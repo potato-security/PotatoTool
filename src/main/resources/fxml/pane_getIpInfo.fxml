@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import org.fxmisc.richtext.CodeArea?>
+<?import org.fxmisc.flowless.VirtualizedScrollPane?>
+<?import javafx.scene.control.TextField?>
+<StackPane fx:id="sPane"
+           stylesheets="@../css/getIpInfo.css"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+           xmlns="http://javafx.com/javafx/21.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.potato.potatotool.controller.PaneGetIpInfo">
+   <children>
+      <VBox alignment="CENTER">
+         <children>
+            <Pane style="-fx-background-radius: 10;-fx-background-color: null">
+               <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入netstat -ano或者net -pantu执行后的内容"  />
+            </Pane>
+            <Pane minHeight="15"/>
+            <HBox alignment="CENTER">
+               <Button minHeight="48.0" minWidth="${sPane.width}" styleClass="btnGetIpInfo" text="开始提取" onAction="#getIpInfo">
+                  <effect>
+                     <DropShadow />
+                  </effect>
+               </Button>
+            </HBox>
+            <Pane minHeight="20"/>
+            <ScrollPane prefHeight="${sPane.height * 0.6 - 83}">
+                <FlowPane fx:id="flowPane" alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
+                   <children>
+                       <VBox styleClass="codeAreaPane">
+                         <VirtualizedScrollPane fx:id="virScrollPane1" styleClass="virtualizedScrollPane">
+                             <content>
+                                <CodeArea fx:id="result1" editable="false" styleClass="codeArea"/>
+                             </content>
+                         </VirtualizedScrollPane>
+                       </VBox>
+                       <VBox styleClass="codeAreaPane">
+                          <VirtualizedScrollPane fx:id="virScrollPane2" styleClass="virtualizedScrollPane">
+                              <content>
+                                  <CodeArea fx:id="result2" editable="false" styleClass="codeArea"/>
+                              </content>
+                          </VirtualizedScrollPane>
+                       </VBox>
+                       <VBox styleClass="codeAreaPane">
+                           <VirtualizedScrollPane fx:id="virScrollPane3" styleClass="virtualizedScrollPane">
+                               <content>
+                                   <CodeArea fx:id="result3" editable="false"  styleClass="codeArea"/>
+                               </content>
+                           </VirtualizedScrollPane>
+                       </VBox>
+                       <VBox styleClass="codeAreaPane">
+                           <VirtualizedScrollPane fx:id="virScrollPane4" styleClass="virtualizedScrollPane">
+                               <content>
+                                   <CodeArea fx:id="result4" editable="false" styleClass="codeArea"/>
+                               </content>
+                           </VirtualizedScrollPane>
+                       </VBox>
+                       <HBox alignment="CENTER" spacing="20">
+                        <ComboBox fx:id="rulesComboBox" prefHeight="30.0" prefWidth="250" onAction="#rulesComboChoose"/>
+                        <TextField fx:id="customTextField" prefHeight="30.0" prefWidth="250" promptText="IP/Pos前缀内容"/>
+                       </HBox>
+                       <VBox styleClass="codeAreaPane">
+                           <VirtualizedScrollPane fx:id="virScrollPane5" styleClass="virtualizedScrollPane">
+                               <content>
+                                   <CodeArea fx:id="result5" editable="false" styleClass="codeArea"/>
+                               </content>
+                           </VirtualizedScrollPane>
+                       </VBox>
+                       <VBox styleClass="codeAreaPane">
+                           <VirtualizedScrollPane fx:id="virScrollPane6" styleClass="virtualizedScrollPane">
+                               <content>
+                                   <CodeArea fx:id="result6" editable="false" styleClass="codeArea"/>
+                               </content>
+                           </VirtualizedScrollPane>
+                       </VBox>
+                       <VBox styleClass="codeAreaPane">
+                           <VirtualizedScrollPane fx:id="virScrollPane7" styleClass="virtualizedScrollPane">
+                               <content>
+                                   <CodeArea fx:id="result7" editable="false" styleClass="codeArea"/>
+                               </content>
+                           </VirtualizedScrollPane>
+                       </VBox>
+                       <VBox styleClass="codeAreaPane">
+                           <VirtualizedScrollPane fx:id="virScrollPane8" styleClass="virtualizedScrollPane">
+                               <content>
+                                   <CodeArea fx:id="result8" editable="false" styleClass="codeArea"/>
+                               </content>
+                           </VirtualizedScrollPane>
+                       </VBox>
+                     <Pane minHeight="5" prefWidth="${sPane.width - 20}"/>
+                   </children>
+                </FlowPane>
+            </ScrollPane>
+         </children>
+      </VBox>
+   </children>
+</StackPane>

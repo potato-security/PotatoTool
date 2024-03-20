@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.control.Label?>
+<StackPane xmlns="http://javafx.com/javafx/21.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:id="sPane"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+
+    <BorderPane>
+
+        <center>
+            <VBox alignment="CENTER" style="-fx-padding: 0 0 120;">
+                <Label text="银行卡归属地、手机号归属地批量查询暂不对外开放" styleClass="titleTipText" alignment="CENTER"/>
+            </VBox>
+        </center>
+
+    </BorderPane>
+
+
+</StackPane>

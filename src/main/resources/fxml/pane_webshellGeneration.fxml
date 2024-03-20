@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.effect.DropShadow?>
+<StackPane xmlns="http://javafx.com/javafx/21.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/webshellGeneration.css"
+           fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.PaneWebshellGeneration"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+
+    <VBox fx:id="paneBox" spacing="25" alignment="CENTER">
+
+        <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
+            <Label text="当前版本：公开版"/>
+            <Label text="涉及工具：Godzilla、Behinder、AntSword"/>
+            <Label text="支持语言：JSP、JSPX、PHP、ASP、ASPX"/>
+            <Label text="支持混淆：Base64、AES、RAW、XOR、Unicode、CSHARP、Reflect"/>
+        </VBox>
+
+        <HBox alignment="CENTER">
+            <Label text="自定义webShell密钥："/>
+            <TextField fx:id="webShellKey" prefHeight="30.0" prefWidth="270"/>
+        </HBox>
+
+        <Button minHeight="48.0" minWidth="250" text="生成webShell" onAction="#webshellGeneration">
+            <effect>
+                <DropShadow />
+            </effect>
+        </Button>
+
+        <Label fx:id="tipTitle" visible="false"/>
+        <Pane minHeight="50"/>
+
+    </VBox>
+
+
+</StackPane>

@@ -1,0 +1,10 @@
+.btnDecompile{
+    -fx-background-color:-main-btnTransition-color;
+    -fx-background-radius: 5;
+    -fx-background-insets: 0 0 0 1; /*背景色溢出bug解决方式*/
+    -fx-text-fill: white;
+    -fx-font-size: 20;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+    -fx-border-color: black;
+}

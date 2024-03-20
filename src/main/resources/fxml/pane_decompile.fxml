@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import com.leewyatt.rxcontrols.controls.RXTranslationButton?>
+<?import javafx.scene.effect.DropShadow?>
+<?import org.fxmisc.richtext.CodeArea?>
+<?import org.fxmisc.flowless.VirtualizedScrollPane?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.Cursor?>
+<StackPane xmlns="http://javafx.com/javafx/21.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/decompile.css"
+           fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.PaneDecompile"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+
+    <VBox fx:id="paneBox" alignment="CENTER">
+
+
+        <HBox alignment="CENTER">
+            <Label text="反编译器选择："/>
+            <ComboBox fx:id="rulesComboBox" prefHeight="30.0" prefWidth="270">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="idea" />
+                        <String fx:value="procyon" />
+                    </FXCollections>
+                </items>
+                <cursor>
+                    <Cursor fx:constant="HAND" />
+                </cursor>
+            </ComboBox>
+        </HBox>
+        <Pane minHeight="20"/>
+
+        <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width}" styleClass="btnDecompile" text="选择本地class文件" onAction="#toDecompile" translationDir="BOTTOM_TO_TOP">
+            <graphic>
+                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../img/codeFile.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+            <effect>
+                <DropShadow height="5.0" radius="2.0" width="5.0" />
+            </effect>
+        </RXTranslationButton>
+
+        <Pane minHeight="20"/>
+        <VBox styleClass="codeAreaPane">
+            <VirtualizedScrollPane fx:id="virScrollPane" styleClass="virtualizedScrollPane">
+                <content>
+                    <CodeArea fx:id="result" editable="false" wrapText="true" styleClass="codeArea"/>
+                </content>
+            </VirtualizedScrollPane>
+        </VBox>
+
+    </VBox>
+
+
+
+
+</StackPane>

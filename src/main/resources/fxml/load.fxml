@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<StackPane fx:id="root"
+           alignment="CENTER"
+           maxHeight="-Infinity" maxWidth="-Infinity"
+           minHeight="-Infinity" minWidth="-Infinity"
+           prefHeight="720"
+           prefWidth="1280"
+           xmlns="http://javafx.com/javafx/21.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/load.css"
+           fx:controller="com.potato.potatotool.controller.PaneLoad">
+    <StackPane fx:id="codePane"/>
+
+    <Label>
+        <graphic>
+            <Region styleClass="loadImg"/>
+        </graphic>
+    </Label>
+
+
+    <Label fx:id="blueImg" translateX="-200" translateY="-100">
+        <graphic>
+            <Region styleClass="blueImg"/>
+        </graphic>
+    </Label>
+
+    <Label fx:id="redImg" translateX="175" translateY="100">
+        <graphic>
+            <Region styleClass="redImg"/>
+        </graphic>
+    </Label>
+
+    <ImageView fx:id="potatoImg" fitHeight="100.0" fitWidth="1000.0" translateX="100" translateY="-150" pickOnBounds="true" preserveRatio="true">
+        <image>
+            <Image url="@../img/potato.png" />
+        </image>
+    </ImageView>
+
+    <ImageView fx:id="toolImg" fitHeight="150.0" fitWidth="1000.0" translateX="-150"  translateY="150" pickOnBounds="true" preserveRatio="true">
+        <image>
+            <Image url="@../img/tool.png" />
+        </image>
+    </ImageView>
+
+
+</StackPane>

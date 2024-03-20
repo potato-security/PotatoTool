@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.ListView?>
+<StackPane xmlns="http://javafx.com/javafx/21.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/extension.css"
+           fx:controller="com.potato.potatotool.controller.PaneExtension"
+           fx:id="sPane"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+
+    <BorderPane>
+
+        <left>
+            <ScrollPane maxHeight="${sPane.height - 10}" hbarPolicy="NEVER">
+                <VBox fx:id="vBoxBar">
+                    <Accordion fx:id="accordionPane"/>
+                </VBox>
+            </ScrollPane>
+        </left>
+
+        <right>
+            <ListView fx:id="listView" prefWidth="${sPane.width - 210}" maxHeight="${sPane.height - 10}" />
+        </right>
+    </BorderPane>
+
+
+</StackPane>

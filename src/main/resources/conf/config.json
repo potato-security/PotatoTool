@@ -1,0 +1,5496 @@
+{
+  "Proxy": {
+    "enable": false,
+    "address": "http://127.0.0.1:7890"
+  },
+  "Decompile": {
+    "decompileMode": "idea",
+    "AI_optimization": false
+  },
+  "AI": {
+    "GPT_Model": "gpt-4",
+    "GPT_API_Key": ""
+  },
+  "Extension": {
+    "快捷指令": {
+      "启动工具": [
+        {
+          "title": "Burp",
+          "describe": "[Mac示例]启动BurpSuite",
+          "content": "/Users/a/Desktop/渗透测试/bp/start.sh",
+          "type": "cmd",
+          "icon": ""
+        },
+        {
+          "title": "cd Sqlmap",
+          "describe": "[Mac示例]命令行进入Sqlmap文件夹",
+          "content": "open -a iTerm -n /Users/a/Desktop/渗透测试/sqlmap",
+          "type": "cmd",
+          "icon": ""
+        },
+        {
+          "title": "打开Sqlmap",
+          "describe": "[Mac示例]打开Sqlmap文件夹",
+          "content": "open /Users/a/Desktop/渗透测试/sqlmap",
+          "type": "cmd",
+          "icon": ""
+        }
+      ],
+      "启动网页": []
+    },
+    "在线工具": {
+      "网络空间资产绘测": [
+        {
+          "title": "Netlas",
+          "describe": "Netlas",
+          "content": "https://netlas.io/",
+          "type": "web",
+          "icon": "/img/bar/bea077010d778d46b0c72b5b83719c58.png"
+        },
+        {
+          "title": "钟馗之眼",
+          "describe": "知道创宇开发的全球网络资产绘测",
+          "content": "https://www.zoomeye.org/",
+          "type": "web",
+          "icon": "/img/bar/9e98968fdf173b01264ecfaa3f2aa6e2.png"
+        },
+        {
+          "title": "360Quake",
+          "describe": "360网络空间测绘-因为看见，所以安全",
+          "content": "https://quake.360.cn/",
+          "type": "web",
+          "icon": "/img/bar/fc957473349f9483c7ffe67e335585b2.png"
+        },
+        {
+          "title": "鹰图平台",
+          "describe": "奇安信网络空间测绘鹰图平台",
+          "content": "https://hunter.qianxin.com/",
+          "type": "web",
+          "icon": "/img/bar/6c17e23f9d04bbc7a05791a0dacfdb76.png"
+        },
+        {
+          "title": "Fofa",
+          "describe": "白帽汇推出的网络空间资产搜索引擎",
+          "content": "https://fofa.info/",
+          "type": "web",
+          "icon": "/img/bar/9af4abfebd34b5aabf9f1cc9e6dd6d7e.png"
+        },
+        {
+          "title": "Shodan",
+          "describe": "Shodan Search",
+          "content": "https://www.shodan.io/",
+          "type": "web",
+          "icon": "/img/bar/f5251222e2630f56540ff1305407dd95.png"
+        },
+        {
+          "title": "Censys",
+          "describe": "一款洞察互联网秘密的新型搜索引擎",
+          "content": "https://search.censys.io/",
+          "type": "web",
+          "icon": "/img/bar/c9bfa8116300eb7861876b0bc01a2cc1.png"
+        },
+        {
+          "title": "全球DNS搜索引擎",
+          "describe": "全球DNS搜索引擎",
+          "content": "https://dnsdb.io/zh-cn/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "BinaryEdge",
+          "describe": "针对全网范围扫描资产",
+          "content": "https://www.binaryedge.io/",
+          "type": "web",
+          "icon": "/img/bar/70b2dc232ccf80c14d044d5417830457.png"
+        },
+        {
+          "title": "GreyNoise",
+          "describe": "资产测绘引擎",
+          "content": "https://www.greynoise.io/blog",
+          "type": "web",
+          "icon": "/img/bar/3d9400aa62d2e6c57924a77f104eb16e.png"
+        },
+        {
+          "title": "Project Sonar",
+          "describe": "搜集公网数据并分析",
+          "content": "https://opendata.rapid7.com/",
+          "type": "web",
+          "icon": "/img/bar/b333058c15080e8906e17722e667c09f.png"
+        },
+        {
+          "title": "FullHunt",
+          "describe": "互联网攻击面数据库",
+          "content": "https://fullhunt.io/",
+          "type": "web",
+          "icon": "/img/bar/209fb93765e9f52db8099374f4beb18c.png"
+        },
+        {
+          "title": "LeakIX",
+          "describe": "LeakIX",
+          "content": "https://leakix.net",
+          "type": "web",
+          "icon": "/img/bar/6adc53624710a8f01103bb67e2e07219.png"
+        },
+        {
+          "title": "Criminal IP",
+          "describe": "Cybersecurity Search Engine | Criminal IP",
+          "content": "https://www.criminalip.io",
+          "type": "web",
+          "icon": "/img/bar/1592e77176a91676b10cf00940629e7f.png"
+        },
+        {
+          "title": "PublicWWW",
+          "describe": "Source Code Search Engine",
+          "content": "https://publicwww.com/",
+          "type": "web",
+          "icon": "/img/bar/2a0abee5be4fb94fdcd189367237bc1d.png"
+        },
+        {
+          "title": "Web-Check",
+          "describe": "All-in-one OSINT tool, for quickly checking a websites data",
+          "content": "https://web-check.as93.net",
+          "type": "web",
+          "icon": "/img/bar/f62780a084a8118dd0636d8a42382bf2.png"
+        },
+        {
+          "title": "Graph",
+          "describe": "微步可视化威胁调查分析工具，看清目标，让对手无处遁形",
+          "content": "https://x.threatbook.com/v5/graphSearch",
+          "type": "web",
+          "icon": "/img/bar/f35627bb6c1d0144e1dd7f57cf7c4cce.png"
+        },
+        {
+          "title": "Hunter Search",
+          "describe": "Hunter Search Engine",
+          "content": "https://hunter.how/",
+          "type": "web",
+          "icon": "/img/bar/c0b0565d7e3c6dfd76edf6a33e0ad288.png"
+        },
+        {
+          "title": "IVRE",
+          "describe": "Network recon",
+          "content": "https://ivre.rocks/",
+          "type": "web",
+          "icon": "/img/bar/c70e0c1d0551f3c36e14d684c93f601f.png"
+        },
+        {
+          "title": "FireFly",
+          "describe": "SRC相关资产搜集平台",
+          "content": "http://firefly.geekyoung.com",
+          "type": "web",
+          "icon": "/img/bar/5bb8f84a709a2cd80b6bc2f04e5d0f92.png"
+        },
+        {
+          "title": "零零信安",
+          "describe": "00SEC-ASM 零零信安攻击面管理系统",
+          "content": "https://0.zone/",
+          "type": "web",
+          "icon": "/img/bar/9e71a3440ed85599cb57590af24de9a2.png"
+        }
+      ],
+      "渗透利器": [
+        {
+          "title": "网络设备默认口令查询",
+          "describe": "提权|杀软|默认口令|辅助工具的集合",
+          "content": "https://www.shentoushi.top/av/",
+          "type": "web",
+          "icon": "/img/bar/56155613a42db83858e656522bbcb70e.png"
+        },
+        {
+          "title": "RedTeam And Command",
+          "describe": "系统命令Wiki",
+          "content": "https://book.shentoushi.top/",
+          "type": "web",
+          "icon": "/img/bar/5274f81020b979205580ed60432c72e6.png"
+        },
+        {
+          "title": "凌星阁",
+          "describe": "凌星阁",
+          "content": "https://sec.lintstar.top/",
+          "type": "web",
+          "icon": "/img/bar/282e84ad8a6bb08260fea7b92302be95.png"
+        },
+        {
+          "title": "Windows提权辅助",
+          "describe": "Windows提权辅助工具",
+          "content": "https://i.hacking8.com/tiquan",
+          "type": "web",
+          "icon": "/img/bar/aea7bd1f829fdf77e7f35c6449293e26.png"
+        },
+        {
+          "title": "Reverse shell",
+          "describe": "Reverse shell cheatsheet",
+          "content": "https://www.shentoushi.top/tools/misc/reverse_shell.php",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Reverse Shell",
+          "describe": "Reverse Shell Generator",
+          "content": "https://www.revshells.com/",
+          "type": "web",
+          "icon": "/img/bar/2be48bc3e1063850d4be6e68a71d4d29.png"
+        },
+        {
+          "title": "Golin",
+          "describe": "一体化信息搜集和外部打点及等保测评系统",
+          "content": "https://github.com/selinuxG/Golin",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        }
+      ],
+      "威胁情报分析": [
+        {
+          "title": "URLhaus",
+          "describe": "URLhaus Database",
+          "content": "https://urlhaus.abuse.ch/browse/",
+          "type": "web",
+          "icon": "/img/bar/a60e36a9271f4f6229e265b3c7a81931.png"
+        },
+        {
+          "title": "Pinatahub",
+          "describe": "Github 敏感信息搜索引擎",
+          "content": "https://pinatahub.incognita.tech/",
+          "type": "web",
+          "icon": "/img/bar/050beec5389529575aaa8bff96f7eb9b.png"
+        },
+        {
+          "title": "Hunter",
+          "describe": "电子邮件搜寻工具",
+          "content": "https://hunter.io/",
+          "type": "web",
+          "icon": "/img/bar/0d8189f9a274a3978bf9a167506a199a.png"
+        },
+        {
+          "title": "微步情报社区",
+          "describe": "微步在线X情报社区",
+          "content": "https://x.threatbook.com/",
+          "type": "web",
+          "icon": "/img/bar/7aec87fa95aff164f4c5ef2caec67733.png"
+        },
+        {
+          "title": "安恒威胁分析平台",
+          "describe": "安恒威胁情报中心",
+          "content": "https://ti.dbappsecurity.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/9078d412f3df124eaa1978e16619386c.png"
+        },
+        {
+          "title": "360威胁情报中心",
+          "describe": "360威胁情报中心",
+          "content": "https://ti.360.com/",
+          "type": "web",
+          "icon": "/img/bar/bd984eaa79a2f195c34953c0862cedaf.png"
+        },
+        {
+          "title": "奇安信威胁情报中心",
+          "describe": "奇安信威胁情报中心",
+          "content": "https://ti.qianxin.com/",
+          "type": "web",
+          "icon": "/img/bar/92d2a92b48f4e42c135fdf4e6ea69b5a.png"
+        },
+        {
+          "title": "RedQueen",
+          "describe": "RedQueen安全智能服务平台",
+          "content": "https://redqueen.tj-un.com/",
+          "type": "web",
+          "icon": "/img/bar/a920b7e383e2adfef2075baa13580a4a.png"
+        },
+        {
+          "title": "安全应急资源库",
+          "describe": "CNSRC - 安全应急响应",
+          "content": "https://www.cnsrc.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/ce9a41e724797164c6f6fc845b0c39f7.png"
+        },
+        {
+          "title": "BadIP",
+          "describe": "全球网络威胁动态狩猎系统",
+          "content": "http://badip.com/",
+          "type": "web",
+          "icon": "/img/bar/db0153eda6d897dd1c080cc56108caa0.png"
+        },
+        {
+          "title": "深信服威胁情报中心",
+          "describe": "深信服威胁情报中心",
+          "content": "https://ti.sangfor.com.cn",
+          "type": "web",
+          "icon": "/img/bar/555b50feb7b713ac2fb9bc4371adaa7f.png"
+        },
+        {
+          "title": "安全星图平台",
+          "describe": "安恒-安全数据分析",
+          "content": "https://ti.dbappsecurity.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/0f50d535f1f30964c03ec56e5c905e11.png"
+        },
+        {
+          "title": "HFish",
+          "describe": "安全、简单、有效的蜜罐平台",
+          "content": "https://hfish.io",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Lyzem",
+          "describe": "Lyzem是一个针对telegram的搜索引擎",
+          "content": "https://lyzem.com/",
+          "type": "web",
+          "icon": "/img/bar/2905ef6814312f974b44b269de0b3e5a.png"
+        },
+        {
+          "title": "VoidSec",
+          "describe": "WebRTC真实IP在线探测",
+          "content": "https://ip.voidsec.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "国家计算机病毒应急处理中心",
+          "describe": "CVERC",
+          "content": "https://www.cverc.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "在线威胁情报播报",
+          "describe": "实时更新威胁情报播报",
+          "content": "https://threat.aabyss.cn/",
+          "type": "web",
+          "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+        },
+        {
+          "title": "Microsoft Defender",
+          "describe": "Microsoft Defender Threat Intelligence",
+          "content": "https://ti.defender.microsoft.com/",
+          "type": "web",
+          "icon": "/img/bar/d945f30ffe9978fe661641d05347b172.png"
+        },
+        {
+          "title": "IBM X-Force",
+          "describe": "IBM X-Force Exchange",
+          "content": "https://exchange.xforce.ibmcloud.com/",
+          "type": "web",
+          "icon": "/img/bar/94ca754bc9bcd675431534bf87938323.png"
+        },
+        {
+          "title": "VIP 漏洞情报中心",
+          "describe": "斗象科技 VIP漏洞情报",
+          "content": "https://vip.riskivy.com/",
+          "type": "web",
+          "icon": "/img/bar/1364eddd36121c1699d3ef2e7eb01560.png"
+        },
+        {
+          "title": "无胁漏洞情报中心",
+          "describe": "无胁科技漏洞情报中心",
+          "content": "https://tvd.wuthreat.com/",
+          "type": "web",
+          "icon": "/img/bar/7e583930dc5b686390e2d9cec9423edc.png"
+        }
+      ],
+      "文件分析与免杀测试": [
+        {
+          "title": "InQues-Labs",
+          "describe": "InQuest.net",
+          "content": "https://labs.inquest.net/",
+          "type": "web",
+          "icon": "/img/bar/fdfe140ba589e5e22524dadba2fef1dd.png"
+        },
+        {
+          "title": "MalShare",
+          "describe": "MalShare",
+          "content": "https://malshare.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "MalwareBazaar",
+          "describe": "Browse malware samples",
+          "content": "https://bazaar.abuse.ch/browse/",
+          "type": "web",
+          "icon": "/img/bar/a60e36a9271f4f6229e265b3c7a81931.png"
+        },
+        {
+          "title": "PolySwarm",
+          "describe": "Crowdsourced threat detection",
+          "content": "https://polyswarm.network/",
+          "type": "web",
+          "icon": "/img/bar/52129811ebb0c0c4f6c34b41d8caab99.png"
+        },
+        {
+          "title": "YOMI",
+          "describe": "YOMI",
+          "content": "https://yomi.yoroi.company/upload",
+          "type": "web",
+          "icon": "/img/bar/7de9e618f32bc04c58a032d3576c8c77.png"
+        },
+        {
+          "title": "阿里伏魔引擎",
+          "describe": "伏魔Webshell检测引擎",
+          "content": "https://xz.aliyun.com/zues",
+          "type": "web",
+          "icon": "/img/bar/b43103e4b11ff21240cc0de270e55b9d.png"
+        },
+        {
+          "title": "WEBDIR+",
+          "describe": "百度Webshell检测引擎",
+          "content": "https://scanner.baidu.com/",
+          "type": "web",
+          "icon": "/img/bar/077167860f0429226f15d4b8a11739fb.png"
+        },
+        {
+          "title": "牧云Webshell检测",
+          "describe": "牧云Webshell检测引擎社区版",
+          "content": "https://stack.chaitin.com/security-challenge/webshell/index",
+          "type": "web",
+          "icon": "/img/bar/bd46354a404c0277c24486efd342eee4.png"
+        },
+        {
+          "title": "AntiScan",
+          "describe": "国外不上报查杀引擎",
+          "content": "https://antiscan.me/",
+          "type": "web",
+          "icon": "/img/bar/e17d8a27b8fab66e19fd40b8bc64492c.png"
+        },
+        {
+          "title": "TideBypass",
+          "describe": "潮影在线免杀平台",
+          "content": "http://bypass.tidesec.com/",
+          "type": "web",
+          "icon": "/img/bar/67feaef31df965db54c96a60c326b099.png"
+        },
+        {
+          "title": "安恒威胁分析平台",
+          "describe": "安恒威胁情报中心",
+          "content": "https://ti.dbappsecurity.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/9078d412f3df124eaa1978e16619386c.png"
+        },
+        {
+          "title": "D盾",
+          "describe": "D盾防火墙",
+          "content": "http://www.d99net.net/",
+          "type": "web",
+          "icon": "/img/bar/44e064d417beee7edc514ffe5ed871ac.png"
+        },
+        {
+          "title": "安全狗",
+          "describe": "网站安全狗",
+          "content": "http://free.safedog.cn/website_safedog.html",
+          "type": "web",
+          "icon": "/img/bar/ff9e78087f665d926920a24ff3203262.png"
+        },
+        {
+          "title": "安全应急资源库",
+          "describe": "CNSRC - 安全应急响应",
+          "content": "https://www.cnsrc.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/ce9a41e724797164c6f6fc845b0c39f7.png"
+        },
+        {
+          "title": "微步在线云沙箱",
+          "describe": "微步-文件在线分析",
+          "content": "https://s.threatbook.com/",
+          "type": "web",
+          "icon": "/img/bar/7aec87fa95aff164f4c5ef2caec67733.png"
+        },
+        {
+          "title": "VirusTotal",
+          "describe": "大名鼎鼎的VT",
+          "content": "https://www.virustotal.com/gui/home/upload",
+          "type": "web",
+          "icon": "/img/bar/8bb54c0cf2431324686ed83e43a49f25.png"
+        },
+        {
+          "title": "腾讯哈勃分析系统",
+          "describe": "腾讯哈勃分析系统",
+          "content": "https://habo.qq.com/",
+          "type": "web",
+          "icon": "/img/bar/a8e76b2538e9421005a840451b9bf5e7.png"
+        },
+        {
+          "title": "腾讯手机查毒",
+          "describe": "腾讯安全管家在线查毒系统",
+          "content": "https://m.qq.com/security_lab/scans_online.jsp",
+          "type": "web",
+          "icon": "/img/bar/bc0c500b6bd76e1e3a56a2ebdd1971d6.jpg"
+        },
+        {
+          "title": "三六零天御",
+          "describe": "需登录：企业移动应用安全检测",
+          "content": "https://jiagu.360.cn/",
+          "type": "web",
+          "icon": "/img/bar/94044dba1ed56eb63796240dad26d5f7.jpg"
+        },
+        {
+          "title": "VirSCAN",
+          "describe": "多引擎在线病毒扫描",
+          "content": "https://www.virscan.org/",
+          "type": "web",
+          "icon": "/img/bar/b9b67d56e7b26371f977a0f099b5c6c2.png"
+        },
+        {
+          "title": "SHELLPUB",
+          "describe": "河马Webshell在线查杀",
+          "content": "https://n.shellpub.com/",
+          "type": "web",
+          "icon": "/img/bar/b9012a681ea65068d1d6bb2df4956c92.png"
+        },
+        {
+          "title": "ANY RUN",
+          "describe": "交互式恶意软件分析沙盒服务",
+          "content": "https://app.any.run/",
+          "type": "web",
+          "icon": "/img/bar/182b41b063d704177f31f004e9ffc076.png"
+        },
+        {
+          "title": "安全星图平台",
+          "describe": "安恒-安全数据分析",
+          "content": "https://ti.dbappsecurity.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/0f50d535f1f30964c03ec56e5c905e11.png"
+        },
+        {
+          "title": "Webshell免杀手册",
+          "describe": "PHP从零学习到Webshell免杀手册",
+          "content": "https://github.com/AabyssZG/WebShell-Bypass-Guide",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "奇安信情报沙箱",
+          "describe": "奇安信情报沙箱",
+          "content": "https://sandbox.ti.qianxin.com/",
+          "type": "web",
+          "icon": "/img/bar/d5b62c47162f861e58c62ce4cfdda7c9.png"
+        },
+        {
+          "title": "未知威胁文件检测系统",
+          "describe": "未知威胁文件检测系统",
+          "content": "https://scan.anxinsec.com/",
+          "type": "web",
+          "icon": "/img/bar/e7ca5f635858ee7a232d1375a9fe8768.png"
+        },
+        {
+          "title": "阿里云恶意文件检测平台",
+          "describe": "专注于技术分享、安全能力输出",
+          "content": "https://ti.aliyun.com",
+          "type": "web",
+          "icon": "/img/bar/e7ca5f635858ee7a339d1375a9fe8768.png"
+        },
+        {
+          "title": "大圣云沙箱",
+          "describe": "斗象科技-大圣云沙箱检测系统",
+          "content": "https://sandbox.vulbox.com/",
+          "type": "web",
+          "icon": "/img/bar/d5cf027882202772f418261ed52e9dd4.png"
+        },
+        {
+          "title": "Valkyrie",
+          "describe": "Advanced File Analysis System",
+          "content": "https://valkyrie.comodo.com/",
+          "type": "web",
+          "icon": "/img/bar/c7d6326ff06534ab4ed8471b657e4481.png"
+        },
+        {
+          "title": "IObit",
+          "describe": "IObit Cloud",
+          "content": "https://cloud.iobit.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Joe Sandbox",
+          "describe": "Automated Malware Analysis",
+          "content": "https://www.joesandbox.com/",
+          "type": "web",
+          "icon": "/img/bar/8db35c9b604e998b441f789ad6952fa8.png"
+        },
+        {
+          "title": "360沙箱云",
+          "describe": "360沙箱云",
+          "content": "https://ata.360.net/",
+          "type": "web",
+          "icon": "/img/bar/a1959df4aeb58f1da8f45e82949c1992.png"
+        },
+        {
+          "title": "Triage",
+          "describe": "Triage文件分析",
+          "content": "https://tria.ge/",
+          "type": "web",
+          "icon": "/img/bar/14138c33f7b99eff25c3f2721498b52e.png"
+        },
+        {
+          "title": "CAPE",
+          "describe": "CAPE Sandbox",
+          "content": "https://capesandbox.com/",
+          "type": "web",
+          "icon": "/img/bar/41a9f666934c404f3a35905e9bbffc82.png"
+        },
+        {
+          "title": "Falcon Sandbox",
+          "describe": "Free Automated Malware Analysis Service",
+          "content": "https://www.hybrid-analysis.com/",
+          "type": "web",
+          "icon": "/img/bar/ae71d5dfc2c021614233f15aa53b83ef.png"
+        }
+      ],
+      "Web在线探测": [
+        {
+          "title": "源码搜索",
+          "describe": "在线源代码搜索",
+          "content": "https://searchcode.com/",
+          "type": "web",
+          "icon": "/img/bar/39de2727d6a62256268c57f43063ec47.png"
+        },
+        {
+          "title": "Online V",
+          "describe": "漏洞在线检测",
+          "content": "https://hackertarget.com/",
+          "type": "web",
+          "icon": "/img/bar/f4e23ba1f5888a06c07f979e43bcffbf.png"
+        },
+        {
+          "title": "Dnsdb",
+          "describe": "提供DNS快速查询和反查功能",
+          "content": "https://dnsdb.io/zh-cn/",
+          "type": "web",
+          "icon": "/img/bar/8ef779b27ec127b505270c7372e6979a.png"
+        },
+        {
+          "title": "PhoneBook",
+          "describe": "例举所有的域名，邮件地址",
+          "content": "https://phonebook.cz/",
+          "type": "web",
+          "icon": "/img/bar/803481957a78d9d7e2b773d12f4cd5fa.png"
+        },
+        {
+          "title": "PublicWWW",
+          "describe": "Source Code Search Engine",
+          "content": "https://publicwww.com/",
+          "type": "web",
+          "icon": "/img/bar/2a0abee5be4fb94fdcd189367237bc1d.png"
+        },
+        {
+          "title": "云悉",
+          "describe": "在线CMS指纹识别，资产梳理",
+          "content": "http://www.yunsee.cn/",
+          "type": "web",
+          "icon": "/img/bar/fede63b8a320e64f1933a2ef211c81dc.jpg"
+        },
+        {
+          "title": "潮汐指纹识别",
+          "describe": "TideFinger 潮汐指纹",
+          "content": "http://finger.tidesec.net/",
+          "type": "web",
+          "icon": "/img/bar/905b7784a1bf37861ba39c03ad38119f.png"
+        },
+        {
+          "title": "SSL/TLS安全评估",
+          "describe": "SSL证书安全在线检测",
+          "content": "https://myssl.com/",
+          "type": "web",
+          "icon": "/img/bar/ee47fcc971cd065205117f218e265e5e.png"
+        },
+        {
+          "title": "WhatCMS",
+          "describe": "What CMS Is This Site Using?",
+          "content": "https://whatcms.org/",
+          "type": "web",
+          "icon": "/img/bar/17711cd3017facbdccd552670644f60b.png"
+        },
+        {
+          "title": "17ce",
+          "describe": "网站DNS/CDN查询",
+          "content": "https://www.17ce.com/",
+          "type": "web",
+          "icon": "/img/bar/88a1f80574494daa51d9484c64e48045.png"
+        }
+      ],
+      "服务器情报搜集": [
+        {
+          "title": "Online V",
+          "describe": "漏洞在线检测",
+          "content": "https://hackertarget.com/",
+          "type": "web",
+          "icon": "/img/bar/f4e23ba1f5888a06c07f979e43bcffbf.png"
+        },
+        {
+          "title": "Dnsdb",
+          "describe": "提供DNS快速查询和反查功能",
+          "content": "https://dnsdb.io/zh-cn/",
+          "type": "web",
+          "icon": "/img/bar/8ef779b27ec127b505270c7372e6979a.png"
+        },
+        {
+          "title": "Pinatahub",
+          "describe": "Github 敏感信息搜索引擎",
+          "content": "https://pinatahub.incognita.tech/",
+          "type": "web",
+          "icon": "/img/bar/050beec5389529575aaa8bff96f7eb9b.png"
+        },
+        {
+          "title": "SCANS.IO",
+          "describe": "Stanford Internet Research Data Repository",
+          "content": "https://scans.io/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "全球CDN查询",
+          "describe": "全球CDN服务商查询",
+          "content": "https://tools.ipip.net/cdn.php",
+          "type": "web",
+          "icon": "/img/bar/a516bbd5b2f66bc985b9af4bde011f52.png"
+        },
+        {
+          "title": "Namp Online",
+          "describe": "在线Namp端口扫描",
+          "content": "http://nmap.online-domain-tools.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "DNSdump",
+          "describe": "DNS记录在线查询",
+          "content": "https://dnsdumpster.com/",
+          "type": "web",
+          "icon": "/img/bar/be980e79497dc19f69b82205502b154d.png"
+        },
+        {
+          "title": "ViewDNS",
+          "describe": "DNS记录多种查询",
+          "content": "https://viewdns.info/",
+          "type": "web",
+          "icon": "/img/bar/7f462d6e191a195ea30be79a4687e3ef.png"
+        },
+        {
+          "title": "微步在线情报分析",
+          "describe": "微步多功能在线情报分析",
+          "content": "https://x.threatbook.com/",
+          "type": "web",
+          "icon": "/img/bar/7aec87fa95aff164f4c5ef2caec67733.png"
+        },
+        {
+          "title": "17ce",
+          "describe": "网站DNS/CDN查询",
+          "content": "https://www.17ce.com/",
+          "type": "web",
+          "icon": "/img/bar/88a1f80574494daa51d9484c64e48045.png"
+        },
+        {
+          "title": "SecurityTrails",
+          "describe": "网络资产DNS历史记录跟踪",
+          "content": "https://securitytrails.com/",
+          "type": "web",
+          "icon": "/img/bar/9a11bea79f159186909eaab982f8304f.png"
+        },
+        {
+          "title": "IP138",
+          "describe": "IP信息在线查询",
+          "content": "https://www.ip138.com/",
+          "type": "web",
+          "icon": "/img/bar/9f743d837450f1f4cdfe9823450efff4.png"
+        },
+        {
+          "title": "Certificate Search",
+          "describe": "SSL证书查询收集",
+          "content": "https://crt.sh/",
+          "type": "web",
+          "icon": "/img/bar/9f743d837450f1f4cdfe9889250efff4.png"
+        }
+      ],
+      "Dnslog": [
+        {
+          "title": "Fu4k USA",
+          "describe": "安全快速的Dns、Http、Rmi、Ldap Log平台",
+          "content": "https://www.log.d48e48337471993e.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "DNSLog",
+          "describe": "DNSLog Platform",
+          "content": "http://dnslog.cn/",
+          "type": "web",
+          "icon": "/img/bar/8e2b16fe22361c690296013620c2bf77.png"
+        },
+        {
+          "title": "CEYE",
+          "describe": "Monitor service for security",
+          "content": "http://ceye.io/",
+          "type": "web",
+          "icon": "/img/bar/d9cc3dc555cfd80b1ffcb344fcdb34af.png"
+        },
+        {
+          "title": "DNSLOG Platform",
+          "describe": "dig.pm",
+          "content": "https://dig.pm/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "DDDD",
+          "describe": "Blind Command Injection tool",
+          "content": "https://dddd.cam/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        }
+      ],
+      "在线加解密": [
+        {
+          "title": "CyberChef",
+          "describe": "CyberChef",
+          "content": "https://cyberchef.cn/",
+          "type": "web",
+          "icon": "/img/bar/f4750b5983a38067dcb4c38fd5db8f8a.png"
+        },
+        {
+          "title": "在线编码解码",
+          "describe": "在线加密解密",
+          "content": "https://govuln.com/tool/decoder/",
+          "type": "web",
+          "icon": "/img/bar/116e061881f97695ad50c0b3414d9b17.png"
+        },
+        {
+          "title": "WebDeveloper",
+          "describe": "WebDeveloper",
+          "content": "https://payloads.online/tools/",
+          "type": "web",
+          "icon": "/img/bar/c194d19eaa5b52264760291813514a90.png"
+        },
+        {
+          "title": "Xmd5",
+          "describe": "在线免费md5解密",
+          "content": "http://www.xmd5.org/",
+          "type": "web",
+          "icon": "/img/bar/a512bc43c729e5386088b5f492d5eded.png"
+        },
+        {
+          "title": "ChaMD5",
+          "describe": "在线查询md5",
+          "content": "http://www.chamd5.org/",
+          "type": "web",
+          "icon": "/img/bar/d42d81fa2599106ce86e2d15a8b7d523.png"
+        },
+        {
+          "title": "CMD5",
+          "describe": "MD5在线加密解密",
+          "content": "https://www.cmd5.com/",
+          "type": "web",
+          "icon": "/img/bar/6cfb44b6e7c4145c9dbe85a08bf55a3f.png"
+        },
+        {
+          "title": "Somd5",
+          "describe": "解密让你无语的MD5",
+          "content": "https://www.somd5.com/",
+          "type": "web",
+          "icon": "/img/bar/c62510ae609b58fdbc9d7378e0c13b39.png"
+        },
+        {
+          "title": "Pmd5",
+          "describe": "MD5在线解密",
+          "content": "https://pmd5.com/",
+          "type": "web",
+          "icon": "/img/bar/d03f0f0e693f67f780afc8ab2485f7c1.png"
+        },
+        {
+          "title": "Javascript Obfuscator",
+          "describe": "超强JS加密",
+          "content": "https://www.javascriptobfuscator.com/Javascript-Obfuscator.aspx",
+          "type": "web",
+          "icon": "/img/bar/2fcc1af44b8639e5e0752c5f20ef4332.png"
+        },
+        {
+          "title": "Vigenere 求解器",
+          "describe": "维吉尼亚密码解密器",
+          "content": "https://www.guballa.de/vigenere-solver",
+          "type": "web",
+          "icon": "/img/bar/fffd596200cc2e68a2b84aa751587900.png"
+        },
+        {
+          "title": "在线哈希解密",
+          "describe": "Cloud Password Recovery Services",
+          "content": "https://www.onlinehashcrack.com/",
+          "type": "web",
+          "icon": "/img/bar/7e273ca4cc0eb36accc6cbca918c07f7.png"
+        },
+        {
+          "title": "查MD5啦",
+          "describe": "md5在线解密",
+          "content": "https://cmd5.la/",
+          "type": "web",
+          "icon": "/img/bar/70af78df25a52dc1a4535bfaf390a9ed.png"
+        },
+        {
+          "title": "GPUHASH.me",
+          "describe": "online WPA/WPA2 PMKID cracker",
+          "content": "https://gpuhash.me/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        }
+      ],
+      "社工工具": [
+        {
+          "title": "Hunter",
+          "describe": "电子邮件搜寻工具",
+          "content": "https://hunter.io/",
+          "type": "web",
+          "icon": "/img/bar/0d8189f9a274a3978bf9a167506a199a.png"
+        },
+        {
+          "title": "PhoneBook",
+          "describe": "例举所有的域名，邮件地址",
+          "content": "https://phonebook.cz/",
+          "type": "web",
+          "icon": "/img/bar/803481957a78d9d7e2b773d12f4cd5fa.png"
+        },
+        {
+          "title": "OpenGps",
+          "describe": "openGPS定位",
+          "content": "https://www.opengps.cn/",
+          "type": "web",
+          "icon": "/img/bar/2f67f0e6c01bcf688a4e1be3ee4d583d.png"
+        },
+        {
+          "title": "埃文科技",
+          "describe": "高精度IP定位",
+          "content": "https://www.ipplus360.com/",
+          "type": "web",
+          "icon": "/img/bar/8309c42568db26ea00f7f6c07c44430e.png"
+        },
+        {
+          "title": "IPIP",
+          "describe": "专业的IP地址库_IPIP.NET",
+          "content": "https://www.ipip.net/",
+          "type": "web",
+          "icon": "/img/bar/f6617c6ffcdc571e2f2c5bd7071f1de2.png"
+        },
+        {
+          "title": "安全沙漏",
+          "describe": "专业的安全数据交流平台",
+          "content": "https://www.secsilo.com/",
+          "type": "web",
+          "icon": "/img/bar/d6bbf9d43d0d892ee524cbbdb2916db8.png"
+        },
+        {
+          "title": "社会工程学密码生成器",
+          "describe": "社会工程学密码生成器",
+          "content": "https://www.shentoushi.top/tools/distplus/index.html",
+          "type": "web",
+          "icon": "/img/bar/1bea9d3d0dc6372c9e94f2902cbcbb05.png"
+        },
+        {
+          "title": "Have I Been Pwned",
+          "describe": "在线数据泄露查询",
+          "content": "https://haveibeenpwned.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Firefox Monitor",
+          "describe": "FireFox数据泄露查询",
+          "content": "https://monitor.firefox.com/",
+          "type": "web",
+          "icon": "/img/bar/5f609fd37ea919abf7af871db4eaa520.png"
+        },
+        {
+          "title": "密码字典生成器",
+          "describe": "输入目标信息，猜测可能使用的密码",
+          "content": "https://www.bugku.com/mima/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Intelligence X",
+          "describe": "敏感信息搜索引擎,支持虚拟货币地址追踪",
+          "content": "https://intelx.io/",
+          "type": "web",
+          "icon": "/img/bar/1e72559f30a2d943e399ba9c529627ac.png"
+        },
+        {
+          "title": "Instant Checkmate",
+          "describe": "境外公共记录查询服务",
+          "content": "https://www.instantcheckmate.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "REG007",
+          "describe": "在线查询注册过的网站",
+          "content": "https://www.reg007.com/",
+          "type": "web",
+          "icon": "/img/bar/4598b9ad7c7598a987084fadc1a3b421.png"
+        },
+        {
+          "title": "企查查",
+          "describe": "企业工商信息查询系统",
+          "content": "https://www.qcc.com/",
+          "type": "web",
+          "icon": "/img/bar/a21d883ce242fc012e9487c8edc79928.png"
+        },
+        {
+          "title": "天眼查",
+          "describe": "企业信息查询",
+          "content": "https://www.tianyancha.com/",
+          "type": "web",
+          "icon": "/img/bar/28c1ed1ea86754e82aaa3ddf916869fd.png"
+        },
+        {
+          "title": "Redacted",
+          "describe": "在线图片马赛克",
+          "content": "https://redacted.app/",
+          "type": "web",
+          "icon": "/img/bar/1011da4a370d9054ed5ead50d27590a0.png"
+        },
+        {
+          "title": "Emkei\u0027s Fake Mailer",
+          "describe": "Emkei在线伪造邮件",
+          "content": "https://emkei.cz/",
+          "type": "web",
+          "icon": "/img/bar/b03011b9f1241ff6fe25a274deb1c85c.png"
+        }
+      ],
+      "接码平台": [
+        {
+          "title": "Free Receive SMS Online",
+          "describe": "免费国外手机接码平台",
+          "content": "https://getfreesmsnumber.com/",
+          "type": "web",
+          "icon": "/img/bar/05f39a67462194adc417b44d641020ca.png"
+        },
+        {
+          "title": "有信云短信",
+          "describe": "在线短信接收",
+          "content": "https://www.zusms.com/",
+          "type": "web",
+          "icon": "/img/bar/4cd4ba3912fdc27fb6e97eb62d070fee.png"
+        },
+        {
+          "title": "云短信",
+          "describe": "免费接短信",
+          "content": "https://yunduanxin.net/",
+          "type": "web",
+          "icon": "/img/bar/778846e6b2b7c81ee6990f8caa0d9201.png"
+        },
+        {
+          "title": "SMS-Activate",
+          "describe": "超便宜好用的平台",
+          "content": "https://sms-activate.org/cn",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e232dc4d946cb.png"
+        },
+        {
+          "title": "Free-Sms-Receive",
+          "describe": "FREE-SMS-RECEIVE",
+          "content": "https://www.free-sms-receive.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Receive-Sms",
+          "describe": "RECEIVE SMS",
+          "content": "https://receive-sms.cc/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Get Free Sms",
+          "describe": "GetFreeSMSNumber!",
+          "content": "https://getfreesmsnumber.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "BestSMS",
+          "describe": "验证码接收",
+          "content": "https://bestsms.xyz/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "SMS Code Online",
+          "describe": "SMSCodeOnline!",
+          "content": "https://smscodeonline.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        }
+      ],
+      "匿名邮箱": [
+        {
+          "title": "Guerrilla Mail",
+          "describe": "Disposable Temporary E-Mail Address",
+          "content": "https://www.guerrillamail.com/",
+          "type": "web",
+          "icon": "/img/bar/a9e16b5fb0e04aab7735eb7c80703bba.png"
+        },
+        {
+          "title": "Proton Mail",
+          "describe": "免费好用的匿名邮箱",
+          "content": "https://proton.me/mail",
+          "type": "web",
+          "icon": "/img/bar/435ba9a9d14473e73ffe8722c6dedaad.png"
+        },
+        {
+          "title": "在线临时邮箱",
+          "describe": "十分钟邮箱",
+          "content": "http://24mail.chacuo.net/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "10分钟邮箱",
+          "describe": "10分钟邮箱",
+          "content": "https://rootsh.com/",
+          "type": "web",
+          "icon": "/img/bar/3fd2c2ab409e73aab81124cf3def9929.png"
+        }
+      ],
+      "匿名网盘": [
+        {
+          "title": "PikPak",
+          "describe": "极速秒存的私密网盘",
+          "content": "https://mypikpak.com/",
+          "type": "web",
+          "icon": "/img/bar/ee16eb254aa8fed864a4597408d8538e.png"
+        },
+        {
+          "title": "MEGA",
+          "describe": "国际匿名网盘",
+          "content": "https://mega.nz/",
+          "type": "web",
+          "icon": "/img/bar/bd615bae418d1d785f533244469c4d75.png"
+        },
+        {
+          "title": "anonfiles",
+          "describe": "anonymous file upload",
+          "content": "https://anonfiles.com/",
+          "type": "web",
+          "icon": "/img/bar/28553e3bcc6650aa7aa47aaa7a0fad6d.png"
+        }
+      ]
+    },
+    "利器集合": {
+      "资源网盘大全": [
+        {
+          "title": "渊龙Sec内部资料库",
+          "describe": "为国之安全而奋斗，为信息安全而发声！",
+          "content": "https://pan.aabyss.cn",
+          "type": "web",
+          "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+        },
+        {
+          "title": "WgpSec PAN",
+          "describe": "WgpSec狼组资源网盘",
+          "content": "https://pan.wgpsec.org/",
+          "type": "web",
+          "icon": "/img/bar/83824d1c2584fb4b55bb1ce583a2171d.png"
+        },
+        {
+          "title": "PanSearch",
+          "describe": "网盘资源搜索",
+          "content": "https://www.pansearch.me",
+          "type": "web",
+          "icon": "/img/bar/00fe2cb4b38d7ffeafc5d80eaa5acda5.png"
+        }
+      ],
+      "网安开源项目": [
+        {
+          "title": "开源安全情报预警",
+          "describe": "OSCS | 开源软件供应链安全",
+          "content": "https://www.oscs1024.com/cm",
+          "type": "web",
+          "icon": "/img/bar/247ae409bd07c62878fef8a7ec2486dc.png"
+        },
+        {
+          "title": "SpringBoot-Scan",
+          "describe": "针对SpringBoot的开源渗透框架",
+          "content": "https://github.com/AabyssZG/SpringBoot-Scan",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "SpringBoot-Scan-GUI",
+          "describe": "SpringBoot-Scan的图形化版",
+          "content": "https://github.com/13exp/SpringBoot-Scan-GUI",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "ShiroExp",
+          "describe": "shiro综合利用工具",
+          "content": "https://github.com/safe6Sec/ShiroExp",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "seeyon_exp",
+          "describe": "致远OA漏洞检查与利用工具",
+          "content": "https://github.com/Summer177/seeyon_exp",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Glass",
+          "describe": "针对资产列表的快速指纹识别工具",
+          "content": "https://github.com/s7ckTeam/Glass",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "HaE",
+          "describe": "BurpSuite 请求高亮标记与信息提取插件",
+          "content": "https://github.com/gh0stkey/HaE",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "FofaMap",
+          "describe": "一款基于Python3开发的全流程漏扫",
+          "content": "https://github.com/asaotomo/FofaMap",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "CTF-Tools",
+          "describe": "渊龙Sec安全团队CTF\u0026AWD工具包",
+          "content": "https://github.com/Aabyss-Team/CTF-Tools",
+          "type": "web",
+          "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+        },
+        {
+          "title": "Yakit",
+          "describe": "交互式应用安全测试平台",
+          "content": "https://github.com/yaklang/yakit",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Fscan",
+          "describe": "一款内网综合扫描工具",
+          "content": "https://github.com/shadow1ng/fscan",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "veinmind-tools",
+          "describe": "长亭科技自研打造的容器安全工具集",
+          "content": "https://github.com/chaitin/veinmind-tools",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Kunyu",
+          "describe": "更高效的企业资产收集",
+          "content": "https://github.com/knownsec/Kunyu",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "scaninfo",
+          "describe": "开源、轻量、快速、跨平台 的红队内外网打点扫描器",
+          "content": "https://github.com/redtoolskobe/scaninfo",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "AppShark",
+          "describe": "针对安卓的静态分析工具",
+          "content": "https://github.com/bytedance/appshark",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "GShark",
+          "describe": "开源敏感信息检测系统",
+          "content": "https://github.com/madneal/gshark",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "炫彩蛇",
+          "describe": "Viper是一款图形化内网渗透工具",
+          "content": "https://github.com/FunnyWolf/Viper",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Pocsuite3",
+          "describe": "404团队开发的开源远程漏洞测试和概念验证开发框架",
+          "content": "https://github.com/knownsec/pocsuite3",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "CDK",
+          "describe": "容器环境定制的渗透测试工具",
+          "content": "https://github.com/cdk-team/CDK",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "404StarLink",
+          "describe": "404星链计划",
+          "content": "https://github.com/knownsec/404StarLink",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "ARL",
+          "describe": "资产侦察灯塔系统",
+          "content": "https://github.com/TophantTechnology/ARL",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "ENScan",
+          "describe": "企业信息查询工具",
+          "content": "https://github.com/wgpsec/ENScan",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "f8x",
+          "describe": "红/蓝队环境自动化部署工具",
+          "content": "https://github.com/ffffffff0x/f8x",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "As-Exploits",
+          "describe": "中国蚁剑后渗透框架",
+          "content": "https://github.com/yzddmr6/As-Exploits",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "中国蚁剑",
+          "describe": "开源的跨平台网站Webshell管理工具",
+          "content": "https://github.com/AntSwordProject/antSword",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "哥斯拉",
+          "describe": "Godzilla Webshell管理工具",
+          "content": "https://github.com/BeichenDream/Godzilla",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "冰蝎",
+          "describe": "“冰蝎”动态二进制加密网站管理工具",
+          "content": "https://github.com/rebeyond/Behinder",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "WMIHACKER",
+          "describe": "免杀横向渗透远程命令执行工具",
+          "content": "https://github.com/rootclay/WMIHACKER",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "MDUT",
+          "describe": "数据库跨平台利用工具",
+          "content": "https://github.com/SafeGroceryStore/MDUT",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "CF",
+          "describe": "云环境利用框架",
+          "content": "https://github.com/teamssix/cf",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "SqlMap",
+          "describe": "自动化SQL注入工具",
+          "content": "https://github.com/sqlmapproject/sqlmap",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Vulhub",
+          "describe": "面向大众的开源漏洞靶场",
+          "content": "https://github.com/vulhub/vulhub",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "水泽",
+          "describe": "红队信息收集自动化工具",
+          "content": "https://github.com/0x727/ShuiZe_0x727",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "awesome-rat",
+          "describe": "RAT And C\u0026C Resources",
+          "content": "https://github.com/alphaSeclab/awesome-rat",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "棱洞",
+          "describe": "红队重点攻击系统指纹探测工具",
+          "content": "https://github.com/EdgeSecurityTeam/EHole",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "ecapture",
+          "describe": "capture SSL/TLS text content without CA cert Using eBPF",
+          "content": "https://github.com/gojue/ecapture",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "XSS Probe",
+          "describe": "xss探针脚本，用于获取被跨页面的通用数据",
+          "content": "https://github.com/evilcos/xssprobe",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "XSStrike",
+          "describe": "智能XSS检测与开发套件",
+          "content": "https://github.com/s0md3v/XSStrike",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "IoT-vulhub",
+          "describe": "IoT固件漏洞复现环境",
+          "content": "https://github.com/VulnTotal-Team/IoT-vulhub",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Nuclei",
+          "describe": "基于YAML语法模板的定制化快速漏洞扫描器",
+          "content": "https://github.com/projectdiscovery/nuclei",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Webshell免杀手册",
+          "describe": "PHP从零学习到Webshell免杀手册",
+          "content": "https://github.com/AabyssZG/WebShell-Bypass-Guide",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "CTF快速入门手册",
+          "describe": "【推荐】CTF快速入门手册",
+          "content": "https://github.com/ProbiusOfficial/CTF-QuickStart",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "SearchAll",
+          "describe": "服务器敏感内容搜索工具",
+          "content": "https://github.com/Naturehi666/searchall",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Threat-Broadcast",
+          "describe": "在线威胁情报播报",
+          "content": "https://github.com/Aabyss-Team/threat-broadcast",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "TheRoadOfSO",
+          "describe": "安全运营之路",
+          "content": "https://github.com/satan1a/TheRoadOfSO",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "安全开源项目Wiki",
+          "describe": "安全开源项目Wiki",
+          "content": "http://wiki.shentoushi.top/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Golin",
+          "describe": "一体化信息搜集和外部打点及等保测评系统",
+          "content": "https://github.com/selinuxG/Golin",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Bypass firewalls by abusing DNS history",
+          "describe": "Bypass firewalls by abusing DNS history",
+          "content": "https://github.com/vincentcox/bypass-firewalls-by-DNS-history",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "SocialEngineeringDictionaryGenerator",
+          "describe": "社会工程学密码生成器",
+          "content": "https://github.com/zgjx6/SocialEngineeringDictionaryGenerator",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "CBR-Doc",
+          "describe": "网安图书馆：文档",
+          "content": "https://github.com/WilsonHuha/cbr-doc/blob/master/posts/cc_sum.md",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        }
+      ],
+      "各大工具官网": [
+        {
+          "title": "Nuclei",
+          "describe": "基于YAML语法模板的定制化快速漏洞扫描器",
+          "content": "https://nuclei.projectdiscovery.io/",
+          "type": "web",
+          "icon": "/img/bar/bd36f14976aa937d092aea55e6d3d365.png"
+        },
+        {
+          "title": "Kali",
+          "describe": "Kali Linux",
+          "content": "https://www.kali.org/get-kali/",
+          "type": "web",
+          "icon": "/img/bar/85ed52b6220ab4a23872c17c77b65717.png"
+        },
+        {
+          "title": "Yak",
+          "describe": "为网络安全而生的专属编程语言",
+          "content": "https://yaklang.com/",
+          "type": "web",
+          "icon": "/img/bar/402f6ad409962a0f643f6232ff54d98e.png"
+        },
+        {
+          "title": "长亭百川云",
+          "describe": "长亭对外开放的SaaS产品服务平台",
+          "content": "https://rivers.chaitin.cn/",
+          "type": "web",
+          "icon": "/img/bar/402f6ad409962a0f643f6298ff54d98e.png"
+        },
+        {
+          "title": "eBPF",
+          "describe": "无需CA证书即可捕获HTTPS/TLS明文数据包",
+          "content": "https://ecapture.cc/zh/",
+          "type": "web",
+          "icon": "/img/bar/c2d1609b67156c0037d0e3f50e0115d7.png"
+        },
+        {
+          "title": "问脉",
+          "describe": "问脉Tools",
+          "content": "https://veinmind.chaitin.com/docs/",
+          "type": "web",
+          "icon": "/img/bar/264cd328a274d04e6401c998968b57b5.png"
+        },
+        {
+          "title": "ProjectDiscovery",
+          "describe": "ProjectDiscovery, Inc",
+          "content": "https://projectdiscovery.io/",
+          "type": "web",
+          "icon": "/img/bar/057cb6c0f3cbf23923f862ac632a1e9a.png"
+        },
+        {
+          "title": "CobaltStrike",
+          "describe": "Adversary Simulation and Red Team Operations",
+          "content": "https://www.cobaltstrike.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "BlackArch Linux",
+          "describe": "基于Arch Linux的漏洞利用系统",
+          "content": "https://blackarch.org/",
+          "type": "web",
+          "icon": "/img/bar/2f4658e9715389d17e1c22d2b1030382.png"
+        },
+        {
+          "title": "Goby",
+          "describe": "Attack surface mapping",
+          "content": "https://gobysec.net/",
+          "type": "web",
+          "icon": "/img/bar/f45984fb160c8e3d42fc0191efd73206.png"
+        },
+        {
+          "title": "Xray",
+          "describe": "Xray 漏洞扫描器",
+          "content": "https://xray.cool/",
+          "type": "web",
+          "icon": "/img/bar/e2d26da2da9b180287b1384ef543bcbe.png"
+        },
+        {
+          "title": "Nmap",
+          "describe": "Nmap: the Network Mapper - Free Security Scanner",
+          "content": "https://nmap.org/",
+          "type": "web",
+          "icon": "/img/bar/6814748745a2f67634549e4f0ecec73d.png"
+        },
+        {
+          "title": "Burp",
+          "describe": "BurpSuite",
+          "content": "https://portswigger.net/",
+          "type": "web",
+          "icon": "/img/bar/50cf6e3c975ae975328dbd134d0de864.png"
+        }
+      ]
+    },
+    "大佬聚集地": {
+      "安全社区和门户": [
+        {
+          "title": "T00LS",
+          "describe": "低调求发展-潜心学习安全",
+          "content": "https://www.t00ls.net/",
+          "type": "web",
+          "icon": "/img/bar/45bff4435a282c83e8c95b30f6ae7dbc.jpg"
+        },
+        {
+          "title": "安全内参",
+          "describe": "决策者的网络安全知识库",
+          "content": "https://www.secrss.com/",
+          "type": "web",
+          "icon": "/img/bar/9011f4bb86f854016e5b1c93c129900f.png"
+        },
+        {
+          "title": "先知社区",
+          "describe": "优秀的网络安全社区",
+          "content": "https://xz.aliyun.com/",
+          "type": "web",
+          "icon": "/img/bar/6fa802c741c1c6531fdac38fdad1e7c1.jpg"
+        },
+        {
+          "title": "FreeBuf",
+          "describe": "互联网安全新媒体",
+          "content": "https://www.freebuf.com/",
+          "type": "web",
+          "icon": "/img/bar/2a5ba5247b9fb14726d446c1e480b962.jpg"
+        },
+        {
+          "title": "unSafe",
+          "describe": "unSafe-不安全",
+          "content": "https://unsafe.sh/",
+          "type": "web",
+          "icon": "/img/bar/dd365797847ff1bbb8e9a7019f7fc159.png"
+        },
+        {
+          "title": "圈子社区",
+          "describe": "一个新锐白帽子汇聚地",
+          "content": "https://www.secquan.org",
+          "type": "web",
+          "icon": "/img/bar/348b895a23ea725b0043ba570ca8edb1.png"
+        },
+        {
+          "title": "安全牛",
+          "describe": "安全牛学习平台",
+          "content": "https://www.aqniu.com/",
+          "type": "web",
+          "icon": "/img/bar/a1eebc067d2855b5b3b558444ec255e6.jpg"
+        },
+        {
+          "title": "90Sec",
+          "describe": "专注于网络空间安全、前沿技术研究",
+          "content": "https://forum.90sec.com/",
+          "type": "web",
+          "icon": "/img/bar/a98b7099c538eb1016c74d8c0040f7e3.png"
+        },
+        {
+          "title": "i春秋",
+          "describe": "i春秋网络安全平台",
+          "content": "https://www.ichunqiu.com/",
+          "type": "web",
+          "icon": "/img/bar/3acb912d77a1f755d3ddaf422a8351e6.jpg"
+        },
+        {
+          "title": "奇安信攻防社区",
+          "describe": "补天配套-奇安信攻防社区",
+          "content": "https://forum.butian.net",
+          "type": "web",
+          "icon": "/img/bar/078d21e700ce94e77828137ceaf1cfab.png"
+        },
+        {
+          "title": "指尖安全",
+          "describe": "垂直互联网安全媒体",
+          "content": "https://www.secfree.com/",
+          "type": "web",
+          "icon": "/img/bar/8524c9c4c8c320acdbb9173c442133bd.png"
+        },
+        {
+          "title": "嘶吼",
+          "describe": "回归最本质的信息安全,互联网安全新媒体",
+          "content": "https://www.4hou.com/",
+          "type": "web",
+          "icon": "/img/bar/dd08d348665aec08526982fe7b674e19.png"
+        },
+        {
+          "title": "白帽汇安全研究院",
+          "describe": "NOSEC安全讯息平台",
+          "content": "https://nosec.org/home/index",
+          "type": "web",
+          "icon": "/img/bar/5a0e980a9bd88276c20a557e6c95449c.png"
+        },
+        {
+          "title": "IOTsec-Zone",
+          "describe": "IOTsec-Zone 物联网安全社区",
+          "content": "https://www.iotsec-zone.com/",
+          "type": "web",
+          "icon": "/img/bar/b6738c9445ec1b05c3ef1073513e5925.png"
+        },
+        {
+          "title": "安全脉搏",
+          "describe": "分享技术，悦享品质",
+          "content": "https://www.secpulse.com/",
+          "type": "web",
+          "icon": "/img/bar/cb0307dd9f40a311d0a779b85205a135.png"
+        },
+        {
+          "title": "跳跳糖",
+          "describe": "跳跳糖安全社区",
+          "content": "http://tttang.com/",
+          "type": "web",
+          "icon": "/img/bar/a00cee13e3880bb571930ef8374614bc.png"
+        },
+        {
+          "title": "Track安全社区",
+          "describe": "掌控安全旗下的安全社区",
+          "content": "https://bbs.zkaq.cn/",
+          "type": "web",
+          "icon": "/img/bar/5e5774a36c26460955efc486de7ee0b5.png"
+        },
+        {
+          "title": "[~]#棱角 ::Edge.Forum*",
+          "describe": "棱角安全团队的技术论坛",
+          "content": "https://forum.ywhack.com/",
+          "type": "web",
+          "icon": "/img/bar/55f2f65115ba2d687f0ff9eb47e7ba08.png"
+        },
+        {
+          "title": "非安全中国网",
+          "describe": "非安全中国网-官方论坛",
+          "content": "https://www.sitedirsec.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Hacking8 安全信息流",
+          "describe": "安全信息流-漏洞/Poc监控",
+          "content": "https://i.hacking8.com/index/vul-poc",
+          "type": "web",
+          "icon": "/img/bar/aea7bd1f829fdf77e7f35c6449293e26.png"
+        },
+        {
+          "title": "SecHub",
+          "describe": "为网安提供学习交流、知识分享的平台",
+          "content": "https://sechub.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/9abf8e6b4b76db325eae5b18c7d6c38a.png"
+        },
+        {
+          "title": "SecIN",
+          "describe": "SecIN信息安全技术社区",
+          "content": "https://www.sec-in.com/",
+          "type": "web",
+          "icon": "/img/bar/68339719913e0a63124e5a3443a7fdb9.png"
+        },
+        {
+          "title": "i春秋论坛",
+          "describe": "i春秋论坛",
+          "content": "https://bbs.ichunqiu.com/",
+          "type": "web",
+          "icon": "/img/bar/3acb912d77a1f755d3ddaf422a8351e6.jpg"
+        },
+        {
+          "title": "国家计算机病毒应急处理中心",
+          "describe": "CVERC",
+          "content": "https://www.cverc.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "安全村",
+          "describe": "安全村(Sec-UN)，成立于2014年",
+          "content": "https://www.sec-un.org",
+          "type": "web",
+          "icon": "/img/bar/ec736c2f7341b767eb54d77efa69e7f2.png"
+        },
+        {
+          "title": "助安社区",
+          "describe": "助安社区",
+          "content": "https://secself.com/",
+          "type": "web",
+          "icon": "/img/bar/1020f65e30caf0f0ccd9aa2f6cb3aab8.png"
+        },
+        {
+          "title": "在线威胁情报播报",
+          "describe": "实时更新威胁情报播报",
+          "content": "https://threat.aabyss.cn/",
+          "type": "web",
+          "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+        },
+        {
+          "title": "ParrotSec",
+          "describe": "ParrotSec中文社区",
+          "content": "https://parrotsec-cn.org/",
+          "type": "web",
+          "icon": "/img/bar/20e3367e9a403ab4f3b8877365ec02c9.png"
+        },
+        {
+          "title": "HackingGroup",
+          "describe": "在Hacking Group，与行业爱好者交流互进",
+          "content": "https://hackinggroup.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/3435c3dddd1ec2b604bef8a6357917cf.png"
+        },
+        {
+          "title": "CT Stack安全社区",
+          "describe": "长亭科技旗下的安全社区",
+          "content": "https://stack.chaitin.com/",
+          "type": "web",
+          "icon": "/img/bar/bd46354a404c0277c24486efd342eee4.png"
+        },
+        {
+          "title": "暗魂社区",
+          "describe": "暗魂安全团队社区",
+          "content": "https://bbs.anhunsec.cn/",
+          "type": "web",
+          "icon": "/img/bar/c230741a97817adc251e42cfef74d270.png"
+        },
+        {
+          "title": "知识大陆",
+          "describe": "知识大陆 - 安全圈的百科全书",
+          "content": "https://wiki.freebuf.com/",
+          "type": "web",
+          "icon": "/img/bar/c35702d3857e229b9cf93045c483f2de.png"
+        },
+        {
+          "title": "NGC660安全社区",
+          "describe": "NGC660安全社区",
+          "content": "http://ngc660.cn/",
+          "type": "web",
+          "icon": "/img/bar/6b231d44d6a073c2bdc174397a05a1cf.png"
+        }
+      ],
+      "安全大会与论坛": [
+        {
+          "title": "看雪安全论坛",
+          "describe": "致力于PC/移动/智能设备安全研究社区",
+          "content": "https://bbs.pediy.com/",
+          "type": "web",
+          "icon": "/img/bar/3d832123650798eea4de82e38e64e51d.png"
+        },
+        {
+          "title": "HackingGroup",
+          "describe": "在Hacking Group，与行业爱好者交流互进",
+          "content": "https://hackinggroup.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/3435c3dddd1ec2b604bef8a6357917cf.png"
+        },
+        {
+          "title": "补天白帽大会",
+          "describe": "补天白帽大会",
+          "content": "https://whc.butian.net/",
+          "type": "web",
+          "icon": "/img/bar/f8be966bcce185e3f7a456a1a6f0021d.png"
+        },
+        {
+          "title": "KCon 黑客大会",
+          "describe": "知道创宇 KCon安全大会",
+          "content": "https://kcon.knownsec.com/",
+          "type": "web",
+          "icon": "/img/bar/ec32025022e2551490c1147501f4d217.png"
+        },
+        {
+          "title": "NSC",
+          "describe": "NSC中国网络安全大会",
+          "content": "http://nsc.skdlabs.com/",
+          "type": "web",
+          "icon": "/img/bar/2a5ba5247b9fb14232d446c1e480b962.png"
+        },
+        {
+          "title": "CIS 网络安全创新大会",
+          "describe": "CIS 网络安全创新大会",
+          "content": "https://cis.freebuf.com/",
+          "type": "web",
+          "icon": "/img/bar/2a5ba5247b9fb14726d446c1e480b962.jpg"
+        },
+        {
+          "title": "CCS 网络安全大会",
+          "describe": "CCS 网络安全大会",
+          "content": "https://www.cdccs.cn/",
+          "type": "web",
+          "icon": "/img/bar/f9138cb80b0bee057ed08c48e1f92451.png"
+        },
+        {
+          "title": "BCS 网络安全大会",
+          "describe": "2022北京网络安全大会",
+          "content": "https://bcs.qianxin.com/",
+          "type": "web",
+          "icon": "/img/bar/8a3da1295fed05d3ba3fca7bd8f1c217.png"
+        },
+        {
+          "title": "ISC 互联网安全大会",
+          "describe": "ISC 互联网安全大会",
+          "content": "https://isc.360.com/",
+          "type": "web",
+          "icon": "/img/bar/c7602691bc2091e70ca818824477081b.png"
+        },
+        {
+          "title": "Defcon",
+          "describe": "国际网络安全大会",
+          "content": "https://defcon.org/",
+          "type": "web",
+          "icon": "/img/bar/72f37506f3aeae938aea6f98848aba78.png"
+        },
+        {
+          "title": "SDC 看雪安全",
+          "describe": "看雪安全开发者峰会",
+          "content": "https://meet.kanxue.com/",
+          "type": "web",
+          "icon": "/img/bar/8c17f4e71c7399667c4119a350c9700f.png"
+        },
+        {
+          "title": "GeekPwn",
+          "describe": "GeekPwn国际安全极客大赛",
+          "content": "https://www.geekpwn.org/zh/",
+          "type": "web",
+          "icon": "/img/bar/2143220889d1a9e6f48ff5c753931881.png"
+        },
+        {
+          "title": "XCon",
+          "describe": "安全焦点信息安全技术峰会",
+          "content": "http://xcon.xfocus.net/",
+          "type": "web",
+          "icon": "/img/bar/ca656295fc9876db630af4347c005cd5.png"
+        },
+        {
+          "title": "USENIX Security",
+          "describe": "USENIX Security",
+          "content": "https://www.usenix.org/conference/usenixsecurity14",
+          "type": "web",
+          "icon": "/img/bar/a858311e7c8cfe3f5313ff1653a5f0ae.png"
+        },
+        {
+          "title": "S\u0026P",
+          "describe": "IEEE Symposium on Security and Privacy",
+          "content": "https://www.ieee-security.org/",
+          "type": "web",
+          "icon": "/img/bar/4e8280f0bf577f2e132f2ee292666b6b.png"
+        },
+        {
+          "title": "CCS",
+          "describe": "ACM Conference on Computer and Communications Security",
+          "content": "http://www.sigsac.org/ccs.html",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "NDSS",
+          "describe": "Network and Distributed System Security Symposium",
+          "content": "https://www.ndss-symposium.org/",
+          "type": "web",
+          "icon": "/img/bar/1957e2156e1fc8e368bfabcbca80e409.png"
+        },
+        {
+          "title": "Eurocrypt",
+          "describe": "Eurocrypt (欧密)",
+          "content": "https://eurocrypt.iacr.org/",
+          "type": "web",
+          "icon": "/img/bar/b265f5a30d3e5cf7f34d8e553b348b6b.png"
+        },
+        {
+          "title": "Asiacrypt",
+          "describe": "Asiacrypt (亚密)",
+          "content": "https://asiacrypt.iacr.org/",
+          "type": "web",
+          "icon": "/img/bar/c322689fdee0bbc559ebe1067960ca4a.png"
+        },
+        {
+          "title": "Crypto",
+          "describe": "Crypto (美密)",
+          "content": "https://crypto.iacr.org/",
+          "type": "web",
+          "icon": "/img/bar/eed86b82589d4a4f38433a79af0ad5f1.png"
+        },
+        {
+          "title": "中国密码学会",
+          "describe": "中国密码学会",
+          "content": "https://www.cacrnet.org.cn/site/term/43.html",
+          "type": "web",
+          "icon": "/img/bar/832549cf1d25e3104201ba8e6d90fe67.png"
+        },
+        {
+          "title": "新耀东方",
+          "describe": "上海网络安全博览会暨高峰论坛",
+          "content": "http://www.sins-expo.com/",
+          "type": "web",
+          "icon": "/img/bar/bc49b2626587f415cc9e99c31294cb46.png"
+        }
+      ],
+      "APT情报": [
+        {
+          "title": "绿盟威胁情报中心",
+          "describe": "绿盟威胁情报中心（NTI）",
+          "content": "https://nti.nsfocus.com/apt/group",
+          "type": "web",
+          "icon": "/img/bar/4c74fcba2475c569050be970a6421dc3.png"
+        },
+        {
+          "title": "奇安信APT组织情报",
+          "describe": "奇安信跟踪的APT组织情报",
+          "content": "https://ti.qianxin.com/apt/?type\u003dlist",
+          "type": "web",
+          "icon": "/img/bar/12546dd7c10b2bf80921fceb26e0b6ce.png"
+        },
+        {
+          "title": "安全星图平台",
+          "describe": "APT组织列表",
+          "content": "https://ti.dbappsecurity.com.cn/apt/list",
+          "type": "web",
+          "icon": "/img/bar/0f50d535f1f30964c03ec56e5c905e11.png"
+        },
+        {
+          "title": "360-APT全景雷达",
+          "describe": "360APT全景雷达",
+          "content": "https://apt.360.net/aptlist",
+          "type": "web",
+          "icon": "/img/bar/5c20a298ac73c58a957835c10a1c76ad.png"
+        },
+        {
+          "title": "ATT\u0026CK Groups",
+          "describe": "Groups | MITRE ATT\u0026CK",
+          "content": "https://attack.mitre.org/groups/",
+          "type": "web",
+          "icon": "/img/bar/3546fd7f297eba60547624dd5d1a2843.png"
+        },
+        {
+          "title": "Cisco Talos",
+          "describe": "Cisco Talos Intelligence Group - Comprehensive Threat Intelligence",
+          "content": "https://talosintelligence.com/",
+          "type": "web",
+          "icon": "/img/bar/db82c108f849f6fbd5998c433c7de018.png"
+        },
+        {
+          "title": "AT\u0026T Alien Labs",
+          "describe": "AT\u0026T Alien Labs Research Blog",
+          "content": "https://cybersecurity.att.com/blogs/labs-research",
+          "type": "web",
+          "icon": "/img/bar/9378d1df82587648bae7a7b555135874.png"
+        },
+        {
+          "title": "CPR",
+          "describe": "CPR - Check Point Research",
+          "content": "https://research.checkpoint.com/",
+          "type": "web",
+          "icon": "/img/bar/765fccb2e74e33d860093e43ce4e820a.png"
+        },
+        {
+          "title": "ClearskySec",
+          "describe": "ClearSky Cyber Security",
+          "content": "https://www.clearskysec.com/blog/",
+          "type": "web",
+          "icon": "/img/bar/395371027d49a6bd18ff8eb394dfb5f8.png"
+        },
+        {
+          "title": "Exploit.IN",
+          "describe": "Exploit.IN",
+          "content": "https://exploit.in/",
+          "type": "web",
+          "icon": "/img/bar/63d2cca59a27a6dc9ba82c078a31a227.png"
+        },
+        {
+          "title": "DarkNetEye",
+          "describe": "Darknet Market Links, News and Vendor Stores",
+          "content": "https://darkneteye.com/",
+          "type": "web",
+          "icon": "/img/bar/5c3e9c44d724912212e9fef8ca62a752.png"
+        },
+        {
+          "title": "MISP Galaxy",
+          "describe": "MISP Galaxy Clusters",
+          "content": "https://www.misp-project.org/galaxy.html",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "APT Index",
+          "describe": "APT Index / Default View",
+          "content": "https://embed.kumu.io/0b023bf1a971ba32510e86e8f1a38c38#apt-index",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Unit42",
+          "describe": "Latest Cyber Security Research | Palo Alto Networks",
+          "content": "https://unit42.paloaltonetworks.com/",
+          "type": "web",
+          "icon": "/img/bar/ba9e32f14826b9f619da77f972a2bbea.png"
+        },
+        {
+          "title": "APT-Notes",
+          "describe": "APTnotes data",
+          "content": "https://github.com/aptnotes/data",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "APT_REPORT",
+          "describe": "Interesting APT Report Collection And Some Special IOC",
+          "content": "https://github.com/blackorbird/APT_REPORT",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        }
+      ],
+      "安全博客": [
+        {
+          "title": "渊龙Sec团队博客",
+          "describe": "为国之安全而奋斗，为信息安全而发声！",
+          "content": "https://blog.aabyss.cn",
+          "type": "web",
+          "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+        },
+        {
+          "title": "360核心技术团队",
+          "describe": "360核心技术团队博客",
+          "content": "http://blogs.360.cn/",
+          "type": "web",
+          "icon": "/img/bar/ca21d70625f68c4fba36fa41cb6699f9.png"
+        },
+        {
+          "title": "Paper-知道创宇",
+          "describe": "知道创宇SeeBug安全博客",
+          "content": "https://paper.seebug.org",
+          "type": "web",
+          "icon": "/img/bar/22e25425621143bd28b29af73e049ac7.png"
+        },
+        {
+          "title": "天融信阿尔法实验室",
+          "describe": "天融信阿尔法实验室",
+          "content": "http://blog.topsec.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/6ab9b0c7da638e3fb6d15a72b512f16d.png"
+        },
+        {
+          "title": "算命瞎子",
+          "describe": "生命不息，算命不止",
+          "content": "http://www.nmd5.com",
+          "type": "web",
+          "icon": "/img/bar/990bdba964439022bc1274a6776bf9d9.png"
+        },
+        {
+          "title": "ChaBug安全",
+          "describe": "一个分享知识、结识伙伴、资源共享的博客",
+          "content": "https://www.chabug.org/",
+          "type": "web",
+          "icon": "/img/bar/9eb9488ba26b0e6406b4ce8efd43f187.png"
+        },
+        {
+          "title": "Hedysx博客",
+          "describe": "Hedysx-专注信息安全",
+          "content": "https://www.hedysx.com",
+          "type": "web",
+          "icon": "/img/bar/d771a74411869b7fdea3d4cace86cd85.png"
+        },
+        {
+          "title": "倾旋的博客",
+          "describe": "h4ck1r\u0027s Blog",
+          "content": "https://payloads.online/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "绿盟科技博客",
+          "describe": "绿盟安全技术博客",
+          "content": "http://blog.nsfocus.net/",
+          "type": "web",
+          "icon": "/img/bar/c8176e29e471a49ff32524f06fdd4c73.png"
+        },
+        {
+          "title": "独自等待的博客",
+          "describe": "独自等待\u0027s Blog",
+          "content": "https://www.waitalone.cn/",
+          "type": "web",
+          "icon": "/img/bar/28cc029200d11be2967d5983a685e675.png"
+        },
+        {
+          "title": "Java安全网",
+          "describe": "JAVA安全网",
+          "content": "https://www.javasec.cn/",
+          "type": "web",
+          "icon": "/img/bar/e5679ada9b694798907d6cb934dc5955.png"
+        },
+        {
+          "title": "Hack Inn",
+          "describe": "国内网络安全峰会资料整理",
+          "content": "https://www.hackinn.com/",
+          "type": "web",
+          "icon": "/img/bar/0b9972c35ccd321bb3ecee2b09d7f614.png"
+        },
+        {
+          "title": "K8哥哥",
+          "describe": "K8哥哥\u0027s Blog",
+          "content": "http://k8gege.org/",
+          "type": "web",
+          "icon": "/img/bar/c07b45a81fa9fcfdfadc1ebc5096c47d.png"
+        },
+        {
+          "title": "Safe6",
+          "describe": "Safe6\u0027s Blog",
+          "content": "http://www.safe6.cn/",
+          "type": "web",
+          "icon": "/img/bar/8a3e85e77be85ed6fd5b05800cb42e55.png"
+        },
+        {
+          "title": "shadowsec",
+          "describe": "暗影安全团队博客",
+          "content": "http://blog.shadowsec.org/",
+          "type": "web",
+          "icon": "/img/bar/3df8014a1a0a5a003ab9338c7cc109ef.jpeg"
+        },
+        {
+          "title": "素十八",
+          "describe": "素十八的博客",
+          "content": "https://su18.org/",
+          "type": "web",
+          "icon": "/img/bar/81407818bf39da69133648341f1b69d3.png"
+        },
+        {
+          "title": "边窗",
+          "describe": "SideWindow",
+          "content": "https://peirs.net/",
+          "type": "web",
+          "icon": "/img/bar/00166fdeaecdcf68745d686ef1f34d36.png"
+        },
+        {
+          "title": "Victory",
+          "describe": "潜心学安全",
+          "content": "https://txluck.github.io/",
+          "type": "web",
+          "icon": "/img/bar/ea21928e9e50ac95205e98fdd088706c.png"
+        },
+        {
+          "title": "WHOAMI",
+          "describe": "Pentesting \u0026 Security research",
+          "content": "https://whoamianony.top/",
+          "type": "web",
+          "icon": "/img/bar/e14d0286bca5bf1403fdc519ddd0b097.png"
+        },
+        {
+          "title": "Potato\u0027s Blog",
+          "describe": "没有攻不破的系统，只有不努力的黑客！",
+          "content": "https://potato.gold/",
+          "type": "web",
+          "icon": "/img/bar/51b12073c0efda6a6739da94a259f521.png"
+        },
+        {
+          "title": "离别歌",
+          "describe": "我是phith0n",
+          "content": "https://www.leavesongs.com/",
+          "type": "web",
+          "icon": "/img/bar/07057b3dc130651f6a0d9c4a89222bb8.png"
+        },
+        {
+          "title": "安全小飞侠",
+          "describe": "安全小飞侠的窝",
+          "content": "http://avfisher.win/",
+          "type": "web",
+          "icon": "/img/bar/b0dd00c679e0b2976e883800ab7689e3.png"
+        },
+        {
+          "title": "Black-Hole",
+          "describe": "Black-Hole\u0027s Blog",
+          "content": "https://www.bugs.cc/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "回忆飘如雪",
+          "describe": "回忆飘如雪是一个专注于网络安全,研究漏洞艺术,记录c0ny1成长的信息安全博客",
+          "content": "https://gv7.me/",
+          "type": "web",
+          "icon": "/img/bar/82365c2e2e0e90fdd848dc636bdd279e.png"
+        },
+        {
+          "title": "Chaitin Blog",
+          "describe": "长亭科技博客",
+          "content": "https://blog.chaitin.cn/",
+          "type": "web",
+          "icon": "/img/bar/9369f326b88c6f967a9b659714d9abba.png"
+        },
+        {
+          "title": "腾讯安全玄武实验室",
+          "describe": "腾讯安全玄武实验室博客",
+          "content": "https://xlab.tencent.com/cn/",
+          "type": "web",
+          "icon": "/img/bar/5daf9139d3b9a4bfe329f9176e21aae1.png"
+        },
+        {
+          "title": "PanguTeam",
+          "describe": "盘古团队博客",
+          "content": "https://blog.pangu.io/",
+          "type": "web",
+          "icon": "/img/bar/80895cc2960a1c801cc045f7b93fb856.jpg"
+        },
+        {
+          "title": "Demon",
+          "describe": "Demonsec",
+          "content": "https://www.ggsec.cn/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "lijiejie",
+          "describe": "李劼杰的博客",
+          "content": "https://www.lijiejie.com/",
+          "type": "web",
+          "icon": "/img/bar/665906085b9c13978a1456a904ea5d2d.png"
+        },
+        {
+          "title": "Hackfun",
+          "describe": "Hackfun | Secblog",
+          "content": "https://hackfun.org/",
+          "type": "web",
+          "icon": "/img/bar/7aadf0e1a5395e4785eef947fd8a38a9.png"
+        },
+        {
+          "title": "KitPloit",
+          "describe": "KitPloit",
+          "content": "https://www.kitploit.com",
+          "type": "web",
+          "icon": "/img/bar/923f285571201bfb2068ca1168c91c4c.png"
+        },
+        {
+          "title": "白袍的小行星",
+          "describe": "白袍的博客",
+          "content": "https://www.red-team.tips",
+          "type": "web",
+          "icon": "/img/bar/486357cf3933d5171bffca3b6f29c346.png"
+        },
+        {
+          "title": "NOSEC安全讯息平台",
+          "describe": "白帽汇安全研究院",
+          "content": "https://nosec.org/home/index",
+          "type": "web",
+          "icon": "/img/bar/5a0e980a9bd88276c20a557e6c95449c.png"
+        },
+        {
+          "title": "网安 | FreshRSS",
+          "describe": "网安 | FreshRSS",
+          "content": "https://rss.putdown.top/p/i/?a\u003dnormal\u0026get\u003dc_2",
+          "type": "web",
+          "icon": "/img/bar/b1abb088ed1de152f8185e829ed54469.png"
+        },
+        {
+          "title": "YX\u0027BLOG",
+          "describe": "Green_Datura负责人",
+          "content": "http://535yx.cn/",
+          "type": "web",
+          "icon": "/img/bar/625bad67a1d4a2f1eed6ce1d41d7e36b.jpg"
+        },
+        {
+          "title": "TeamsSix",
+          "describe": "I can do all this through him who gives me strength.",
+          "content": "https://teamssix.com/",
+          "type": "web",
+          "icon": "/img/bar/fa66d2bcb5b5aa6234d87e82c6297dd4.png"
+        },
+        {
+          "title": "国光",
+          "describe": "国光 - 分享与收获",
+          "content": "https://www.sqlsec.com/",
+          "type": "web",
+          "icon": "/img/bar/7961de9186be436bd291d9c1d1f62362.jpg"
+        },
+        {
+          "title": "AabyssZG\u0027s Blog",
+          "describe": "曾哥的个人博客",
+          "content": "https://blog.zgsec.cn/",
+          "type": "web",
+          "icon": "/img/bar/e7766fb00dbc4c7c7b324a7c4adf187c.png"
+        },
+        {
+          "title": "WBGIII",
+          "describe": "WBGIII\u0027s Blog",
+          "content": "https://wbglil.github.io/",
+          "type": "web",
+          "icon": "/img/bar/462a71d2cdcae5f92ea4b39e77900504.png"
+        },
+        {
+          "title": "cnhack\u0027s blog",
+          "describe": "cnhack\u0027s blog",
+          "content": "https://securityreseacher.gitee.io/securityreseacher/",
+          "type": "web",
+          "icon": "/img/bar/23b8004879adb2a1ae5748ac857fc432.png"
+        },
+        {
+          "title": "R4v3zn\u0027s Blog",
+          "describe": "R4v3zn\u0027s Blog",
+          "content": "https://www.r4v3zn.com/",
+          "type": "web",
+          "icon": "/img/bar/888729e8438ccca00d8161c1a404aa9a.png"
+        },
+        {
+          "title": "雨苁",
+          "describe": "雨苁博客",
+          "content": "https://www.ddosi.org/",
+          "type": "web",
+          "icon": "/img/bar/973d7f137d07912ca897a19641d9168b.png"
+        },
+        {
+          "title": "阿浪的小破站",
+          "describe": "我荒废的今日，正是昨日殒身之人祈求的明日！望诸君 共勉之.",
+          "content": "https://blog.yunjianxx.com/",
+          "type": "web",
+          "icon": "/img/bar/d7916a16783a4a11e56dbbfb23d55c0b.jpg"
+        },
+        {
+          "title": "JunBlog",
+          "describe": "喜欢交朋友，也喜欢交流",
+          "content": "https://blog.mo60.cn/",
+          "type": "web",
+          "icon": "/img/bar/08c9293ab7eb9cc5b0e986e43cefca0f.png"
+        }
+      ],
+      "安全团队": [
+        {
+          "title": "One-Fox安全团队",
+          "describe": "One-Fox安全团队",
+          "content": "https://www.one-fox.cn/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "悬镜安全实验室",
+          "describe": "追求技术安全",
+          "content": "https://www.xmirror.cn",
+          "type": "web",
+          "icon": "/img/bar/39149e674e4571af49df2a855bd9d231.png"
+        },
+        {
+          "title": "网络尖刀",
+          "describe": "网络尖刀（1AQ TEAM）",
+          "content": "https://www.1aq.com/",
+          "type": "web",
+          "icon": "/img/bar/1e4a5bbce476df701005e8a13c3ecdda.png"
+        },
+        {
+          "title": "WgpSec",
+          "describe": "狼组安全团队",
+          "content": "https://www.wgpsec.org/",
+          "type": "web",
+          "icon": "/img/bar/83824d1c2584fb4b55bb1ce583a2171d.png"
+        },
+        {
+          "title": "Hawoo SecLab",
+          "describe": "汉武安全实验室",
+          "content": "http://www.hawoo.net/",
+          "type": "web",
+          "icon": "/img/bar/018ff614050eea7f90d2a436cdb5ccb7.png"
+        },
+        {
+          "title": "RadeBit",
+          "describe": "瑞安全",
+          "content": "http://www.radebit.com/",
+          "type": "web",
+          "icon": "/img/bar/2492fd2fdc80f754fd7f77e6f1db40ab.png"
+        },
+        {
+          "title": "Timeline Sec",
+          "describe": "Timeline Sec团队",
+          "content": "http://www.timelinesec.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Tide安全团队",
+          "describe": "Tide安全团队",
+          "content": "https://tidesec.com/",
+          "type": "web",
+          "icon": "/img/bar/450f40df95226f337582f59ddf1ac9f6.png"
+        },
+        {
+          "title": "米斯特安全团队",
+          "describe": "米斯特安全团队",
+          "content": "http://www.acmesec.cn/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "星盟安全团队",
+          "describe": "Star Alliance SECURITY TEAM",
+          "content": "http://www.xmcve.com/",
+          "type": "web",
+          "icon": "/img/bar/10a56659576376cd0bc08a1fba42b5f3.png"
+        },
+        {
+          "title": "Ghost Wolf Lab",
+          "describe": "Ghost Wolf Lab",
+          "content": "https://ghostwolflab.com/",
+          "type": "web",
+          "icon": "/img/bar/d353801773e793325c32b41775a92c38.png"
+        },
+        {
+          "title": "渊龙Sec安全团队",
+          "describe": "为国之安全而奋斗，为信息安全而发声！",
+          "content": "https://www.aabyss.cn",
+          "type": "web",
+          "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+        },
+        {
+          "title": "NGC660安全实验室",
+          "describe": "NGC660安全实验室",
+          "content": "https://ngc660.com/",
+          "type": "web",
+          "icon": "/img/bar/6b231d44d6a073c2bdc174397a05a1cf.png"
+        }
+      ],
+      "逆向破解": [
+        {
+          "title": "看雪安全论坛",
+          "describe": "致力于PC/移动/智能设备安全研究社区",
+          "content": "https://bbs.pediy.com/",
+          "type": "web",
+          "icon": "/img/bar/3d832123650798eea4de82e38e64e51d.png"
+        },
+        {
+          "title": "吾爱破解论坛",
+          "describe": "致力于软件安全与病毒分析的前沿",
+          "content": "https://www.52pojie.cn/",
+          "type": "web",
+          "icon": "/img/bar/0d5ea3f27c8464fb4b4ffe7883b45a76.png"
+        },
+        {
+          "title": "卡饭论坛",
+          "describe": "第三方综合性安全软件交流社区",
+          "content": "https://bbs.kafan.cn/",
+          "type": "web",
+          "icon": "/img/bar/1662cc908afb025166e2f34e8453e234.png"
+        },
+        {
+          "title": "火绒安全论坛",
+          "describe": "火绒安全官方论坛",
+          "content": "https://bbs.huorong.cn/",
+          "type": "web",
+          "icon": "/img/bar/72c4b6dc3e7af277f86ccc1a3ea4df29.png"
+        },
+        {
+          "title": "逆向未来",
+          "describe": "逆向未来",
+          "content": "https://www.pd521.com/",
+          "type": "web",
+          "icon": "/img/bar/5077aa05d47a7e77b4a3a820e93f9f62.png"
+        },
+        {
+          "title": "飘云阁",
+          "describe": "飘云阁",
+          "content": "https://www.chinapyg.com/",
+          "type": "web",
+          "icon": "/img/bar/76b227e68b52e87116f565d7e849aa06.png"
+        },
+        {
+          "title": "睿论坛",
+          "describe": "互联网人的罗马广场",
+          "content": "https://iosre.com/",
+          "type": "web",
+          "icon": "/img/bar/c6478dfd394c972cb2ffccd4f780d16b.png"
+        }
+      ],
+      "国外论坛": [
+        {
+          "title": "Infosec Exchange",
+          "describe": "是由 Mastodon 驱动的去中心化社交网络的一部分",
+          "content": "https://infosec.exchange/",
+          "type": "web",
+          "icon": "/img/bar/798096c10dc7450bee3514fdf86f14c0.png"
+        },
+        {
+          "title": "andika",
+          "describe": "andika - Medium",
+          "content": "https://andika-here.medium.com/",
+          "type": "web",
+          "icon": "/img/bar/82b571aee225042e1e8aaf648391e5d8.png"
+        },
+        {
+          "title": "Security Intelligence",
+          "describe": "Cybersecurity Analysis \u0026 Insight",
+          "content": "https://securityintelligence.com",
+          "type": "web",
+          "icon": "/img/bar/490c1de356aa2068f32e6f1f134b3eba.png"
+        },
+        {
+          "title": "Hackread",
+          "describe": "Latest Cybersecurity News, Press Releases \u0026 Technology Today",
+          "content": "https://www.hackread.com/",
+          "type": "web",
+          "icon": "/img/bar/76c3e018cecc62decf456a17bda78acb.png"
+        },
+        {
+          "title": "Exploit.IN",
+          "describe": "Exploit.IN Forum",
+          "content": "https://forum.exploit.in/",
+          "type": "web",
+          "icon": "/img/bar/b35356b6b7e983c8705a968db61463e7.png"
+        },
+        {
+          "title": "Hack Forums",
+          "describe": "Hack Forums",
+          "content": "https://hackforums.net/",
+          "type": "web",
+          "icon": "/img/bar/8ef9763a8f12ebd1136da63df5e24123.png"
+        },
+        {
+          "title": "ANTICHAT",
+          "describe": "Security online community",
+          "content": "https://forum.antichat.com/",
+          "type": "web",
+          "icon": "/img/bar/251f73a5522d3e9c7c87a7f6e76d97b4.png"
+        },
+        {
+          "title": "Securelist",
+          "describe": "Kaspersky’s threat research and reports",
+          "content": "https://securelist.com/",
+          "type": "web",
+          "icon": "/img/bar/ac38703f23509c743f877cda80f84c30.png"
+        },
+        {
+          "title": "0x00sec",
+          "describe": "The Home of the Hacker",
+          "content": "https://0x00sec.org/",
+          "type": "web",
+          "icon": "/img/bar/47bf12794a2eb38f63a8e8ff79f13467.png"
+        },
+        {
+          "title": "FuzzySecurity",
+          "describe": "FuzzySecurity",
+          "content": "https://fuzzysecurity.com/",
+          "type": "web",
+          "icon": "/img/bar/a76b88590737a5694c154c74742d3856.png"
+        },
+        {
+          "title": "Exetools",
+          "describe": "Exetools - Powered by vBulletin",
+          "content": "https://forum.exetools.com/",
+          "type": "web",
+          "icon": "/img/bar/51de2b83a2d789dec47a47cc181da791.png"
+        },
+        {
+          "title": "Tuts 4 You",
+          "describe": "Tuts 4 You Forums",
+          "content": "https://forum.tuts4you.com/",
+          "type": "web",
+          "icon": "/img/bar/13658667b010f27a918d44e8c1289cf9.png"
+        },
+        {
+          "title": "R0 CREW",
+          "describe": "R0 CREW - The Best Community Ever \u003d)",
+          "content": "https://forum.reverse4you.org/",
+          "type": "web",
+          "icon": "/img/bar/48b3fa2bceb32dfe9603b36bbbf367fd.png"
+        },
+        {
+          "title": "Security Tube",
+          "describe": "SecurityTube.net",
+          "content": "http://www.securitytube.net/",
+          "type": "web",
+          "icon": "/img/bar/8fc31f602a981792fd16d3762e54697a.png"
+        },
+        {
+          "title": "blackMORE Ops",
+          "describe": "Linux, InfoSec, Hacking - blackMORE Ops",
+          "content": "https://www.blackmoreops.com/",
+          "type": "web",
+          "icon": "/img/bar/41de8af614c75aa28bf46402f6be88c7.png"
+        },
+        {
+          "title": "BreachForums",
+          "describe": "臭名昭著的冲突论坛",
+          "content": "https://breachforums.is/",
+          "type": "web",
+          "icon": "/img/bar/73895628c23c9c464590f7700499bc07.png"
+        }
+      ]
+    },
+    "漏洞平台": {
+      "国内漏洞平台": [
+        {
+          "title": "教育漏洞报告平台",
+          "describe": "教育漏洞报告平台-EduSRC",
+          "content": "https://src.sjtu.edu.cn/list/",
+          "type": "web",
+          "icon": "/img/bar/c83cdd3c9854da2ab67abedd49042d14.png"
+        },
+        {
+          "title": "开源安全情报预警",
+          "describe": "OSCS | 开源软件供应链安全",
+          "content": "https://www.oscs1024.com/cm",
+          "type": "web",
+          "icon": "/img/bar/247ae409bd07c62878fef8a7ec2486dc.png"
+        },
+        {
+          "title": "HITCON",
+          "describe": "HITCON ZeroDay",
+          "content": "https://zeroday.hitcon.org/",
+          "type": "web",
+          "icon": "/img/bar/c4efc30bfebfce79c5330379ef039d91.png"
+        },
+        {
+          "title": "360网络安全响应中心",
+          "describe": "360CERT",
+          "content": "https://cert.360.cn/",
+          "type": "web",
+          "icon": "/img/bar/a4072425958d7d87acd54e89eccb0c64.png"
+        },
+        {
+          "title": "渊龙Sec内部漏洞库",
+          "describe": "渊龙Sec安全团队内部漏洞库",
+          "content": "https://wiki.aabyss.cn/",
+          "type": "web",
+          "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+        },
+        {
+          "title": "Exp库",
+          "describe": "打造中文最大exploit库",
+          "content": "http://www.expku.com/",
+          "type": "web",
+          "icon": "/img/bar/84614b4f34808723719ff1c19c31aff9.png"
+        },
+        {
+          "title": "Seebug漏洞平台",
+          "describe": "知道创宇Seebug漏洞平台",
+          "content": "https://www.seebug.org/",
+          "type": "web",
+          "icon": "/img/bar/dbf79a6be54debe6a527ab0c600d892a.png"
+        },
+        {
+          "title": "BugScan平台",
+          "describe": "少数漏洞插件收集平台",
+          "content": "http://www.bugscan.net/",
+          "type": "web",
+          "icon": "/img/bar/5b07775ffe98b3a4d62731d55824bd69.png"
+        },
+        {
+          "title": "工控漏洞子库",
+          "describe": "工控漏洞子库",
+          "content": "https://ics.cnvd.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/d1abf6b82456e5026178878da9d6ae62.png"
+        },
+        {
+          "title": "国家信息安全漏洞共享平台",
+          "describe": "国家信息安全漏洞共享平台",
+          "content": "https://www.cnvd.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/39acb90770689c1ef02b7b3cacbabdf9.png"
+        },
+        {
+          "title": "国家信息安全漏洞库",
+          "describe": "国家信息安全漏洞库",
+          "content": "https://www.cnnvd.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/7a5a996db44ccc3c24b74a07e688412c.png"
+        },
+        {
+          "title": "绿盟漏洞库",
+          "describe": "NSFOCUS绿盟漏洞库",
+          "content": "http://www.nsfocus.net/index.php",
+          "type": "web",
+          "icon": "/img/bar/c8176e29e471a49ff32524f06fdd4c73.png"
+        },
+        {
+          "title": "IOT安全情报",
+          "describe": "IOTsec-IOT安全情报",
+          "content": "https://www.iotsec-zone.com/vullist",
+          "type": "web",
+          "icon": "/img/bar/b6738c9445ec1b05c3ef1073513e5925.png"
+        },
+        {
+          "title": "漏洞时代",
+          "describe": "博客型漏洞收集平台",
+          "content": "http://0day5.com/",
+          "type": "web",
+          "icon": "/img/bar/646f2315ec369235dc9c699cc0296bf3.png"
+        },
+        {
+          "title": "SCAP中文漏洞库",
+          "describe": "VULHUB开源网络安全威胁库",
+          "content": "http://cve.scap.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/1340b7c607a6ce43e3f507f5c073bf95.png"
+        },
+        {
+          "title": "数字观星",
+          "describe": "360POC++",
+          "content": "https://poc.shuziguanxing.com",
+          "type": "web",
+          "icon": "/img/bar/d37b3be7e5d889e5d4c361cafd926b11.png"
+        },
+        {
+          "title": "360众测平台",
+          "describe": "360面向企业的白帽子众测平台",
+          "content": "https://zhongce.360.net/",
+          "type": "web",
+          "icon": "/img/bar/38624159aa7c63eb353a378dd2395724.png"
+        },
+        {
+          "title": "火线安全平台",
+          "describe": "北京安全共识科技创立的安全平台",
+          "content": "https://www.huoxian.cn/",
+          "type": "web",
+          "icon": "/img/bar/13c93690b0ca16c977fe626200f16e08.png"
+        },
+        {
+          "title": "乌云镜像知识库",
+          "describe": "乌云网镜像、知识库搜索",
+          "content": "http://wooyun.2xss.cc/",
+          "type": "web",
+          "icon": "/img/bar/d42d81fa2599106ce86e2d15a8b7d523.png"
+        },
+        {
+          "title": "PeiQiWiki",
+          "describe": "佩奇漏洞文库",
+          "content": "https://peiqi.wgpsec.org/",
+          "type": "web",
+          "icon": "/img/bar/a7c0afad764c0cdf850c517833f51e70.png"
+        },
+        {
+          "title": "Hacking8 安全信息流",
+          "describe": "安全信息流-漏洞/Poc监控",
+          "content": "https://i.hacking8.com/index/vul-poc",
+          "type": "web",
+          "icon": "/img/bar/aea7bd1f829fdf77e7f35c6449293e26.png"
+        },
+        {
+          "title": "96.mk",
+          "describe": "基于零组公开漏洞库",
+          "content": "https://wiki.96.mk/",
+          "type": "web",
+          "icon": "/img/bar/c3a7203b1b891f7a5471b5995618a17f.png"
+        },
+        {
+          "title": "白阁文库",
+          "describe": "白阁文库",
+          "content": "https://wiki.bylibrary.cn/",
+          "type": "web",
+          "icon": "/img/bar/b57b8bd59209f78ee1d67567ba6b561b.png"
+        },
+        {
+          "title": "DayDayPoc",
+          "describe": "DayDayPoc漏洞平台",
+          "content": "https://www.ddpoc.com/",
+          "type": "web",
+          "icon": "/img/bar/a2a1a8901f9ba4595969814ec56ca6bf.png"
+        },
+        {
+          "title": "在线威胁情报播报",
+          "describe": "实时更新威胁情报播报",
+          "content": "https://threat.aabyss.cn/",
+          "type": "web",
+          "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+        },
+        {
+          "title": "阿里云漏洞库",
+          "describe": "及时响应与收敛云上高危漏洞",
+          "content": "https://avd.aliyun.com",
+          "type": "web",
+          "icon": "/img/bar/431d7e63823c73a20efd5619e36ea210.png"
+        },
+        {
+          "title": "情报星球",
+          "describe": "漏洞盒子 情报星球",
+          "content": "https://planet.vulbox.com/",
+          "type": "web",
+          "icon": "/img/bar/103d495caa4d964810644cc64bfe0f15.png"
+        },
+        {
+          "title": "VIP 漏洞情报中心",
+          "describe": "斗象科技 VIP漏洞情报",
+          "content": "https://vip.riskivy.com/",
+          "type": "web",
+          "icon": "/img/bar/1364eddd36121c1699d3ef2e7eb01560.png"
+        }
+      ],
+      "国外漏洞平台": [
+        {
+          "title": "Shodan Exploits",
+          "describe": "Shodan Exploits",
+          "content": "https://exploits.shodan.io/",
+          "type": "web",
+          "icon": "/img/bar/a3eab0990bcf3b67ca3a812063b31609.png"
+        },
+        {
+          "title": "CVE Details",
+          "describe": "CVE security vulnerability database",
+          "content": "https://www.cvedetails.com/",
+          "type": "web",
+          "icon": "/img/bar/540ebe344c0916cb066c0f4702211a35.png"
+        },
+        {
+          "title": "Zero Day Initiative",
+          "describe": "Published | Zero Day Initiative",
+          "content": "https://www.zerodayinitiative.com/",
+          "type": "web",
+          "icon": "/img/bar/82972d8201daf6447df3b9faf75d7563.png"
+        },
+        {
+          "title": "Alerts | CISA",
+          "describe": "Alerts | CISA",
+          "content": "https://www.cisa.gov/uscert/ncas/alerts",
+          "type": "web",
+          "icon": "/img/bar/0e7b9cdd5e75e22ec15729ef897e98a3.png"
+        },
+        {
+          "title": "NVD",
+          "describe": "NVD - Home",
+          "content": "https://nvd.nist.gov/",
+          "type": "web",
+          "icon": "/img/bar/778a1430ff8bc1aa4e78ff7722942934.png"
+        },
+        {
+          "title": "OVAL",
+          "describe": "Open Vulnerability and Assessment Language",
+          "content": "https://oval.mitre.org/",
+          "type": "web",
+          "icon": "/img/bar/b29972c29aeeadff0d49cb9e8f4d5f11.png"
+        },
+        {
+          "title": "Security Database",
+          "describe": "security-database",
+          "content": "https://www.security-database.com/",
+          "type": "web",
+          "icon": "/img/bar/6810fc3858a3dc22886d5e63372163b9.png"
+        },
+        {
+          "title": "hyp3rlinx",
+          "describe": "HYP3RLINX Information security",
+          "content": "http://hyp3rlinx.altervista.org/",
+          "type": "web",
+          "icon": "/img/bar/df1bf798c04da03918ba7acf6e7c341b.png"
+        },
+        {
+          "title": "JVN",
+          "describe": "JVN iPedia",
+          "content": "https://jvndb.jvn.jp/en/",
+          "type": "web",
+          "icon": "/img/bar/99191f8a35999cc59a33786dfbf4a2e9.png"
+        },
+        {
+          "title": "Full Disclosure",
+          "describe": "Full Disclosure Mailing List",
+          "content": "https://seclists.org/fulldisclosure/",
+          "type": "web",
+          "icon": "/img/bar/b5aee25b10546f7684f1bd81f5a18a12.png"
+        },
+        {
+          "title": "JetLib",
+          "describe": "jetlib.sec",
+          "content": "https://sec.jetlib.com/",
+          "type": "web",
+          "icon": "/img/bar/c55f48749ec7dae61764344807bd4f16.png"
+        },
+        {
+          "title": "Уязвимости",
+          "describe": "securitylab.ru",
+          "content": "https://www.securitylab.ru/vulnerability/",
+          "type": "web",
+          "icon": "/img/bar/ab106f1488df361b08d1b3f2cd694962.png"
+        },
+        {
+          "title": "XSSed",
+          "describe": "Cross Site Scripting (XSS) attacks information and archive",
+          "content": "http://xssed.com/",
+          "type": "web",
+          "icon": "/img/bar/43223891d9880f8e20a703208c519a04.png"
+        },
+        {
+          "title": "VULNERABILITY",
+          "describe": "VULNERABILITY LAB",
+          "content": "https://www.vulnerability-lab.com/",
+          "type": "web",
+          "icon": "/img/bar/96d31f5a31925c822fb0dc2b3533deea.png"
+        },
+        {
+          "title": "RAPID7",
+          "describe": "Vulnerability \u0026 Exploit Database",
+          "content": "https://www.rapid7.com/db/",
+          "type": "web",
+          "icon": "/img/bar/b333058c15080e8906e17722e667c09f.png"
+        },
+        {
+          "title": "Packet Storm",
+          "describe": "Packet Storm",
+          "content": "https://packetstormsecurity.com/",
+          "type": "web",
+          "icon": "/img/bar/077a61a1d75a27ad8a2444084c04043d.png"
+        },
+        {
+          "title": "CVE Trends",
+          "describe": "crowdsourced CVE intel",
+          "content": "https://cvetrends.com/",
+          "type": "web",
+          "icon": "/img/bar/f20d4f521dc451b755303695035b6a10.png"
+        },
+        {
+          "title": "HackOne",
+          "describe": "国际漏洞提交平台",
+          "content": "https://www.hackerone.com/",
+          "type": "web",
+          "icon": "/img/bar/71d4713e41b339bec06cf27e41dc3732.jpg"
+        },
+        {
+          "title": "0day.taday",
+          "describe": "0day前沿漏洞交易平台",
+          "content": "https://www.0day.today/",
+          "type": "web",
+          "icon": "/img/bar/a9508aa06c1a2002cfef9587f614ad42.png"
+        },
+        {
+          "title": "Routerpwn",
+          "describe": "国外路由器漏洞库",
+          "content": "http://routerpwn.com/",
+          "type": "web",
+          "icon": "/img/bar/735e84c30e9bc6e40d85c36bce2584f5.png"
+        },
+        {
+          "title": "CVE",
+          "describe": "国际CVE漏洞平台",
+          "content": "https://cve.mitre.org/",
+          "type": "web",
+          "icon": "/img/bar/019983917c91a5f12b38cf71c94c8da3.png"
+        },
+        {
+          "title": "微软漏洞通报库",
+          "describe": "微软官方安全通报和公告",
+          "content": "https://learn.microsoft.com/zh-cn/security-updates/",
+          "type": "web",
+          "icon": "/img/bar/f3cd4680dbbc61c9a41267a025b958d8.png"
+        },
+        {
+          "title": "Exploit Database",
+          "describe": "exploit-db",
+          "content": "https://www.exploit-db.com/papers",
+          "type": "web",
+          "icon": "/img/bar/430f2d09afe139aea650d00a6b814efd.png"
+        },
+        {
+          "title": "BugX",
+          "describe": "国外区块链安全平台",
+          "content": "http://www.bugx.org",
+          "type": "web",
+          "icon": "/img/bar/b6654ede71ff5f6e5b15a796a2cb5d56.png"
+        },
+        {
+          "title": "DVPNET",
+          "describe": "去中心化区块链漏洞平台",
+          "content": "https://dvpnet.io/",
+          "type": "web",
+          "icon": "/img/bar/76516519fcf141c67f97cb8e7f395993.png"
+        },
+        {
+          "title": "CXSECURITY",
+          "describe": "Free Security List",
+          "content": "https://cxsecurity.com/",
+          "type": "web",
+          "icon": "/img/bar/2e0756993070ef5c36c170d13124048d.png"
+        },
+        {
+          "title": "Sploitus",
+          "describe": "Exploits \u0026 Tools Search Engine",
+          "content": "https://sploitus.com/",
+          "type": "web",
+          "icon": "/img/bar/4c2d2a693ae4ad44e6ea7bd6263ad282.png"
+        },
+        {
+          "title": "ATT\u0026CK",
+          "describe": "MITRE ATT\u0026CK®",
+          "content": "https://attack.mitre.org/",
+          "type": "web",
+          "icon": "/img/bar/3546fd7f297eba60547624dd5d1a2843.png"
+        },
+        {
+          "title": "TI-Start",
+          "describe": "国外安全资源导航集合",
+          "content": "https://start.me/p/rxRbpo/cti",
+          "type": "web",
+          "icon": "/img/bar/ce4f1a4deb7e6d918245bd54ec9942de.png"
+        },
+        {
+          "title": "Minio CVE",
+          "describe": "Minio CVE - Open CVE",
+          "content": "https://www.opencve.io/cve?vendor\u003dminio",
+          "type": "web",
+          "icon": "/img/bar/8a4250a80dc0f601f50007d8ff7f0ac6.png"
+        },
+        {
+          "title": "Mvnrepository",
+          "describe": "mvnrepository",
+          "content": "https://mvnrepository.com/",
+          "type": "web",
+          "icon": "/img/bar/3c46857eafb453d8556aebf5160b9dd0.png"
+        },
+        {
+          "title": "Cyber Threat Intelligence",
+          "describe": "网络威胁情报导航",
+          "content": "https://start.me/p/wMrA5z/cyber-threat-intelligence",
+          "type": "web",
+          "icon": "/img/bar/ce4f1a4deb7e6d918245bd54ec9942de.png"
+        },
+        {
+          "title": "Vulnerability feed",
+          "describe": "Vulnerability feed",
+          "content": "https://inthewild.io/feed",
+          "type": "web",
+          "icon": "/img/bar/4a801226bf26c8a4578da3b22dd589d8.png"
+        },
+        {
+          "title": "Newest CVEs",
+          "describe": "Newest CVEs | Tenable®",
+          "content": "https://www.tenable.com/cve/newest",
+          "type": "web",
+          "icon": "/img/bar/bfdb2636065b19d72827faf4fbf70458.png"
+        },
+        {
+          "title": "hunter",
+          "describe": "huntr – Security Bounties for any GitHub repository",
+          "content": "https://huntr.dev/",
+          "type": "web",
+          "icon": "/img/bar/b518983558d54ff810eda4e4dcbab6d4.png"
+        }
+      ],
+      "SRC平台": [
+        {
+          "title": "斗鱼SRC",
+          "describe": "斗鱼安全应急响应中心",
+          "content": "https://security.douyu.com/",
+          "type": "web",
+          "icon": "/img/bar/105e0cc7b34bc1212c72cf2355a2130d.png"
+        },
+        {
+          "title": "FSRC",
+          "describe": "焦点安全应急响应中心",
+          "content": "https://security.focuschina.com/",
+          "type": "web",
+          "icon": "/img/bar/f52dcfaa227acecd4dff0c936a342a90.png"
+        },
+        {
+          "title": "融360SRC",
+          "describe": "融360安全应急响应中心",
+          "content": "https://security.rong360.com",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d256cb.png"
+        },
+        {
+          "title": "vivoSRC",
+          "describe": "vivo安全应急响应中心",
+          "content": "https://security.vivo.com.cn",
+          "type": "web",
+          "icon": "/img/bar/fcd11f7ddbab01d6246ed458cfd24c74.png"
+        },
+        {
+          "title": "挖财SRC",
+          "describe": "挖财安全应急响应中心",
+          "content": "https://sec.wacai.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "魅族SRC",
+          "describe": "魅族安全应急响应中心",
+          "content": "https://sec.meizu.com/",
+          "type": "web",
+          "icon": "/img/bar/65482cd37addf540157a4d2d335f0209.png"
+        },
+        {
+          "title": "MFSRC",
+          "describe": "马蜂窝安全应急响应中心",
+          "content": "https://security.mafengwo.cn/",
+          "type": "web",
+          "icon": "/img/bar/bac4c9f31da8f56707b10fec6e942253.png"
+        },
+        {
+          "title": "你我贷SRC",
+          "describe": "你我贷安全响应中心",
+          "content": "https://www.niwodai.com/sec/index.htm",
+          "type": "web",
+          "icon": "/img/bar/aa843880595f4842c8784feca6425229.png"
+        },
+        {
+          "title": "新浪SRC",
+          "describe": "新浪安全应急响应中心",
+          "content": "https://sec.sina.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/e2dd3edc0bcfbb23adfb23d3001606ec.png"
+        },
+        {
+          "title": "涂鸦SRC",
+          "describe": "Tuya SRC",
+          "content": "https://src.tuya.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "荣耀SRC",
+          "describe": "荣耀安全应急响应中心",
+          "content": "https://security.hihonor.com/",
+          "type": "web",
+          "icon": "/img/bar/40c613f451ffaefc0031d9f9747953f5.png"
+        },
+        {
+          "title": "TSRC",
+          "describe": "腾讯安全应急响应中心",
+          "content": "https://security.tencent.com/",
+          "type": "web",
+          "icon": "/img/bar/f50c4ef3f30408324064c385a03a44b0.png"
+        },
+        {
+          "title": "ASRC",
+          "describe": "阿里安全响应中心",
+          "content": "https://security.alibaba.com/",
+          "type": "web",
+          "icon": "/img/bar/4893d04f55bc2c2fedc9d6293f069164.png"
+        },
+        {
+          "title": "百度SRC",
+          "describe": "百度安全应急响应中心",
+          "content": "https://bsrc.baidu.com/",
+          "type": "web",
+          "icon": "/img/bar/ed9c63c17f18a6e09281550a7f110804.png"
+        },
+        {
+          "title": "菜鸟SRC",
+          "describe": "菜鸟安全应急响应中心",
+          "content": "https://sec.cainiao.com/",
+          "type": "web",
+          "icon": "/img/bar/c663e617dbfe0f9571d41c6003bb29c1.png"
+        },
+        {
+          "title": "滴滴SRC",
+          "describe": "滴滴出行安全应急响应中心",
+          "content": "http://sec.didichuxing.com/",
+          "type": "web",
+          "icon": "/img/bar/4003a6460c31ddb1d3213316014c2f59.png"
+        },
+        {
+          "title": "京东SRC",
+          "describe": "京东安全应急响应中心",
+          "content": "https://security.jd.com/",
+          "type": "web",
+          "icon": "/img/bar/93d05417bc991eae5741c51e5f2e45a7.png"
+        },
+        {
+          "title": "LYSRC",
+          "describe": "同程旅行安全应急响应中心",
+          "content": "https://sec.ly.com/",
+          "type": "web",
+          "icon": "/img/bar/ec38e8ed558d01ec0e51f0b682b6c6d4.png"
+        },
+        {
+          "title": "蘑菇街SRC",
+          "describe": "美丽联合集团安全应急响应中心",
+          "content": "https://security.mogu.com",
+          "type": "web",
+          "icon": "/img/bar/518791de1b23bc173c29cf09edf57dd5.png"
+        },
+        {
+          "title": "陌陌SRC",
+          "describe": "陌陌安全应急响应中心",
+          "content": "https://security.immomo.com/",
+          "type": "web",
+          "icon": "/img/bar/83ad5b8c00b91dada311a96420a9a1fc.png"
+        },
+        {
+          "title": "360SRC",
+          "describe": "360安全应急响应中心",
+          "content": "https://security.360.cn/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d256cb.png"
+        },
+        {
+          "title": "苏宁SRC",
+          "describe": "苏宁安全应急响应中心",
+          "content": "https://security.suning.com/",
+          "type": "web",
+          "icon": "/img/bar/def12a165a500b9e1815a8e38ddc1fc3.png"
+        },
+        {
+          "title": "VSRC",
+          "describe": "唯品会信息安全中心",
+          "content": "https://sec.vip.com/",
+          "type": "web",
+          "icon": "/img/bar/7c7c1bdab6a65b61633b593cc4bc2f33.png"
+        },
+        {
+          "title": "微博SRC",
+          "describe": "微博安全应急响应中心",
+          "content": "https://wsrc.weibo.com/",
+          "type": "web",
+          "icon": "/img/bar/f8dd0cec495b9c6468baf6f5102c8194.png"
+        },
+        {
+          "title": "VIPKIDSRC",
+          "describe": "VIPKID安全响应中心",
+          "content": "http://security.vipkid.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "网易SRC",
+          "describe": "网易安全中心",
+          "content": "https://aq.163.com/",
+          "type": "web",
+          "icon": "/img/bar/d3339053196c8a24a81141ef340fbf2e.png"
+        },
+        {
+          "title": "WiFi万能钥匙SRC",
+          "describe": "WiFi万能钥匙安全响应中心",
+          "content": "https://sec.wifi.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "WMSRC",
+          "describe": "完美世界安全应急响应中心",
+          "content": "http://security.wanmei.com/",
+          "type": "web",
+          "icon": "/img/bar/6bcf09c32e8a5627776cfc0d1cdce9d4.png"
+        },
+        {
+          "title": "小米SRC",
+          "describe": "小米安全中心",
+          "content": "https://sec.xiaomi.com/",
+          "type": "web",
+          "icon": "/img/bar/d3a633568bb2ab1a6f6ebb00dd514309.png"
+        },
+        {
+          "title": "蚂蚁金服SRC",
+          "describe": "蚂蚁集团安全应急响应中心",
+          "content": "https://security.alipay.com/",
+          "type": "web",
+          "icon": "/img/bar/c9637fbdaa07260c58f097010b1ec5b3.png"
+        },
+        {
+          "title": "71SRC",
+          "describe": "爱奇艺安全应急响应中心",
+          "content": "https://security.iqiyi.com/",
+          "type": "web",
+          "icon": "/img/bar/d7f3497ef82dac65d54da351c2df7812.png"
+        },
+        {
+          "title": "安全狗SRC",
+          "describe": "安全狗漏洞响应中心",
+          "content": "http://security.safedog.cn/",
+          "type": "web",
+          "icon": "/img/bar/ff9e78087f665d926920a24ff3203262.png"
+        },
+        {
+          "title": "BilibiliSRC",
+          "describe": "哔哩哔哩安全应急响应中心",
+          "content": "https://security.bilibili.com/",
+          "type": "web",
+          "icon": "/img/bar/e9590d27109f925357286864575013ee.png"
+        },
+        {
+          "title": "贝壳SRC",
+          "describe": "贝壳安全应急响应中心",
+          "content": "https://security.ke.com/",
+          "type": "web",
+          "icon": "/img/bar/d1309eb08b28547d38f43d4be7a244ff.png"
+        },
+        {
+          "title": "58SRC",
+          "describe": "58安全应急响应中心",
+          "content": "https://security.58.com/",
+          "type": "web",
+          "icon": "/img/bar/481c6e5bc688be48eadf4ad5abdf5dec.png"
+        },
+        {
+          "title": "度小满SRC",
+          "describe": "度小满安全应急响应中心",
+          "content": "https://security.duxiaoman.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "美团SRC",
+          "describe": "美团安全应急响应中心",
+          "content": "https://security.meituan.com/",
+          "type": "web",
+          "icon": "/img/bar/cab220828af855282b37ece5c7518c78.png"
+        },
+        {
+          "title": "货拉拉SRC",
+          "describe": "货拉拉安全应急响应中心",
+          "content": "https://llsrc.huolala.cn/",
+          "type": "web",
+          "icon": "/img/bar/85050315bb02cafc9ee560109f0600ce.png"
+        },
+        {
+          "title": "GZSRC",
+          "describe": "瓜子安全应急响应中心",
+          "content": "https://security.guazi.com",
+          "type": "web",
+          "icon": "/img/bar/c69ecdf747fda7efdde4cb2fab496896.png"
+        },
+        {
+          "title": "T3SRC",
+          "describe": "T3出行安全应急响应中心",
+          "content": "https://security.t3go.cn/",
+          "type": "web",
+          "icon": "/img/bar/5138df7eb79e1db5547614dce86ad7f6.png"
+        },
+        {
+          "title": "字节跳动SRC",
+          "describe": "字节跳动安全中心",
+          "content": "https://security.bytedance.com/",
+          "type": "web",
+          "icon": "/img/bar/426f3dcc988f47131537f321c8a612a1.png"
+        },
+        {
+          "title": "USRC",
+          "describe": "银联安全应急响应中心",
+          "content": "https://security.unionpay.com/",
+          "type": "web",
+          "icon": "/img/bar/4f5d475d6568d1e074f511d991d46712.png"
+        },
+        {
+          "title": "虎牙SRC",
+          "describe": "虎牙安全应急中心",
+          "content": "https://security.huya.com/",
+          "type": "web",
+          "icon": "/img/bar/1320ed73bb3cf9a11e1f1d77bf4ea681.png"
+        },
+        {
+          "title": "携程SRC",
+          "describe": "携程安全应急响应中心",
+          "content": "https://sec.ctrip.com/",
+          "type": "web",
+          "icon": "/img/bar/5daa7089f1ab4297f53cf821762ce5b1.png"
+        },
+        {
+          "title": "讯飞SRC",
+          "describe": "讯飞安全响应中心",
+          "content": "https://security.iflytek.com/",
+          "type": "web",
+          "icon": "/img/bar/62709b8c239bc27380b1de1751c77fe4.png"
+        },
+        {
+          "title": "顺丰SRC",
+          "describe": "顺丰安全应急响应中心",
+          "content": "https://sfsrc.sf-express.com/",
+          "type": "web",
+          "icon": "/img/bar/3970ea59524c8b299e4cbc93cf058e7a.png"
+        },
+        {
+          "title": "ZSRC",
+          "describe": "中通安全应急响应中心",
+          "content": "https://sec.zto.com/",
+          "type": "web",
+          "icon": "/img/bar/c6a3e4368b22f96ef7d2b561397801b5.png"
+        },
+        {
+          "title": "平安SRC",
+          "describe": "平安安全应急响应中心",
+          "content": "https://security.pingan.com",
+          "type": "web",
+          "icon": "/img/bar/1a9b6aea64273d77ee9c2075a89a73d2.png"
+        },
+        {
+          "title": "FSRC",
+          "describe": "富友安全应急响应中心",
+          "content": "https://fsrc.fuiou.com/",
+          "type": "web",
+          "icon": "/img/bar/f0d027233efaa115f826aa1945cd048a.png"
+        },
+        {
+          "title": "华为SRC",
+          "describe": "华为安全奖励计划",
+          "content": "https://bugbounty.huawei.com/",
+          "type": "web",
+          "icon": "/img/bar/ff9fc4068011ea89d3abb60bf64ebeff.png"
+        },
+        {
+          "title": "JJSRC",
+          "describe": "竞技世界安全应急响应中心",
+          "content": "https://security.jj.cn/",
+          "type": "web",
+          "icon": "/img/bar/e8739ff1d5b3d86b31b8657384a23e99.png"
+        },
+        {
+          "title": "快手SRC",
+          "describe": "快手安全应急响应中心",
+          "content": "https://security.kuaishou.com/",
+          "type": "web",
+          "icon": "/img/bar/8a771ac1599983af02b10d84cbfda53a.png"
+        },
+        {
+          "title": "YSRC",
+          "describe": "荧石安全应急响应中心",
+          "content": "https://ysrc.ys7.com/",
+          "type": "web",
+          "icon": "/img/bar/7c62cf5781ebe45a2876a38dd100dbb8.png"
+        },
+        {
+          "title": "金山SRC",
+          "describe": "金山办公安全应急响应中心",
+          "content": "https://security.wps.cn/",
+          "type": "web",
+          "icon": "/img/bar/a401217e144d1dfa5ac2adf0387cc13d.png"
+        },
+        {
+          "title": "YYSRC",
+          "describe": "YY安全应急响应中心",
+          "content": "https://security.yy.com/",
+          "type": "web",
+          "icon": "/img/bar/a7db673d7b2f3ec87be880a65d8bd17d.png"
+        },
+        {
+          "title": "喜马拉雅SRC",
+          "describe": "喜马拉雅应急响应中心",
+          "content": "https://security.ximalaya.com/",
+          "type": "web",
+          "icon": "/img/bar/256a165fd9ed75c35edeb1d4f3455e1d.png"
+        },
+        {
+          "title": "DHSRC",
+          "describe": "DHSRC 安全应急响应中心",
+          "content": "http://dhsrc.dhgate.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "OneSRC",
+          "describe": "OnePlus SRC",
+          "content": "https://security.oneplus.com/",
+          "type": "web",
+          "icon": "/img/bar/acfec91622c1274c3305cade65842848.png"
+        },
+        {
+          "title": "大疆SRC",
+          "describe": "大疆安全应急响应中心",
+          "content": "https://security.dji.com/",
+          "type": "web",
+          "icon": "/img/bar/3d22e49091102e8c5909e6f04920021b.png"
+        },
+        {
+          "title": "华住SRC",
+          "describe": "华住安全响应中心",
+          "content": "https://sec.huazhu.com/",
+          "type": "web",
+          "icon": "/img/bar/8c7b89d061b3acd4b9c0ac02c262872b.png"
+        },
+        {
+          "title": "安恒SRC",
+          "describe": "安恒信息安全应急响应中心",
+          "content": "https://security.dbappsecurity.com.cn/index",
+          "type": "web",
+          "icon": "/img/bar/505daf90a276c73e13e582520c4453d7.jpg"
+        },
+        {
+          "title": "知识星球SRC",
+          "describe": "知识星球安全应急响应中心",
+          "content": "https://security.zsxq.com/",
+          "type": "web",
+          "icon": "/img/bar/e8d79dc49b1c6d5a848a7efe11b727de.png"
+        },
+        {
+          "title": "BIGO SRC",
+          "describe": "BIGO 安全响应中心",
+          "content": "https://security.bigo.sg/#/",
+          "type": "web",
+          "icon": "/img/bar/d1337d194cb15e974a62490c8600c45d.png"
+        },
+        {
+          "title": "深信服SRC",
+          "describe": "深信服安全应急响应中心",
+          "content": "https://security.sangfor.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/ff208bdfacc85cd6ac0f2ff274260b18.png"
+        },
+        {
+          "title": "斗米SRC",
+          "describe": "斗米安全应急响应中心",
+          "content": "https://security.doumi.com/",
+          "type": "web",
+          "icon": "/img/bar/ff208bdfacc85cd6ac0f2ff542260b18.png"
+        },
+        {
+          "title": "ISRC",
+          "describe": "合合安全应急响应中心",
+          "content": "https://security.intsig.com/",
+          "type": "web",
+          "icon": "/img/bar/552d326d48ed7617cb324754d1b7d20c.png"
+        },
+        {
+          "title": "100TAL SRC",
+          "describe": "好未来安全应急响应中心",
+          "content": "https://src.100tal.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "LPSRC",
+          "describe": "猎聘安全应急响应中心",
+          "content": "https://security.liepin.com/",
+          "type": "web",
+          "icon": "/img/bar/65340497c227117bf65e7e83b96c84db.png"
+        },
+        {
+          "title": "TOPSRC",
+          "describe": "天融信安全漏洞响应中心",
+          "content": "https://src.topsec.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/f054f522ad360f8ff32f80554097d747.png"
+        },
+        {
+          "title": "WSRC",
+          "describe": "微众银行安全响应中心",
+          "content": "https://security.webank.com/",
+          "type": "web",
+          "icon": "/img/bar/2637a35c6fcf09fc0608036b564a730a.png"
+        },
+        {
+          "title": "THSRC",
+          "describe": "途虎安全应急响应中心",
+          "content": "https://security.tuhu.cn/",
+          "type": "web",
+          "icon": "/img/bar/ca8a63ec52c6f7813219a1bb43316ff7.png"
+        },
+        {
+          "title": "BSSRC",
+          "describe": "BOSS直聘安全应急响应中心",
+          "content": "https://src.zhipin.com/",
+          "type": "web",
+          "icon": "/img/bar/7f1306af779a03caed8ee5d4b11e5069.png"
+        },
+        {
+          "title": "YZSRC",
+          "describe": "有赞安全应急响应中心",
+          "content": "https://src.youzan.com/",
+          "type": "web",
+          "icon": "/img/bar/bf20b81d51c3a0ee32489cb76b55d01b.png"
+        },
+        {
+          "title": "KGSRC",
+          "describe": "酷狗安全应急响应中心",
+          "content": "https://security.kugou.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "ZRSRC",
+          "describe": "自如安全应急响应中心",
+          "content": "https://zrsecurity.ziroom.com/",
+          "type": "web",
+          "icon": "/img/bar/5381371922177c8e39eb03c09a5b7246.png"
+        },
+        {
+          "title": "OSRC",
+          "describe": "OPPO安全应急响应中心",
+          "content": "https://security.oppo.com/cn/",
+          "type": "web",
+          "icon": "/img/bar/f4f6d0b93a9e1e053240b4e59e666e53.png"
+        },
+        {
+          "title": "宜信SRC",
+          "describe": "宜信安全应急响应中心",
+          "content": "https://security.creditease.cn/",
+          "type": "web",
+          "icon": "/img/bar/04289a32bedaa801e5a1714871c0e6b3.png"
+        },
+        {
+          "title": "猪八戒SRC",
+          "describe": "猪八戒网安全响应中心",
+          "content": "https://sec.zbj.com/",
+          "type": "web",
+          "icon": "/img/bar/f6ae53266f5fc299cbd93a6fe2cef334.png"
+        },
+        {
+          "title": "ZPSRC",
+          "describe": "智联招聘安全应急响应中心",
+          "content": "https://src.zhaopin.com/",
+          "type": "web",
+          "icon": "/img/bar/609652f83d51544ae80dbf1fffafcf8b.png"
+        },
+        {
+          "title": "东方SRC",
+          "describe": "东方财富安全应急响应中心",
+          "content": "http://security.eastmoney.com/",
+          "type": "web",
+          "icon": "/img/bar/fd86996d3520ff8929f03f092adec7a0.png"
+        }
+      ],
+      "众测平台": [
+        {
+          "title": "教育漏洞报告平台",
+          "describe": "教育漏洞报告平台-EduSRC",
+          "content": "https://src.sjtu.edu.cn/list/",
+          "type": "web",
+          "icon": "/img/bar/c83cdd3c9854da2ab67abedd49042d14.png"
+        },
+        {
+          "title": "漏洞银行",
+          "describe": "领先的网络安全漏洞发现品牌",
+          "content": "https://www.bugbank.cn/",
+          "type": "web",
+          "icon": "/img/bar/bba6f6ccecf210f976f0e922f029dae9.png"
+        },
+        {
+          "title": "SOBUG",
+          "describe": "Sobug众测平台",
+          "content": "https://sobug.com/",
+          "type": "web",
+          "icon": "/img/bar/0464afee5ca6baf6726b8406fb7b8601.png"
+        },
+        {
+          "title": "漏洞盒子",
+          "describe": "互联网安全测试众测平台",
+          "content": "https://www.vulbox.com/",
+          "type": "web",
+          "icon": "/img/bar/a371633b2af0dbddfad2a791c7ab44b6.png"
+        },
+        {
+          "title": "HakcerOne",
+          "describe": "#1 Trusted Security Platform and Hacker Program",
+          "content": "https://www.hackerone.com/",
+          "type": "web",
+          "icon": "/img/bar/c58a461000bb4dbb1219825bbef0337a.png"
+        },
+        {
+          "title": "HITCON",
+          "describe": "HITCON ZeroDay",
+          "content": "https://zeroday.hitcon.org/",
+          "type": "web",
+          "icon": "/img/bar/c4efc30bfebfce79c5330379ef039d91.png"
+        },
+        {
+          "title": "OpenBugBounty",
+          "describe": "Free Bug Bounty Program and Coordinated Vulnerability Disclosure",
+          "content": "https://www.openbugbounty.org/",
+          "type": "web",
+          "icon": "/img/bar/69f3b6a6b75cc3c6c87e2bdad1c4305a.png"
+        },
+        {
+          "title": "云众可信",
+          "describe": "云众可信 - 互联网安全服务引领者",
+          "content": "https://www.cloudcrowd.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/b03bc0a823d2325750e5de4f64b038b9.png"
+        },
+        {
+          "title": "Seebug漏洞平台",
+          "describe": "知道创宇Seebug漏洞平台",
+          "content": "https://www.seebug.org/",
+          "type": "web",
+          "icon": "/img/bar/dbf79a6be54debe6a527ab0c600d892a.png"
+        },
+        {
+          "title": "360众测平台",
+          "describe": "360面向企业的白帽子众测平台",
+          "content": "https://zhongce.360.net/",
+          "type": "web",
+          "icon": "/img/bar/38624159aa7c63eb353a378dd2395724.png"
+        },
+        {
+          "title": "火线安全平台",
+          "describe": "北京安全共识科技创立的安全平台",
+          "content": "https://www.huoxian.cn/",
+          "type": "web",
+          "icon": "/img/bar/13c93690b0ca16c977fe626200f16e08.png"
+        },
+        {
+          "title": "hunter",
+          "describe": "huntr – Security Bounties for any GitHub repository",
+          "content": "https://huntr.dev/",
+          "type": "web",
+          "icon": "/img/bar/b518983558d54ff810eda4e4dcbab6d4.png"
+        },
+        {
+          "title": "雷神众测",
+          "describe": "雷神众测 - 网聚优秀安全力量，开创安全众测新纪元",
+          "content": "https://www.bountyteam.com/",
+          "type": "web",
+          "icon": "/img/bar/ad3943b369fa4fe6b5a4946704c3d17e.png"
+        }
+      ]
+    },
+    "新手推荐": [
+      {
+        "title": "技能学习脑图",
+        "describe": "技能学习思维导图",
+        "content": "https://github.com/SecWiki/sec-chart",
+        "type": "web",
+        "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+      },
+      {
+        "title": "Sec-News安全文摘",
+        "describe": "安全文摘",
+        "content": "https://govuln.com/news/",
+        "type": "web",
+        "icon": "/img/bar/24cfecd99fe33c6c5b170300ba612771.png"
+      },
+      {
+        "title": "SecWiki",
+        "describe": "信息安全技能学习表",
+        "content": "https://www.sec-wiki.com/skill/index",
+        "type": "web",
+        "icon": "/img/bar/675d30bf843f360ca201a03b7b4e6033.jpg"
+      },
+      {
+        "title": "Sec-wiki",
+        "describe": "安全维基百科",
+        "content": "https://www.sec-wiki.com/index.php",
+        "type": "web",
+        "icon": "/img/bar/675d30bf843f360ca201a03b7b4e6033.jpg"
+      },
+      {
+        "title": "漏洞银行技能树",
+        "describe": "漏洞银行学习技能树",
+        "content": "https://skills.bugbank.cn/",
+        "type": "web",
+        "icon": "/img/bar/f9fa410e84b15b689605309665a722ea.png"
+      },
+      {
+        "title": "安全信息流",
+        "describe": "安全信息流，最新安全资讯",
+        "content": "https://i.hacking8.com/",
+        "type": "web",
+        "icon": "/img/bar/aea7bd1f829fdf77e7f35c6449293e26.png"
+      },
+      {
+        "title": "T00LS",
+        "describe": "低调求发展-潜心学习安全",
+        "content": "https://www.t00ls.net/",
+        "type": "web",
+        "icon": "/img/bar/45bff4435a282c83e8c95b30f6ae7dbc.jpg"
+      },
+      {
+        "title": "先知社区",
+        "describe": "优秀的网络安全社区",
+        "content": "https://xz.aliyun.com/",
+        "type": "web",
+        "icon": "/img/bar/6fa802c741c1c6531fdac38fdad1e7c1.jpg"
+      },
+      {
+        "title": "FreeBuf",
+        "describe": "互联网安全新媒体",
+        "content": "https://www.freebuf.com/",
+        "type": "web",
+        "icon": "/img/bar/2a5ba5247b9fb14726d446c1e480b962.jpg"
+      },
+      {
+        "title": "看雪安全论坛",
+        "describe": "致力于PC/移动/智能设备安全研究社区",
+        "content": "https://bbs.pediy.com/",
+        "type": "web",
+        "icon": "/img/bar/3d832123650798eea4de82e38e64e51d.png"
+      },
+      {
+        "title": "unSafe",
+        "describe": "unSafe-不安全",
+        "content": "https://unsafe.sh/",
+        "type": "web",
+        "icon": "/img/bar/dd365797847ff1bbb8e9a7019f7fc159.png"
+      },
+      {
+        "title": "圈子社区",
+        "describe": "一个新锐白帽子汇聚地",
+        "content": "https://www.secquan.org",
+        "type": "web",
+        "icon": "/img/bar/348b895a23ea725b0043ba570ca8edb1.png"
+      },
+      {
+        "title": "漏洞银行",
+        "describe": "领先的网络安全漏洞发现品牌",
+        "content": "https://www.bugbank.cn/",
+        "type": "web",
+        "icon": "/img/bar/bba6f6ccecf210f976f0e922f029dae9.png"
+      },
+      {
+        "title": "渊龙Sec团队博客",
+        "describe": "为国之安全而奋斗，为信息安全而发声！",
+        "content": "https://blog.aabyss.cn",
+        "type": "web",
+        "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+      },
+      {
+        "title": "90Sec",
+        "describe": "专注于网络空间安全、前沿技术研究",
+        "content": "https://forum.90sec.com/",
+        "type": "web",
+        "icon": "/img/bar/a98b7099c538eb1016c74d8c0040f7e3.png"
+      },
+      {
+        "title": "i春秋",
+        "describe": "i春秋网络安全平台",
+        "content": "https://www.ichunqiu.com/",
+        "type": "web",
+        "icon": "/img/bar/3acb912d77a1f755d3ddaf422a8351e6.jpg"
+      },
+      {
+        "title": "奇安信攻防社区",
+        "describe": "补天配套-奇安信攻防社区",
+        "content": "https://forum.butian.net",
+        "type": "web",
+        "icon": "/img/bar/078d21e700ce94e77828137ceaf1cfab.png"
+      },
+      {
+        "title": "嘶吼",
+        "describe": "回归最本质的信息安全,互联网安全新媒体",
+        "content": "https://www.4hou.com/",
+        "type": "web",
+        "icon": "/img/bar/dd08d348665aec08526982fe7b674e19.png"
+      },
+      {
+        "title": "IOTsec-Zone",
+        "describe": "IOTsec-Zone 物联网安全社区",
+        "content": "https://www.iotsec-zone.com/",
+        "type": "web",
+        "icon": "/img/bar/b6738c9445ec1b05c3ef1073513e5925.png"
+      },
+      {
+        "title": "安全脉搏",
+        "describe": "分享技术，悦享品质",
+        "content": "https://www.secpulse.com/",
+        "type": "web",
+        "icon": "/img/bar/cb0307dd9f40a311d0a779b85205a135.png"
+      },
+      {
+        "title": "安全客",
+        "describe": "安全客-安全资讯平台",
+        "content": "https://www.anquanke.com/",
+        "type": "web",
+        "icon": "/img/bar/ea92c6fbaf3b917436ccc96379467ac9.png"
+      },
+      {
+        "title": "跳跳糖",
+        "describe": "跳跳糖安全社区",
+        "content": "http://tttang.com/",
+        "type": "web",
+        "icon": "/img/bar/a00cee13e3880bb571930ef8374614bc.png"
+      },
+      {
+        "title": "洞见微信聚合",
+        "describe": "洞见微信聚合-订阅号文章收录",
+        "content": "http://wechat.doonsec.com/",
+        "type": "web",
+        "icon": "/img/bar/599bf5cd1ca05c9f7142c29fc1046d74.png"
+      },
+      {
+        "title": "吾爱破解论坛",
+        "describe": "致力于软件安全与病毒分析的前沿",
+        "content": "https://www.52pojie.cn/",
+        "type": "web",
+        "icon": "/img/bar/0d5ea3f27c8464fb4b4ffe7883b45a76.png"
+      },
+      {
+        "title": "GitHub",
+        "describe": "有非常多的优秀开源安全工具",
+        "content": "https://github.com/Aabyss-Team",
+        "type": "web",
+        "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+      },
+      {
+        "title": "Bilibili",
+        "describe": "哔哩哔哩可以算是不错的学习平台",
+        "content": "https://space.bilibili.com/122627170/favlist?fid\u003d325120470",
+        "type": "web",
+        "icon": "/img/bar/5ef815aef025edd9698d84fc809e4fe2.png"
+      },
+      {
+        "title": "SecHub",
+        "describe": "为网安提供学习交流、知识分享的平台",
+        "content": "https://sechub.com.cn/",
+        "type": "web",
+        "icon": "/img/bar/9abf8e6b4b76db325eae5b18c7d6c38a.png"
+      },
+      {
+        "title": "助安社区",
+        "describe": "助安社区",
+        "content": "https://secself.com/",
+        "type": "web",
+        "icon": "/img/bar/1020f65e30caf0f0ccd9aa2f6cb3aab8.png"
+      },
+      {
+        "title": "在线威胁情报播报",
+        "describe": "实时更新威胁情报播报",
+        "content": "https://threat.aabyss.cn/",
+        "type": "web",
+        "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+      },
+      {
+        "title": "网络安全学习法",
+        "describe": "网络安全学习法-助安社区",
+        "content": "http://red.secself.com/#/",
+        "type": "web",
+        "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+      },
+      {
+        "title": "安全牛课堂",
+        "describe": "领先的信息安全教育平台",
+        "content": "https://www.aqniukt.com/",
+        "type": "web",
+        "icon": "/img/bar/310a0b5592747a2556843233f5d96d93.png"
+      },
+      {
+        "title": "Hello CTF",
+        "describe": "开源免费、新手友好的CTF入门教程",
+        "content": "https://ctf.probius.xyz/",
+        "type": "web",
+        "icon": "/img/bar/f288817ad420d2c98a44005f7877c514.png"
+      },
+      {
+        "title": "网安 | FreshRSS",
+        "describe": "网安 | FreshRSS",
+        "content": "https://rss.putdown.top/p/i/?a\u003dnormal\u0026get\u003dc_2",
+        "type": "web",
+        "icon": "/img/bar/b1abb088ed1de152f8185e829ed54469.png"
+      },
+      {
+        "title": "CT Stack安全社区",
+        "describe": "长亭科技旗下的安全社区",
+        "content": "https://stack.chaitin.com/",
+        "type": "web",
+        "icon": "/img/bar/bd46354a404c0277c24486efd342eee4.png"
+      },
+      {
+        "title": "暗魂社区",
+        "describe": "暗魂安全团队社区",
+        "content": "https://bbs.anhunsec.cn/",
+        "type": "web",
+        "icon": "/img/bar/c230741a97817adc251e42cfef74d270.png"
+      },
+      {
+        "title": "知识大陆",
+        "describe": "知识大陆 - 安全圈的百科全书",
+        "content": "https://wiki.freebuf.com/",
+        "type": "web",
+        "icon": "/img/bar/c35702d3857e229b9cf93045c483f2de.png"
+      }
+    ],
+    "在线学习": {
+      "技能路线": [
+        {
+          "title": "技能学习脑图",
+          "describe": "技能学习思维导图",
+          "content": "https://github.com/SecWiki/sec-chart",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "SecWiki",
+          "describe": "信息安全技能学习表",
+          "content": "https://www.sec-wiki.com/skill/index",
+          "type": "web",
+          "icon": "/img/bar/675d30bf843f360ca201a03b7b4e6033.jpg"
+        },
+        {
+          "title": "漏洞银行技能树",
+          "describe": "漏洞银行学习技能树",
+          "content": "https://skills.bugbank.cn/",
+          "type": "web",
+          "icon": "/img/bar/f9fa410e84b15b689605309665a722ea.png"
+        },
+        {
+          "title": "技能时间轴",
+          "describe": "西电协会的学习技能时间轴",
+          "content": "https://www.anquanquan.info/sifangcai/tuijian/jinengzhou.pdf",
+          "type": "web",
+          "icon": "/img/bar/cf579a0ac849b823eccd07bd266f1f80.png"
+        },
+        {
+          "title": "习科技能表",
+          "describe": "习科技能表V1.1",
+          "content": "https://www.shentoushi.top/Public/upload/images/2017-07-09/Sisso_skills_table.jpg",
+          "type": "web",
+          "icon": "/img/bar/5093c3ac1a2f11e44b19bd50c7f57fd8.png"
+        },
+        {
+          "title": "研发技能表",
+          "describe": "知道创宇研发技能表v3.1",
+          "content": "https://blog.knownsec.com/Knownsec_RD_Checklist/index.html",
+          "type": "web",
+          "icon": "/img/bar/d0a71a414371a1c8f63a205b78e17690.png"
+        },
+        {
+          "title": "安全技能树-余弦",
+          "describe": "安全技能树简版",
+          "content": "https://evilcos.me/security_skill_tree_basic/index.html",
+          "type": "web",
+          "icon": "/img/bar/33124521b8a552b59508c8f10758ddf6.png"
+        },
+        {
+          "title": "网络安全学习法",
+          "describe": "网络安全学习法-助安社区",
+          "content": "http://red.secself.com/#/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        }
+      ],
+      "前端安全": [
+        {
+          "title": "HTML5 Security Cheatsheet",
+          "describe": "HTML5 Security Cheatsheet",
+          "content": "https://html5sec.org/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Unicode®字符百科",
+          "describe": "基本拉丁字母 — Unicode 字符百科",
+          "content": "https://unicode-table.com/cn/",
+          "type": "web",
+          "icon": "/img/bar/3df839a7d5b4fc5c69e2dfcd1b6fce2f.png"
+        },
+        {
+          "title": "XSS Payload",
+          "describe": "xss payload",
+          "content": "http://xssor.io/s/payload/xssmisc.txt",
+          "type": "web",
+          "icon": "/img/bar/7ee6971352a3395fec6a14a4bbef3448.png"
+        },
+        {
+          "title": "XSS Filter Evasion Cheat Sheet",
+          "describe": "XSS过滤器逃避作弊表",
+          "content": "https://cheatsheetseries.owasp.org/cheatsheets/XSS_Filter_Evasion_Cheat_Sheet.html",
+          "type": "web",
+          "icon": "/img/bar/e4b6117c6152db1f9f83ea2990bb8d98.png"
+        },
+        {
+          "title": "XSS Probe",
+          "describe": "xss探针脚本，用于获取被跨页面的通用数据",
+          "content": "https://github.com/evilcos/xssprobe",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "HTML Purifier",
+          "describe": "Filter your HTML the standards-compliant way!",
+          "content": "http://htmlpurifier.org/",
+          "type": "web",
+          "icon": "/img/bar/bef281cbff6d357137a384a5942cde15.png"
+        },
+        {
+          "title": "XSSEE",
+          "describe": "XSSEE 3.0 Beta",
+          "content": "https://web2hack.org/xssee/",
+          "type": "web",
+          "icon": "/img/bar/5d26d1a828920a97904787f8b1b84be0.png"
+        },
+        {
+          "title": "XSS Hunter",
+          "describe": "XSS Hunter",
+          "content": "https://xsshunter.com/",
+          "type": "web",
+          "icon": "/img/bar/0d38aba39fd52fb3d6911863a56a288c.png"
+        },
+        {
+          "title": "XSStrike",
+          "describe": "智能XSS检测与开发套件",
+          "content": "https://github.com/s0md3v/XSStrike",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "xsspt",
+          "describe": "XSS平台合集",
+          "content": "https://www.shentoushi.top/xsspt.txt",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "WebDeveloper",
+          "describe": "WebDeveloper",
+          "content": "https://payloads.online/tools/",
+          "type": "web",
+          "icon": "/img/bar/c194d19eaa5b52264760291813514a90.png"
+        },
+        {
+          "title": "XSS Payload",
+          "describe": "XSS-Payload",
+          "content": "http://www.xss-payloads.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Xss\u0027OR",
+          "describe": "XSS在线构造工具",
+          "content": "http://xssor.io/",
+          "type": "web",
+          "icon": "/img/bar/7ee6971352a3395fec6a14a4bbef3448.png"
+        },
+        {
+          "title": "aem1k",
+          "describe": "JS Hacks \u0026 Creativity",
+          "content": "https://aem1k.com/aurebesh.js/#0day",
+          "type": "web",
+          "icon": "/img/bar/3ede1454ffcae2d9dcdd41fd6d2e70c7.png"
+        },
+        {
+          "title": "De4js",
+          "describe": "JavaScript Deobfuscator and Unpacker",
+          "content": "https://lelinhtinh.github.io/de4js/",
+          "type": "web",
+          "icon": "/img/bar/bcfd289de4f257106e65483c06a9d218.png"
+        },
+        {
+          "title": "w3school",
+          "describe": "Web前端学习平台",
+          "content": "https://www.w3school.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/fef3fb1bf3de00e696b052a583bb46a7.png"
+        },
+        {
+          "title": "XSS平台",
+          "describe": "XSSYE",
+          "content": "https://xssye.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        }
+      ],
+      "在线学习平台": [
+        {
+          "title": "BugBountyHunting",
+          "describe": "A community-curated Resource for Bug Bounty Hunting",
+          "content": "https://www.bugbountyhunting.com/",
+          "type": "web",
+          "icon": "/img/bar/07149c217c115a0e237000e66334fcd0.png"
+        },
+        {
+          "title": "Java安全",
+          "describe": "只有Java安全才能拯救宇宙",
+          "content": "https://github.com/HackJava/HackJava",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Spring Boot Vulnerability",
+          "describe": "Spring Boot 相关漏洞学习资料合集",
+          "content": "https://github.com/LandGrey/SpringBootVulExploit",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Fastjson",
+          "describe": "Fastjson姿势技巧集合",
+          "content": "https://github.com/safe6Sec/Fastjson",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "漏洞银行",
+          "describe": "领先的网络安全漏洞发现品牌",
+          "content": "https://www.bugbank.cn/",
+          "type": "web",
+          "icon": "/img/bar/bba6f6ccecf210f976f0e922f029dae9.png"
+        },
+        {
+          "title": "1earn",
+          "describe": "安全知识框架",
+          "content": "https://github.com/ffffffff0x/1earn",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "i春秋",
+          "describe": "i春秋网络安全平台",
+          "content": "https://www.ichunqiu.com/",
+          "type": "web",
+          "icon": "/img/bar/3acb912d77a1f755d3ddaf422a8351e6.jpg"
+        },
+        {
+          "title": "SQL-injection-bypass",
+          "describe": "记录实战中的各种sql注入绕过姿势",
+          "content": "https://github.com/Junehck/SQL-injection-bypass",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "洞见微信聚合",
+          "describe": "洞见微信聚合-订阅号文章收录",
+          "content": "http://wechat.doonsec.com/",
+          "type": "web",
+          "icon": "/img/bar/599bf5cd1ca05c9f7142c29fc1046d74.png"
+        },
+        {
+          "title": "Bilibili",
+          "describe": "哔哩哔哩可以算是不错的学习平台",
+          "content": "https://space.bilibili.com/122627170/favlist?fid\u003d325120470",
+          "type": "web",
+          "icon": "/img/bar/5ef815aef025edd9698d84fc809e4fe2.png"
+        },
+        {
+          "title": "Quick Reference",
+          "describe": "编程语言速查备忘录",
+          "content": "https://quickref.me/",
+          "type": "web",
+          "icon": "/img/bar/adf7273ce0467059ccea197dd6c3c6f2.png"
+        },
+        {
+          "title": "TWiki",
+          "describe": "云安全方向知识库",
+          "content": "https://github.com/teamssix/TWiki",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "PTES Technical Guidelines",
+          "describe": "PTES Technical Guidelines",
+          "content": "http://www.pentest-standard.org/index.php/PTES_Technical_Guidelines",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Hacking8",
+          "describe": "Hacking8 安全知识库",
+          "content": "https://www.hacking8.com/repository",
+          "type": "web",
+          "icon": "/img/bar/e66259691a012b16c4c369e3229fa77e.png"
+        },
+        {
+          "title": "合天网安实验室",
+          "describe": "合天网安实验室",
+          "content": "https://www.hetianlab.com/",
+          "type": "web",
+          "icon": "/img/bar/a13708885dab2f1ddcced2e2096def6a.png"
+        },
+        {
+          "title": "KSSD",
+          "describe": "看雪KSSD",
+          "content": "https://www.pediy.com/kssd/index.html",
+          "type": "web",
+          "icon": "/img/bar/a1cc88efabce9a068559140d69076c7e.png"
+        },
+        {
+          "title": "Web Security Learning",
+          "describe": "Web-Security-Learning",
+          "content": "https://github.com/CHYbeta/Web-Security-Learning",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Software Security Learning",
+          "describe": "Software-Security-Learning",
+          "content": "https://github.com/CHYbeta/Software-Security-Learning",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Writeups",
+          "describe": "赏金漏洞文章列表",
+          "content": "https://pentester.land/writeups/",
+          "type": "web",
+          "icon": "/img/bar/db08fe8626ad0f41ada92cfc713ef4bc.png"
+        },
+        {
+          "title": "T Wiki",
+          "describe": "云安全资源汇总",
+          "content": "https://wiki.teamssix.com/cloudsecurityresources/",
+          "type": "web",
+          "icon": "/img/bar/514af289639a1bb98c253b6f4047da3d.png"
+        },
+        {
+          "title": "狼组公开知识库",
+          "describe": "狼组公开知识库",
+          "content": "https://wiki.wgpsec.org/",
+          "type": "web",
+          "icon": "/img/bar/514af289639a1bb98c864b6f4047da3d.png"
+        },
+        {
+          "title": "暗月知识中心",
+          "describe": "暗月知识分享中心",
+          "content": "https://wiki.moonteams.com/",
+          "type": "web",
+          "icon": "/img/bar/dd5a991598d07557d61b0803d5d697a5.png"
+        },
+        {
+          "title": "SecHub",
+          "describe": "为网安提供学习交流、知识分享的平台",
+          "content": "https://sechub.com.cn/",
+          "type": "web",
+          "icon": "/img/bar/9abf8e6b4b76db325eae5b18c7d6c38a.png"
+        },
+        {
+          "title": "白阁文库",
+          "describe": "白阁文库",
+          "content": "https://wiki.bylibrary.cn/",
+          "type": "web",
+          "icon": "/img/bar/b57b8bd59209f78ee1d67567ba6b561b.png"
+        },
+        {
+          "title": "Webshell免杀手册",
+          "describe": "PHP从零学习到Webshell免杀手册",
+          "content": "https://github.com/AabyssZG/WebShell-Bypass-Guide",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "安全运营之路",
+          "describe": "这是我学习安全运营的旅途记录，很开心与你分享~",
+          "content": "https://wiki.y1ng.org/",
+          "type": "web",
+          "icon": "/img/bar/f4e1f56c231fb83ec1f1caa49e03dfc5.png"
+        },
+        {
+          "title": "信息安全知识库",
+          "describe": "信息安全知识文库",
+          "content": "https://vipread.com/",
+          "type": "web",
+          "icon": "/img/bar/5a98931ea5595dffd6d39bc9e42dac9d.jpg"
+        },
+        {
+          "title": "安全牛课堂",
+          "describe": "领先的信息安全教育平台",
+          "content": "https://www.aqniukt.com/",
+          "type": "web",
+          "icon": "/img/bar/310a0b5592747a2556843233f5d96d93.png"
+        },
+        {
+          "title": "补天学习平台",
+          "describe": "补天学习平台",
+          "content": "https://www.butian.net/School/index",
+          "type": "web",
+          "icon": "/img/bar/11a76ed4906077e9e895967d1aed04c5.png"
+        },
+        {
+          "title": "菜鸟教程",
+          "describe": "学的不仅是技术，更是梦想！",
+          "content": "https://www.runoob.com/",
+          "type": "web",
+          "icon": "/img/bar/6e82f97616a09800678e95c454fcc3fe.png"
+        },
+        {
+          "title": "慕课网",
+          "describe": "程序员的梦工场",
+          "content": "https://www.imooc.com/",
+          "type": "web",
+          "icon": "/img/bar/bfd0bab6c3b3958c672791e7d6b668bf.png"
+        },
+        {
+          "title": "中国大学MOOC",
+          "describe": "国家精品课程在线学习平台",
+          "content": "https://www.pngurse163.org/",
+          "type": "web",
+          "icon": "/img/bar/413594df0049722a0e6ac5b275f95f9d.jpg"
+        },
+        {
+          "title": "腾讯课堂",
+          "describe": "腾讯课堂教育平台",
+          "content": "https://ke.qq.com/",
+          "type": "web",
+          "icon": "/img/bar/be268c97f24d52937a5c1c071e5e4eb0.png"
+        },
+        {
+          "title": "Linux命令大全",
+          "describe": "真正好用的Linux命令在线查询网站",
+          "content": "https://www.linuxcool.com/",
+          "type": "web",
+          "icon": "/img/bar/bfe8f54427f09e3f0e0726c637a59be3.png"
+        },
+        {
+          "title": "潇湘信安",
+          "describe": "潇湘信安知识库",
+          "content": "https://www.yuque.com/xxxasec",
+          "type": "web",
+          "icon": "/img/bar/90a4ebb50635e062f9691419ac291619.png"
+        },
+        {
+          "title": "JavaSec",
+          "describe": "攻击Java Web应用-[Java Web安全]",
+          "content": "https://javasec.org/",
+          "type": "web",
+          "icon": "/img/bar/89c82ce216a09d231d0bfe19b6481ace.png"
+        },
+        {
+          "title": "Web安全学习笔记",
+          "describe": "Web安全学习笔记",
+          "content": "https://websec.readthedocs.io/zh/latest/",
+          "type": "web",
+          "icon": "/img/bar/fa344930faf3ba3fa1562fd4707e78c7.png"
+        },
+        {
+          "title": "知识大陆",
+          "describe": "知识大陆 - 安全圈的百科全书",
+          "content": "https://wiki.freebuf.com/",
+          "type": "web",
+          "icon": "/img/bar/c35702d3857e229b9cf93045c483f2de.png"
+        },
+        {
+          "title": "信息安全学报",
+          "describe": "中国科学院信息工程研究所",
+          "content": "http://jcs.iie.ac.cn/xxaqxb/ch/index.aspx",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "CBR-Doc",
+          "describe": "网安图书馆：文档",
+          "content": "https://github.com/WilsonHuha/cbr-doc/blob/master/posts/cc_sum.md",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        }
+      ],
+      "CTF学习相关": [
+        {
+          "title": "CTF-Tools",
+          "describe": "渊龙Sec安全团队CTF\u0026AWD工具包",
+          "content": "https://github.com/Aabyss-Team/CTF-Tools",
+          "type": "web",
+          "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+        },
+        {
+          "title": "CRC32-Tools",
+          "describe": "CTFer专属的CRC碰撞全自动化脚本",
+          "content": "https://github.com/AabyssZG/CRC32-Tools",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "FileReverse-Tools",
+          "describe": "二进制文件反转、倒置相关的工具",
+          "content": "https://github.com/AabyssZG/FileReverse-Tools",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "BugKu社区",
+          "describe": "CTF论坛",
+          "content": "https://www.bugku.com/",
+          "type": "web",
+          "icon": "/img/bar/5f6a6283daabc36e168ac123d89511a2.png"
+        },
+        {
+          "title": "合天网安实验室",
+          "describe": "CTF从入门到实践",
+          "content": "https://www.hetianlab.com/pages/CTFLaboratory.jsp",
+          "type": "web",
+          "icon": "/img/bar/a13708885dab2f1ddcced2e2096def6a.png"
+        },
+        {
+          "title": "PwnHub",
+          "describe": "长亭科技旗下的CTF平台",
+          "content": "https://pwnhub.cn",
+          "type": "web",
+          "icon": "/img/bar/1bdd4dd99f31e6833cf6ffa844bf63ad.png"
+        },
+        {
+          "title": "Reversing.Kr",
+          "describe": "Reversing.Kr",
+          "content": "http://reversing.kr/",
+          "type": "web",
+          "icon": "/img/bar/0beaae0ead681c99fb599d580b7c4f21.png"
+        },
+        {
+          "title": "CTFlearn",
+          "describe": "CTFlearn - Home",
+          "content": "https://ctflearn.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "RedTiger\u0027s Hackit",
+          "describe": "RedTiger\u0027s Hackit",
+          "content": "http://redtiger.labs.overthewire.org/",
+          "type": "web",
+          "icon": "/img/bar/29a7713cad6791b24584deb74ea02ef3.png"
+        },
+        {
+          "title": "CTF Tools",
+          "describe": "CTF 军火库",
+          "content": "https://ctf-wiki.github.io/ctf-tools/",
+          "type": "web",
+          "icon": "/img/bar/e76d2d83a8d0d42d673556b87c7293ad.png"
+        },
+        {
+          "title": "About WeChall",
+          "describe": "About WeChall",
+          "content": "http://www.wechall.net/",
+          "type": "web",
+          "icon": "/img/bar/c6ecdc0c52a428fa637b995e2fda54c0.png"
+        },
+        {
+          "title": "CTF WP from P4 Team",
+          "describe": "CTF writeups from P4 Team",
+          "content": "https://github.com/p4-team/ctf",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "prompt(1)",
+          "describe": "prompt(1) to win",
+          "content": "http://prompt.ml",
+          "type": "web",
+          "icon": "/img/bar/1c0a7e2f96d66929c1b6a4cd3ca7322d.png"
+        },
+        {
+          "title": "CTF Wiki",
+          "describe": "CTF开源知识库",
+          "content": "https://ctf-wiki.org/index.html",
+          "type": "web",
+          "icon": "/img/bar/f6c3e4a5a3cfb78d464c140043a5dfa1.png"
+        },
+        {
+          "title": "CTF快速入门手册",
+          "describe": "【推荐】CTF快速入门手册",
+          "content": "https://github.com/ProbiusOfficial/CTF-QuickStart",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "CTF在线编码工具",
+          "describe": "CTF加解密/编码在线工具",
+          "content": "http://www.hiencode.com/",
+          "type": "web",
+          "icon": "/img/bar/80d2a1d3a9abe3e71681f60e0bc4addd.png"
+        },
+        {
+          "title": "CTFHub",
+          "describe": "CTFHub",
+          "content": "https://www.ctfhub.com",
+          "type": "web",
+          "icon": "/img/bar/88801c6a9405fcb2bedba28c1a3d3637.png"
+        },
+        {
+          "title": "BUUCTF",
+          "describe": "安恒信息-CTF靶场",
+          "content": "https://buuoj.cn/",
+          "type": "web",
+          "icon": "/img/bar/639cf2d645002d1e89d3fa82db570bfa.png"
+        },
+        {
+          "title": "CTFtime",
+          "describe": "国际CTF平台",
+          "content": "https://ctftime.org/",
+          "type": "web",
+          "icon": "/img/bar/85f8a90df44a7fc479803887e76a9736.png"
+        },
+        {
+          "title": "CTF资源库",
+          "describe": "CTF在线工具库、工具下载",
+          "content": "https://www.ctftools.com/",
+          "type": "web",
+          "icon": "/img/bar/bc9462cf6270cfe53a35f5505fb7586d.png"
+        },
+        {
+          "title": "Bugku CTF",
+          "describe": "BugkuCTF练习平台",
+          "content": "https://ctf.bugku.com/",
+          "type": "web",
+          "icon": "/img/bar/e5d3ea17d87d86bba3e4930f827415a8.png"
+        },
+        {
+          "title": "攻防世界",
+          "describe": "XCTF社区（攻防世界）",
+          "content": "https://adworld.xctf.org.cn/home/index",
+          "type": "web",
+          "icon": "/img/bar/9f27406c4598bb6ff2766513ddf20662.jpg"
+        },
+        {
+          "title": "RealWorldCTF",
+          "describe": "长亭科技-RealWorldCTF",
+          "content": "https://realworldctf.cn",
+          "type": "web",
+          "icon": "/img/bar/6d4563d4d371813637b284a10e56f888.jpg"
+        },
+        {
+          "title": "CTFshow",
+          "describe": "CTF WriteUP整理",
+          "content": "https://wp.ctf.show/",
+          "type": "web",
+          "icon": "/img/bar/304aaea8a5f9d8839972a41743794398.png"
+        },
+        {
+          "title": "Wgpsec CTF",
+          "describe": "WgpSec狼组-CTF平台",
+          "content": "https://ctf.wgpsec.org/",
+          "type": "web",
+          "icon": "/img/bar/658617054db75b9ee13bd41948ee971b.png"
+        },
+        {
+          "title": "与佛论禅",
+          "describe": "佛曰加密与解密",
+          "content": "https://www.keyfc.net/bbs/tools/tudoucode.aspx",
+          "type": "web",
+          "icon": "/img/bar/2c66c1f0bfb8e2940af911a76bffe788.png"
+        },
+        {
+          "title": "实验吧",
+          "describe": "实验吧CTF题库",
+          "content": "https://www.shiyanbar.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "quipqiup",
+          "describe": "字符串字频统计和破解",
+          "content": "https://quipqiup.com/",
+          "type": "web",
+          "icon": "/img/bar/06283e9dfa3c92ef8ccf4bfdcd4ba652.png"
+        },
+        {
+          "title": "Hello CTF",
+          "describe": "开源免费、新手友好的CTF入门教程",
+          "content": "https://ctf.probius.xyz/",
+          "type": "web",
+          "icon": "/img/bar/f288817ad420d2c98a44005f7877c514.png"
+        },
+        {
+          "title": "I春秋CTF训练营",
+          "describe": "CTF竞赛训练营",
+          "content": "https://www.ichunqiu.com/battalion",
+          "type": "web",
+          "icon": "/img/bar/3acb912d77a1f755d3ddaf422a8351e6.jpg"
+        },
+        {
+          "title": "因数分解数据库",
+          "describe": "RSA算法-因数分解数据库",
+          "content": "http://factordb.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "SanhaCTF",
+          "describe": "CTF比赛讯息平台",
+          "content": "https://su-sanha.cn/",
+          "type": "web",
+          "icon": "/img/bar/bdd477723f579cc0508db27d5dfcf8ca.png"
+        },
+        {
+          "title": "GPS Visualizer",
+          "describe": "Draw a map from a GPS data file",
+          "content": "https://www.gpsvisualizer.com/map_input",
+          "type": "web",
+          "icon": "/img/bar/2f786161ff94648bbe957dcaf459c0ac.png"
+        },
+        {
+          "title": "Ook！",
+          "describe": "Esoteric Code Decoder, Online Translator",
+          "content": "https://www.dcode.fr/ook-language",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        }
+      ],
+      "实战靶场": [
+        {
+          "title": "Vulhub",
+          "describe": "面向大众的开源漏洞靶场",
+          "content": "https://github.com/vulhub/vulhub",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Vulfocus",
+          "describe": "白帽汇开发的一款开源漏洞靶场",
+          "content": "https://vulfocus.cn/",
+          "type": "web",
+          "icon": "/img/bar/8ad7ede220f7718128773a9735384006.png"
+        },
+        {
+          "title": "墨者学院",
+          "describe": "专注安全人才培训",
+          "content": "https://www.mozhe.cn/",
+          "type": "web",
+          "icon": "/img/bar/5dae242ee5de6ea4d8bfb97e812e64e2.png"
+        },
+        {
+          "title": "渊龙Sec团队靶场",
+          "describe": "为国之安全而奋斗，为信息安全而发声！",
+          "content": "http://ctf.aabyss.cn/",
+          "type": "web",
+          "icon": "/img/bar/b4d2a05236b5b8066212d602982ccf3a.png"
+        },
+        {
+          "title": "春秋云镜",
+          "describe": "i春秋旗下的云镜实战靶场",
+          "content": "https://yunjing.ichunqiu.com/",
+          "type": "web",
+          "icon": "/img/bar/a4aec4ea632719caf66d6c296bf54c88.png"
+        },
+        {
+          "title": "封神台",
+          "describe": "掌控安全在线演练靶场",
+          "content": "https://hack.zkaq.cn/",
+          "type": "web",
+          "icon": "/img/bar/6f7e5987ecbf42db8a48b6ae181ae0f4.png"
+        },
+        {
+          "title": "VulnHub",
+          "describe": "VulnHub",
+          "content": "https://www.vulnhub.com/",
+          "type": "web",
+          "icon": "/img/bar/7d2579699de45f4bf0b8b1a009a78762.png"
+        },
+        {
+          "title": "Hack The Box",
+          "describe": "大名鼎鼎的HTB",
+          "content": "https://www.hackthebox.com/",
+          "type": "web",
+          "icon": "/img/bar/3de4cf469a94e124ce8ac25cd177ee19.png"
+        },
+        {
+          "title": "Xss小游戏",
+          "describe": "部署在Github上的XSS小游戏",
+          "content": "https://xss.haozi.me/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "网络安全实验室",
+          "describe": "网络信息安全攻防学习平台",
+          "content": "http://hackinglab.cn/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Root Me",
+          "describe": "国外实战靶场",
+          "content": "https://www.root-me.org/",
+          "type": "web",
+          "icon": "/img/bar/c698f13d3c00f6c22384f92c75cd0db8.png"
+        },
+        {
+          "title": "AltoroJ",
+          "describe": "IBM公司的漏洞靶场",
+          "content": "http://demo.testfire.net/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Acunetix Web Vulnerability",
+          "describe": "Acunetix Web Vulnerability Scanner.",
+          "content": "http://vulnweb.com/",
+          "type": "web",
+          "icon": "/img/bar/3175f1acdec2174f6e4b7ccc6fc9d90e.png"
+        },
+        {
+          "title": "VulApps",
+          "describe": "VulApps",
+          "content": "http://vulapps.evalbug.com/",
+          "type": "web",
+          "icon": "/img/bar/af82f99d120fb835ba367c10df7f150f.png"
+        },
+        {
+          "title": "Attack-Defense",
+          "describe": "Attack-Defense Online Lab",
+          "content": "https://attackdefense.com/",
+          "type": "web",
+          "icon": "/img/bar/9ee07457ae0c373796c23227eb4dcdbf.png"
+        }
+      ],
+      "区块链安全": [
+        {
+          "title": "BugX",
+          "describe": "国外区块链安全平台",
+          "content": "http://www.bugx.org",
+          "type": "web",
+          "icon": "/img/bar/b6654ede71ff5f6e5b15a796a2cb5d56.png"
+        },
+        {
+          "title": "DVPNET",
+          "describe": "去中心化区块链漏洞平台",
+          "content": "https://dvpnet.io/",
+          "type": "web",
+          "icon": "/img/bar/76516519fcf141c67f97cb8e7f395993.png"
+        },
+        {
+          "title": "Blockchain Security",
+          "describe": "区块链安全Wiki",
+          "content": "https://blockchain-sec.com/",
+          "type": "web",
+          "icon": "/img/bar/3ebee0bdb78ebf56ae711349b17e3a7c.png"
+        },
+        {
+          "title": "DASP",
+          "describe": "DASP-TOP 10",
+          "content": "https://www.dasp.co/",
+          "type": "web",
+          "icon": "/img/bar/a5ccc5faa0051c5aa5150a8d24514e68.png"
+        },
+        {
+          "title": "DarkHandBook",
+          "describe": "区块链黑暗森林自救手册",
+          "content": "https://darkhandbook.io/",
+          "type": "web",
+          "icon": "/img/bar/c20488ae22592c33cd3f08437f55e4b3.png"
+        }
+      ],
+      "APT攻防": [
+        {
+          "title": "Pentester\u0027s Notebook",
+          "describe": "Pentester\u0027s Promiscuous Notebook",
+          "content": "https://ppn.snovvcrash.rocks/",
+          "type": "web",
+          "icon": "/img/bar/5c1bf8eb30d6dbc3320cc0950d360bf9.png"
+        },
+        {
+          "title": "Red Team Notes",
+          "describe": "Introduction - Red Team Notes",
+          "content": "https://dmcxblue.gitbook.io/red-team-notes/",
+          "type": "web",
+          "icon": "/img/bar/a055e0376b4b9e01a82f76335c47fa21.png"
+        },
+        {
+          "title": "NVISO Labs",
+          "describe": "Cyber security research, straight from the lab!",
+          "content": "https://blog.nviso.eu/",
+          "type": "web",
+          "icon": "/img/bar/cb35c071f05bcabda7eb27e89e9ce87b.png"
+        },
+        {
+          "title": "RedTeam101",
+          "describe": "redteam101 - 红队技术手册",
+          "content": "https://www.redteam101.tech/",
+          "type": "web",
+          "icon": "/img/bar/e13f201ab8febed52eb2fc323464db9f.png"
+        },
+        {
+          "title": "Windows Protocol",
+          "describe": "windows-protocol",
+          "content": "https://daiker.gitbook.io/windows-protocol/",
+          "type": "web",
+          "icon": "/img/bar/7c161ce3ae0ceae7ec555cde8fb240af.png"
+        },
+        {
+          "title": "eXploit",
+          "describe": "exploit.ph",
+          "content": "https://exploit.ph/",
+          "type": "web",
+          "icon": "/img/bar/c7203e5384807308360413b090ef7822.png"
+        },
+        {
+          "title": "CheatSheets",
+          "describe": "Introduction - CheatSheets",
+          "content": "https://cheats.philkeeble.com/",
+          "type": "web",
+          "icon": "/img/bar/c56e65aab91b7dfa4048d4cfd2af525c.png"
+        },
+        {
+          "title": "CPP构建C2",
+          "describe": "Building-C2-Implants-In-Cpp-A-Primer",
+          "content": "https://shogunlab.gitbook.io/building-c2-implants-in-cpp-a-primer/",
+          "type": "web",
+          "icon": "/img/bar/d98b49ab501119a77c439c976e08f522.png"
+        },
+        {
+          "title": "The Hacker Recipes",
+          "describe": "The Hacker Recipes",
+          "content": "https://www.thehacker.recipes/",
+          "type": "web",
+          "icon": "/img/bar/8833968763ff9fdc68862e951c0860ca.png"
+        },
+        {
+          "title": "Offensive Security",
+          "describe": "Offensive Security Cheatsheet",
+          "content": "https://cheatsheet.haax.fr/",
+          "type": "web",
+          "icon": "/img/bar/b30675c16b2ab855e988a66ccc55a405.png"
+        },
+        {
+          "title": "GTFOBins",
+          "describe": "GTFOBins",
+          "content": "https://gtfobins.github.io/",
+          "type": "web",
+          "icon": "/img/bar/25c69a37738cdf5b7921ab09e168c2f4.png"
+        },
+        {
+          "title": "NCC Group",
+          "describe": "Making the world safer and more secure",
+          "content": "https://research.nccgroup.com/",
+          "type": "web",
+          "icon": "/img/bar/43e60cc7a542390d6818a5fe63e3bebb.jpg"
+        },
+        {
+          "title": "xct\u0027s notes",
+          "describe": "xct\u0027s notes",
+          "content": "https://notes.vulndev.io/notes/",
+          "type": "web",
+          "icon": "/img/bar/bb1ffc8bdf47c0825b2b47df3338b567.png"
+        },
+        {
+          "title": "idiotc4t",
+          "describe": "Windows系统安全",
+          "content": "https://idiotc4t.com/",
+          "type": "web",
+          "icon": "/img/bar/d02b696732d7ea50a9531e86e89c18b2.png"
+        },
+        {
+          "title": "Cobalt Strike",
+          "describe": "CS相关知识整理",
+          "content": "https://wbglil.gitbook.io/cobalt-strike/",
+          "type": "web",
+          "icon": "/img/bar/aed000d8cc5cd9aa22359edbe3156207.png"
+        },
+        {
+          "title": "C2 Matrix",
+          "describe": "The C2 Matrix",
+          "content": "https://howto.thec2matrix.com/",
+          "type": "web",
+          "icon": "/img/bar/bcc964823e302eac53f6c30a8fe3147e.png"
+        },
+        {
+          "title": "Community Kit",
+          "describe": "Community Kit",
+          "content": "https://cobalt-strike.github.io/community_kit/",
+          "type": "web",
+          "icon": "/img/bar/d6d18e030f0432bb670fc062e6cc8445.png"
+        },
+        {
+          "title": "Active Directory",
+          "describe": "Active Directory Security",
+          "content": "https://adsecurity.org/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "LOLBAS",
+          "describe": "Living Off The Land Binaries, Scripts and Libraries",
+          "content": "https://lolbas-project.github.io/",
+          "type": "web",
+          "icon": "/img/bar/0a07b2e911c9f8409847a8efffe25355.png"
+        },
+        {
+          "title": "dirkjanm.io",
+          "describe": "dirkjanm.io",
+          "content": "https://dirkjanm.io/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "XPN",
+          "describe": "XPN InfoSec",
+          "content": "https://blog.xpnsec.com/",
+          "type": "web",
+          "icon": "/img/bar/3ab240a9fb7032ebb3303e3423d25975.png"
+        },
+        {
+          "title": "360Netlab",
+          "describe": "360 Netlab Blog",
+          "content": "https://blog.netlab.360.com/",
+          "type": "web",
+          "icon": "/img/bar/5391935ce123bd9c1df22c4014a79ad6.png"
+        },
+        {
+          "title": "Vx,Jump Security",
+          "describe": "Vx,Jump Security",
+          "content": "http://www.vxjump.net/files/a_page/7/aptr.htm",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Win RedTeam",
+          "describe": "Windows Red Team Lab",
+          "content": "https://www.pentesteracademy.com/redteamlab",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "SkullSecurity",
+          "describe": "SkullSecurity Adventures In Security",
+          "content": "https://www.skullsecurity.org/",
+          "type": "web",
+          "icon": "/img/bar/2296bdb37a83eed6df8ea819a35cac7f.jpg"
+        },
+        {
+          "title": "HackTricks",
+          "describe": "HackTricks",
+          "content": "https://book.hacktricks.xyz/welcome/readme",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Penetration Testing",
+          "describe": "Penetration Testing",
+          "content": "https://www.hackingarticles.in/penetration-testing/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "3gstudent",
+          "describe": "Good in study, attitude and health",
+          "content": "https://3gstudent.github.io/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Red Teaming",
+          "describe": "Red Teaming Experiments",
+          "content": "https://www.ired.team/",
+          "type": "web",
+          "icon": "/img/bar/0f7826f1f0ff6f1e996d10355155cfdb.png"
+        },
+        {
+          "title": "Red Team Adventures",
+          "describe": "Red Team Adventures",
+          "content": "https://riccardoancarani.github.io/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Red Team Security",
+          "describe": "Red Team Security",
+          "content": "https://www.reddit.com/r/redteamsec/",
+          "type": "web",
+          "icon": "/img/bar/f6d4368f5e8ae72e9301a91f8b24d560.png"
+        },
+        {
+          "title": "awesome-rat",
+          "describe": "RAT And C\u0026C Resources",
+          "content": "https://github.com/alphaSeclab/awesome-rat",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Sevagas",
+          "describe": "Sevagas",
+          "content": "https://blog.sevagas.com/",
+          "type": "web",
+          "icon": "/img/bar/05a3bed1ffc070c591c4120b8ee609ae.png"
+        },
+        {
+          "title": "Tarlogic Blog",
+          "describe": "Cybersecurity Blog",
+          "content": "https://www.tarlogic.com/blog/",
+          "type": "web",
+          "icon": "/img/bar/f3cce0c5426e85ea802667a13fc4061a.png"
+        },
+        {
+          "title": "Spaceraccoon\u0027s Blog",
+          "describe": "Spaceraccoon\u0027s Blog",
+          "content": "https://spaceraccoon.dev/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Pentest Book",
+          "describe": "six2dez/.pentest-book",
+          "content": "https://pentestbook.six2dez.com/",
+          "type": "web",
+          "icon": "/img/bar/68ee8b6a0d9100e082e3996560d1fc88.png"
+        },
+        {
+          "title": "Pentest Handbook",
+          "describe": "渗透测试手册 - Pentest Handbook",
+          "content": "https://www.heresecurity.wiki/about/readme",
+          "type": "web",
+          "icon": "/img/bar/929d08c06792dd088f63818adf7e1308.jpg"
+        },
+        {
+          "title": "Unprotect Project",
+          "describe": "Search Evasion Techniques",
+          "content": "https://unprotect.it/",
+          "type": "web",
+          "icon": "/img/bar/3660a5fa39ff31a80f747387584d6f1b.png"
+        },
+        {
+          "title": "Payloads All The Things",
+          "describe": "Payloads All The Things Web",
+          "content": "https://swisskyrepo.github.io/PayloadsAllTheThingsWeb/",
+          "type": "web",
+          "icon": "/img/bar/cc37a2d340d1e4d0219157649bac14ef.png"
+        },
+        {
+          "title": "安全运营之路",
+          "describe": "这是我学习安全运营的旅途记录，很开心与你分享~",
+          "content": "https://wiki.y1ng.org/",
+          "type": "web",
+          "icon": "/img/bar/f4e1f56c231fb83ec1f1caa49e03dfc5.png"
+        },
+        {
+          "title": "APT实战资源",
+          "describe": "APT实战资源 OSINT-Labs",
+          "content": "https://start.me/p/PwlKgn/apt-osint-labs",
+          "type": "web",
+          "icon": "/img/bar/8227ee0ecc4680194a8b6fc9ef081c49.png"
+        }
+      ],
+      "物联网安全相关": [
+        {
+          "title": "Netlas",
+          "describe": "Netlas",
+          "content": "https://netlas.io/",
+          "type": "web",
+          "icon": "/img/bar/bea077010d778d46b0c72b5b83719c58.png"
+        },
+        {
+          "title": "IOTsec-Zone",
+          "describe": "IOTsec-Zone 物联网安全社区",
+          "content": "https://www.iotsec-zone.com/",
+          "type": "web",
+          "icon": "/img/bar/b6738c9445ec1b05c3ef1073513e5925.png"
+        },
+        {
+          "title": "Shodan",
+          "describe": "Shodan Search",
+          "content": "https://www.shodan.io/",
+          "type": "web",
+          "icon": "/img/bar/f5251222e2630f56540ff1305407dd95.png"
+        },
+        {
+          "title": "知风",
+          "describe": "互联网联网工控资产测绘引擎",
+          "content": "https://zhifeng.io/web/new/",
+          "type": "web",
+          "icon": "/img/bar/bf38a8af25996e621ba54432cc3f0183.png"
+        },
+        {
+          "title": "IOT安全情报",
+          "describe": "IOTsec-IOT安全情报",
+          "content": "https://www.iotsec-zone.com/vullist",
+          "type": "web",
+          "icon": "/img/bar/b6738c9445ec1b05c3ef1073513e5925.png"
+        },
+        {
+          "title": "Hak5",
+          "describe": "Hak5 Official Site",
+          "content": "https://www.hak5.org/",
+          "type": "web",
+          "icon": "/img/bar/26e9a41817b0b26bfb2ed7cd55ac8861.png"
+        },
+        {
+          "title": "IoT-vulhub",
+          "describe": "IoT固件漏洞复现环境",
+          "content": "https://github.com/VulnTotal-Team/IoT-vulhub",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "LimitedResults",
+          "describe": "Limited contribution to this world",
+          "content": "https://limitedresults.com",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "灯塔实验室",
+          "describe": "灯塔实验室-专注工控安全",
+          "content": "http://plcscan.org/blog/",
+          "type": "web",
+          "icon": "/img/bar/21173501753ae20693f31bae793f04e9.png"
+        },
+        {
+          "title": "谛听",
+          "describe": "专注工控安全的搜索引擎",
+          "content": "https://www.ditecting.com/",
+          "type": "web",
+          "icon": "/img/bar/20be6bf340cce29ff14861a5e089390a.png"
+        },
+        {
+          "title": "物联网安全百科",
+          "describe": "物联网安全百科",
+          "content": "https://iot-security.wiki/",
+          "type": "web",
+          "icon": "/img/bar/b0b2b7b969c692e9cc00d92e3b2e8b12.png"
+        }
+      ],
+      "免杀学习": [
+        {
+          "title": "TideBypass",
+          "describe": "潮影在线免杀平台",
+          "content": "http://bypass.tidesec.com/",
+          "type": "web",
+          "icon": "/img/bar/67feaef31df965db54c96a60c326b099.png"
+        },
+        {
+          "title": "Webshell免杀手册",
+          "describe": "PHP从零学习到Webshell免杀手册",
+          "content": "https://github.com/AabyssZG/WebShell-Bypass-Guide",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "免杀规避Wiki",
+          "describe": "Ghost Wolf Lab – Evasions",
+          "content": "https://evasions.ghostwolflab.com/",
+          "type": "web",
+          "icon": "/img/bar/d353801773e793325c32b41775a92c38.png"
+        }
+      ]
+    },
+    "人工智能": {
+      "语言模型AI": [
+        {
+          "title": "OpenAI",
+          "describe": "ChatGPT:优化对话的语言模型",
+          "content": "https://chat.openai.com/auth/login",
+          "type": "web",
+          "icon": "/img/bar/72f4f21c503592d6bf95ce6ee6e7016d.png"
+        },
+        {
+          "title": "NewBing",
+          "describe": "注:需要代理+清理Cookie才可进入",
+          "content": "https://www.bing.com/new",
+          "type": "web",
+          "icon": "/img/bar/23aabf0a1a8bf1d06b80eccc9604ad0b.png"
+        },
+        {
+          "title": "文心一言",
+          "describe": "百度全新一代知识增强大语言模型",
+          "content": "https://yiyan.baidu.com/welcome",
+          "type": "web",
+          "icon": "/img/bar/8483370d0f4c29ee456ee547fea9efaa.png"
+        },
+        {
+          "title": "OpenPlayground",
+          "describe": "大型语言模型在线对比/切换",
+          "content": "https://nat.dev/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "Bard AI",
+          "describe": "Google Bard AI",
+          "content": "https://bard.google.com/",
+          "type": "web",
+          "icon": "/img/bar/6a2fedd0470bb517b89f9ae4719782c8.png"
+        },
+        {
+          "title": "通义千问",
+          "describe": "阿里的通义千问，一个专门响应人类指令的大模型",
+          "content": "https://tongyi.aliyun.com/",
+          "type": "web",
+          "icon": "/img/bar/1456e62e7f733d57d984feeb3d0c9b8b.png"
+        },
+        {
+          "title": "BestPrompts",
+          "describe": "ChatGPT指令大全-BestPrompts",
+          "content": "https://www.doustudy.com/h5/",
+          "type": "web",
+          "icon": "/img/bar/4d63f996f1348c47352f509796283cad.png"
+        }
+      ],
+      "图像模型AI": [
+        {
+          "title": "CVAT",
+          "describe": "用于计算机视觉的免费在线交互式视频和图像标注工具",
+          "content": "https://github.com/opencv/cvat",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "faceswap",
+          "describe": "用深度学习来识别和交换图片和视频中的人脸的工具",
+          "content": "https://github.com/deepfakes/faceswap",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "style2paints",
+          "describe": "新一代的强大线稿上色 AI",
+          "content": "https://github.com/lllyasviel/style2paints",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "stargan-v2",
+          "describe": "人脸属性替换",
+          "content": "https://github.com/clovaai/stargan-v2",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "deep-image-prior",
+          "describe": "图像去水印及修复",
+          "content": "https://github.com/DmitryUlyanov/deep-image-prior",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "pulse",
+          "describe": "去除人脸马赛克",
+          "content": "https://github.com/adamian98/pulse",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "VOR",
+          "describe": "移除视频中的物体/人物",
+          "content": "https://github.com/zllrunning/video-object-removal",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        }
+      ],
+      "语音模型AI": [
+        {
+          "title": "MockingBird",
+          "describe": "AI拟声: 5秒内克隆您的声音并生成任意语音内容",
+          "content": "https://github.com/babysor/MockingBird",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "Uncaptcha",
+          "describe": "依靠音频验证码攻击绕过reCAPTCHA的AI算法",
+          "content": "https://github.com/ecthros/uncaptcha",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        },
+        {
+          "title": "PaddleSpeech",
+          "describe": "基于飞桨的语音方向的开源模型库",
+          "content": "https://github.com/PaddlePaddle/PaddleSpeech/",
+          "type": "web",
+          "icon": "/img/bar/ec646f4e1d11757d6302315c214dbb26.png"
+        }
+      ],
+      "深度学习平台": [
+        {
+          "title": "飞桨",
+          "describe": "PaddlePaddle-开源深度学习平台",
+          "content": "https://www.paddlepaddle.org.cn/",
+          "type": "web",
+          "icon": "/img/bar/d3061e0a9330d1cb87961cacf3e2e828.png"
+        },
+        {
+          "title": "百度AI开放平台",
+          "describe": "百度大脑AI开放平台",
+          "content": "https://ai.baidu.com/",
+          "type": "web",
+          "icon": "/img/bar/6dd2783aa3d6bff894804d50b253783f.png"
+        },
+        {
+          "title": "矩池云",
+          "describe": "专注于人工智能领域的云服务商",
+          "content": "https://www.matpool.com/",
+          "type": "web",
+          "icon": "/img/bar/bc9b0b2d086899c1b0a430e68a99f438.png"
+        },
+        {
+          "title": "Colab",
+          "describe": "Google Colab",
+          "content": "https://colab.research.google.com/",
+          "type": "web",
+          "icon": "/img/bar/e752a390ff9a2cb366b8f3800e16e3fd.png"
+        },
+        {
+          "title": "青云",
+          "describe": "青云QingCloud",
+          "content": "https://www.qingcloud.com/",
+          "type": "web",
+          "icon": "/img/bar/c6d33d385154e354049db5723516e30c.png"
+        },
+        {
+          "title": "腾讯AI Lab",
+          "describe": "腾讯人工智能实验室官网",
+          "content": "https://ai.tencent.com/",
+          "type": "web",
+          "icon": "/img/bar/e5c379a372b8496e7e0e507dc4d946cb.jpg"
+        },
+        {
+          "title": "iFLYTEK AI开发者大赛",
+          "describe": "讯飞开放平台",
+          "content": "https://challenge.xfyun.cn/",
+          "type": "web",
+          "icon": "/img/bar/7693d70e3f2bb447542261d882f9c413.png"
+        },
+        {
+          "title": "AAAI",
+          "describe": "Association for the Advancement of Artificial Intelligence",
+          "content": "https://aaai.org/",
+          "type": "web",
+          "icon": "/img/bar/63cf614d05b695820fb39494f45f77e3.png"
+        }
+      ]
+    }
+  }
+}

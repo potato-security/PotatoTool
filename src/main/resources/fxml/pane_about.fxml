@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.text.Text?>
+<?import com.leewyatt.rxcontrols.controls.RXLineButton?>
+<?import javafx.scene.effect.DropShadow?>
+<StackPane xmlns="http://javafx.com/javafx/21.0.1"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/about.css"
+           fx:controller="com.potato.potatotool.controller.PaneAbout"
+           fx:id="sPane"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+
+    <VBox StackPane.alignment="TOP_RIGHT" translateX="170" maxWidth="160" maxHeight="180" styleClass="bar" alignment="CENTER_LEFT">
+        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="工具信息"  alignment="CENTER_LEFT"/>
+        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="鸣谢"  alignment="CENTER_LEFT"/>
+        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="150" spacing="3.0" text="建议/BUG反馈"  alignment="CENTER_LEFT"/>
+        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="交流群"  alignment="CENTER_LEFT"/>
+    </VBox>
+
+    <ListView fx:id="listView" prefHeight="${sPane.height}" prefWidth="${sPane.width}">
+        <!--        <VBox fx:id="contentBox" prefWidth="${sPane.width - 12}">-->
+
+        <Text fx:id="info" text="工具信息" styleClass="titleText"/>
+        <HBox>
+            <VBox alignment="CENTER">
+                <ImageView fitHeight="200" fitWidth="200" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../img/work.png" />
+                    </image>
+                </ImageView>
+            </VBox>
+            <Pane minWidth="20"/>
+            <VBox alignment="CENTER_LEFT">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="版本：" />
+                    <RXLineButton prefHeight="40.0" prefWidth="50" spacing="3.0" text="V1.0（社区版）"  alignment="CENTER_LEFT"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="作者：" />
+                    <RXLineButton  onAction="#openCSDN" prefHeight="40.0" prefWidth="70.0" spacing="3.0" text="Potato" alignment="CENTER_LEFT"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="仓库：" />
+                    <RXLineButton onAction="#openGithub" prefHeight="40.0" prefWidth="230.0" spacing="3.0" text="https://github.com/Potato-py"  alignment="CENTER_LEFT"/>
+                </HBox>
+            </VBox>
+        </HBox>
+        <Pane minHeight="15" styleClass="linenoPane"/>
+        <Pane minHeight="15"/>
+
+        <Text fx:id="thanks" text="鸣谢" styleClass="titleText"/>
+        <HBox>
+            <VBox alignment="CENTER">
+                <ImageView fitHeight="200" fitWidth="200" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../img/speak.png" />
+                    </image>
+                </ImageView>
+            </VBox>
+            <Pane minWidth="20"/>
+            <ScrollPane fx:id="thanksScrollPane" vbarPolicy="NEVER" hbarPolicy="NEVER" prefWidth="${sPane.width - 270}" prefHeight="260">
+                <VBox fx:id="thanksVBox" spacing="10">
+                    <HBox>
+                        <Label text="V1.0 @Allan" />
+                        <Label text="[技术]" style="-fx-font-size: 12"/>
+                        <Label text="：" />
+                        <Label text="人工智能专家支持" maxWidth="470" wrapText="true"/>
+                    </HBox>
+                    <HBox>
+                        <Label text="V1.0 @Kevin" />
+                        <Label text="[美工]" style="-fx-font-size: 12"/>
+                        <Label text="：" />
+                        <Label text="UI美化" maxWidth="470" wrapText="true"/>
+                    </HBox>
+                    <HBox>
+                        <Label text="V1.0 @H7lan" />
+                        <Label text="[建议]" style="-fx-font-size: 12"/>
+                        <Label text="：" />
+                        <Label text="手机号归属地、银行卡开户行、区块链追溯（暂未对外开放）" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+        </HBox>
+        <Pane minHeight="15" styleClass="linenoPane"/>
+        <Pane minHeight="15"/>
+
+        <Text fx:id="bug" text="建议/BUG反馈" styleClass="titleText"/>
+        <Pane minHeight="40"/>
+        <VBox fx:id="noWebBox" alignment="CENTER">
+            <Button fx:id="viewProfileButton" style="-fx-padding: 5 10 5 10" text="打开问卷星，在线提交建议" onAction="#openWJX">
+                <effect>
+                    <DropShadow />
+                </effect>
+            </Button>
+            <Pane minHeight="10"/>
+            <ImageView styleClass="wxImg" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                <image>
+                    <Image url="@../img/wx.jpg" />
+                </image>
+            </ImageView>
+            <Pane minHeight="20"/>
+            <Label text="或扫描二维码添加微信进行反馈，备注PotatoTool建议反馈"/>
+        </VBox>
+        <VBox fx:id="webBox" alignment="CENTER"/>
+        <Pane minHeight="15" styleClass="linenoPane"/>
+        <Pane minHeight="15"/>
+
+        <Text fx:id="group" text="交流群" styleClass="titleText"/>
+        <Pane minHeight="40"/>
+        <StackPane>
+            <VBox alignment="CENTER">
+                <ImageView styleClass="wxImg" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../img/wx.jpg" />
+                    </image>
+                </ImageView>
+                <Pane minHeight="20"/>
+                <Label text="扫描二维码添加微信进群，备注DX安全交流群"/>
+            </VBox>
+        </StackPane>
+        <Pane minHeight="10"/>
+
+        <!--        </VBox>-->
+    </ListView>
+
+    <ImageView fitHeight="230" fitWidth="230" pickOnBounds="true" preserveRatio="true" translateX="250" scaleX="-1" StackPane.alignment="BOTTOM_RIGHT">
+        <image>
+            <Image url="@../img/police.png" />
+        </image>
+    </ImageView>
+</StackPane>

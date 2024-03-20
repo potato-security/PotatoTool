@@ -1,0 +1,23 @@
+.wxImg{
+    -fx-border-color: -main-border-color;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+.label .text{
+    -fx-font-weight: bold;
+}
+.bar{
+    -fx-background-color: -main-topBar-color;
+    -fx-background-radius: 8;
+    -fx-padding: 20;
+}
+#listView{
+    -fx-padding: 10;
+    -fx-border-color: -main-border-color;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+}
+.linenoPane{
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+}

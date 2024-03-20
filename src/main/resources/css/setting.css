@@ -1,0 +1,14 @@
+#proxy{
+    -fx-padding: 5 50 5 5;
+}
+#proxyButton{
+    -fx-font-size: 10;
+    -fx-padding: 5;
+    -fx-background-color: #D85550;
+}
+#proxyButton:selected{
+    -fx-background-color: #3ECEE3;
+}
+#viewProfileButton{
+    -fx-font-size: 13;
+}
