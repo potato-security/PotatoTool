@@ -10,7 +10,7 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.control.Button?>
-<StackPane xmlns="http://javafx.com/javafx/21.0.1"
+<StackPane xmlns="http://javafx.com/javafx/21.0.2"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/blockchain.css"
            fx:controller="com.potato.potatotool.controller.PaneBlockchain"

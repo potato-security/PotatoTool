@@ -4,8 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
-import com.potato.potatotool.content.blueTeam.webShellDecrypt;
-import com.potato.potatotool.utils.codeHighlightingAsync;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -30,7 +28,6 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -89,7 +86,7 @@ public class PaneBlockchain {
 
     }
 
-    // 初始化测试数据
+    // 初始化样本数据
     private void initTextData() {
         ArrayList<String> testDataList = new ArrayList<>();
         testDataList.add("TV6MuMXfmLbBqPZvBHdwFsDnQeVfnmiuSi");
@@ -106,7 +103,7 @@ public class PaneBlockchain {
             rxLineButton.setPrefWidth(100);
             rxLineButton.setPrefHeight(40);
             rxLineButton.setSpacing(3);
-            rxLineButton.setText("测试数据" + (i+1));
+            rxLineButton.setText("样本数据" + (i+1));
 
             contentObj.add(rxLineButton);
         }

@@ -5,7 +5,6 @@ import com.potato.potatotool.utils.jsonUtils;
 
 import java.io.InputStream;
 
-import static com.potato.potatotool.utils.Constants.getResourceFilePath;
 import static com.potato.potatotool.utils.Constants.getResourceStream;
 
 /**

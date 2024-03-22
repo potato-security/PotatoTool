@@ -1,26 +1,15 @@
 package com.potato.potatotool.controller;
 
 import javafx.animation.*;
-import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
@@ -281,7 +270,11 @@ public class PaneLoad {
 
             //  延时
             PauseTransition delay = new PauseTransition(Duration.seconds(random.nextDouble() * 5 + 0.5));
-            delay.setOnFinished(event -> parallelTransition.play());
+            delay.setOnFinished(event -> {
+                if(parallelTransition!=null){
+                    parallelTransition.play();
+                }
+            });
             delay.play();
 
         }

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<?import javafx.scene.control.Label?>
 <StackPane xmlns="http://javafx.com/javafx/21.0.2"
            xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/PaneVulScan.css"
            fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.PaneVulScan"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
     <VBox fx:id="paneBox" spacing="25" alignment="CENTER">
@@ -17,16 +18,16 @@
             </HBox>
 
             <HBox>
-                <Label id="tipTitle" text="支持类型："/>
-                <Label  wrapText="true" text="银行卡归属地免费批量查询、手机号归属地免费批量查询。"/>
+                <Label id="tipTitle" text="内置POC脚本："/>
+                <Label wrapText="true" text="工具内置了大量的POC脚本，覆盖了多种漏洞类型和攻击场景。"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="支持广泛："/>
-                <Label  wrapText="true" text="涵盖超过2000家银行，可精准查询银行卡具体归属地或支行，以及手机号的运营商和省市信息。"/>
+                <Label id="tipTitle" text="高度语言兼容性："/>
+                <Label wrapText="true" text="支持python、json(内测中)、yarm的POC"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="数据筛选："/>
-                <Label  wrapText="true" text="提供强大的数据筛选功能，包括数据去重和元素筛选，帮助用户快速处理和分析大量查询结果。"/>
+                <Label id="tipTitle" text="高度代码兼容性："/>
+                <Label wrapText="true" text="支持用户提供不规范的POC(暂支持python)，智能调用不规范的POC并获取不规范的输出，智能判断是否存在对应漏洞。"/>
             </HBox>
         </VBox>
 

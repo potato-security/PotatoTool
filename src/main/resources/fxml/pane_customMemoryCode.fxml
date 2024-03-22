@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<?import javafx.scene.control.Label?>
 <StackPane xmlns="http://javafx.com/javafx/21.0.2"
            xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/PaneCustomMemoryCode.css"
            fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.PaneCustomMemoryCode"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
     <VBox fx:id="paneBox" spacing="25" alignment="CENTER">
@@ -17,16 +18,20 @@
             </HBox>
 
             <HBox>
-                <Label id="tipTitle" text="支持类型："/>
-                <Label  wrapText="true" text="银行卡归属地免费批量查询、手机号归属地免费批量查询。"/>
-            </HBox>
-            <HBox>
                 <Label id="tipTitle" text="支持广泛："/>
-                <Label  wrapText="true" text="涵盖超过2000家银行，可精准查询银行卡具体归属地或支行，以及手机号的运营商和省市信息。"/>
+                <Label  wrapText="true" text="支持包括Tomcat、Resin、Jetty、WebLogic、WebSphere、Undertow、GlassFish、SpringMVC以及SpringWebFlux等主流中间件和框架"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="数据筛选："/>
-                <Label  wrapText="true" text="提供强大的数据筛选功能，包括数据去重和元素筛选，帮助用户快速处理和分析大量查询结果。"/>
+                <Label id="tipTitle" text="支持类型："/>
+                <Label  wrapText="true" text="Filter/Listener/Interceptor/HandlerMethod"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="支持工具："/>
+                <Label  wrapText="true" text="Godzilla、Behinder、AntSword"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="支持高度自定义："/>
+                <Label  wrapText="true" text="支持自定义密钥、请求头、类名、路由路径、输出格式、封装类型"/>
             </HBox>
         </VBox>
 

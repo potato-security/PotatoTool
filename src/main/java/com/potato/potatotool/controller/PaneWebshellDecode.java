@@ -18,7 +18,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -159,7 +158,7 @@ public class PaneWebshellDecode {
             rxLineButton.setPrefWidth(100);
             rxLineButton.setPrefHeight(40);
             rxLineButton.setSpacing(3);
-            rxLineButton.setText("测试数据" + (i+1));
+            rxLineButton.setText("样本数据" + (i+1));
             Tooltip tooltip = new Tooltip(mode);
             Tooltip.install(rxLineButton, tooltip);
 
@@ -361,6 +360,8 @@ public class PaneWebshellDecode {
                         aiTextArea.appendText(data);
                     }else {
                         tipTitle.setText("自动识别："+encodeModeList);
+                        Tooltip tooltip = new Tooltip("自动识别："+encodeModeList);
+                        Tooltip.install(tipTitle, tooltip);
                         tipTitle.setVisible(true);
                         tipTitle.setManaged(true);
                     }

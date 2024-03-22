@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.effect.DropShadow?>
-<StackPane xmlns="http://javafx.com/javafx/21.0.1"
+<StackPane xmlns="http://javafx.com/javafx/21.0.2"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/webshellGeneration.css"
            fx:id="sPane"
@@ -13,10 +13,22 @@
     <VBox fx:id="paneBox" spacing="25" alignment="CENTER">
 
         <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
-            <Label text="当前版本：公开版"/>
-            <Label text="涉及工具：Godzilla、Behinder、AntSword"/>
-            <Label text="支持语言：JSP、JSPX、PHP、ASP、ASPX"/>
-            <Label text="支持混淆：Base64、AES、RAW、XOR、Unicode、CSHARP、Reflect"/>
+            <HBox>
+                <Label id="tipTitle" text="当前版本："/>
+                <Label text="社区测试版"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="涉及工具："/>
+                <Label text="Godzilla、Behinder、AntSword"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="支持语言："/>
+                <Label text="JSP、JSPX、PHP、ASP、ASPX"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="支持混淆："/>
+                <Label text="Base64、AES、RAW、XOR、Unicode、CSHARP、Reflect"/>
+            </HBox>
         </VBox>
 
         <HBox alignment="CENTER">

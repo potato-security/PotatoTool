@@ -1,32 +1,15 @@
 package com.potato.potatotool.controller;
 
-import com.potato.potatotool.utils.DefaultContextMenu;
 import com.potato.potatotool.utils.aiUtil;
-import com.potato.potatotool.utils.codeAnalyzerUtils;
-import com.potato.potatotool.utils.strUtils;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.util.Duration;
-import org.fxmisc.flowless.VirtualizedScrollPane;
-import org.fxmisc.richtext.CodeArea;
 
 /**
  * @author Potato
@@ -172,7 +155,9 @@ public class PaneAiAnswer {
         };
         task.setOnFailed(event -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (error != null) {
+                error.printStackTrace();
+            }
         });
         task.setOnSucceeded(event -> {
         });

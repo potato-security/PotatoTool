@@ -1,22 +1,13 @@
 package com.potato.potatotool.controller;
 
 import com.potato.potatotool.utils.DefaultContextMenu;
-import com.potato.potatotool.utils.codeHighlightingAsync;
-import com.potato.potatotool.utils.decompileUtils;
 import com.potato.potatotool.utils.strUtils;
-import javafx.application.Platform;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
@@ -39,7 +30,6 @@ public class PaneSeparateDecode {
 
     @FXML
     private ToggleGroup checkboxGroup;
-
 
     public void initialize() {
 

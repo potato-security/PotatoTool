@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<?import javafx.scene.control.Label?>
 <StackPane xmlns="http://javafx.com/javafx/21.0.2"
            xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/PaneInfoGeneration.css"
            fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.PaneInfoGeneration"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
     <VBox fx:id="paneBox" spacing="25" alignment="CENTER">
@@ -18,15 +19,7 @@
 
             <HBox>
                 <Label id="tipTitle" text="支持类型："/>
-                <Label  wrapText="true" text="银行卡归属地免费批量查询、手机号归属地免费批量查询。"/>
-            </HBox>
-            <HBox>
-                <Label id="tipTitle" text="支持广泛："/>
-                <Label  wrapText="true" text="涵盖超过2000家银行，可精准查询银行卡具体归属地或支行，以及手机号的运营商和省市信息。"/>
-            </HBox>
-            <HBox>
-                <Label id="tipTitle" text="数据筛选："/>
-                <Label  wrapText="true" text="提供强大的数据筛选功能，包括数据去重和元素筛选，帮助用户快速处理和分析大量查询结果。"/>
+                <Label  wrapText="true" text="个人信息、通讯信息、单位组织信息、银行卡信息"/>
             </HBox>
         </VBox>
 

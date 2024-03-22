@@ -8,7 +8,7 @@
 <?import javafx.scene.text.Text?>
 <?import com.leewyatt.rxcontrols.controls.RXLineButton?>
 <?import javafx.scene.effect.DropShadow?>
-<StackPane xmlns="http://javafx.com/javafx/21.0.1"
+<StackPane xmlns="http://javafx.com/javafx/21.0.2"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/about.css"
            fx:controller="com.potato.potatotool.controller.PaneAbout"
@@ -37,16 +37,37 @@
             <Pane minWidth="20"/>
             <VBox alignment="CENTER_LEFT">
                 <HBox alignment="CENTER_LEFT">
-                    <Label text="版本：" />
+                    <Label id="tipTitle" text="版本：" />
                     <RXLineButton prefHeight="40.0" prefWidth="50" spacing="3.0" text="V1.0（社区版）"  alignment="CENTER_LEFT"/>
                 </HBox>
                 <HBox alignment="CENTER_LEFT">
-                    <Label text="作者：" />
+                    <Label id="tipTitle" text="作者：" />
                     <RXLineButton  onAction="#openCSDN" prefHeight="40.0" prefWidth="70.0" spacing="3.0" text="Potato" alignment="CENTER_LEFT"/>
                 </HBox>
                 <HBox alignment="CENTER_LEFT">
-                    <Label text="仓库：" />
+                    <Label id="tipTitle" text="仓库：" />
                     <RXLineButton onAction="#openGithub" prefHeight="40.0" prefWidth="230.0" spacing="3.0" text="https://github.com/Potato-py"  alignment="CENTER_LEFT"/>
+                </HBox>
+            </VBox>
+        </HBox>
+        <Pane minHeight="15" styleClass="linenoPane"/>
+        <Pane minHeight="15"/>
+
+        <Text fx:id="notice" text="公告" styleClass="titleText"/>
+        <HBox>
+            <VBox alignment="CENTER_LEFT" spacing="10">
+                <HBox id="tipTitle" alignment="CENTER">
+                    <Label text="目前本项目由我独立维护，持续招募维护人员，宁缺毋滥，严格选拔" />
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label id="tipTitle"  text="招募要求："/>
+                    <VBox spacing="10">
+                        <Label wrapText="true" text="·精通 Java 编程语言及相关技术栈，具有扎实的面向对象编程(OOP)基础。" />
+                        <Label wrapText="true" text="·在 JavaFX 中有丰富的开发经验，能够设计和实现复杂的用户界面(UI)。" />
+                        <Label wrapText="true" text="·至少五年以上红蓝攻防领域相关工作经验。" />
+                        <Label wrapText="true" text="·对网络安全充满热情，并具有创新意识。" />
+                        <Label wrapText="true" text="·具备充足的空余时间来投入项目维护工作。" />
+                    </VBox>
                 </HBox>
             </VBox>
         </HBox>

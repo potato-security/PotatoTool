@@ -1,13 +1,9 @@
 package com.potato.potatotool.controller;
 
-import com.leewyatt.rxcontrols.controls.RXHighlightText;
 import com.potato.potatotool.utils.DefaultContextMenu;
-import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
@@ -17,9 +13,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import org.fxmisc.richtext.*;
 import org.lionsoul.ip2region.xdb.Searcher;
 import org.fxmisc.flowless.VirtualizedScrollPane;

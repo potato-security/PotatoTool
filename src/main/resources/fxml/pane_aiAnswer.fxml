@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Cursor?>
-<StackPane xmlns="http://javafx.com/javafx/21.0.1"
+<StackPane xmlns="http://javafx.com/javafx/21.0.2"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/aiAnswer.css"
            fx:id="sPane"
@@ -12,7 +12,6 @@
 
     <VBox>
         <StackPane alignment="TOP_CENTER">
-            <Label  fx:id="tipTitle" text="当前为V1.0测试版，V3.0可配置GPT4认证、记录历史会话"/>
             <ScrollPane fx:id="scrollPane" vvalue="1.0" hbarPolicy="NEVER">
                 <VBox spacing="10" prefWidth="${sPane.width}" fx:id="msgBox"/>
             </ScrollPane>

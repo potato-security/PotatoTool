@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.strUtils;
 
-import static com.potato.potatotool.utils.Constants.getResourceFilePath;
 import static com.potato.potatotool.utils.Constants.getResourceFileTmpPath;
 import static com.potato.potatotool.utils.decompileUtils.Decompile;
 

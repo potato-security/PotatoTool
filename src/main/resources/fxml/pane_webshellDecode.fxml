@@ -21,12 +21,11 @@
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Label?>
-<?import com.leewyatt.rxcontrols.controls.RXLineButton?>
 <?import javafx.scene.control.ListView?>
 <StackPane fx:id="sPane"
            stylesheets="@../css/webshellDecode.css"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-           xmlns="http://javafx.com/javafx/21.0.1"
+           xmlns="http://javafx.com/javafx/21.0.2"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.potato.potatotool.controller.PaneWebshellDecode">
    <ListView fx:id="testDataList" translateX="180" maxWidth="160" maxHeight="300" StackPane.alignment="TOP_RIGHT"/>
@@ -39,8 +38,8 @@
 
       <Pane minHeight="15"/>
       <HBox alignment="CENTER" spacing="20">
-         <Label  fx:id="tipTitle" visible="false" managed="false"/>
-         <ComboBox fx:id="rulesComboBox" prefHeight="30.0" prefWidth="250" onAction="#rulesComboChoose">
+         <Label fx:id="tipTitle" visible="false" managed="false"/>
+         <ComboBox fx:id="rulesComboBox" prefHeight="30.0" minWidth="250" prefWidth="250" onAction="#rulesComboChoose">
             <items>
                <FXCollections fx:factory="observableArrayList">
                   <String fx:value="使用默认Key快速解密" />
@@ -53,8 +52,8 @@
                <Cursor fx:constant="HAND" />
             </cursor>
          </ComboBox>
-         <TextField fx:id="customKey" visible="false" managed="false" prefHeight="30.0" prefWidth="250" promptText="AES/XOR-Key"/>
-         <TextField fx:id="customPath" visible="false" managed="false" editable="false" prefHeight="30.0" prefWidth="250" promptText="自定义字典路径"/>
+         <TextField fx:id="customKey" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="AES/XOR-Key"/>
+         <TextField fx:id="customPath" visible="false" managed="false" editable="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="自定义字典路径"/>
       </HBox>
 
       <Pane minHeight="15"/>

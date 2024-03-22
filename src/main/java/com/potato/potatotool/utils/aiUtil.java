@@ -54,8 +54,11 @@ public class aiUtil {
 
                         String res = "";
 
-                        if(line!=null){
-
+                        if(line.equals("[[Premature EOF]]")){
+                            res = "【AI服务器显存炸裂了~ 买不起~ 传输小点儿的东西吧】";
+                        }else if(line.equals("[[Response code 502]]")){
+                            res = "【内部免费AI服务器可能已关停，请在设置中自行配置AI模型及对应Key】";
+                        }else {
                             JSONObject reponseJson = new JSONObject(line.replaceAll("^data: ",""));
 
                             if( (boolean)reponseJson.get("finished") == true){
@@ -67,8 +70,6 @@ public class aiUtil {
                                 //System.out.println("Received ResponseJson: " + reponseJson);
                                 res = (String) reponseJson.get("delta");
                             }
-                        }else {
-                            res = "【AI服务器显存炸裂了~ 买不起~ 传输小点儿的东西吧】";
                         }
 
                         if (node instanceof TextArea) {

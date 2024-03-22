@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<StackPane xmlns="http://javafx.com/javafx/21.0.2"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/PaneCustomCommandGeneration.css"
+           fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.PaneCustomCommandGeneration"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+
+    <VBox fx:id="paneBox" spacing="25" alignment="CENTER">
+
+        <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
+            <HBox>
+                <Label id="tipTitle" text="当前版本："/>
+                <Label  wrapText="true" text="社区版"/>
+            </HBox>
+
+            <HBox>
+                <Label id="tipTitle" text="支持类型："/>
+                <Label  wrapText="true" text="支持反向shell、正向shell、MSFVenom、HoaxShell、内网代理、文件下载、痕迹清理命令生成，满足渗透测试和攻击需求，提供一站式解决方案"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="自定义化："/>
+                <Label  wrapText="true" text="可根据特定环境输入IP和端口，系统根据参数生成多种定制化方案，确保适用性和灵活性。"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="防检测化："/>
+                <Label  wrapText="true" text="支持添加编码防止检测，在一定程度上提高生成Payload的免杀能力，确保攻击效果。"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="常用命令检索："/>
+                <Label  wrapText="true" text="支持对常用的内网横向攻击系统命令进行模糊检索，方便用户快速获取所需信息。"/>
+            </HBox>
+        </VBox>
+
+        <Pane minHeight="300"/>
+
+    </VBox>
+
+    <Label prefWidth="550" prefHeight="500">
+        <graphic>
+            <Region styleClass="closeImg"/>
+        </graphic>
+    </Label>
+
+
+</StackPane>

@@ -66,15 +66,14 @@ public class CustomHttpResponse{
                 callback.onResponse(line);
                 // 回调处理每次响应
             }
-
             reader.close();
             con.disconnect();
 
         } catch (Exception e) {
             if(e.toString().contains("Premature EOF")) {
-                System.out.println("AI服务器显存炸裂了~ 买不起~ 传输小点儿的东西吧");
-                // TODO 提示给前端吧
-                callback.onResponse(null);
+                callback.onResponse("[[Premature EOF]]");
+            }else if(e.toString().contains("Server returned HTTP response code: 502")){
+                callback.onResponse("[[Response code 502]]");
             }
             e.printStackTrace();
         }

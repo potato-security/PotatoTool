@@ -29,7 +29,7 @@
             minHeight="-Infinity" minWidth="-Infinity"
             prefHeight="${screen.visualBounds.height* 0.8}"
             prefWidth="${screen.visualBounds.width * 0.8}"
-            xmlns="http://javafx.com/javafx/21.0.1"
+            xmlns="http://javafx.com/javafx/21.0.2"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.potato.potatotool.controller.MainController">
    <fx:define>
@@ -72,7 +72,14 @@
                            </Pane>
                         </left>
                         <center>
-                           <Label alignment="CENTER" style="-fx-padding: 0 200 0 0;-fx-font-size: 27;-fx-font-weight: bold;" prefHeight="${topBar.height}" prefWidth="${topBar.width - 200}" text="PotatoTool" textFill="WHITE" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+<!--                           <Label alignment="CENTER" style="-fx-padding: 0 200 0 0;-fx-font-size: 27;-fx-font-weight: bold;" prefHeight="${topBar.height}" prefWidth="${topBar.width - 200}" text="PotatoTool" textFill="WHITE" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>-->
+                           <HBox style="-fx-padding: 0 270 0 0;" alignment="CENTER">
+                              <ImageView fitHeight="40.0" fitWidth="400.0"  pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../img/PotatoTool.png" />
+                                 </image>
+                              </ImageView>
+                           </HBox>
                         </center>
                         <right>
                            <HBox alignment="CENTER" spacing="20"  fx:id="appController" prefHeight="${topBar.height}">
@@ -142,23 +149,14 @@
                               <!-- 红队导航 -->
                               <FlowPane fx:id="redBar" alignment="CENTER" hgap="10" vgap="10" prefHeight="80.0" styleClass="box-nav">
                                  <children>
-                                    <RXToggleButton selected="true" text="一键解密">
-                                       <toggleGroup>
-                                          <ToggleGroup fx:id="navGroup1" />
-                                       </toggleGroup>
-                                    </RXToggleButton>
                                     <RXToggleButton text="信息收集" toggleGroup="$navGroup" />
                                     <RXToggleButton text="漏洞扫描" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="漏洞利用" toggleGroup="$navGroup" />
                                     <RXToggleButton text="免杀webshell" toggleGroup="$navGroup" />
                                     <RXToggleButton text="自定义内存码" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="shell命令" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="命令生成" toggleGroup="$navGroup" />
                                     <RXToggleButton text="kb提权查询" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="进程查询" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="命令查询" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="进程分析" toggleGroup="$navGroup" />
                                     <RXToggleButton text="信息生成" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="扩展模块" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="关于" toggleGroup="$navGroup"/>
                                  </children>
                               </FlowPane>
                            </StackPane>

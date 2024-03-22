@@ -1,12 +1,8 @@
 package com.potato.potatotool.controller;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.animation.carousel.*;
 import com.leewyatt.rxcontrols.controls.RXCarousel;
 import com.leewyatt.rxcontrols.pane.RXCarouselPane;
-import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.Util;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -17,7 +13,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
@@ -134,14 +129,48 @@ public class MainController {
         p9.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
         p9.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
 
+        Pane p10 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoSearch.fxml"));
+        RXCarouselPane infoSearchPane = new RXCarouselPane(p10);
+        p10.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
+        p10.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p14 = FXMLLoader.load(getClass().getResource("/fxml/pane_webshellGeneration.fxml"));
-        RXCarouselPane webshellGenerationPane = new RXCarouselPane(p14);
+        Pane p11 = FXMLLoader.load(getClass().getResource("/fxml/pane_vulScan.fxml"));
+        RXCarouselPane vulScanPane = new RXCarouselPane(p11);
+        p11.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
+        p11.prefHeightProperty().bind(mainCarousel.heightProperty());
+
+        Pane p12 = FXMLLoader.load(getClass().getResource("/fxml/pane_webshellGeneration.fxml"));
+        RXCarouselPane webshellGenerationPane = new RXCarouselPane(p12);
+        p12.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
+        p12.prefHeightProperty().bind(mainCarousel.heightProperty());
+
+        Pane p13 = FXMLLoader.load(getClass().getResource("/fxml/pane_customMemoryCode.fxml"));
+        RXCarouselPane customMemoryCodePane = new RXCarouselPane(p13);
+        p13.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
+        p13.prefHeightProperty().bind(mainCarousel.heightProperty());
+
+        Pane p14 = FXMLLoader.load(getClass().getResource("/fxml/pane_customCommandGeneration.fxml"));
+        RXCarouselPane customCommandGenerationPane = new RXCarouselPane(p14);
         p14.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
         p14.prefHeightProperty().bind(mainCarousel.heightProperty());
 
+        Pane p15 = FXMLLoader.load(getClass().getResource("/fxml/pane_kbRootQuery.fxml"));
+        RXCarouselPane kbRootQueryPane = new RXCarouselPane(p15);
+        p15.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
+        p15.prefHeightProperty().bind(mainCarousel.heightProperty());
+
+        Pane p16 = FXMLLoader.load(getClass().getResource("/fxml/pane_processQuery.fxml"));
+        RXCarouselPane processQueryPane = new RXCarouselPane(p16);
+        p16.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
+        p16.prefHeightProperty().bind(mainCarousel.heightProperty());
+
+        Pane p17 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoGeneration.fxml"));
+        RXCarouselPane infoGenerationPane = new RXCarouselPane(p17);
+        p17.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
+        p17.prefHeightProperty().bind(mainCarousel.heightProperty());
+
         mainCarousel.setPaneList(webshellDecodePane, separateDecodePane, ipInFoPane, aiAnswerPane, decompilePane, blockchainPane, locationQueryPane, extensionPane, aboutPane,
-                webshellGenerationPane);
+                infoSearchPane, vulScanPane, webshellGenerationPane, customMemoryCodePane, customCommandGenerationPane, kbRootQueryPane, processQueryPane, infoGenerationPane);
         mainCarousel.setCarouselAnimation(new AnimNone());  // AnimFade
         mainCarousel.setAnimationTime(Duration.seconds(0));  // 0.2
         navGroup.selectedToggleProperty().addListener((ob, ov, nv) -> {
@@ -175,6 +204,7 @@ public class MainController {
 
         if (isChangeModePaneRight) {
             //  此时切换为蓝队
+            mainCarousel.setSelectedIndex(0);
             blueTransition.setByX(-55);
             redTransition.setByX(-55);
             redBarTransition.setByX(barWidthDistance);
@@ -186,6 +216,7 @@ public class MainController {
 
         }else {
             //  此时切换为红队
+            mainCarousel.setSelectedIndex(9);
             blueTransition.setByX(55);
             redTransition.setByX(55);
             redBarTransition.setByX(-barWidthDistance);
@@ -200,9 +231,9 @@ public class MainController {
         blueTransition.setOnFinished(e -> {
             isChangeModePaneMoving = false;
 
-            if(isChangeModePaneRight){
-                delDialog();
-            }
+//            if(isChangeModePaneRight){
+//                delDialog();
+//            }
 
         });
         blueTransition.play();

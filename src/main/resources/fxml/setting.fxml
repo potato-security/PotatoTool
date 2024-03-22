@@ -10,7 +10,7 @@
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
-<AnchorPane xmlns="http://javafx.com/javafx"
+<AnchorPane xmlns="http://javafx.com/javafx/21.0.2"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.potato.potatotool.controller.PaneSetting"
             fx:id="an"
@@ -22,97 +22,97 @@
             prefHeight="460"
 >
     <children>
-    <Pane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0">
-    <effect>
-        <DropShadow/>
-    </effect>
-    <VBox>
-        <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
-            <center>
-                <Label style="-fx-padding: 0 0 0 30;-fx-font-size: 25;-fx-font-weight: bold;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="修改配置" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-            </center>
-            <right>
-                <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
-                    <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction" prefHeight="25.0" prefWidth="25.0">
-                        <graphic>
-                            <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                <image>
-                                    <Image url="@../img/close.png" />
-                                </image>
-                            </ImageView>
-                        </graphic>
-                        <tooltip>
-                            <Tooltip text="关闭" />
-                        </tooltip>
-                    </Button>
-                    <Pane minWidth="10"/>
+        <Pane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0">
+            <effect>
+                <DropShadow/>
+            </effect>
+            <VBox>
+                <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
+                    <center>
+                        <Label style="-fx-padding: 0 0 0 30;-fx-font-size: 25;-fx-font-weight: bold;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="修改配置" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                    </center>
+                    <right>
+                        <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
+                            <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction" prefHeight="25.0" prefWidth="25.0">
+                                <graphic>
+                                    <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                        <image>
+                                            <Image url="@../img/close.png" />
+                                        </image>
+                                    </ImageView>
+                                </graphic>
+                                <tooltip>
+                                    <Tooltip text="关闭" />
+                                </tooltip>
+                            </Button>
+                            <Pane minWidth="10"/>
+                        </HBox>
+                    </right>
+                </BorderPane>
+                <VBox alignment="CENTER_LEFT" spacing="20" prefWidth="${an.width - 18}" style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="       设置代理："/>
+                    <StackPane>
+                        <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" StackPane.alignment="CENTER"/>
+                        <ToggleButton fx:id="proxyButton" text="关闭" StackPane.alignment="CENTER_RIGHT" onAction="#toggleProxy"/>
+                    </StackPane>
                 </HBox>
-            </right>
-        </BorderPane>
-        <VBox alignment="CENTER_LEFT" spacing="20" prefWidth="${an.width - 18}" style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text="       设置代理："/>
-            <StackPane>
-                <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" StackPane.alignment="CENTER"/>
-                <ToggleButton fx:id="proxyButton" text="关闭" StackPane.alignment="CENTER_RIGHT" onAction="#toggleProxy"/>
-            </StackPane>
-        </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text=" 默认反编译器："/>
-            <ComboBox fx:id="decompileType" prefHeight="20.0" prefWidth="250">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="idea" />
-                        <String fx:value="procyon" />
-                    </FXCollections>
-                </items>
-            </ComboBox>
-        </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text="   GPT_Model："/>
-            <ComboBox fx:id="gptModel" prefHeight="20.0" prefWidth="250">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="gpt-4" />
-                        <String fx:value="gpt-4-0314" />
-                        <String fx:value="gpt-4-0613" />
-                        <String fx:value="gpt-4-32k" />
-                        <String fx:value="gpt-4-32k-0314" />
-                        <String fx:value="gpt-4-32k-0613" />
-                        <String fx:value="gpt-4-1106-preview" />
-                        <String fx:value="gpt-4-version-preview" />
-                        <String fx:value="gpt-3.5-turbo" />
-                        <String fx:value="gpt-3.5-turbo-0301" />
-                        <String fx:value="gpt-3.5-turbo-0613" />
-                        <String fx:value="gpt-3.5-turbo-1106" />
-                        <String fx:value="gpt-3.5-turbo-16k" />
-                        <String fx:value="gpt-3.5-turbo-16k-0613" />
-                    </FXCollections>
-                </items>
-            </ComboBox>
-        </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text="GPT_API_Key："/>
-            <TextField fx:id="gptApiKey"  prefWidth="250"/>
-        </HBox>
-        <HBox alignment="CENTER" spacing="10">
-            <Button fx:id="viewProfileButton" minHeight="48.0" minWidth="250" text="查看配置文件" onAction="#viewProfile">
-                <effect>
-                    <DropShadow />
-                </effect>
-            </Button>
-        </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text=" 默认反编译器："/>
+                    <ComboBox fx:id="decompileType" prefHeight="20.0" prefWidth="250">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <String fx:value="idea" />
+                                <String fx:value="procyon" />
+                            </FXCollections>
+                        </items>
+                    </ComboBox>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="   GPT_Model："/>
+                    <ComboBox fx:id="gptModel" prefHeight="20.0" prefWidth="250">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <String fx:value="gpt-4" />
+                                <String fx:value="gpt-4-0314" />
+                                <String fx:value="gpt-4-0613" />
+                                <String fx:value="gpt-4-32k" />
+                                <String fx:value="gpt-4-32k-0314" />
+                                <String fx:value="gpt-4-32k-0613" />
+                                <String fx:value="gpt-4-1106-preview" />
+                                <String fx:value="gpt-4-version-preview" />
+                                <String fx:value="gpt-3.5-turbo" />
+                                <String fx:value="gpt-3.5-turbo-0301" />
+                                <String fx:value="gpt-3.5-turbo-0613" />
+                                <String fx:value="gpt-3.5-turbo-1106" />
+                                <String fx:value="gpt-3.5-turbo-16k" />
+                                <String fx:value="gpt-3.5-turbo-16k-0613" />
+                            </FXCollections>
+                        </items>
+                    </ComboBox>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="GPT_API_Key："/>
+                    <TextField fx:id="gptApiKey"  prefWidth="250"/>
+                </HBox>
+                <HBox alignment="CENTER" spacing="10">
+                    <Button fx:id="viewProfileButton" minHeight="48.0" minWidth="250" text="查看配置文件" onAction="#viewProfile">
+                        <effect>
+                            <DropShadow />
+                        </effect>
+                    </Button>
+                </HBox>
 
-        <HBox alignment="CENTER">
-            <Button fx:id="saveButton" minHeight="48.0" minWidth="150" text="保存" onAction="#save">
-                <effect>
-                    <DropShadow />
-                </effect>
-            </Button>
-        </HBox>
-    </VBox>
-    </VBox>
-    </Pane>
+                <HBox alignment="CENTER">
+                    <Button fx:id="saveButton" minHeight="48.0" minWidth="150" text="保存" onAction="#save">
+                        <effect>
+                            <DropShadow />
+                        </effect>
+                    </Button>
+                </HBox>
+            </VBox>
+            </VBox>
+        </Pane>
     </children>
 
 </AnchorPane>

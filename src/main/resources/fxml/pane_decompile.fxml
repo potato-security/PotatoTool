@@ -11,7 +11,7 @@
 <?import org.fxmisc.flowless.VirtualizedScrollPane?>
 <?import javafx.collections.FXCollections?>
 <?import javafx.scene.Cursor?>
-<StackPane xmlns="http://javafx.com/javafx/21.0.1"
+<StackPane xmlns="http://javafx.com/javafx/21.0.2"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/decompile.css"
            fx:id="sPane"

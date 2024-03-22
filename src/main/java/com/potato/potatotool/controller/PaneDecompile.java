@@ -1,11 +1,9 @@
 package com.potato.potatotool.controller;
 
-import com.potato.potatotool.content.blueTeam.webShellDecrypt;
 import com.potato.potatotool.utils.DefaultContextMenu;
 import com.potato.potatotool.utils.codeHighlightingAsync;
 import com.potato.potatotool.utils.decompileUtils;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
