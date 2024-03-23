@@ -36,17 +36,17 @@
             </VBox>
             <Pane minWidth="20"/>
             <VBox alignment="CENTER_LEFT">
-                <HBox alignment="CENTER_LEFT">
+                <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label id="tipTitle" text="版本：" />
-                    <RXLineButton prefHeight="40.0" prefWidth="50" spacing="3.0" text="V1.0（社区版）"  alignment="CENTER_LEFT"/>
+                    <RXLineButton prefHeight="40.0" prefWidth="150" spacing="3.0" text="V1.0（社区版）"  alignment="CENTER_LEFT"/>
                 </HBox>
-                <HBox alignment="CENTER_LEFT">
+                <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label id="tipTitle" text="作者：" />
                     <RXLineButton  onAction="#openCSDN" prefHeight="40.0" prefWidth="70.0" spacing="3.0" text="Potato" alignment="CENTER_LEFT"/>
                 </HBox>
-                <HBox alignment="CENTER_LEFT">
+                <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label id="tipTitle" text="仓库：" />
-                    <RXLineButton onAction="#openGithub" prefHeight="40.0" prefWidth="230.0" spacing="3.0" text="https://github.com/Potato-py"  alignment="CENTER_LEFT"/>
+                    <RXLineButton onAction="#openGithub" prefHeight="40.0" prefWidth="300.0" spacing="3.0" text="https://github.com/Potato-py"  alignment="CENTER_LEFT"/>
                 </HBox>
             </VBox>
         </HBox>

@@ -1,5 +1,7 @@
 package com.potato.potatotool.utils;
 
+import com.google.gson.JsonArray;
+
 /**
  * @author Potato
  * @date 2023/5/11 09:11
@@ -11,7 +13,7 @@ public class codeAnalyzerUtils {
 
     public static void evilCodeAnalysis(String evilCode,Object node) throws Exception {
 
-        aiObj.historyList.clear();
+        aiObj.historyList = new JsonArray();
         aiObj.isFirstResponse = true;
 
         System.out.println("------------------------------------------------------------------------");
@@ -26,7 +28,7 @@ public class codeAnalyzerUtils {
     //  优化代码，如反编译后的代码
     public static void optimizedCode(String code, Object node) throws Exception {
 
-        aiObj.historyList.clear();
+        aiObj.historyList = new JsonArray();
         aiObj.isFirstResponse = true;
 
         System.out.println("------------------------------------------------------------------------");

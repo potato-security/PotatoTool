@@ -28,7 +28,7 @@ public class RequestObj {
     private byte[] postData;
     private String proxiesType = "HTTP";
     private String proxies;
-    private int timeOut;
+    private int timeOut = 10;
     private File file;
     private Map formParameters;
 
@@ -159,6 +159,10 @@ public class RequestObj {
         return this;
     }
     public RequestObj setPostData(JSONObject postJsonData) {
+        this.postData = postJsonData.toString().getBytes(StandardCharsets.UTF_8);
+        return this;
+    }
+    public RequestObj setPostData(JsonObject postJsonData) {
         this.postData = postJsonData.toString().getBytes(StandardCharsets.UTF_8);
         return this;
     }

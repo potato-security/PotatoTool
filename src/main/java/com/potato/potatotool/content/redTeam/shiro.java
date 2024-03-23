@@ -17,7 +17,7 @@ public class shiro {
     public static String shiroKeyWord = "rememberMe=";
     public static String reqMethod = "GET";
     public static String postData = "";
-    public static int timeOut = 15;
+    public static int timeOut = 10;
 
     public static void main(String[] args) { //.toLowerCase().equals("cookie")
 
