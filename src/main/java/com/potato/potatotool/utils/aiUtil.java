@@ -91,7 +91,7 @@ public class aiUtil {
                         if(line != null && !line.equals("")) {
                             if (!GPT_API_Key.equals("")) {
                                 if (line.startsWith("data: [DONE]")) {
-                                    res = "\n\n";
+                                    res = "";
                                 } else {
                                     JsonObject responseJson = JsonParser.parseString(line.replaceAll("^data: ", "")).getAsJsonObject();
 
@@ -124,7 +124,7 @@ public class aiUtil {
                                     res = "【AI服务器显存炸裂了~ 买不起~ 传输小点儿的东西吧】";
                                 } else if (line.equals("[[Response code 502]]")) {
                                     res = "【内部免费AI服务器可能已关停，请在设置中自行配置AI模型及对应Key】";
-                                } else {
+                                } else if (line.startsWith("data: ")){
                                     JsonObject responseJson = JsonParser.parseString(line.replaceAll("^data: ", "")).getAsJsonObject();
 
                                     if (responseJson.get("finished").getAsBoolean()) {
