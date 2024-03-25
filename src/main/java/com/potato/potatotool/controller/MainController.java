@@ -27,7 +27,12 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.Callable;
+
+import static com.potato.potatotool.utils.Constants.getResourceString;
 
 
 /**
@@ -67,9 +72,20 @@ public class MainController {
 
     private double offsetX,offsetY;
 
+    private static final String CONFIG_FOLDER = ".PotatoTool";
+    private static final String CONFIG_FILE = "config.json";
 
     @FXML
     void initialize() throws IOException {
+
+        // 初始化配置文件
+        Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
+        Files.createDirectories(configFolder);
+        Path configFile = configFolder.resolve(CONFIG_FILE);
+        if (!Files.exists(configFile)) {
+            String tmpDataJsonStr = getResourceString("config");
+            Files.write(configFile, tmpDataJsonStr.getBytes());
+        }
 
         SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(20.0);
         Rectangle clip = clipRect(
