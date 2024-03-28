@@ -17,8 +17,9 @@ public class ReadabilityChecker {
         int printableCharacters = 0;
 
         for (int i = 0; i < totalCharacters; i++) {
-            if (Character.isLetterOrDigit(decryptedString.charAt(i)) || Character.isWhitespace(decryptedString.charAt(i)) ||
-                    isCommonSymbol(decryptedString.charAt(i))) {
+            char currentChar = decryptedString.charAt(i);
+            // Character.isLetterOrDigit(currentChar) 该函数存在bug:一些可打印的特殊符号会被识别通过，比如Ԅ
+            if (isLetterOrDigit(currentChar) || Character.isWhitespace(currentChar) || isCommonSymbol(currentChar)) {
                 printableCharacters++;
             }
         }
@@ -31,6 +32,12 @@ public class ReadabilityChecker {
         String commonSymbols = "!@#$%^&*()-_=+[]{}\\|;:'\",.<>/?`~";
         return commonSymbols.indexOf(c) != -1;
     }
+
+    private static boolean isLetterOrDigit(char c) {
+        // 支持英文大小写、数字、中文
+        return String.valueOf(c).matches("[\\p{Alnum}\\p{IsHan}]");
+    }
+
 
     public static int detectGibberishPattern(String decryptedString) {
         Pattern gibberishPattern = Pattern.compile("[^\\x00-\\x7F\\u4E00-\\u9FFF]");  // "[^\\x00-\\x7F]"
@@ -55,11 +62,16 @@ public class ReadabilityChecker {
 //        System.out.println(decryptedString);
 //        System.out.println("printableRatio:");
 //        System.out.println(printableRatio);
-//        System.out.println("printableRatio:");
+//        System.out.println("gibberishCount:");
 //        System.out.println(gibberishCount);
 
         double printableRatioSet = 0.8;
         int gibberishCountSet = 5;
+
+        if (decryptedString.length() < 20){
+            // 短数据时，应提高可打印率
+            printableRatioSet = 0.9;
+        }
 
         if(printableRatioSetAndgibberishCountSet.length == 2){
             printableRatioSet = printableRatioSetAndgibberishCountSet[0];

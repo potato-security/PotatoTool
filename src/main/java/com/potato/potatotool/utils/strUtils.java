@@ -1,8 +1,12 @@
 package com.potato.potatotool.utils;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.bouncycastle.jcajce.provider.symmetric.SM4;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.graalvm.polyglot.Value;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URLDecoder;
@@ -14,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -739,6 +744,79 @@ public class strUtils {
         String res = base64Decode(output.toString().trim());
 
         return res;
+    }
+
+    /**
+     * seeyon数据库密码加密
+     * 兼容V1.0和V2.4
+     */
+    public static String seeyonDbDecode(String baseText){
+        if(baseText.startsWith("/1.0/")) {
+
+            baseText = baseText.substring("/1.0/".length());
+            baseText = base64Decode(baseText);
+            char[] encodeStringCharArray = baseText.toCharArray();
+            for (int i = 0; i < encodeStringCharArray.length; ++i) {
+                encodeStringCharArray[i] = (char) (encodeStringCharArray[i] - '\u0001');
+            }
+            return new String(encodeStringCharArray);
+
+        }else if(baseText.startsWith("/2.4/")){
+
+            baseText = baseText.substring("/2.4/".length());
+            String SM4_KEY = "E6C63180C2806DD1F47B859DE501C15F";
+            return SM4Decrypt(baseText, SM4_KEY);
+
+        }
+        return null;
+    }
+
+    /**
+     * 帆软数据库密码加密
+     */
+    public static String fineReportDecode(String baseText){
+        int[] PassWordArray = new int[]{19, 78, 10, 15, 100, 213, 43, 23};
+        if (baseText != null && baseText.startsWith("___")) {
+            baseText = baseText.substring(3);
+            StringBuilder stringBuilder = new StringBuilder();
+            int Step = 0;
+            for (int i = 0; i <= baseText.length() - 4; i = (int)((byte)(i + 4))) {
+                if (Step == PassWordArray.length) {
+                    Step = 0;
+                }
+                String str = baseText.substring(i, i + 4);
+                int num = Integer.parseInt(str, 16) ^ PassWordArray[Step];
+                stringBuilder.append((char)num);
+                Step = (byte)(Step + 1);
+            }
+            baseText = stringBuilder.toString();
+        }
+        return baseText;
+    }
+
+    public static String SM4Decrypt(String cipher, String key) {
+        byte[] in;
+        in = Base64.getDecoder().decode(cipher);
+
+        byte[] keyBytes = hexToByteArray(key);
+        return SM4Decrypt(in, keyBytes);
+    }
+
+    public static String SM4Decrypt(byte[] in, byte[] keyBytes) {
+        Security.addProvider(new BouncyCastleProvider());
+
+        try {
+
+            Cipher cipher = Cipher.getInstance("SM4/ECB/PKCS7Padding", "BC");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "SM4");
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
+            byte[] decrypted = cipher.doFinal(in);
+
+            return new String(decrypted);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
 

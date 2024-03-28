@@ -1,9 +1,6 @@
 package com.potato.potatotool.content.blueTeam;
 
-import com.potato.potatotool.utils.ReadabilityChecker;
-import com.potato.potatotool.utils.aesUtils;
-import com.potato.potatotool.utils.jsonUtils;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.*;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
@@ -21,6 +18,8 @@ public class webShellDecrypt {
     strUtils str = new strUtils();
     aesUtils aes = new aesUtils();
     shiroDecrypt shiro = new shiroDecrypt();
+    desUtils des = new desUtils();
+    blowfishUtils blowfish = new blowfishUtils();
 
     public byte[] classData;
 
@@ -324,6 +323,139 @@ public class webShellDecrypt {
             }
         }
 
+        // 尝试新华三imc解密
+        if(conText.startsWith("-")){
+            String conText_imc = imcDesUtils.decode(conText);
+            if(conText_imc != null) {
+                encodeMode.add("新华三imcDB");
+                encodeModeList.add(encodeMode);
+                return conText_imc;
+            }
+        }
+
+        // 尝试用友数据库解密
+        ncDesUtils ncDes = new ncDesUtils();
+        String conText_nc = ncDes.decodeToStr(conText);
+        if(conText_nc != null) {
+            encodeMode.add("用友DB");
+            encodeModeList.add(encodeMode);
+            return conText_nc;
+        }
+
+        // 尝试致远数据库解密
+        if(conText.startsWith("/1.0/")){
+            String conText_seeyon = str.seeyonDbDecode(conText);
+            if(conText_seeyon!=null){
+                encodeMode.add("致远DB_base64");
+                encodeModeList.add(encodeMode);
+                return conText_seeyon;
+            }
+        }
+        if(conText.startsWith("/2.4/")){
+            String conText_seeyon = str.seeyonDbDecode(conText);
+            if(conText_seeyon!=null){
+                encodeMode.add("致远DB_SM4");
+                encodeModeList.add(encodeMode);
+                return conText_seeyon;
+            }
+        }
+
+        // 尝试帆软数据库解密
+        if (conText.startsWith("___")) {
+            String conText_fineReport = str.fineReportDecode(conText);
+            if(!conText_fineReport.equals(conText)){
+                encodeMode.add("帆软DB");
+                encodeModeList.add(encodeMode);
+                return conText_fineReport;
+            }
+        }
+
+        // 尝试Druid_rsa解密
+        String conText_druid = rsaUtils.decrypt("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAINRom1IY639dDMD0FFw7zMsxRVABYGJnKxSpO84dyJgXaIkoTZkE1JaWE2/gtgli28vgM72UHf2EGhxbLZwzhsCAwEAAQ==",conText);
+        if(conText_druid != null){
+            encodeMode.add("Druid_rsa");
+            encodeModeList.add(encodeMode);
+            return conText_druid;
+        }
+
+        // 尝试Finalshell解密
+        String conText_Finalshell = des.finalshellDecode(conText);
+        if(conText_Finalshell != null){
+            encodeMode.add("Finalshell(DES\\"+des.mode_DES.get()+"\\"+des.padding_DES.get()+"<key:iv>"+des.key_DES.get()+":"+des.iv_DES.get()+")");
+            encodeModeList.add(encodeMode);
+            return conText_Finalshell;
+        }
+
+        // 尝试ivms解密
+        String conText_ivmsDes = ivmsDes.decrypt(conText);
+        if(conText_ivmsDes != null){
+            encodeMode.add("ivms");
+            encodeModeList.add(encodeMode);
+            return conText_ivmsDes;
+        }
+
+        // 尝试Jboss_db解密
+        String conText_Jboss = blowfish.jbossDecode(conText);
+        if(conText_Jboss != null){
+            encodeMode.add("Jboss_DB(Blowfish\\"+blowfish.mode_Blowfish.get()+"\\"+blowfish.padding_Blowfish.get()+"<key:iv>"+blowfish.key_Blowfish.get()+":"+blowfish.iv_Blowfish.get());
+            encodeModeList.add(encodeMode);
+            return conText_Jboss;
+        }
+
+        // 尝试qiangzhi_db解密
+        if(conText.startsWith("#!@")){
+            String conText_qiangzhi = qiangzhiDec.desDecode(conText);
+            if(conText_qiangzhi != null){
+                encodeMode.add("qiangzhi_DES_base(DES<key:iv>02A46370BC76:null])");
+                encodeModeList.add(encodeMode);
+                return conText_qiangzhi;
+            }
+        }
+
+        // 尝试Navicat解密
+        String conText_navicat11 = navicat11Des.decryptString(conText);
+        if(conText_navicat11 != null){
+            encodeMode.add("Navicat11(Blowfish\\ECB\\NoPadding<key:iv>7A3F4B8A1C2E6A4A9B3A6B8FA6A0B3F2C0A4F4C7:3B2E68F7D4CCD6E3)");
+            encodeModeList.add(encodeMode);
+            return conText_navicat11;
+        }
+        String conText_navicat12 = navicat12Des.decryptString(conText);
+        if(conText_navicat12 != null){
+            encodeMode.add("Navicat12(AES\\CBC\\PKCS5Padding<key:iv>libcckeylibcckey:libcciv libcciv )");
+            encodeModeList.add(encodeMode);
+            return conText_navicat12;
+        }
+
+        // 尝试realor解密
+        String conText_realor = realorDec.decode(conText);
+        if(conText_realor != null){
+            encodeMode.add("realor_db");
+            encodeModeList.add(encodeMode);
+            return conText_realor;
+        }
+
+        // 尝试spring解密 可自定义盐值
+        String conText_spring = springDec.decode(conText, inputKey);
+        if(conText_spring != null){
+            encodeMode.add("spring_db");
+            encodeModeList.add(encodeMode);
+            return conText_spring;
+        }
+
+        // 尝试针对weblogic数据库密码解密   需要上传对应SerializedSystemIni.dat文件
+        if(customPath!=null && customPath.toLowerCase().endsWith(".dat")){
+
+            weblogicDecUtils weblogicDec = new weblogicDecUtils();
+            String tmpConText = weblogicDec.decrypt(customPath, conText);
+
+            if(tmpConText!=null){
+                encodeMode.add("Weblogic("+weblogicDec.cipher.get()+"\\"+weblogicDec.mode.get()+"\\"+weblogicDec.padding_mode.get()+"<key:iv>"+weblogicDec.key_Str.get()+":"+weblogicDec.iv_Str.get()+")");
+                encodeModeList.add(encodeMode);
+                return tmpConText;
+            }
+        }
+
+
         // 尝试单解密
         if(oldData.equals(conText)){
             System.out.println("组合解密失败，开始尝试单解密");
@@ -351,6 +483,13 @@ public class webShellDecrypt {
                 classData = aes.aesWebShellDecode(conText9, inputKey, traverse, customPath);
                 conText20 = new String(classData, StandardCharsets.UTF_8);
             }
+            String conText21;
+            if(str.listContantsStr((ArrayList<String>) encodeMode, "DES") || (traverse && i!=3) ){
+                conText21 = conText20;
+            }else{
+                classData = des.desWebShellDecode(conText20, inputKey, traverse, customPath);
+                conText21 = new String(classData, StandardCharsets.UTF_8);
+            }
             //  不需要单独考虑XOR, XOR均为组合加密
 
 
@@ -371,16 +510,17 @@ public class webShellDecrypt {
             if( !conText8.equals(conText7) ) encodeMode.add("Base64");
             if( !conText9.equals(conText8) ) encodeMode.add("seeyonBase64");
             if( !conText20.equals(conText9) ) encodeMode.add("AES\\"+aes.mode_AES.get()+"\\"+aes.padding_AES.get()+"<key:iv>"+aes.key_AES.get()+":"+aes.iv_AES.get());
+            if( !conText21.equals(conText20) ) encodeMode.add("DES\\"+des.mode_DES.get()+"\\"+des.padding_DES.get()+"<key:iv>"+des.key_DES.get()+":"+des.iv_DES.get());
 
-            conText = conText20;
+            conText = conText21;
         }
 
         if(!passStr.equals("")) conText = passStr + conText;
         if(!md5PassKey.equals("")) conText = md5PassKey + conText;
 
-        if( aes.gzipCode || str.gzipCode) encodeMode.add("Gzip");
-        if( aes.classCode || str.classCode) encodeMode.add("Class编译");
-        if( aes.serializeCode || str.serializeCode) encodeMode.add("反序列化");
+        if( aes.gzipCode || des.gzipCode || str.gzipCode) encodeMode.add("Gzip");
+        if( aes.classCode || des.classCode || str.classCode) encodeMode.add("Class编译");
+        if( aes.serializeCode || des.serializeCode || str.serializeCode) encodeMode.add("反序列化");
 
         encodeModeList.add(encodeMode);
 

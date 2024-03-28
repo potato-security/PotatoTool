@@ -17,5 +17,7 @@ open module com.potato.potatotool {
     requires com.google.gson;
     requires org.json;
     requires org.bouncycastle.provider;
+    requires jasypt;
+    requires unidbg.api;
 
 }

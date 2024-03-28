@@ -1,7 +1,7 @@
 package com.potato.potatotool.content.blueTeam;
 
 import com.potato.potatotool.utils.DeserializerUtils;
-import com.sun.org.apache.bcel.internal.classfile.Utility;
+import com.potato.potatotool.utils.Utility;
 
 /**
  * @author Potato

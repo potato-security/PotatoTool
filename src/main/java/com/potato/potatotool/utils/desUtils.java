@@ -8,6 +8,8 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.util.*;
@@ -26,15 +28,15 @@ import static com.potato.potatotool.utils.Constants.getResourceStream;
  * @date 2023/4/19 18:23
  */
 
-public class aesUtils {
-    private static final int IV_SIZE = 16;
-    private static final String CIPHER_ALGORITHM = "AES/%s/%s";
-    private static final String AES_MODE_CBC = "CBC";
-    private static final String AES_MODE_ECB = "ECB";
-    private static final String AES_MODE_GCM = "GCM";
-    private static final String AES_MODE_CFB = "CFB";
-    private static final String AES_MODE_OFB = "OFB";
-    private static final String AES_MODE_CTR = "CTR";
+public class desUtils {
+    private static final int IV_SIZE = 8;
+    private static final String CIPHER_ALGORITHM = "DES/%s/%s";
+    private static final String DES_MODE_CBC = "CBC";
+    private static final String DES_MODE_ECB = "ECB";
+    private static final String DES_MODE_GCM = "GCM";
+    private static final String DES_MODE_CFB = "CFB";
+    private static final String DES_MODE_OFB = "OFB";
+    private static final String DES_MODE_CTR = "CTR";
     private static final String PADDING_NO_PADDING = "NoPadding";
     private static final String PADDING_PKCS5_PADDING = "PKCS5Padding";
     private static final String PADDING_PKCS7_PADDING = "PKCS7Padding";
@@ -43,7 +45,7 @@ public class aesUtils {
         Security.addProvider(new BouncyCastleProvider());
     }
     /**
-     * 对输入的明文进行AES加密
+     * 对输入的明文进行DES加密
      *
      * @param plainText 密文byte数组
      * @param keyBytes  密钥byte数组
@@ -57,15 +59,15 @@ public class aesUtils {
         validateMode(mode);
         validatePadding(padding);
 
-        SecretKeySpec secretKey = new SecretKeySpec(keyBytes, "AES");
+        SecretKeySpec secretKey = new SecretKeySpec(keyBytes, "DES");
 
         Cipher cipher = Cipher.getInstance(String.format(CIPHER_ALGORITHM, mode, padding), "BC");
-        if (mode.equals(AES_MODE_ECB) || mode.equals(AES_MODE_CTR)) {
+        if (mode.equals(DES_MODE_ECB) || mode.equals(DES_MODE_CTR)) {
 
             // ECB及CTR不需要传入iv
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
-        } else if (mode.equals(AES_MODE_GCM)) {
+        } else if (mode.equals(DES_MODE_GCM)) {
 
             // GCM解密可自动提取iv，故不需要固定，自动生成
             byte[] ivTmp = generateRandomBytes(IV_SIZE);
@@ -77,7 +79,7 @@ public class aesUtils {
             System.arraycopy(encrypted, 0, cipherText, IV_SIZE, encrypted.length);
             return cipherText;
 
-        } else if (mode.equals(AES_MODE_CBC) || mode.equals(AES_MODE_CFB) || mode.equals(AES_MODE_OFB)) {
+        } else if (mode.equals(DES_MODE_CBC) || mode.equals(DES_MODE_CFB) || mode.equals(DES_MODE_OFB)) {
 
             //  该模式必须传入iv值，且解密iv同步
             if(iv==null||iv.length==0){
@@ -92,7 +94,7 @@ public class aesUtils {
     }
 
     /**
-     * 对输入的密文进行AES解密
+     * 对输入的密文进行DES解密
      *
      * @param cipherText 密文byte数组
      * @param key        密钥byte数组
@@ -105,19 +107,22 @@ public class aesUtils {
     public boolean classCode = false;
     public boolean serializeCode = false;
     public boolean gzipCode = false;
-    public byte[] decrypt(byte[] cipherText, byte[] key, byte[] iv, String mode, String padding) throws Exception {
+    public byte[] decrypt(byte[] cipherText, byte[] tmpKey, byte[] iv, String mode, String padding) throws Exception {
         validateMode(mode);
         validatePadding(padding);
 
-        SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
+        byte[] key = new byte[8];
+        System.arraycopy(tmpKey, 0, key, 0, 8);
+
+        SecretKeySpec secretKey = new SecretKeySpec(key, "DES");
 
         Cipher cipher = Cipher.getInstance(String.format(CIPHER_ALGORITHM, mode, padding), "BC");
-        if (mode.equals(AES_MODE_ECB) || mode.equals(AES_MODE_CTR)) {
+        if (mode.equals(DES_MODE_ECB) || mode.equals(DES_MODE_CTR)) {
 
             //  ECB和CTR不需要传输iv
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
 
-        } else if (mode.equals(AES_MODE_GCM)){
+        } else if (mode.equals(DES_MODE_GCM)){
 
             //  GCM不需要传输iv，可以提取出iv
             byte[] ivBytes = new byte[IV_SIZE];
@@ -127,7 +132,7 @@ public class aesUtils {
             byte[] encrypted = new byte[cipherText.length - IV_SIZE];
             System.arraycopy(cipherText, IV_SIZE, encrypted, 0, encrypted.length);
             cipherText = encrypted;
-        } else if (mode.equals(AES_MODE_CBC) || mode.equals(AES_MODE_CFB) || mode.equals(AES_MODE_OFB)) {
+        } else if (mode.equals(DES_MODE_CBC) || mode.equals(DES_MODE_CFB) || mode.equals(DES_MODE_OFB)) {
 
             //  必须手动传入iv
             if(iv==null||iv.length==0){
@@ -171,9 +176,9 @@ public class aesUtils {
 
     // 验证加密模式是否合法
     private static void validateMode(String mode) {
-        if (!mode.equals(AES_MODE_CBC) && !mode.equals(AES_MODE_ECB) && !mode.equals(AES_MODE_GCM)
-                && !mode.equals(AES_MODE_CFB) && !mode.equals(AES_MODE_OFB)) {
-            throw new IllegalArgumentException("无效的 AES 模式");
+        if (!mode.equals(DES_MODE_CBC) && !mode.equals(DES_MODE_ECB) && !mode.equals(DES_MODE_GCM)
+                && !mode.equals(DES_MODE_CFB) && !mode.equals(DES_MODE_OFB)) {
+            throw new IllegalArgumentException("无效的 DES 模式");
         }
     }
 
@@ -194,18 +199,18 @@ public class aesUtils {
 
 
     //  AtomicReference<>原子性更新，多线程环境下安全的类型
-    public AtomicReference<String> mode_AES = new AtomicReference<>("");
-    public AtomicReference<String> padding_AES = new AtomicReference<>("");
-    public AtomicReference<String> key_AES = new AtomicReference<>("");
-    public AtomicReference<String> iv_AES = new AtomicReference<>("Null");
-    public Set<String> keyArray_AES = new HashSet<>();
+    public AtomicReference<String> mode_DES = new AtomicReference<>("");
+    public AtomicReference<String> padding_DES = new AtomicReference<>("");
+    public AtomicReference<String> key_DES = new AtomicReference<>("");
+    public AtomicReference<String> iv_DES = new AtomicReference<>("Null");
+    public Set<String> keyArray_DES = new HashSet<>();
     //  50w字典爆破调用方法：
-    //  aesUtils aes=new aesUtils();
-    //  String res = aes.aesWebShellDecode(encodeStr, null,true);
+    //  desUtils des=new desUtils();
+    //  String res = des.desWebShellDecode(encodeStr, null,true);
     //  运行时间特别长，导致Java UI（例如使用Swing）,需要将更新ui防止后台线程运行，防止堵塞
     //  若测试，误解率大，可使用ReadabilityChecker.assessReadability()方法判断可读性，抛除
     /**
-     *  AES解密尝试【兼容+Gzip】     放了3个常见key，两种常见iv,两个常见mode CBC/ECB，填充方式PKCS5Padding
+     *  DES解密尝试【兼容+Gzip】     放了3个常见key，两种常见iv,两个常见mode CBC/ECB，填充方式PKCS5Padding
      * @param conText       原始字符串
      * @param inputKeyStr   指定key的值，NULL时尝试webShell最常见的3个key
      * @param traverse      [可不传]调用50w字典进行爆破，将忽略inputKeyStr传入值
@@ -213,11 +218,11 @@ public class aesUtils {
      * @return              解密后结果--最好返回byte[]数据，而非string，防止后续传输存在问题
      * @throws Exception
      */
-    public byte[] aesWebShellDecode(String conText, String inputKeyStr, boolean traverse, String customPath) {
+    public byte[] desWebShellDecode(String conText, String inputKeyStr, boolean traverse, String customPath) {
 
-        // 排除非AES加密格式字符串传入
-        String aesPattern = "^[A-Za-z0-9+/]+={0,2}$";
-        Pattern pattern = Pattern.compile(aesPattern);
+        // 排除非DES加密格式字符串传入
+        String desPattern = "^[A-Za-z0-9+/]+={0,2}$";
+        Pattern pattern = Pattern.compile(desPattern);
         Matcher matcher = pattern.matcher(conText.replace("\n","").replace("\r","").replace("\t",""));
 
         if (!matcher.matches()) {
@@ -236,25 +241,25 @@ public class aesUtils {
                     while ((line = reader.readLine()) != null) {
                         keyArray.add(line);
                     }
-                    keyArray_AES = keyArray;
+                    keyArray_DES = keyArray;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }else {
-                if(keyArray_AES.isEmpty()){ // 优先读取缓存数据
+                if(keyArray_DES.isEmpty()){ // 优先读取缓存数据
                     try{
-                        InputStream aesKeyInputStream = getResourceStream("aesKey");
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(aesKeyInputStream));
+                        InputStream desKeyInputStream = getResourceStream("aesKey");
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(desKeyInputStream));
                         String line;
                         while ((line = reader.readLine()) != null) {
                             keyArray.add(line);
                         }
-                        keyArray_AES = keyArray;
+                        keyArray_DES = keyArray;
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }else {
-                    keyArray = keyArray_AES;
+                    keyArray = keyArray_DES;
                 }
             }
         } else if( inputKeyStr == null ){
@@ -266,6 +271,10 @@ public class aesUtils {
             keyArray.add("5f4dcc3b5aa765d6");
             keyArray.add("changeit");
             keyArray.add("whir2014");
+            keyArray.add("li_01010");
+            keyArray.add("kmssAdminKey");
+            keyArray.add("kmssPropertiesKey");
+            keyArray.add("ilovethisgame");
         } else if( inputKeyStr != null ){
             keyArray.add(inputKeyStr);
         }
@@ -285,26 +294,28 @@ public class aesUtils {
                         try {
                             byte[] encryptData = strUtils.base64Decode(conText.getBytes(StandardCharsets.UTF_8));
                             byte[] key = keyStr.getBytes(StandardCharsets.UTF_8);
-                            byte[] iv = finalI == 0 ? new byte[16] : key;
+                            byte[] iv = finalI == 0 ? new byte[8] : key;
 
-                            aesUtils aes = new aesUtils();
-                            byte[] result = aes.decrypt(
+                            desUtils des = new desUtils();
+                            byte[] result = des.decrypt(
                                     encryptData,
                                     key,
                                     iv,
                                     mode,
                                     "PKCS5Padding"
                             );
-                            mode_AES.set(mode);
-                            padding_AES.set("PKCS5Padding");
-                            key_AES.set(keyStr);
-                            iv_AES.set(!iv_AES.get().equals("Null") ? ( mode.equals("ECB") ? "Null": new String(iv, StandardCharsets.UTF_8) ) : "Null");
-                            classCode = aes.classCode;
-                            serializeCode = aes.serializeCode;
+                            mode_DES.set(mode);
+                            padding_DES.set("PKCS5Padding");
+                            key_DES.set(keyStr);
+                            iv_DES.set(!iv_DES.get().equals("Null") ? ( mode.equals("ECB") ? "Null": new String(iv, StandardCharsets.UTF_8) ) : "Null");
+                            classCode = des.classCode;
+                            serializeCode = des.serializeCode;
 //                            System.out.println("~~~~~~");
-//                            System.out.println(mode_AES.get());
+//                            System.out.println(mode_DES.get());
 //                            System.out.println(keyStr);
-//                            System.out.println(iv_AES.get());
+//                            System.out.println(iv_DES.get());
+//                            System.out.println(result);
+//                            System.out.println(new String(result));
 //                            System.out.println("———————");
 
                             return result;
@@ -337,6 +348,83 @@ public class aesUtils {
         return res==null ? conText.getBytes(StandardCharsets.UTF_8) : res;
     }
 
+    public String finalshellDecode(String conText){
 
+        try {
+            byte[] decodedData = Base64.getDecoder().decode(conText);
+            byte[] head = new byte[8];
+            System.arraycopy(decodedData, 0, head, 0, head.length);
+
+            byte[] encryptedData = new byte[decodedData.length - head.length];
+            System.arraycopy(decodedData, head.length, encryptedData, 0, encryptedData.length);
+
+            byte[] key = generateRandomKey(head);
+            byte[] decryptedData = new desUtils().decrypt(encryptedData, key, null, DES_MODE_ECB, PADDING_PKCS5_PADDING);
+            mode_DES.set(DES_MODE_ECB);
+            padding_DES.set(PADDING_PKCS5_PADDING);
+            key_DES.set("(hex)"+strUtils.byteToHex(key));
+            iv_DES.set("null");
+            return new String(decryptedData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    static byte[] generateRandomKey(byte[] head) {
+        long seed = 3680984568597093857L / (long) (new Random((long) head[5])).nextInt(127);
+        Random random = new Random(seed);
+        int t = head[0];
+
+        for (int i = 0; i < t; ++i) {
+            random.nextLong();
+        }
+
+        long n = random.nextLong();
+        Random random2 = new Random(n);
+
+        long[] keyData = {(long) head[4], random2.nextLong(), (long) head[7], (long) head[3], random2.nextLong(),
+                (long) head[1], random.nextLong(), (long) head[2]};
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(bos);
+
+        for (long l : keyData) {
+            try {
+                dos.writeLong(l);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            dos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        byte[] key = bos.toByteArray();
+        return md5Hash(key);
+    }
+
+    public static byte[] md5Hash(byte[] data) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.update(data, 0, data.length);
+            byte[] result = messageDigest.digest();
+            return result;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void main(String []args) {
+        desUtils des =new desUtils();
+        String res = des.finalshellDecode("Xg5GPCslNUdSsG1Tn3oR/g+3OAYFnCP3");
+        System.out.println(res);
+        System.out.println("Finalshell(DES\\"+des.mode_DES.get()+"\\"+des.padding_DES.get()+"<key:iv>"+des.key_DES.get()+":"+des.iv_DES.get());
+
+    }
 
 }

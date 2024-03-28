@@ -123,7 +123,7 @@ public class aiUtil {
                                 if (line.equals("[[Premature EOF]]")) {
                                     res = "【AI服务器显存炸裂了~ 买不起~ 传输小点儿的东西吧】";
                                 } else if (line.equals("[[Response code 502]]")) {
-                                    res = "【内部免费AI服务器可能已关停，请在设置中自行配置AI模型及对应Key】";
+                                    res = "【内部免费AI服务器可能已关停/您当前处于国外IP环境，请在设置中自行配置AI模型及对应Key】";
                                 } else if (line.startsWith("data: ")){
                                     JsonObject responseJson = JsonParser.parseString(line.replaceAll("^data: ", "")).getAsJsonObject();
 

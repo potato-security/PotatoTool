@@ -395,8 +395,11 @@ public class PaneWebshellDecode {
         if(selectedIndex == 3){
             FileChooser chooser = new FileChooser();
             FileChooser.ExtensionFilter filter =
-                    new FileChooser.ExtensionFilter("txt文件", "*.txt");
+                    new FileChooser.ExtensionFilter("txt文件(*.txt)", "*.txt");
+            FileChooser.ExtensionFilter datFilter =
+                    new FileChooser.ExtensionFilter("数据文件(*.dat)", "*.dat");
             chooser.getExtensionFilters().add(filter);
+            chooser.getExtensionFilters().add(datFilter);
 
             Stage stage = (Stage) ((Node)e.getSource()).getScene().getWindow();
             try {
