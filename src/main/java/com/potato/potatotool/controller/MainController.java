@@ -2,6 +2,7 @@ package com.potato.potatotool.controller;
 
 import com.leewyatt.rxcontrols.animation.carousel.*;
 import com.leewyatt.rxcontrols.controls.RXCarousel;
+import com.leewyatt.rxcontrols.controls.RXToggleButton;
 import com.leewyatt.rxcontrols.pane.RXCarouselPane;
 import com.potato.potatotool.utils.Util;
 import javafx.animation.TranslateTransition;
@@ -57,6 +58,12 @@ public class MainController {
     private FlowPane blueBar;
 
     @FXML
+    private RXToggleButton blueBtn;
+
+    @FXML
+    private RXToggleButton redBtn;
+
+    @FXML
     private BorderPane borderPane;
 
     @FXML
@@ -75,6 +82,8 @@ public class MainController {
     private static final String CONFIG_FOLDER = ".PotatoTool";
     private static final String CONFIG_FILE = "config.json";
 
+    private int selectedBlueIndex = 0;
+    private int selectedRedIndex = 9;
     @FXML
     void initialize() throws IOException {
 
@@ -192,6 +201,11 @@ public class MainController {
         navGroup.selectedToggleProperty().addListener((ob, ov, nv) -> {
             int index = navGroup.getToggles().indexOf(nv);
             mainCarousel.setSelectedIndex(index);
+            if (isBlueMode) {
+                selectedBlueIndex = index;
+            } else {
+                selectedRedIndex = index;
+            }
         });
 
         topBar.widthProperty().addListener((observable, oldValue, newValue) -> {
@@ -202,6 +216,7 @@ public class MainController {
 
     private boolean isChangeModePaneRight = false;  // 是否向右移动
     private boolean isChangeModePaneMoving = false; // 是否开始移动动画
+    private boolean isBlueMode = true;
     @FXML
     void changeMode() {
         if(isChangeModePaneMoving) return;  // 如果动画正在播放，不响应按钮点击事件
@@ -220,7 +235,7 @@ public class MainController {
 
         if (isChangeModePaneRight) {
             //  此时切换为蓝队
-            mainCarousel.setSelectedIndex(0);
+            isBlueMode = true;
             blueTransition.setByX(-55);
             redTransition.setByX(-55);
             redBarTransition.setByX(barWidthDistance);
@@ -229,10 +244,11 @@ public class MainController {
 
             scene.getRoot().getStyleClass().remove("redStyle");
             scene.getRoot().getStyleClass().add("blueStyle");
+            navGroup.getToggles().get(selectedBlueIndex).setSelected(true);
 
         }else {
             //  此时切换为红队
-            mainCarousel.setSelectedIndex(9);
+            isBlueMode = false;
             blueTransition.setByX(55);
             redTransition.setByX(55);
             redBarTransition.setByX(-barWidthDistance);
@@ -241,6 +257,7 @@ public class MainController {
 
             scene.getRoot().getStyleClass().remove("blueStyle");
             scene.getRoot().getStyleClass().add("redStyle");
+            navGroup.getToggles().get(selectedRedIndex).setSelected(true);
 
         }
 
