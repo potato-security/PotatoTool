@@ -7,6 +7,11 @@ import org.graalvm.polyglot.Value;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URLDecoder;
@@ -20,6 +25,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -1370,6 +1376,27 @@ public class strUtils {
         }
 
         return null;
+    }
+
+    // 获取jar所在目录绝对路径
+    public static String getSelfPath() throws Exception {
+        String currentPath = strUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        currentPath = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
+        currentPath = (new File(currentPath)).getCanonicalPath();
+        return currentPath;
+    }
+
+    // 获取jar绝对路径
+    public static String getSelfJarPath() throws Exception {
+        String currentPath = strUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath().toString();
+        return currentPath;
+    }
+
+    // copy剪贴板
+    public static void setClipboardString(String text) {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable trans = new StringSelection(text);
+        clipboard.setContents(trans, (ClipboardOwner)null);
     }
 
 }
