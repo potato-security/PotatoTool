@@ -156,6 +156,10 @@
     {
       "data": "vpIBjT3RT8mf6pBjiKJuqA==",
       "mode": "[[spring_db(key:EbfYkitulv73I2p0mXI50JMXoaxZTKJ7)]]"
+    },
+    {
+      "data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ",
+      "mode": "[[JWT]]"
     }
   ]
 }

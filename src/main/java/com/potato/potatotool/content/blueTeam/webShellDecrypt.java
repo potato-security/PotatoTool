@@ -27,6 +27,7 @@ public class webShellDecrypt {
 
 
     public String inputKey = null;
+    public String inputIv = null;
     public boolean traverse = false;
     public String customPath = null;
 
@@ -211,6 +212,23 @@ public class webShellDecrypt {
             }
         }
 
+        // jwt解密
+        if( conText.startsWith("eyJ") && conText.split("\\.").length == 3 ){
+            System.out.println("--------------------------------------");
+            String[] conTextList = conText.split("\\.");
+            String context_first = str.base64Decode(conTextList[0]);
+            String context_finaly = str.base64Decode(conTextList[1]);
+
+            if(context_first!=null && context_finaly!=null){
+                encodeMode.add("JWT");
+                encodeModeList.add(encodeMode);
+
+                String tmpContext = "header:\n" + context_first +"\n\npayload:\n" + context_finaly;
+
+                return tmpContext;
+            }
+
+        }
 
         // cas解密
         if(conText.length()>100){
@@ -298,7 +316,7 @@ public class webShellDecrypt {
                 break;
             }else{
                 // 可能使用的AES
-                classData = aes.aesWebShellDecode(conText1, inputKey, traverse, customPath);
+                classData = aes.aesWebShellDecode(conText1, inputKey, inputIv, traverse, customPath);
                 String conText4 = new String(classData, StandardCharsets.UTF_8);
 
                 if( !conText4.equals(conText1) ){
@@ -487,14 +505,14 @@ public class webShellDecrypt {
             if(str.listContantsStr((ArrayList<String>) encodeMode, "AES") || (traverse && i!=3) ){
                 conText20 = conText9;
             }else{
-                classData = aes.aesWebShellDecode(conText9, inputKey, traverse, customPath);
+                classData = aes.aesWebShellDecode(conText9, inputKey, inputIv, traverse, customPath);
                 conText20 = new String(classData, StandardCharsets.UTF_8);
             }
             String conText21;
             if(str.listContantsStr((ArrayList<String>) encodeMode, "DES") || (traverse && i!=3) ){
                 conText21 = conText20;
             }else{
-                classData = des.desWebShellDecode(conText20, inputKey, traverse, customPath);
+                classData = des.desWebShellDecode(conText20, inputKey, inputIv, traverse, customPath);
                 conText21 = new String(classData, StandardCharsets.UTF_8);
             }
             //  不需要单独考虑XOR, XOR均为组合加密

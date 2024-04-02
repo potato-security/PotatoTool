@@ -52,7 +52,8 @@
                <Cursor fx:constant="HAND" />
             </cursor>
          </ComboBox>
-         <TextField fx:id="customKey" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="AES/XOR-Key"/>
+         <TextField fx:id="customKey" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Key"/>
+         <TextField fx:id="customIv" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Iv"/>
          <TextField fx:id="customPath" visible="false" managed="false" editable="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="自定义字典路径"/>
       </HBox>
 

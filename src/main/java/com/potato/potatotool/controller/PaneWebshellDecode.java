@@ -62,6 +62,8 @@ public class PaneWebshellDecode {
     @FXML
     private TextField customKey;
     @FXML
+    private TextField customIv;
+    @FXML
     private TextField customPath;
 
     @FXML
@@ -310,6 +312,7 @@ public class PaneWebshellDecode {
 
 
     String inputKey = null;
+    String inputIv = null;
     boolean traverse = false;
     String filePath = null;
     @FXML
@@ -325,15 +328,19 @@ public class PaneWebshellDecode {
         int selectedIndex = rulesComboBox.getSelectionModel().getSelectedIndex();
         if(selectedIndex == 0){
             inputKey = null;
+            inputIv = null;
             traverse = false;
         }else if(selectedIndex == 1){
             inputKey = customKey.getText();
+            inputIv = customIv.getText();
             traverse = false;
         }else if(selectedIndex == 2){
             inputKey = null;
+            inputIv = null;
             traverse = true;
         }else if(selectedIndex == 3){
             inputKey = null;
+            inputIv = null;
             traverse = true;
         }
 
@@ -342,6 +349,7 @@ public class PaneWebshellDecode {
             protected Void call() throws Exception {
                 webShellDecrypt wsd = new webShellDecrypt();
                 wsd.inputKey = inputKey;
+                wsd.inputIv = inputIv;
                 wsd.traverse = traverse;
                 wsd.customPath = filePath;
                 res = wsd.dealBody(inputText.getText());
@@ -389,6 +397,8 @@ public class PaneWebshellDecode {
 
         customKey.setVisible(selectedIndex==1? true : false);
         customKey.setManaged(selectedIndex==1? true : false);
+        customIv.setVisible(selectedIndex==1? true : false);
+        customIv.setManaged(selectedIndex==1? true : false);
         customPath.setVisible(selectedIndex==3? true : false);
         customPath.setManaged(selectedIndex==3? true : false);
 

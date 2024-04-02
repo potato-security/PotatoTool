@@ -221,7 +221,7 @@ public class aesUtils {
      * @return              解密后结果--最好返回byte[]数据，而非string，防止后续传输存在问题
      * @throws Exception
      */
-    public byte[] aesWebShellDecode(String conText, String inputKeyStr, boolean traverse, String customPath) {
+    public byte[] aesWebShellDecode(String conText, String inputKeyStr, String inputIv, boolean traverse, String customPath) {
 
         // 排除非AES加密格式字符串传入
         String aesPattern = "^[A-Za-z0-9+/]+={0,2}$";
@@ -293,7 +293,7 @@ public class aesUtils {
                         try {
                             byte[] encryptData = strUtils.base64Decode(conText.getBytes(StandardCharsets.UTF_8));
                             byte[] key = keyStr.getBytes(StandardCharsets.UTF_8);
-                            byte[] iv = finalI == 0 ? new byte[16] : key;
+                            byte[] iv = inputIv!=null ? inputIv.getBytes(StandardCharsets.UTF_8) : finalI == 0 ? new byte[16] : key;
 
                             aesUtils aes = new aesUtils();
                             byte[] result = aes.decrypt(
