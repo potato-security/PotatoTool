@@ -8,10 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,7 +69,7 @@ public class shiroDecrypt {
 
         String[] modeArray = {"CBC", "GCM"};
 
-        ExecutorService executor = Executors.newFixedThreadPool(8); // 默认8线程
+        ExecutorService executor = ForkJoinPool.commonPool();
         List<Future<byte[]>> futures = new ArrayList<>();
         for (String keyStr : keyArray) {
             for (String mode : modeArray) {
