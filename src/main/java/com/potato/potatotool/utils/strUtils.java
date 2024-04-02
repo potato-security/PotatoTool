@@ -1082,7 +1082,9 @@ public class strUtils {
             int i = Integer.valueOf( code , 16 );
             if (i == 0x000a) {
                 sb.append('\r');
-            } else {
+            }else if (i == 0x0020) {
+                sb.append(' ');
+            }else {
                 byte[] bb = new byte[4];
                 bb[0] = (byte) ((i >> 8) & 0xFF);
                 bb[1] = (byte) (i & 0xFF);

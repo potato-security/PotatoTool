@@ -274,21 +274,27 @@ public class webShellDecrypt {
                 tmpConText = conText.substring(16, conText.length()-16 );
             }
 
-            String conText1 = str.urlDecode(tmpConText);//TODO
+            String conText1 = str.urlDecode(tmpConText);
             if( !conText1.equals(tmpConText) ) encodeMode.add("URLdeocde");
 
-            byte[] conText2 = str.base64Decode(conText1.getBytes(StandardCharsets.UTF_8));
+            String tmp_conText3 = null;
+            try {
 
-            String conText3 = str.xorEncode(conText2, inputKey, traverse, customPath);
+                byte[] tmp_conText2 = str.base64Decode(conText1.getBytes(StandardCharsets.UTF_8));
 
-            if(conText3 != null){
+                tmp_conText3 = str.xorEncode(tmp_conText2, inputKey, traverse, customPath);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            if(tmp_conText3 != null){
                 encodeMode.add("Base64");
                 encodeMode.add("XOR/"+str.xorKey);
 
                 if(i==1) passStr = tmpPassStr;
                 if(i==2) md5PassKey = tempMd5PassKey;
 
-                conText = conText3;
+                conText = tmp_conText3;
                 break;
             }else{
                 // 可能使用的AES
@@ -406,7 +412,7 @@ public class webShellDecrypt {
         if(conText.startsWith("#!@")){
             String conText_qiangzhi = qiangzhiDec.desDecode(conText);
             if(conText_qiangzhi != null){
-                encodeMode.add("qiangzhi_DES_base(DES<key:iv>02A46370BC76:null])");
+                encodeMode.add("qiangzhi_DES(DES<key:iv>02A46370BC76:null])");
                 encodeModeList.add(encodeMode);
                 return conText_qiangzhi;
             }
@@ -437,7 +443,8 @@ public class webShellDecrypt {
         // 尝试spring解密 可自定义盐值
         String conText_spring = springDec.decode(conText, inputKey);
         if(conText_spring != null){
-            encodeMode.add("spring_db");
+            String tmp_key = inputKey == null? "EbfYkitulv73I2p0mXI50JMXoaxZTKJ7" : inputKey;
+            encodeMode.add("spring_db(key:" + tmp_key + ")");
             encodeModeList.add(encodeMode);
             return conText_spring;
         }

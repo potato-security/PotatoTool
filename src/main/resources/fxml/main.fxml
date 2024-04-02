@@ -154,7 +154,7 @@
                                     <RXToggleButton text="免杀webshell" toggleGroup="$navGroup" />
                                     <RXToggleButton text="自定义内存码" toggleGroup="$navGroup" />
                                     <RXToggleButton text="命令生成" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="kb提权查询" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="KB提权查询" toggleGroup="$navGroup" />
                                     <RXToggleButton text="进程分析" toggleGroup="$navGroup" />
                                     <RXToggleButton text="信息生成" toggleGroup="$navGroup" />
                                  </children>

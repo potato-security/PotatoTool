@@ -9,7 +9,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.control.Button?>
 <StackPane xmlns="http://javafx.com/javafx/21.0.2"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/blockchain.css"
@@ -17,55 +16,46 @@
            fx:id="sPane"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <BorderPane>
+    <ScrollPane maxHeight="${sPane.height - 10}"  translateX="-210" hbarPolicy="NEVER" StackPane.alignment="TOP_LEFT">
+        <VBox fx:id="vBoxBar">
+            <Accordion fx:id="accordionPane"/>
+        </VBox>
+    </ScrollPane>
 
-        <left>
-            <ScrollPane maxHeight="${sPane.height - 10}" hbarPolicy="NEVER">
-                <VBox fx:id="vBoxBar">
-                    <Accordion fx:id="accordionPane"/>
-                </VBox>
-            </ScrollPane>
-        </left>
-
-        <right>
-            <VBox spacing="20" alignment="CENTER">
-                <StackPane maxWidth="${(sPane.width - 210)/2}">
-                    <TextField fx:id="question" minHeight="0" promptText="支持钱包地址、交易hash、区块ID、名词解释等" />
-                    <Pane  maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
-                        <Label layoutX="-40" layoutY="3" onMouseClicked="#searchInput">
-                            <graphic>
-                                <Region styleClass="send"/>
-                            </graphic>
-                            <cursor>
-                                <Cursor fx:constant="HAND" />
-                            </cursor>
-                            <tooltip>
-                                <Tooltip text="查询" />
-                            </tooltip>
-                        </Label>
-                    </Pane>
-                </StackPane>
-                <StackPane>
-                    <ListView fx:id="listView" prefWidth="${sPane.width - 210}" prefHeight="${sPane.height - 85}" />
-                    <Pane fx:id="detailedPane" visible="false" maxWidth="0"  StackPane.alignment="CENTER_RIGHT">
-                        <ListView fx:id="detailedListView" layoutX="${- detailedListView.width}" minWidth="0" minHeight="0" prefWidth="0" prefHeight="${sPane.height - 85}" StackPane.alignment="CENTER_RIGHT" />
-                        <Label layoutX="${ 10 - detailedListView.width}" layoutY="10" onMouseClicked="#goBack">
-                            <graphic>
-                                <Region styleClass="back"/>
-                            </graphic>
-                            <cursor>
-                                <Cursor fx:constant="HAND" />
-                            </cursor>
-                            <tooltip>
-                                <Tooltip text="返回" />
-                            </tooltip>
-                        </Label>
-                    </Pane>
-                </StackPane>
-            </VBox>
-        </right>
-
-    </BorderPane>
-
+    <VBox spacing="20" alignment="CENTER">
+        <StackPane maxWidth="${sPane.width / 2}">
+            <TextField fx:id="question" minHeight="0" promptText="支持钱包地址、交易hash、区块ID、名词解释等" />
+            <Pane  maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
+                <Label layoutX="-40" layoutY="3" onMouseClicked="#searchInput">
+                    <graphic>
+                        <Region styleClass="send"/>
+                    </graphic>
+                    <cursor>
+                        <Cursor fx:constant="HAND" />
+                    </cursor>
+                    <tooltip>
+                        <Tooltip text="查询" />
+                    </tooltip>
+                </Label>
+            </Pane>
+        </StackPane>
+        <StackPane>
+            <ListView fx:id="listView" prefWidth="${sPane.width}" prefHeight="${sPane.height - 85}"/>
+            <Pane fx:id="detailedPane" visible="false" maxWidth="0"  StackPane.alignment="CENTER_RIGHT">
+                <ListView fx:id="detailedListView" layoutX="${- detailedListView.width}" minWidth="0" minHeight="0" prefWidth="0" prefHeight="${sPane.height - 85}" StackPane.alignment="CENTER_RIGHT" />
+                <Label layoutX="${ 10 - detailedListView.width}" layoutY="10" onMouseClicked="#goBack">
+                    <graphic>
+                        <Region styleClass="back"/>
+                    </graphic>
+                    <cursor>
+                        <Cursor fx:constant="HAND" />
+                    </cursor>
+                    <tooltip>
+                        <Tooltip text="返回" />
+                    </tooltip>
+                </Label>
+            </Pane>
+        </StackPane>
+    </VBox>
 
 </StackPane>

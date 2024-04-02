@@ -142,7 +142,9 @@ public class PaneBlockchain {
         Label tips = new Label("正在查询有关\"" + input + "\"的信息（v1.0非全接口版本）……");
         tips.setAlignment(Pos.CENTER);
         tips.setId("tipTitle");
-        tips.setPrefWidth(sPane.getWidth() - 280);
+        tips.setPrefWidth(sPane.getWidth() - 50);
+        tips.setMinWidth(sPane.getWidth() - 50);
+        tips.setMaxWidth(sPane.getWidth() - 50);
         contentObj.add(tips);
         listView.setItems(contentObj);
 

@@ -111,67 +111,80 @@ public class desUtils {
         validateMode(mode);
         validatePadding(padding);
 
-        byte[] key = new byte[8];
-        System.arraycopy(tmpKey, 0, key, 0, 8);
+        try {
 
-        SecretKeySpec secretKey = new SecretKeySpec(key, "DES");
+            byte[] key = new byte[8];
+            System.arraycopy(tmpKey, 0, key, 0, 8);
 
-        Cipher cipher = Cipher.getInstance(String.format(CIPHER_ALGORITHM, mode, padding), "BC");
-        if (mode.equals(DES_MODE_ECB) || mode.equals(DES_MODE_CTR)) {
 
-            //  ECB和CTR不需要传输iv
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
-
-        } else if (mode.equals(DES_MODE_GCM)){
-
-            //  GCM不需要传输iv，可以提取出iv
-            byte[] ivBytes = new byte[IV_SIZE];
-            System.arraycopy(cipherText, 0, ivBytes, 0, IV_SIZE);
-            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(IV_SIZE * 8, ivBytes);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
-            byte[] encrypted = new byte[cipherText.length - IV_SIZE];
-            System.arraycopy(cipherText, IV_SIZE, encrypted, 0, encrypted.length);
-            cipherText = encrypted;
-        } else if (mode.equals(DES_MODE_CBC) || mode.equals(DES_MODE_CFB) || mode.equals(DES_MODE_OFB)) {
-
-            //  必须手动传入iv
-            if(iv==null||iv.length==0){
-                throw new IllegalArgumentException("该模式必须传入iv值");
-            }
-            IvParameterSpec parameterSpec = new IvParameterSpec(iv);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, parameterSpec);
-
-        }
-
-        byte[] decryptedTextBytes = cipher.doFinal(cipherText);
-
-        //是否存在Gzip压缩特征
-        if(strUtils.byteToHex(decryptedTextBytes).toLowerCase().startsWith("1f8b")){
-            decryptedTextBytes = strUtils.gzipDecompress(decryptedTextBytes);
-            String tmpHexData = strUtils.byteToHex(decryptedTextBytes);
-
-            if(tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005") ){  // 针对于哥斯拉key和value空字符需要转换为等号
-                tmpHexData = strUtils.strRev( strUtils.strRev(tmpHexData).replaceAll("(00.{8})", "D3") );
-                decryptedTextBytes = strUtils.hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+            if(key==null){
+                System.out.println("无key输入");
+                return null;
             }
 
-            gzipCode = true;
-        }
+            SecretKeySpec secretKey = new SecretKeySpec(key, "DES");
 
-        // 检查是否存在class/反序列化
-        byte[] tmpDecryptedTextBytes = null;
-        tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(decryptedTextBytes);
-        if(tmpDecryptedTextBytes==null) {
-            tmpDecryptedTextBytes = DeserializerUtils.serializeCheck(decryptedTextBytes);
-        }else {
-            classCode = true;
+            Cipher cipher = Cipher.getInstance(String.format(CIPHER_ALGORITHM, mode, padding), "BC");
+            if (mode.equals(DES_MODE_ECB) || mode.equals(DES_MODE_CTR)) {
+
+                //  ECB和CTR不需要传输iv
+                cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+            } else if (mode.equals(DES_MODE_GCM)){
+
+                //  GCM不需要传输iv，可以提取出iv
+                byte[] ivBytes = new byte[IV_SIZE];
+                System.arraycopy(cipherText, 0, ivBytes, 0, IV_SIZE);
+                GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(IV_SIZE * 8, ivBytes);
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
+                byte[] encrypted = new byte[cipherText.length - IV_SIZE];
+                System.arraycopy(cipherText, IV_SIZE, encrypted, 0, encrypted.length);
+                cipherText = encrypted;
+            } else if (mode.equals(DES_MODE_CBC) || mode.equals(DES_MODE_CFB) || mode.equals(DES_MODE_OFB)) {
+
+                //  必须手动传入iv
+                if(iv==null||iv.length==0){
+                    throw new IllegalArgumentException("该模式必须传入iv值");
+                }
+                IvParameterSpec parameterSpec = new IvParameterSpec(iv);
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, parameterSpec);
+
+            }
+
+            byte[] decryptedTextBytes = cipher.doFinal(cipherText);
+
+            //是否存在Gzip压缩特征
+            if(strUtils.byteToHex(decryptedTextBytes).toLowerCase().startsWith("1f8b")){
+                decryptedTextBytes = strUtils.gzipDecompress(decryptedTextBytes);
+                String tmpHexData = strUtils.byteToHex(decryptedTextBytes);
+
+                if(tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005") ){  // 针对于哥斯拉key和value空字符需要转换为等号
+                    tmpHexData = strUtils.strRev( strUtils.strRev(tmpHexData).replaceAll("(00.{8})", "D3") );
+                    decryptedTextBytes = strUtils.hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+                }
+
+                gzipCode = true;
+            }
+
+            // 检查是否存在class/反序列化
+            byte[] tmpDecryptedTextBytes = null;
+            tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(decryptedTextBytes);
+            if(tmpDecryptedTextBytes==null) {
+                tmpDecryptedTextBytes = DeserializerUtils.serializeCheck(decryptedTextBytes);
+            }else {
+                classCode = true;
+            }
+            if(tmpDecryptedTextBytes!=null) {
+                decryptedTextBytes = tmpDecryptedTextBytes;
+                serializeCode = true;
+            }
+            boolean readability = ReadabilityChecker.assessReadability(decryptedTextBytes);
+            return (!classCode && !serializeCode && !readability)? null : decryptedTextBytes;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
         }
-        if(tmpDecryptedTextBytes!=null) {
-            decryptedTextBytes = tmpDecryptedTextBytes;
-            serializeCode = true;
-        }
-        boolean readability = ReadabilityChecker.assessReadability(decryptedTextBytes);
-        return (!classCode && !serializeCode && !readability)? null : decryptedTextBytes;
     }
 
     // 验证加密模式是否合法

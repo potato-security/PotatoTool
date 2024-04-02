@@ -95,7 +95,7 @@ public class PaneWebshellDecode {
             virScrollPane.setMaxWidth(prefWidth);   //setMinWidth存在bug
         });
         sPane.heightProperty().addListener((obs, oldValue, newValue) -> {
-            double prefHeight = newValue.doubleValue() * 0.46;
+            double prefHeight = newValue.doubleValue() * 0.43;
             virScrollPane.setMinHeight(prefHeight);
 
             aiTextAreHeightProperty = new SimpleDoubleProperty(prefHeight + 12);

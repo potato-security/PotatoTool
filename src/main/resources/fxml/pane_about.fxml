@@ -42,11 +42,15 @@
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label id="tipTitle" text="作者：" />
-                    <RXLineButton  onAction="#openCSDN" prefHeight="40.0" prefWidth="70.0" spacing="3.0" text="Potato" alignment="CENTER_LEFT"/>
+                    <RXLineButton  onAction="#openBlog" prefHeight="40.0" prefWidth="70.0" spacing="3.0" text="Potato" alignment="CENTER_LEFT"/>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label id="tipTitle" text="仓库：" />
-                    <RXLineButton onAction="#openGithub" prefHeight="40.0" prefWidth="300.0" spacing="3.0" text="https://github.com/Potato-py"  alignment="CENTER_LEFT"/>
+                    <RXLineButton onAction="#openGithub" prefHeight="40.0" prefWidth="300.0" spacing="3.0" text="https://github.com/ljy1058318852"  alignment="CENTER_LEFT"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label id="tipTitle" text="CSDN：" />
+                    <RXLineButton  onAction="#openCSDN" prefHeight="40.0" prefWidth="300.0" spacing="3.0" text="https://blog.csdn.net/weixin_43526443" alignment="CENTER_LEFT"/>
                 </HBox>
             </VBox>
         </HBox>

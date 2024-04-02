@@ -140,12 +140,17 @@ public class PaneAbout {
     HostServices services = MainApplication.letGetHostServices();
     @FXML
     void openGithub(){
-        services.showDocument("https://github.com/Potato-py");
+        services.showDocument("https://github.com/ljy1058318852");
+    }
+
+    @FXML
+    void openBlog(){
+        services.showDocument("https://potato.gold");
     }
 
     @FXML
     void openCSDN(){
-        services.showDocument("https://github.com/Potato-py");
+        services.showDocument("https://blog.csdn.net/weixin_43526443");
     }
 
     @FXML

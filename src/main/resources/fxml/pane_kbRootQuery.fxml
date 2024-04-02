@@ -9,7 +9,7 @@
            fx:controller="com.potato.potatotool.controller.PaneKbRootQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox fx:id="paneBox" spacing="25" alignment="CENTER">
+    <VBox fx:id="paneBox" spacing="25" alignment="TOP_CENTER">
 
         <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
             <HBox>
@@ -31,7 +31,6 @@
             </HBox>
         </VBox>
 
-        <Pane minHeight="300"/>
 
     </VBox>
 

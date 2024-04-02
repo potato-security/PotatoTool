@@ -13,14 +13,14 @@
            fx:controller="com.potato.potatotool.controller.PaneSeparateDecode"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox alignment="CENTER" >
+    <VBox alignment="CENTER" prefWidth="${sPane.width}">
 
         <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-            <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 45}" prefWidth="${sPane.width}" promptText="请输入明文/密文"  />
+            <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入明文/密文"  />
         </Pane>
 
         <Pane minHeight="15"/>
-        <FlowPane alignment="CENTER" hgap="20" vgap="10" prefHeight="50.0">
+        <FlowPane alignment="CENTER" hgap="20" vgap="10" prefHeight="50.0" prefWidth="${sPane.width}">
             <RadioButton text="Base64">
                 <toggleGroup>
                     <ToggleGroup fx:id="checkboxGroup"/>
@@ -37,13 +37,13 @@
         </FlowPane>
 
         <Pane minHeight="15"/>
-        <HBox alignment="CENTER" spacing="20" >
-            <Button minHeight="48.0" minWidth="400" text="加密" onAction="#toEncode">
+        <HBox alignment="CENTER" spacing="20" prefWidth="${sPane.width}">
+            <Button minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="加密" onAction="#toEncode">
                 <effect>
                     <DropShadow />
                 </effect>
             </Button>
-            <Button minHeight="48.0" minWidth="400" text="解密" onAction="#toDecode">
+            <Button minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="解密" onAction="#toDecode">
                 <effect>
                     <DropShadow />
                 </effect>
