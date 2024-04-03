@@ -8,6 +8,7 @@ import com.leewyatt.rxcontrols.controls.RXLineButton;
 import com.potato.potatotool.content.blueTeam.webShellDecrypt;
 import com.potato.potatotool.utils.DefaultContextMenu;
 import com.potato.potatotool.utils.codeAnalyzerUtils;
+import com.potato.potatotool.utils.strUtils;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -58,6 +59,8 @@ public class PaneWebshellDecode {
     @FXML
     private Label tipTitle;
     @FXML
+    private Button tipTitleCopy;
+    @FXML
     private ComboBox rulesComboBox;
     @FXML
     private TextField customKey;
@@ -87,6 +90,8 @@ public class PaneWebshellDecode {
     void initialize() throws IOException {
 
         initTextData();
+
+        tipTitle.setCursor(Cursor.HAND);
 
         aiTextArea.prefWidthProperty().bind(aiTextAreWidthProperty);
         aiTextArea.layoutXProperty().bind(aiTextAreWidthProperty.negate());
@@ -424,6 +429,22 @@ public class PaneWebshellDecode {
 
     }
 
+    @FXML
+    private void handleMouseEntered() {
+        tipTitleCopy.setVisible(true);
+        tipTitleCopy.setManaged(true);
+    }
+    @FXML
+    private void handleMouseExited() {
+        tipTitleCopy.setVisible(false);
+        tipTitleCopy.setManaged(false);
+    }
+
+    @FXML
+    private void coptTip(){
+        String tip = tipTitle.getText();
+        strUtils.setClipboardString(tip);
+    }
 
     void writeTestData(String data) {
         inputText.setText(data);

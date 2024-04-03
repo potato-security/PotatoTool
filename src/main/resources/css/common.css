@@ -677,3 +677,18 @@
     -fx-background-color: -main-border-color;
     -fx-opacity: 0.7;
 }
+
+.copyButton{
+    -fx-background-color: black;
+    -fx-opacity: 0.7;
+    -fx-fill: -main-border-color;
+    -fx-font-size: 15;
+    -fx-padding: 3;
+}
+.copyButton:pressed{
+    -fx-background-color: black;
+    -fx-opacity: 0.9;
+    -fx-fill: -main-border-color;
+    -fx-font-size: 15;
+    -fx-padding: 3;
+}

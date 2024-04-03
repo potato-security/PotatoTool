@@ -38,7 +38,10 @@
 
       <Pane minHeight="15"/>
       <HBox alignment="CENTER" spacing="20">
-         <Label fx:id="tipTitle" visible="false" managed="false"/>
+         <StackPane  onMouseEntered="#handleMouseEntered" onMouseExited="#handleMouseExited">
+            <Label fx:id="tipTitle" visible="false" managed="false"/>
+            <Button styleClass="copyButton" fx:id="tipTitleCopy" text="复制" visible="false" managed="false" onAction="#coptTip" StackPane.alignment="CENTER_RIGHT"/>
+         </StackPane>
          <ComboBox fx:id="rulesComboBox" prefHeight="30.0" minWidth="250" prefWidth="250" onAction="#rulesComboChoose">
             <items>
                <FXCollections fx:factory="observableArrayList">
