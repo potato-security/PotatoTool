@@ -22,7 +22,8 @@ public class PaneWebshellGeneration {
     @FXML
     private Label tipTitle;
 
-    public void webshellGeneration(ActionEvent event) {
+    @FXML
+    public void webshellGeneration() {
         String pass = webShellKey.getText().isEmpty()? "potato" : webShellKey.getText() ;
         try {
             HashMap<String, HashMap<String, String[][]>> multiDict = new HashMap<String, HashMap<String, String[][]>>();
