@@ -8,6 +8,7 @@ package com.potato.potatotool;
 public class ToStart {
 
     public static void main(String[] args) {
+        System.out.println("------------本窗口为DEBUG输出窗口------------");
         MainApplication.main(args);
     }
 

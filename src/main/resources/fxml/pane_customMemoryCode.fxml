@@ -13,24 +13,29 @@
 
         <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
             <HBox>
-                <Label id="tipTitle" text="当前版本："/>
+                <Label id="tipTitle" text="当前版本"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="社区版"/>
             </HBox>
 
             <HBox>
-                <Label id="tipTitle" text="支持广泛："/>
+                <Label id="tipTitle" text="支持广泛"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="支持包括Tomcat、Resin、Jetty、WebLogic、WebSphere、Undertow、GlassFish、SpringMVC以及SpringWebFlux等主流中间件和框架"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="支持类型："/>
+                <Label id="tipTitle" text="支持类型"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="Filter/Listener/Interceptor/HandlerMethod"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="支持工具："/>
+                <Label id="tipTitle" text="支持工具"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="Godzilla、Behinder、AntSword"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="支持高度自定义："/>
+                <Label id="tipTitle" text="支持高度自定义"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="支持自定义密钥、请求头、类名、路由路径、输出格式、封装类型"/>
             </HBox>
         </VBox>

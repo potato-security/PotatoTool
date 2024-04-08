@@ -12,7 +12,7 @@
             onMousePressed="#topBarPressedAction"
             maxHeight="-Infinity" maxWidth="-Infinity"
             minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="190"
+            prefHeight="205"
             prefWidth="500"
             style="-fx-background-color: transparent"
             xmlns="http://javafx.com/javafx/21.0.2"
@@ -26,7 +26,7 @@
             </effect>
 
             <VBox>
-                <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="47" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
+                <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="57" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
                     <center>
                         <HBox style="-fx-padding: 0 0 0 45;" alignment="CENTER">
                             <ImageView fitHeight="30.0" fitWidth="300.0"  pickOnBounds="true" preserveRatio="true">

@@ -103,9 +103,17 @@ public class PaneBlockchain {
             rxLineButton.setPrefWidth(100);
             rxLineButton.setPrefHeight(40);
             rxLineButton.setSpacing(3);
+
             rxLineButton.setText("样本数据" + (i+1));
 
-            contentObj.add(rxLineButton);
+            VBox vBoxConent = new VBox();
+            vBoxConent.setPrefWidth(sPane.getWidth() - 280);
+            vBoxConent.getStyleClass().add("cellVBox");
+            vBoxConent.setAlignment(Pos.CENTER);
+            vBoxConent.setCursor(Cursor.HAND);
+            vBoxConent.getChildren().add(rxLineButton);
+
+            contentObj.add(vBoxConent);
         }
         listView.setItems(contentObj);
     }

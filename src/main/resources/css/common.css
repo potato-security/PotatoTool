@@ -57,6 +57,9 @@
 #tipTitle .text{
     -fx-fill: -main-border-color;
 }
+#tipSymbol .text{
+    -fx-fill: -main-border-color;
+}
 .titled-pane > .title {
     -fx-background-color: -main-cell-color;
     -fx-text-fill: -main-font-color;

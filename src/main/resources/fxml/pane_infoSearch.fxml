@@ -13,32 +13,39 @@
 
         <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
             <HBox>
-                <Label id="tipTitle" text="当前版本："/>
+                <Label id="tipTitle" text="当前版本"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label wrapText="true" text="社区版"/>
             </HBox>
 
             <HBox>
-                <Label id="tipTitle" text="支持测绘平台："/>
+                <Label id="tipTitle" text="支持测绘平台"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label wrapText="true" text="Fofa、鹰图、ZoomEye、shodan"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="数据聚合化："/>
+                <Label id="tipTitle" text="数据聚合化"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label wrapText="true" text="支持同时使用多方平台检索数据，并进行聚合整理"/>
             </HBox>
             <HBox>
-                <Label maxWidth="Infinity" id="tipTitle" text="智能扩散搜索："/>
+                <Label maxWidth="Infinity" id="tipTitle" text="智能扩散搜索"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label wrapText="true" text="开启后，将自动对查询的信息进行智能扩散搜索，包括对公司名称进行检索，并拓展至图标、域名、证书等关键信息的深度搜索。"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="清洗与标准化："/>
+                <Label id="tipTitle" text="清洗与标准化"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label wrapText="true" text="提供强大的数据清洗功能，确保数据整洁有序。"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="重复数据过滤："/>
+                <Label id="tipTitle" text="重复数据过滤"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label wrapText="true" text="通过改进的算法，快速准确地过滤重复数据，包括相似数据的智能识别。"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="智能脏数据过滤："/>
+                <Label id="tipTitle" text="智能脏数据过滤"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label wrapText="true" text="利用先进的机器学习算法，实现智能化的脏数据过滤，确保数据质量。有效解决模糊检索影子资产时，杂数据影响。"/>
             </HBox>
         </VBox>

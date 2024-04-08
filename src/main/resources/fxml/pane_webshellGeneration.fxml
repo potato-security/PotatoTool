@@ -14,19 +14,23 @@
 
         <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
             <HBox>
-                <Label id="tipTitle" text="当前版本："/>
+                <Label id="tipTitle" text="当前版本"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label text="社区测试版"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="涉及工具："/>
+                <Label id="tipTitle" text="涉及工具"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label text="Godzilla、Behinder、AntSword"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="支持语言："/>
+                <Label id="tipTitle" text="支持语言"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label text="JSP、JSPX、PHP、ASP、ASPX"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="支持混淆："/>
+                <Label id="tipTitle" text="支持混淆"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label text="Base64、AES、RAW、XOR、Unicode、CSHARP、Reflect"/>
             </HBox>
         </VBox>

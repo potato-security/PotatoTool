@@ -12,20 +12,24 @@
 
         <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
             <HBox>
-                <Label id="tipTitle" text="当前版本："/>
+                <Label id="tipTitle" text="当前版本"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="社区版"/>
             </HBox>
 
             <HBox>
-                <Label id="tipTitle" text="支持类型："/>
+                <Label id="tipTitle" text="支持类型"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="银行卡归属地免费批量查询、手机号归属地免费批量查询。"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="支持广泛："/>
+                <Label id="tipTitle" text="支持广泛"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="涵盖超过2000家银行，可精准查询银行卡具体归属地或支行，以及手机号的运营商和省市信息。"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="数据筛选："/>
+                <Label id="tipTitle" text="数据筛选"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="提供强大的数据筛选功能，包括数据去重和元素筛选，帮助用户快速处理和分析大量查询结果。"/>
             </HBox>
         </VBox>

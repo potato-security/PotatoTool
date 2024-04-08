@@ -13,20 +13,24 @@
 
         <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
             <HBox>
-                <Label id="tipTitle" text="当前版本："/>
+                <Label id="tipTitle" text="当前版本"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="社区版"/>
             </HBox>
 
             <HBox>
-                <Label id="tipTitle" text="查询提权信息："/>
+                <Label id="tipTitle" text="查询提权信息"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="检查已安装的KB编号，展示存在的提权漏洞的详细信息，包括发布日期、CVE编号、KB编号、标题、影响产品、影响组件、严重性、漏洞影响、替代KB编号、漏洞利用方法"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="平替KB检测："/>
+                <Label id="tipTitle" text="平替KB检测"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="通过对比是否已存在可替换的KB编号，剔除不存在的提权漏洞信息，减少误报，提高信息准确性。"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="自定义筛选："/>
+                <Label id="tipTitle" text="自定义筛选"/>
+                <Label wrapText="true" id="tipSymbol" text="："/>
                 <Label  wrapText="true" text="可根据特定情况，自定义筛选/过滤条件，如影响产品、影响组件、严重性、是否存在漏洞利用等标准，减少误报，提高信息准确性。"/>
             </HBox>
         </VBox>
