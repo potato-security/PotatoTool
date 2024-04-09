@@ -11,7 +11,7 @@
            minHeight="-Infinity" minWidth="-Infinity"
            prefHeight="720"
            prefWidth="1280"
-           xmlns="http://javafx.com/javafx/21.0.2"
+           xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/load.css"
            fx:controller="com.potato.potatotool.controller.PaneLoad">

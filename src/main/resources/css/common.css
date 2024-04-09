@@ -546,6 +546,7 @@
     -fx-border-color: -main-border-color;
     -fx-border-radius: 7;
     -fx-cursor: HAND;
+    -fx-pref-height: 40;
 }
 .combo-box .list-cell {
     -fx-background-color: null;
@@ -686,12 +687,12 @@
     -fx-opacity: 0.7;
     -fx-fill: -main-border-color;
     -fx-font-size: 15;
-    -fx-padding: 3;
+    -fx-padding: 0 5 0 5;
 }
 .copyButton:pressed{
     -fx-background-color: black;
     -fx-opacity: 0.9;
     -fx-fill: -main-border-color;
     -fx-font-size: 15;
-    -fx-padding: 3;
+    -fx-padding: 0 5 0 5;
 }

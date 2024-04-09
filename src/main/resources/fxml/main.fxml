@@ -29,7 +29,7 @@
             minHeight="-Infinity" minWidth="-Infinity"
             prefHeight="${screen.visualBounds.height* 0.8}"
             prefWidth="${screen.visualBounds.width * 0.8}"
-            xmlns="http://javafx.com/javafx/21.0.2"
+            xmlns="http://javafx.com/javafx/"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.potato.potatotool.controller.MainController">
    <fx:define>

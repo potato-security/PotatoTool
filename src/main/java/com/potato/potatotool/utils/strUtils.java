@@ -1,7 +1,6 @@
 package com.potato.potatotool.utils;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.bouncycastle.jcajce.provider.symmetric.SM4;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.graalvm.polyglot.Value;
 

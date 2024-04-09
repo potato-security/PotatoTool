@@ -10,7 +10,7 @@
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
-<AnchorPane xmlns="http://javafx.com/javafx/21.0.2"
+<AnchorPane xmlns="http://javafx.com/javafx/"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.potato.potatotool.controller.PaneAddBarDialog"
             fx:id="an"

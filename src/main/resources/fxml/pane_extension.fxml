@@ -5,7 +5,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.ListView?>
-<StackPane xmlns="http://javafx.com/javafx/21.0.2"
+<StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/extension.css"
            fx:controller="com.potato.potatotool.controller.PaneExtension"

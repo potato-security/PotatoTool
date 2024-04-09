@@ -16,7 +16,7 @@
 <StackPane fx:id="sPane"
            stylesheets="@../css/getIpInfo.css"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-           xmlns="http://javafx.com/javafx/21.0.2"
+           xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.potato.potatotool.controller.PaneGetIpInfo">
    <children>

@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Cursor?>
-<StackPane xmlns="http://javafx.com/javafx/21.0.2"
+<StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/aiAnswer.css"
            fx:id="sPane"

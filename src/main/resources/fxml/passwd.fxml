@@ -15,7 +15,7 @@
             prefHeight="205"
             prefWidth="500"
             style="-fx-background-color: transparent"
-            xmlns="http://javafx.com/javafx/21.0.2"
+            xmlns="http://javafx.com/javafx/"
             xmlns:fx="http://javafx.com/fxml/1"
             stylesheets="@../css/common.css, @../css/passwd.css"
             fx:controller="com.potato.potatotool.controller.PanePasswd">

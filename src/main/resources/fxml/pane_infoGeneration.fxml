@@ -2,14 +2,14 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<StackPane xmlns="http://javafx.com/javafx/21.0.2"
+<StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/PaneInfoGeneration.css"
            fx:id="sPane"
            fx:controller="com.potato.potatotool.controller.PaneInfoGeneration"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox fx:id="paneBox" spacing="25" alignment="CENTER">
+    <VBox fx:id="paneBox" spacing="25" alignment="TOP_CENTER">
 
         <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
             <HBox>
@@ -24,8 +24,6 @@
                 <Label  wrapText="true" text="个人信息、通讯信息、单位组织信息、银行卡信息"/>
             </HBox>
         </VBox>
-
-        <Pane minHeight="300"/>
 
     </VBox>
 
