@@ -96,7 +96,7 @@
         <dependency>
             <groupId>com.github.leewyatt</groupId>
             <artifactId>rxcontrols</artifactId>
-            <version>11.0.3</version>
+            <version>8.0.3</version>
         </dependency>
         <dependency><!--        后续优化掉-->
             <groupId>org.json</groupId>
@@ -105,28 +105,28 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.77</version>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.56</version>
         </dependency>
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
             <artifactId>graal-sdk</artifactId>
-            <version>22.3.5</version>
+            <version>21.3.9</version>
         </dependency>
         <dependency>
             <groupId>org.graalvm.js</groupId>
             <artifactId>js</artifactId>
-            <version>22.3.5</version>
+            <version>21.3.9</version>
         </dependency>
         <dependency>
             <groupId>org.graalvm.js</groupId>
             <artifactId>js-scriptengine</artifactId>
-            <version>22.3.5</version>
+            <version>21.3.9</version>
         </dependency>
         <dependency>
             <groupId>org.graalvm.truffle</groupId>
             <artifactId>truffle-api</artifactId>
-            <version>22.3.5</version>
+            <version>21.3.9</version>
         </dependency>
         <dependency>
             <groupId>com.github.adedayo.intellij.sdk</groupId>
@@ -156,7 +156,7 @@
         <dependency>
             <groupId>org.fxmisc.richtext</groupId>
             <artifactId>richtextfx</artifactId>
-            <version>0.11.2</version>
+            <version>0.10.8</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -172,8 +172,8 @@
                 <artifactId>maven-compiler-plugin</artifactId><!--maven 默认编译插件 -->
                 <version>3.12.1</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -215,6 +215,7 @@
             <plugin>
                 <groupId>com.github.wvengen</groupId>
                 <artifactId>proguard-maven-plugin</artifactId>
+                <version>2.6.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -225,17 +226,36 @@
                 </executions>
                 <configuration>
                     <attach>true</attach>
-                    <attachArtifactClassifier>pg</attachArtifactClassifier>
+                    <attachArtifactClassifier>jdk8</attachArtifactClassifier>
                     <libs>
                         <lib>${java.home}/jmods/</lib>
                     </libs>
                     <obfuscate>true</obfuscate>
                     <!-- 将前一步打包后的jar进行混淆  -->
                     <injar>${project.build.finalName}-jar-with-dependencies.jar</injar>
-                    <outjar>${project.build.finalName}-proguard.jar</outjar>
                     <outputDirectory>${project.build.directory}</outputDirectory>
                     <proguardInclude>${project.basedir}/proguard.conf</proguardInclude>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <mkdir dir="${project.basedir}/outJar"/>
+                                <copy file="${project.build.directory}/${project.build.finalName}-jar-with-dependencies-jdk8.jar" tofile="${project.basedir}/outJar/${project.build.finalName}-jdk8.jar" force="true" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>
