@@ -1,5 +1,5 @@
 mvn clean package -f pom-jdk11+.xml 打包
-mvn clean package -f pom-jdk8.xml 打包
+mvn clean package -f jdk8.xml 打包
 
 打包失败请先运行mvn的插件-assembly:single看报错
 

@@ -47,7 +47,7 @@ public class strUtils {
     public static String md5(String input) throws NoSuchAlgorithmException {
 
         MessageDigest md = MessageDigest.getInstance("MD5");
-        byte[] messageDigest = md.digest(input.getBytes());
+        byte[] messageDigest = md.digest(input.getBytes(StandardCharsets.UTF_8));
         BigInteger no = new BigInteger(1, messageDigest);
         String hashtext = no.toString(16);
         while (hashtext.length() < 32) {

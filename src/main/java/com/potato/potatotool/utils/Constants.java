@@ -3,6 +3,7 @@ package com.potato.potatotool.utils;
 import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -146,7 +147,7 @@ public class Constants {
             }
 
             // 使用缓冲区读取文件数据
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             StringBuilder stringBuilder = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
@@ -241,7 +242,7 @@ public class Constants {
 
             // 写入更新后的配置
             String json = gson.toJson(config);
-            Files.write(configFile, json.getBytes());
+            Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
 
             System.out.println("配置已保存");
 
@@ -277,7 +278,7 @@ public class Constants {
 
             // 写入更新后的配置
             String json = gson.toJson(config);
-            Files.write(configFile, json.getBytes());
+            Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
 
             System.out.println("配置已保存");
 
@@ -291,7 +292,7 @@ public class Constants {
             Path configFile = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER, CONFIG_FILE);
 
             if (Files.exists(configFile)) {
-                String content = new String(Files.readAllBytes(configFile));
+                String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
                 JsonObject jsonObject = (new Gson()).fromJson(content, JsonObject.class);
                 return jsonObject.get(key);
             }

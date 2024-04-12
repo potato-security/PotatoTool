@@ -9,6 +9,7 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
@@ -94,7 +95,7 @@ public class jsonUtils {
 
         try {
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             String json = "";
             String line;
 
