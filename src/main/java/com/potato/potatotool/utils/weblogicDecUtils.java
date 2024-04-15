@@ -1,6 +1,5 @@
 package com.potato.potatotool.utils;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -13,7 +12,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.security.Security;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -30,7 +28,6 @@ public class weblogicDecUtils {
     public String decrypt(String customPath, String ciphertext) {
         String cleartext = null;
         try {
-            Security.addProvider(new BouncyCastleProvider());
             cipher.set("AES");
             mode.set("PBEWITHSHAAND128BITRC2-CBC");
             padding_mode.set("PKCS5Padding");

@@ -74,22 +74,10 @@ public class MainController {
 
     private double offsetX,offsetY;
 
-    private static final String CONFIG_FOLDER = ".PotatoTool";
-    private static final String CONFIG_FILE = "config.json";
-
     private int selectedBlueIndex = 0;
     private int selectedRedIndex = 9;
     @FXML
     void initialize() throws IOException {
-
-        // 初始化配置文件
-        Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
-        Files.createDirectories(configFolder);
-        Path configFile = configFolder.resolve(CONFIG_FILE);
-        if (!Files.exists(configFile)) {
-            String tmpDataJsonStr = getResourceString("config");
-            Files.write(configFile, tmpDataJsonStr.getBytes(StandardCharsets.UTF_8));
-        }
 
         SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(20.0);
         Rectangle clip = clipRect(

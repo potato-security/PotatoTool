@@ -4,6 +4,8 @@ import org.lionsoul.ip2region.SearchTest;
 import org.lionsoul.ip2region.xdb.Searcher;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -143,7 +145,7 @@ public class ipInfo {
 
         try {
 
-            String ip2regionPath = getResourceFileTmpPath("ip2region");
+            String ip2regionPath = Paths.get(System.getProperty("user.home"), ".PotatoTool","ip2region.xdb").toString();
             searcher = SearchTest.createSearcher(ip2regionPath, "vectorIndex");
 
         } catch (IOException e) {

@@ -1,6 +1,5 @@
 package com.potato.potatotool.utils;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -8,10 +7,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.Security;
+import java.security.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,9 +34,6 @@ public class desUtils {
     private static final String PADDING_PKCS5_PADDING = "PKCS5Padding";
     private static final String PADDING_PKCS7_PADDING = "PKCS7Padding";
     private static final String PADDING_ZERO_PADDING = "ZeroPadding";
-    static {
-        Security.addProvider(new BouncyCastleProvider());
-    }
     /**
      * 对输入的明文进行DES加密
      *

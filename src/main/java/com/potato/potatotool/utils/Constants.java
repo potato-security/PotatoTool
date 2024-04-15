@@ -61,6 +61,7 @@ public class Constants {
             resourceFilePath = propertyName;
             propertyName = "img";
         }
+        System.out.println(resourceFilePath);
 
         InputStream inputStream = Constants.class.getClassLoader().getResourceAsStream(resourceFilePath);
         if (inputStream == null) {

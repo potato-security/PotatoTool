@@ -1,7 +1,6 @@
 package com.potato.potatotool.utils;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.graalvm.polyglot.Value;
 
 import javax.crypto.Cipher;
@@ -22,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -808,7 +806,6 @@ public class strUtils {
     }
 
     public static String SM4Decrypt(byte[] in, byte[] keyBytes) {
-        Security.addProvider(new BouncyCastleProvider());
 
         try {
 

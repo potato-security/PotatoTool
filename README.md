@@ -1,10 +1,9 @@
-mvn clean package -f pom-jdk11+.xml 打包
-mvn clean package -f jdk8.xml 打包
+1、打包时，先确保当前命令行java版本（jdk8\jdk11+）
+2、将对应版本的jdk.xml复制到pom.xml中（jdk8.xml、jdk11+.xml）
+3、重新加载mvn配置(pom.xml)
+4、运行mvn clean package
 
-打包失败请先运行mvn的插件-assembly:single看报错
-
-
-mvn没环境生效：source ~/.bash_profile
+MacOs的mvn没环境生效：source ~/.bash_profile
 
 发行版本不支持，查看当前java环境配置是否和pom.xml配置一致
 

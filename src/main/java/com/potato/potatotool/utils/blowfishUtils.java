@@ -1,6 +1,5 @@
 package com.potato.potatotool.utils;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -36,9 +35,6 @@ public class blowfishUtils {
     private static final String PADDING_PKCS5_PADDING = "PKCS5Padding";
     private static final String PADDING_PKCS7_PADDING = "PKCS7Padding";
     private static final String PADDING_ZERO_PADDING = "ZeroPadding";
-    static {
-        Security.addProvider(new BouncyCastleProvider());
-    }
     /**
      * 对输入的明文进行Blowfish加密
      *

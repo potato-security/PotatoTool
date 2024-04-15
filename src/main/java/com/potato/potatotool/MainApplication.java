@@ -2,6 +2,7 @@ package com.potato.potatotool;
 
 import com.potato.potatotool.controller.PaneLoad;
 import com.potato.potatotool.controller.PanePasswd;
+import com.potato.potatotool.utils.SecurityInitializer;
 import com.potato.potatotool.utils.Util;
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
@@ -15,14 +16,28 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static com.potato.potatotool.utils.Constants.*;
 
 public class MainApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         hostServices = getHostServices();
+
+        // 初始化配置及BC.jar文件
+        initEnvFile();
+
+        // 初始化BC算法支持
+        SecurityInitializer.initializeSecurityProvider();
 
         System.setProperty("prism.lcdtext", "false");// 关闭字体锯齿效果
 
@@ -135,6 +150,62 @@ public class MainApplication extends Application {
 
 
 
+
+    }
+
+    private void initEnvFile() {
+        String TMP_FOLDER = ".PotatoTool";
+        String CONFIG_FILE = "config.json";
+        String BcJAR_FILE = "bcprov.jar";
+        String ip2Region_FILE = "ip2region.xdb";
+
+        Path configFolder = Paths.get(System.getProperty("user.home"), TMP_FOLDER);
+
+        try {
+            Files.createDirectories(configFolder);
+            Path configFile = configFolder.resolve(CONFIG_FILE);
+
+            if (!Files.exists(configFile)) {
+                String tmpDataJsonStr = getResourceString("config");
+                Files.write(configFile, tmpDataJsonStr.getBytes(StandardCharsets.UTF_8));
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            Path bcJarFile = configFolder.resolve(BcJAR_FILE);
+            if (!Files.exists(bcJarFile)) {
+                InputStream inputStream = getResourceStream("bcprov");
+                FileOutputStream outputStream = new FileOutputStream(bcJarFile.toString());
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                inputStream.close();
+                outputStream.close();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            Path ip2RegionFile = configFolder.resolve(ip2Region_FILE);
+            if (!Files.exists(ip2RegionFile)) {
+                InputStream inputStream = getResourceStream("ip2region");
+                FileOutputStream outputStream = new FileOutputStream(ip2RegionFile.toString());
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                inputStream.close();
+                outputStream.close();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 
