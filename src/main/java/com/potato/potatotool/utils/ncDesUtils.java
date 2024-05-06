@@ -1,6 +1,8 @@
 package com.potato.potatotool.utils;
 
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2023/4/19 18:23
@@ -50,7 +52,7 @@ public class ncDesUtils {
         try {
             return this.decode(s, key);
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -59,7 +61,7 @@ public class ncDesUtils {
         try {
             return new String(this.decode(s, key));
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -67,7 +69,7 @@ public class ncDesUtils {
         try {
             return new String(this.decode(s, k));
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }

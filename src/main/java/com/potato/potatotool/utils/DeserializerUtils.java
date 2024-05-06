@@ -105,8 +105,6 @@ public class DeserializerUtils{
 
         if(byteToHex(byteData).toLowerCase().startsWith("cafebabe")){
             System.out.println("存在class字节码数据，可以导出class及java文件");
-            // TODO 界面提示可以导出class文件及反编译后的java文件，界面调整路径更改此处全局变量fileOutPath
-            //  (让fileOutPath默认以class结尾别忘了)
             String path="./tmpDataOut.class";
             strUtils.createFile(byteData, "./tmpDataOut.class");
             try {

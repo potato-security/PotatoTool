@@ -6,6 +6,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.SecureRandom;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2024/3/28 00:01
@@ -26,7 +28,7 @@ public class ivmsDes {
             byte[] result = cipher.doFinal(strUtils.hexToByteArray(str));
             return new String(result, "utf-8");
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }

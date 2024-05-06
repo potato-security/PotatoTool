@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.getResourceStream;
 
 
@@ -223,7 +224,7 @@ public class strUtils {
             outputStream.write(data);
         } catch (IOException e) {
             // 处理写入异常
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
 
     }
@@ -251,7 +252,7 @@ public class strUtils {
         } catch (IOException e) {
 
             System.out.println("[×] 文件保存失败 - " + fileName);
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
 
         }
 
@@ -282,7 +283,7 @@ public class strUtils {
         } catch (IOException e) {
 
             System.out.println("[×] 文件保存失败 - " + fileName);
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
 
         }
 
@@ -311,7 +312,7 @@ public class strUtils {
 
         } catch (IOException e) {
             System.out.println("[×] 文件保存失败 - " + newFilePath);
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
 
     }
@@ -330,7 +331,7 @@ public class strUtils {
             return fileBytes;
 
         } catch (IOException e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
 
         return null;
@@ -650,7 +651,7 @@ public class strUtils {
             return URLEncoder.encode(conText, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             // 处理编码异常
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return "";
         }
     }
@@ -816,7 +817,7 @@ public class strUtils {
 
             return new String(decrypted);
         } catch (Exception e){
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -868,7 +869,7 @@ public class strUtils {
 
             return new String(decodeBytes, "UTF-8");
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -878,7 +879,7 @@ public class strUtils {
             byte[] decodeBytes = Base64.getDecoder().decode(baseText);
             return decodeBytes;
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -930,7 +931,7 @@ public class strUtils {
 
             return buffer.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return baseText;
         }
     }
@@ -982,7 +983,7 @@ public class strUtils {
 
             return (new String(tmpRes, StandardCharsets.UTF_8));
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return oldData;
         }
     }
@@ -1216,7 +1217,7 @@ public class strUtils {
         try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)) {
             gzipOutputStream.write(data);
         } catch (IOException e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
         return outputStream.toByteArray();
     }
@@ -1296,7 +1297,7 @@ public class strUtils {
                     }
                     keyArray_AES = keyArray;
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    if(debugMode)e.printStackTrace();
                 }
             }else{
                 if(keyArray_AES.isEmpty()){ // 优先读取缓存数据
@@ -1309,7 +1310,7 @@ public class strUtils {
                         }
                         keyArray_AES = keyArray;
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        if(debugMode)e.printStackTrace();
                     }
                 }else {
                     keyArray = keyArray_AES;

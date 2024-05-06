@@ -120,9 +120,9 @@ public class Constants {
         byte[] buffer = new byte[4096];
         int bytesRead;
         try{
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, bytesRead);
-        }
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
         }catch (Exception e){
             e.printStackTrace();
         }

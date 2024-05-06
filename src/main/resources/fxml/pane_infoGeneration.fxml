@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.effect.DropShadow?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/PaneInfoGeneration.css"
@@ -9,29 +10,68 @@
            fx:controller="com.potato.potatotool.controller.PaneInfoGeneration"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox fx:id="paneBox" spacing="25" alignment="TOP_CENTER">
+    <VBox alignment="CENTER" spacing="20">
 
-        <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
-            <HBox>
-                <Label id="tipTitle" text="当前版本"/>
-                <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="社区版"/>
-            </HBox>
+        <Button minHeight="48.0" minWidth="${sPane.width}" text="生成信息" onAction="#generation">
+            <effect>
+                <DropShadow />
+            </effect>
+        </Button>
 
+        <FlowPane styleClass="flowPane" alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
             <HBox>
-                <Label id="tipTitle" text="支持类型"/>
-                <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="个人信息、通讯信息、单位组织信息、银行卡信息"/>
+                <Label id="tipTitle" text="           姓名          "/>
+                <Label id="tipSymbol" text="："/>
+                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="nameTF"/>
             </HBox>
-        </VBox>
+            <HBox>
+                <Label id="tipTitle" text="           拼音          "/>
+                <Label id="tipSymbol" text="："/>
+                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="nameToPinYinTF"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="         手机号        "/>
+                <Label id="tipSymbol" text="："/>
+                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="         邮箱号        "/>
+                <Label id="tipSymbol" text="："/>
+                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="emailTF"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="       居住地址       "/>
+                <Label id="tipSymbol" text="："/>
+                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="addressTF"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="       身份证号       "/>
+                <Label id="tipSymbol" text="："/>
+                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="idCardTF"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="       银行卡号       "/>
+                <Label id="tipSymbol" text="："/>
+                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="bankCardTF"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="         邮编号        "/>
+                <Label id="tipSymbol" text="："/>
+                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="postalCodeTF"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="统一社会信用代码"/>
+                <Label id="tipSymbol" text="："/>
+                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="unifiedSocialCreditCodeTF"/>
+            </HBox>
+            <HBox>
+                <Label id="tipTitle" text="   组织机构代码   "/>
+                <Label id="tipSymbol" text="："/>
+                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="organizationCodeTF"/>
+            </HBox>
+        </FlowPane>
+        <Pane minHeight="40"/>
 
     </VBox>
-
-    <Label prefWidth="550" prefHeight="500">
-        <graphic>
-            <Region styleClass="closeImg"/>
-        </graphic>
-    </Label>
-
 
 </StackPane>

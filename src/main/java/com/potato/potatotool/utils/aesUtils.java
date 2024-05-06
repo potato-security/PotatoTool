@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.getResourceStream;
 
 /**
@@ -103,7 +104,7 @@ public class aesUtils {
             validatePadding(padding);
 
             if(key==null){
-                System.out.println("无key输入");
+//                System.out.println("无key输入");
                 return null;
             }
 
@@ -167,7 +168,7 @@ public class aesUtils {
             return (!classCode && !serializeCode && !readability) ? null : decryptedTextBytes;
 
         }catch (Exception e){
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -241,7 +242,7 @@ public class aesUtils {
                     }
                     keyArray_AES = keyArray;
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    if(debugMode)e.printStackTrace();
                 }
             }else {
                 if(keyArray_AES.isEmpty()){ // 优先读取缓存数据
@@ -254,7 +255,7 @@ public class aesUtils {
                         }
                         keyArray_AES = keyArray;
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        if(debugMode)e.printStackTrace();
                     }
                 }else {
                     keyArray = keyArray_AES;
@@ -312,7 +313,7 @@ public class aesUtils {
 
                             return result;
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            if(debugMode)e.printStackTrace();
                             return null;
                         }
                     };
@@ -330,7 +331,7 @@ public class aesUtils {
                     break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                if(debugMode)e.printStackTrace();
             }
         }
 

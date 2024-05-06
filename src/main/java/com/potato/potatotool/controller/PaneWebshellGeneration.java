@@ -1,8 +1,11 @@
 package com.potato.potatotool.controller;
 
 import com.potato.potatotool.utils.strUtils;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
@@ -21,6 +24,34 @@ public class PaneWebshellGeneration {
 
     @FXML
     private Label tipTitle;
+
+    @FXML
+    private ComboBox godComboBox;
+    @FXML
+    private ComboBox godModeComboBox;
+    @FXML
+    private TextField godKey;
+
+    @FXML
+    private ComboBox behComboBox;
+    @FXML
+    private ComboBox behModeComboBox;
+    @FXML
+    private TextField behKey;
+
+    @FXML
+    private ComboBox antComboBox;
+    @FXML
+    private ComboBox antModeComboBox;
+    @FXML
+    private TextField antKey;
+
+    @FXML
+    private ComboBox cmdComboBox;
+    @FXML
+    private ComboBox cmdModeComboBox;
+    @FXML
+    private TextField cmdKey;
 
     @FXML
     public void webshellGeneration() {
@@ -84,5 +115,239 @@ public class PaneWebshellGeneration {
         }
         tipTitle.setVisible(true);
 
+    }
+
+    @FXML
+    public void godChoose(ActionEvent event) {
+        if(godComboBox.getValue().equals("jsp")){
+            ObservableList<String> items = FXCollections.observableArrayList("AES_RAW", "AES_RAW_unicode");
+            godModeComboBox.setItems(items);
+        }else if(godComboBox.getValue().equals("jspx")){
+            ObservableList<String> items = FXCollections.observableArrayList("AES_RAW", "AES_RAW_unicode");
+            godModeComboBox.setItems(items);
+        }else if(godComboBox.getValue().equals("php")){
+            ObservableList<String> items = FXCollections.observableArrayList("XOR_base64");
+            godModeComboBox.setItems(items);
+        }else if(godComboBox.getValue().equals("asp")){
+            ObservableList<String> items = FXCollections.observableArrayList("RAW");
+            godModeComboBox.setItems(items);
+        }else if(godComboBox.getValue().equals("aspx")){
+            ObservableList<String> items = FXCollections.observableArrayList("CSHARP_AES_RAW");
+            godModeComboBox.setItems(items);
+        }else if(godComboBox.getValue().equals("ashx")){
+            ObservableList<String> items = FXCollections.observableArrayList("CSHARP_AES_RAW");
+            godModeComboBox.setItems(items);
+        }
+    }
+
+    @FXML
+    public void antChoose(ActionEvent event) {
+        if(antComboBox.getValue().equals("jsp")){
+            ObservableList<String> items = FXCollections.observableArrayList("default", "default_unicode");
+            antModeComboBox.setItems(items);
+        }else if(antComboBox.getValue().equals("jspx")){
+            ObservableList<String> items = FXCollections.observableArrayList("default", "default_unicode");
+            antModeComboBox.setItems(items);
+        }else if(antComboBox.getValue().equals("php")){
+            ObservableList<String> items = FXCollections.observableArrayList("default", "base64");
+            antModeComboBox.setItems(items);
+        }else if(antComboBox.getValue().equals("asp")){
+            ObservableList<String> items = FXCollections.observableArrayList("default");
+            antModeComboBox.setItems(items);
+        }else if(antComboBox.getValue().equals("aspx")){
+            ObservableList<String> items = FXCollections.observableArrayList("default");
+            antModeComboBox.setItems(items);
+        }
+    }
+
+    @FXML
+    public void behChoose(ActionEvent event) {
+        if(behComboBox.getValue().equals("jsp")){
+            ObservableList<String> items = FXCollections.observableArrayList("default", "default_unicode");
+            behModeComboBox.setItems(items);
+        }else if(behComboBox.getValue().equals("jspx")){
+            ObservableList<String> items = FXCollections.observableArrayList("default", "default_unicode");
+            behModeComboBox.setItems(items);
+        }else if(behComboBox.getValue().equals("php")){
+            ObservableList<String> items = FXCollections.observableArrayList("default");
+            behModeComboBox.setItems(items);
+        }else if(behComboBox.getValue().equals("asp")){
+            ObservableList<String> items = FXCollections.observableArrayList("default");
+            behModeComboBox.setItems(items);
+        }else if(behComboBox.getValue().equals("aspx")){
+            ObservableList<String> items = FXCollections.observableArrayList("default");
+            behModeComboBox.setItems(items);
+        }
+    }
+
+    @FXML
+    public void cmdChoose(ActionEvent event) {
+        if(cmdComboBox.getValue().equals("jsp")){
+            ObservableList<String> items = FXCollections.observableArrayList("default", "default_unicode", "reflect", "reflect_unicode");
+            cmdModeComboBox.setItems(items);
+        }else if(cmdComboBox.getValue().equals("jspx")){
+            ObservableList<String> items = FXCollections.observableArrayList("default", "default_unicode", "reflect", "reflect_unicode");
+            cmdModeComboBox.setItems(items);
+        }else if(cmdComboBox.getValue().equals("ashx")){
+            ObservableList<String> items = FXCollections.observableArrayList("default");
+            cmdModeComboBox.setItems(items);
+        }
+    }
+
+    @FXML
+    public void godWebshellGeneration(ActionEvent event) {
+        String pass = godKey.getText().isEmpty()? "potato" : godKey.getText();
+        String webShell_Manager = "Godzilla";
+
+        if(godComboBox.getValue() == null){
+            tipTitle.setText("请选择脚本语言！");
+            tipTitle.setVisible(true);
+            return;
+        }
+        if(godModeComboBox.getValue() == null){
+            tipTitle.setText("请选择编码方式！");
+            tipTitle.setVisible(true);
+            return;
+        }
+
+        String scriptMethod = (String) godComboBox.getValue();
+        String enMothod_Str = (String) godModeComboBox.getValue();
+
+        try {
+
+            String[] enMethod = enMothod_Str.split("_");
+            String aesKey = strUtils.md5(pass).substring(0, 16);
+
+            String webShellData = getWebShell(webShell_Manager, scriptMethod, enMethod, pass, aesKey);
+
+            String fileName = "." + File.separator + "webshell_KeyIs_" + pass + File.separator + scriptMethod  + File.separator + webShell_Manager + "_" + enMothod_Str + "." + scriptMethod;
+            fileName = fileName.replace("__", "_").replace("_.", ".");
+            strUtils.createFile(webShellData, fileName);
+
+            tipTitle.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
+
+        }catch (Exception e){
+            e.printStackTrace();
+            tipTitle.setText("webShell生成失败，详细请查看命令窗口报错");
+        }
+        tipTitle.setVisible(true);
+    }
+
+    @FXML
+    public void behWebshellGeneration(ActionEvent event) {
+        String pass = behKey.getText().isEmpty()? "potato" : behKey.getText();
+        String webShell_Manager = "Behinder";
+
+        if(behComboBox.getValue() == null){
+            tipTitle.setText("请选择脚本语言！");
+            tipTitle.setVisible(true);
+            return;
+        }
+        if(behModeComboBox.getValue() == null){
+            tipTitle.setText("请选择编码方式！");
+            tipTitle.setVisible(true);
+            return;
+        }
+
+        String scriptMethod = (String) behComboBox.getValue();
+        String enMothod_Str = (String) behModeComboBox.getValue();
+
+        try {
+
+            String[] enMethod = enMothod_Str.split("_");
+            String aesKey = strUtils.md5(pass).substring(0, 16);
+
+            String webShellData = getWebShell(webShell_Manager, scriptMethod, enMethod, pass, aesKey);
+
+            String fileName = "." + File.separator + "webshell_KeyIs_" + pass + File.separator + scriptMethod  + File.separator + webShell_Manager + "_" + enMothod_Str + "." + scriptMethod;
+            fileName = fileName.replace("__", "_").replace("_.", ".");
+            strUtils.createFile(webShellData, fileName);
+
+            tipTitle.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
+
+        }catch (Exception e){
+            e.printStackTrace();
+            tipTitle.setText("webShell生成失败，详细请查看命令窗口报错");
+        }
+        tipTitle.setVisible(true);
+
+    }
+
+    @FXML
+    public void antWebshellGeneration(ActionEvent event) {
+        String pass = antKey.getText().isEmpty()? "potato" : antKey.getText();
+        String webShell_Manager = "AntSword";
+
+        if(antComboBox.getValue() == null){
+            tipTitle.setText("请选择脚本语言！");
+            tipTitle.setVisible(true);
+            return;
+        }
+        if(antModeComboBox.getValue() == null){
+            tipTitle.setText("请选择编码方式！");
+            tipTitle.setVisible(true);
+            return;
+        }
+
+        String scriptMethod = (String) antComboBox.getValue();
+        String enMothod_Str = (String) antModeComboBox.getValue();
+
+        try {
+
+            String[] enMethod = enMothod_Str.split("_");
+            String aesKey = strUtils.md5(pass).substring(0, 16);
+
+            String webShellData = getWebShell(webShell_Manager, scriptMethod, enMethod, pass, aesKey);
+
+            String fileName = "." + File.separator + "webshell_KeyIs_" + pass + File.separator + scriptMethod  + File.separator + webShell_Manager + "_" + enMothod_Str + "." + scriptMethod;
+            fileName = fileName.replace("__", "_").replace("_.", ".");
+            strUtils.createFile(webShellData, fileName);
+
+            tipTitle.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
+
+        }catch (Exception e){
+            e.printStackTrace();
+            tipTitle.setText("webShell生成失败，详细请查看命令窗口报错");
+        }
+        tipTitle.setVisible(true);
+    }
+
+    @FXML
+    public void cmdWebshellGeneration(ActionEvent event) {
+        String pass = cmdKey.getText().isEmpty()? "potato" : cmdKey.getText();
+        String webShell_Manager = "Cmd";
+
+        if(cmdComboBox.getValue() == null){
+            tipTitle.setText("请选择脚本语言！");
+            tipTitle.setVisible(true);
+            return;
+        }
+        if(cmdModeComboBox.getValue() == null){
+            tipTitle.setText("请选择编码方式！");
+            tipTitle.setVisible(true);
+            return;
+        }
+
+        String scriptMethod = (String) cmdComboBox.getValue();
+        String enMothod_Str = (String) cmdModeComboBox.getValue();
+
+        try {
+
+            String[] enMethod = enMothod_Str.split("_");
+            String aesKey = strUtils.md5(pass).substring(0, 16);
+
+            String webShellData = getWebShell(webShell_Manager, scriptMethod, enMethod, pass, aesKey);
+
+            String fileName = "." + File.separator + "webshell_KeyIs_" + pass + File.separator + scriptMethod  + File.separator + webShell_Manager + "_" + enMothod_Str + "." + scriptMethod;
+            fileName = fileName.replace("__", "_").replace("_.", ".");
+            strUtils.createFile(webShellData, fileName);
+
+            tipTitle.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
+
+        }catch (Exception e){
+            e.printStackTrace();
+            tipTitle.setText("webShell生成失败，详细请查看命令窗口报错");
+        }
+        tipTitle.setVisible(true);
     }
 }

@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.getResourceStream;
 
 /**
@@ -108,7 +109,7 @@ public class desUtils {
 
 
             if(key==null){
-                System.out.println("无key输入");
+//                System.out.println("无key输入");
                 return null;
             }
 
@@ -172,7 +173,7 @@ public class desUtils {
             return (!classCode && !serializeCode && !readability)? null : decryptedTextBytes;
 
         }catch (Exception e){
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -246,7 +247,7 @@ public class desUtils {
                     }
                     keyArray_DES = keyArray;
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    if(debugMode)e.printStackTrace();
                 }
             }else {
                 if(keyArray_DES.isEmpty()){ // 优先读取缓存数据
@@ -259,7 +260,7 @@ public class desUtils {
                         }
                         keyArray_DES = keyArray;
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        if(debugMode)e.printStackTrace();
                     }
                 }else {
                     keyArray = keyArray_DES;
@@ -323,7 +324,7 @@ public class desUtils {
 
                             return result;
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            if(debugMode)e.printStackTrace();
                             return null;
                         }
                     };
@@ -341,7 +342,7 @@ public class desUtils {
                     break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                if(debugMode)e.printStackTrace();
             }
         }
 
@@ -369,7 +370,7 @@ public class desUtils {
             iv_DES.set("null");
             return new String(decryptedData);
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -396,14 +397,14 @@ public class desUtils {
             try {
                 dos.writeLong(l);
             } catch (IOException e) {
-                e.printStackTrace();
+                if(debugMode)e.printStackTrace();
             }
         }
 
         try {
             dos.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
 
         byte[] key = bos.toByteArray();
@@ -417,7 +418,7 @@ public class desUtils {
             byte[] result = messageDigest.digest();
             return result;
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }

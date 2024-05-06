@@ -3,45 +3,130 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.control.Button?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/PaneInfoGeneration.css"
            fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.PaneLocationQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox fx:id="paneBox" spacing="25" alignment="TOP_CENTER">
+    <VBox spacing="20" alignment="CENTER">
 
-        <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
-            <HBox>
-                <Label id="tipTitle" text="当前版本"/>
-                <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="社区版"/>
+        <VBox styleClass="vBox" spacing="20">
+            <HBox styleClass="linenoPane" spacing="20" alignment="CENTER">
+                <HBox>
+                    <Label id="tipTitle_input" text="身份证号："/>
+                    <TextField  prefWidth="${sPane.width / 2 -200}" fx:id="idCardInput" promptText="请输入身份证号"/>
+                </HBox>
+                <Button minHeight="35.0" minWidth="200" text="查询" onAction="#getIdCardInfoFx">
+                    <effect>
+                        <DropShadow />
+                    </effect>
+                </Button>
             </HBox>
 
-            <HBox>
-                <Label id="tipTitle" text="支持类型"/>
-                <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="银行卡归属地免费批量查询、手机号归属地免费批量查询。"/>
+            <FlowPane alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
+                <HBox>
+                    <Label id="tipTitle" text="生日"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}" fx:id="idCardTF_born"/>
+                </HBox>
+                <HBox>
+                    <Label id="tipTitle" text="性别"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}" fx:id="idCardTF_sex"/>
+                </HBox>
+                <HBox>
+                    <Label id="tipTitle" text="地区"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}" fx:id="idCardTF_att"/>
+                </HBox>
+                <HBox visible="false">
+                    <Label id="tipTitle" text="占位"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}"/>
+                </HBox>
+            </FlowPane>
+        </VBox>
+
+        <VBox styleClass="vBox" spacing="20">
+            <HBox styleClass="linenoPane" spacing="20" alignment="CENTER">
+                <HBox>
+                    <Label id="tipTitle_input" text="银行卡号："/>
+                    <TextField  prefWidth="${sPane.width / 2 -200}" fx:id="bankCardInput"  promptText="请输入银行卡号"/>
+                </HBox>
+                <Button minHeight="35.0" minWidth="200" text="查询" onAction="#getBankCardInfoFx">
+                    <effect>
+                        <DropShadow />
+                    </effect>
+                </Button>
             </HBox>
-            <HBox>
-                <Label id="tipTitle" text="支持广泛"/>
-                <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="涵盖超过2000家银行，可精准查询银行卡具体归属地或支行，以及手机号的运营商和省市信息。"/>
+
+            <FlowPane alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
+                <HBox>
+                    <Label id="tipTitle" text="类型"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}" fx:id="bankCardTF_type"/>
+                </HBox>
+                <HBox>
+                    <Label id="tipTitle" text="银行"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}" fx:id="bankCardTF_bank"/>
+                </HBox>
+            </FlowPane>
+        </VBox>
+
+        <VBox styleClass="vBox" spacing="20">
+            <HBox styleClass="linenoPane" spacing="20" alignment="CENTER">
+                <HBox>
+                    <Label id="tipTitle_input" text="手机卡号："/>
+                    <TextField  prefWidth="${sPane.width / 2 -200}" fx:id="phoneInput"  promptText="请输入手机号"/>
+                </HBox>
+                <Button minHeight="35.0" minWidth="200" text="查询" onAction="#getPhoneInfoFx">
+                    <effect>
+                        <DropShadow />
+                    </effect>
+                </Button>
             </HBox>
-            <HBox>
-                <Label id="tipTitle" text="数据筛选"/>
-                <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="提供强大的数据筛选功能，包括数据去重和元素筛选，帮助用户快速处理和分析大量查询结果。"/>
-            </HBox>
+
+            <FlowPane alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
+                <HBox>
+                    <Label id="tipTitle" text="省份"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF_Province"/>
+                </HBox>
+                <HBox>
+                    <Label id="tipTitle" text="城市"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF_City"/>
+                </HBox>
+                <HBox>
+                    <Label id="tipTitle" text="运商"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF_Operator"/>
+                </HBox>
+                <HBox>
+                    <Label id="tipTitle" text="区号"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF_AreaCode"/>
+                </HBox>
+                <HBox>
+                    <Label id="tipTitle" text="邮编"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF_PostalCode"/>
+                </HBox>
+                <HBox visible="false">
+                    <Label id="tipTitle" text="占位"/>
+                    <Label id="tipSymbol" text="："/>
+                    <TextField prefWidth="${sPane.width / 2 -200}"/>
+                </HBox>
+            </FlowPane>
         </VBox>
 
 
     </VBox>
-
-    <Label prefWidth="550" prefHeight="500">
-        <graphic>
-            <Region styleClass="closeImg"/>
-        </graphic>
-    </Label>
-
 
 </StackPane>

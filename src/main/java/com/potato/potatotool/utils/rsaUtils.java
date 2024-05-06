@@ -10,6 +10,8 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2023/3/27 21:44
@@ -23,7 +25,7 @@ public class rsaUtils {
             PublicKey publicKey = rsaUtils.getPublicKey(publicKeyText);
             return rsaUtils.decrypt(publicKey, cipherText);
         }catch (Exception e){
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }

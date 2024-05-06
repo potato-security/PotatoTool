@@ -12,6 +12,7 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.getResourceStream;
 
 /**
@@ -60,7 +61,7 @@ public class shiroDecrypt {
                     }
                     keyArray_Shiro = keyArray;
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    if(debugMode)e.printStackTrace();
                 }
             }else {
                 keyArray = keyArray_Shiro;
@@ -89,7 +90,7 @@ public class shiroDecrypt {
                         aes.iv_AES.set(mode.equals("GCM") ? "Null" : "Random");
                         return decryptedTextBytes;
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        if(debugMode)e.printStackTrace();
                         return null;
                     }
                 };
@@ -107,7 +108,7 @@ public class shiroDecrypt {
                 }
 
             } catch (Exception e) {
-                e.printStackTrace();
+                if(debugMode)e.printStackTrace();
             }
         }
 

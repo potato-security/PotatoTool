@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2023/3/27 10:59
@@ -37,7 +39,7 @@ public class weblogicDecUtils {
                 cleartext = decrypt3DES(customPath, ciphertext.replaceAll("^[{3DES}]+", ""));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
         return cleartext;
     }
@@ -59,7 +61,7 @@ public class weblogicDecUtils {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWITHSHAAND128BITRC2-CBC");
         PBEKeySpec pbeKeySpec = new PBEKeySpec(password, salt, 5);
@@ -100,7 +102,7 @@ public class weblogicDecUtils {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWITHSHAAND128BITRC2-CBC");
         PBEKeySpec pbeKeySpec = new PBEKeySpec(password, salt, 5);

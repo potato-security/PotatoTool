@@ -20,7 +20,7 @@ public class taskListCheck {
      */
     public static void main(String []args) {
 
-        JSONObject taskListJsonObject = init();  //TODO !软件初始化调用一次就行! !!!不要每次搜索都调用!!!
+        JSONObject taskListJsonObject = init();  //初始化调用一次就行! !!!不要每次搜索都调用!!!
         JSONObject avJsonOjb = (JSONObject) taskListJsonObject.get("avList");
         JSONObject tqJsonOjb = (JSONObject) taskListJsonObject.get("tqList");
 

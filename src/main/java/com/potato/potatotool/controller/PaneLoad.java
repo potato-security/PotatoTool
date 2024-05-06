@@ -68,8 +68,8 @@ public class PaneLoad {
 
         initAnimatedText();
 
-        initAnimatedRedBlueLog();
 
+        initAnimatedRedBlueLog();
 
 //         虚拟动态眼镜Demo
 //        AnchorPane pane = new AnchorPane();
@@ -155,7 +155,7 @@ public class PaneLoad {
 
         //  延时
         PauseTransition delay = new PauseTransition(Duration.seconds(1));
-        PauseTransition delayOver = new PauseTransition(Duration.seconds(3));
+        PauseTransition delayOver = new PauseTransition(Duration.seconds(4));
         delay.setOnFinished(event -> {
             parallelTransition.play();
             delayOver.play();

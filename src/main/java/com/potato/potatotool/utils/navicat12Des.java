@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2024/3/28 11:36
@@ -26,7 +28,7 @@ public class navicat12Des {
 
             return res;
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
 

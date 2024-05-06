@@ -22,7 +22,7 @@ import org.fxmisc.richtext.CodeArea;
 public class PaneDecompile {
 
     @FXML
-    private StackPane sPane;
+        private StackPane sPane;
 
     @FXML
     private VirtualizedScrollPane virScrollPane;
@@ -34,6 +34,7 @@ public class PaneDecompile {
     private ComboBox rulesComboBox;
 
     public void initialize() {
+        new codeHighlightingAsync().codeHighlighting(result);
 
         //  CodeArea添加高自适应
         sPane.heightProperty().addListener((obs, oldValue, newValue) -> {
@@ -84,7 +85,6 @@ public class PaneDecompile {
                 Platform.runLater(() -> {
                     result.replaceText(res);
                 });
-                new codeHighlightingAsync().codeHighlighting(result);
                 return null;
             }
         };

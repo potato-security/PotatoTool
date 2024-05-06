@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.effect.DropShadow?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/PaneKbRootQuery.css"
@@ -9,40 +10,27 @@
            fx:controller="com.potato.potatotool.controller.PaneKbRootQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox fx:id="paneBox" spacing="25" alignment="TOP_CENTER">
+    <VBox fx:id="vBox" alignment="CENTER" prefWidth="${sPane.width}" prefHeight="${sPane.height}" spacing="15">
 
-        <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
-            <HBox>
-                <Label id="tipTitle" text="当前版本"/>
-                <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="社区版"/>
-            </HBox>
+        <Pane style="-fx-background-radius: 10;-fx-background-color: null" minHeight="${sPane.height * 0.4 - 75}">
+            <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请粘贴补丁号或systeminfo信息"  />
+        </Pane>
 
-            <HBox>
-                <Label id="tipTitle" text="查询提权信息"/>
-                <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="检查已安装的KB编号，展示存在的提权漏洞的详细信息，包括发布日期、CVE编号、KB编号、标题、影响产品、影响组件、严重性、漏洞影响、替代KB编号、漏洞利用方法"/>
-            </HBox>
-            <HBox>
-                <Label id="tipTitle" text="平替KB检测"/>
-                <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="通过对比是否已存在可替换的KB编号，剔除不存在的提权漏洞信息，减少误报，提高信息准确性。"/>
-            </HBox>
-            <HBox>
-                <Label id="tipTitle" text="自定义筛选"/>
-                <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="可根据特定情况，自定义筛选/过滤条件，如影响产品、影响组件、严重性、是否存在漏洞利用等标准，减少误报，提高信息准确性。"/>
-            </HBox>
-        </VBox>
-
+        <Button minHeight="48.0" minWidth="${sPane.width}" text="提取查询" onAction="#searchKb">
+            <effect>
+                <DropShadow />
+            </effect>
+        </Button>
 
     </VBox>
 
+    <Label prefWidth="${sPane.width}" prefHeight="${sPane.height}"/>
     <Label prefWidth="550" prefHeight="500">
         <graphic>
             <Region styleClass="closeImg"/>
         </graphic>
     </Label>
+
 
 
 </StackPane>

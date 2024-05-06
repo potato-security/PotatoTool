@@ -9,6 +9,7 @@ import com.potato.potatotool.content.blueTeam.webShellDecrypt;
 import com.potato.potatotool.utils.DefaultContextMenu;
 import com.potato.potatotool.utils.codeAnalyzerUtils;
 import com.potato.potatotool.utils.strUtils;
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -80,6 +81,11 @@ public class PaneWebshellDecode {
     @FXML
     private Button showAI;
 
+    @FXML
+    private Label prompt;
+    @FXML
+    private Pane promptPane;
+
     Map<String, Object> res = new HashMap<>();
 
     private double aiTextAreaStartX, aiTextAreaStartY;
@@ -88,6 +94,7 @@ public class PaneWebshellDecode {
     private static final double RESIZE_MARGIN = 10;
     @FXML
     void initialize() throws IOException {
+        new codeHighlightingAsync().codeHighlighting(result);
 
         initTextData();
 
@@ -380,7 +387,6 @@ public class PaneWebshellDecode {
                     }
 
                 });
-                new codeHighlightingAsync().codeHighlighting(result);
                 return null;
             }
         };
@@ -440,10 +446,33 @@ public class PaneWebshellDecode {
         tipTitleCopy.setManaged(false);
     }
 
+
     @FXML
-    private void coptTip(){
+    private void copyTip(){
         String tip = tipTitle.getText();
         strUtils.setClipboardString(tip);
+        copyAnimation();
+    }
+
+    void copyAnimation() {
+        // 显示提示组件
+        promptPane.setVisible(true);
+        promptPane.setManaged(true);
+
+        // 创建渐入动画
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+
+        // 创建渐出动画
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        fadeOut.setDelay(Duration.seconds(0.5)); // 延迟1秒执行渐出动画
+
+        // 播放渐入动画，完成后播放渐出动画
+        fadeIn.setOnFinished(event -> fadeOut.play());
+        fadeIn.play();
     }
 
     void writeTestData(String data) {

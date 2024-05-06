@@ -1122,7 +1122,7 @@ public class PaneBlockchain {
     }
 
     private void showRegionTokentrans() {
-        System.out.println("第一版先到这里哦~ 第一版暂没写批量查询及导出，工作比较忙");// TODO 记得改
+        System.out.println("第一版先到这里哦~ 第一版暂没写批量查询及导出，工作比较忙");
     }
 
     //  导航转跳

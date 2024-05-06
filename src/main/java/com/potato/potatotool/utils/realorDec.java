@@ -2,6 +2,8 @@ package com.potato.potatotool.utils;
 
 import java.nio.charset.StandardCharsets;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2024/3/28 14:25
@@ -30,7 +32,7 @@ public class realorDec {
             return null;
 
         }catch (Exception e){
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }

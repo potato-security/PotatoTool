@@ -8,6 +8,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 
 /**
  * @author Potato
@@ -20,6 +22,7 @@ public class webShellDecrypt {
     shiroDecrypt shiro = new shiroDecrypt();
     desUtils des = new desUtils();
     blowfishUtils blowfish = new blowfishUtils();
+    md5Decrypt md5 = new md5Decrypt();
 
     public byte[] classData;
 
@@ -86,7 +89,7 @@ public class webShellDecrypt {
             try{
                 jsonData = new jsonUtils.OrderedJSONObject(postData);
             } catch (Exception e) {
-                e.printStackTrace();
+                if(debugMode)e.printStackTrace();
                 System.out.println("json格式错误，确定是json格式么？");
             }
         }
@@ -269,6 +272,18 @@ public class webShellDecrypt {
             return Shiro;
         }
 
+
+        // md5爆破尝试
+        if(conText.length()==16 || conText.length()==32 || conText.length()==40) {
+            String tmpConText_md5 = md5.decrypt(conText);
+            if(tmpConText_md5 != null) {
+                encodeMode.add(md5.mode);
+                encodeModeList.add(encodeMode);
+                return tmpConText_md5;
+            }
+        }
+
+
         // 尝试组合解密-URLdeocde+【(Base64+XOR)/AES】 【兼容+Gzip】
         for(int i=0; i<3 ; i++){
             String tmpConText = conText;
@@ -302,7 +317,7 @@ public class webShellDecrypt {
 
                 tmp_conText3 = str.xorEncode(tmp_conText2, inputKey, traverse, customPath);
             }catch (Exception e){
-                e.printStackTrace();
+                if(debugMode)e.printStackTrace();
             }
 
             if(tmp_conText3 != null){

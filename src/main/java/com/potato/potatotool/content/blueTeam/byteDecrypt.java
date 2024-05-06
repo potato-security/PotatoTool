@@ -5,6 +5,7 @@ import com.potato.potatotool.utils.strUtils;
 
 import java.nio.charset.StandardCharsets;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.strUtils.byteToHex;
 import static com.potato.potatotool.utils.strUtils.hexDecode;
 
@@ -71,7 +72,7 @@ public class byteDecrypt {
             return byteArray;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
 
         return null;

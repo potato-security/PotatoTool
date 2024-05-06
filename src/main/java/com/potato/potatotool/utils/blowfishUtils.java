@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.getResourceStream;
 
 /**
@@ -234,7 +235,7 @@ public class blowfishUtils {
                     }
                     keyArray_Blowfish = keyArray;
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    if(debugMode)e.printStackTrace();
                 }
             }else {
                 if(keyArray_Blowfish.isEmpty()){ // 优先读取缓存数据
@@ -247,7 +248,7 @@ public class blowfishUtils {
                         }
                         keyArray_Blowfish = keyArray;
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        if(debugMode)e.printStackTrace();
                     }
                 }else {
                     keyArray = keyArray_Blowfish;
@@ -311,7 +312,7 @@ public class blowfishUtils {
 
                             return result;
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            if(debugMode)e.printStackTrace();
                             return null;
                         }
                     };
@@ -329,7 +330,7 @@ public class blowfishUtils {
                     break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                if(debugMode)e.printStackTrace();
             }
         }
 
@@ -355,7 +356,7 @@ public class blowfishUtils {
 
             return new String(encoding);
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }

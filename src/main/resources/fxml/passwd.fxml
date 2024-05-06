@@ -71,9 +71,7 @@
                         <Label fx:id="tipTitle" StackPane.alignment="CENTER_RIGHT"/>
                     </StackPane>
 
-
                 </VBox>
-
 
             </VBox>
 

@@ -70,7 +70,7 @@ public class codeHighlightingAsync {
                     if(t.isSuccess()) {
                         return Optional.of(t.get());
                     } else {
-                        t.getFailure().printStackTrace();
+//                        t.getFailure().printStackTrace();
                         return Optional.empty();
                     }
                 })

@@ -40,7 +40,7 @@
       <HBox alignment="CENTER" spacing="20">
          <StackPane  onMouseEntered="#handleMouseEntered" onMouseExited="#handleMouseExited">
             <Label fx:id="tipTitle" visible="false" managed="false"/>
-            <Button styleClass="copyButton" fx:id="tipTitleCopy" text="复制" visible="false" managed="false" onAction="#coptTip" StackPane.alignment="CENTER_RIGHT"/>
+            <Button styleClass="copyButton" fx:id="tipTitleCopy" text="复制" visible="false" managed="false" onAction="#copyTip" StackPane.alignment="CENTER_RIGHT"/>
          </StackPane>
          <ComboBox fx:id="rulesComboBox" prefHeight="30.0" minWidth="250" prefWidth="250" onAction="#rulesComboChoose">
             <items>
@@ -127,4 +127,11 @@
          </Pane>
       </StackPane>
    </VBox>
+
+   <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="200" alignment="CENTER" StackPane.alignment="CENTER">
+      <effect>
+         <DropShadow/>
+      </effect>
+      <Label fx:id="prompt" text="复制成功"/>
+   </StackPane>
 </StackPane>

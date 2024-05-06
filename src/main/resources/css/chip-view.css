@@ -1,0 +1,44 @@
+/* -----------------------------------------------------------------------------------------------------
+ * ChipView
+ */
+
+.chip-view {
+    -fx-background: -fx-accent;
+    -fx-background-color: -fx-background;
+    -fx-background-radius: 1000;
+}
+
+.chip-view > .chip-container {
+}
+
+.chip-view > .chip-container > .label {
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 5 10 5 10;
+}
+
+.chip-view > .chip-container > .close-icon {
+    -fx-background-color: transparent, derive(-fx-accent, -20%);
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 1000;
+    -size: 25;
+    -fx-pref-width: -size;
+    -fx-pref-height: -size;
+    -fx-min-width: -size;
+    -fx-min-height: -size;
+    -fx-max-width: -size;
+    -fx-max-height: -size;
+}
+
+.chip-view > .chip-container > .close-icon:hover {
+    -fx-background-color: transparent, derive(-fx-accent, -30%);
+}
+
+.chip-view > .chip-container > .close-icon:pressed {
+    -fx-background-color: transparent, derive(-fx-accent, -40%);
+}
+
+.chip-view > .chip-container > .close-icon > .ikonli-font-icon {
+    -fx-icon-size: 12px;
+    -fx-fill: white;
+}

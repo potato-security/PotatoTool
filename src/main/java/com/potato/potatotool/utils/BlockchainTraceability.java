@@ -21,7 +21,6 @@ public class BlockchainTraceability {
         obj = new RequestObj();
         obj.setMethod("GET");
         obj.setHeaders(headers);
-//        obj.setProxies("127.0.0.1:8080");
     }
 
 

@@ -102,6 +102,10 @@
       "mode": "[[HexDecode, Class编译, 反序列化]]"
     },
     {
+      "data": "text1=3e2e95f5ad970eadfa7e17eaf73da97024aa5359&text2=8ee2027983915ec78acc45027d874316&text3=83915ec78acc4502",
+      "mode": "[[SHA1], [MD5], [MD5-16]]"
+    },
+    {
       "data": "JMK83aAgUCrm2fHdvJWIEQ==",
       "mode": "[[蓝凌DES\\ECB\\PKCS5Padding<Key:iv>kmssAdminKey:Null]]"
     },

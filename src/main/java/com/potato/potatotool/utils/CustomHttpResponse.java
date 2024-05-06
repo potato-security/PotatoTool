@@ -74,6 +74,8 @@ public class CustomHttpResponse{
                 callback.onResponse("[[Premature EOF]]");
             }else if(e.toString().contains("Server returned HTTP response code: 502")){
                 callback.onResponse("[[Response code 502]]");
+            }else if(e.toString().contains("Read timed out")){
+                callback.onResponse("[[Read timed out]]");
             }
             e.printStackTrace();
         }

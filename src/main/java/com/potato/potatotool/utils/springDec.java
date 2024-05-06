@@ -5,6 +5,8 @@ import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2024/3/28 13:13
@@ -33,7 +35,7 @@ public class springDec {
             return res;
 
         }catch (Exception e){
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }

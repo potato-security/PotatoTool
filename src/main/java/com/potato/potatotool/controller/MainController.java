@@ -5,6 +5,7 @@ import com.leewyatt.rxcontrols.controls.RXCarousel;
 import com.leewyatt.rxcontrols.controls.RXToggleButton;
 import com.leewyatt.rxcontrols.pane.RXCarouselPane;
 import com.potato.potatotool.utils.Util;
+import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -75,7 +76,7 @@ public class MainController {
     private double offsetX,offsetY;
 
     private int selectedBlueIndex = 0;
-    private int selectedRedIndex = 9;
+    private int selectedRedIndex = 10;
     @FXML
     void initialize() throws IOException {
 
@@ -127,58 +128,73 @@ public class MainController {
         p7.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p7.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p8 = FXMLLoader.load(getClass().getResource("/fxml/pane_extension.fxml"));
-        RXCarouselPane extensionPane = new RXCarouselPane(p8);
-        p8.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
+        Pane p8 = FXMLLoader.load(getClass().getResource("/fxml/pane_exif.fxml"));
+        RXCarouselPane exifPane = new RXCarouselPane(p8);
+        p8.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p8.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p9 = FXMLLoader.load(getClass().getResource("/fxml/pane_about.fxml"));
-        RXCarouselPane aboutPane = new RXCarouselPane(p9);
-        p9.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
-        p9.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
+        Pane p9 = FXMLLoader.load(getClass().getResource("/fxml/pane_extension.fxml"));
+        RXCarouselPane extensionPane = new RXCarouselPane(p9);
+        p9.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
+        p9.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p10 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoSearch.fxml"));
-        RXCarouselPane infoSearchPane = new RXCarouselPane(p10);
+        Pane p10 = FXMLLoader.load(getClass().getResource("/fxml/pane_about.fxml"));
+        RXCarouselPane aboutPane = new RXCarouselPane(p10);
         p10.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
-        p10.prefHeightProperty().bind(mainCarousel.heightProperty());
+        p10.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
 
-        Pane p11 = FXMLLoader.load(getClass().getResource("/fxml/pane_vulScan.fxml"));
-        RXCarouselPane vulScanPane = new RXCarouselPane(p11);
+        Pane p11 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoSearch.fxml"));
+        RXCarouselPane infoSearchPane = new RXCarouselPane(p11);
         p11.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p11.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p12 = FXMLLoader.load(getClass().getResource("/fxml/pane_webshellGeneration.fxml"));
-        RXCarouselPane webshellGenerationPane = new RXCarouselPane(p12);
+        Pane p12 = FXMLLoader.load(getClass().getResource("/fxml/pane_vulScan.fxml"));
+        RXCarouselPane vulScanPane = new RXCarouselPane(p12);
         p12.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p12.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p13 = FXMLLoader.load(getClass().getResource("/fxml/pane_customMemoryCode.fxml"));
-        RXCarouselPane customMemoryCodePane = new RXCarouselPane(p13);
+        Pane p13 = FXMLLoader.load(getClass().getResource("/fxml/pane_webshellGeneration.fxml"));
+        RXCarouselPane webshellGenerationPane = new RXCarouselPane(p13);
         p13.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p13.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p14 = FXMLLoader.load(getClass().getResource("/fxml/pane_customCommandGeneration.fxml"));
-        RXCarouselPane customCommandGenerationPane = new RXCarouselPane(p14);
+        Pane p14 = FXMLLoader.load(getClass().getResource("/fxml/pane_customMemoryCode.fxml"));
+        RXCarouselPane customMemoryCodePane = new RXCarouselPane(p14);
         p14.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p14.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p15 = FXMLLoader.load(getClass().getResource("/fxml/pane_kbRootQuery.fxml"));
-        RXCarouselPane kbRootQueryPane = new RXCarouselPane(p15);
+        Pane p15 = FXMLLoader.load(getClass().getResource("/fxml/pane_customCommandGeneration.fxml"));
+        RXCarouselPane customCommandGenerationPane = new RXCarouselPane(p15);
         p15.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p15.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p16 = FXMLLoader.load(getClass().getResource("/fxml/pane_processQuery.fxml"));
-        RXCarouselPane processQueryPane = new RXCarouselPane(p16);
+        Pane p16 = FXMLLoader.load(getClass().getResource("/fxml/pane_kbRootQuery.fxml"));
+        RXCarouselPane kbRootQueryPane = new RXCarouselPane(p16);
         p16.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p16.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p17 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoGeneration.fxml"));
-        RXCarouselPane infoGenerationPane = new RXCarouselPane(p17);
+        Pane p17 = FXMLLoader.load(getClass().getResource("/fxml/pane_processQuery.fxml"));
+        RXCarouselPane processQueryPane = new RXCarouselPane(p17);
         p17.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p17.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        mainCarousel.setPaneList(webshellDecodePane, separateDecodePane, ipInFoPane, aiAnswerPane, decompilePane, blockchainPane, locationQueryPane, extensionPane, aboutPane,
-                infoSearchPane, vulScanPane, webshellGenerationPane, customMemoryCodePane, customCommandGenerationPane, kbRootQueryPane, processQueryPane, infoGenerationPane);
+        Pane p18 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoGeneration.fxml"));
+        RXCarouselPane infoGenerationPane = new RXCarouselPane(p18);
+        p18.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p18.prefHeightProperty().bind(mainCarousel.heightProperty());
+
+        Pane p19 = FXMLLoader.load(getClass().getResource("/fxml/pane_extension.fxml"));
+        RXCarouselPane extensionPane_1 = new RXCarouselPane(p19);
+        p19.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
+        p19.prefHeightProperty().bind(mainCarousel.heightProperty());
+
+        Pane p20 = FXMLLoader.load(getClass().getResource("/fxml/pane_about.fxml"));
+        RXCarouselPane aboutPane_1 = new RXCarouselPane(p20);
+        p20.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p20.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
+
+        mainCarousel.setPaneList(webshellDecodePane, separateDecodePane, ipInFoPane, aiAnswerPane, decompilePane, blockchainPane, locationQueryPane, exifPane, extensionPane, aboutPane,
+                infoSearchPane, vulScanPane, webshellGenerationPane, customMemoryCodePane, customCommandGenerationPane, kbRootQueryPane, processQueryPane, infoGenerationPane, extensionPane_1, aboutPane_1);
         mainCarousel.setCarouselAnimation(new AnimNone());  // AnimFade
         mainCarousel.setAnimationTime(Duration.seconds(0));  // 0.2
         navGroup.selectedToggleProperty().addListener((ob, ov, nv) -> {
@@ -318,7 +334,6 @@ public class MainController {
         offsetX = event.getSceneX();
         offsetY = event.getSceneY();
     }
-
 
     public static Rectangle clipRect(Node node, DoubleProperty bindArc){
         Rectangle rectangle = new Rectangle();

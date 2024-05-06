@@ -36,7 +36,7 @@
       <Screen fx:factory="getPrimary" fx:id="screen"/>
    </fx:define>
    <children>
-      <Pane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0">
+      <StackPane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0" alignment="CENTER">
          <effect>
             <DropShadow/>
          </effect>
@@ -142,6 +142,7 @@
                                     <RXToggleButton text="反编译" toggleGroup="$navGroup" />
                                     <RXToggleButton text="区块链溯源" toggleGroup="$navGroup" />
                                     <RXToggleButton text="归属地查询" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="文件元信息" toggleGroup="$navGroup"/>
                                     <RXToggleButton text="扩展模块" toggleGroup="$navGroup" />
                                     <RXToggleButton text="关于" toggleGroup="$navGroup"/>
                                  </children>
@@ -157,6 +158,8 @@
                                     <RXToggleButton text="KB提权查询" toggleGroup="$navGroup" />
                                     <RXToggleButton text="进程分析" toggleGroup="$navGroup" />
                                     <RXToggleButton text="信息生成" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="扩展模块" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="关于" toggleGroup="$navGroup"/>
                                  </children>
                               </FlowPane>
                            </StackPane>
@@ -195,6 +198,6 @@
                <RXCarousel fx:id="mainCarousel" arrowDisplayMode="HIDE" autoSwitch="false" hoverPause="false" navDisplayMode="HIDE" prefHeight="${borderPane.height * 0.9 - 120}" prefWidth="${borderPane.width}" styleClass="main-pane" BorderPane.alignment="CENTER"/>
             </center>
          </BorderPane>
-      </Pane>
+      </StackPane>
    </children>
 </AnchorPane>

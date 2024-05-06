@@ -1,0 +1,22 @@
+.btn{
+    -fx-background-color:-main-btnTransition-color;
+    -fx-background-radius: 5;
+    -fx-background-insets: 0 0 0 1; /*背景色溢出bug解决方式*/
+    -fx-text-fill: white;
+    -fx-font-size: 20;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+    -fx-border-color: black;
+}
+#listView{
+    -fx-background-color: -main-topBar-color;
+    -fx-border-color: -main-border-color;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 20;
+}
+.linenoPane{
+    -fx-padding: 0 0 20 0;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+}

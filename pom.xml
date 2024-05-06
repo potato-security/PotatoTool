@@ -15,12 +15,6 @@
     </properties>
     <repositories>
 
-        <!-- JitPack 仓库 -->
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-
         <!-- Maven 中央仓库 -->
         <repository>
             <id>central</id>
@@ -36,67 +30,73 @@
             <id>central1</id>
             <url>http://repo1.maven.org/maven2</url>
         </repository>
+
+        <!-- JitPack 仓库 -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencies>
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-base</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>win</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-graphics</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>win</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-fxml</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>win</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-base</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>linux</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-graphics</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>linux</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-fxml</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>linux</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-base</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>mac</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-graphics</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>mac</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-fxml</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>mac</classifier>-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>17.0.10</version>
+            <classifier>win</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>17.0.10</version>
+            <classifier>win</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>17.0.10</version>
+            <classifier>win</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>17.0.10</version>
+            <classifier>linux</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>17.0.10</version>
+            <classifier>linux</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>17.0.10</version>
+            <classifier>linux</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>17.0.10</version>
+            <classifier>mac</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>17.0.10</version>
+            <classifier>mac</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>17.0.10</version>
+            <classifier>mac</classifier>
+        </dependency>
         <dependency>
             <groupId>com.github.leewyatt</groupId>
             <artifactId>rxcontrols</artifactId>
-            <version>8.0.3</version>
+            <version>11.0.3</version>
         </dependency>
         <dependency><!--        后续优化掉-->
             <groupId>org.json</groupId>
@@ -106,17 +106,17 @@
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
             <artifactId>graal-sdk</artifactId>
-            <version>21.3.9</version>
+            <version>22.3.5</version>
         </dependency>
         <dependency>
             <groupId>org.graalvm.js</groupId>
             <artifactId>js</artifactId>
-            <version>21.3.9</version>
+            <version>22.3.5</version>
         </dependency>
         <dependency>
             <groupId>org.graalvm.js</groupId>
             <artifactId>js-scriptengine</artifactId>
-            <version>21.3.9</version>
+            <version>22.3.5</version>
         </dependency>
         <dependency>
             <groupId>com.github.adedayo.intellij.sdk</groupId>
@@ -146,12 +146,59 @@
         <dependency>
             <groupId>org.fxmisc.richtext</groupId>
             <artifactId>richtextfx</artifactId>
-            <version>0.10.8</version>
+            <version>0.11.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.8.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.drewnoakes</groupId>
+            <artifactId>metadata-extractor</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.promeg</groupId>
+            <artifactId>tinypinyin</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-core</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-javafx</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-materialdesign-pack</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-material-pack</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-bootstrapicons-pack</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.controlsfx</groupId>
+            <artifactId>controlsfx</artifactId>
+            <version>11.1.2</version>
         </dependency>
     </dependencies>
 
@@ -162,34 +209,34 @@
                 <artifactId>maven-compiler-plugin</artifactId><!--maven 默认编译插件 -->
                 <version>3.12.1</version>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
-            <!--                        <plugin>-->
-            <!--                            <groupId>org.apache.maven.plugins</groupId>-->
-            <!--                            <artifactId>maven-assembly-plugin</artifactId>-->
-            <!--                            <version>3.3.0</version>-->
-            <!--                            <executions>-->
-            <!--                                <execution>-->
-            <!--                                    <phase>package</phase>-->
-            <!--                                    <goals>-->
-            <!--                                        <goal>single</goal>-->
-            <!--                                    </goals>-->
-            <!--                                </execution>-->
-            <!--                            </executions>-->
-            <!--                            <configuration>-->
-            <!--                                <archive>-->
-            <!--                                    <manifest>-->
-            <!--                                        <mainClass>com.potato.potatotool.ToStart</mainClass>-->
-            <!--                                    </manifest>-->
-            <!--                                </archive>-->
-            <!--                                &lt;!&ndash;打包时，包含所有依赖的jar包&ndash;&gt;-->
-            <!--                                <descriptorRefs>-->
-            <!--                                    <descriptorRef>jar-with-dependencies</descriptorRef>-->
-            <!--                                </descriptorRefs>-->
-            <!--                            </configuration>-->
-            <!--                        </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-assembly-plugin</artifactId>-->
+            <!--                <version>3.3.0</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <phase>package</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>single</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--                <configuration>-->
+            <!--                    <archive>-->
+            <!--                        <manifest>-->
+            <!--                            <mainClass>com.potato.potatotool.ToStart</mainClass>-->
+            <!--                        </manifest>-->
+            <!--                    </archive>-->
+            <!--                    &lt;!&ndash;打包时，包含所有依赖的jar包&ndash;&gt;-->
+            <!--                    <descriptorRefs>-->
+            <!--                        <descriptorRef>jar-with-dependencies</descriptorRef>-->
+            <!--                    </descriptorRefs>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -202,10 +249,8 @@
                         <configuration>
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.potato.potatotool.ToStart</mainClass>
                                 </transformer>
                             </transformers>
@@ -223,6 +268,7 @@
                     <mainClass>com.potato.potatotool/com.potato.potatotool.ToStart</mainClass>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>com.github.wvengen</groupId>
                 <artifactId>proguard-maven-plugin</artifactId>
@@ -237,9 +283,9 @@
                 </executions>
                 <configuration>
                     <attach>true</attach>
-                    <attachArtifactClassifier>jdk8</attachArtifactClassifier>
+                    <attachArtifactClassifier>jdk11+</attachArtifactClassifier>
                     <libs>
-                        <lib>${java.home}</lib>
+                        <lib>${java.home}/jmods/</lib>
                     </libs>
                     <obfuscate>true</obfuscate>
                     <!-- 将前一步打包后的jar进行混淆  -->
@@ -259,9 +305,7 @@
                         <configuration>
                             <tasks>
                                 <mkdir dir="${project.basedir}/outJar"/>
-                                <copy file="${project.build.directory}/${project.build.finalName}-jdk8.jar"
-                                      tofile="${project.basedir}/outJar/${project.build.finalName}-jdk8.jar"
-                                      force="true"/>
+                                <copy file="${project.build.directory}/${project.build.finalName}-jdk11+.jar" tofile="${project.basedir}/outJar/${project.build.finalName}-jdk11+.jar" force="true" />
                             </tasks>
                         </configuration>
                         <goals>

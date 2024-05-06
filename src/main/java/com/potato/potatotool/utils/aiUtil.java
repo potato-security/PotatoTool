@@ -124,7 +124,9 @@ public class aiUtil {
                                     res = "【AI服务器显存炸裂了~ 买不起~ 传输小点儿的东西吧】";
                                 } else if (line.equals("[[Response code 502]]")) {
                                     res = "【内部免费AI服务器可能已关停/您当前处于国外IP环境，请在设置中自行配置AI模型及对应Key】";
-                                } else if (line.startsWith("data: ")){
+                                }else if (line.equals("[[Read timed out]]")) {
+                                    res = "【您提交的消息太长，请提交较短的消息】";
+                                }else if (line.startsWith("data: ")){
                                     JsonObject responseJson = JsonParser.parseString(line.replaceAll("^data: ", "")).getAsJsonObject();
 
                                     if (responseJson.get("finished").getAsBoolean()) {

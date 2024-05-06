@@ -23,7 +23,6 @@
     </VBox>
 
     <ListView fx:id="listView" prefHeight="${sPane.height}" prefWidth="${sPane.width}">
-        <!--        <VBox fx:id="contentBox" prefWidth="${sPane.width - 12}">-->
 
         <Text fx:id="info" text="工具信息" styleClass="titleText"/>
         <HBox alignment="CENTER">
@@ -108,7 +107,13 @@
                         <Label text="V1.0 @H7lan" />
                         <Label text="[建议]" style="-fx-font-size: 12"/>
                         <Label text="：" />
-                        <Label text="手机号归属地、银行卡开户行、区块链追溯（暂未对外开放）" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
+                        <Label text="添加手机号归属地、银行卡开户行、区块链追溯功能" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
+                    </HBox>
+                    <HBox>
+                        <Label text="V1.0 @狐狸" />
+                        <Label text="[建议]" style="-fx-font-size: 12"/>
+                        <Label text="：" />
+                        <Label text="提供cmd5的50w付费及个人整理的字典，支持md5解密功能" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
                     </HBox>
                 </VBox>
             </ScrollPane>
@@ -137,22 +142,6 @@
         <Pane minHeight="15" styleClass="linenoPane"/>
         <Pane minHeight="15"/>
 
-        <Text fx:id="group" text="交流群" styleClass="titleText"/>
-        <Pane minHeight="40"/>
-        <StackPane>
-            <VBox alignment="CENTER">
-                <ImageView styleClass="wxImg" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
-                    <image>
-                        <Image url="@../img/wx.jpg" />
-                    </image>
-                </ImageView>
-                <Pane minHeight="20"/>
-                <Label text="扫描二维码添加微信进群，备注DX安全交流群"/>
-            </VBox>
-        </StackPane>
-        <Pane minHeight="10"/>
-
-        <!--        </VBox>-->
     </ListView>
 
     <ImageView fitHeight="230" fitWidth="230" pickOnBounds="true" preserveRatio="true" translateX="250" scaleX="-1" StackPane.alignment="BOTTOM_RIGHT">

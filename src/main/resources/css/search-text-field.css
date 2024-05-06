@@ -1,0 +1,18 @@
+.search-text-field {
+    -fx-pref-width: 250px;
+}
+
+.search-text-field.round {
+    -fx-background-radius: 1000px;
+}
+
+.search-text-field > .left-pane > .search-icon-wrapper,
+.search-text-field > .right-pane > .clear-icon-wrapper {
+    -fx-padding: 0px 5px;
+}
+
+.search-text-field > .left-pane > .search-icon-wrapper > .ikonli-font-icon,
+.search-text-field > .right-pane > .clear-icon-wrapper > .ikonli-font-icon {
+    -fx-icon-size: 1em;
+    -fx-icon-color: -fx-text-inner-color;
+}

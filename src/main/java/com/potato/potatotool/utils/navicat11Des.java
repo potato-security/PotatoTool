@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2024/3/28 11:36
@@ -25,7 +27,7 @@ public class navicat11Des {
             sha1.update(userkey_data, 0, userkey_data.length);
             _Key = new SecretKeySpec(sha1.digest(), "Blowfish");
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
     }
 
@@ -34,7 +36,7 @@ public class navicat11Des {
             _Encryptor = Cipher.getInstance("Blowfish/ECB/NoPadding");
             _Encryptor.init(1, _Key);
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
     }
 
@@ -43,7 +45,7 @@ public class navicat11Des {
             _Decryptor = Cipher.getInstance("Blowfish/ECB/NoPadding");
             _Decryptor.init(2, _Key);
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
     }
 
@@ -52,7 +54,7 @@ public class navicat11Des {
             byte[] initVec = strUtils.hexToByteArray("FFFFFFFFFFFFFFFF");
             _IV = _Encryptor.doFinal(initVec);
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
     }
 
@@ -93,7 +95,7 @@ public class navicat11Des {
             }
             return ret;
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -104,7 +106,7 @@ public class navicat11Des {
             byte[] outData = this.Encrypt(inData);
             return strUtils.byteToHex(outData);
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -134,7 +136,7 @@ public class navicat11Des {
             }
             return ret;
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -148,7 +150,7 @@ public class navicat11Des {
 
             return res;
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }

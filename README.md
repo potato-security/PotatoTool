@@ -9,3 +9,6 @@ MacOs的mvn没环境生效：source ~/.bash_profile
 
 
 最终混淆后的jar被复制在./outJar/文件夹下
+
+调试时： idea程序实参后面跟上debug    jar运行需要后面跟上debug
+webshell解密报错信息才会展示

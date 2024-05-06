@@ -46,7 +46,7 @@
                 </ImageView>
             </graphic>
             <effect>
-                <DropShadow height="5.0" radius="2.0" width="5.0" />
+                <DropShadow />
             </effect>
             <cursor>
                 <Cursor fx:constant="HAND" />

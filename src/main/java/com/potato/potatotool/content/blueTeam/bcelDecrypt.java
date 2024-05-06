@@ -3,6 +3,8 @@ package com.potato.potatotool.content.blueTeam;
 import com.potato.potatotool.utils.DeserializerUtils;
 import com.potato.potatotool.utils.Utility;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2023/5/18 14:08
@@ -38,7 +40,7 @@ public class bcelDecrypt {
             return resByte;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
 
         return null;

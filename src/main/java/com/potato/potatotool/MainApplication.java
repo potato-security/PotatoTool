@@ -51,6 +51,40 @@ public class MainApplication extends Application {
         passwdStage.setScene(passwdScene);
         passwdStage.show();
 
+        // 提前加载主界面
+        AtomicReference<FadeTransition> fadeTransition1 = new AtomicReference<FadeTransition>();
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws IOException {
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
+                Scene scene = new Scene(fxmlLoader.load());
+                Platform.runLater(() -> {
+                    try {
+                        scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
+                        scene.setCamera(new PerspectiveCamera());   //  添加摄像机
+                        stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
+                        scene.setFill(null);    //  背景透明
+                        scene.getRoot().getStyleClass().add("blueStyle");   //  默认蓝队样式
+                        stage.setScene(scene);
+                        scene.getRoot().setOpacity(0);
+                        fadeTransition1.set(new FadeTransition(Duration.seconds(0.4), scene.getRoot()));
+                        fadeTransition1.get().setFromValue(0);
+                        fadeTransition1.get().setToValue(1);
+                        fadeTransition1.get().setCycleCount(1);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                return null;
+            }
+        };
+        task.setOnFailed(e -> {
+            Throwable error = task.getException();
+            error.printStackTrace();
+            System.exit(0);
+        });
+        new Thread(task).start();
+
         PanePasswd pwdController = passwdLoader.getController();
         AtomicBoolean isPasswdCorrect = new AtomicBoolean(false);
         pwdController.passwdProperty().addListener((obs_x, oldValue_x, newValue_x) -> {
@@ -70,44 +104,6 @@ public class MainApplication extends Application {
                 passwdStage.close();
                 loadStage.show();
 
-
-                AtomicReference<FadeTransition> fadeTransition1 = new AtomicReference<FadeTransition>();
-
-                //  后台加载主界面stage
-                Task<Stage> task = new Task<Stage>() {
-                    @Override
-                    protected Stage call() throws IOException {
-                        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
-                        Platform.runLater(() -> {
-                            try {
-                                Scene scene = new Scene(fxmlLoader.load());
-                                scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
-                                scene.setCamera(new PerspectiveCamera());   //  添加摄像机
-                                stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
-                                scene.setFill(null);    //  背景透明
-                                scene.getRoot().getStyleClass().add("blueStyle");   //  默认蓝队样式
-                                stage.setScene(scene);
-
-                                scene.getRoot().setOpacity(0);
-                                fadeTransition1.set(new FadeTransition(Duration.seconds(0.4), scene.getRoot()));
-                                fadeTransition1.get().setFromValue(0);
-                                fadeTransition1.get().setToValue(1);
-                                fadeTransition1.get().setCycleCount(1);
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        });
-                        return stage;
-                    }
-                };
-
-                task.setOnFailed(e -> {
-                    Throwable error = task.getException();
-                    error.printStackTrace();
-                    System.exit(0);
-                });
-
                 PaneLoad controller = loader.getController();
 
                 FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.7), loadScene.getRoot());
@@ -118,31 +114,15 @@ public class MainApplication extends Application {
                 fadeTransition.setOnFinished(event -> {
                     loadStage.close();
                     controller.stopAnimations();
-                    task.getValue().show();
+                    stage.show();
                     fadeTransition1.get().play();
                 });
 
-                AtomicBoolean overLoading = new AtomicBoolean(false);
-                AtomicBoolean overPreparation = new AtomicBoolean(false);
-
                 controller.loadedProperty().addListener((obs, oldValue, newValue) -> {
-                    overLoading.set(true);
-
-                    if (!overPreparation.get()) return;
-
                     fadeTransition.play();
-
                 });
 
-                task.setOnSucceeded(event -> {
-                    overPreparation.set(true);
 
-                    if (!overLoading.get()) return;
-
-                    fadeTransition.play();
-
-                });
-                new Thread(task).start();
             }catch (Exception e){
                 e.printStackTrace();
             }

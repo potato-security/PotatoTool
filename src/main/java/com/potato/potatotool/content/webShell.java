@@ -91,9 +91,9 @@ public class webShell {
         String[] randomString = strUtils.createRandomString(30);
 
         // 蚁剑码免杀
-        if (webShell_Manager == "AntSword"){
+        if (webShell_Manager.equals("AntSword")){
 
-            if (scriptMethod == "jsp"){
+            if (scriptMethod.equals("jsp")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -121,7 +121,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "jspx"){
+            else if (scriptMethod.equals("jspx")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -151,7 +151,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "php"){
+            else if (scriptMethod.equals("php")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -174,7 +174,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "asp"){
+            else if (scriptMethod.equals("asp")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -187,7 +187,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "aspx"){
+            else if (scriptMethod.equals("aspx")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -204,9 +204,9 @@ public class webShell {
         }
 
         // 哥斯拉免杀
-        else if (webShell_Manager == "Godzilla"){
+        else if (webShell_Manager.equals("Godzilla")){
 
-            if (scriptMethod == "jsp"){
+            if (scriptMethod.equals("jsp")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("AES", "RAW"))){
 
@@ -243,7 +243,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "jspx"){
+            else if (scriptMethod.equals("jspx")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("AES", "RAW"))){
 
@@ -281,7 +281,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "php"){
+            else if (scriptMethod.equals("php")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("XOR", "base64"))){
 
@@ -294,7 +294,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "asp"){
+            else if (scriptMethod.equals("asp")){
 
                 if (Arrays.asList(enMethod).contains("RAW")){
 
@@ -307,7 +307,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "aspx"){
+            else if (scriptMethod.equals("aspx")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("CSHARP", "AES", "RAW"))){
 
@@ -320,7 +320,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "ashx"){
+            else if (scriptMethod.equals("ashx")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("CSHARP", "AES", "RAW"))) {
 
@@ -337,9 +337,9 @@ public class webShell {
         }
 
         // 冰蝎免杀
-        else if (webShell_Manager == "Behinder"){
+        else if (webShell_Manager.equals("Behinder")){
 
-            if (scriptMethod == "jsp"){
+            if (scriptMethod.equals("jsp")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -376,7 +376,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "jspx"){
+            else if (scriptMethod.equals("jspx")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -413,7 +413,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "php"){
+            else if (scriptMethod.equals("php")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -426,7 +426,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "asp"){
+            else if (scriptMethod.equals("asp")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -439,7 +439,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "aspx"){
+            else if (scriptMethod.equals("aspx")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -456,9 +456,9 @@ public class webShell {
         }
 
         // Cmd免杀
-        else if (webShell_Manager == "Cmd"){
+        else if (webShell_Manager.equals("Cmd")){
 
-            if (scriptMethod == "jsp"){
+            if (scriptMethod.equals("jsp")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -495,7 +495,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "jspx"){
+            else if (scriptMethod.equals("jspx")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 
@@ -532,7 +532,7 @@ public class webShell {
                 }
 
             }
-            else if (scriptMethod == "ashx"){
+            else if (scriptMethod.equals("ashx")){
 
                 if (Arrays.asList(enMethod).containsAll(Arrays.asList("default"))){
 

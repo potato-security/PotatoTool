@@ -1,0 +1,79 @@
+/* -----------------------------------------------------------------------------------------------------
+ * FilterView
+ */
+.filter-view {
+}
+
+.filter-view > .filter-container {
+    -fx-spacing: 10px;
+}
+
+.filter-view > .filter-container > .header-box {
+    -fx-spacing: 10;
+}
+
+.filter-view  > .filter-container> .header-box > .title-subtitle-box {
+    -fx-spacing: 5px;
+}
+
+.filter-view  > .filter-container> .header-box > .title-subtitle-box > .title-box {
+    -fx-spacing: 5px;
+}
+
+.filter-view  > .filter-container> .header-box > .title-subtitle-box > .title-box > .title {
+    -fx-font-size: 1.5em;
+}
+
+.filter-view  > .filter-container> .header-box > .title-subtitle-box > .title-box > .title-postfix {
+    -fx-font-size: 1.5em;
+}
+
+.filter-view > .filter-container> .header-box > .title-subtitle-box > .subtitle {
+    -fx-font-size: 1.2em;
+}
+
+.filter-view > .filter-container > .filter-groups {
+    -fx-pref-height: 40px;
+    -fx-min-height: 40px;
+    -fx-spacing: 10px;
+}
+
+.filter-view > .filter-container > .filter-groups > .menu-button {
+    -fx-background-radius: 0px;
+    -fx-border-radius: 0px;
+}
+
+.filter-view > .filter-container > .filter-groups > .menu-button.last {
+}
+
+.filter-view > .filter-container > .filter-groups > .menu-button:hover {
+}
+
+.filter-view > .filter-container > .filter-groups > .menu-button > .label {
+}
+
+.filter-view > .filter-container > .filter-groups > .menu-button .arrow {
+}
+
+.filter-view > .filter-container > .filter-groups > .menu-button:hover .arrow {
+}
+
+.filter-view > .filter-container > .scroll-pane {
+    -fx-max-height: 380px;
+    -fx-padding: 2px;
+}
+
+.filter-view > .filter-container > .filters {
+    -fx-hgap: 10px;
+    -fx-vgap: 5px;
+    -fx-padding: 0px 0px 0px 0px;
+}
+
+.filter-view > .filter-container > .filters > .clear-filter-label {
+    -fx-underline: true;
+    -fx-cursor: hand;
+    -fx-text-fill: -fx-accent;
+}
+
+.filter-view > .filter-container > .filters > .filter-view .clear-filter-label:hover {
+}

@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2023/6/16 11:34
@@ -59,7 +61,7 @@ public class casDecrypt {
             res = result;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
 
         return res;
