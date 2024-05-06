@@ -51,6 +51,8 @@ public class MainApplication extends Application {
         passwdStage.setScene(passwdScene);
         passwdStage.show();
 
+        stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
+
         // 提前加载主界面
         AtomicReference<FadeTransition> fadeTransition1 = new AtomicReference<FadeTransition>();
         Task<Void> task = new Task<Void>() {
@@ -62,12 +64,12 @@ public class MainApplication extends Application {
                     try {
                         scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
                         scene.setCamera(new PerspectiveCamera());   //  添加摄像机
-                        stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
+                        // stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
                         scene.setFill(null);    //  背景透明
                         scene.getRoot().getStyleClass().add("blueStyle");   //  默认蓝队样式
                         stage.setScene(scene);
                         scene.getRoot().setOpacity(0);
-                        fadeTransition1.set(new FadeTransition(Duration.seconds(0.4), scene.getRoot()));
+                        fadeTransition1.set(new FadeTransition(Duration.seconds(0.3), scene.getRoot()));
                         fadeTransition1.get().setFromValue(0);
                         fadeTransition1.get().setToValue(1);
                         fadeTransition1.get().setCycleCount(1);
@@ -88,6 +90,8 @@ public class MainApplication extends Application {
         PanePasswd pwdController = passwdLoader.getController();
         AtomicBoolean isPasswdCorrect = new AtomicBoolean(false);
         pwdController.passwdProperty().addListener((obs_x, oldValue_x, newValue_x) -> {
+            // 提前隐藏展示，防止动画卡顿
+            stage.show();
 
             try {
                 isPasswdCorrect.set(true);
@@ -106,7 +110,7 @@ public class MainApplication extends Application {
 
                 PaneLoad controller = loader.getController();
 
-                FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.7), loadScene.getRoot());
+                FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.3), loadScene.getRoot());
                 fadeTransition.setFromValue(1);
                 fadeTransition.setToValue(0);
                 fadeTransition.setCycleCount(1);
@@ -114,7 +118,6 @@ public class MainApplication extends Application {
                 fadeTransition.setOnFinished(event -> {
                     loadStage.close();
                     controller.stopAnimations();
-                    stage.show();
                     fadeTransition1.get().play();
                 });
 

@@ -1,15 +1,15 @@
 @font-face {
-    font-family: 'Microsoft YaHei';
+    font-family: "Microsoft YaHei";
     src: url("../fonts/msyh.ttf");
 }
 
 @font-face {
-    font-family: 'Microsoft YaHei Light';
+    font-family: "Microsoft YaHei Light";
     src: url("../fonts/msyhl.ttf");
 }
 
 @font-face {
-    font-family: 'Microsoft YaHei Bold';
+    font-family: "Microsoft YaHei Bold";
     src: url("../fonts/msyhbd.ttf");
 }
 
@@ -30,6 +30,8 @@
     -main-smallbtnBg-color: #87CEFA;
     -main-btnTransition-color: linear-gradient(to bottom, #75D6BA, #3C85C5);
     -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0);
+
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 
 .blueStyle{
@@ -51,7 +53,7 @@
 .text{
     -fx-font-size: 18;
     -fx-fill: -main-font-color;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: normal;
 }
 .tooltip {
@@ -60,7 +62,7 @@
 .tips .text {
     -fx-font-size: 16;
     -fx-fill: -main-linenoText-color;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 .textTip{
     -fx-border-width: 0 0 1 0;
@@ -72,11 +74,11 @@
 }
 #tipTitle .text{
     -fx-fill: -main-border-color;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 #tipSymbol .text{
     -fx-fill: -main-border-color;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 .titled-pane > .title {
     -fx-background-color: -main-cell-color;
@@ -109,7 +111,7 @@
 .rx-line-button{
     -fx-font-size: 18;
     -fx-text-fill: -main-font-color;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: normal;
     -fx-cursor: HAND;
 }
@@ -125,7 +127,7 @@
 .titleText {
     -fx-font-size: 23;
     -fx-fill: -main-border-color;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: bold;
 }
 .titleTipText{
@@ -135,14 +137,14 @@
 .titleTipText .text{
     -fx-font-size: 23;
     -fx-fill: -main-border-color;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: bold;
 }
 #tipTitle_input .text{
     -fx-font-size: 20;
     -fx-fill: white;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
-    -fx-font-weight: bold;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
+    /*-fx-font-weight: bold;*/
 }
 #root{
     -fx-background-color: transparent;
@@ -402,7 +404,7 @@
 }
 .lineno .text{
     -fx-fill: -main-linenoText-color;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 
 /*java代码暗色调*/
@@ -472,7 +474,7 @@
     -fx-text-fill: -main-font-color;
     -fx-font-size: 18;
     -fx-padding: 5;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 .text-area .content {
     -fx-background-color: null;
@@ -598,7 +600,7 @@
 }
 .menu-button .text{
     -fx-font-size: 16;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 
 
@@ -714,7 +716,7 @@
 
 #flowPane{
     -fx-background-color: transparent;
-    -fx-padding: 10 0 5 0;
+    -fx-padding: 12 0 5 0;
 }
 
 .closeImg{

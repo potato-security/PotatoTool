@@ -18,56 +18,56 @@
             </effect>
         </Button>
 
-        <FlowPane styleClass="flowPane" alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
+        <FlowPane styleClass="flowPane" alignment="CENTER" hgap="20"  vgap="30"  prefWidth="${sPane.width - 20}">
             <HBox>
                 <Label id="tipTitle" text="           姓名          "/>
                 <Label id="tipSymbol" text="："/>
-                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="nameTF"/>
+                <TextField prefWidth="${sPane.width / 2 -225}" fx:id="nameTF"/>
             </HBox>
             <HBox>
                 <Label id="tipTitle" text="           拼音          "/>
                 <Label id="tipSymbol" text="："/>
-                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="nameToPinYinTF"/>
+                <TextField prefWidth="${sPane.width / 2 -225}" fx:id="nameToPinYinTF"/>
             </HBox>
             <HBox>
                 <Label id="tipTitle" text="         手机号        "/>
                 <Label id="tipSymbol" text="："/>
-                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF"/>
+                <TextField prefWidth="${sPane.width / 2 -225}" fx:id="phoneTF"/>
             </HBox>
             <HBox>
                 <Label id="tipTitle" text="         邮箱号        "/>
                 <Label id="tipSymbol" text="："/>
-                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="emailTF"/>
+                <TextField prefWidth="${sPane.width / 2 -225}" fx:id="emailTF"/>
             </HBox>
             <HBox>
                 <Label id="tipTitle" text="       居住地址       "/>
                 <Label id="tipSymbol" text="："/>
-                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="addressTF"/>
+                <TextField prefWidth="${sPane.width / 2 -225}" fx:id="addressTF"/>
             </HBox>
             <HBox>
                 <Label id="tipTitle" text="       身份证号       "/>
                 <Label id="tipSymbol" text="："/>
-                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="idCardTF"/>
+                <TextField prefWidth="${sPane.width / 2 -225}" fx:id="idCardTF"/>
             </HBox>
             <HBox>
                 <Label id="tipTitle" text="       银行卡号       "/>
                 <Label id="tipSymbol" text="："/>
-                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="bankCardTF"/>
+                <TextField prefWidth="${sPane.width / 2 -225}" fx:id="bankCardTF"/>
             </HBox>
             <HBox>
                 <Label id="tipTitle" text="         邮编号        "/>
                 <Label id="tipSymbol" text="："/>
-                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="postalCodeTF"/>
+                <TextField prefWidth="${sPane.width / 2 -225}" fx:id="postalCodeTF"/>
             </HBox>
             <HBox>
                 <Label id="tipTitle" text="统一社会信用代码"/>
                 <Label id="tipSymbol" text="："/>
-                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="unifiedSocialCreditCodeTF"/>
+                <TextField prefWidth="${sPane.width / 2 -225}" fx:id="unifiedSocialCreditCodeTF"/>
             </HBox>
             <HBox>
                 <Label id="tipTitle" text="   组织机构代码   "/>
                 <Label id="tipSymbol" text="："/>
-                <TextField prefWidth="${sPane.width / 2 -200}" fx:id="organizationCodeTF"/>
+                <TextField prefWidth="${sPane.width / 2 -225}" fx:id="organizationCodeTF"/>
             </HBox>
         </FlowPane>
         <Pane minHeight="40"/>

@@ -4,7 +4,7 @@
 .text{
     -fx-font-size: 18;
     -fx-fill: white;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Arial, sans-serif;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: normal;
 }
 .loadImg{

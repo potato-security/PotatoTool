@@ -17,7 +17,7 @@
 
         <VBox styleClass="vBox" spacing="20">
             <HBox styleClass="linenoPane" spacing="20" alignment="CENTER">
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle_input" text="身份证号："/>
                     <TextField  prefWidth="${sPane.width / 2 -200}" fx:id="idCardInput" promptText="请输入身份证号"/>
                 </HBox>
@@ -29,22 +29,22 @@
             </HBox>
 
             <FlowPane alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle" text="生日"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}" fx:id="idCardTF_born"/>
                 </HBox>
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle" text="性别"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}" fx:id="idCardTF_sex"/>
                 </HBox>
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle" text="地区"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}" fx:id="idCardTF_att"/>
                 </HBox>
-                <HBox visible="false">
+                <HBox visible="false" alignment="CENTER">
                     <Label id="tipTitle" text="占位"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}"/>
@@ -54,7 +54,7 @@
 
         <VBox styleClass="vBox" spacing="20">
             <HBox styleClass="linenoPane" spacing="20" alignment="CENTER">
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle_input" text="银行卡号："/>
                     <TextField  prefWidth="${sPane.width / 2 -200}" fx:id="bankCardInput"  promptText="请输入银行卡号"/>
                 </HBox>
@@ -66,12 +66,12 @@
             </HBox>
 
             <FlowPane alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle" text="类型"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}" fx:id="bankCardTF_type"/>
                 </HBox>
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle" text="银行"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}" fx:id="bankCardTF_bank"/>
@@ -81,7 +81,7 @@
 
         <VBox styleClass="vBox" spacing="20">
             <HBox styleClass="linenoPane" spacing="20" alignment="CENTER">
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle_input" text="手机卡号："/>
                     <TextField  prefWidth="${sPane.width / 2 -200}" fx:id="phoneInput"  promptText="请输入手机号"/>
                 </HBox>
@@ -93,32 +93,32 @@
             </HBox>
 
             <FlowPane alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle" text="省份"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF_Province"/>
                 </HBox>
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle" text="城市"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF_City"/>
                 </HBox>
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle" text="运商"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF_Operator"/>
                 </HBox>
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle" text="区号"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF_AreaCode"/>
                 </HBox>
-                <HBox>
+                <HBox alignment="CENTER">
                     <Label id="tipTitle" text="邮编"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}" fx:id="phoneTF_PostalCode"/>
                 </HBox>
-                <HBox visible="false">
+                <HBox visible="false" alignment="CENTER">
                     <Label id="tipTitle" text="占位"/>
                     <Label id="tipSymbol" text="："/>
                     <TextField prefWidth="${sPane.width / 2 -200}"/>

@@ -31,6 +31,7 @@ public class PaneProcessQuery {
     @FXML
     private TextArea canRoot;
 
+    @FXML
     public void getInfo(ActionEvent event) {
         String inputStr = inputText.getText();
         JSONObject antivirusProcesses = getAntivirusProcesses(avJsonOjb, inputStr);

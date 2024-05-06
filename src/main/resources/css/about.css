@@ -4,7 +4,7 @@
     -fx-background-radius: 8;
 }
 .label .text{
-    -fx-font-weight: bold;
+    /*-fx-font-weight: bold;*/
 }
 .bar{
     -fx-background-color: -main-topBar-color;

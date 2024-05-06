@@ -249,7 +249,6 @@ public class PaneKbRootQuery {
         });
     }
 
-
     public static class KbInfo {
 
         private String date;

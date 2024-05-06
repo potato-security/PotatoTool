@@ -62,8 +62,8 @@ public class PanePasswd {
 
     public void start() {
         if(passwd.getText().equals("potato520")){
-            isPasswdCorrect.set(true);
             tipTitle.setText("密码正确，正在进入");
+            isPasswdCorrect.set(true);
         }else {
             tipTitle.setText("密码错误，请重试！");
         }

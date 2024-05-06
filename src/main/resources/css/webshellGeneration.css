@@ -9,7 +9,7 @@
 #tipTitle_input_big .text{
     -fx-font-size: 25;
     -fx-fill: -main-border-color;
-    -fx-font-family: "PingFang SC","Microsoft YaHei", Consolas, "Courier New", monospace;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: bold;
     -fx-translate-y: -60;
 }
