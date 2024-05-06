@@ -86,6 +86,7 @@ public class PaneLoad {
 //            pane.getChildren().add(text);
 //        }
 //        root.getChildren().add(pane);
+
     }
 
     private void initAnimatedText() {
