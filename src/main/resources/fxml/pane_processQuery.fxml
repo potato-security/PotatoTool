@@ -43,7 +43,7 @@
     <VBox alignment="CENTER" spacing="15">
 
         <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-            <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入netstat -ano或者net -pantu执行后的内容"  />
+            <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入tasklist或者ps aux执行后的内容"  />
         </Pane>
 
         <Button minHeight="48.0" minWidth="${sPane.width}" text="开始提取" onAction="#getInfo">
