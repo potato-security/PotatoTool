@@ -6,6 +6,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/PaneInfoGeneration.css"
@@ -13,7 +14,8 @@
            fx:controller="com.potato.potatotool.controller.PaneLocationQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox spacing="20" alignment="CENTER">
+    <ScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}">
+    <VBox spacing="20" alignment="CENTER"  prefWidth="${sPane.width - 15}">
 
         <VBox styleClass="vBox" spacing="20">
             <HBox styleClass="linenoPane" spacing="20" alignment="CENTER">
@@ -128,5 +130,6 @@
 
 
     </VBox>
+    </ScrollPane>
 
 </StackPane>

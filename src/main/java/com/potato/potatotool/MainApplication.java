@@ -8,6 +8,11 @@ import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.PerspectiveCamera;
@@ -51,8 +56,6 @@ public class MainApplication extends Application {
         passwdStage.setScene(passwdScene);
         passwdStage.show();
 
-        stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
-
         // 提前加载主界面
         AtomicReference<FadeTransition> fadeTransition1 = new AtomicReference<FadeTransition>();
         Task<Void> task = new Task<Void>() {
@@ -64,7 +67,7 @@ public class MainApplication extends Application {
                     try {
                         scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
                         scene.setCamera(new PerspectiveCamera());   //  添加摄像机
-                        // stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
+                        stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
                         scene.setFill(null);    //  背景透明
                         scene.getRoot().getStyleClass().add("blueStyle");   //  默认蓝队样式
                         stage.setScene(scene);
@@ -85,49 +88,93 @@ public class MainApplication extends Application {
             error.printStackTrace();
             System.exit(0);
         });
+        BooleanProperty preload = new SimpleBooleanProperty(false);
+        task.setOnSucceeded(e -> {
+            preload.set(true);
+        });
         new Thread(task).start();
 
         PanePasswd pwdController = passwdLoader.getController();
-        AtomicBoolean isPasswdCorrect = new AtomicBoolean(false);
         pwdController.passwdProperty().addListener((obs_x, oldValue_x, newValue_x) -> {
             // 提前隐藏展示，防止动画卡顿
-            stage.show();
+            if(preload.get()) {
+                stage.show();
 
-            try {
-                isPasswdCorrect.set(true);
+                try {
 
-                //  加载动画界面stage
-                Stage loadStage = new Stage();
-                loadStage.initStyle(StageStyle.TRANSPARENT);
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/load.fxml"));
-                Scene loadScene = null;
-                loadScene = new Scene(loader.load());
-                loadScene.setCamera(new PerspectiveCamera());
-                loadScene.setFill(null);
-                loadStage.setScene(loadScene);
-                passwdStage.close();
-                loadStage.show();
+                    //  加载动画界面stage
+                    Stage loadStage = new Stage();
+                    loadStage.initStyle(StageStyle.TRANSPARENT);
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/load.fxml"));
+                    Scene loadScene = new Scene(loader.load());
+                    loadScene.setCamera(new PerspectiveCamera());
+                    loadScene.setFill(null);
+                    loadStage.setScene(loadScene);
+                    passwdStage.close();
+                    loadStage.show();
 
-                PaneLoad controller = loader.getController();
+                    PaneLoad controller = loader.getController();
 
-                FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.3), loadScene.getRoot());
-                fadeTransition.setFromValue(1);
-                fadeTransition.setToValue(0);
-                fadeTransition.setCycleCount(1);
+                    FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.3), loadScene.getRoot());
+                    fadeTransition.setFromValue(1);
+                    fadeTransition.setToValue(0);
+                    fadeTransition.setCycleCount(1);
 
-                fadeTransition.setOnFinished(event -> {
-                    loadStage.close();
-                    controller.stopAnimations();
-                    fadeTransition1.get().play();
+                    fadeTransition.setOnFinished(event -> {
+                        loadStage.close();
+                        controller.stopAnimations();
+                        fadeTransition1.get().play();
+                    });
+
+                    controller.loadedProperty().addListener((obs, oldValue, newValue) -> {
+                        fadeTransition.play();
+                    });
+
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+            }else {
+                preload.addListener((observable_y, oldValue_y, newValue_y) -> {
+                    stage.show();
+
+                    try {
+
+                        //  加载动画界面stage
+                        Stage loadStage = new Stage();
+                        loadStage.initStyle(StageStyle.TRANSPARENT);
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/load.fxml"));
+                        Scene loadScene = new Scene(loader.load());
+                        loadScene.setCamera(new PerspectiveCamera());
+                        loadScene.setFill(null);
+                        loadStage.setScene(loadScene);
+                        passwdStage.close();
+                        loadStage.show();
+
+                        PaneLoad controller = loader.getController();
+
+                        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.3), loadScene.getRoot());
+                        fadeTransition.setFromValue(1);
+                        fadeTransition.setToValue(0);
+                        fadeTransition.setCycleCount(1);
+
+                        fadeTransition.setOnFinished(event -> {
+                            loadStage.close();
+                            controller.stopAnimations();
+                            fadeTransition1.get().play();
+                        });
+
+                        controller.loadedProperty().addListener((obs, oldValue, newValue) -> {
+                            fadeTransition.play();
+                        });
+
+
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
                 });
-
-                controller.loadedProperty().addListener((obs, oldValue, newValue) -> {
-                    fadeTransition.play();
-                });
-
-
-            }catch (Exception e){
-                e.printStackTrace();
             }
         });
 

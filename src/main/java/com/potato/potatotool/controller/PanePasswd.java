@@ -60,9 +60,10 @@ public class PanePasswd {
         stage.close();
     }
 
+    @FXML
     public void start() {
         if(passwd.getText().equals("potato520")){
-            tipTitle.setText("密码正确，正在进入");
+            tipTitle.setText("密码正确，加载中……");
             isPasswdCorrect.set(true);
         }else {
             tipTitle.setText("密码错误，请重试！");

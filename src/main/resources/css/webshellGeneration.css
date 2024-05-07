@@ -1,4 +1,4 @@
-.stack{
+.contentHbox{
     -fx-background-color: -main-topBar-color;
     -fx-border-color: -main-border-color;
     -fx-background-radius: 10;
@@ -6,10 +6,14 @@
     -fx-padding: 20;
     -fx-alignment: center;
 }
+.tipInfo{
+    -fx-padding: 10 0 0 0;
+    -fx-spacing: 50;
+}
 #tipTitle_input_big .text{
     -fx-font-size: 25;
     -fx-fill: -main-border-color;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: bold;
-    -fx-translate-y: -60;
+    /*-fx-translate-y: -60;*/
 }

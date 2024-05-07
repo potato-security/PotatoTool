@@ -57,6 +57,12 @@ public class PaneLocationQuery {
     @FXML
     public void getIdCardInfoFx(ActionEvent event) {
         String input = idCardInput.getText();
+        if(input.isEmpty()){
+            idCardTF_born.setText("请输入正确的身份证号");
+            idCardTF_sex.setText("");
+            idCardTF_att.setText("");
+            return;
+        }
         JsonObject str= getIdCardInfo(input);
 
         if(str.has("born") && str.has("sex") && str.has("att")){
@@ -80,6 +86,11 @@ public class PaneLocationQuery {
     @FXML
     public void getBankCardInfoFx(ActionEvent event) {
         String input = bankCardInput.getText();
+        if(input.isEmpty()){
+            bankCardTF_type.setText("请输入正确的银行卡号");
+            bankCardTF_bank.setText("");
+            return;
+        }
         JsonObject str= getBankCardInfo(input);
 
         try {
@@ -94,6 +105,14 @@ public class PaneLocationQuery {
     @FXML
     public void getPhoneInfoFx(ActionEvent event) {
         String[] phoneList = {phoneInput.getText()};
+        if(phoneInput.getText().isEmpty()){
+            phoneTF_Province.setText("请输入正确的手机号");
+            phoneTF_City.setText("");
+            phoneTF_Operator.setText("");
+            phoneTF_AreaCode.setText("");
+            phoneTF_PostalCode.setText("");
+            return;
+        }
         JsonObject result = getPhoneInfo(phoneList).get(0).getAsJsonObject();
 
         phoneTF_Province.setText(result.get("省份").getAsString());

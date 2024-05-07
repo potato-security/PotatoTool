@@ -31,6 +31,8 @@ public class PaneWebshellGeneration {
     private ComboBox godModeComboBox;
     @FXML
     private TextField godKey;
+    @FXML
+    private Label tipTitleGod;
 
     @FXML
     private ComboBox behComboBox;
@@ -38,6 +40,8 @@ public class PaneWebshellGeneration {
     private ComboBox behModeComboBox;
     @FXML
     private TextField behKey;
+    @FXML
+    private Label tipTitleBeh;
 
     @FXML
     private ComboBox antComboBox;
@@ -45,6 +49,8 @@ public class PaneWebshellGeneration {
     private ComboBox antModeComboBox;
     @FXML
     private TextField antKey;
+    @FXML
+    private Label tipTitleAnt;
 
     @FXML
     private ComboBox cmdComboBox;
@@ -52,6 +58,8 @@ public class PaneWebshellGeneration {
     private ComboBox cmdModeComboBox;
     @FXML
     private TextField cmdKey;
+    @FXML
+    private Label tipTitleCmd;
 
     @FXML
     public void webshellGeneration() {
@@ -107,7 +115,7 @@ public class PaneWebshellGeneration {
                     }
                 }
             }
-            tipTitle.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
+            tipTitle.setText("全部webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
 
         }catch (Exception e){
             e.printStackTrace();
@@ -200,13 +208,13 @@ public class PaneWebshellGeneration {
         String webShell_Manager = "Godzilla";
 
         if(godComboBox.getValue() == null){
-            tipTitle.setText("请选择脚本语言！");
-            tipTitle.setVisible(true);
+            tipTitleGod.setText("请选择脚本语言！");
+            tipTitleGod.setVisible(true);
             return;
         }
         if(godModeComboBox.getValue() == null){
-            tipTitle.setText("请选择编码方式！");
-            tipTitle.setVisible(true);
+            tipTitleGod.setText("请选择编码方式！");
+            tipTitleGod.setVisible(true);
             return;
         }
 
@@ -224,13 +232,13 @@ public class PaneWebshellGeneration {
             fileName = fileName.replace("__", "_").replace("_.", ".");
             strUtils.createFile(webShellData, fileName);
 
-            tipTitle.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
+            tipTitleGod.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
 
         }catch (Exception e){
             e.printStackTrace();
-            tipTitle.setText("webShell生成失败，详细请查看命令窗口报错");
+            tipTitleGod.setText("webShell生成失败，详细请查看命令窗口报错");
         }
-        tipTitle.setVisible(true);
+        tipTitleGod.setVisible(true);
     }
 
     @FXML
@@ -239,13 +247,13 @@ public class PaneWebshellGeneration {
         String webShell_Manager = "Behinder";
 
         if(behComboBox.getValue() == null){
-            tipTitle.setText("请选择脚本语言！");
-            tipTitle.setVisible(true);
+            tipTitleBeh.setText("请选择脚本语言！");
+            tipTitleBeh.setVisible(true);
             return;
         }
         if(behModeComboBox.getValue() == null){
-            tipTitle.setText("请选择编码方式！");
-            tipTitle.setVisible(true);
+            tipTitleBeh.setText("请选择编码方式！");
+            tipTitleBeh.setVisible(true);
             return;
         }
 
@@ -263,13 +271,13 @@ public class PaneWebshellGeneration {
             fileName = fileName.replace("__", "_").replace("_.", ".");
             strUtils.createFile(webShellData, fileName);
 
-            tipTitle.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
+            tipTitleBeh.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
 
         }catch (Exception e){
             e.printStackTrace();
-            tipTitle.setText("webShell生成失败，详细请查看命令窗口报错");
+            tipTitleBeh.setText("webShell生成失败，详细请查看命令窗口报错");
         }
-        tipTitle.setVisible(true);
+        tipTitleBeh.setVisible(true);
 
     }
 
@@ -279,13 +287,13 @@ public class PaneWebshellGeneration {
         String webShell_Manager = "AntSword";
 
         if(antComboBox.getValue() == null){
-            tipTitle.setText("请选择脚本语言！");
-            tipTitle.setVisible(true);
+            tipTitleAnt.setText("请选择脚本语言！");
+            tipTitleAnt.setVisible(true);
             return;
         }
         if(antModeComboBox.getValue() == null){
-            tipTitle.setText("请选择编码方式！");
-            tipTitle.setVisible(true);
+            tipTitleAnt.setText("请选择编码方式！");
+            tipTitleAnt.setVisible(true);
             return;
         }
 
@@ -303,13 +311,13 @@ public class PaneWebshellGeneration {
             fileName = fileName.replace("__", "_").replace("_.", ".");
             strUtils.createFile(webShellData, fileName);
 
-            tipTitle.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
+            tipTitleAnt.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
 
         }catch (Exception e){
             e.printStackTrace();
-            tipTitle.setText("webShell生成失败，详细请查看命令窗口报错");
+            tipTitleAnt.setText("webShell生成失败，详细请查看命令窗口报错");
         }
-        tipTitle.setVisible(true);
+        tipTitleAnt.setVisible(true);
     }
 
     @FXML
@@ -318,13 +326,13 @@ public class PaneWebshellGeneration {
         String webShell_Manager = "Cmd";
 
         if(cmdComboBox.getValue() == null){
-            tipTitle.setText("请选择脚本语言！");
-            tipTitle.setVisible(true);
+            tipTitleCmd.setText("请选择脚本语言！");
+            tipTitleCmd.setVisible(true);
             return;
         }
         if(cmdModeComboBox.getValue() == null){
-            tipTitle.setText("请选择编码方式！");
-            tipTitle.setVisible(true);
+            tipTitleCmd.setText("请选择编码方式！");
+            tipTitleCmd.setVisible(true);
             return;
         }
 
@@ -342,12 +350,12 @@ public class PaneWebshellGeneration {
             fileName = fileName.replace("__", "_").replace("_.", ".");
             strUtils.createFile(webShellData, fileName);
 
-            tipTitle.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
+            tipTitleCmd.setText("webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
 
         }catch (Exception e){
             e.printStackTrace();
-            tipTitle.setText("webShell生成失败，详细请查看命令窗口报错");
+            tipTitleCmd.setText("webShell生成失败，详细请查看命令窗口报错");
         }
-        tipTitle.setVisible(true);
+        tipTitleCmd.setVisible(true);
     }
 }

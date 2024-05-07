@@ -6,7 +6,7 @@
 
     <groupId>com.potato</groupId>
     <artifactId>PotatoTool</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <name>PotatoTool</name>
 
     <properties>
@@ -14,12 +14,6 @@
         <junit.version>5.7.1</junit.version>
     </properties>
     <repositories>
-
-        <!-- JitPack 仓库 -->
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
 
         <!-- Maven 中央仓库 -->
         <repository>
@@ -36,63 +30,15 @@
             <id>central1</id>
             <url>http://repo1.maven.org/maven2</url>
         </repository>
+
+        <!-- JitPack 仓库 -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencies>
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-base</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>win</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-graphics</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>win</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-fxml</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>win</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-base</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>linux</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-graphics</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>linux</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-fxml</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>linux</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-base</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>mac</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-graphics</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>mac</classifier>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.openjfx</groupId>-->
-        <!--            <artifactId>javafx-fxml</artifactId>-->
-        <!--            <version>17.0.10</version>-->
-        <!--            <classifier>mac</classifier>-->
-        <!--        </dependency>-->
         <dependency>
             <groupId>com.github.leewyatt</groupId>
             <artifactId>rxcontrols</artifactId>
@@ -158,6 +104,41 @@
             <artifactId>opencsv</artifactId>
             <version>5.6</version>
         </dependency>
+        <dependency>
+            <groupId>com.drewnoakes</groupId>
+            <artifactId>metadata-extractor</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.promeg</groupId>
+            <artifactId>tinypinyin</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-core</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-javafx</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-materialdesign-pack</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-material-pack</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.controlsfx</groupId>
+            <artifactId>controlsfx</artifactId>
+            <version>8.40.18</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -171,30 +152,6 @@
                     <target>8</target>
                 </configuration>
             </plugin>
-            <!--                        <plugin>-->
-            <!--                            <groupId>org.apache.maven.plugins</groupId>-->
-            <!--                            <artifactId>maven-assembly-plugin</artifactId>-->
-            <!--                            <version>3.3.0</version>-->
-            <!--                            <executions>-->
-            <!--                                <execution>-->
-            <!--                                    <phase>package</phase>-->
-            <!--                                    <goals>-->
-            <!--                                        <goal>single</goal>-->
-            <!--                                    </goals>-->
-            <!--                                </execution>-->
-            <!--                            </executions>-->
-            <!--                            <configuration>-->
-            <!--                                <archive>-->
-            <!--                                    <manifest>-->
-            <!--                                        <mainClass>com.potato.potatotool.ToStart</mainClass>-->
-            <!--                                    </manifest>-->
-            <!--                                </archive>-->
-            <!--                                &lt;!&ndash;打包时，包含所有依赖的jar包&ndash;&gt;-->
-            <!--                                <descriptorRefs>-->
-            <!--                                    <descriptorRef>jar-with-dependencies</descriptorRef>-->
-            <!--                                </descriptorRefs>-->
-            <!--                            </configuration>-->
-            <!--                        </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
