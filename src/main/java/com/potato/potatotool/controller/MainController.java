@@ -11,6 +11,8 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -73,10 +75,18 @@ public class MainController {
     @FXML
     private Rectangle redModePane;
 
+    @FXML
+    private Button reduceScreen;
+    @FXML
+    private Button fullScreen;
+
     private double offsetX,offsetY;
 
     private int selectedBlueIndex = 0;
     private int selectedRedIndex = 10;
+
+    private boolean isFullScreen = false;
+
     @FXML
     void initialize() throws IOException {
 
@@ -345,6 +355,33 @@ public class MainController {
         rectangle.arcHeightProperty().bind(bindArc);
         node.setClip(rectangle);
         return rectangle;
+    }
+
+    @FXML
+    void fullScreenAction(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setFullScreen(!isFullScreen);
+    }
+
+    @FXML
+    void reduceScreenAction(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setIconified(true);
+    }
+
+    public void setStage(Stage stage){
+        stage.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                isFullScreen = newValue;
+                reduceScreen.setDisable(newValue);
+                if (newValue) {
+                    fullScreen.setId("selectedColor");
+                } else {
+                    fullScreen.setId("btnExit");
+                }
+            }
+        });
     }
 
 }

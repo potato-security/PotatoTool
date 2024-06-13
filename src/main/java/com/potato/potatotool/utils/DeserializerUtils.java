@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 import static com.potato.potatotool.utils.Constants.getResourceString;
@@ -122,6 +123,24 @@ public class DeserializerUtils{
 
         return resultData;
     }
+
+
+    public static byte[] serialize(Object obj) throws IOException {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+            oos.writeObject(obj);
+            return bos.toByteArray();
+        }
+    }
+
+    // 从字节数组反序列化对象
+    public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(data);
+             ObjectInputStream ois = new ObjectInputStream(bis)) {
+            return ois.readObject();
+        }
+    }
+
 }
 
 class JavaStreamArrayTraverser {

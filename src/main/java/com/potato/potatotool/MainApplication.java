@@ -1,5 +1,6 @@
 package com.potato.potatotool;
 
+import com.potato.potatotool.controller.MainController;
 import com.potato.potatotool.controller.PaneLoad;
 import com.potato.potatotool.controller.PanePasswd;
 import com.potato.potatotool.utils.SecurityInitializer;
@@ -48,6 +49,7 @@ public class MainApplication extends Application {
 
         //  输入密码界面stage
         Stage passwdStage = new Stage();
+        passwdStage.setAlwaysOnTop(true);
         passwdStage.initStyle(StageStyle.TRANSPARENT);
         FXMLLoader passwdLoader = new FXMLLoader(getClass().getResource("/fxml/passwd.fxml"));
         Scene passwdScene = new Scene(passwdLoader.load());
@@ -65,6 +67,10 @@ public class MainApplication extends Application {
                 Scene scene = new Scene(fxmlLoader.load());
                 Platform.runLater(() -> {
                     try {
+                        MainController controller = fxmlLoader.getController();
+                        controller.setStage(stage);
+                        stage.setFullScreenExitHint("");
+
                         scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
                         scene.setCamera(new PerspectiveCamera());   //  添加摄像机
                         stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明

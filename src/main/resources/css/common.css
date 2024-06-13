@@ -199,6 +199,18 @@
     -fx-background-color: -main-border-color;
     -fx-background-radius: 35;
 }
+#selectedColor{
+    -fx-alignment: center;
+    -fx-min-width: 35;
+    -fx-min-height: 35;
+    -fx-max-width: 35;
+    -fx-max-height: 35;
+    -fx-background-color: -main-border-color;
+    -fx-background-radius: 35;
+}
+#btnExit:disabled{
+    -fx-opacity: 0.5;
+}
 #btnExitSmall{
     -fx-alignment: center;
     -fx-min-width: 25;
@@ -207,7 +219,6 @@
     -fx-max-height: 25;
     -fx-background-color:transparent;
 }
-
 #btnExitSmall:hover{
     -fx-background-color: -main-smallbtnBg-color;
     -fx-background-radius: 25;

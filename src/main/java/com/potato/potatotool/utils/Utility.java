@@ -25,6 +25,7 @@ package com.potato.potatotool.utils;
 import java.io.*;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Utility functions that do not really belong to any class in particular.
@@ -159,6 +160,74 @@ public abstract class Utility {
             System.err.println(e);
         }
         return str;
+    }
+
+
+    private static class JavaWriter extends FilterWriter {
+
+        public JavaWriter(final Writer out) {
+            super(out);
+        }
+
+
+        @Override
+        public void write( final int b ) throws IOException {
+            if (isJavaIdentifierPart((char) b) && (b != ESCAPE_CHAR)) {
+                out.write(b);
+            } else {
+                out.write(ESCAPE_CHAR); // Escape character
+                // Special escape
+                if (b >= 0 && b < FREE_CHARS) {
+                    out.write(CHAR_MAP[b]);
+                } else { // Normal escape
+                    final char[] tmp = Integer.toHexString(b).toCharArray();
+                    if (tmp.length == 1) {
+                        out.write('0');
+                        out.write(tmp[0]);
+                    } else {
+                        out.write(tmp[0]);
+                        out.write(tmp[1]);
+                    }
+                }
+            }
+        }
+
+
+        @Override
+        public void write( final char[] cbuf, final int off, final int len ) throws IOException {
+            for (int i = 0; i < len; i++) {
+                write(cbuf[off + i]);
+            }
+        }
+
+
+        @Override
+        public void write( final String str, final int off, final int len ) throws IOException {
+            write(str.toCharArray(), off, len);
+        }
+    }
+
+    public static boolean isJavaIdentifierPart( final char ch ) {
+        return ((ch >= 'a') && (ch <= 'z')) || ((ch >= 'A') && (ch <= 'Z'))
+                || ((ch >= '0') && (ch <= '9')) || (ch == '_');
+    }
+
+    public static String encode(byte[] bytes, final boolean compress) throws IOException {
+        if (compress) {
+            try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                 GZIPOutputStream gos = new GZIPOutputStream(baos)) {
+                gos.write(bytes, 0, bytes.length);
+                bytes = baos.toByteArray();
+            }
+        }
+        final CharArrayWriter caw = new CharArrayWriter();
+        try (JavaWriter jw = new JavaWriter(caw)) {
+            for (final byte b : bytes) {
+                final int in = b & 0x000000ff; // Normalize to unsigned
+                jw.write(in);
+            }
+        }
+        return caw.toString();
     }
 
 }

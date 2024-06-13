@@ -110,6 +110,7 @@ public class aesUtils {
 
             SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
 
+            System.out.println(String.format(CIPHER_ALGORITHM, mode, padding));
             Cipher cipher = Cipher.getInstance(String.format(CIPHER_ALGORITHM, mode, padding), "BC");
             if (mode.equals(AES_MODE_ECB) || mode.equals(AES_MODE_CTR)) {
 
@@ -138,6 +139,8 @@ public class aesUtils {
             }
 
             byte[] decryptedTextBytes = cipher.doFinal(cipherText);
+            System.out.println(decryptedTextBytes.length);
+            System.out.println(new String(decryptedTextBytes));
 
             //是否存在Gzip压缩特征
             if (strUtils.byteToHex(decryptedTextBytes).toLowerCase().startsWith("1f8b")) {
@@ -168,7 +171,8 @@ public class aesUtils {
             return (!classCode && !serializeCode && !readability) ? null : decryptedTextBytes;
 
         }catch (Exception e){
-            if(debugMode)e.printStackTrace();
+//            if(debugMode)e.printStackTrace();
+            e.printStackTrace();
             return null;
         }
     }
@@ -339,6 +343,28 @@ public class aesUtils {
         executor.shutdownNow();
 
         return res==null ? conText.getBytes(StandardCharsets.UTF_8) : res;
+    }
+
+    public static void main(String []args) {
+        SecurityInitializer.initializeSecurityProvider();
+        byte[] encryptData = strUtils.base64Decode("Ywdhof43ReBYml+64Fs8Qg==".getBytes(StandardCharsets.UTF_8));
+        byte[] key = "1234567890123456".getBytes(StandardCharsets.UTF_8);
+        byte[] iv = key;//new byte[16];//"1234567890123456".getBytes(StandardCharsets.UTF_8);//inputIv!=null ? inputIv.getBytes(StandardCharsets.UTF_8) : finalI == 0 ? new byte[16] : key;
+        Arrays.fill(iv, (byte) 0xFF);
+
+        aesUtils aes = new aesUtils();
+        try {
+            byte[] result = aes.decrypt(
+                    encryptData,
+                    key,
+                    iv,
+                    "CBC",
+                    PADDING_ZERO_PADDING
+            );
+            System.out.println("result:"+result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

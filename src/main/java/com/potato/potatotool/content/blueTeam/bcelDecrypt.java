@@ -3,6 +3,11 @@ package com.potato.potatotool.content.blueTeam;
 import com.potato.potatotool.utils.DeserializerUtils;
 import com.potato.potatotool.utils.Utility;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import static com.potato.potatotool.ToStart.debugMode;
 
 /**
@@ -44,6 +49,9 @@ public class bcelDecrypt {
         }
 
         return null;
+    }
+
+    public static void main(String[] args) {
     }
 
 }

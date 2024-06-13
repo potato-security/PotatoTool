@@ -82,7 +82,7 @@
                            </HBox>
                         </center>
                         <right>
-                           <HBox alignment="CENTER" spacing="20"  fx:id="appController" prefHeight="${topBar.height}">
+                           <HBox alignment="CENTER" spacing="10" prefHeight="${topBar.height}">
                               <Button id="btnSet" mnemonicParsing="false" onAction="#showSet" prefHeight="35.0" prefWidth="35.0">
                                  <graphic>
                                     <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
@@ -98,9 +98,43 @@
                                     <Tooltip text="设置" />
                                  </tooltip>
                               </Button>
-                              <Button id="btnExit" mnemonicParsing="false" onAction="#exitAction" prefHeight="35.0" prefWidth="35.0">
+                              <Pane minWidth="1"/>
+
+                              <Button fx:id="fullScreen" id="btnExit" onAction="#fullScreenAction" prefHeight="35.0" prefWidth="35.0">
                                  <graphic>
                                     <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../img/fullScreen.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                                 <tooltip>
+                                    <Tooltip text="全屏化" />
+                                 </tooltip>
+                              </Button>
+
+                              <Button fx:id="reduceScreen" id="btnExit" mnemonicParsing="false" onAction="#reduceScreenAction" prefHeight="35.0" prefWidth="35.0">
+                                 <graphic>
+                                    <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../img/reduce.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                                 <tooltip>
+                                    <Tooltip text="缩小化" />
+                                 </tooltip>
+                              </Button>
+
+                              <Button id="btnExit" mnemonicParsing="false" onAction="#exitAction" prefHeight="35.0" prefWidth="35.0">
+                                 <graphic>
+                                    <ImageView fitHeight="36.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
                                           <Image url="@../img/close.png" />
                                        </image>
@@ -113,6 +147,7 @@
                                     <Tooltip text="关闭" />
                                  </tooltip>
                               </Button>
+
                               <Pane minWidth="10"/>
                            </HBox>
                         </right>

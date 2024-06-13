@@ -35,7 +35,7 @@
                         <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
                             <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction" prefHeight="25.0" prefWidth="25.0">
                                 <graphic>
-                                    <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                         <image>
                                             <Image url="@../img/close.png" />
                                         </image>
