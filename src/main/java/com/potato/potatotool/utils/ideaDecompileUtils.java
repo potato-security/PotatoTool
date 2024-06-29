@@ -29,18 +29,20 @@ public class ideaDecompileUtils {
             return null;
         }
 
-        String[] arguments = {classPath, "." + File.separator};
+        String jarDir = strUtils.getCurrentJarDir();
+
+        String[] arguments = {classPath, jarDir};
         ConsoleDecompiler.main(arguments);
 
-        String javaTempFilePath = "." + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
+        String javaTempFilePath = jarDir + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
 
-        System.out.println("-----------------1");
+        System.out.println("-----------------");
         System.out.println(classPath);
         System.out.println(javaTempFilePath);
         res = new String( strUtils.readFile(javaTempFilePath) );
 
         if (outfilePath.length == 1) {
-            System.out.println("-----------------2");
+            System.out.println("-----------------");
             strUtils.moveFile(javaTempFilePath, outfilePath[0]);
         }
 

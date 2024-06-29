@@ -7,13 +7,14 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.effect.DropShadow?>
 <?import com.leewyatt.rxcontrols.controls.RXPasswordField?>
+<?import com.dlsc.gemsfx.CFCheckBox?>
 <AnchorPane fx:id="an"
             onMouseDragged="#topBarDraggedAction"
             onMousePressed="#topBarPressedAction"
             maxHeight="-Infinity" maxWidth="-Infinity"
             minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="205"
-            prefWidth="500"
+            prefHeight="245"
+            prefWidth="510"
             style="-fx-background-color: transparent"
             xmlns="http://javafx.com/javafx/"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -55,12 +56,14 @@
                     </right>
                 </BorderPane>
 
-                <VBox alignment="CENTER" spacing="20" prefWidth="${an.width - 18}" style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
+                <VBox alignment="CENTER" spacing="10" prefWidth="${an.width - 18}" style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
 
                     <HBox alignment="CENTER" spacing="10">
                         <Label text="启动密码："/>
                         <RXPasswordField fx:id="passwd" buttonDisplayMode="AUTO" promptText="请输入密码……" prefWidth="200" />
                     </HBox>
+
+                    <CFCheckBox fx:id="checkBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="记住密码" VBox.vgrow="ALWAYS" />
 
                     <StackPane>
                         <Button fx:id="startButton" minHeight="35.0" minWidth="100" text="启动" onAction="#start">

@@ -107,7 +107,8 @@ public class DeserializerUtils{
         if(byteToHex(byteData).toLowerCase().startsWith("cafebabe")){
             System.out.println("存在class字节码数据，可以导出class及java文件");
             String path="./tmpDataOut.class";
-            strUtils.createFile(byteData, "./tmpDataOut.class");
+            path = strUtils.filePathtoAbsolute(path);
+            strUtils.createFile(byteData, path);
             try {
                 path = path + ".java";
                 //  初始化默认反编译模式配置

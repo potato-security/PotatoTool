@@ -18,6 +18,7 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
@@ -39,6 +40,12 @@ public class MainApplication extends Application {
     public void start(Stage stage) throws IOException {
         hostServices = getHostServices();
 
+//        double screenWidth = Screen.getPrimary().getVisualBounds().getWidth();
+//        double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
+//        Screen screen = Screen.getPrimary();
+//        double dpi = screen.getDpi();
+//        double scale = dpi / 151; // 测试机DPI为151
+
         // 初始化配置及BC.jar文件
         initEnvFile();
 
@@ -58,47 +65,9 @@ public class MainApplication extends Application {
         passwdStage.setScene(passwdScene);
         passwdStage.show();
 
-        // 提前加载主界面
-        AtomicReference<FadeTransition> fadeTransition1 = new AtomicReference<FadeTransition>();
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() throws IOException {
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
-                Scene scene = new Scene(fxmlLoader.load());
-                Platform.runLater(() -> {
-                    try {
-                        MainController controller = fxmlLoader.getController();
-                        controller.setStage(stage);
-                        stage.setFullScreenExitHint("");
 
-                        scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
-                        scene.setCamera(new PerspectiveCamera());   //  添加摄像机
-                        stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
-                        scene.setFill(null);    //  背景透明
-                        scene.getRoot().getStyleClass().add("blueStyle");   //  默认蓝队样式
-                        stage.setScene(scene);
-                        scene.getRoot().setOpacity(0);
-                        fadeTransition1.set(new FadeTransition(Duration.seconds(0.3), scene.getRoot()));
-                        fadeTransition1.get().setFromValue(0);
-                        fadeTransition1.get().setToValue(1);
-                        fadeTransition1.get().setCycleCount(1);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-                return null;
-            }
-        };
-        task.setOnFailed(e -> {
-            Throwable error = task.getException();
-            error.printStackTrace();
-            System.exit(0);
-        });
         BooleanProperty preload = new SimpleBooleanProperty(false);
-        task.setOnSucceeded(e -> {
-            preload.set(true);
-        });
-        new Thread(task).start();
+        AtomicReference<FadeTransition> fadeTransition1 = new AtomicReference<FadeTransition>();
 
         PanePasswd pwdController = passwdLoader.getController();
         pwdController.passwdProperty().addListener((obs_x, oldValue_x, newValue_x) -> {
@@ -183,6 +152,49 @@ public class MainApplication extends Application {
                 });
             }
         });
+
+
+        // 提前加载主界面
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws IOException {
+
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
+                Scene scene = new Scene(fxmlLoader.load());
+                Platform.runLater(() -> {
+                    try {
+//                        scene.getRoot().setScaleX(scale);
+//                        scene.getRoot().setScaleY(scale);
+
+                        stage.setFullScreenExitHint("");
+
+                        scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
+                        scene.setCamera(new PerspectiveCamera());   //  添加摄像机
+                        stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
+                        scene.setFill(null);    //  背景透明
+                        scene.getRoot().getStyleClass().add("blueStyle");   //  默认蓝队样式
+                        stage.setScene(scene);
+                        scene.getRoot().setOpacity(0);
+                        fadeTransition1.set(new FadeTransition(Duration.seconds(0.3), scene.getRoot()));
+                        fadeTransition1.get().setFromValue(0);
+                        fadeTransition1.get().setToValue(1);
+                        fadeTransition1.get().setCycleCount(1);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                return null;
+            }
+        };
+        task.setOnFailed(e -> {
+            Throwable error = task.getException();
+            error.printStackTrace();
+            System.exit(0);
+        });
+        task.setOnSucceeded(e -> {
+            preload.set(true);
+        });
+        new Thread(task).start();
 
 
 

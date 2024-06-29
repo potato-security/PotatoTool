@@ -1,6 +1,11 @@
 package com.potato.potatotool.controller;
 
+import com.dlsc.gemsfx.CFCheckBox;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXPasswordField;
+import com.potato.potatotool.utils.Constants;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -15,6 +20,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+
+import java.io.File;
 
 /**
  * @author Potato
@@ -33,6 +40,9 @@ public class PanePasswd {
 
     @FXML
     private RXPasswordField passwd;
+
+    @FXML
+    private CFCheckBox checkBox;
 
     private double offsetX,offsetY;
 
@@ -60,11 +70,24 @@ public class PanePasswd {
         stage.close();
     }
 
+    String initPassword = "";
+
     @FXML
     public void start() {
         if(passwd.getText().equals("potato520")){
-            tipTitle.setText("密码正确，加载中……");
-            isPasswdCorrect.set(true);
+            Platform.runLater(() -> {
+                boolean isRememberMe = checkBox.isSelected();
+                if (isRememberMe && !initPassword.equals(passwd.getText())) {
+                    System.out.println(initPassword);
+                    System.out.println(passwd.getText());
+                    rememberMe();
+                }
+                if (!isRememberMe &&  !initPassword.equals("")) {
+                    deleteMe();
+                }
+                tipTitle.setText("密码正确，加载中……");
+                isPasswdCorrect.set(true);
+            });
         }else {
             tipTitle.setText("密码错误，请重试！");
         }
@@ -79,6 +102,27 @@ public class PanePasswd {
                 }
             }
         });
+
+        JsonElement passwordObj = (JsonElement) Constants.getOutsideConfig("StartPassword");
+        if(passwordObj != null){
+            initPassword = passwordObj.getAsString();
+            if (initPassword.equals("")){
+                checkBox.setSelected(false);
+            }else {
+                passwd.setText(initPassword);
+                checkBox.setSelected(true);
+            }
+        }
+    }
+
+    public void rememberMe(){
+        String password = passwd.getText();
+        Constants.saveConfig("StartPassword", password);
+    }
+
+    public void deleteMe(){
+        String password = "";
+        Constants.saveConfig("StartPassword", password);
     }
 
 }

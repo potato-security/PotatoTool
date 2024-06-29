@@ -18,6 +18,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -229,12 +231,50 @@ public class strUtils {
 
     }
 
+    /**
+     * 获取当前JAR文件所在目录
+     * @return JAR文件所在目录的绝对路径
+     */
+    public static String getCurrentJarDir() {
+        try {
+            // 获取当前JAR文件的位置
+            File jarFile = new File(strUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            // 获取JAR文件所在目录的绝对路径
+            return jarFile.getParentFile().getAbsolutePath();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 相对路径转绝对路径
+     * @return 【对于JAR文件的】相对路径转绝对路径
+     */
+    public static String filePathtoAbsolute(String filePath) {
+
+        Path path = Paths.get(filePath);
+        if (!path.isAbsolute()){
+            String jarDir = getCurrentJarDir();
+            if (jarDir != null) {
+                Path absolutePath = Paths.get(jarDir, filePath).normalize();
+                filePath = absolutePath.toAbsolutePath().toString();
+            } else {
+                throw new RuntimeException("Failed to determine JAR directory.");
+            }
+        }
+
+        return filePath;
+    }
+
 
     /**
      * @param code      写入文件的内容 String
      * @param fileName  写入文件名称
      */
     public static void createFile(String code, String fileName){
+
+        fileName = filePathtoAbsolute(fileName);
 
         File file = new File(fileName);
         if (!file.getParentFile().exists()) {
@@ -267,6 +307,8 @@ public class strUtils {
 
         if(code==null) System.out.println("[×] 文件保存失败 - code为空");
 
+        fileName = filePathtoAbsolute(fileName);
+
         File file = new File(fileName);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
@@ -297,7 +339,10 @@ public class strUtils {
     public static void moveFile(String originalFilePath, String newFilePath){
 
         // 创建原始文件对象
+        originalFilePath = filePathtoAbsolute(originalFilePath);
         File originalFile = new File(originalFilePath);
+
+        newFilePath = filePathtoAbsolute(newFilePath);
         // 创建新文件对象
         File newFile = new File(newFilePath);
 

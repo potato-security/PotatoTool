@@ -2,10 +2,8 @@ package com.potato.potatotool.controller;
 
 import com.leewyatt.rxcontrols.animation.carousel.*;
 import com.leewyatt.rxcontrols.controls.RXCarousel;
-import com.leewyatt.rxcontrols.controls.RXToggleButton;
 import com.leewyatt.rxcontrols.pane.RXCarouselPane;
 import com.potato.potatotool.utils.Util;
-import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -16,6 +14,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -24,20 +23,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
+import javafx.stage.*;
 import javafx.util.Duration;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.Callable;
-
-import static com.potato.potatotool.utils.Constants.getResourceString;
 
 
 /**
@@ -48,6 +38,9 @@ public class MainController {
 
     @FXML
     private AnchorPane root;
+
+    @FXML
+    private Screen screen;
 
     @FXML
     private BorderPane topBar;
@@ -89,6 +82,11 @@ public class MainController {
 
     @FXML
     void initialize() throws IOException {
+
+//        root.setPrefWidth(screen.getVisualBounds().getWidth()* 0.8);
+//        root.setPrefHeight(screen.getVisualBounds().getHeight()* 0.8);
+//        root.setPrefWidth(2048);
+//        root.setPrefWidth(1280);
 
         SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(20.0);
         Rectangle clip = clipRect(
@@ -218,7 +216,13 @@ public class MainController {
         });
 
         topBar.widthProperty().addListener((observable, oldValue, newValue) -> {
-            redBar.setTranslateX(newValue.doubleValue() - 320);
+            if(isBlueMode) {
+                blueBar.setTranslateX(0);
+                redBar.setTranslateX(newValue.doubleValue() - 320);
+            }else {
+                blueBar.setTranslateX(-(newValue.doubleValue() - 320));
+                redBar.setTranslateX(0);
+            }
         });
 
     }
@@ -232,7 +236,7 @@ public class MainController {
 
         isChangeModePaneMoving = true;
 
-        double barWidthDistance = topBar.getPrefWidth() - 320;
+        double barWidthDistance = topBar.getWidth() - 320;
 
         TranslateTransition blueTransition = new TranslateTransition(Duration.seconds(0.2), blueModePane);
         TranslateTransition redTransition = new TranslateTransition(Duration.seconds(0.2), redModePane);
@@ -273,10 +277,6 @@ public class MainController {
         blueTransition.setOnFinished(e -> {
             isChangeModePaneMoving = false;
 
-//            if(isChangeModePaneRight){
-//                delDialog();
-//            }
-
         });
         blueTransition.play();
         redTransition.play();
@@ -286,23 +286,6 @@ public class MainController {
 
         isChangeModePaneRight = !isChangeModePaneRight;
 
-    }
-
-    private void delDialog() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.initOwner(root.getScene().getWindow());
-        alert.initModality(Modality.WINDOW_MODAL);
-        alert.initStyle(StageStyle.UTILITY);
-        alert.getDialogPane().getStylesheets().add(Util.getResourceUrl("/css/common.css"));
-        alert.setTitle("探索未开放界面");
-        alert.setHeaderText("红队版暂不对外开放，相关代码已剔除");
-        alert.setContentText("Red Team version is currently closed, please wait for updates……");
-
-        Button ok = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
-        ok.setOnAction(e->{
-            changeMode();
-        });
-        alert.show();
     }
 
     @FXML
@@ -359,29 +342,41 @@ public class MainController {
 
     @FXML
     void fullScreenAction(ActionEvent event) {
+        isFullScreen = !isFullScreen;
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setFullScreen(!isFullScreen);
+
+        reduceScreen.setDisable(isFullScreen);
+        fullScreen.setId( isFullScreen ? "selectedColor" : "btnExit");
+
+        String os = System.getProperty("os.name").toLowerCase();
+        if(os.contains("mac")){
+            Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+            if (isFullScreen){
+                Platform.runLater(() -> {
+                    stage.setX(primaryScreenBounds.getMinX());
+                    stage.setY(primaryScreenBounds.getMinY());
+                    stage.setWidth(primaryScreenBounds.getWidth());
+                    stage.setHeight(primaryScreenBounds.getHeight());
+                });
+            }else {
+                Platform.runLater(() -> {
+                    stage.setX(primaryScreenBounds.getWidth() * 0.1);
+                    stage.setY(primaryScreenBounds.getHeight() * 0.1);
+                    stage.setWidth(primaryScreenBounds.getWidth() * 0.8);
+                    stage.setHeight(primaryScreenBounds.getHeight() * 0.8);
+                });
+            }
+        }else {
+            Platform.runLater(() -> {
+                stage.setMaximized(isFullScreen);
+            });
+        }
     }
 
     @FXML
     void reduceScreenAction(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setIconified(true);
-    }
-
-    public void setStage(Stage stage){
-        stage.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                isFullScreen = newValue;
-                reduceScreen.setDisable(newValue);
-                if (newValue) {
-                    fullScreen.setId("selectedColor");
-                } else {
-                    fullScreen.setId("btnExit");
-                }
-            }
-        });
     }
 
 }

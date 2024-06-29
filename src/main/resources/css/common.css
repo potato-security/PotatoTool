@@ -755,3 +755,49 @@
     -fx-background-color: -main-btnContent-color;
     -fx-background-radius: 8;
 }
+
+*{
+    -cf-primary-color: #6690FF;
+    -cf-success-color: #33C651;
+    -cf-info-color: #52A8F9;
+    -cf-warn-color: #FFA10A;
+    -cf-danger-color: #FF4C3F;
+
+    -cf-text-color:#303133;
+    -cf-border-color:#CDD0D6;
+    -cf-base-color:#F2F3F5;
+}
+
+.combo-box{
+    -fx-cursor:hand;
+}
+.combo-box > .container{
+    -fx-pref-height: 32px;
+}
+.combo-box > .container > .box{
+    -fx-pref-height: 16px;
+    -fx-pref-width: 16px;
+    -fx-border-radius: 3px;
+    -fx-border-color: -cf-border-color;
+    -fx-background-color: transparent;
+    -fx-background-radius: 3px;
+}
+.combo-box > .container > .box > .mark{
+    -fx-background-color: rgb(255,255,255);
+    -fx-background-insets: 3px 2px;
+    -fx-shape: "M369.792 704.32L930.304 128 1024 223.616 369.984 896l-20.288-20.864-0.128 0.128L0 516.8 96.128 423.68l273.664 280.64z";
+}
+.combo-box > .container{
+    -fx-text-fill: -cf-text-color;
+    -fx-font-size: 14px;
+}
+.combo-box:focused > .container > .box{
+    -fx-border-color: -cf-primary-color;
+}
+.combo-box:selected > .container{
+    -fx-text-fill: -cf-primary-color;
+}
+.combo-box:selected > .container > .box{
+    -fx-border-color: -cf-primary-color;
+    -fx-background-color: -cf-primary-color;
+}

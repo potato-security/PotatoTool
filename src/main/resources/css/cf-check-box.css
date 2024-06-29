@@ -1,0 +1,33 @@
+.cf-check-box{
+    -fx-cursor:hand;
+}
+.cf-check-box > .container{
+    -fx-pref-height: 32px;
+}
+.cf-check-box > .container > .box{
+    -fx-pref-height: 17;
+    -fx-pref-width: 17;
+    -fx-border-radius: 3;
+    -fx-border-color: -main-border-color;;
+    -fx-background-color: transparent;
+    -fx-background-radius: 3;
+}
+.cf-check-box > .container > .box > .mark{
+    -fx-background-color: rgb(255,255,255);
+    -fx-background-insets: 3 2;
+    -fx-shape: "M369.792 704.32L930.304 128 1024 223.616 369.984 896l-20.288-20.864-0.128 0.128L0 516.8 96.128 423.68l273.664 280.64z";
+}
+.cf-check-box > .container{
+    /*-fx-text-fill: -cf-text-color;*/
+    /*-fx-font-size: 14px;*/
+}
+.cf-check-box:focused > .container > .box{
+    -fx-border-color: -main-border-color;;
+}
+.cf-check-box:selected > .container{
+    -fx-text-fill: -main-border-color;;
+}
+.cf-check-box:selected > .container > .box{
+    -fx-border-color: -main-border-color;;
+    -fx-background-color: -main-border-color;;
+}
