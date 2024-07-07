@@ -64,8 +64,6 @@ public class BlockchainTraceability {
             CustomHttpResponse con = requests(obj);
             JsonObject res = con.getJson();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            System.out.println(res);
-            System.out.println(con.getResponseCode());
             return res;
         } catch (Exception e) {
             e.printStackTrace();

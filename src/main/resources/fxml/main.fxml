@@ -44,11 +44,11 @@
                <VBox>
                   <children>
                      <!--头部-->
-                     <BorderPane fx:id="topBar" prefHeight="${(root.prefHeight - 18) * 0.1}" prefWidth="${root.width - 18}" BorderPane.alignment="CENTER">
+                     <BorderPane fx:id="topBar" prefHeight="${(root.prefHeight - 18) * 0.1}" prefWidth="${root.width - 18}">
                         <left>
-                           <Pane>
+                           <Pane maxWidth="200">
                               <clip>
-                                 <Rectangle translateX="25" height="9999" width="150"/>
+                                 <Rectangle translateX="25" height="9999" width="200" style="-fx-background-color: red"/>
                               </clip>
                               <HBox fx:id="topBarLeft">
                                  <Label alignment="CENTER" prefHeight="${topBar.height}" prefWidth="200" styleClass="log-label" text=" BlueTeam" textFill="WHITE">
@@ -71,9 +71,8 @@
                            </Pane>
                         </left>
                         <center>
-                           <Label alignment="CENTER" style="-fx-padding: 0 200 0 0;-fx-font-size: 27;-fx-font-weight: bold;" prefHeight="${topBar.height}" prefWidth="${topBar.width - 200}" text="PotatoTool" textFill="WHITE" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-                           <HBox style="-fx-padding: 0 270 0 0;" alignment="CENTER">
-                              <ImageView fitHeight="40.0" fitWidth="400.0"  pickOnBounds="true" preserveRatio="true">
+                           <HBox prefWidth="250" alignment="CENTER" BorderPane.alignment="CENTER">
+                              <ImageView fitHeight="40.0" fitWidth="250.0"  pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@../img/PotatoTool.png" />
                                  </image>
@@ -101,7 +100,7 @@
 
                               <Button fx:id="fullScreen" id="btnExit" onAction="#fullScreenAction" prefHeight="35.0" prefWidth="35.0">
                                  <graphic>
-                                    <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView  fx:id="fullScreenImgView" fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
                                           <Image url="@../img/fullScreen.png" />
                                        </image>

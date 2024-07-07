@@ -46,7 +46,7 @@ public class ReadabilityChecker {
 
         while (matcher.find()) {
             gibberishCount++;
-//            System.out.println("Gibberish 字符如下: " + matcher.group());
+//            System.out.println("Gibberish 乱码字符如下: " + matcher.group());
         }
 
         return gibberishCount;
@@ -58,11 +58,11 @@ public class ReadabilityChecker {
         double printableRatio = calculatePrintableRatio(decryptedString);
         int gibberishCount = detectGibberishPattern(decryptedString);
 
-//        System.out.println("decryptedString:");
+//        System.out.println("原文内容:");
 //        System.out.println(decryptedString);
-//        System.out.println("printableRatio:");
+//        System.out.println("可打印率:");
 //        System.out.println(printableRatio);
-//        System.out.println("gibberishCount:");
+//        System.out.println("乱码字符数量如下:");
 //        System.out.println(gibberishCount);
 
         double printableRatioSet = 0.8;
@@ -87,10 +87,10 @@ public class ReadabilityChecker {
     }
 
     public static boolean assessReadability(byte[] decryptedByte,double... printableRatioSetAndgibberishCountSet) {
-        return assessReadability( new String(decryptedByte, StandardCharsets.UTF_8),printableRatioSetAndgibberishCountSet);
+        return assessReadability( new String(decryptedByte, StandardCharsets.UTF_8), printableRatioSetAndgibberishCountSet);
     }
 
-        public static void main(String[] args) {
+    public static void main(String[] args) {
         String decryptedString = "Decrypted result";
 
         boolean isReadable = assessReadability(decryptedString);

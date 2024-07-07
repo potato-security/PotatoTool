@@ -139,6 +139,27 @@
             <artifactId>controlsfx</artifactId>
             <version>8.40.18</version>
         </dependency>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.46.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ihxq.projects</groupId>
+            <artifactId>phone-number-geo</artifactId>
+            <version>1.0.9-202302</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+
     </dependencies>
 
     <build>

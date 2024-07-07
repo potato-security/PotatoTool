@@ -19,6 +19,8 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -72,6 +74,8 @@ public class MainController {
     private Button reduceScreen;
     @FXML
     private Button fullScreen;
+    @FXML
+    private ImageView fullScreenImgView;
 
     private double offsetX,offsetY;
 
@@ -347,6 +351,8 @@ public class MainController {
 
         reduceScreen.setDisable(isFullScreen);
         fullScreen.setId( isFullScreen ? "selectedColor" : "btnExit");
+        fullScreenImgView.setImage(new Image(getClass().getResourceAsStream(isFullScreen ? "/img/nofullScreen.png" : "/img/fullScreen.png")));
+
 
         String os = System.getProperty("os.name").toLowerCase();
         if(os.contains("mac")){

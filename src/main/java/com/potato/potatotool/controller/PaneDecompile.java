@@ -1,19 +1,34 @@
 package com.potato.potatotool.controller;
 
 import com.potato.potatotool.utils.DefaultContextMenu;
+import com.potato.potatotool.utils.codeAnalyzerUtils;
 import com.potato.potatotool.utils.codeHighlightingAsync;
 import com.potato.potatotool.utils.decompileUtils;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextArea;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Potato
@@ -33,6 +48,16 @@ public class PaneDecompile {
     @FXML
     private ComboBox rulesComboBox;
 
+    @FXML
+    private TextArea aiTextArea;
+    @FXML
+    private Pane aiPane;
+    @FXML
+    private Button showAI;
+
+
+    String res = "";
+
     public void initialize() {
         new codeHighlightingAsync().codeHighlighting(result);
 
@@ -40,6 +65,9 @@ public class PaneDecompile {
         sPane.heightProperty().addListener((obs, oldValue, newValue) -> {
             double prefHeight = newValue.doubleValue() - 150;
             virScrollPane.setMinHeight(prefHeight);
+
+            aiTextAreHeightProperty = new SimpleDoubleProperty(prefHeight + 12);
+            aiTextArea.prefHeightProperty().bind(aiTextAreHeightProperty);
         });
 
         //  CodeArea添加右键菜单
@@ -47,6 +75,49 @@ public class PaneDecompile {
 
         //  设置默认第一个选项
         rulesComboBox.getSelectionModel().selectFirst();
+
+
+        aiTextArea.prefWidthProperty().bind(aiTextAreWidthProperty);
+        aiTextArea.layoutXProperty().bind(aiTextAreWidthProperty.negate());
+
+        aiTextArea.setOnMouseMoved(event -> {
+            if (isInLeftResizeZone(aiTextArea, event)) {
+                aiTextArea.setCursor(Cursor.H_RESIZE);
+            } else if (isInBottomResizeZone(aiTextArea, event)) {
+                aiTextArea.setCursor(Cursor.V_RESIZE);
+            } else {
+                aiTextArea.setCursor(Cursor.DEFAULT);
+            }
+        });
+
+        aiTextArea.setOnMousePressed(event -> {
+            aiTextAreaStartX = event.getSceneX();
+            aiTextAreaStartY = event.getSceneY();
+        });
+        aiTextArea.setOnMouseDragged(event -> {
+            double deltaX = event.getSceneX() - aiTextAreaStartX;
+            double deltaY = event.getSceneY() - aiTextAreaStartY;
+
+            double newX = aiTextAreWidthProperty.get() - deltaX;
+            double newY = aiTextAreHeightProperty.get() + deltaY;
+
+            if( newX > 0 && newX < sPane.getPrefWidth() * 0.9 ){
+                aiTextAreWidthProperty.set(newX);
+                aiTextAreHeightProperty.set(newY);
+            }
+
+            aiTextAreaStartX = event.getSceneX();
+            aiTextAreaStartY = event.getSceneY();
+        });
+    }
+
+
+    private boolean isInLeftResizeZone(TextArea textArea, MouseEvent event) {
+        return event.getX() < RESIZE_MARGIN;
+    }
+
+    private boolean isInBottomResizeZone(TextArea textArea, MouseEvent event) {
+        return event.getY() > (textArea.getHeight() - RESIZE_MARGIN);
     }
 
     @FXML
@@ -81,7 +152,7 @@ public class PaneDecompile {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                String res = decompileUtils.Decompile(finalPath, decompileMode);
+                res = decompileUtils.Decompile(finalPath, decompileMode);
                 Platform.runLater(() -> {
                     result.replaceText(res);
                 });
@@ -95,6 +166,117 @@ public class PaneDecompile {
 
         // 启动任务
         new Thread(task).start();
+    }
+
+    private String oldData = "";
+    private boolean isAiVisible = false;
+    private boolean isAiCD = false;
+
+    private double aiTextAreaStartX, aiTextAreaStartY;
+    private DoubleProperty aiTextAreWidthProperty = new SimpleDoubleProperty(0);
+    private DoubleProperty aiTextAreHeightProperty = new SimpleDoubleProperty(0);
+    private static final double RESIZE_MARGIN = 10;
+    @FXML
+    void showAI(ActionEvent e) throws Exception {
+
+        double targetWidth = isAiVisible ? 0 : sPane.getPrefWidth() * 0.8;
+        Duration duration = Duration.seconds(0.2);
+
+        if (!isAiVisible){
+            aiPane.setVisible(true);
+            showAI.setStyle("-fx-background-color: #87CEFA");
+        }else {
+            showAI.setStyle("-fx-background-color: transparent");
+        }
+
+        Timeline animation = new Timeline(
+                new KeyFrame(Duration.ZERO, new KeyValue(aiTextAreWidthProperty, aiTextAreWidthProperty.get())),
+                new KeyFrame(duration, new KeyValue(aiTextAreWidthProperty, targetWidth))
+        );
+
+        animation.setOnFinished(event -> {
+            isAiVisible = !isAiVisible;
+
+            if (!isAiVisible) {
+                aiPane.setVisible(false);
+            }
+        });
+
+        animation.play();
+
+        String resultStr = result.getText();
+        //  结果非空 且 结果更新 且 未到AI冷却CD 才触发AI接口
+        if(res.isEmpty()){
+
+            aiTextArea.clear();
+            aiTextArea.appendText("反编译结果为空，AI暂无内容优化");
+            oldData = "";
+
+        }else if (!resultStr.equals(oldData) && !isAiCD){
+
+            oldData = resultStr;
+            isAiCD = true;
+
+            aiTextArea.clear();
+            aiTextArea.appendText("AI分析中，请稍等……");
+
+            // 另起线程调用AI接口
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    codeAnalyzerUtils.optimizedCode(resultStr, aiTextArea);
+                    return null;
+                }
+            };
+            task.setOnFailed(event -> {
+                Throwable error = task.getException();
+                error.printStackTrace();
+            });
+            task.setOnSucceeded(event -> {
+                isAiCD = false;
+            });
+            new Thread(task).start();
+
+        }
+
+    }
+
+    @FXML
+    void refreshAI(ActionEvent e) throws Exception { //结果未更新也可以强行重新调用AI
+        String resultStr = result.getText();
+        //  结果非空 且 未到AI冷却CD 才触发AI接口
+        if(res.isEmpty()){
+
+            aiTextArea.clear();
+            aiTextArea.appendText("反编译结果为空，AI暂无内容分析");
+            oldData = "";
+
+        }else if (!isAiCD){
+
+            oldData = resultStr;
+            isAiCD = true;
+
+            aiTextArea.clear();
+            aiTextArea.appendText("AI分析中，请稍等……");
+
+            // 另起线程调用AI接口
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    codeAnalyzerUtils.optimizedCode(resultStr, aiTextArea);
+                    return null;
+                }
+            };
+            task.setOnFailed(event -> {
+                Throwable error = task.getException();
+                error.printStackTrace();
+            });
+            task.setOnSucceeded(event -> {
+                isAiCD = false;
+            });
+            new Thread(task).start();
+
+        }
     }
 
 }

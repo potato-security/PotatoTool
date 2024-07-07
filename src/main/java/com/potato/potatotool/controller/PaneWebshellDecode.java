@@ -6,9 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
 import com.potato.potatotool.content.blueTeam.webShellDecrypt;
-import com.potato.potatotool.utils.DefaultContextMenu;
-import com.potato.potatotool.utils.codeAnalyzerUtils;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.*;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -34,11 +32,13 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
-import com.potato.potatotool.utils.codeHighlightingAsync;
-
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.*;
 
 
@@ -64,6 +64,8 @@ public class PaneWebshellDecode {
     @FXML
     private ComboBox rulesComboBox;
     @FXML
+    private ComboBox modeComboBox;
+    @FXML
     private TextField customKey;
     @FXML
     private TextField customIv;
@@ -82,8 +84,6 @@ public class PaneWebshellDecode {
     private Button showAI;
 
     @FXML
-    private Label prompt;
-    @FXML
     private Pane promptPane;
 
     Map<String, Object> res = new HashMap<>();
@@ -97,6 +97,11 @@ public class PaneWebshellDecode {
         new codeHighlightingAsync().codeHighlighting(result);
 
         initTextData();
+
+        ScheduledExecutorService monitorExecutor = Executors.newSingleThreadScheduledExecutor();
+
+//        // 定期监控任务，延迟0秒后开始，每隔5秒执行一次
+//        monitorExecutor.scheduleAtFixedRate(() -> monitorExecutorStatus(ExecutorServiceManager.getInstance().getExecutor()), 0, 5, TimeUnit.SECONDS);
 
         tipTitle.setCursor(Cursor.HAND);
 
@@ -151,6 +156,7 @@ public class PaneWebshellDecode {
 
         //  设置默认第一个选项
         rulesComboBox.getSelectionModel().selectFirst();
+        modeComboBox.getSelectionModel().selectFirst();
 
     }
 
@@ -322,41 +328,89 @@ public class PaneWebshellDecode {
         }
     }
 
+    // 输出进程池数
+    private static void monitorExecutorStatus(ExecutorService executor) {
+        if (executor instanceof ForkJoinPool) {
+            ForkJoinPool forkJoinPool = (ForkJoinPool) executor;
+            int runningThreadCount = forkJoinPool.getRunningThreadCount();
+            int activeThreadCount = forkJoinPool.getActiveThreadCount();
+            long queuedTaskCount = forkJoinPool.getQueuedTaskCount();
+            long queuedSubmissionCount = forkJoinPool.getQueuedSubmissionCount();
+            int poolSize = forkJoinPool.getPoolSize();
+            int parallelism = forkJoinPool.getParallelism();
+            int activeTaskCount = forkJoinPool.getActiveThreadCount();
+
+            System.out.println("==== ExecutorService Status ====");
+            System.out.println("Running Thread Count: " + runningThreadCount);
+            System.out.println("Active Thread Count: " + activeThreadCount);
+            System.out.println("Queued Task Count: " + queuedTaskCount);
+            System.out.println("Queued Submission Count: " + queuedSubmissionCount);
+            System.out.println("Pool Size: " + poolSize);
+            System.out.println("Parallelism: " + parallelism);
+            System.out.println("Active Task Count: " + activeTaskCount);
+            System.out.println("===============================");
+        } else {
+            System.out.println("The provided executor is not an instance of ForkJoinPool.");
+        }
+    }
+
+    private Task<Void> currentTask;
+    private Thread currentThread;
 
     String inputKey = null;
     String inputIv = null;
-    boolean traverse = false;
+    List<String> traverse = new ArrayList<>();
     String filePath = null;
     @FXML
     void toDecode(ActionEvent event) throws Exception {
         if(!checkContent()) return;
 
-        result.replaceText(traverse? "请稍等，正在使用大型字典进行解密，可能需要一些时间……" : "解密进行中，请稍等……");
+        ExecutorServiceManager.getInstance().forceShutdown();
+
+        if (currentTask != null && !currentTask.isDone()) {
+            currentThread.stop();
+        }
+
+
         tipTitle.setText("");
         tipTitle.setVisible(false);
         tipTitle.setManaged(false);
 
         //  配置参数
         int selectedIndex = rulesComboBox.getSelectionModel().getSelectedIndex();
+        int modeIndex = modeComboBox.getSelectionModel().getSelectedIndex();
+
+        if(modeIndex == 0){
+            traverse.add("AES");
+        }else if(modeIndex == 1){
+            traverse.add("DES");
+        }else if(modeIndex == 2){
+            traverse.add("XOR");
+        }else if(modeIndex == 3){
+            traverse.add("AES");
+            traverse.add("DES");
+            traverse.add("XOR");
+        }
+
         if(selectedIndex == 0){
             inputKey = null;
             inputIv = null;
-            traverse = false;
+            traverse.clear();
         }else if(selectedIndex == 1){
             inputKey = customKey.getText();
             inputIv = customIv.getText();
-            traverse = false;
+            traverse.clear();
         }else if(selectedIndex == 2){
             inputKey = null;
             inputIv = null;
-            traverse = true;
         }else if(selectedIndex == 3){
             inputKey = null;
             inputIv = null;
-            traverse = true;
         }
 
-        Task<Void> task = new Task<Void>() {
+        result.replaceText(!traverse.isEmpty()? "请稍等，正在使用大型字典进行解密，可能需要一些时间……" : "解密进行中，请稍等……");
+
+        currentTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
                 webShellDecrypt wsd = new webShellDecrypt();
@@ -387,15 +441,17 @@ public class PaneWebshellDecode {
                     }
 
                 });
+                ExecutorServiceManager.getInstance().forceShutdown();
                 return null;
             }
         };
-        task.setOnFailed(e -> {
-            Throwable error = task.getException();
-            error.printStackTrace();
+        currentTask.setOnFailed(e -> {
+            Throwable error = currentTask.getException();
+            if (debugMode) error.printStackTrace();
         });
         // 启动任务
-        new Thread(task).start();
+        currentThread = new Thread(currentTask);
+        currentThread.start();
     }
 
     //    筛选栏事件
@@ -412,6 +468,8 @@ public class PaneWebshellDecode {
         customIv.setManaged(selectedIndex==1? true : false);
         customPath.setVisible(selectedIndex==3? true : false);
         customPath.setManaged(selectedIndex==3? true : false);
+        modeComboBox.setVisible(selectedIndex==2||selectedIndex==3? true : false);
+        modeComboBox.setManaged(selectedIndex==2||selectedIndex==3? true : false);
 
         if(selectedIndex == 3){
             FileChooser chooser = new FileChooser();
@@ -473,6 +531,11 @@ public class PaneWebshellDecode {
         // 播放渐入动画，完成后播放渐出动画
         fadeIn.setOnFinished(event -> fadeOut.play());
         fadeIn.play();
+
+        fadeOut.setOnFinished(event -> {
+            promptPane.setVisible(false);
+            promptPane.setManaged(false);
+        });
     }
 
     void writeTestData(String data) {

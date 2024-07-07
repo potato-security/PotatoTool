@@ -1,11 +1,11 @@
 #question{
-    -fx-padding: 5 70 5 5;
+    -fx-padding: 0 70 0 0;
 }
 .send{
-    -fx-pref-width: 40;
-    -fx-pref-height: 40;
-    -fx-max-width: 40;
-    -fx-max-height: 40;
+    -fx-pref-width: 30;
+    -fx-pref-height: 30;
+    -fx-max-width: 30;
+    -fx-max-height: 30;
     -fx-shape: "M0 1024l106.496-474.112 588.8-36.864-588.8-39.936L0 0l1024 512z";
     -fx-background-color: -main-border-color;
 }

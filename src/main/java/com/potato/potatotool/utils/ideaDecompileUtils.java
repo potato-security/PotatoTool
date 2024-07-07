@@ -42,7 +42,6 @@ public class ideaDecompileUtils {
         res = new String( strUtils.readFile(javaTempFilePath) );
 
         if (outfilePath.length == 1) {
-            System.out.println("-----------------");
             strUtils.moveFile(javaTempFilePath, outfilePath[0]);
         }
 

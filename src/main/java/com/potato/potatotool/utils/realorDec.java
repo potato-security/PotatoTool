@@ -1,6 +1,10 @@
 package com.potato.potatotool.utils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.potato.potatotool.ToStart.debugMode;
 
@@ -13,7 +17,7 @@ public class realorDec {
     public static String decode(String str){
         try {
 
-            String res = strUtils.base64Decode(str.replace("#", "="));
+            String res = new strUtils().base64Decode(str.replace("#", "="));
             if(ReadabilityChecker.assessReadability(res)){
                 if(str.contains("#")){
                     return res;
@@ -25,6 +29,13 @@ public class realorDec {
             if (res == null){
                 String tmp_res = new String(nt_crypt(strUtils.base64Decode(str.replace("#", "=").getBytes(StandardCharsets.UTF_8)),false));
                 if (ReadabilityChecker.assessReadability(tmp_res)){
+                    List<String> list = List.of("(", ")", "'", "\"", "[", "]", "\\", "{", "}", "：", "《", "》", "【", "】");
+
+                    // 排除低概率意外情况，比如admin123
+                    if( str.length() < 10 && strUtils.containsAnyWithSet(tmp_res, list) ){
+                        tmp_res = null;
+                    }
+
                     return tmp_res;
                 }
             }
@@ -52,7 +63,6 @@ public class realorDec {
     public static void main(String []args) {
         String res = realorDec.decode("SprIrBOGcHdvCK63VoT0NHmSAow=");
         System.out.println(res);
-
     }
 
 }

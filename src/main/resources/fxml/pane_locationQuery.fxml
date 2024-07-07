@@ -28,6 +28,11 @@
                         <DropShadow />
                     </effect>
                 </Button>
+                <Button minHeight="35.0" minWidth="200" text="批量" onAction="#getIdCardInfoFx_batch">
+                    <effect>
+                        <DropShadow />
+                    </effect>
+                </Button>
             </HBox>
 
             <FlowPane alignment="CENTER" hgap="20"  vgap="20" style="-fx-padding: 10;" prefWidth="${sPane.width - 20}">
@@ -65,6 +70,11 @@
                         <DropShadow />
                     </effect>
                 </Button>
+                <Button minHeight="35.0" minWidth="200" text="批量" onAction="#getBankCardInfoFx_batch">
+                    <effect>
+                        <DropShadow />
+                    </effect>
+                </Button>
             </HBox>
 
             <FlowPane alignment="CENTER" hgap="20"  vgap="20" style="-fx-padding: 10;"  prefWidth="${sPane.width - 20}">
@@ -88,6 +98,11 @@
                     <TextField prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="phoneInput"  promptText="请输入手机号"/>
                 </HBox>
                 <Button minHeight="35.0" minWidth="200" text="查询" onAction="#getPhoneInfoFx">
+                    <effect>
+                        <DropShadow />
+                    </effect>
+                </Button>
+                <Button minHeight="35.0" minWidth="200" text="批量" onAction="#getPhoneInfoFx_batch">
                     <effect>
                         <DropShadow />
                     </effect>

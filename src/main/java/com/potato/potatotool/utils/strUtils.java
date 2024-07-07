@@ -1,5 +1,6 @@
 package com.potato.potatotool.utils;
 
+import com.potato.potatotool.controller.PaneWebshellDecode;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.graalvm.polyglot.Value;
 
@@ -25,6 +26,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -672,6 +676,23 @@ public class strUtils {
 
 
     /**
+     *      A字符串中，是否包含B数组中的某一个元素
+     * @param str     字符串A
+     * @param list   B数组
+     * @return
+     */
+    public static boolean containsAnyWithSet(String str, List<String> list) {
+        Set<String> set = new HashSet<>(list);
+        for (String item : set) {
+            if (str.contains(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
      *      A字符串 是否包含B中所有字符
      * @param input         A字符串
      * @param characters    B字符集
@@ -680,6 +701,38 @@ public class strUtils {
     public static boolean containsAllChars(String input, String characters) {
         for (char c : characters.toCharArray()) {
             if (input.indexOf(c) == -1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
+     *      A字符串 是否包含B数组中所有元素
+     * @param str         A字符串
+     * @param elements      B数组
+     * @return
+     */
+    public static boolean containsAllElements(String str, String[] elements) {
+        for (String element : elements) {
+            if (!str.contains(element)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
+     *      Abyte集合 是否只有Bbyte
+     * @param a    Abyte集合
+     * @param b    Bbyte
+     * @return
+     */
+    public static boolean allElementsAreByte(ArrayList<Byte> a, byte b) {
+        for (Byte c : a) {
+            if (!c.equals(b)) {
                 return false;
             }
         }
@@ -767,13 +820,12 @@ public class strUtils {
             output.append(mapped);
         }
 
-        String res = base64Decode(output.toString());
+        String res = new strUtils().base64Decode(output.toString());
 
         if(res==null){
             res = seeyonOldBase64Decode(output.toString());
         }
 
-        System.out.println(res);
         return res;
     }
     public static String seeyonOldBase64Decode(String baseText){
@@ -790,7 +842,7 @@ public class strUtils {
             output.append(map.get(c));
         }
 
-        String res = base64Decode(output.toString().trim());
+        String res = new strUtils().base64Decode(output.toString().trim());
 
         return res;
     }
@@ -803,7 +855,7 @@ public class strUtils {
         if(baseText.startsWith("/1.0/")) {
 
             baseText = baseText.substring("/1.0/".length());
-            baseText = base64Decode(baseText);
+            baseText = new strUtils().base64Decode(baseText);
             char[] encodeStringCharArray = baseText.toCharArray();
             for (int i = 0; i < encodeStringCharArray.length; ++i) {
                 encodeStringCharArray[i] = (char) (encodeStringCharArray[i] - '\u0001');
@@ -874,17 +926,17 @@ public class strUtils {
      * @return      Base64解码后的字符串
      * @throws Exception
      */
-    public static boolean classCode = false;
-    public static boolean serializeCode = false;
-    public static boolean gzipCode = false;
-    public static String base64Decode(String baseText) {
+    public boolean classCode = false;
+    public boolean serializeCode = false;
+    public boolean gzipCode = false;
+    public String base64Decode(String baseText) {
         try {
             baseText = baseText.replace("\n","").replace("\r","").replace("\t","");
 
             byte[] decodeBytes = Base64.getDecoder().decode(baseText);
 
             if(byteToHex(decodeBytes).toLowerCase().startsWith("1f8b")){
-                byte[] tmpGzipRes = gzipDecompress(decodeBytes);
+                byte[] tmpGzipRes = GzipUtils.GzipDecompress(decodeBytes);
                 if(tmpGzipRes!=null){
                     if(ReadabilityChecker.assessReadability( new String(tmpGzipRes, StandardCharsets.UTF_8), new double[]{1,0} )){
 
@@ -997,7 +1049,7 @@ public class strUtils {
      * @param hexText   原始字符串
      * @return      Hex解码后的字符串
      */
-    public static String hexDecode(String hexText) {
+    public String hexDecode(String hexText) {
 
         String oldData = hexText;
 
@@ -1253,52 +1305,12 @@ public class strUtils {
 
 
     /**
-     *  数据进行GZIP压缩
-     * @param data   需要压缩的byte数组
-     * @return       进行gzip压缩
-     */
-    public static byte[] gzipGetCompressedData(byte[] data) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)) {
-            gzipOutputStream.write(data);
-        } catch (IOException e) {
-            if(debugMode)e.printStackTrace();
-        }
-        return outputStream.toByteArray();
-    }
-
-    /**
-     *  数据进行GZIP解压   [hax特征开头:1f8b]
-     * @param compressedData   被压缩的byte数组
-     * @return                 解gzip压缩
-     */
-    public static byte[] gzipDecompress(byte[] compressedData) {
-        if(!byteToHex(compressedData).toLowerCase().startsWith("1f8b")) return null;
-        byte[] buffer = new byte[1024];
-        try{
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(compressedData);
-            GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-            int len;
-            while ((len = gzipInputStream.read(buffer)) > 0) {
-                outputStream.write(buffer, 0, len);
-            }
-
-            return outputStream.toByteArray();
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-
-    /**
      *  异或加/解密
      * @param data   源byte数组
      * @param key    异或的byte数组
      * @return       异或后的byte数组
      */
-    public static byte[] xorEncode(byte[] data, byte[] key) {
+    public byte[] xorEncode(byte[] data, byte[] key) {
         byte[] encryptedData = new byte[data.length];
         int keyLength = key.length;
 
@@ -1310,9 +1322,55 @@ public class strUtils {
         return encryptedData;
     }
     // 兼容String传参，单独异或可使用这个
-    public static String xorEncode(String data, String key) {
+    public String xorEncode(String data, String key) {
         return new String( xorEncode(data.getBytes(StandardCharsets.UTF_8), key.getBytes(StandardCharsets.UTF_8)) );
     }
+
+    public byte[] xorEncode(byte[] data, String key) {
+        byte[] encryptedData = new byte[data.length];
+
+        byte[] keyByte = key.getBytes(StandardCharsets.UTF_8);
+        int keyLength = keyByte.length;
+
+        for (int i = 0; i < data.length; i++) {
+            byte c = keyByte[(i + 1) % keyLength];
+            encryptedData[i] = (byte) (data[i] ^ c);
+        }
+
+        String res = new String(encryptedData, StandardCharsets.UTF_8);
+
+        if (ReadabilityChecker.assessReadability(res, new double[]{1, 0})) {
+            xorKey = key;
+            return encryptedData;
+        } else if (res.startsWith("methodName") && res.length() > 15) {
+            xorKey = key;
+            String tmpHexData = byteToHex(encryptedData);
+            if (tmpHexData.contains("00") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005")) {  // 非gzip不需要匹配000000 针对于哥斯拉key和value空字符需要转换为等号
+                tmpHexData = strRev(strRev(tmpHexData).replaceAll("(00.{8})", "D3"));
+                encryptedData = hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+            }
+            return encryptedData;
+        } else if (byteToHex(encryptedData).toLowerCase().startsWith("1f8b")) {
+            byte[] tmpGzipRes = GzipUtils.GzipDecompress(encryptedData);
+            if (tmpGzipRes != null) {
+                if (ReadabilityChecker.assessReadability(new String(tmpGzipRes, StandardCharsets.UTF_8), new double[]{1, 0})) {
+
+                    String tmpHexData = byteToHex(tmpGzipRes);
+                    if (tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005")) {  // 针对于哥斯拉key和value空字符需要转换为等号
+                        tmpHexData = strRev(strRev(tmpHexData).replaceAll("(00.{8})", "D3"));
+                        tmpGzipRes = hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+                    }
+
+                    xorKey = key + "+Gzip";
+
+                    return tmpGzipRes;
+                }
+            }
+        }
+
+        return null;
+    }
+
 
 
     /**
@@ -1326,13 +1384,13 @@ public class strUtils {
      */
     public Set<String> keyArray_AES = new HashSet<>();
     public String xorKey = "";
-    public String xorEncode(byte[] data, String inputKeyStr, boolean traverse, String customPath) {
+    public String xorEncode(byte[] data, String inputKeyStr, List traverse, String customPath) {
         if(data == null) return null;
 
-        byte[] encryptedData = new byte[data.length];
+        byte[] res = null;
         Set<String> keyArray = new LinkedHashSet<>();
 
-        if( traverse){
+        if(traverse.contains("XOR")){
             if(customPath != null && !customPath.equals("")){
                 try{
                     BufferedReader reader = new BufferedReader(new FileReader(customPath));
@@ -1373,51 +1431,37 @@ public class strUtils {
             keyArray.add(inputKeyStr);
         }
 
+        ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
+        List<Future<?>> futures = ExecutorServiceManager.futures;
+
         for(String key : keyArray){
-            byte[] keyByte = key.getBytes(StandardCharsets.UTF_8);
-            int keyLength = keyByte.length;
-
-            for (int i = 0; i < data.length; i++) {
-                byte c = keyByte[(i + 1) % keyLength];
-                encryptedData[i] = (byte) (data[i] ^ c);
-            }
-
-            String res = new String(encryptedData, StandardCharsets.UTF_8);
-
-
-            if(ReadabilityChecker.assessReadability(res, new double[]{1,0} )){
-                xorKey = key;
-                return res;
-            }else if(res.startsWith("methodName") && res.length()>15){
-                xorKey = key;
-                String tmpHexData = byteToHex(encryptedData);
-                if(tmpHexData.contains("00")  && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005")){  // 非gzip不需要匹配000000 针对于哥斯拉key和value空字符需要转换为等号
-                    tmpHexData = strRev( strRev(tmpHexData).replaceAll("(00.{8})", "D3") );
-                    encryptedData = hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
-                }
-                return new String(encryptedData, StandardCharsets.UTF_8);
-            }else if(byteToHex(encryptedData).toLowerCase().startsWith("1f8b")){
-                byte[] tmpGzipRes = gzipDecompress(encryptedData);
-                if(tmpGzipRes!=null){
-                    if(ReadabilityChecker.assessReadability( new String(tmpGzipRes, StandardCharsets.UTF_8), new double[]{1,0} )){
-
-                        String tmpHexData = byteToHex(tmpGzipRes);
-                        if(tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005") ){  // 针对于哥斯拉key和value空字符需要转换为等号
-                            tmpHexData = strRev( strRev(tmpHexData).replaceAll("(00.{8})", "D3") );
-                            tmpGzipRes = hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
-                        }
-
-                        xorKey = key + "+Gzip";
-                        res = new String(tmpGzipRes, StandardCharsets.UTF_8);
-
-                        return res;
-                    }
-                }
-            }
-
+            Callable<byte[]> task = () -> {
+                return xorEncode(data, key);
+            };
+            futures.add(executor.submit(task));
         }
 
-        return null;
+        for (Future<?> future : futures) {
+            try {
+                byte[] result = (byte[]) future.get();
+                if (result != null && !result.equals("")) {
+                    res = result;
+                    break;
+                }
+            } catch (Exception e) {
+                if(debugMode)e.printStackTrace();
+            }
+        }
+
+        for (Future<?> future : futures) {
+            future.cancel(true);
+        }
+        futures.clear();
+
+        // 停止所有线程
+        ExecutorServiceManager.getInstance().forceShutdown();
+
+        return new String(res, StandardCharsets.UTF_8);
     }
 
     // 获取jar所在目录绝对路径

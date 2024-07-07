@@ -1,5 +1,7 @@
 package com.potato.potatotool.content.blueTeam;
 
+import com.potato.potatotool.controller.PaneWebshellDecode;
+import com.potato.potatotool.utils.ExecutorServiceManager;
 import com.potato.potatotool.utils.aesUtils;
 import com.potato.potatotool.utils.strUtils;
 
@@ -70,8 +72,8 @@ public class shiroDecrypt {
 
         String[] modeArray = {"CBC", "GCM"};
 
-        ExecutorService executor = ForkJoinPool.commonPool();
-        List<Future<byte[]>> futures = new ArrayList<>();
+        ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
+        List<Future<?>> futures = ExecutorServiceManager.futures;
         for (String keyStr : keyArray) {
             for (String mode : modeArray) {
                 String finalCode = code;
@@ -98,9 +100,9 @@ public class shiroDecrypt {
             }
         }
 
-        for (Future<byte[]> future : futures) {
+        for (Future<?> future : futures) {
             try {
-                byte[] result = future.get();
+                byte[] result = (byte[]) future.get();
                 if (result != null && !result.equals("")) {
 
                     res = result;
@@ -112,8 +114,13 @@ public class shiroDecrypt {
             }
         }
 
+        for (Future<?> future : futures) {
+            future.cancel(true);
+        }
+        futures.clear();
+
         // 停止所有线程
-        executor.shutdownNow();
+        ExecutorServiceManager.getInstance().forceShutdown();
 
         return res;
     }

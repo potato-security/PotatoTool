@@ -1,0 +1,15 @@
+.cf-switch{
+    -cf-color: #D85550;
+    -fx-cursor: hand;
+}
+.cf-switch > .container{
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-pref-height: 32px;
+}
+.cf-switch:selected{
+    -cf-color: #3ECEE3;
+}
+.cf-switch:selected > .container{
+    -fx-text-fill: #3ECEE3;
+}

@@ -1,6 +1,8 @@
 package com.potato.potatotool.utils;
 
 
+import com.potato.potatotool.controller.PaneWebshellDecode;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
@@ -34,7 +36,7 @@ public class aesUtils {
     private static final String PADDING_NO_PADDING = "NoPadding";
     private static final String PADDING_PKCS5_PADDING = "PKCS5Padding";
     private static final String PADDING_PKCS7_PADDING = "PKCS7Padding";
-    private static final String PADDING_ZERO_PADDING = "ZeroPadding";
+    private static final String PADDING_ZERO_PADDING = "ZeroBytePadding";
     /**
      * 对输入的明文进行AES加密
      *
@@ -42,7 +44,7 @@ public class aesUtils {
      * @param keyBytes  密钥byte数组
      * @param iv        iv向量byte数组
      * @param mode      加密模式（如CBC、ECB、GCM等）
-     * @param padding   填充方式（如NoPadding、PKCS7Padding、ZeroPadding等）
+     * @param padding   填充方式（如NoPadding、PKCS7Padding、ZeroBytePadding等）
      * @return 加密后的密文字符串
      * @throws Exception 加密过程中的异常
      */
@@ -91,7 +93,7 @@ public class aesUtils {
      * @param key        密钥byte数组
      * @param iv         iv向量byte数组
      * @param mode       加密模式（如CBC、ECB、GCM等）
-     * @param padding    填充方式（如NoPadding、PKCS7Padding、ZeroPadding等）
+     * @param padding    填充方式（如NoPadding、PKCS7Padding、ZeroBytePadding等）
      * @return 解密后的明文byte数组
      * @throws Exception 解密过程中的异常
      */
@@ -110,7 +112,6 @@ public class aesUtils {
 
             SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
 
-            System.out.println(String.format(CIPHER_ALGORITHM, mode, padding));
             Cipher cipher = Cipher.getInstance(String.format(CIPHER_ALGORITHM, mode, padding), "BC");
             if (mode.equals(AES_MODE_ECB) || mode.equals(AES_MODE_CTR)) {
 
@@ -139,17 +140,15 @@ public class aesUtils {
             }
 
             byte[] decryptedTextBytes = cipher.doFinal(cipherText);
-            System.out.println(decryptedTextBytes.length);
-            System.out.println(new String(decryptedTextBytes));
 
             //是否存在Gzip压缩特征
             if (strUtils.byteToHex(decryptedTextBytes).toLowerCase().startsWith("1f8b")) {
-                decryptedTextBytes = strUtils.gzipDecompress(decryptedTextBytes);
+                decryptedTextBytes = GzipUtils.GzipDecompress(decryptedTextBytes);
                 String tmpHexData = strUtils.byteToHex(decryptedTextBytes);
 
                 if (tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005")) {  // 针对于哥斯拉key和value空字符需要转换为等号
                     tmpHexData = strUtils.strRev(strUtils.strRev(tmpHexData).replaceAll("(00.{8})", "D3"));
-                    decryptedTextBytes = strUtils.hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+                    decryptedTextBytes = new strUtils().hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
                 }
 
                 gzipCode = true;
@@ -167,12 +166,12 @@ public class aesUtils {
                 decryptedTextBytes = tmpDecryptedTextBytes;
                 serializeCode = true;
             }
+
             boolean readability = ReadabilityChecker.assessReadability(decryptedTextBytes);
             return (!classCode && !serializeCode && !readability) ? null : decryptedTextBytes;
 
         }catch (Exception e){
-//            if(debugMode)e.printStackTrace();
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
             return null;
         }
     }
@@ -210,8 +209,6 @@ public class aesUtils {
     //  50w字典爆破调用方法：
     //  aesUtils aes=new aesUtils();
     //  String res = aes.aesWebShellDecode(encodeStr, null,true);
-    //  运行时间特别长，导致Java UI（例如使用Swing）,需要将更新ui防止后台线程运行，防止堵塞
-    //  若测试，误解率大，可使用ReadabilityChecker.assessReadability()方法判断可读性，抛除
     /**
      *  AES解密尝试【兼容+Gzip】     放了3个常见key，两种常见iv,两个常见mode CBC/ECB，填充方式PKCS5Padding
      * @param conText       原始字符串
@@ -221,7 +218,7 @@ public class aesUtils {
      * @return              解密后结果--最好返回byte[]数据，而非string，防止后续传输存在问题
      * @throws Exception
      */
-    public byte[] aesWebShellDecode(String conText, String inputKeyStr, String inputIv, boolean traverse, String customPath) {
+    public byte[] aesWebShellDecode(String conText, String inputKeyStr, String inputIv, List traverse, String customPath) {
 
         // 排除非AES加密格式字符串传入
         String aesPattern = "^[A-Za-z0-9+/]+={0,2}$";
@@ -236,7 +233,7 @@ public class aesUtils {
         Set<String> keyArray = new LinkedHashSet<>();
 
 
-        if(traverse){
+        if(traverse.contains("AES")){
             if(customPath != null && !customPath.equals("")){
                 try{
                     BufferedReader reader = new BufferedReader(new FileReader(customPath));
@@ -274,62 +271,63 @@ public class aesUtils {
             keyArray.add("5f4dcc3b5aa765d6");
             keyArray.add("changeit");
             keyArray.add("whir2014");
+            keyArray.add("1234567890123456");
         } else if( inputKeyStr != null ){
             keyArray.add(inputKeyStr);
         }
 
         String[] modeArray = {"CBC", "ECB"};    //  webShell常见两种模式
+        String[] paddingArray = {PADDING_PKCS5_PADDING, PADDING_ZERO_PADDING}; // 数据加密常见的两种padding
 
-        ExecutorService executor = ForkJoinPool.commonPool();
-        List<Future<byte[]>> futures = new ArrayList<>();
+        ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
+        List<Future<?>> futures = ExecutorServiceManager.futures;
 
         for (String keyStr : keyArray) {
             for (String mode : modeArray) {
-                for (int i = 0; i < 2; i++) {
-                    if (i == 1 && mode.equals("ECB")) continue;
+                for (String padding : paddingArray) {
+                    for (int i = 0; i < 2; i++) {
+                        if (i == 1 && mode.equals("ECB")) continue;
 
-                    int finalI = i;
-                    Callable<byte[]> task = () -> {
-                        try {
-                            byte[] encryptData = strUtils.base64Decode(conText.getBytes(StandardCharsets.UTF_8));
-                            byte[] key = keyStr.getBytes(StandardCharsets.UTF_8);
-                            byte[] iv = inputIv!=null ? inputIv.getBytes(StandardCharsets.UTF_8) : finalI == 0 ? new byte[16] : key;
+                        int finalI = i;
+                        Callable<byte[]> task = () -> {
+                            try {
+                                byte[] encryptData = strUtils.base64Decode(conText.getBytes(StandardCharsets.UTF_8));
+                                byte[] key = keyStr.getBytes(StandardCharsets.UTF_8);
+                                byte[] iv = inputIv != null ? inputIv.getBytes(StandardCharsets.UTF_8) : finalI == 0 ? new byte[16] : key;
 
-                            aesUtils aes = new aesUtils();
-                            byte[] result = aes.decrypt(
-                                    encryptData,
-                                    key,
-                                    iv,
-                                    mode,
-                                    "PKCS5Padding"
-                            );
-                            mode_AES.set(mode);
-                            padding_AES.set("PKCS5Padding");
-                            key_AES.set(keyStr);
-                            iv_AES.set(!iv_AES.get().equals("Null") ? ( mode.equals("ECB") ? "Null": new String(iv, StandardCharsets.UTF_8) ) : "Null");
-                            classCode = aes.classCode;
-                            serializeCode = aes.serializeCode;
-//                            System.out.println("~~~~~~");
-//                            System.out.println(mode_AES.get());
-//                            System.out.println(keyStr);
-//                            System.out.println(iv_AES.get());
-//                            System.out.println("———————");
+                                aesUtils aes = new aesUtils();
+                                byte[] result = aes.decrypt(
+                                        encryptData,
+                                        key,
+                                        iv,
+                                        mode,
+                                        padding
+                                );
+                                if(result != null && !result.equals("")){
+                                    mode_AES.set(mode);
+                                    padding_AES.set(padding);
+                                    key_AES.set(keyStr);
+                                    iv_AES.set(!iv.equals("Null") ? (mode.equals("ECB") ? "Null" : new String(iv, StandardCharsets.UTF_8)) : "Null");
+                                    classCode = aes.classCode;
+                                    serializeCode = aes.serializeCode;
+                                }
 
-                            return result;
-                        } catch (Exception e) {
-                            if(debugMode)e.printStackTrace();
-                            return null;
-                        }
-                    };
+                                return result;
+                            } catch (Exception e) {
+                                if (debugMode) e.printStackTrace();
+                                return null;
+                            }
+                        };
 
-                    futures.add(executor.submit(task));
+                        futures.add(executor.submit(task));
+                    }
                 }
             }
         }
 
-        for (Future<byte[]> future : futures) {
+        for (Future<?> future : futures) {
             try {
-                byte[] result = future.get();
+                byte[] result = (byte[]) future.get();
                 if (result != null && !result.equals("")) {
                     res = result;
                     break;
@@ -339,18 +337,22 @@ public class aesUtils {
             }
         }
 
+//        for (Future<?> future : futures) {
+//            future.cancel(true);
+//        }
+//        futures.clear();
+
         // 停止所有线程
-        executor.shutdownNow();
+        ExecutorServiceManager.getInstance().forceShutdown();
 
         return res==null ? conText.getBytes(StandardCharsets.UTF_8) : res;
     }
 
     public static void main(String []args) {
         SecurityInitializer.initializeSecurityProvider();
-        byte[] encryptData = strUtils.base64Decode("Ywdhof43ReBYml+64Fs8Qg==".getBytes(StandardCharsets.UTF_8));
+        byte[] encryptData = strUtils.base64Decode("qK+uRdRsYAa2jdP6kGdhEg==".getBytes(StandardCharsets.UTF_8));
         byte[] key = "1234567890123456".getBytes(StandardCharsets.UTF_8);
         byte[] iv = key;//new byte[16];//"1234567890123456".getBytes(StandardCharsets.UTF_8);//inputIv!=null ? inputIv.getBytes(StandardCharsets.UTF_8) : finalI == 0 ? new byte[16] : key;
-        Arrays.fill(iv, (byte) 0xFF);
 
         aesUtils aes = new aesUtils();
         try {
@@ -359,14 +361,39 @@ public class aesUtils {
                     key,
                     iv,
                     "CBC",
-                    PADDING_ZERO_PADDING
+                    PADDING_NO_PADDING
             );
-            System.out.println("result:"+result);
+            System.out.println("result:"+new String(result) );
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * 知识点记录
+     *
+     * 【NoPadding】
+     * 描述: NoPadding 不会对数据进行任何填充操作。
+     * 要求: 数据长度必须是加密算法块大小的整数倍。如果不是整数倍，数据将无法正确加密。
+     * 使用场景: 适用于数据已经按照块大小分组的场景，比如一些固定格式的数据（图像、音频等）。
+     * 【ZeroBytePadding】
+     * 描述: ZeroBytePadding 会在数据的末尾填充零字节（0x00）直到数据长度达到块大小的整数倍。
+     * 要求: 如果原始数据包含 0x00 字节，解密时可能会产生混淆，因为无法区分哪些零字节是填充的，哪些是数据的一部分。
+     * 使用场景: 适合于填充零字节不会影响数据内容的场景。
+     *
+     *
+     * 【是否可以使用 ZeroBytePadding 解密 NoPadding 加密的密文？】
+     * 数据块完整: 如果使用 NoPadding 加密的数据长度已经是块大小的整数倍（例如 16 字节、32 字节等），那么可以直接解密，不需要填充，也不需要去除填充。因此，这种情况下，ZeroBytePadding 和 NoPadding 的解密方式不会产生冲突，可以用 ZeroBytePadding 解密。
+     *
+     * 数据长度非整数倍: 如果数据长度不是块大小的整数倍，不能直接使用 NoPadding 加密，因为它不会进行任何填充，数据长度必须自己处理成块大小的整数倍。在这种情况下，NoPadding 和 ZeroBytePadding 无法互相替代。
+     * 但是数据长度非整数倍的场景本身应该不会存在，因为 NoPadding 要求数据长度是 16 字节的倍数，故不存在该场景。
+     *
+     * 填充数据的干扰: 使用 NoPadding 加密的数据不会有任何填充，而 ZeroBytePadding 解密会试图将末尾的零字节移除作为填充。因此，如果原始数据末尾刚好是 0x00 字节，在解密过程中，ZeroBytePadding 可能会错误地将其识别为填充并移除，导致数据不完整。
+     *
+     * 由于我们是数据解密，故不需要考虑填充数据的干扰。
+     * 综上所述，【可以使用 ZeroBytePadding 解密 NoPadding 加密的密文】
+     *
+     **/
 
 
 }

@@ -29,7 +29,7 @@ public class PaneAiAnswer {
     @FXML
     private VBox msgBox;
 
-    static aiUtil aiObj=new aiUtil();
+    aiUtil aiObj=new aiUtil();
 
     public void initialize() {
 
@@ -39,7 +39,7 @@ public class PaneAiAnswer {
             Text t = (Text) ((Group)((Region)lookup.getContent()).getChildrenUnmodifiable().get(1)).getChildren().get(0);
             t.layoutBoundsProperty().addListener((o,n,v)->{
                 if(v.getHeight()==0) return;
-                double newHeight = v.getHeight() == 23 ? 67 : v.getHeight() + 59 ;  //不故意隐藏scroll 请修改为+44
+                double newHeight = v.getHeight() == 23 ? 57 : v.getHeight() + 57 ;  //不故意隐藏scroll 请修改为+44
                 if(newHeight >= question.getMaxHeight()) {
                     lookup.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
                     newHeight = question.getMaxHeight();

@@ -55,6 +55,19 @@
                <Cursor fx:constant="HAND" />
             </cursor>
          </ComboBox>
+         <ComboBox fx:id="modeComboBox" visible="false" managed="false" prefHeight="30.0" minWidth="80" prefWidth="80" >
+            <items>
+               <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="AES" />
+                  <String fx:value="DES" />
+                  <String fx:value="XOR" />
+                  <String fx:value="ALL" />
+               </FXCollections>
+            </items>
+            <cursor>
+               <Cursor fx:constant="HAND" />
+            </cursor>
+         </ComboBox>
          <TextField fx:id="customKey" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Key"/>
          <TextField fx:id="customIv" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Iv"/>
          <TextField fx:id="customPath" visible="false" managed="false" editable="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="自定义字典路径"/>

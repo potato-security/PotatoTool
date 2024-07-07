@@ -10,6 +10,7 @@
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import com.dlsc.gemsfx.CFSwitch?>
 <AnchorPane xmlns="http://javafx.com/javafx/"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.potato.potatotool.controller.PaneSetting"
@@ -51,14 +52,14 @@
                 </BorderPane>
                 <VBox alignment="CENTER_LEFT" spacing="20" prefWidth="${an.width - 18}" style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label text="       设置代理："/>
+                    <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置代理："/>
                     <StackPane>
                         <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" StackPane.alignment="CENTER"/>
-                        <ToggleButton fx:id="proxyButton" text="关闭" StackPane.alignment="CENTER_RIGHT" onAction="#toggleProxy"/>
+                        <CFSwitch fx:id="proxyButton" StackPane.alignment="CENTER_RIGHT" onAction="#toggleProxy"/>
                     </StackPane>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label text=" 默认反编译器："/>
+                    <Label fx:id="maxWidthlabel" textAlignment="RIGHT" text="默认反编译器："/>
                     <ComboBox fx:id="decompileType" prefHeight="20.0" prefWidth="250">
                         <items>
                             <FXCollections fx:factory="observableArrayList">
@@ -69,7 +70,7 @@
                     </ComboBox>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label text="   GPT_Model："/>
+                    <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="GPT_Model："/>
                     <ComboBox fx:id="gptModel" prefHeight="20.0" prefWidth="250">
                         <items>
                             <FXCollections fx:factory="observableArrayList">
@@ -92,7 +93,7 @@
                     </ComboBox>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label text="GPT_API_Key："/>
+                    <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="GPT_API_Key："/>
                     <TextField fx:id="gptApiKey"  prefWidth="250"/>
                 </HBox>
                 <HBox alignment="CENTER" spacing="10">

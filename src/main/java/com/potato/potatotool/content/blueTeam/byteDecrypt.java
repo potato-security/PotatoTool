@@ -1,13 +1,13 @@
 package com.potato.potatotool.content.blueTeam;
 
 import com.potato.potatotool.utils.DeserializerUtils;
+import com.potato.potatotool.utils.GzipUtils;
 import com.potato.potatotool.utils.strUtils;
 
 import java.nio.charset.StandardCharsets;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.strUtils.byteToHex;
-import static com.potato.potatotool.utils.strUtils.hexDecode;
 
 /**
  * @author Potato
@@ -45,12 +45,12 @@ public class byteDecrypt {
         try {
             //是否存在Gzip压缩特征
             if(byteToHex(byteArray).toLowerCase().startsWith("1f8b")){
-                byteArray = strUtils.gzipDecompress(byteArray);
+                byteArray = GzipUtils.GzipDecompress(byteArray);
                 String tmpHexData = byteToHex(byteArray);
 
                 if(tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005") ){  // 针对于哥斯拉key和value空字符需要转换为等号
                     tmpHexData = strUtils.strRev( strUtils.strRev(tmpHexData).replaceAll("(00.{8})", "D3") );
-                    byteArray = hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+                    byteArray = new strUtils().hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
                 }
 
                 gzipCode = true;

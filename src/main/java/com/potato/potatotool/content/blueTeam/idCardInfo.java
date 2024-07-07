@@ -27,12 +27,17 @@ public class idCardInfo {
      * @return
      */
     public static JsonObject getIdCardInfo(String idcard) {
+        idcard = idcard.replace(" ","");
         RequestObj obj = new RequestObj().setMethod("GET").setHeaders(headers).setUrl(blockUrl + "/getIdCardInfo?idcard=" + idcard);
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson().getAsJsonObject("result");
-            return res;
+            JsonObject res = con.getJson();
+            if( res!=null && res.has("result")){
+                return res.getAsJsonObject("result");
+            }else {
+                return null;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

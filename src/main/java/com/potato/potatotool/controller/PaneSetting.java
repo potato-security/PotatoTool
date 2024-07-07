@@ -1,5 +1,6 @@
 package com.potato.potatotool.controller;
 
+import com.dlsc.gemsfx.CFSwitch;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.Constants;
 import javafx.fxml.FXML;
@@ -26,7 +27,7 @@ public class PaneSetting {
     private TextField proxy;
 
     @FXML
-    private ToggleButton proxyButton;
+    private CFSwitch proxyButton;
 
     @FXML
     private ComboBox decompileType;
@@ -51,7 +52,7 @@ public class PaneSetting {
         String address = tmpJsonObj_Proxy.getAsJsonPrimitive("address").getAsString();
         proxy.setText(address);
         proxyButton.setSelected(isProxy);
-        proxyButton.setText(isProxy ? "开启" : "关闭");
+//        proxyButton.setText(isProxy ? "开启" : "关闭");
 
         //  初始化默认反编译模式配置
         JsonObject tmpJsonObj_Decompile = (JsonObject) Constants.getOutsideConfig("Decompile");
@@ -83,7 +84,7 @@ public class PaneSetting {
     @FXML
     public void toggleProxy() {
         boolean isProxy = proxyButton.isSelected();
-        proxyButton.setText(isProxy ? "开启" : "关闭");
+//        proxyButton.setText(isProxy ? "开启" : "关闭");
     }
 
     @FXML

@@ -12,6 +12,7 @@
 
     <VBox>
         <StackPane alignment="TOP_CENTER">
+            <Label id="tipTitle" text=" 为保留算力，暂留5轮会话记忆 "/>
             <ScrollPane fx:id="scrollPane" vvalue="1.0" hbarPolicy="NEVER">
                 <VBox spacing="10" prefWidth="${sPane.width}" fx:id="msgBox"/>
             </ScrollPane>
@@ -19,9 +20,9 @@
 
         <Pane minHeight="20"/>
         <StackPane>
-            <TextArea fx:id="question" wrapText="true" prefHeight="67" maxHeight="250"  minHeight="0" />
-            <Pane  maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
-                <Label layoutX="-60" onMouseClicked="#ask">
+            <TextArea fx:id="question" wrapText="true" prefHeight="57" maxHeight="250"  minHeight="0" />
+            <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
+                <Label layoutX="-57" onMouseClicked="#ask">
                     <graphic>
                         <Region styleClass="send"/>
                     </graphic>

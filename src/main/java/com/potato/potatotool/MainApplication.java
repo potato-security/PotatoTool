@@ -47,12 +47,20 @@ public class MainApplication extends Application {
 //        double scale = dpi / 151; // 测试机DPI为151
 
         // 初始化配置及BC.jar文件
-        initEnvFile();
+        Task<Void> taskInit = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                initEnvFile();
+                return null;
+            }
+        };
 
-        // 初始化BC算法支持
-        SecurityInitializer.initializeSecurityProvider();
+        new Thread(taskInit).start();
+
+
 
         System.setProperty("prism.lcdtext", "false");// 关闭字体锯齿效果
+        System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");// 关闭Polyglot告警
 
         //  输入密码界面stage
         Stage passwdStage = new Stage();
@@ -206,6 +214,7 @@ public class MainApplication extends Application {
         String CONFIG_FILE = "config.json";
         String BcJAR_FILE = "bcprov.jar";
         String ip2Region_FILE = "ip2region.xdb";
+        String md5DB_File = "md5_database.db";
 
         Path configFolder = Paths.get(System.getProperty("user.home"), TMP_FOLDER);
 
@@ -223,9 +232,30 @@ public class MainApplication extends Application {
 
         try {
             Path bcJarFile = configFolder.resolve(BcJAR_FILE);
-            if (!Files.exists(bcJarFile)) {
+            if (!Files.exists(bcJarFile) || Files.size(bcJarFile) < 7.9 * 1024 * 1024 ) {
                 InputStream inputStream = getResourceStream("bcprov");
                 FileOutputStream outputStream = new FileOutputStream(bcJarFile.toString());
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                inputStream.close();
+                outputStream.close();
+            }
+
+            // 初始化BC算法支持
+            SecurityInitializer.initializeSecurityProvider();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            Path ip2RegionFile = configFolder.resolve(ip2Region_FILE);
+            if (!Files.exists(ip2RegionFile) || Files.size(ip2RegionFile) < 10.5 * 1024 * 1024 ) {
+                InputStream inputStream = getResourceStream("ip2region");
+                FileOutputStream outputStream = new FileOutputStream(ip2RegionFile.toString());
                 byte[] buffer = new byte[1024];
                 int bytesRead;
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
@@ -239,10 +269,10 @@ public class MainApplication extends Application {
         }
 
         try {
-            Path ip2RegionFile = configFolder.resolve(ip2Region_FILE);
-            if (!Files.exists(ip2RegionFile)) {
-                InputStream inputStream = getResourceStream("ip2region");
-                FileOutputStream outputStream = new FileOutputStream(ip2RegionFile.toString());
+            Path md5DBFile = configFolder.resolve(md5DB_File);
+            if (!Files.exists(md5DBFile) || Files.size(md5DBFile) < 1.66 * 1024 * 1024 * 1024 ) {
+                InputStream inputStream = getResourceStream("md5DB");
+                FileOutputStream outputStream = new FileOutputStream(md5DBFile.toString());
                 byte[] buffer = new byte[1024];
                 int bytesRead;
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
@@ -253,6 +283,7 @@ public class MainApplication extends Application {
             }
         }catch (Exception e){
             e.printStackTrace();
+            System.out.println("【Error】请检查电脑剩余可用内存，是否低于2G！！");
         }
 
     }

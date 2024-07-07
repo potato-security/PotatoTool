@@ -1,6 +1,8 @@
 package com.potato.potatotool.utils;
 
 
+import com.potato.potatotool.controller.PaneWebshellDecode;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
@@ -35,7 +37,7 @@ public class blowfishUtils {
     private static final String PADDING_NO_PADDING = "NoPadding";
     private static final String PADDING_PKCS5_PADDING = "PKCS5Padding";
     private static final String PADDING_PKCS7_PADDING = "PKCS7Padding";
-    private static final String PADDING_ZERO_PADDING = "ZeroPadding";
+    private static final String PADDING_ZERO_PADDING = "ZeroBytePadding";
     /**
      * 对输入的明文进行Blowfish加密
      *
@@ -43,7 +45,7 @@ public class blowfishUtils {
      * @param keyBytes  密钥byte数组
      * @param iv        iv向量byte数组
      * @param mode      加密模式（如CBC、ECB、GCM等）
-     * @param padding   填充方式（如NoPadding、PKCS7Padding、ZeroPadding等）
+     * @param padding   填充方式（如NoPadding、PKCS7Padding、ZeroBytePadding等）
      * @return 加密后的密文字符串
      * @throws Exception 加密过程中的异常
      */
@@ -92,7 +94,7 @@ public class blowfishUtils {
      * @param key        密钥byte数组
      * @param iv         iv向量byte数组
      * @param mode       加密模式（如CBC、ECB、GCM等）
-     * @param padding    填充方式（如NoPadding、PKCS7Padding、ZeroPadding等）
+     * @param padding    填充方式（如NoPadding、PKCS7Padding、ZeroBytePadding等）
      * @return 解密后的明文byte数组
      * @throws Exception 解密过程中的异常
      */
@@ -139,12 +141,12 @@ public class blowfishUtils {
 
         //是否存在Gzip压缩特征
         if(strUtils.byteToHex(decryptedTextBytes).toLowerCase().startsWith("1f8b")){
-            decryptedTextBytes = strUtils.gzipDecompress(decryptedTextBytes);
+            decryptedTextBytes = GzipUtils.GzipDecompress(decryptedTextBytes);
             String tmpHexData = strUtils.byteToHex(decryptedTextBytes);
 
             if(tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005") ){  // 针对于哥斯拉key和value空字符需要转换为等号
                 tmpHexData = strUtils.strRev( strUtils.strRev(tmpHexData).replaceAll("(00.{8})", "D3") );
-                decryptedTextBytes = strUtils.hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+                decryptedTextBytes = new strUtils().hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
             }
 
             gzipCode = true;
@@ -273,8 +275,8 @@ public class blowfishUtils {
 
         String[] modeArray = {"CBC", "ECB"};    //  webShell常见两种模式
 
-        ExecutorService executor = ForkJoinPool.commonPool();
-        List<Future<byte[]>> futures = new ArrayList<>();
+        ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
+        List<Future<?>> futures = ExecutorServiceManager.futures;
 
         for (String keyStr : keyArray) {
             for (String mode : modeArray) {
@@ -302,13 +304,6 @@ public class blowfishUtils {
                             iv_Blowfish.set(!iv_Blowfish.get().equals("Null") ? ( mode.equals("ECB") ? "Null": new String(iv, StandardCharsets.UTF_8) ) : "Null");
                             classCode = blowfish.classCode;
                             serializeCode = blowfish.serializeCode;
-//                            System.out.println("~~~~~~");
-//                            System.out.println(mode_Blowfish.get());
-//                            System.out.println(keyStr);
-//                            System.out.println(iv_Blowfish.get());
-//                            System.out.println(result);
-//                            System.out.println(new String(result));
-//                            System.out.println("———————");
 
                             return result;
                         } catch (Exception e) {
@@ -322,9 +317,9 @@ public class blowfishUtils {
             }
         }
 
-        for (Future<byte[]> future : futures) {
+        for (Future<?> future : futures) {
             try {
-                byte[] result = future.get();
+                byte[] result = (byte[]) future.get();
                 if (result != null && !result.equals("")) {
                     res = result;
                     break;
@@ -334,8 +329,13 @@ public class blowfishUtils {
             }
         }
 
+        for (Future<?> future : futures) {
+            future.cancel(true);
+        }
+        futures.clear();
+
         // 停止所有线程
-        executor.shutdownNow();
+        ExecutorServiceManager.getInstance().forceShutdown();
 
         return res==null ? conText.getBytes(StandardCharsets.UTF_8) : res;
     }

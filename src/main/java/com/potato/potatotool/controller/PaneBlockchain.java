@@ -163,7 +163,6 @@ public class PaneBlockchain {
                 if(!searchData.has("data")){
                     return null;
                 }
-                System.out.println(searchData);
 
                 JsonArray dataJsonArray = (JsonArray) searchData.get("data");
                 Platform.runLater(() -> {

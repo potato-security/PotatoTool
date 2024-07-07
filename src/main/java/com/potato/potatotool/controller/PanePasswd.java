@@ -78,8 +78,6 @@ public class PanePasswd {
             Platform.runLater(() -> {
                 boolean isRememberMe = checkBox.isSelected();
                 if (isRememberMe && !initPassword.equals(passwd.getText())) {
-                    System.out.println(initPassword);
-                    System.out.println(passwd.getText());
                     rememberMe();
                 }
                 if (!isRememberMe &&  !initPassword.equals("")) {

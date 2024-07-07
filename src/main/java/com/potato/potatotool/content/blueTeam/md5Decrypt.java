@@ -1,5 +1,7 @@
 package com.potato.potatotool.content.blueTeam;
 
+import com.potato.potatotool.utils.SQLiteDBManager;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,9 +33,6 @@ public class md5Decrypt {
     public String decrypt(String encryptedString){
         encryptedString = encryptedString.toLowerCase();
         String res = null;
-        ExecutorService executor = ForkJoinPool.commonPool();
-        List<Future<String>> futures = new ArrayList<>();
-
 
         boolean isMD5 = isMD5(encryptedString);
         boolean isMD516 = isMD516(encryptedString);
@@ -41,56 +40,38 @@ public class md5Decrypt {
 
         if(isMD5||isMD516||isSHA1){
             try{
-                InputStream inputStream = getResourceStream("md5");
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                String line;
-                while ((line = reader.readLine()) != null) {
 
-                    String finalEncryptedString = encryptedString;
-                    String finalLine = line;
+                Map<String, String> result= SQLiteDBManager.hashGetPlaintext(encryptedString);
+                if(result!=null){
+                    String plaintext = result.get("plaintext");
+                    String md5 = result.get("MD5");
+                    String md5_16 = result.get("MD5-16");
+                    String sha1 = result.get("SHA1");
 
-                    Callable<String> task = () -> {
-                        if (isMD5) {
-                            mode = "MD5";
-                            return hashString(finalLine, "MD5").equals(finalEncryptedString) ? finalLine : null;
-                        } else if (isMD516) {
-                            mode = "MD5-16";
-                            return hashString(finalLine, "MD5").substring(8, 24).equals(finalEncryptedString) ? finalLine : null;
-                        } else if (isSHA1) {
-                            mode = "SHA1";
-                            return hashString(finalLine, "SHA-1").equals(finalEncryptedString) ? finalLine : null;
-                        }
-                        return null;
-                    };
-                    futures.add(executor.submit(task));
+                    if (encryptedString.equals(md5)) {
+                        mode = "MD5";
+                    } else if (encryptedString.equals(md5_16)) {
+                        mode = "MD5-16";
+                    } else if (encryptedString.equals(sha1)) {
+                        mode = "SHA1";
+                    } else {
+                        mode = "UNKNOWN";
+                    }
 
+                    res = plaintext;
                 }
 
             } catch (Exception e) {
                 if(debugMode)e.printStackTrace();
             }
-        }
 
-        for (Future<String> future : futures) {
-            try {
-                String result = future.get();
-                if (result != null && !result.equals("")) {
-                    res = result;
-                    break;
-                }
-            } catch (Exception e) {
-                if(debugMode)e.printStackTrace();
-            }
         }
-
-        // 停止所有线程
-        executor.shutdownNow();
 
         return res;
 
     }
 
-    private static String hashString(String input, String algorithm) {
+    public static String hashString(String input, String algorithm) {
         try {
             // 创建 MessageDigest 实例
             MessageDigest digest = MessageDigest.getInstance(algorithm);
@@ -138,7 +119,7 @@ public class md5Decrypt {
 
     public static void main(String []args) {
         md5Decrypt md5 = new md5Decrypt();
-        String str = md5.decrypt("8ee2027983915ec78acc45027d874316");
+        String str = md5.decrypt("8EE2027983915ec78acc45027d874316");
         System.out.println(md5.mode+"-8ee2027983915ec78acc45027d874316-"+str);
         String str1 = md5.decrypt("83915ec78acc4502");
         System.out.println(md5.mode+"-83915ec78acc4502-"+str1);

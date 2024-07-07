@@ -16,7 +16,7 @@ public class qiangzhiDec {
         if (str.startsWith("#!@")) {
             String res = decrypt(str.substring(3), key);
 
-            String res_bs64 = strUtils.base64Decode(res);
+            String res_bs64 = new strUtils().base64Decode(res);
             res_bs64 = ReadabilityChecker.assessReadability(res_bs64) ? res_bs64 : null;
 
             return res_bs64 != null ? res_bs64 : res;

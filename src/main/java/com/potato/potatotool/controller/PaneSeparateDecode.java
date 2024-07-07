@@ -57,7 +57,7 @@ public class PaneSeparateDecode {
         String res = null;
 
         if(mode.equals("Base64")){
-            res = strUtils.base64Decode(Content);
+            res = new strUtils().base64Decode(Content);
         }else if(mode.equals("URL")){
             res = strUtils.urlDecode(Content);
         }else if(mode.equals("Rot13")){
@@ -69,7 +69,7 @@ public class PaneSeparateDecode {
         }else if(mode.equals("strRev")){
             res = strUtils.strRev(Content);
         }else if(mode.equals("Hex")){
-            res = strUtils.hexDecode(Content);
+            res = new strUtils().hexDecode(Content);
         }else if(mode.equals("Html")){
             res = strUtils.htmlDecode(Content);
         }

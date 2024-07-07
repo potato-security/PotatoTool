@@ -1,6 +1,8 @@
 package com.potato.potatotool.utils;
 
 
+import com.potato.potatotool.controller.PaneWebshellDecode;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
@@ -34,7 +36,7 @@ public class desUtils {
     private static final String PADDING_NO_PADDING = "NoPadding";
     private static final String PADDING_PKCS5_PADDING = "PKCS5Padding";
     private static final String PADDING_PKCS7_PADDING = "PKCS7Padding";
-    private static final String PADDING_ZERO_PADDING = "ZeroPadding";
+    private static final String PADDING_ZERO_PADDING = "ZeroBytePadding";
     /**
      * 对输入的明文进行DES加密
      *
@@ -42,7 +44,7 @@ public class desUtils {
      * @param keyBytes  密钥byte数组
      * @param iv        iv向量byte数组
      * @param mode      加密模式（如CBC、ECB、GCM等）
-     * @param padding   填充方式（如NoPadding、PKCS7Padding、ZeroPadding等）
+     * @param padding   填充方式（如NoPadding、PKCS7Padding、ZeroBytePadding等）
      * @return 加密后的密文字符串
      * @throws Exception 加密过程中的异常
      */
@@ -91,7 +93,7 @@ public class desUtils {
      * @param key        密钥byte数组
      * @param iv         iv向量byte数组
      * @param mode       加密模式（如CBC、ECB、GCM等）
-     * @param padding    填充方式（如NoPadding、PKCS7Padding、ZeroPadding等）
+     * @param padding    填充方式（如NoPadding、PKCS7Padding、ZeroBytePadding等）
      * @return 解密后的明文byte数组
      * @throws Exception 解密过程中的异常
      */
@@ -146,12 +148,12 @@ public class desUtils {
 
             //是否存在Gzip压缩特征
             if(strUtils.byteToHex(decryptedTextBytes).toLowerCase().startsWith("1f8b")){
-                decryptedTextBytes = strUtils.gzipDecompress(decryptedTextBytes);
+                decryptedTextBytes = GzipUtils.GzipDecompress(decryptedTextBytes);
                 String tmpHexData = strUtils.byteToHex(decryptedTextBytes);
 
                 if(tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005") ){  // 针对于哥斯拉key和value空字符需要转换为等号
                     tmpHexData = strUtils.strRev( strUtils.strRev(tmpHexData).replaceAll("(00.{8})", "D3") );
-                    decryptedTextBytes = strUtils.hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+                    decryptedTextBytes = new strUtils().hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
                 }
 
                 gzipCode = true;
@@ -211,8 +213,6 @@ public class desUtils {
     //  50w字典爆破调用方法：
     //  desUtils des=new desUtils();
     //  String res = des.desWebShellDecode(encodeStr, null,true);
-    //  运行时间特别长，导致Java UI（例如使用Swing）,需要将更新ui防止后台线程运行，防止堵塞
-    //  若测试，误解率大，可使用ReadabilityChecker.assessReadability()方法判断可读性，抛除
     /**
      *  DES解密尝试【兼容+Gzip】     放了3个常见key，两种常见iv,两个常见mode CBC/ECB，填充方式PKCS5Padding
      * @param conText       原始字符串
@@ -222,7 +222,7 @@ public class desUtils {
      * @return              解密后结果--最好返回byte[]数据，而非string，防止后续传输存在问题
      * @throws Exception
      */
-    public byte[] desWebShellDecode(String conText, String inputKeyStr, String inputIv, boolean traverse, String customPath) {
+    public byte[] desWebShellDecode(String conText, String inputKeyStr, String inputIv, List traverse, String customPath) {
 
         // 排除非DES加密格式字符串传入
         String desPattern = "^[A-Za-z0-9+/]+={0,2}$";
@@ -237,7 +237,7 @@ public class desUtils {
         Set<String> keyArray = new LinkedHashSet<>();
 
 
-        if(traverse){
+        if(traverse.contains("DES")){
             if(customPath != null && !customPath.equals("")){
                 try{
                     BufferedReader reader = new BufferedReader(new FileReader(customPath));
@@ -279,64 +279,63 @@ public class desUtils {
             keyArray.add("kmssAdminKey");
             keyArray.add("kmssPropertiesKey");
             keyArray.add("ilovethisgame");
+            keyArray.add("1234567890123456");
         } else if( inputKeyStr != null ){
             keyArray.add(inputKeyStr);
         }
 
         String[] modeArray = {"CBC", "ECB"};    //  webShell常见两种模式
+        String[] paddingArray = {PADDING_PKCS5_PADDING, PADDING_ZERO_PADDING}; // 数据加密常见的两种padding
 
-        ExecutorService executor = ForkJoinPool.commonPool();
-        List<Future<byte[]>> futures = new ArrayList<>();
+        ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
+        List<Future<?>> futures = ExecutorServiceManager.futures;
 
         for (String keyStr : keyArray) {
             for (String mode : modeArray) {
-                for (int i = 0; i < 2; i++) {
-                    if (i == 1 && mode.equals("ECB")) continue;
+                for (String padding : paddingArray) {
+                    for (int i = 0; i < 2; i++) {
+                        if (i == 1 && mode.equals("ECB")) continue;
 
-                    int finalI = i;
-                    Callable<byte[]> task = () -> {
-                        try {
-                            byte[] encryptData = strUtils.base64Decode(conText.getBytes(StandardCharsets.UTF_8));
-                            byte[] key = keyStr.getBytes(StandardCharsets.UTF_8);
-                            byte[] iv = inputIv!=null ? inputIv.getBytes(StandardCharsets.UTF_8) : finalI == 0 ? new byte[8] : key;
+                        int finalI = i;
+                        Callable<byte[]> task = () -> {
+                            try {
+                                byte[] encryptData = strUtils.base64Decode(conText.getBytes(StandardCharsets.UTF_8));
+                                byte[] key = keyStr.getBytes(StandardCharsets.UTF_8);
+                                byte[] iv = inputIv != null ? inputIv.getBytes(StandardCharsets.UTF_8) : finalI == 0 ? new byte[8] : key;
 
-                            desUtils des = new desUtils();
-                            byte[] result = des.decrypt(
-                                    encryptData,
-                                    key,
-                                    iv,
-                                    mode,
-                                    "PKCS5Padding"
-                            );
-                            mode_DES.set(mode);
-                            padding_DES.set("PKCS5Padding");
-                            key_DES.set(keyStr);
-                            iv_DES.set(!iv_DES.get().equals("Null") ? ( mode.equals("ECB") ? "Null": new String(iv, StandardCharsets.UTF_8) ) : "Null");
-                            classCode = des.classCode;
-                            serializeCode = des.serializeCode;
-//                            System.out.println("~~~~~~");
-//                            System.out.println(mode_DES.get());
-//                            System.out.println(keyStr);
-//                            System.out.println(iv_DES.get());
-//                            System.out.println(result);
-//                            System.out.println(new String(result));
-//                            System.out.println("———————");
+                                desUtils des = new desUtils();
+                                byte[] result = des.decrypt(
+                                        encryptData,
+                                        key,
+                                        iv,
+                                        mode,
+                                        padding
+                                );
+                                if (result != null && !result.equals("")) {
+                                    mode_DES.set(mode);
+                                    padding_DES.set(padding);
+                                    key_DES.set(keyStr);
+                                    iv_DES.set(!iv.equals("Null") ? (mode.equals("ECB") ? "Null" : new String(iv, StandardCharsets.UTF_8)) : "Null");
+                                    classCode = des.classCode;
+                                    serializeCode = des.serializeCode;
+                                }
 
-                            return result;
-                        } catch (Exception e) {
-                            if(debugMode)e.printStackTrace();
-                            return null;
-                        }
-                    };
+                                return result;
+                            } catch (Exception e) {
+                                if (debugMode) e.printStackTrace();
+                                return null;
+                            }
+                        };
 
-                    futures.add(executor.submit(task));
+                        futures.add(executor.submit(task));
+                    }
                 }
             }
         }
 
-        for (Future<byte[]> future : futures) {
+        for (Future<?> future : futures) {
             try {
-                byte[] result = future.get();
+                byte[] result = (byte[]) future.get();
                 if (result != null && !result.equals("")) {
                     res = result;
                     break;
@@ -346,8 +345,13 @@ public class desUtils {
             }
         }
 
+        for (Future<?> future : futures) {
+            future.cancel(true);
+        }
+        futures.clear();
+
         // 停止所有线程
-        executor.shutdownNow();
+        ExecutorServiceManager.getInstance().forceShutdown();
 
         return res==null ? conText.getBytes(StandardCharsets.UTF_8) : res;
     }
@@ -424,6 +428,7 @@ public class desUtils {
     }
 
     public static void main(String []args) {
+        SecurityInitializer.initializeSecurityProvider();
         desUtils des =new desUtils();
         String res = des.finalshellDecode("Xg5GPCslNUdSsG1Tn3oR/g+3OAYFnCP3");
         System.out.println(res);

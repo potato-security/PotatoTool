@@ -21,10 +21,10 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2023/5/6 16:52
  */
 
-// V1.0 第一版，不需要传session
+// V2.0 优化版，支持历史会话
 public class aiUtil {
 
-    public JsonArray historyList = new JsonArray();
+    private JsonArray historyList = new JsonArray();
 
     public boolean isFirstResponse = true;
 
@@ -51,6 +51,11 @@ public class aiUtil {
             systemMessage.addProperty("role", "system");
             systemMessage.addProperty("content", "你是个乐于助人的助手。");
             messages.add(systemMessage);
+
+            // 添加历史对话
+            for (int i = 0; i < historyList.size(); i++) {
+                messages.add(historyList.get(i).getAsJsonObject());
+            }
 
             JsonObject userMessage = new JsonObject();
             userMessage.addProperty("role", "user");
@@ -108,10 +113,9 @@ public class aiUtil {
                                         Boolean finishReasonValue = firstChoice.get("finish_reason").isJsonNull() ? false : true;
 
                                         if (finishReasonValue) {
-                                            JsonArray historyJsonArray = responseJson.getAsJsonArray("history");
-                                            historyList = historyJsonArray;
-                                            res = "\n\n";
-                                            //System.out.println("historyList:"+historyList);
+                                            addHistory("user", question);
+                                            addHistory("assistant", contentValue);
+                                            res = "";
                                         } else {
                                             //System.out.println("Received ResponseJson: " + reponseJson);
                                             res = contentValue;
@@ -125,15 +129,14 @@ public class aiUtil {
                                 } else if (line.equals("[[Response code 502]]")) {
                                     res = "【内部免费AI服务器可能已关停/您当前处于国外IP环境，请在设置中自行配置AI模型及对应Key】";
                                 }else if (line.equals("[[Read timed out]]")) {
-                                    res = "【您提交的消息太长，请提交较短的消息】";
+                                    res = "【您提交的消息太长/内部免费AI服务器可能已关停/您当前处于国外IP环境，请在设置中自行配置AI模型及对应Key】";
                                 }else if (line.startsWith("data: ")){
                                     JsonObject responseJson = JsonParser.parseString(line.replaceAll("^data: ", "")).getAsJsonObject();
 
                                     if (responseJson.get("finished").getAsBoolean()) {
-                                        JsonArray historyJsonArray = responseJson.getAsJsonArray("history");
-                                        historyList = historyJsonArray;
-                                        res = "\n\n";
-                                        //System.out.println("historyList:"+historyList);
+                                        addHistory("user", question);
+                                        addHistory("assistant", responseJson.get("delta").getAsString());
+                                        res = "";
                                     } else {
                                         //System.out.println("Received ResponseJson: " + reponseJson);
                                         res = responseJson.get("delta").getAsString();
@@ -203,4 +206,19 @@ public class aiUtil {
 
     }
 
+    // 添加历史记录的方法
+    private void addHistory(String role, String content) {
+        JsonObject message = new JsonObject();
+        message.addProperty("role", role);
+        message.addProperty("content", content);
+        historyList.add(message);
+
+        if (historyList.size() > 10) {
+            historyList.remove(0);
+        }
+    }
+
+    public void clearHistory() {
+        historyList = new JsonArray();
+    }
 }
