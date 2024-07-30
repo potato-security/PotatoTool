@@ -372,10 +372,8 @@ public class PaneLocationQuery {
                         while ((line = br.readLine()) != null) {
                             line = line.trim();
                             if (!line.isEmpty()) {
-                                System.out.println(line);
                                 JsonObject str = getPhoneInfo(new String[]{line}).get(0).getAsJsonObject();
                                 long finalLineNumber = lineNumber;
-                                System.out.println(str);
 
                                 String[] data = {line, "", "", "", "", ""};
                                 data[1] = str.get("省份").getAsString();

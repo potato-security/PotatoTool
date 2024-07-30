@@ -4,6 +4,10 @@ import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 
 import java.io.File;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.potato.potatotool.utils.Constants.getResourceFilePath;
 import static com.potato.potatotool.utils.requestUtils.requests;
@@ -18,15 +22,21 @@ public class testFileUploadFunc {
         obj.setUrl("http://192.168.10.120/vul/unsafeupload/clientcheck.php");
         obj.setMethod("POST");
 
-        File file = new File(getResourceFilePath("imgs")+"np/shadow_bg_tooltip2.9.png");
+        File file = null;
+        try {
+            file = new File(testFileUploadFunc.class.getResource("/img/PotatoTool.png").toURI());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        Map<String, Object> formMap = new HashMap<>();
+        formMap.put("submit", "开始上传");
+        formMap.put("uploadfile", file);
+        obj.setFormParameters(formMap);
 
 //        obj.setPostMethod("Form");
-//        Map<String, Object> formMap = new HashMap<>();
-//        formMap.put("submit", "开始上传");
-//        formMap.put("uploadfile", file);
-//        obj.setFormParameters(formMap);
-        obj.setPostMethod("Chunked");
-        obj.setPostData(file);
+//        obj.setFile(file);
+//        obj.set(file);
 
         obj.setProxies("127.0.0.1:8080");
 
@@ -36,7 +46,6 @@ public class testFileUploadFunc {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
     }
 }

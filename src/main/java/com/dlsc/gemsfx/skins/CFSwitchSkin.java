@@ -1,8 +1,6 @@
 package com.dlsc.gemsfx.skins;
 
 import com.dlsc.gemsfx.CFSwitch;
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.behavior.ToggleButtonBehavior;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.Bindings;
@@ -28,12 +26,9 @@ public class CFSwitchSkin extends CFLabelSkin<CFSwitch> {
     //
     private final double size = 20;
     private final TranslateTransition TT;
-    //
-    private final BehaviorBase<CFSwitch> behavior;
 
     public CFSwitchSkin(CFSwitch control) {
         super(control);
-        behavior = new ToggleButtonBehavior<>(control);
         back = new Rectangle();
         circle = new Circle();
         double backSize = size - 6;
@@ -73,9 +68,5 @@ public class CFSwitchSkin extends CFLabelSkin<CFSwitch> {
     @Override
     public void dispose() {
         super.dispose();
-
-        if (behavior != null) {
-            behavior.dispose();
-        }
     }
 }

@@ -1,8 +1,6 @@
 package com.dlsc.gemsfx.skins;
 
 import com.dlsc.gemsfx.CFCheckBox;
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.behavior.ButtonBehavior;
 import javafx.animation.ScaleTransition;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
@@ -13,12 +11,9 @@ public class CFCheckBoxSkin extends CFLabelSkin<CFCheckBox> {
     private final StackPane mark;
     // 动画
     private final ScaleTransition scaleTransition;
-    //
-    private final BehaviorBase<CFCheckBox> behavior;
 
     public CFCheckBoxSkin(CFCheckBox control) {
         super(control);
-        behavior = new ButtonBehavior<>(control);
         // 布局
         mark = new StackPane();
         box = new StackPane(mark);
@@ -34,9 +29,6 @@ public class CFCheckBoxSkin extends CFLabelSkin<CFCheckBox> {
     @Override
     public void dispose() {
         super.dispose();
-        if (behavior != null) {
-            behavior.dispose();
-        }
     }
 
     private void setAnimationInfo() {

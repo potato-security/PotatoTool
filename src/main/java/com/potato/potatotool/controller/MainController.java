@@ -150,10 +150,12 @@ public class MainController {
         p9.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p9.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p10 = FXMLLoader.load(getClass().getResource("/fxml/pane_about.fxml"));
-        RXCarouselPane aboutPane = new RXCarouselPane(p10);
-        p10.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
-        p10.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
+        FXMLLoader loader_pane_about = new FXMLLoader(getClass().getResource("/fxml/pane_about.fxml"));
+        Pane p_pane_about = loader_pane_about.load();
+        PaneAbout PaneAbout = loader_pane_about.getController();
+        RXCarouselPane aboutPane = new RXCarouselPane(p_pane_about);
+        p_pane_about.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p_pane_about.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
 
         Pane p11 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoSearch.fxml"));
         RXCarouselPane infoSearchPane = new RXCarouselPane(p11);
@@ -200,18 +202,36 @@ public class MainController {
         p19.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p19.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p20 = FXMLLoader.load(getClass().getResource("/fxml/pane_about.fxml"));
-        RXCarouselPane aboutPane_1 = new RXCarouselPane(p20);
-        p20.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
-        p20.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
+        FXMLLoader loader_pane_about_1 = new FXMLLoader(getClass().getResource("/fxml/pane_about.fxml"));
+        Pane p_pane_about_1 = loader_pane_about_1.load();
+        PaneAbout PaneAbout_1 = loader_pane_about_1.getController();
+        RXCarouselPane aboutPane_1 = new RXCarouselPane(p_pane_about_1);
+        p_pane_about_1.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p_pane_about_1.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
 
         mainCarousel.setPaneList(webshellDecodePane, separateDecodePane, ipInFoPane, aiAnswerPane, decompilePane, blockchainPane, locationQueryPane, exifPane, extensionPane, aboutPane,
                 infoSearchPane, vulScanPane, webshellGenerationPane, customMemoryCodePane, customCommandGenerationPane, kbRootQueryPane, processQueryPane, infoGenerationPane, extensionPane_1, aboutPane_1);
         mainCarousel.setCarouselAnimation(new AnimNone());  // AnimFade
         mainCarousel.setAnimationTime(Duration.seconds(0));  // 0.2
+
+
+
         navGroup.selectedToggleProperty().addListener((ob, ov, nv) -> {
             int index = navGroup.getToggles().indexOf(nv);
             mainCarousel.setSelectedIndex(index);
+
+            // 点击关于界面时 触发滚动信息
+            if(mainCarousel.getPaneList().get(index) == aboutPane){
+                PaneAbout.startScrolling();
+            }else{
+                PaneAbout.stopScrolling();
+            }
+            if(mainCarousel.getPaneList().get(index) == aboutPane_1){
+                PaneAbout_1.startScrolling();
+            }else{
+                PaneAbout_1.stopScrolling();
+            }
+
             if (isBlueMode) {
                 selectedBlueIndex = index;
             } else {
@@ -294,23 +314,25 @@ public class MainController {
 
     @FXML
     void showSet(ActionEvent event) {
-        try {
-            Stage stage = new Stage();
-            stage.initOwner(root.getScene().getWindow());
-            stage.initModality(Modality.WINDOW_MODAL);
-            stage.initStyle(StageStyle.TRANSPARENT);
-            stage.setAlwaysOnTop(true);
+        Platform.runLater(() -> {
+            try {
+                Stage stage = new Stage();
+                stage.initOwner(root.getScene().getWindow());
+                stage.initModality(Modality.WINDOW_MODAL);
+                stage.initStyle(StageStyle.TRANSPARENT);
+                stage.setAlwaysOnTop(true);
 
-            AnchorPane dialogRoot = new FXMLLoader(getClass().getResource("/fxml/setting.fxml")).load();
-            Scene scene = new Scene(dialogRoot);
-            scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
-            scene.setFill(null);    //  背景透明
-            stage.setScene(scene);
-            stage.setTitle("修改配置信息");
-            stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                AnchorPane dialogRoot = new FXMLLoader(getClass().getResource("/fxml/setting.fxml")).load();
+                Scene scene = new Scene(dialogRoot);
+                scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
+                scene.setFill(null);    //  背景透明
+                stage.setScene(scene);
+                stage.setTitle("修改配置信息");
+                stage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @FXML

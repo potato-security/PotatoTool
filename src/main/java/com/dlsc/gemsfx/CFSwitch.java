@@ -37,6 +37,10 @@ public class CFSwitch extends ToggleButton {
     private void initialize() {
         setMaxSize(USE_PREF_SIZE, USE_PREF_SIZE);
         getStyleClass().setAll(STYLE_CLASS);
+
+        setOnMouseClicked(event -> {
+            setSelected(!isSelected());
+        });
     }
 
     private final StyleableObjectProperty<Color> cfColor = new SimpleStyleableObjectProperty<>(StyleableProperties.CF_COLOR,
@@ -57,8 +61,7 @@ public class CFSwitch extends ToggleButton {
         private static final List<CssMetaData<? extends Styleable, ?>> CSS_META_DATA_LIST;
 
         private static final CssMetaData<CFSwitch, Color> CF_COLOR =
-                new CssMetaData<>("-cf-color",
-                        new StyleConverter<>(), Color.TRANSPARENT) {
+                new CssMetaData<CFSwitch, Color>("-cf-color", StyleConverter.getColorConverter(), Color.TRANSPARENT) {
                     @Override
                     public boolean isSettable(CFSwitch styleable) {
                         return styleable.cfColor == null || !styleable.cfColor.isBound();
@@ -66,17 +69,18 @@ public class CFSwitch extends ToggleButton {
 
                     @Override
                     public StyleableProperty<Color> getStyleableProperty(CFSwitch cfSwitch) {
-                        return cfSwitch.cfColor;// 返回一个StyleableProperty，其他地方绑定这个属性即可
+                        return cfSwitch.cfColor; // 返回一个StyleableProperty，其他地方绑定这个属性即可
                     }
                 };
 
         static {
-            final List<CssMetaData<? extends Styleable, ?>> styleables = new ArrayList<CssMetaData<? extends Styleable, ?>>(Control.getClassCssMetaData());
+            final List<CssMetaData<? extends Styleable, ?>> styleables =
+                    new ArrayList<>(Control.getClassCssMetaData());
             Collections.addAll(styleables, CF_COLOR);
             CSS_META_DATA_LIST = Collections.unmodifiableList(styleables);
         }
-
     }
+
 
     public List<CssMetaData<? extends Styleable, ?>> getControlCssMetaDataList() {
         return StyleableProperties.CSS_META_DATA_LIST;

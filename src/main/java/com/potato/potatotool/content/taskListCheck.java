@@ -45,11 +45,13 @@ public class taskListCheck {
      */
     public static JSONObject init() {
 
-        InputStream taskListStream = getResourceStream("taskList");
+        try (InputStream taskListStream = getResourceStream("taskList")) {
+            return jsonUtils.readJsonFile(taskListStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 
-        JSONObject jsonObject = jsonUtils.readJsonFile(taskListStream);
-
-        return jsonObject;
     }
 
 

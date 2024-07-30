@@ -1,6 +1,8 @@
 package com.potato.potatotool.utils;
 
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2023/4/19 18:23
@@ -12,7 +14,7 @@ public class imcDesUtils {
 
     public static String decode(String et) {
         if (!et.startsWith("-")) {    //判断密文是否以“-”开头
-            System.out.println("Invalid encrypted text: "+et);
+            if(debugMode)System.out.println("Invalid encrypted text: "+et);
             return null;
         }
         String[] strs = et.substring(1).split("-");

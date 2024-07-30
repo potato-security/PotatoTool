@@ -4,6 +4,7 @@ import org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -32,17 +33,22 @@ public class ideaDecompileUtils {
         String jarDir = strUtils.getCurrentJarDir();
 
         String[] arguments = {classPath, jarDir};
-        ConsoleDecompiler.main(arguments);
 
-        String javaTempFilePath = jarDir + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
+        try {
+            ConsoleDecompiler.main(arguments);
 
-        System.out.println("-----------------");
-        System.out.println(classPath);
-        System.out.println(javaTempFilePath);
-        res = new String( strUtils.readFile(javaTempFilePath) );
+            String javaTempFilePath = jarDir + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
 
-        if (outfilePath.length == 1) {
-            strUtils.moveFile(javaTempFilePath, outfilePath[0]);
+            System.out.println("-----------------");
+            System.out.println(classPath);
+            System.out.println(javaTempFilePath);
+            res = new String(strUtils.readFile(javaTempFilePath));
+
+            if (outfilePath.length == 1) {
+                strUtils.moveFile(javaTempFilePath, outfilePath[0]);
+            }
+        } catch (Exception e) {
+            return null;
         }
 
         return res;

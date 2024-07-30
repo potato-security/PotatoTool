@@ -59,13 +59,16 @@ public class GzipUtils {
      * @return       进行gzip压缩
      */
     public static byte[] GzipGetCompressedData(byte[] data) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)) {
+
             gzipOutputStream.write(data);
+
+            return outputStream.toByteArray();
         } catch (IOException e) {
             if(debugMode)e.printStackTrace();
+            return null;
         }
-        return outputStream.toByteArray();
     }
 
     /**
@@ -74,12 +77,13 @@ public class GzipUtils {
      * @return                 解gzip压缩
      */
     public static byte[] GzipDecompress(byte[] compressedData) {
-        if(!strUtils.byteToHex(compressedData).toLowerCase().startsWith("1f8b")) return null;
+        if (compressedData == null || compressedData.length < 2 || compressedData[0] != (byte) 0x1F || compressedData[1] != (byte) 0x8B) {
+            return null;
+        }
         byte[] buffer = new byte[1024];
-        try{
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(compressedData);
-            GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(compressedData);
+             GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
             int len;
             while ((len = gzipInputStream.read(buffer)) > 0) {

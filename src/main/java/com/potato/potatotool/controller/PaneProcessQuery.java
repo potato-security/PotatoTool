@@ -17,7 +17,7 @@ public class PaneProcessQuery {
     static JSONObject tqJsonOjb;
 
     static {
-        JSONObject taskListJsonObject = init();  //TODO !软件初始化调用一次就行! !!!不要每次搜索都调用!!!
+        JSONObject taskListJsonObject = init();
         avJsonOjb = (JSONObject) taskListJsonObject.get("avList");
         tqJsonOjb = (JSONObject) taskListJsonObject.get("tqList");
     }

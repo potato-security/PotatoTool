@@ -36,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.controller.MainController.clipRect;
 import static com.potato.potatotool.utils.BlockchainTraceability.*;
 import static com.potato.potatotool.utils.Constants.getConfigInfo;
@@ -542,7 +543,7 @@ public class PaneBlockchain {
                             });
 
                         }
-                    }catch (Exception e){e.printStackTrace();}
+                    }catch (Exception e){if(debugMode)e.printStackTrace();}
 
                     try {
                         //  近180天余额变化
@@ -588,7 +589,7 @@ public class PaneBlockchain {
                                 detailedListView.setItems(detailedContentObj);
                             });
                         }
-                    }catch (Exception e){e.printStackTrace();}
+                    }catch (Exception e){if(debugMode)e.printStackTrace();}
 
                     try {
                         //  代币余额
@@ -680,7 +681,7 @@ public class PaneBlockchain {
                             });
 
                         }
-                    }catch (Exception e){e.printStackTrace();}
+                    }catch (Exception e){if(debugMode)e.printStackTrace();}
 
                 }else if (type.equals("block") && jsonObject.has("network")){
                     String block = jsonObject.get("block_no").getAsString();
@@ -838,7 +839,7 @@ public class PaneBlockchain {
 
                         }
 
-                    }catch (Exception e){e.printStackTrace();}
+                    }catch (Exception e){if(debugMode)e.printStackTrace();}
 
 
                     try {
@@ -973,7 +974,7 @@ public class PaneBlockchain {
 
                         }
 
-                    }catch (Exception e){e.printStackTrace();}
+                    }catch (Exception e){if(debugMode)e.printStackTrace();}
 
 
                     try {
@@ -1084,7 +1085,7 @@ public class PaneBlockchain {
                             });
 
                         }
-                    }catch (Exception e){e.printStackTrace();}
+                    }catch (Exception e){if(debugMode)e.printStackTrace();}
 
                 }
 

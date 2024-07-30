@@ -81,8 +81,8 @@ public class PaneGetIpInfo {
 
         searcher = ipInfo.init();
 
-        codeAreas = Arrays.asList(result1, result2, result3, result4, result5, result6, result7, result8);
-        virScrollPanes = Arrays.asList(virScrollPane1, virScrollPane2, virScrollPane3, virScrollPane4, virScrollPane5, virScrollPane6, virScrollPane7, virScrollPane8);
+        codeAreas.addAll(Arrays.asList(result1, result2, result3, result4, result5, result6, result7, result8));
+        virScrollPanes.addAll(Arrays.asList(virScrollPane1, virScrollPane2, virScrollPane3, virScrollPane4, virScrollPane5, virScrollPane6, virScrollPane7, virScrollPane8));
 
         //  CodeArea添加右键菜单  协调ScrollPane>VirtualizedScrollPane>CodeArea嵌套时的滚动事件问题
         for (CodeArea codeArea : codeAreas) {

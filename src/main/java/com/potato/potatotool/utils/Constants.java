@@ -61,7 +61,6 @@ public class Constants {
             resourceFilePath = propertyName;
             propertyName = "img";
         }
-        System.out.println(resourceFilePath);
 
         InputStream inputStream = Constants.class.getClassLoader().getResourceAsStream(resourceFilePath);
         if (inputStream == null) {
@@ -330,5 +329,19 @@ public class Constants {
 
         return null;
     }
+
+    public static void copyResourceToFile(String resourceName, Path targetPath, long expectedSize) throws IOException {
+        if (!Files.exists(targetPath) || Files.size(targetPath) < expectedSize) {
+            try (InputStream inputStream = getResourceStream(resourceName);
+                 FileOutputStream outputStream = new FileOutputStream(targetPath.toString())) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            }
+        }
+    }
+
 
 }

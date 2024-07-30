@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.getConfigInfo;
 import static com.potato.potatotool.utils.requestUtils.requests;
 
@@ -109,7 +110,7 @@ public class exifUtils {
                 }
             }
         } catch (Exception e) {
-//            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
 
         return metadataMap;

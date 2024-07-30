@@ -935,15 +935,16 @@ public class strUtils {
 
             byte[] decodeBytes = Base64.getDecoder().decode(baseText);
 
-            if(byteToHex(decodeBytes).toLowerCase().startsWith("1f8b")){
+
+
+            if(strUtils.byteStartsWith(decodeBytes, 0, new byte[]{(byte) 0x1F, (byte) 0x8B})) {
+
                 byte[] tmpGzipRes = GzipUtils.GzipDecompress(decodeBytes);
                 if(tmpGzipRes!=null){
                     if(ReadabilityChecker.assessReadability( new String(tmpGzipRes, StandardCharsets.UTF_8), new double[]{1,0} )){
 
-                        String tmpHexData = byteToHex(tmpGzipRes);
-                        if(tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005") ){  // 针对于哥斯拉key和value空字符需要转换为等号
-                            tmpHexData = strRev( strRev(tmpHexData).replaceAll("(00.{8})", "D3") );
-                            tmpGzipRes = hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+                        if(strUtils.byteArrayContains(tmpGzipRes, new byte[]{0, 0, 0}) != -1 && !strUtils.byteStartsWith(tmpGzipRes, 0, new byte[]{(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE}) && !strUtils.byteStartsWith(tmpGzipRes, 0, new byte[]{(byte) 0xAC, (byte) 0xED, 0x00, 0x05}) ){  // 针对于哥斯拉key和value空字符需要转换为等号
+                            tmpGzipRes = strUtils.byteReplaceZeroToD3(tmpGzipRes);
                         }
                         decodeBytes = tmpGzipRes;
                         gzipCode = true;
@@ -952,15 +953,17 @@ public class strUtils {
             }
 
             // 检查是否存在class/反序列化
-            byte[] tmpDecryptedTextBytes = null;
-            tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(decodeBytes);
-            if(tmpDecryptedTextBytes==null) {
-                tmpDecryptedTextBytes = DeserializerUtils.serializeCheck(decodeBytes);
-            }else {
+            byte[] tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(decodeBytes);
+            byte[] tmpSerDecryptedTextBytes = null;
+            if (tmpDecryptedTextBytes == null) {
+                tmpSerDecryptedTextBytes = DeserializerUtils.serializeCheck(decodeBytes);
+            } else {
+                decodeBytes = tmpDecryptedTextBytes;
                 classCode = true;
             }
-            if(tmpDecryptedTextBytes!=null) {
-                decodeBytes = tmpDecryptedTextBytes;
+
+            if (tmpSerDecryptedTextBytes != null) {
+                decodeBytes = tmpSerDecryptedTextBytes;
                 serializeCode = true;
             }
 
@@ -1054,27 +1057,21 @@ public class strUtils {
         String oldData = hexText;
 
         try{
-//            StringBuilder res = new StringBuilder("");
-//            String tmpText = hexText.replace(",", "");
-//            tmpText = tmpText.replace("0x", "");
-//
-//            for (int i = 0; i < tmpText.length(); i += 2) {
-//                String str = tmpText.substring(i, i + 2);
-//                res.append((char) Integer.parseInt(str, 16));
-//            }
             hexText = hexText.replace(",", "").replace("0x", "");
 
             byte[] tmpRes = hexToByteArray(hexText);
             // 检查是否存在class/反序列化
-            byte[] tmpDecryptedTextBytes = null;
-            tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(tmpRes);
-            if(tmpDecryptedTextBytes==null) {
-                tmpDecryptedTextBytes = DeserializerUtils.serializeCheck(tmpRes);
-            }else {
+            byte[] tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(tmpRes);
+            byte[] tmpSerDecryptedTextBytes = null;
+            if (tmpDecryptedTextBytes == null) {
+                tmpSerDecryptedTextBytes = DeserializerUtils.serializeCheck(tmpRes);
+            } else {
+                tmpRes = tmpDecryptedTextBytes;
                 classCode = true;
             }
-            if(tmpDecryptedTextBytes!=null) {
-                tmpRes = tmpDecryptedTextBytes;
+
+            if (tmpSerDecryptedTextBytes != null) {
+                tmpRes = tmpSerDecryptedTextBytes;
                 serializeCode = true;
             }
 
@@ -1085,6 +1082,91 @@ public class strUtils {
         }
     }
 
+    /**
+     * 返回字节数组中存在的指定的连续子数组下标
+     *
+     * @param array 原始字节数组
+     * @param subArray 要查找的子数组
+     * @return 如果存在子数组则返回 下标，否则返回 -1
+     */
+    public static int byteArrayContains(byte[] array, byte[] subArray){
+        int limit = array.length - subArray.length;
+        for (int i = 0; i <= limit; i++) {
+            boolean found = true;
+            for (int j = 0; j < subArray.length; j++) {
+                if (array[i + j] != subArray[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * byte[]后往前匹配(byte[]{0,0,0}) ，然后继续往前再次匹配任意值的2个byte，将匹配到的5个byte元素替换成一个元素(byte)0xD3
+     * 该函数会循环判断匹配
+     *
+     * @param byteArray 原始字节数组
+     * @return
+     */
+    public static byte[] byteReplaceZeroToD3(byte[] byteArray){
+        int index;
+        while ((index = byteArrayContains(byteArray, new byte[]{0, 0, 0})) > 2) {
+
+            int endIndex = index + 2; // 末尾下标
+            int realyStartIndex = index - 2; // 真正需要开始截取掉的下标
+            if (realyStartIndex < 0) realyStartIndex = 0; // 防止数组越界
+            byteArray[endIndex] = (byte) 0x3D;
+            byteArray = byteSubRejectArray(byteArray, realyStartIndex, 4);
+
+        }
+        return byteArray;
+    }
+
+
+    /**
+     * byte[]array从下标offset开始，是否头部包含prefix
+     *
+     */
+    public static boolean byteStartsWith(byte[] array, int offset, byte[] prefix) {
+        if (array.length - offset < prefix.length) {
+            return false;
+        }
+        for (int i = 0; i < prefix.length; i++) {
+            if (array[offset + i] != prefix[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * byte[]array从下标start开始，获取多少长度
+     *
+     */
+    public static byte[] byteSubArray(byte[] array, int start, int length) {
+        byte[] result = new byte[length];
+        System.arraycopy(array, start, result, 0, length);
+        return result;
+    }
+
+    /**
+     * byte[]array从下标start开始，剔除多少长度
+     *
+     */
+    public static byte[] byteSubRejectArray(byte[] array, int start, int length) {
+        int newLength = array.length - length;
+        byte[] result = new byte[newLength];
+        System.arraycopy(array, 0, result, 0, start);
+        if (start + length < array.length) {
+            System.arraycopy(array, start + length, result, start, newLength - start);
+        }
+        return result;
+    }
 
     /**
      * @param input   原始字符串
@@ -1344,21 +1426,18 @@ public class strUtils {
             return encryptedData;
         } else if (res.startsWith("methodName") && res.length() > 15) {
             xorKey = key;
-            String tmpHexData = byteToHex(encryptedData);
-            if (tmpHexData.contains("00") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005")) {  // 非gzip不需要匹配000000 针对于哥斯拉key和value空字符需要转换为等号
-                tmpHexData = strRev(strRev(tmpHexData).replaceAll("(00.{8})", "D3"));
-                encryptedData = hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+
+            if(strUtils.byteArrayContains(encryptedData, new byte[]{0, 0, 0}) != -1 && !strUtils.byteStartsWith(encryptedData, 0, new byte[]{(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE}) && !strUtils.byteStartsWith(encryptedData, 0, new byte[]{(byte) 0xAC, (byte) 0xED, 0x00, 0x05}) ){  // 针对于哥斯拉key和value空字符需要转换为等号
+                encryptedData = strUtils.byteReplaceZeroToD3(encryptedData);
             }
             return encryptedData;
-        } else if (byteToHex(encryptedData).toLowerCase().startsWith("1f8b")) {
+        } else if(strUtils.byteStartsWith(encryptedData, 0, new byte[]{(byte) 0x1F, (byte) 0x8B})) {
             byte[] tmpGzipRes = GzipUtils.GzipDecompress(encryptedData);
             if (tmpGzipRes != null) {
                 if (ReadabilityChecker.assessReadability(new String(tmpGzipRes, StandardCharsets.UTF_8), new double[]{1, 0})) {
 
-                    String tmpHexData = byteToHex(tmpGzipRes);
-                    if (tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005")) {  // 针对于哥斯拉key和value空字符需要转换为等号
-                        tmpHexData = strRev(strRev(tmpHexData).replaceAll("(00.{8})", "D3"));
-                        tmpGzipRes = hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+                    if(strUtils.byteArrayContains(tmpGzipRes, new byte[]{0, 0, 0}) != -1 && !strUtils.byteStartsWith(tmpGzipRes, 0, new byte[]{(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE}) && !strUtils.byteStartsWith(tmpGzipRes, 0, new byte[]{(byte) 0xAC, (byte) 0xED, 0x00, 0x05}) ){  // 针对于哥斯拉key和value空字符需要转换为等号
+                        tmpGzipRes = strUtils.byteReplaceZeroToD3(tmpGzipRes);
                     }
 
                     xorKey = key + "+Gzip";
@@ -1404,9 +1483,9 @@ public class strUtils {
                 }
             }else{
                 if(keyArray_AES.isEmpty()){ // 优先读取缓存数据
-                    try{
-                        InputStream aesKeyInputStream = getResourceStream("aesKey");
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(aesKeyInputStream));
+                    try(InputStream desKeyInputStream = getResourceStream("aesKey");
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(desKeyInputStream))){
+
                         String line;
                         while ((line = reader.readLine()) != null) {
                             keyArray.add(line);
@@ -1452,11 +1531,6 @@ public class strUtils {
                 if(debugMode)e.printStackTrace();
             }
         }
-
-        for (Future<?> future : futures) {
-            future.cancel(true);
-        }
-        futures.clear();
 
         // 停止所有线程
         ExecutorServiceManager.getInstance().forceShutdown();

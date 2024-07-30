@@ -98,9 +98,9 @@ public class PaneWebshellDecode {
 
         initTextData();
 
-        ScheduledExecutorService monitorExecutor = Executors.newSingleThreadScheduledExecutor();
 
 //        // 定期监控任务，延迟0秒后开始，每隔5秒执行一次
+//        ScheduledExecutorService monitorExecutor = Executors.newSingleThreadScheduledExecutor();
 //        monitorExecutor.scheduleAtFixedRate(() -> monitorExecutorStatus(ExecutorServiceManager.getInstance().getExecutor()), 0, 5, TimeUnit.SECONDS);
 
         tipTitle.setCursor(Cursor.HAND);
@@ -167,8 +167,7 @@ public class PaneWebshellDecode {
         JsonArray jsonObject = (JsonArray) (new Gson()).fromJson(testDataJsonStr, JsonObject.class).get("webshellDecode");
 
         for (int i = 0; i < jsonObject.size(); i++) {
-            JsonElement element = jsonObject.get(i);
-            JsonObject tmpDictData = element.getAsJsonObject();
+            JsonObject tmpDictData = jsonObject.get(i).getAsJsonObject();
 
             String data = tmpDictData.get("data").getAsString();
             String mode = tmpDictData.get("mode").getAsString();

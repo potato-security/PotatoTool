@@ -79,7 +79,7 @@
         <HBox alignment="CENTER_LEFT" spacing="10">
             <Label text="图标："/>
             <StackPane>
-                <TextField style="-fx-padding: 5 80 5 5;" fx:id="icon" editable="false" promptText="可为空" prefWidth="200" StackPane.alignment="CENTER"/>
+                <TextField style="-fx-padding: 5 80 5 5;" fx:id="icon" promptText="可为空" prefWidth="200" StackPane.alignment="CENTER"/>
                 <Button style="-fx-padding: 5;" text="选择图片" onAction="#getImg" StackPane.alignment="CENTER_RIGHT"/>
             </StackPane>
         </HBox>

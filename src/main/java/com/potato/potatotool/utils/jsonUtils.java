@@ -92,25 +92,16 @@ public class jsonUtils {
     public static JSONObject readJsonFile(InputStream inputStream) {
 
         JSONObject jsonObject = null;
+        StringBuilder json = new StringBuilder();
 
-        try {
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            String json = "";
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             String line;
-
             while ((line = reader.readLine()) != null) {
-                json += line;
+                json.append(line);
             }
-
-            reader.close();
-
-            jsonObject = new JSONObject(json);
-
+            jsonObject = new JSONObject(json.toString());
         } catch (Exception e) {
-
             e.printStackTrace();
-
         }
 
         return jsonObject;

@@ -139,7 +139,7 @@ public class PaneAddBarDialog {
     void addBar(){
         String titleData = title.getText();
         String describeData = describe.getText();;
-        String typeData = ((String) type.getSelectionModel().getSelectedItem()).equals("执行命令") ? "cmd" : ((String) type.getSelectionModel().getSelectedItem()).equals("打开Web") ? "web" : "";
+        String typeData = ((String) type.getSelectionModel().getSelectedItem()).equals("执行命令") ? "cmd" : ((String) type.getSelectionModel().getSelectedItem()).equals("打开Web") ? "web" : (String) type.getSelectionModel().getSelectedItem();
         String contentData = content.getText();
         String iconData = icon.getText();
 
@@ -159,7 +159,7 @@ public class PaneAddBarDialog {
                 elem.addProperty("icon",iconData);
                 array.add(elem);
             }else{
-                array.forEach(jsonElement -> {
+                for (JsonElement jsonElement : array) {
                     JsonObject obj = jsonElement.getAsJsonObject();
                     if ( obj.get("title").getAsString().equals(TitleData) && obj.get("describe").getAsString().equals(DescribeData)) {
                         obj.addProperty("title", titleData);
@@ -167,8 +167,9 @@ public class PaneAddBarDialog {
                         obj.addProperty("content", contentData);
                         obj.addProperty("type", typeData);
                         obj.addProperty("icon", iconData);
+                        break;
                     }
-                });
+                };
             }
 
         }

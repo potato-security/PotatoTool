@@ -1,7 +1,5 @@
 package com.potato.potatotool.utils;
 
-// 导入必要的类
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -146,80 +144,76 @@ public class requestUtils {
             // 启用输出流
             con.setDoOutput(true);
             // 获取输出流
-            OutputStream os = con.getOutputStream();
             // 写入请求参数
+            try (OutputStream os = con.getOutputStream()) {
+                if(postMethod.equalsIgnoreCase("Form")){
 
+                    Map<String, Object> formParameters = requestObj.getFormParameters();
 
-            if(postMethod.equalsIgnoreCase("Form")){
+                    // 构建表单参数
+                    if (formParameters != null) {
+                        for (Map.Entry<String, Object> entry : formParameters.entrySet()) {
+                            String paramName = entry.getKey();
+                            Object paramValue = entry.getValue();
 
-                Map<String, Object> formParameters = requestObj.getFormParameters();
+                            if (paramValue instanceof String) {
+                                // 字符串参数
+                                String paramStr = (String) paramValue;
 
-                // 构建表单参数
-                if (formParameters != null) {
-                    for (Map.Entry<String, Object> entry : formParameters.entrySet()) {
-                        String paramName = entry.getKey();
-                        Object paramValue = entry.getValue();
+                                StringBuilder paramBuilder = new StringBuilder();
+                                paramBuilder.append("--").append(boundary).append("\r\n");
+                                paramBuilder.append("Content-Disposition: form-data; name=\"").append(paramName).append("\"\r\n");
+                                paramBuilder.append("\r\n");
+                                paramBuilder.append(paramStr).append("\r\n");
 
-                        if (paramValue instanceof String) {
-                            // 字符串参数
-                            String paramStr = (String) paramValue;
+                                byte[] paramBytes = paramBuilder.toString().getBytes(StandardCharsets.UTF_8);
+                                os.write(paramBytes);
+                            } else if (paramValue instanceof File) {
+                                // 文件参数
+                                File fileData = (File) paramValue;
 
-                            StringBuilder paramBuilder = new StringBuilder();
-                            paramBuilder.append("--").append(boundary).append("\r\n");
-                            paramBuilder.append("Content-Disposition: form-data; name=\"").append(paramName).append("\"\r\n");
-                            paramBuilder.append("\r\n");
-                            paramBuilder.append(paramStr).append("\r\n");
+                                StringBuilder fileBuilder = new StringBuilder();
+                                fileBuilder.append("--").append(boundary).append("\r\n");
+                                fileBuilder.append("Content-Disposition: form-data; name=\"").append(paramName)
+                                        .append("\"; filename=\"").append(fileData.getName()).append("\"\r\n");
+                                fileBuilder.append("Content-Type: ").append(HttpURLConnection.guessContentTypeFromName(fileData.getName()))
+                                        .append("\r\n");
+                                fileBuilder.append("\r\n");
 
-                            byte[] paramBytes = paramBuilder.toString().getBytes(StandardCharsets.UTF_8);
-                            os.write(paramBytes);
-                        } else if (paramValue instanceof File) {
-                            // 文件参数
-                            File fileData = (File) paramValue;
+                                byte[] fileHeaderBytes = fileBuilder.toString().getBytes(StandardCharsets.UTF_8);
+                                os.write(fileHeaderBytes);
 
-                            StringBuilder fileBuilder = new StringBuilder();
-                            fileBuilder.append("--").append(boundary).append("\r\n");
-                            fileBuilder.append("Content-Disposition: form-data; name=\"").append(paramName)
-                                    .append("\"; filename=\"").append(fileData.getName()).append("\"\r\n");
-                            fileBuilder.append("Content-Type: ").append(HttpURLConnection.guessContentTypeFromName(fileData.getName()))
-                                    .append("\r\n");
-                            fileBuilder.append("\r\n");
-
-                            byte[] fileHeaderBytes = fileBuilder.toString().getBytes(StandardCharsets.UTF_8);
-                            os.write(fileHeaderBytes);
-
-                            // 写入文件内容
-                            try (InputStream fileInputStream = new FileInputStream(fileData)) {
-                                byte[] buffer = new byte[4096];
-                                int bytesRead;
-                                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                                    os.write(buffer, 0, bytesRead);
+                                // 写入文件内容
+                                try (InputStream fileInputStream = new FileInputStream(fileData)) {
+                                    byte[] buffer = new byte[4096];
+                                    int bytesRead;
+                                    while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                                        os.write(buffer, 0, bytesRead);
+                                    }
+                                    os.write("\r\n".getBytes(StandardCharsets.UTF_8));
+                                } catch (IOException e) {
+                                    e.printStackTrace();
                                 }
-                                os.write("\r\n".getBytes(StandardCharsets.UTF_8));
-                            } catch (IOException e) {
-                                e.printStackTrace();
                             }
                         }
                     }
+
+                    // 添加结束标识
+                    byte[] boundaryBytes = ("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8);
+                    os.write(boundaryBytes);
+
+                }else{
+                    if(postData.length == 0){
+                        throw new Exception("[×] 未setPostData，请检查");
+                    }
+                    os.write(postData);
                 }
 
-                // 添加结束标识
-                byte[] boundaryBytes = ("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8);
-                os.write(boundaryBytes);
-
-            }else{
-                if(postData.length == 0){
-                    throw new Exception("[×] 未setPostData，请检查");
-                }
-                os.write(postData);
+                os.flush();
             }
-
-            os.flush();
-            os.close();
         }
 
-        CustomHttpResponse result = new CustomHttpResponse(con);
-
-        return result;
+        return new CustomHttpResponse(con);
     }
 
 

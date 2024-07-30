@@ -28,6 +28,7 @@ import javafx.stage.StageStyle;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static com.potato.potatotool.controller.MainController.clipRect;
 import static com.potato.potatotool.utils.Constants.getResourceString;
@@ -205,16 +206,34 @@ public class PaneExtension {
             ImageView imageView = new ImageView();
 
             try {
-                Image image;
+                Image image = null;
                 if(icon.equals("") && type.equals("cmd")){
                     icon = "/img/bar/cmd.png";
                 }else if(icon.equals("") && type.equals("web")){
                     icon = "/img/bar/web.png";
                 }
                 if(icon.startsWith("/img/bar/")){
-                    image = new Image(getClass().getResourceAsStream(icon));
+                    try (InputStream is = getClass().getResourceAsStream(icon)) {
+                        image = new Image(is);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }else {
                     image = new Image(new File(icon).toURI().toString());
+                    if(image.isError()){
+                        if(type.equals("cmd")){
+                            icon = "/img/bar/cmd.png";
+                        }else if(type.equals("web")){
+                            icon = "/img/bar/web.png";
+                        }
+                        if(icon.startsWith("/img/bar/")) {
+                            try (InputStream is = getClass().getResourceAsStream(icon)) {
+                                image = new Image(is);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
                 }
                 imageView.setImage(image);
             }catch (Exception e){

@@ -44,28 +44,28 @@ public class byteDecrypt {
 
         try {
             //是否存在Gzip压缩特征
-            if(byteToHex(byteArray).toLowerCase().startsWith("1f8b")){
+            if(strUtils.byteStartsWith(byteArray, 0, new byte[]{(byte) 0x1F, (byte) 0x8B})) {
                 byteArray = GzipUtils.GzipDecompress(byteArray);
-                String tmpHexData = byteToHex(byteArray);
 
-                if(tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005") ){  // 针对于哥斯拉key和value空字符需要转换为等号
-                    tmpHexData = strUtils.strRev( strUtils.strRev(tmpHexData).replaceAll("(00.{8})", "D3") );
-                    byteArray = new strUtils().hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+                if(strUtils.byteArrayContains(byteArray, new byte[]{0, 0, 0}) != -1 && !strUtils.byteStartsWith(byteArray, 0, new byte[]{(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE}) && !strUtils.byteStartsWith(byteArray, 0, new byte[]{(byte) 0xAC, (byte) 0xED, 0x00, 0x05}) ){  // 针对于哥斯拉key和value空字符需要转换为等号
+                    byteArray = strUtils.byteReplaceZeroToD3(byteArray);
                 }
 
                 gzipCode = true;
             }
 
             // 检查是否存在class/反序列化
-            byte[] tmpDecryptedTextBytes = null;
-            tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(byteArray);
-            if(tmpDecryptedTextBytes==null) {
-                tmpDecryptedTextBytes = DeserializerUtils.serializeCheck(byteArray);
-            }else {
+            byte[] tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(byteArray);
+            byte[] tmpSerDecryptedTextBytes = null;
+            if (tmpDecryptedTextBytes == null) {
+                tmpSerDecryptedTextBytes = DeserializerUtils.serializeCheck(byteArray);
+            } else {
+                byteArray = tmpDecryptedTextBytes;
                 classCode = true;
             }
-            if(tmpDecryptedTextBytes!=null) {
-                byteArray = tmpDecryptedTextBytes;
+
+            if (tmpSerDecryptedTextBytes != null) {
+                byteArray = tmpSerDecryptedTextBytes;
                 serializeCode = true;
             }
 

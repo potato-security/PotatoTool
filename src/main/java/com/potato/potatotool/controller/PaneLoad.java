@@ -174,6 +174,7 @@ public class PaneLoad {
         for (AnimatedText text : animatedTexts) {
             text.stop();
         }
+        animatedTexts.clear();
     }
 
     /**
@@ -192,23 +193,24 @@ public class PaneLoad {
         public void stop() {
             if(parallelTransition!=null){
                 parallelTransition.stop();
-                textUpdateTimeline = null;
-                timer = null;
+                parallelTransition.getChildren().clear();
                 parallelTransition = null;
-                fadeTransition = null;
-                translateTransition = null;
             }
             if(textUpdateTimeline!=null){
                 textUpdateTimeline.stop();
+                textUpdateTimeline = null;
             }
             if(timer!=null) {
                 timer.stop();
+                timer = null;
             }
             if(fadeTransition!=null) {
                 fadeTransition.stop();
+                fadeTransition = null;
             }
             if(translateTransition!=null) {
                 translateTransition.stop();
+                translateTransition = null;
             }
         }
 

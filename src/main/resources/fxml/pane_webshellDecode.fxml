@@ -47,15 +47,15 @@
                <FXCollections fx:factory="observableArrayList">
                   <String fx:value="使用默认Key快速解密" />
                   <String fx:value="指定Key快速解密" />
-                  <String fx:value="使用内置50wKey字典解密" />
-                  <String fx:value="指定Key字典解密" />
+                  <String fx:value="使用内置50万Key字典解密-Webshell专用" />
+                  <String fx:value="上传Key字典解密" />
                </FXCollections>
             </items>
             <cursor>
                <Cursor fx:constant="HAND" />
             </cursor>
          </ComboBox>
-         <ComboBox fx:id="modeComboBox" visible="false" managed="false" prefHeight="30.0" minWidth="80" prefWidth="80" >
+         <ComboBox fx:id="modeComboBox" visible="false" managed="false" prefHeight="30.0" minWidth="90" prefWidth="90" >
             <items>
                <FXCollections fx:factory="observableArrayList">
                   <String fx:value="AES" />

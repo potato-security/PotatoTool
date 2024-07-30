@@ -2,7 +2,6 @@ package com.potato.potatotool.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.json.JSONObject;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -36,18 +35,13 @@ public class CustomHttpResponse{
 
     public String getTextStr() { // 存在getText方法
 
-        try {
-
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
             StringBuilder responseString = new StringBuilder();
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 responseString.append(inputLine);
             }
-            in.close();
-
             return responseString.toString();
-
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -57,75 +51,57 @@ public class CustomHttpResponse{
 
     public void getSSEStreamingJson(ResponseCallback callback) { // 获取服务器发送事件(SSE)流式响应json
 
-        try {
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-
-                callback.onResponse(line);
+                if (!line.trim().isEmpty()) {
+                    callback.onResponse(line);
+                }
                 // 回调处理每次响应
             }
-            reader.close();
             con.disconnect();
-
         } catch (Exception e) {
-            if(e.toString().contains("Premature EOF")) {
-                callback.onResponse("[[Premature EOF]]");
-            }else if(e.toString().contains("Server returned HTTP response code: 502")){
-                callback.onResponse("[[Response code 502]]");
-            }else if(e.toString().contains("Read timed out")){
-                callback.onResponse("[[Read timed out]]");
-            }
-            e.printStackTrace();
+            handleException(e, callback);
+        } finally {
+            con.disconnect();
         }
 
     }
     interface ResponseCallback {
         void onResponse(String line);
     }
+    private void handleException(Exception e, ResponseCallback callback) {
+        String message = e.getMessage();
+        if (message.contains("Premature EOF")) {
+            callback.onResponse("[[Premature EOF]]");
+        } else if (message.contains("Server returned HTTP response code: 502")) {
+            callback.onResponse("[[Response code 502]]");
+        } else if (message.contains("Read timed out")) {
+            callback.onResponse("[[Read timed out]]");
+        }
+        e.printStackTrace();
+    }
 
 
     public JsonObject getJson() {
-
-        JsonObject result = null;
-        try{
-            String testStr = getTextStr();
-            if(testStr != null && testStr != ""){
-                result = (new Gson()).fromJson(testStr, JsonObject.class);;
-            }else {
-                result = null;
-            }
+        try {
+            String textStr = getTextStr();
+            return textStr != null && !textStr.isEmpty() ? new Gson().fromJson(textStr, JsonObject.class) : null;
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-
-        return result;
     }
 
     public String saveToFile(String filePath,Boolean showSpeed){
 
-        try{
+        try (InputStream inputStream = con.getInputStream();
+             FileOutputStream fos = new FileOutputStream(getSaveFile(filePath))) {
 
-            InputStream inputStream = con.getInputStream();
-
-            // 文件保存位置
-            File saveFile = new File(filePath);
-            if (saveFile.isDirectory()) { // 传入文件夹
-                if (!saveFile.exists()) {
-                    saveFile.mkdir();
-                    saveFile = new File(saveFile + File.separator + getFileName(con));
-                }
-            }
-            FileOutputStream fos = new FileOutputStream(saveFile);
-
-            int fileSize = getContentLength();
-            int bytesRead = 0;
             byte[] buffer = new byte[1024];
-            int len;
-
-            long startTime = System.currentTimeMillis();
-            long lastBytesRead = 0;
+            int bytesRead = 0, len;
+            long startTime = System.currentTimeMillis(), lastBytesRead = 0;
+            int fileSize = con.getContentLength();
 
             // 该判断不要写while内，影响运行速率
             if (showSpeed) {
@@ -151,21 +127,12 @@ public class CustomHttpResponse{
                 }
 
             }else {
-
                 while ((len = inputStream.read(buffer)) != -1) {
                     fos.write(buffer, 0, len);
                 }
-
             }
 
-            if (fos != null) {
-                fos.close();
-            }
-            if (inputStream != null) {
-                inputStream.close();
-            }
-
-            return saveFile.getAbsolutePath();
+            return new File(filePath).getAbsolutePath();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -174,22 +141,32 @@ public class CustomHttpResponse{
 
     }
 
+    private File getSaveFile(String filePath) throws IOException {
+        File saveFile = new File(filePath);
+        if (saveFile.isDirectory()) {
+            if (!saveFile.exists()) {
+                saveFile.mkdirs();
+            }
+            saveFile = new File(saveFile, getFileName(con));
+        }
+        return saveFile;
+    }
+
     // 获取文件名
     private String getFileName(HttpURLConnection connection) {
-        String fileName = "";
         String disposition = connection.getHeaderField("Content-Disposition");
         if (disposition != null) {
             // 从Content-Disposition中获取文件名
             int index = disposition.indexOf("filename=");
             if (index > 0) {
-                fileName = disposition.substring(index + 10, disposition.length() - 1);
+                return disposition.substring(index + 10, disposition.length() - 1);
             }
         } else {
             // 从URL中获取文件名
-            fileName = connection.getURL().toString();
-            fileName = fileName.substring(fileName.lastIndexOf(File.separator) + 1, fileName.length());
+            String fileName = connection.getURL().toString();
+            return fileName.substring(fileName.lastIndexOf(File.separator) + 1, fileName.length());
         }
-        return fileName;
+        return "";
     }
 
 

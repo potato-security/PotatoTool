@@ -52,7 +52,6 @@ public class PaneSetting {
         String address = tmpJsonObj_Proxy.getAsJsonPrimitive("address").getAsString();
         proxy.setText(address);
         proxyButton.setSelected(isProxy);
-//        proxyButton.setText(isProxy ? "开启" : "关闭");
 
         //  初始化默认反编译模式配置
         JsonObject tmpJsonObj_Decompile = (JsonObject) Constants.getOutsideConfig("Decompile");
@@ -79,12 +78,6 @@ public class PaneSetting {
     void topBarPressedAction(MouseEvent event) {
         offsetX = event.getSceneX();
         offsetY = event.getSceneY();
-    }
-
-    @FXML
-    public void toggleProxy() {
-        boolean isProxy = proxyButton.isSelected();
-//        proxyButton.setText(isProxy ? "开启" : "关闭");
     }
 
     @FXML

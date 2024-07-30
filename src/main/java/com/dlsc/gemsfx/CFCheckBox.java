@@ -1,7 +1,10 @@
 package com.dlsc.gemsfx;
 
 import com.dlsc.gemsfx.skins.CFCheckBoxSkin;
+import javafx.event.Event;
 import javafx.scene.control.CheckBox;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 
 public class CFCheckBox extends CheckBox {
 
@@ -26,6 +29,10 @@ public class CFCheckBox extends CheckBox {
     private void initialize() {
         setMaxSize(USE_PREF_SIZE, USE_PREF_SIZE);
         getStyleClass().add(STYLE_CLASS);
+
+        setOnMouseClicked(event -> {
+            setSelected(!isSelected());
+        });
     }
 
     @Override

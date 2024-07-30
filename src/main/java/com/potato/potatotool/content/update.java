@@ -25,7 +25,7 @@ public class update {
      */
     public static void main(String []args) throws IOException {
 
-//        List<Map<String, String>> cves = init();  //TODO !软件初始化调用一次就行! !!!不要每次搜索都调用!!!
+//        List<Map<String, String>> cves = init();
 //        updateResource( "https://raw.githubusercontent.com/HotBoy-java/Resource/main/winKbInfo20230410.csv","./src/content/conf/winKbInfo20230411.csv");
         updateResource( "https://codeload.github.com/HotBoy-java/Resource/zip/refs/heads/main","./src/content/conf/main.zip");
         List<String> filePathFromZip = unZipUtils.unZip(Paths.get(".", "src", "content", "conf", "main.zip").toString(), "./src/content/conf/", "Resource-main");

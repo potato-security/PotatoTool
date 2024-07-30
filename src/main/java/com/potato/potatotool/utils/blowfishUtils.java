@@ -28,16 +28,16 @@ import static com.potato.potatotool.utils.Constants.getResourceStream;
 public class blowfishUtils {
     private static final int IV_SIZE = 8;
     private static final String CIPHER_ALGORITHM = "Blowfish/%s/%s";
-    private static final String Blowfish_MODE_CBC = "CBC";
-    private static final String Blowfish_MODE_ECB = "ECB";
-    private static final String Blowfish_MODE_GCM = "GCM";
-    private static final String Blowfish_MODE_CFB = "CFB";
-    private static final String Blowfish_MODE_OFB = "OFB";
-    private static final String Blowfish_MODE_CTR = "CTR";
-    private static final String PADDING_NO_PADDING = "NoPadding";
-    private static final String PADDING_PKCS5_PADDING = "PKCS5Padding";
-    private static final String PADDING_PKCS7_PADDING = "PKCS7Padding";
-    private static final String PADDING_ZERO_PADDING = "ZeroBytePadding";
+    public static final String Blowfish_MODE_CBC = "CBC";
+    public static final String Blowfish_MODE_ECB = "ECB";
+    public static final String Blowfish_MODE_GCM = "GCM";
+    public static final String Blowfish_MODE_CFB = "CFB";
+    public static final String Blowfish_MODE_OFB = "OFB";
+    public static final String Blowfish_MODE_CTR = "CTR";
+    public static final String PADDING_NO_PADDING = "NoPadding";
+    public static final String PADDING_PKCS5_PADDING = "PKCS5Padding";
+    public static final String PADDING_PKCS7_PADDING = "PKCS7Padding";
+    public static final String PADDING_ZERO_PADDING = "ZeroBytePadding";
     /**
      * 对输入的明文进行Blowfish加密
      *
@@ -102,70 +102,73 @@ public class blowfishUtils {
     public boolean serializeCode = false;
     public boolean gzipCode = false;
     public byte[] decrypt(byte[] cipherText, byte[] tmpKey, byte[] iv, String mode, String padding) throws Exception {
-        validateMode(mode);
-        validatePadding(padding);
+        try {
+            validateMode(mode);
+            validatePadding(padding);
 
-        byte[] key = new byte[8];
-        System.arraycopy(tmpKey, 0, key, 0, 8);
+            byte[] key = new byte[8];
+            System.arraycopy(tmpKey, 0, key, 0, 8);
 
-        SecretKeySpec secretKey = new SecretKeySpec(key, "Blowfish");
+            SecretKeySpec secretKey = new SecretKeySpec(key, "Blowfish");
 
-        Cipher cipher = Cipher.getInstance(String.format(CIPHER_ALGORITHM, mode, padding), "BC");
-        if (mode.equals(Blowfish_MODE_ECB) || mode.equals(Blowfish_MODE_CTR)) {
+            Cipher cipher = Cipher.getInstance(String.format(CIPHER_ALGORITHM, mode, padding), "BC");
+            if (mode.equals(Blowfish_MODE_ECB) || mode.equals(Blowfish_MODE_CTR)) {
 
-            //  ECB和CTR不需要传输iv
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+                //  ECB和CTR不需要传输iv
+                cipher.init(Cipher.DECRYPT_MODE, secretKey);
 
-        } else if (mode.equals(Blowfish_MODE_GCM)){
+            } else if (mode.equals(Blowfish_MODE_GCM)){
 
-            //  GCM不需要传输iv，可以提取出iv
-            byte[] ivBytes = new byte[IV_SIZE];
-            System.arraycopy(cipherText, 0, ivBytes, 0, IV_SIZE);
-            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(IV_SIZE * 8, ivBytes);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
-            byte[] encrypted = new byte[cipherText.length - IV_SIZE];
-            System.arraycopy(cipherText, IV_SIZE, encrypted, 0, encrypted.length);
-            cipherText = encrypted;
-        } else if (mode.equals(Blowfish_MODE_CBC) || mode.equals(Blowfish_MODE_CFB) || mode.equals(Blowfish_MODE_OFB)) {
+                //  GCM不需要传输iv，可以提取出iv
+                byte[] ivBytes = new byte[IV_SIZE];
+                System.arraycopy(cipherText, 0, ivBytes, 0, IV_SIZE);
+                GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(IV_SIZE * 8, ivBytes);
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
+                byte[] encrypted = new byte[cipherText.length - IV_SIZE];
+                System.arraycopy(cipherText, IV_SIZE, encrypted, 0, encrypted.length);
+                cipherText = encrypted;
+            } else if (mode.equals(Blowfish_MODE_CBC) || mode.equals(Blowfish_MODE_CFB) || mode.equals(Blowfish_MODE_OFB)) {
 
-            //  必须手动传入iv
-            if(iv==null||iv.length==0){
-                throw new IllegalArgumentException("该模式必须传入iv值");
-            }
-            IvParameterSpec parameterSpec = new IvParameterSpec(iv);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, parameterSpec);
+                //  必须手动传入iv
+                if(iv==null||iv.length==0){
+                    throw new IllegalArgumentException("该模式必须传入iv值");
+                }
+                IvParameterSpec parameterSpec = new IvParameterSpec(iv);
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, parameterSpec);
 
-        }
-
-        byte[] decryptedTextBytes = cipher.doFinal(cipherText);
-
-        //是否存在Gzip压缩特征
-        if(strUtils.byteToHex(decryptedTextBytes).toLowerCase().startsWith("1f8b")){
-            decryptedTextBytes = GzipUtils.GzipDecompress(decryptedTextBytes);
-            String tmpHexData = strUtils.byteToHex(decryptedTextBytes);
-
-            if(tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005") ){  // 针对于哥斯拉key和value空字符需要转换为等号
-                tmpHexData = strUtils.strRev( strUtils.strRev(tmpHexData).replaceAll("(00.{8})", "D3") );
-                decryptedTextBytes = new strUtils().hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
             }
 
-            gzipCode = true;
-        }
+            byte[] decryptedTextBytes = cipher.doFinal(cipherText);
 
-        // 检查是否存在class/反序列化
-        byte[] tmpDecryptedTextBytes = null;
-        tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(decryptedTextBytes);
-        if(tmpDecryptedTextBytes==null) {
-            tmpDecryptedTextBytes = DeserializerUtils.serializeCheck(decryptedTextBytes);
-        }else {
-            classCode = true;
+            //是否存在Gzip压缩特征
+            if(strUtils.byteStartsWith(decryptedTextBytes, 0, new byte[]{(byte) 0x1F, (byte) 0x8B})) {
+                decryptedTextBytes = GzipUtils.GzipDecompress(decryptedTextBytes);
+                gzipCode = true;
+            }
+
+            // 检查是否存在class/反序列化
+            byte[] tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(decryptedTextBytes);
+            byte[] tmpSerDecryptedTextBytes = null;
+            if (tmpDecryptedTextBytes == null) {
+                tmpSerDecryptedTextBytes = DeserializerUtils.serializeCheck(decryptedTextBytes);
+            } else {
+                decryptedTextBytes = tmpDecryptedTextBytes;
+                classCode = true;
+            }
+
+            if (tmpSerDecryptedTextBytes != null) {
+                decryptedTextBytes = tmpSerDecryptedTextBytes;
+                serializeCode = true;
+            }
+
+            boolean readability = ReadabilityChecker.assessReadability(decryptedTextBytes);
+
+            return (!classCode && !serializeCode && !readability) ? null : decryptedTextBytes;
+
+        }catch (Exception e){
+            if(debugMode)e.printStackTrace();
+            return null;
         }
-        if(tmpDecryptedTextBytes!=null) {
-            decryptedTextBytes = tmpDecryptedTextBytes;
-            serializeCode = true;
-        }
-        boolean readability = ReadabilityChecker.assessReadability(decryptedTextBytes);
-        return (!classCode && !serializeCode && !readability)? null : decryptedTextBytes;
     }
 
     // 验证加密模式是否合法
@@ -241,9 +244,9 @@ public class blowfishUtils {
                 }
             }else {
                 if(keyArray_Blowfish.isEmpty()){ // 优先读取缓存数据
-                    try{
-                        InputStream blowfishKeyInputStream = getResourceStream("aesKey");
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(blowfishKeyInputStream));
+                    try(InputStream blowfishKeyInputStream = getResourceStream("aesKey");
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(blowfishKeyInputStream))){
+
                         String line;
                         while ((line = reader.readLine()) != null) {
                             keyArray.add(line);
@@ -328,11 +331,6 @@ public class blowfishUtils {
                 if(debugMode)e.printStackTrace();
             }
         }
-
-        for (Future<?> future : futures) {
-            future.cancel(true);
-        }
-        futures.clear();
 
         // 停止所有线程
         ExecutorServiceManager.getInstance().forceShutdown();

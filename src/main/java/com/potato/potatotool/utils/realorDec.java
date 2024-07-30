@@ -2,6 +2,7 @@ package com.potato.potatotool.utils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,7 +30,7 @@ public class realorDec {
             if (res == null){
                 String tmp_res = new String(nt_crypt(strUtils.base64Decode(str.replace("#", "=").getBytes(StandardCharsets.UTF_8)),false));
                 if (ReadabilityChecker.assessReadability(tmp_res)){
-                    List<String> list = List.of("(", ")", "'", "\"", "[", "]", "\\", "{", "}", "：", "《", "》", "【", "】");
+                    List<String> list = Arrays.asList("(", ")", "'", "\"", "[", "]", "\\", "{", "}", "：", "《", "》", "【", "】");
 
                     // 排除低概率意外情况，比如admin123
                     if( str.length() < 10 && strUtils.containsAnyWithSet(tmp_res, list) ){

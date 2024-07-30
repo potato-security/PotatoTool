@@ -7,6 +7,7 @@ import org.graalvm.polyglot.Value;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.getResourceString;
 import static com.potato.potatotool.utils.decompileUtils.Decompile;
 import static com.potato.potatotool.utils.strUtils.*;
@@ -18,9 +19,8 @@ import static com.potato.potatotool.utils.strUtils.*;
 
 public class DeserializerUtils{
     public static byte[] serializeParsing(byte[] decryptedTextBytes){
-        try {
-            // 创建 GraalVM 上下文
-            Context context = Context.create();
+        // 创建 GraalVM 上下文
+        try (Context context = Context.create()) {
 
             // 读取第一个 JS 文件的内容
             String jsCode = getResourceString("JavaStream");
@@ -35,6 +35,7 @@ public class DeserializerUtils{
             Value uint8Array = context.getBindings("js").getMember("Uint8Array");
             Value arrayBuffer = context.getBindings("js").getMember("ArrayBuffer").newInstance(decryptedTextBytes.length);
             Value uint8ArrayObj = uint8Array.newInstance(arrayBuffer);
+
             // 将 Java 的 byte[] 数组内容设置到 Uint8Array 对象中
             for (int i = 0; i < decryptedTextBytes.length; i++) {
                 uint8ArrayObj.setArrayElement(i, decryptedTextBytes[i]);
@@ -49,25 +50,23 @@ public class DeserializerUtils{
             Value valueData = javaStream.getMember("contents").getArrayElement(0).invokeMember("getValue");
             JavaStreamArrayTraverser javaStreamObj= new JavaStreamArrayTraverser();
             javaStreamObj.traverseValue(valueData);
-            byte[] byteArray = javaStreamObj.getByteArray();
 
-            return byteArray;
+            return javaStreamObj.getByteArray();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode)e.printStackTrace();
         }
         return null;
     }
 
     public static byte[] serializeCheck(byte[] decryptedTextBytes) throws Exception{
         byte[] resultData = null;
-        String decryptedTextHex = byteToHex(decryptedTextBytes);
-        // 反序列化数据标志，32-40字节hax=="aced0005" /对应byte[]={-84, -19, 0, 5}但不建议(位数不一定)
-        if (decryptedTextHex.toLowerCase().startsWith("aced0005", 32)){
-            decryptedTextHex =  decryptedTextHex.substring(32);
-            decryptedTextBytes = hexToByteArray(decryptedTextHex);
+
+        // 反序列化数据标志，32-40字节hax=="aced0005" /对应byte[]={-84, -19, 0, 5}/new byte[]{(byte) 0xAC, (byte) 0xED, (byte) 0x00, (byte) 0x05}
+        if (byteStartsWith(decryptedTextBytes, 16, new byte[]{(byte) 0xAC, (byte) 0xED, (byte) 0x00, (byte) 0x05})){
+            decryptedTextBytes = byteSubArray(decryptedTextBytes, 16, decryptedTextBytes.length - 16);
         }
-        if (decryptedTextHex.toLowerCase().startsWith("aced0005")){
+        if (byteStartsWith(decryptedTextBytes, 0, new byte[]{(byte) 0xAC, (byte) 0xED, (byte) 0x00, (byte) 0x05})){
             byte[] resultByte = DeserializerUtils.serializeParsing(decryptedTextBytes);
 
             // 反序列化恶意内容存储
@@ -96,7 +95,6 @@ public class DeserializerUtils{
     }
 
 
-
     /**
      * 检查是否为class数据流
      * @param byteData  需要检查是否存在class的byte[]数据
@@ -104,8 +102,9 @@ public class DeserializerUtils{
     public static byte[] classDataCheck(byte[] byteData){
         byte[] resultData = null;
 
-        if(byteToHex(byteData).toLowerCase().startsWith("cafebabe")){
-            System.out.println("存在class字节码数据，可以导出class及java文件");
+        // class数据流数据标志，开头="cafebabe"  / byte[] {(byte)0xCA, (byte)0xFE, (byte)0xBA, (byte)0xBE})
+        if(byteStartsWith(byteData, 0, new byte[] {(byte)0xCA, (byte)0xFE, (byte)0xBA, (byte)0xBE})){
+            System.out.println("可能存在class字节码数据，尝试导出class及java文件");
             String path="./tmpDataOut.class";
             path = strUtils.filePathtoAbsolute(path);
             strUtils.createFile(byteData, path);
@@ -115,9 +114,9 @@ public class DeserializerUtils{
                 JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Decompile");
                 String decompileMode = tmpJsonObj.getAsJsonPrimitive("decompileMode").getAsString();
                 String code = Decompile(byteData, decompileMode, path);
-                resultData = code.getBytes(StandardCharsets.UTF_8);
+                if(code!=null)resultData = code.getBytes(StandardCharsets.UTF_8);
             } catch (Exception e) {
-                e.printStackTrace();
+                if(debugMode)e.printStackTrace();
             }
 
         }
@@ -146,7 +145,6 @@ public class DeserializerUtils{
 
 class JavaStreamArrayTraverser {
     private byte[] byteArray;
-//    private List<String> arrayList = new ArrayList<String>();
 
     public byte[] getByteArray(){
         return byteArray;
@@ -164,17 +162,6 @@ class JavaStreamArrayTraverser {
 
     public void traverseArray(Value array) {
         int length = (int) array.getArraySize();
-
-//        if ( length == 3 && array.getArrayElement(0).isString() && array.getArrayElement(1).hasArrayElements() && array.getArrayElement(2).hasMembers() ){
-//            Value annotations = array.getArrayElement(1);
-//            int annotationsLength = (int) annotations.getArraySize();
-//            if (annotationsLength > 0){
-//                for(int i = 0; i < annotationsLength; i++){
-//                    Value annotation = annotations.getArrayElement(i);
-//                    traverseValue(element);
-//                }
-//            }
-//        }
 
         // 遍历当前层级的数组元素
         for (int i = 0; i < length; i++) {
@@ -194,15 +181,9 @@ class JavaStreamArrayTraverser {
     }
 
     public void traverseObject(Value object) {
-        // 获取当前层级的属性列表
-        Iterable<String> keys = object.getMemberKeys();
-
-        // 遍历当前层级的属性
-        for (String key : keys) {
-            Value value = object.getMember(key);
-
-            // 递归遍历下一层级的值
-            traverseValue(value);
+        // 获取当前层级的属性列表，遍历当前层级的属性
+        for (String key : object.getMemberKeys()) {
+            traverseValue(object.getMember(key));
         }
     }
 

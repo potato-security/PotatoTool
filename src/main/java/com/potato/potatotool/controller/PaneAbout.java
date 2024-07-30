@@ -28,8 +28,6 @@ import javafx.util.Duration;
 import java.net.*;
 import java.util.function.Function;
 
-//import javafx.scene.web.WebView;
-
 /**
  * @author Potato
  * @date 2023/10/24 16:51
@@ -71,70 +69,35 @@ public class PaneAbout {
 
         scrollThankPane();
 
-//        initWeb();
-
     }
 
+    private Timeline scrollTimeline;
+
     private void scrollThankPane() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(30), event -> {
+        scrollTimeline = new Timeline(new KeyFrame(Duration.millis(30), event -> {
             double currentScroll = thanksScrollPane.getVvalue();
-            double newScroll = currentScroll + 0.002;
+            double newScroll = currentScroll + 0.001;
             if (newScroll > 1.0) {
-                newScroll -= 1.0;
+                newScroll = 0.0;
             }
             thanksScrollPane.setVvalue(newScroll);
         }));
-        timeline.setCycleCount(Timeline.INDEFINITE);
+        scrollTimeline.setCycleCount(Timeline.INDEFINITE);
+    }
 
-        if (thanksVBox.getBoundsInLocal().getHeight() > thanksScrollPane.getViewportBounds().getHeight()) {
-            timeline.play();
-        } else {
-            timeline.stop();
+    @FXML
+    public void stopScrolling() {
+        if (scrollTimeline != null) {
+            scrollTimeline.stop();
         }
     }
 
-
-//    public void initWeb(){
-//        String url = "https://www.wjx.cn/vm/hsIQ1et.aspx";
-//
-//        try {
-//
-//            URI uri = new URI(url);
-//            InetAddress ip = InetAddress.getByName(uri.getHost());
-//            //  未抛异常，Ping通，网站可访问!
-//
-//
-//            Platform.runLater(() -> {
-//                //  在JavaFX应用程序线程上执行的UI代码
-//                WebView webView = new WebView();
-//                webView.setCache(true);
-//                webBox.getChildren().add(webView);
-//
-//                // 获取WebView的WebEngine
-//                WebEngine webEngine = webView.getEngine();
-//                webEngine.getLoadWorker().stateProperty().addListener((ov, oldState, newState) -> {
-//                    if (newState == Worker.State.FAILED) {
-//                        // 处理加载失败的逻辑
-//                        Throwable t = webEngine.getLoadWorker().getException();
-//                        t.printStackTrace();
-//
-//                        webBox.setVisible(false);
-//                    }
-//                });
-//                // 加载网页
-//                webEngine.load(url);
-//                noWebBox.setVisible(false);
-//                noWebBox.setManaged(false);
-//
-//            });
-//
-//        } catch (Exception e) {
-//            // Ping不通,网站不可访问!
-//            webBox.setVisible(false);
-//            e.printStackTrace();
-//        }
-//    }
-
+    @FXML
+    public void startScrolling() {
+        if (scrollTimeline != null && thanksVBox.getBoundsInLocal().getHeight() > thanksScrollPane.getViewportBounds().getHeight()) {
+            scrollTimeline.play();
+        }
+    }
 
     HostServices services = MainApplication.letGetHostServices();
     @FXML

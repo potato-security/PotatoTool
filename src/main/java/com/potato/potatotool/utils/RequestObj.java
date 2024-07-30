@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static com.potato.potatotool.utils.Constants.getResourceString;
@@ -30,9 +32,14 @@ public class RequestObj {
     private String proxies;
     private int timeOut = 10;
     private File file;
-    private Map formParameters;
+    private Map<String, Object> formParameters;
 
     public RequestObj(){
+        initializeProxySettings();
+
+    }
+
+    private void initializeProxySettings() {
         //  初始化默认代理配置
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Proxy");
         boolean enable = tmpJsonObj.getAsJsonPrimitive("enable").getAsBoolean();
@@ -40,22 +47,19 @@ public class RequestObj {
         if(enable && address.length() > 0){
             setProxies(address);
         }
-
     }
 
 
     public RequestObj setMethod(String method) {
-
-        if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("POST") && !method.equalsIgnoreCase("OPTIONS") && !method.equalsIgnoreCase("PUT") && !method.equalsIgnoreCase("DELETE")) {
-            try {
-                throw new Exception("[×] 请求方法不应为" + method);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
+        validateMethod(method);
         this.method = method;
         return this;
+    }
+
+    private void validateMethod(String method) {
+        if (!Arrays.asList("GET", "POST", "OPTIONS", "PUT", "DELETE").contains(method.toUpperCase())) {
+            throw new IllegalArgumentException("[×] 请求方法不应为" + method);
+        }
     }
 
     public String getMethod() {
@@ -108,17 +112,15 @@ public class RequestObj {
     }
 
     public RequestObj setProxiesType(String proxiesType) {
-
-        if (!proxiesType.equalsIgnoreCase("HTTP") && !proxiesType.equalsIgnoreCase("HTTPS") && !proxiesType.equalsIgnoreCase("SOCKS")) {
-            try {
-                throw new Exception("[×] 代理模式支持'HTTP'、'HTTPS'、'SOCKS'，不应为" + proxiesType);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
+        validateProxiesType(proxiesType);
         this.proxiesType = proxiesType;
         return this;
+    }
+
+    private void validateProxiesType(String proxiesType) {
+        if (!Arrays.asList("HTTP", "HTTPS", "SOCKS").contains(proxiesType.toUpperCase())) {
+            throw new IllegalArgumentException("[×] 代理模式支持'HTTP'、'HTTPS'、'SOCKS'，不应为" + proxiesType);
+        }
     }
 
     public String getProxiesType() {
@@ -127,24 +129,26 @@ public class RequestObj {
 
 
     public RequestObj setPostMethod(String postMethod) {
-
-        if (!postMethod.equalsIgnoreCase("Form") && !postMethod.equalsIgnoreCase("Raw") && !postMethod.equalsIgnoreCase("Chunked")) {
-            try {
-                throw new Exception("[×] POST模式支持'Form'、'Raw'、'Chunked'，不应为" + postMethod);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
+        validatePostMethod(postMethod);
         this.postMethod = postMethod;
         return this;
     }
+
+    private void validatePostMethod(String postMethod) {
+        if (!Arrays.asList("FORM", "RAW", "CHUNKED").contains(postMethod.toUpperCase())) {
+            throw new IllegalArgumentException("[×] POST模式支持'Form'、'Raw'、'Chunked'，不应为" + postMethod);
+        }
+    }
+
     public String getPostMethod() {
         return this.postMethod;
     }
 
 
-
+    public RequestObj setPostData(byte[] data) {
+        this.postData = data;
+        return this;
+    }
     public RequestObj setPostData(String postData) {
         this.postData = postData.getBytes(StandardCharsets.UTF_8);
         return this;
@@ -158,6 +162,7 @@ public class RequestObj {
         }
         return this;
     }
+
     public RequestObj setPostData(JSONObject postJsonData) {
         this.postData = postJsonData.toString().getBytes(StandardCharsets.UTF_8);
         return this;
@@ -175,6 +180,7 @@ public class RequestObj {
     }
 
     public RequestObj setFormParameters(Map<String, Object> formParameters) {
+        this.postMethod = "Form";
         this.formParameters = formParameters;
         return this;
     }

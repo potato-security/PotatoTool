@@ -7,6 +7,8 @@ package com.potato.potatotool.utils;
 
 import java.io.UnsupportedEncodingException;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 
 public class QqwryParser {
     /**
@@ -25,7 +27,7 @@ public class QqwryParser {
             ret[2] = (byte) (Integer.parseInt(st.nextToken()) & 0xFF);
             ret[3] = (byte) (Integer.parseInt(st.nextToken()) & 0xFF);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            if(debugMode)System.out.println(e.getMessage());
         }
         return ret;
     }

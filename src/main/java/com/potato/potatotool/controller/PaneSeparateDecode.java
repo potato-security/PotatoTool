@@ -2,6 +2,7 @@ package com.potato.potatotool.controller;
 
 import com.potato.potatotool.utils.DefaultContextMenu;
 import com.potato.potatotool.utils.strUtils;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
@@ -10,6 +11,10 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.StackPane;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Potato
@@ -31,6 +36,9 @@ public class PaneSeparateDecode {
     @FXML
     private ToggleGroup checkboxGroup;
 
+    private final Map<String, Function<String, String>> decodeMap = new HashMap<>();
+    private final Map<String, Function<String, String>> encodeMap = new HashMap<>();
+
     public void initialize() {
 
         //  CodeArea添加宽高自适应
@@ -46,37 +54,34 @@ public class PaneSeparateDecode {
         //  CodeArea添加右键菜单
         result.setContextMenu(new DefaultContextMenu());
 
+        decodeMap.put("Base64", new strUtils()::base64Decode);
+        decodeMap.put("URL", strUtils::urlDecode);
+        decodeMap.put("Rot13", strUtils::ROT13Decode);
+        decodeMap.put("Unicode", strUtils::decodeUnicode);
+        decodeMap.put("Chr", strUtils::chrFuncDecode);
+        decodeMap.put("strRev", strUtils::strRev);
+        decodeMap.put("Hex", new strUtils()::hexDecode);
+        decodeMap.put("Html", strUtils::htmlDecode);
+
+        encodeMap.put("Base64", strUtils::base64Encode);
+        encodeMap.put("URL", strUtils::urlEncode);
+        encodeMap.put("Rot13", strUtils::ROT13Encode);
+        encodeMap.put("Unicode", strUtils::toUnicode);
+        encodeMap.put("Chr", strUtils::chrEncode);
+        encodeMap.put("strRev", strUtils::strRev);
+        encodeMap.put("Hex", strUtils::hexEncode);
+        encodeMap.put("Html", strUtils::htmlEncode);
     }
 
     @FXML
     void toDecode(ActionEvent e){
         if(!checkContent()) return;
 
-        String Content = inputText.getText();
+        result.clear();
+        String content = inputText.getText();
         String mode = ((RadioButton) checkboxGroup.getSelectedToggle()).getText();
-        String res = null;
 
-        if(mode.equals("Base64")){
-            res = new strUtils().base64Decode(Content);
-        }else if(mode.equals("URL")){
-            res = strUtils.urlDecode(Content);
-        }else if(mode.equals("Rot13")){
-            res = strUtils.ROT13Decode(Content);
-        }else if(mode.equals("Unicode")){
-            res = strUtils.decodeUnicode(Content);
-        }else if(mode.equals("Chr")){
-            res = strUtils.chrFuncDecode(Content);
-        }else if(mode.equals("strRev")){
-            res = strUtils.strRev(Content);
-        }else if(mode.equals("Hex")){
-            res = new strUtils().hexDecode(Content);
-        }else if(mode.equals("Html")){
-            res = strUtils.htmlDecode(Content);
-        }
-
-        if(res == null) res = "该密文非" + mode + "加密模式";
-
-        result.replaceText(res);
+        executeTask(decodeMap.get(mode), content, mode, "解密");
 
     }
 
@@ -84,30 +89,42 @@ public class PaneSeparateDecode {
     void toEncode(ActionEvent e){
         if(!checkContent()) return;
 
-        String Content = inputText.getText();
+        result.clear();
+        String content = inputText.getText();
         String mode = ((RadioButton) checkboxGroup.getSelectedToggle()).getText();
-        String res = "";
 
-        if(mode.equals("Base64")){
-            res = strUtils.base64Encode(Content);
-        }else if(mode.equals("URL")){
-            res = strUtils.urlEncode(Content);
-        }else if(mode.equals("Rot13")){
-            res = strUtils.ROT13Encode(Content);
-        }else if(mode.equals("Unicode")){
-            res = strUtils.toUnicode(Content);
-        }else if(mode.equals("Chr")){
-            res = strUtils.chrEncode(Content);
-        }else if(mode.equals("strRev")){
-            res = strUtils.strRev(Content);
-        }else if(mode.equals("Hex")){
-            res = strUtils.hexEncode(Content);
-        }else if(mode.equals("Html")){
-            res = strUtils.htmlEncode(Content);
+        executeTask(encodeMap.get(mode), content, mode, "加密");
+
+    }
+
+    private void executeTask(Function<String, String> function, String content, String mode, String operation) {
+        if (function == null) {
+            result.replaceText("该密文非" + mode + operation + "模式");
+            return;
         }
 
-        result.replaceText(res);
+        Task<String> task = new Task<String>() {
+            @Override
+            protected String call() {
+                return function.apply(content);
+            }
 
+            @Override
+            protected void succeeded() {
+                try {
+                    result.replaceText((String) getValue());
+                }catch (Exception e){
+                    result.replaceText("该密文非" + mode + operation + "模式");
+                }
+            }
+
+            @Override
+            protected void failed() {
+                result.replaceText("处理失败，请重试");
+            }
+        };
+
+        new Thread(task).start();
     }
 
     // 检查内容及模式

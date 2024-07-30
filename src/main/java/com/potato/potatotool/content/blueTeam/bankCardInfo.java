@@ -8,7 +8,6 @@ import com.potato.potatotool.utils.RequestObj;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.potato.potatotool.utils.Constants.getConfigInfo;
 import static com.potato.potatotool.utils.Constants.getResourceString;
 import static com.potato.potatotool.utils.requestUtils.requests;
 

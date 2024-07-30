@@ -1,7 +1,7 @@
 package com.potato.potatotool.utils;
 
 
-import com.potato.potatotool.controller.PaneWebshellDecode;
+import com.potato.potatotool.content.blueTeam.webShellDecrypt;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -27,16 +27,16 @@ import static com.potato.potatotool.utils.Constants.getResourceStream;
 public class aesUtils {
     private static final int IV_SIZE = 16;
     private static final String CIPHER_ALGORITHM = "AES/%s/%s";
-    private static final String AES_MODE_CBC = "CBC";
-    private static final String AES_MODE_ECB = "ECB";
-    private static final String AES_MODE_GCM = "GCM";
-    private static final String AES_MODE_CFB = "CFB";
-    private static final String AES_MODE_OFB = "OFB";
-    private static final String AES_MODE_CTR = "CTR";
-    private static final String PADDING_NO_PADDING = "NoPadding";
-    private static final String PADDING_PKCS5_PADDING = "PKCS5Padding";
-    private static final String PADDING_PKCS7_PADDING = "PKCS7Padding";
-    private static final String PADDING_ZERO_PADDING = "ZeroBytePadding";
+    public static final String AES_MODE_CBC = "CBC";
+    public static final String AES_MODE_ECB = "ECB";
+    public static final String AES_MODE_GCM = "GCM";
+    public static final String AES_MODE_CFB = "CFB";
+    public static final String AES_MODE_OFB = "OFB";
+    public static final String AES_MODE_CTR = "CTR";
+    public static final String PADDING_NO_PADDING = "NoPadding";
+    public static final String PADDING_PKCS5_PADDING = "PKCS5Padding";
+    public static final String PADDING_PKCS7_PADDING = "PKCS7Padding";
+    public static final String PADDING_ZERO_PADDING = "ZeroBytePadding";
     /**
      * 对输入的明文进行AES加密
      *
@@ -106,7 +106,6 @@ public class aesUtils {
             validatePadding(padding);
 
             if(key==null){
-//                System.out.println("无key输入");
                 return null;
             }
 
@@ -142,32 +141,33 @@ public class aesUtils {
             byte[] decryptedTextBytes = cipher.doFinal(cipherText);
 
             //是否存在Gzip压缩特征
-            if (strUtils.byteToHex(decryptedTextBytes).toLowerCase().startsWith("1f8b")) {
+            if(strUtils.byteStartsWith(decryptedTextBytes, 0, new byte[]{(byte) 0x1F, (byte) 0x8B})) {
                 decryptedTextBytes = GzipUtils.GzipDecompress(decryptedTextBytes);
-                String tmpHexData = strUtils.byteToHex(decryptedTextBytes);
 
-                if (tmpHexData.contains("000000") && !tmpHexData.toLowerCase().startsWith("cafebabe") && !tmpHexData.toLowerCase().startsWith("aced0005")) {  // 针对于哥斯拉key和value空字符需要转换为等号
-                    tmpHexData = strUtils.strRev(strUtils.strRev(tmpHexData).replaceAll("(00.{8})", "D3"));
-                    decryptedTextBytes = new strUtils().hexDecode(tmpHexData).getBytes(StandardCharsets.UTF_8);
+                if(strUtils.byteArrayContains(decryptedTextBytes, new byte[]{0, 0, 0}) != -1 && !strUtils.byteStartsWith(decryptedTextBytes, 0, new byte[]{(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE}) && !strUtils.byteStartsWith(decryptedTextBytes, 0, new byte[]{(byte) 0xAC, (byte) 0xED, 0x00, 0x05}) ){  // 针对于哥斯拉key和value空字符需要转换为等号
+                    decryptedTextBytes = strUtils.byteReplaceZeroToD3(decryptedTextBytes);
                 }
 
                 gzipCode = true;
             }
 
             // 检查是否存在class/反序列化
-            byte[] tmpDecryptedTextBytes = null;
-            tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(decryptedTextBytes);
+            byte[] tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(decryptedTextBytes);
+            byte[] tmpSerDecryptedTextBytes = null;
             if (tmpDecryptedTextBytes == null) {
-                tmpDecryptedTextBytes = DeserializerUtils.serializeCheck(decryptedTextBytes);
+                tmpSerDecryptedTextBytes = DeserializerUtils.serializeCheck(decryptedTextBytes);
             } else {
+                decryptedTextBytes = tmpDecryptedTextBytes;
                 classCode = true;
             }
-            if (tmpDecryptedTextBytes != null) {
-                decryptedTextBytes = tmpDecryptedTextBytes;
+
+            if (tmpSerDecryptedTextBytes != null) {
+                decryptedTextBytes = tmpSerDecryptedTextBytes;
                 serializeCode = true;
             }
 
             boolean readability = ReadabilityChecker.assessReadability(decryptedTextBytes);
+
             return (!classCode && !serializeCode && !readability) ? null : decryptedTextBytes;
 
         }catch (Exception e){
@@ -235,8 +235,7 @@ public class aesUtils {
 
         if(traverse.contains("AES")){
             if(customPath != null && !customPath.equals("")){
-                try{
-                    BufferedReader reader = new BufferedReader(new FileReader(customPath));
+                try (BufferedReader reader = new BufferedReader(new FileReader(customPath))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         keyArray.add(line);
@@ -247,9 +246,9 @@ public class aesUtils {
                 }
             }else {
                 if(keyArray_AES.isEmpty()){ // 优先读取缓存数据
-                    try{
-                        InputStream aesKeyInputStream = getResourceStream("aesKey");
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(aesKeyInputStream));
+                    try (InputStream aesKeyInputStream = getResourceStream("aesKey");
+                         BufferedReader reader = new BufferedReader(new InputStreamReader(aesKeyInputStream))) {
+
                         String line;
                         while ((line = reader.readLine()) != null) {
                             keyArray.add(line);
@@ -337,11 +336,6 @@ public class aesUtils {
             }
         }
 
-//        for (Future<?> future : futures) {
-//            future.cancel(true);
-//        }
-//        futures.clear();
-
         // 停止所有线程
         ExecutorServiceManager.getInstance().forceShutdown();
 
@@ -394,6 +388,5 @@ public class aesUtils {
      * 综上所述，【可以使用 ZeroBytePadding 解密 NoPadding 加密的密文】
      *
      **/
-
 
 }

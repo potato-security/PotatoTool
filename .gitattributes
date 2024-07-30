@@ -1,2 +1,1 @@
-src/main/resources/conf/md5.txt filter=lfs diff=lfs merge=lfs -text
 *.db !text !filter !merge !diff

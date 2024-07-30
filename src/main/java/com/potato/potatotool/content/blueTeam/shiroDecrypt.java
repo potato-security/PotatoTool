@@ -54,16 +54,17 @@ public class shiroDecrypt {
             keyArray.add(inputKey);
         } else {
             if(keyArray_Shiro.isEmpty()){ // 优先读取缓存数据
-                try{
-                    InputStream shiroKeyInputStream = getResourceStream("shiroKey");
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(shiroKeyInputStream));
+                try (InputStream shiroKeyInputStream = getResourceStream("shiroKey");
+                     BufferedReader reader = new BufferedReader(new InputStreamReader(shiroKeyInputStream))) {
+
                     String line;
                     while ((line = reader.readLine()) != null) {
                         keyArray.add(line);
                     }
                     keyArray_Shiro = keyArray;
+
                 } catch (Exception e) {
-                    if(debugMode)e.printStackTrace();
+                    if (debugMode) e.printStackTrace();
                 }
             }else {
                 keyArray = keyArray_Shiro;
@@ -104,20 +105,13 @@ public class shiroDecrypt {
             try {
                 byte[] result = (byte[]) future.get();
                 if (result != null && !result.equals("")) {
-
                     res = result;
                     break;
                 }
-
             } catch (Exception e) {
                 if(debugMode)e.printStackTrace();
             }
         }
-
-        for (Future<?> future : futures) {
-            future.cancel(true);
-        }
-        futures.clear();
 
         // 停止所有线程
         ExecutorServiceManager.getInstance().forceShutdown();

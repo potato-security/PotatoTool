@@ -3,6 +3,7 @@ package com.potato.potatotool;
 import com.potato.potatotool.controller.MainController;
 import com.potato.potatotool.controller.PaneLoad;
 import com.potato.potatotool.controller.PanePasswd;
+import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.SecurityInitializer;
 import com.potato.potatotool.utils.Util;
 import javafx.animation.FadeTransition;
@@ -30,12 +31,17 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.*;
 
 public class MainApplication extends Application {
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
+
     @Override
     public void start(Stage stage) throws IOException {
         hostServices = getHostServices();
@@ -55,7 +61,7 @@ public class MainApplication extends Application {
             }
         };
 
-        new Thread(taskInit).start();
+        executor.submit(taskInit);
 
 
 
@@ -82,81 +88,11 @@ public class MainApplication extends Application {
             // 提前隐藏展示，防止动画卡顿
             if(preload.get()) {
                 stage.show();
-
-                try {
-
-                    //  加载动画界面stage
-                    Stage loadStage = new Stage();
-                    loadStage.initStyle(StageStyle.TRANSPARENT);
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/load.fxml"));
-                    Scene loadScene = new Scene(loader.load());
-                    loadScene.setCamera(new PerspectiveCamera());
-                    loadScene.setFill(null);
-                    loadStage.setScene(loadScene);
-                    passwdStage.close();
-                    loadStage.show();
-
-                    PaneLoad controller = loader.getController();
-
-                    FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.3), loadScene.getRoot());
-                    fadeTransition.setFromValue(1);
-                    fadeTransition.setToValue(0);
-                    fadeTransition.setCycleCount(1);
-
-                    fadeTransition.setOnFinished(event -> {
-                        loadStage.close();
-                        controller.stopAnimations();
-                        fadeTransition1.get().play();
-                    });
-
-                    controller.loadedProperty().addListener((obs, oldValue, newValue) -> {
-                        fadeTransition.play();
-                    });
-
-
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-
+                loadMainStage(passwdStage, fadeTransition1);
             }else {
                 preload.addListener((observable_y, oldValue_y, newValue_y) -> {
                     stage.show();
-
-                    try {
-
-                        //  加载动画界面stage
-                        Stage loadStage = new Stage();
-                        loadStage.initStyle(StageStyle.TRANSPARENT);
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/load.fxml"));
-                        Scene loadScene = new Scene(loader.load());
-                        loadScene.setCamera(new PerspectiveCamera());
-                        loadScene.setFill(null);
-                        loadStage.setScene(loadScene);
-                        passwdStage.close();
-                        loadStage.show();
-
-                        PaneLoad controller = loader.getController();
-
-                        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.3), loadScene.getRoot());
-                        fadeTransition.setFromValue(1);
-                        fadeTransition.setToValue(0);
-                        fadeTransition.setCycleCount(1);
-
-                        fadeTransition.setOnFinished(event -> {
-                            loadStage.close();
-                            controller.stopAnimations();
-                            fadeTransition1.get().play();
-                        });
-
-                        controller.loadedProperty().addListener((obs, oldValue, newValue) -> {
-                            fadeTransition.play();
-                        });
-
-
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-
+                    loadMainStage(passwdStage, fadeTransition1);
                 });
             }
         });
@@ -202,25 +138,53 @@ public class MainApplication extends Application {
         task.setOnSucceeded(e -> {
             preload.set(true);
         });
-        new Thread(task).start();
+        executor.submit(task);
 
 
 
 
     }
 
+    private void loadMainStage(Stage passwdStage, AtomicReference<FadeTransition> fadeTransition1) {
+        try {
+            Stage loadStage = new Stage();
+            loadStage.initStyle(StageStyle.TRANSPARENT);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/load.fxml"));
+            Scene loadScene = new Scene(loader.load());
+            loadScene.setCamera(new PerspectiveCamera());
+            loadScene.setFill(null);
+            loadStage.setScene(loadScene);
+            passwdStage.close();
+            loadStage.show();
+
+            PaneLoad controller = loader.getController();
+            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.3), loadScene.getRoot());
+            fadeTransition.setFromValue(1);
+            fadeTransition.setToValue(0);
+            fadeTransition.setCycleCount(1);
+
+            fadeTransition.setOnFinished(event -> {
+                loadStage.close();
+                controller.stopAnimations();
+                fadeTransition1.get().play();
+            });
+
+            controller.loadedProperty().addListener((obs, oldValue, newValue) -> {
+                fadeTransition.play();
+            });
+        }catch (Exception e){
+            if(debugMode)e.printStackTrace();
+        }
+    }
+
+
     private void initEnvFile() {
         String TMP_FOLDER = ".PotatoTool";
-        String CONFIG_FILE = "config.json";
-        String BcJAR_FILE = "bcprov.jar";
-        String ip2Region_FILE = "ip2region.xdb";
-        String md5DB_File = "md5_database.db";
-
         Path configFolder = Paths.get(System.getProperty("user.home"), TMP_FOLDER);
 
         try {
             Files.createDirectories(configFolder);
-            Path configFile = configFolder.resolve(CONFIG_FILE);
+            Path configFile = configFolder.resolve("config.json");
 
             if (!Files.exists(configFile)) {
                 String tmpDataJsonStr = getResourceString("config");
@@ -231,57 +195,21 @@ public class MainApplication extends Application {
         }
 
         try {
-            Path bcJarFile = configFolder.resolve(BcJAR_FILE);
-            if (!Files.exists(bcJarFile) || Files.size(bcJarFile) < 7.9 * 1024 * 1024 ) {
-                InputStream inputStream = getResourceStream("bcprov");
-                FileOutputStream outputStream = new FileOutputStream(bcJarFile.toString());
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-                inputStream.close();
-                outputStream.close();
-            }
-
-            // 初始化BC算法支持
+            copyResourceToFile("bcprov", configFolder.resolve("bcprov.jar"), (long) (7.9 * 1024 * 1024));
             SecurityInitializer.initializeSecurityProvider();
-
-        }catch (Exception e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
         try {
-            Path ip2RegionFile = configFolder.resolve(ip2Region_FILE);
-            if (!Files.exists(ip2RegionFile) || Files.size(ip2RegionFile) < 10.5 * 1024 * 1024 ) {
-                InputStream inputStream = getResourceStream("ip2region");
-                FileOutputStream outputStream = new FileOutputStream(ip2RegionFile.toString());
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-                inputStream.close();
-                outputStream.close();
-            }
-        }catch (Exception e){
+            copyResourceToFile("ip2region", configFolder.resolve("ip2region.xdb"), (long) (10.5 * 1024 * 1024));
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
         try {
-            Path md5DBFile = configFolder.resolve(md5DB_File);
-            if (!Files.exists(md5DBFile) || Files.size(md5DBFile) < 1.66 * 1024 * 1024 * 1024 ) {
-                InputStream inputStream = getResourceStream("md5DB");
-                FileOutputStream outputStream = new FileOutputStream(md5DBFile.toString());
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-                inputStream.close();
-                outputStream.close();
-            }
-        }catch (Exception e){
+            copyResourceToFile("md5DB", configFolder.resolve("md5_database.db"), (long) (1.66 * 1024 * 1024 * 1024));
+        } catch (IOException e) {
             e.printStackTrace();
             System.out.println("【Error】请检查电脑剩余可用内存，是否低于2G！！");
         }

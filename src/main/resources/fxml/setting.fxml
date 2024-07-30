@@ -55,7 +55,7 @@
                     <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置代理："/>
                     <StackPane>
                         <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" StackPane.alignment="CENTER"/>
-                        <CFSwitch fx:id="proxyButton" StackPane.alignment="CENTER_RIGHT" onAction="#toggleProxy"/>
+                        <CFSwitch fx:id="proxyButton" StackPane.alignment="CENTER_RIGHT"/>
                     </StackPane>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="10">

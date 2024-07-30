@@ -52,11 +52,13 @@ public class commandHelp {
      */
     public static JSONObject init() {
 
-        InputStream commandHelpStream = getResourceStream("commandHelp");
+        try (InputStream commandHelpStream = getResourceStream("commandHelp")) {
+            return jsonUtils.readJsonFile(commandHelpStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 
-        JSONObject jsonObject = jsonUtils.readJsonFile(commandHelpStream);
-
-        return jsonObject;
     }
 
 

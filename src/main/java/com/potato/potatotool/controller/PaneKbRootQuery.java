@@ -153,14 +153,15 @@ public class PaneKbRootQuery {
             inputText.setText("输入信息有误，请粘贴补丁号或systeminfo信息");
             return;
         }
-
-        Platform.runLater(() -> {
-            filterView.getItems().clear();
-            productGroup.getFilters().clear();
-            componentGroup.getFilters().clear();
-            severityGroup.getFilters().clear();
-            impactGroup.getFilters().clear();
-            pocGroup.getFilters().clear();
+        new Thread(() -> {
+            Platform.runLater(() -> {
+                filterView.getItems().clear();
+                productGroup.getFilters().clear();
+                componentGroup.getFilters().clear();
+                severityGroup.getFilters().clear();
+                impactGroup.getFilters().clear();
+                pocGroup.getFilters().clear();
+            });
 
             List<Map<String, String>> filteredKB = filterKB(csvData, input);
             List<KbInfo> kbInfo = new ArrayList<>();
@@ -185,69 +186,70 @@ public class PaneKbRootQuery {
 
                 if (!productList.contains(product) && !product.isEmpty()) {
                     productList.add(product);
-                    FilterView.Filter tmpFilter=new FilterView.Filter<KbInfo>(product) {
+                    FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(product) {
                         @Override
                         public boolean test(KbInfo kbinfo) {
-                            return kbinfo.getProduct().equals(product);
-                        }
+                                return kbinfo.getProduct().equals(product);
+                            }
                     };
                     productFilterView.add(tmpFilter);
                 }
-                if(!componentList.contains(component) && !component.isEmpty()){
+                if (!componentList.contains(component) && !component.isEmpty()) {
                     componentList.add(component);
-                    FilterView.Filter tmpFilter=new FilterView.Filter<KbInfo>(component) {
+                    FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(component) {
                         @Override
                         public boolean test(KbInfo kbinfo) {
-                            return kbinfo.getComponent().equals(component);
-                        }
+                                return kbinfo.getComponent().equals(component);
+                            }
                     };
                     componentFilterView.add(tmpFilter);
                 }
-                if(!severityList.contains(severity) && !severity.isEmpty()){
+                if (!severityList.contains(severity) && !severity.isEmpty()) {
                     severityList.add(severity);
-                    FilterView.Filter tmpFilter=new FilterView.Filter<KbInfo>(severity) {
+                    FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(severity) {
                         @Override
                         public boolean test(KbInfo kbinfo) {
-                            return kbinfo.getComponent().equals(severity);
-                        }
+                                return kbinfo.getComponent().equals(severity);
+                            }
                     };
                     severityFilterView.add(tmpFilter);
                 }
-                if(!impactList.contains(impact) && !impact.isEmpty()){
+                if (!impactList.contains(impact) && !impact.isEmpty()) {
                     impactList.add(impact);
-                    FilterView.Filter tmpFilter=new FilterView.Filter<KbInfo>(impact) {
+                    FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(impact) {
                         @Override
                         public boolean test(KbInfo kbinfo) {
-                            return kbinfo.getComponent().equals(impact);
-                        }
+                                return kbinfo.getComponent().equals(impact);
+                            }
                     };
                     impactFilterView.add(tmpFilter);
                 }
-
             });
 
-            filterView.getItems().addAll(kbInfo);
+            Platform.runLater(() -> {
+                filterView.getItems().addAll(kbInfo);
 
-            productGroup.getFilters().addAll(productFilterView);
-            componentGroup.getFilters().addAll(componentFilterView);
-            severityGroup.getFilters().addAll(severityFilterView);
-            impactGroup.getFilters().addAll(impactFilterView);
+                productGroup.getFilters().addAll(productFilterView);
+                componentGroup.getFilters().addAll(componentFilterView);
+                severityGroup.getFilters().addAll(severityFilterView);
+                impactGroup.getFilters().addAll(impactFilterView);
 
-            pocGroup.getFilters().add(new FilterView.Filter<KbInfo>("存在漏洞利用") {
-                @Override
-                public boolean test(KbInfo KbInfo) {
-                    return !KbInfo.getPoc().isEmpty();
-                }
+                pocGroup.getFilters().add(new FilterView.Filter<KbInfo>("存在漏洞利用") {
+                    @Override
+                    public boolean test(KbInfo KbInfo) {
+                        return !KbInfo.getPoc().isEmpty();
+                    }
+                });
+                pocGroup.getFilters().add(new FilterView.Filter<KbInfo>("不存在漏洞利用") {
+                    @Override
+                    public boolean test(KbInfo KbInfo) {
+                        return KbInfo.getPoc().isEmpty();
+                    }
+                });
+                filterView.getFilterGroups().setAll(productGroup, componentGroup, severityGroup, impactGroup, pocGroup);
+
             });
-            pocGroup.getFilters().add(new FilterView.Filter<KbInfo>("不存在漏洞利用") {
-                @Override
-                public boolean test(KbInfo KbInfo) {
-                    return KbInfo.getPoc().isEmpty();
-                }
-            });
-            filterView.getFilterGroups().setAll(productGroup, componentGroup, severityGroup, impactGroup, pocGroup);
-
-        });
+        }).start();
     }
 
 

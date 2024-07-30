@@ -65,10 +65,13 @@ public class kbCheck {
 
         List<Map<String, String>> csvData = new ArrayList<>();
 
-        try{
-            InputStream winKbInfoInputStream = getResourceStream("winKbInfo");
-            CSVReader reader = new CSVReader(new InputStreamReader(winKbInfoInputStream));
-            String[] headers = reader.readNext(); // 读取列标题
+        try (InputStream winKbInfoInputStream = getResourceStream("winKbInfo");
+             CSVReader reader = new CSVReader(new InputStreamReader(winKbInfoInputStream))) {
+
+            String[] headers = reader.readNext();
+            if (headers == null) {
+                throw new RuntimeException("CSV文件为空或无法读取列标题");
+            }
             String[] nextLine;
             while ((nextLine = reader.readNext()) != null) {
                 Map<String, String> row = new LinkedHashMap<>();
@@ -87,9 +90,9 @@ public class kbCheck {
 
 
     public static List<Map<String, String>> filterKB(List<Map<String, String>> csvData, List<String> strList) {
+        Set<String> strSet = new HashSet<>(strList);
         return csvData.stream()
-                .filter(row -> !strList.contains(row.get("KB编号"))) // 过滤掉存在于strList中的KB编号
-                .filter(row -> !strList.contains(row.get("替代KB编号"))) // 过滤掉可以替代的KB编号
+                .filter(row -> !strSet.contains(row.get("KB编号")) && !strSet.contains(row.get("替代KB编号")))
                 .collect(Collectors.toList());
     }
 
@@ -105,11 +108,7 @@ public class kbCheck {
     public static List<Map<String, String>> filterKB(List<Map<String, String>> csvData, String inputText){
 
         List<String> kbList = new ArrayList<>();
-
-        String regex = "\\bKB(\\d+)\\b";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(inputText);
-
+        Matcher matcher = Pattern.compile("\\bKB(\\d+)\\b").matcher(inputText);
         while (matcher.find()) {
             kbList.add(matcher.group(1));
         }
@@ -118,9 +117,8 @@ public class kbCheck {
         String osName = "";
         Matcher nameMatcher = Pattern.compile("\\b(OS Name|OS 名称):\\s*(.+)\\b").matcher(inputText);
         if (nameMatcher.find()) {
-            osName = nameMatcher.group(2);
+            osName = nameMatcher.group(2).replace("Microsoft ", "");
         }
-        osName = osName.replace("Microsoft ","");
         System.out.println(osName);
 
         String osVersion = "";
@@ -133,9 +131,8 @@ public class kbCheck {
         String sysVersion = "";
         Matcher sysVersionMatcher = Pattern.compile("\\b(System Type|系统类型):\\s*(.+)\\b").matcher(inputText);
         if (sysVersionMatcher.find()) {
-            sysVersion = sysVersionMatcher.group(2);
+            sysVersion = sysVersionMatcher.group(2).split(" ")[0];
         }
-        sysVersion = sysVersion.split(" ")[0];
         System.out.println(sysVersion);
 
         return filterKB(csvData, kbList);

@@ -3,11 +3,6 @@ package com.potato.potatotool.content.blueTeam;
 import com.potato.potatotool.utils.DeserializerUtils;
 import com.potato.potatotool.utils.Utility;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import static com.potato.potatotool.ToStart.debugMode;
 
 /**
@@ -30,15 +25,17 @@ public class bcelDecrypt {
             resByte = Utility.decode (input,true);
 
             // 检查是否存在class/反序列化
-            byte[] tmpDecryptedTextBytes = null;
-            tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(resByte);
-            if(tmpDecryptedTextBytes==null) {
-                tmpDecryptedTextBytes = DeserializerUtils.serializeCheck(resByte);
-            }else {
+            byte[] tmpDecryptedTextBytes = DeserializerUtils.classDataCheck(resByte);
+            byte[] tmpSerDecryptedTextBytes = null;
+            if (tmpDecryptedTextBytes == null) {
+                tmpSerDecryptedTextBytes = DeserializerUtils.serializeCheck(resByte);
+            } else {
+                resByte = tmpDecryptedTextBytes;
                 classCode = true;
             }
-            if(tmpDecryptedTextBytes!=null) {
-                resByte = tmpDecryptedTextBytes;
+
+            if (tmpSerDecryptedTextBytes != null) {
+                resByte = tmpSerDecryptedTextBytes;
                 serializeCode = true;
             }
 
