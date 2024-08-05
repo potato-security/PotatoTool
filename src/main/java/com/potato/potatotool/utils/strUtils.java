@@ -77,13 +77,16 @@ public class strUtils {
 
 
     /**
-     * @return 随机字符串
+     * @return 随机字符串、区分大小写
      */
-    public static String generateRandomString() {
+    public static String generateRandomString(int minLength, int maxLength) {
+        if (minLength < 0 || maxLength < minLength) {
+            throw new IllegalArgumentException("Invalid length parameters");
+        }
 
         StringBuilder sb = new StringBuilder();
         Random random = new Random();
-        int length = random.nextInt(10) + 1;// 生成1到10之间的随机长度
+        int length = random.nextInt(maxLength - minLength + 1) + minLength;// 生成1到10之间的随机长度
 
         for (int j = 0; j < length; j++) {
 
@@ -101,7 +104,6 @@ public class strUtils {
         return sb.toString();
 
     }
-
 
     /**
      * @param input     原字符串
@@ -188,15 +190,15 @@ public class strUtils {
 
     /**
      * @param size 随机字符串的个数
-     * @return     返回size个随机字符串数组
+     * @return     返回size个随机字符串数组   如：size=3 result={"sd","qwed","dfxcsd"}
      */
-    public static String[] createRandomString(int size){
+    public static String[] createRandomStringList(int size){
 
         String[] randomString = new String[size];
 
-        for (int i = 0; i < randomString.length; i++) {// 随机生成随机长度的20个字符串存入randomString
+        for (int i = 0; i < randomString.length; i++) {// 随机生成随机长度的字符串存入randomString
 
-            String newString = strUtils.generateRandomString();
+            String newString = strUtils.generateRandomString(1,10);
             if (!Arrays.asList(randomString).contains(newString)) {
                 randomString[i] = newString;
             } else {

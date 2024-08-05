@@ -88,7 +88,7 @@ public class webShell {
 
         String webShellCode = "";
 
-        String[] randomString = strUtils.createRandomString(30);
+        String[] randomString = strUtils.createRandomStringList(30);
 
         // 蚁剑码免杀
         if (webShell_Manager.equals("AntSword")){

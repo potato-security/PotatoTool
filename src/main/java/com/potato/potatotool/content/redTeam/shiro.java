@@ -31,7 +31,7 @@ public class shiro {
     public static boolean checkIsShiro(String iputUrl) {
 
         HashMap<String, String> headers = new HashMap();
-        headers.put("Cookie", shiroKeyWord + strUtils.generateRandomString());
+        headers.put("Cookie", shiroKeyWord + strUtils.generateRandomString(2, 6));
 
 
         try {
