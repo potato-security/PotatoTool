@@ -52,12 +52,11 @@ public class ShowResultsUtil {
         }
 
         if (memoryObj.getExprEncoder() != null) {
-            // TODO 这一步转换了字节码格式 并返回，但是没使用 没修改obj
-            try {
-                transformOutputFormat(memoryObj);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//            try {
+//                transformOutputFormat(memoryObj);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
             String[] results = JexprUtil.generateExp(memoryObj);
             resultMap.put("表达式封装结果", String.valueOf(results));
         } else {
@@ -68,7 +67,6 @@ public class ShowResultsUtil {
                 case MemoryShellConstants.OUTPUTFORMAT_JAR_AGENT:
                     try {
                         memoryObj.setSavePath(getOutputFilePath(memoryObj.getOutputFormat(), memoryObj.getInjectorSimpleClassName(), memoryObj.getSavePath()));
-                        // TODO 写入
                         FileUtil.writeFile(memoryObj.getSavePath(), transformOutputFormat(memoryObj));
                         resultMap.put("文件路径", memoryObj.getSavePath());
                     } catch (Throwable e) {

@@ -188,7 +188,6 @@ public class SpringMVCAgentTransformer implements ClassFileTransformer {
         for (Object vm : vms) {
             Method displayNameMethod = virtualMachineDescriptorClass.getMethod("displayName");
             String currentDisplayName = (String) displayNameMethod.invoke(vm);
-            // TODO
             System.out.println(currentDisplayName);
             System.out.println(displayName);
             System.out.println();

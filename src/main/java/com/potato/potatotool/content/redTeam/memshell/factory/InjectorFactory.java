@@ -43,7 +43,6 @@ public class InjectorFactory {
         // 设置类文件版本为Java 5
         ctClass.getClassFile().setVersionToJava5();
 
-        // TODO 改用自己的
         // 将shell字节数组压缩并进行Base64编码
         String base64EncodedShell = strUtils.base64Encode(GzipUtils.GzipGetCompressedData(memoryObj.getShellBytes())).replace(System.lineSeparator(), "");
 

@@ -129,7 +129,6 @@ class JARAgentGenerator {
         String classFileName = simpleName.replace('.', '/') + ".class";
         ClassPool pool = ClassPool.getDefault();
 
-        // TODO 内置agent模版jar
         InputStream jarStream = JARAgentGenerator.class.getClassLoader().getResourceAsStream("agent.jar");
         File jarFile = File.createTempFile("agent", ".jar");
         try (FileOutputStream out = new FileOutputStream(jarFile)) {
