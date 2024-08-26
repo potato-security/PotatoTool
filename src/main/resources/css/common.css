@@ -130,6 +130,12 @@
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: bold;
 }
+.titleText .text {
+    -fx-font-size: 23;
+    -fx-fill: -main-border-color;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
+    -fx-font-weight: bold;
+}
 .titleTipText{
     -fx-border-width: 0 0 1 0;
     -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
