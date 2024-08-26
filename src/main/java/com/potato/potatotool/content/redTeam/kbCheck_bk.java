@@ -524,9 +524,10 @@ public class kbCheck_bk {
             Elements supers = doc.select("div#supersededbyInfo");
             if (supers.size() == 1) {
                 String text = supers.first().text();
-                kbids.addAll(Pattern.compile("KB[0-9]+").matcher(text).results()
-                        .map(match -> match.group().replaceFirst("^KB", ""))
-                        .collect(Collectors.toSet()));
+                Matcher matcher = Pattern.compile("KB[0-9]+").matcher(text);
+                while (matcher.find()) {
+                    kbids.add(matcher.group().replaceFirst("^KB", ""));
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

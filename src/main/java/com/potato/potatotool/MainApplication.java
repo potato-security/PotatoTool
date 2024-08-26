@@ -221,14 +221,15 @@ public class MainApplication extends Application {
             e.printStackTrace();
         }
 
-        try {
-            String propertyName = "md5";
-            String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
-            copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (1.66 * 1024 * 1024 * 1024));
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("【Error】请检查电脑剩余可用内存，是否低于2G！！");
-        }
+        // 取消内置MD5库
+//        try {
+//            String propertyName = "md5";
+//            String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
+//            copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (1.66 * 1024 * 1024 * 1024));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            System.out.println("【Error】请检查电脑剩余可用内存，是否低于2G！！");
+//        }
 
     }
 

@@ -9,6 +9,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -44,17 +47,25 @@ public class md5Decrypt {
         encryptedString = encryptedString.toLowerCase();
         String res = null;
 
-        // TODO 线上MD5查询
-//        if(true){
-//            res = decryptByNet(encryptedString);
-//            return res;
-//        }
-
         boolean isMD5 = isMD5(encryptedString);
         boolean isMD516 = isMD516(encryptedString);
         boolean isSHA1 = isSHA1(encryptedString);
 
         if(isMD5||isMD516||isSHA1){
+
+            // 若不存在本地md5库，则直接调用在线md5接口
+            String TMP_FOLDER = ".PotatoTool";
+            Path md5Path = Paths.get(System.getProperty("user.home"), TMP_FOLDER).resolve("md5_database.db");
+            long fileSize = (long) (1.7 * 1024 * 1024 * 1024);
+            try {
+                fileSize = Files.size(md5Path);
+            } catch (IOException e) {}
+
+            if(!Files.exists(md5Path) || fileSize < (long) (1.66 * 1024 * 1024 * 1024)){
+                res = decryptByNet(encryptedString);
+                return res;
+            }
+
             try{
 
                 Map<String, String> result= SQLiteDBManager.hashGetPlaintext(encryptedString);

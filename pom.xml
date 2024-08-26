@@ -40,81 +40,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-base</artifactId>
-            <version>17.0.10</version>
-            <classifier>win</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>17.0.10</version>
-            <classifier>win</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>17.0.10</version>
-            <classifier>win</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-base</artifactId>
-            <version>17.0.10</version>
-            <classifier>linux</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>17.0.10</version>
-            <classifier>linux</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>17.0.10</version>
-            <classifier>linux</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-base</artifactId>
-            <version>17.0.10</version>
-            <classifier>mac</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>17.0.10</version>
-            <classifier>mac</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>17.0.10</version>
-            <classifier>mac</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-base</artifactId>
-            <version>17.0.10</version>
-            <classifier>mac-aarch64</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>17.0.10</version>
-            <classifier>mac-aarch64</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>17.0.10</version>
-            <classifier>mac-aarch64</classifier>
-        </dependency>
-        <dependency>
             <groupId>com.github.leewyatt</groupId>
             <artifactId>rxcontrols</artifactId>
-            <version>11.0.3</version>
+            <version>8.0.3</version>
         </dependency>
         <dependency><!--        后续优化掉-->
             <groupId>org.json</groupId>
@@ -124,17 +52,17 @@
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
             <artifactId>graal-sdk</artifactId>
-            <version>22.3.5</version>
+            <version>21.3.9</version>
         </dependency>
         <dependency>
             <groupId>org.graalvm.js</groupId>
             <artifactId>js</artifactId>
-            <version>22.3.5</version>
+            <version>21.3.9</version>
         </dependency>
         <dependency>
             <groupId>org.graalvm.js</groupId>
             <artifactId>js-scriptengine</artifactId>
-            <version>22.3.5</version>
+            <version>21.3.9</version>
         </dependency>
         <dependency>
             <groupId>com.github.adedayo.intellij.sdk</groupId>
@@ -164,7 +92,7 @@
         <dependency>
             <groupId>org.fxmisc.richtext</groupId>
             <artifactId>richtextfx</artifactId>
-            <version>0.11.2</version>
+            <version>0.10.8</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -189,32 +117,27 @@
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-core</artifactId>
-            <version>12.3.1</version>
+            <version>2.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-javafx</artifactId>
-            <version>12.3.1</version>
+            <version>2.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-materialdesign-pack</artifactId>
-            <version>12.3.1</version>
+            <version>2.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-material-pack</artifactId>
-            <version>12.3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kordamp.ikonli</groupId>
-            <artifactId>ikonli-bootstrapicons-pack</artifactId>
-            <version>12.3.1</version>
+            <version>2.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
-            <version>11.1.2</version>
+            <version>8.40.18</version>
         </dependency>
         <dependency>
             <groupId>org.xerial</groupId>
@@ -295,8 +218,8 @@
                 <artifactId>maven-compiler-plugin</artifactId><!--maven 默认编译插件 -->
                 <version>3.12.1</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -311,8 +234,10 @@
                         <configuration>
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.potato.potatotool.ToStart</mainClass>
                                 </transformer>
                             </transformers>
@@ -330,7 +255,6 @@
                     <mainClass>com.potato.potatotool/com.potato.potatotool.ToStart</mainClass>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>com.github.wvengen</groupId>
                 <artifactId>proguard-maven-plugin</artifactId>
@@ -345,9 +269,9 @@
                 </executions>
                 <configuration>
                     <attach>true</attach>
-                    <attachArtifactClassifier>jdk11+</attachArtifactClassifier>
+                    <attachArtifactClassifier>jdk8</attachArtifactClassifier>
                     <libs>
-                        <lib>${java.home}/jmods/</lib>
+                        <lib>${java.home}</lib>
                     </libs>
                     <obfuscate>true</obfuscate>
                     <!-- 将前一步打包后的jar进行混淆  -->
@@ -367,9 +291,9 @@
                         <configuration>
                             <tasks>
                                 <mkdir dir="${project.basedir}/outJar"/>
-                                <copy file="${project.build.directory}/${project.build.finalName}-jdk11+.jar"
-                                      tofile="${project.basedir}/outJar/${project.build.finalName}-jdk11+.jar"
-                                      force="true" />
+                                <copy file="${project.build.directory}/${project.build.finalName}-jdk8.jar"
+                                      tofile="${project.basedir}/outJar/${project.build.finalName}-jdk8.jar"
+                                      force="true"/>
                             </tasks>
                         </configuration>
                         <goals>
