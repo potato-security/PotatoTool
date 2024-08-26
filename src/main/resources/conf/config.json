@@ -12,6 +12,12 @@
     "GPT_Model": "gpt-4",
     "GPT_API_Key": ""
   },
+  "UpDate": {
+    "winKbInfo": {
+      "Path": "",
+      "Date": ""
+    }
+  },
   "Extension": {
     "快捷指令": {
       "启动工具": [

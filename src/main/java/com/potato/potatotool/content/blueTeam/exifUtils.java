@@ -139,7 +139,7 @@ public class exifUtils {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             return res.get("name").getAsString();
         } catch (Exception e) {
             e.printStackTrace();

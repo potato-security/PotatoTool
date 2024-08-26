@@ -1,6 +1,7 @@
 package com.potato.potatotool.utils;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.*;
@@ -9,6 +10,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 /**
  * @author Potato
@@ -83,10 +87,10 @@ public class CustomHttpResponse{
     }
 
 
-    public JsonObject getJson() {
+    public JsonElement getJson() {
         try {
             String textStr = getTextStr();
-            return textStr != null && !textStr.isEmpty() ? new Gson().fromJson(textStr, JsonObject.class) : null;
+            return textStr != null && !textStr.isEmpty() ? new Gson().fromJson(textStr, JsonElement.class) : null;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -98,7 +102,9 @@ public class CustomHttpResponse{
         try (InputStream inputStream = con.getInputStream();
              FileOutputStream fos = new FileOutputStream(getSaveFile(filePath))) {
 
-            byte[] buffer = new byte[1024];
+            File saveFile = getSaveFile(filePath);
+
+            byte[] buffer = new byte[16 * 1024];
             int bytesRead = 0, len;
             long startTime = System.currentTimeMillis(), lastBytesRead = 0;
             int fileSize = con.getContentLength();
@@ -119,7 +125,7 @@ public class CustomHttpResponse{
 
                         int progress = (int) ((bytesRead / (float) fileSize) * 100);
                         System.out.printf("下载进度: %d%%, 速度: %d KB/s, 预估时间: %d s\n",
-                                progress, bytesPerSecond / 1024, remainingTime);
+                                progress, bytesPerSecond / 16*1024, remainingTime);
 
                         lastBytesRead = currentBytesRead;
                         startTime = currentTime;
@@ -132,7 +138,60 @@ public class CustomHttpResponse{
                 }
             }
 
-            return new File(filePath).getAbsolutePath();
+            return saveFile.getAbsolutePath();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public String saveToFileByGzip(String filePath,Boolean showSpeed){
+
+        try (InputStream inputStream = con.getInputStream();
+             GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+             FileOutputStream fos = new FileOutputStream(getSaveFile(filePath))) {
+
+            File saveFile = getSaveFile(filePath);
+            System.out.println(saveFile.getName());
+            System.out.println(saveFile.getAbsolutePath());
+
+            byte[] buffer = new byte[16 * 1024];
+            int bytesRead = 0, len;
+            long startTime = System.currentTimeMillis(), lastBytesRead = 0;
+            int fileSize = con.getContentLength();
+
+            // 该判断不要写while内，影响运行速率
+            if (showSpeed) {
+
+                while ((len = gzipInputStream.read(buffer)) != -1) {
+                    fos.write(buffer, 0, len);
+                    bytesRead += len;
+
+                    long currentTime = System.currentTimeMillis();
+                    long elapsedTime = currentTime - startTime;
+                    if (elapsedTime >= 1000){
+                        long currentBytesRead = bytesRead;
+                        long bytesPerSecond = (currentBytesRead - lastBytesRead) * 1000 / elapsedTime;
+                        long remainingTime = (fileSize - currentBytesRead) / bytesPerSecond;
+
+                        int progress = (int) ((bytesRead / (float) fileSize) * 100);
+                        System.out.printf("下载进度: %d%%, 速度: %d KB/s, 预估时间: %d s\n",
+                                progress, bytesPerSecond / 16*1024, remainingTime);
+
+                        lastBytesRead = currentBytesRead;
+                        startTime = currentTime;
+                    }
+                }
+
+            }else {
+                while ((len = gzipInputStream.read(buffer)) != -1) {
+                    fos.write(buffer, 0, len);
+                }
+            }
+
+            return saveFile.getAbsolutePath();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -157,9 +216,10 @@ public class CustomHttpResponse{
         String disposition = connection.getHeaderField("Content-Disposition");
         if (disposition != null) {
             // 从Content-Disposition中获取文件名
-            int index = disposition.indexOf("filename=");
-            if (index > 0) {
-                return disposition.substring(index + 10, disposition.length() - 1);
+            Pattern pattern = Pattern.compile("filename\\s*=\\s*\"?([^\";]+)\"?");
+            Matcher matcher = pattern.matcher(disposition);
+            if (matcher.find()) {
+                return matcher.group(1);
             }
         } else {
             // 从URL中获取文件名

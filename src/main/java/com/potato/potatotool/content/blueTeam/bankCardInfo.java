@@ -39,7 +39,7 @@ public class bankCardInfo {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
 
             // 映射字段，存在则替换
             if( res!=null && res.has("bank") && res.has("cardType")){

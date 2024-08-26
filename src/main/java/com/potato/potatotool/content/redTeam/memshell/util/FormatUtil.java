@@ -132,7 +132,7 @@ class JARAgentGenerator {
         InputStream jarStream = JARAgentGenerator.class.getClassLoader().getResourceAsStream("agent.jar");
         File jarFile = File.createTempFile("agent", ".jar");
         try (FileOutputStream out = new FileOutputStream(jarFile)) {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[16 * 1024];
             int bytesRead;
             while ((bytesRead = jarStream.read(buffer)) != -1) {
                 out.write(buffer, 0, bytesRead);
@@ -169,7 +169,7 @@ class JARAgentGenerator {
             JarEntry entry = jarEntries.nextElement();
             try (InputStream entryInputStream = jar.getInputStream(entry)) {
                 tempJar.putNextEntry(entry);
-                byte[] buffer = new byte[1024];
+                byte[] buffer = new byte[16 * 1024];
                 int bytesRead;
                 while ((bytesRead = entryInputStream.read(buffer)) != -1) {
                     tempJar.write(buffer, 0, bytesRead);

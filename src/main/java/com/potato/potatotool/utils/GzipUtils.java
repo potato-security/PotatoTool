@@ -11,6 +11,10 @@ import static com.potato.potatotool.ToStart.debugMode;
 
 public class GzipUtils {
 
+    public static void main(String[] args) {
+        GzipFile("/Users/a/.PotatoTool/md5_database.db","/Users/a/.PotatoTool/md51_database.db");
+    }
+
     /**
      *  对目标文件进行GZIP压缩
      */
@@ -19,7 +23,7 @@ public class GzipUtils {
              FileOutputStream fos = new FileOutputStream(gzipFilePath);
              GZIPOutputStream gzipOS = new GZIPOutputStream(fos)) {
 
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[16 * 1024];
             int length;
             while ((length = fis.read(buffer)) > 0) {
                 gzipOS.write(buffer, 0, length);
@@ -40,7 +44,7 @@ public class GzipUtils {
              GZIPInputStream gzipIS = new GZIPInputStream(fis);
              FileOutputStream fos = new FileOutputStream(destFilePath)) {
 
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[16 * 1024];
             int length;
             while ((length = gzipIS.read(buffer)) > 0) {
                 fos.write(buffer, 0, length);
@@ -80,7 +84,7 @@ public class GzipUtils {
         if (compressedData == null || compressedData.length < 2 || compressedData[0] != (byte) 0x1F || compressedData[1] != (byte) 0x8B) {
             return null;
         }
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[16 * 1024];
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(compressedData);
              GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {

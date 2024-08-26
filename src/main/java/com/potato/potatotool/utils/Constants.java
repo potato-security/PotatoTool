@@ -72,7 +72,7 @@ public class Constants {
 
             try (FileOutputStream outputStream = new FileOutputStream(tempFile)) {
                 int read;
-                byte[] buffer = new byte[1024];
+                byte[] buffer = new byte[16 * 1024];
                 while ((read = inputStream.read(buffer)) != -1) {
                     outputStream.write(buffer, 0, read);
                 }
@@ -286,6 +286,45 @@ public class Constants {
             e.printStackTrace();
         }
     }
+    public static void saveConfig(Map<String, Object> configMap, String topKey) {
+
+        try {
+            Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
+            Files.createDirectories(configFolder);
+
+            Path configFile = configFolder.resolve(CONFIG_FILE);
+
+            JsonObject config = new JsonObject();
+            if (Files.exists(configFile)) {
+                // 读取已有配置
+                String content = new String(Files.readAllBytes(configFile));
+                config = gson.fromJson(content, JsonObject.class);
+            }
+
+            // 获取或创建第一层对象
+            JsonObject topLevelObject = config.has(topKey)
+                    ? config.getAsJsonObject(topKey)
+                    : new JsonObject();
+            // 更新第二层key的内容
+            for (Map.Entry<String, Object> entry : configMap.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                topLevelObject.add(key, gson.toJsonTree(value));
+            }
+
+            // 将更新后的对象放回到第一层
+            config.add(topKey, topLevelObject);
+
+            // 写入更新后的配置
+            String json = gson.toJson(config);
+            Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
+
+            System.out.println("配置已保存");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static Object getOutsideConfig(String key) {
         try {
@@ -334,14 +373,27 @@ public class Constants {
         if (!Files.exists(targetPath) || Files.size(targetPath) < expectedSize) {
             try (InputStream inputStream = getResourceStream(resourceName);
                  FileOutputStream outputStream = new FileOutputStream(targetPath.toString())) {
-                byte[] buffer = new byte[1024];
+                byte[] buffer = new byte[16 * 1024];
                 int bytesRead;
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
                     outputStream.write(buffer, 0, bytesRead);
                 }
+            } catch (Exception e){
+                e.printStackTrace();
             }
         }
     }
 
+    // 判断configFolder路径下是否存在文件以prefix开头
+    public static boolean hasFileWithPrefix(Path configFolder, String prefix) {
+        try {
+            return Files.list(configFolder)
+                    .filter(path -> Files.isRegularFile(path))
+                    .anyMatch(path -> path.getFileName().toString().startsWith(prefix));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 }

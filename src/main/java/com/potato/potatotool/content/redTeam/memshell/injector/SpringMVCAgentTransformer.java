@@ -109,7 +109,7 @@ public class SpringMVCAgentTransformer implements ClassFileTransformer {
                 FileOutputStream out = null;
                 try {
                     out = new FileOutputStream(toolsJarFile);
-                    byte[] buffer = new byte[1024];
+                    byte[] buffer = new byte[16 * 1024];
                     int bytesRead;
                     while ((bytesRead = jarStream.read(buffer)) != -1) {
                         out.write(buffer, 0, bytesRead);

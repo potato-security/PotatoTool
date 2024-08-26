@@ -195,20 +195,36 @@ public class MainApplication extends Application {
         }
 
         try {
-            copyResourceToFile("bcprov", configFolder.resolve("bcprov.jar"), (long) (7.9 * 1024 * 1024));
+            String propertyName = "bcprov";
+            String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
+            copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (7.9 * 1024 * 1024));
             SecurityInitializer.initializeSecurityProvider();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         try {
-            copyResourceToFile("ip2region", configFolder.resolve("ip2region.xdb"), (long) (10.5 * 1024 * 1024));
+            String propertyName = "ip2region";
+            String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
+            copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (10.5 * 1024 * 1024));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         try {
-            copyResourceToFile("md5DB", configFolder.resolve("md5_database.db"), (long) (1.66 * 1024 * 1024 * 1024));
+            String propertyName = "winKbInfo";
+            String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
+            if(!hasFileWithPrefix(configFolder, propertyName)) {
+                copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (70.5 * 1024 * 1024));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            String propertyName = "md5";
+            String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
+            copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (1.66 * 1024 * 1024 * 1024));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("【Error】请检查电脑剩余可用内存，是否低于2G！！");

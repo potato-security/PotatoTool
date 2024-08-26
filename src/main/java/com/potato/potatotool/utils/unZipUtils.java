@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -29,9 +30,9 @@ public class unZipUtils {
      * @param removeFolder  剔除某文件夹（该变量为选填项）
      * @throws IOException
      */
-    public static ArrayList<String> unZip(String zipFilePath, String destDirectory, String... removeFolder) throws IOException {
+    public static List<String> unZip(String zipFilePath, String destDirectory, String... removeFolder) throws IOException {
 
-        ArrayList<String> pathAll = new ArrayList<String>();
+        List<String> pathAll = new ArrayList<String>();
 
         File destDir = new File(destDirectory);
         if (!destDir.exists()) {

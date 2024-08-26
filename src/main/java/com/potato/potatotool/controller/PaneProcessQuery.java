@@ -19,7 +19,7 @@ public class PaneProcessQuery {
     static {
         JSONObject taskListJsonObject = init();
         avJsonOjb = (JSONObject) taskListJsonObject.get("avList");
-        tqJsonOjb = (JSONObject) taskListJsonObject.get("tqList");
+        tqJsonOjb = (JSONObject) taskListJsonObject.get("processList");
     }
 
     @FXML

@@ -31,7 +31,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -47,7 +47,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -63,7 +63,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -79,7 +79,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -92,7 +92,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -108,7 +108,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -124,7 +124,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -137,7 +137,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -153,7 +153,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -169,7 +169,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -185,7 +185,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -198,7 +198,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -214,7 +214,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -227,7 +227,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -243,7 +243,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {
@@ -256,7 +256,7 @@ public class BlockchainTraceability {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
         } catch (Exception e) {

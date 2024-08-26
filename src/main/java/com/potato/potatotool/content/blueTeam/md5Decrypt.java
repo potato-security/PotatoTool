@@ -1,5 +1,8 @@
 package com.potato.potatotool.content.blueTeam;
 
+import com.google.gson.JsonObject;
+import com.potato.potatotool.utils.CustomHttpResponse;
+import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.SQLiteDBManager;
 
 import java.io.BufferedReader;
@@ -16,7 +19,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.potato.potatotool.ToStart.debugMode;
+import static com.potato.potatotool.utils.Constants.getConfigInfo;
 import static com.potato.potatotool.utils.Constants.getResourceStream;
+import static com.potato.potatotool.utils.requestUtils.requests;
 
 /**
  * @author Potato
@@ -25,6 +30,11 @@ import static com.potato.potatotool.utils.Constants.getResourceStream;
 public class md5Decrypt {
 
     public String mode = null;
+    public static String md5Url = getConfigInfo("md5Url");
+    public static HashMap<String, String> headers = new HashMap();
+    static {
+        headers.put("AuthToken", "MHg2ZCwweDcwLDB4NzMsMHg3OSwweDdhLDB4NDQsMHgzMywweDc0LDB4NmQsMHg0NiwweDc1LDB4MzIsMHg3NywweDQ4LDB4NzEsMHg2YywweDZmLDB4NzUsMHgzOCwweDc3LDB4NmMsMHg0NiwweDY4LDB4MmYsMHg0OSwweDQ4LDB4NTEsMHgzNywweDQ3LDB4MzksMHg0NywweDRiLDB4NDcsMHg0YiwweDcxLDB4MzYsMHg2MSwweDM1LDB4NDMsMHg3MiwweDY1LDB4NmUsMHg2MywweDU0LDB4NDQsMHgzMiwweDRiLDB4NTAsMHg2NywweDc4LDB4NWEsMHg0ZCwweDM5LDB4NjEsMHg0ZCwweDRjLDB4MzksMHg1YSwweDJiLDB4NGEsMHg0NCwweDM2LDB4NGIsMHg2ZCwweDVhLDB4NTIsMHg0YywweDcxLDB4NGQsMHgzNiwweDczLDB4NDIsMHg2NywweDM5LDB4NzMsMHg3NCwweDRkLDB4NjUsMHg0MiwweDY3LDB4NmQsMHgzOCwweDUyLDB4NzIsMHg0NSwweDUyLDB4NTcsMHg1OCwweDU4LDB4NzYsMHgzNywweDcwLDB4NGMsMHg3MiwweDc3LDB4NGYsMHg0NiwweDM3LDB4NzMsMHg0OSwweDMyLDB4NTcsMHgzNCwweDZiLDB4NzUsMHg1OSwweDRkLDB4M2Q=");
+    }
     /**
      * 遍历解密方式 支持md5-16、md5-21、sha1
      * @param encryptedString 需要解密的字符串
@@ -33,6 +43,12 @@ public class md5Decrypt {
     public String decrypt(String encryptedString){
         encryptedString = encryptedString.toLowerCase();
         String res = null;
+
+        // TODO 线上MD5查询
+//        if(true){
+//            res = decryptByNet(encryptedString);
+//            return res;
+//        }
 
         boolean isMD5 = isMD5(encryptedString);
         boolean isMD516 = isMD516(encryptedString);
@@ -69,6 +85,26 @@ public class md5Decrypt {
 
         return res;
 
+    }
+
+    public String decryptByNet(String encryptedString){
+
+        RequestObj obj = new RequestObj().setMethod("GET").setHeaders(headers).setUrl(md5Url + "/md5Decrypt?encryptedStr=" + encryptedString);
+
+        try {
+            CustomHttpResponse con = requests(obj);
+            JsonObject res = con.getJson().getAsJsonObject();
+            if( res!=null && res.has("plaintext")){
+                System.out.println(res);
+                mode = res.get("mode").getAsString();
+                return res.get("plaintext").getAsString();
+            }else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static String hashString(String input, String algorithm) {
@@ -125,6 +161,7 @@ public class md5Decrypt {
         System.out.println(md5.mode+"-83915ec78acc4502-"+str1);
         String str2 = md5.decrypt("3e2e95f5ad970eadfa7e17eaf73da97024aa5359");
         System.out.println(md5.mode+"-3e2e95f5ad970eadfa7e17eaf73da97024aa5359-"+str2);
+
     }
 
 

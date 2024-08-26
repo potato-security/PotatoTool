@@ -1,17 +1,24 @@
 package com.potato.potatotool.content;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.unZipUtils;
 import com.potato.potatotool.utils.CustomHttpResponse;
+import com.potato.potatotool.utils.unZipUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import static com.potato.potatotool.utils.Constants.getConfigInfo;
 import static com.potato.potatotool.utils.requestUtils.requests;
 
 /**
@@ -25,36 +32,109 @@ public class update {
      */
     public static void main(String []args) throws IOException {
 
-//        List<Map<String, String>> cves = init();
-//        updateResource( "https://raw.githubusercontent.com/HotBoy-java/Resource/main/winKbInfo20230410.csv","./src/content/conf/winKbInfo20230411.csv");
-        updateResource( "https://codeload.github.com/HotBoy-java/Resource/zip/refs/heads/main","./src/content/conf/main.zip");
-        List<String> filePathFromZip = unZipUtils.unZip(Paths.get(".", "src", "content", "conf", "main.zip").toString(), "./src/content/conf/", "Resource-main");
-        deleteOldResources(filePathFromZip, "winKbInfo");
+        // 文件名开头 以及 配置文件的二级key 需要一致
+//        String argKey = "winKbInfo";
+//        checkAndUpdateResource(argKey);
+
+
+        String argKey_md5 = "md5";
+        checkAndUpdateResource(argKey_md5);
 
     }
 
+    // 文件名开头 以及 配置文件的二级key 需要一致
+    public static void checkAndUpdateResource(String argKey){
+        try {
+            if(!argKey.equals("md5")) {
+                String resourceUrl = getConfigInfo("resourceUrl");
+                String downloadUrl = null;
+                String fileName = null;
 
-    public static void updateResource(String urlPath, String savePath) {
+                RequestObj obj = new RequestObj();
+                obj.setUrl(resourceUrl);
+
+                CustomHttpResponse con = requests(obj);
+                JsonArray resJson = con.getJson().getAsJsonArray();
+
+                for (JsonElement element : resJson) {
+                    JsonObject jsonObject = element.getAsJsonObject();
+                    fileName = jsonObject.get("name").getAsString();
+
+                    if (fileName.startsWith(argKey)) {
+                        downloadUrl = jsonObject.get("download_url").getAsString();
+                        break;
+                    }
+                }
+
+                if (downloadUrl != null) {
+                    boolean needUpdate = true;
+                    try {
+                        String topKey = "UpDate";
+                        JsonObject tmpJsonObj_UpDate = (JsonObject) Constants.getOutsideConfig(topKey);
+                        JsonObject tmpJsonObj_arg = tmpJsonObj_UpDate.getAsJsonObject(argKey);
+                        String Date = tmpJsonObj_arg.get("Date").getAsString();
+                        String newDate = extractDateFromFileName(fileName);
+                        if (Date.equals(newDate)) {
+                            needUpdate = false;
+                            System.out.println(fileName + "已经是最新的文件");
+                        }
+                    } catch (Exception e) {
+                    }
+
+                    if (needUpdate) downloadAndSaveResource(argKey, downloadUrl);
+
+                } else {
+                    throw new Exception("未找到以 " + argKey + " 开头的文件");
+                }
+            }else {
+                String md5DownUrl = getConfigInfo("md5DownUrl");
+                String TMP_FOLDER = ".PotatoTool";
+                Path md5Path = Paths.get(System.getProperty("user.home"), TMP_FOLDER).resolve("md5_database.db");
+                if(Files.exists(md5Path) && Files.size(md5Path) > (long) (1.66 * 1024 * 1024 * 1024)){
+                    System.out.println("md5_database已经是最新的文件");
+                }else {
+                    downloadAndSaveResource(argKey, md5DownUrl);
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("github访问失败，请检查尝试使用代理");
+            e.printStackTrace();
+        }
+    }
+
+
+    // 写入本地目录
+    public static String downloadAndSaveResource(String argKey, String urlPath) {
+
+        String TMP_FOLDER = ".PotatoTool";
+        Path configFolder = Paths.get(System.getProperty("user.home"), TMP_FOLDER);
+
+        String savePathResult = "";
 
         try {
+            Map<String ,String> headers = new HashMap<>();
+            if(!argKey.equals("md5")){
+                headers.put("Accept-Encoding","gzip");
+            }
 
             RequestObj obj = new RequestObj();
             obj.setUrl(urlPath);
+            obj.setHeaders(headers);
+            obj.setFollowRedirects(true);
 
             CustomHttpResponse con = requests(obj);
 
-            System.out.println(con.getResponseCode());
-            System.out.println(con.getHeaderFields());
-//            System.out.println(con.getTextStr());
-            System.out.println(con.getContentEncoding());
-            System.out.println(con.getContentLength());
-            System.out.println(con.getContentType());
-            System.out.println(con.getURL());
-//            System.out.println(con.getJson());
-            String savePathResult = con.saveToFile(savePath,false);
+            // 上传的md5也是gzip加工后的
+            savePathResult = con.saveToFileByGzip(configFolder.toString(), false);
 
             if (savePathResult != null){
                 System.out.println("文件写入成功");
+                if(argKey.equals("md5")){
+                    Constants.saveConfig("Md5", savePathResult);
+                }else {
+                    updateLocalResourceConfig(argKey, savePathResult);
+                }
             }else {
                 System.out.println("文件写入失败");
             }
@@ -63,58 +143,66 @@ public class update {
             e.printStackTrace();
         }
 
+        return savePathResult;
     }
 
 
+    // 更新本地配置文件  并删除原有旧索引文件
+    public static void updateLocalResourceConfig(String argKey, String filePath){
+        String topKey = "UpDate";
+        JsonObject tmpJsonObj_UpDate;
+        JsonObject tmpJsonObj_arg;
+        try {
+            tmpJsonObj_UpDate = (JsonObject) Constants.getOutsideConfig(topKey);
+        } catch (Exception e){
+            tmpJsonObj_UpDate = new JsonObject();
+            tmpJsonObj_UpDate.add(argKey, new JsonObject());
+        }
+        try {
+            tmpJsonObj_arg = tmpJsonObj_UpDate.getAsJsonObject(argKey);
+        } catch (Exception e){
+            tmpJsonObj_arg = new JsonObject();
+            tmpJsonObj_arg.addProperty("Path", "");
+            tmpJsonObj_arg.addProperty("Date", "");
+        }
 
 
-    /**
-     * 用于删除带有时间戳的老旧资源，Such as :winKbInfo20230410.csv
-     * @param filePathList  新资源所有路径
-     * @param feature       新老资源的共同特征
-     */
-    public static void deleteOldResources(List<String> filePathList, String feature) {
+        String Path = tmpJsonObj_arg.get("Path").getAsString();
 
-        for (String path : filePathList) {
-            if (path.matches(".*" + feature + ".*")) {
-                File[] peerDirFile = new File(path).getParentFile().listFiles();
-                for (File f : peerDirFile){
-                    if ( f.isFile() && f.getPath().matches(".*" + feature + ".*") && !f.getPath().equals(new File(path).getPath()) ){
-                        System.out.println(f.getPath());
-                        System.out.println(new File(path).getPath());
-                        f.delete();
-                    }
-                }
+        if(!Path.isEmpty() && !filePath.equals(Path)) {
+            try {
+                Files.delete(Paths.get(Path));
+                System.out.println("旧文件删除成功！");
+            } catch (IOException e) {
+                System.out.println("旧文件删除失败：" + Path);
+                e.printStackTrace();
             }
         }
 
+
+        Map<String, Object> configMap = new HashMap<>();
+        Map<String, String> argMap = new HashMap<>();
+        argMap.put("Path", filePath);
+        argMap.put("Date", extractDateFromFileName(filePath));
+        configMap.put(argKey, argMap);
+
+        Constants.saveConfig(configMap, topKey);
     }
 
 
-    /**
-     *  更新config.properties文件内容
-     * @param key       更新指定的键
-     * @param newValue  更新指定的新值
-     */
-    public static void updateConfigProperties(String key, String newValue){
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("(\\d{4,})");
 
-        String configPath = "config.properties";
+    public static String extractDateFromFileName(String filePath) {
+        // 从路径中提取文件名
+        String fileName = Paths.get(filePath).getFileName().toString();
 
-        Properties props = new Properties();
-        try (FileInputStream in = new FileInputStream(configPath)) {
-            props.load(in);
-        } catch (IOException e) {
-            e.printStackTrace();
+        // 使用正则表达式提取文件名中的连续数字（至少4位）
+        Matcher matcher = NUMBER_PATTERN.matcher(fileName);
+        if (matcher.find()) {
+            return matcher.group(1); // 返回匹配的数字字符串
         }
-
-        props.setProperty(key, newValue);
-
-        try (FileOutputStream out = new FileOutputStream(configPath)) {
-            props.store(out, null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        return null; // 如果没有找到匹配项，返回null
     }
+
 
 }

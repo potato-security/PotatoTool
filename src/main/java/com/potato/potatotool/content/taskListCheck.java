@@ -22,9 +22,9 @@ public class taskListCheck {
 
         JSONObject taskListJsonObject = init();  //初始化调用一次就行! !!!不要每次搜索都调用!!!
         JSONObject avJsonOjb = (JSONObject) taskListJsonObject.get("avList");
-        JSONObject tqJsonOjb = (JSONObject) taskListJsonObject.get("tqList");
+        JSONObject tqJsonOjb = (JSONObject) taskListJsonObject.get("processList");
 
-        String inputStr = "tc.exe\nwkufind.exe wrctrl.exe swsbgate.exe pCloud.exe wupdt.exesdwupdt.exe";
+        String inputStr = "tc.exe\nwkufind.exe wrctrl.exe swsbgate.exe /usr/local/aegis/aegis_update/AliYunDunUpdate pCloud.exe wupdt.exesdwupdt.exe";
 
 
         JSONObject antivirusProcesses = getAntivirusProcesses(avJsonOjb, inputStr);

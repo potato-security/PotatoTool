@@ -32,7 +32,7 @@ public class idCardInfo {
 
         try {
             CustomHttpResponse con = requests(obj);
-            JsonObject res = con.getJson();
+            JsonObject res = con.getJson().getAsJsonObject();
             if( res!=null && res.has("result")){
                 return res.getAsJsonObject("result");
             }else {
