@@ -235,6 +235,10 @@ public class PaneCustomCommandGeneration {
         // 示例6：大小写
         JsonObject results6 = searchCommands("查看安装驱动 \"lSHw\"");
         System.out.println("搜索结果6: " + results6);
+
+        // 测试排序
+        JsonObject results7 = searchCommands("我的 祖国 111");
+        System.out.println("搜索结果7: " + results7);
     }
 
 }
