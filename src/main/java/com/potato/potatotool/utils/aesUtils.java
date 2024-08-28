@@ -9,6 +9,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.*;
@@ -109,6 +110,15 @@ public class aesUtils {
                 return null;
             }
 
+            // CryptoJS的cipherText，需要拆分出来新cipherText和iv
+            if (new String(cipherText, 0, 8).equals("Salted__")) {
+                byte[] salt = Arrays.copyOfRange(cipherText, 8, 16);
+                cipherText = Arrays.copyOfRange(cipherText, 16, cipherText.length);
+                byte[] keyAndIv = deriveKeyAndIv(key, salt, 32, 16);
+                key = Arrays.copyOfRange(keyAndIv, 0, 32);
+                iv = Arrays.copyOfRange(keyAndIv, 32, 48);
+            }
+
             SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
 
             Cipher cipher = Cipher.getInstance(String.format(CIPHER_ALGORITHM, mode, padding), "BC");
@@ -174,6 +184,29 @@ public class aesUtils {
             if(debugMode)e.printStackTrace();
             return null;
         }
+    }
+
+    // 根据密码和 salt 生成密钥和 IV
+    public static byte[] deriveKeyAndIv(byte[] password, byte[] salt, int keyLength, int ivLength) throws Exception {
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        byte[] keyAndIv = new byte[keyLength + ivLength];
+        byte[] previous = new byte[0];
+
+        int i = 0;
+        while (i < keyLength + ivLength) {
+            md5.update(previous);
+            md5.update(password);
+            md5.update(salt);
+
+            byte[] hash = md5.digest();
+            int remaining = keyLength + ivLength - i;
+            System.arraycopy(hash, 0, keyAndIv, i, Math.min(remaining, hash.length));
+            i += hash.length;
+
+            previous = hash;
+        }
+
+        return keyAndIv;
     }
 
     // 验证加密模式是否合法
@@ -304,6 +337,9 @@ public class aesUtils {
                                 );
                                 if(result != null && !result.equals("")){
                                     mode_AES.set(mode);
+                                    if (new String(encryptData, 0, 8).equals("Salted__")) {
+                                        mode_AES.set("(CryptoJS)\\" + mode);
+                                    }
                                     padding_AES.set(padding);
                                     key_AES.set(keyStr);
                                     iv_AES.set(!iv.equals("Null") ? (mode.equals("ECB") ? "Null" : new String(iv, StandardCharsets.UTF_8)) : "Null");
