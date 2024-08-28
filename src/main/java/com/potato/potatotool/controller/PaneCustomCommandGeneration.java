@@ -213,27 +213,27 @@ public class PaneCustomCommandGeneration {
     public static void main(String[] args) {
         initData();
         // 示例1：单个关键词必须存在
-        JsonObject results1 = searchCommands("我的");
+        JsonObject results1 = searchCommands("ssh");
         System.out.println("搜索结果1: " + results1);
 
         // 示例2：模糊匹配，双引号必须匹配
-        JsonObject results2 = searchCommands("我的 \"祖国\"");
+        JsonObject results2 = searchCommands("ssh \"20020\"");
         System.out.println("搜索结果2: " + results2);
 
         // 示例3：多个关键词，OR逻辑
-        JsonObject results3 = searchCommands("我的 祖国");
+        JsonObject results3 = searchCommands("横向移动 mmcexec psexec mimikatz查看当前密码");
         System.out.println("搜索结果3: " + results3);
 
         // 示例4：以关键词开头
-        JsonObject results4 = searchCommands("^我的");
+        JsonObject results4 = searchCommands("^ssh");
         System.out.println("搜索结果4: " + results4);
 
         // 示例5：以关键词结尾
-        JsonObject results5 = searchCommands("祖国$");
+        JsonObject results5 = searchCommands("127.0.0.1$");
         System.out.println("搜索结果5: " + results5);
 
         // 示例6：大小写
-        JsonObject results6 = searchCommands("查看安装驱动 \"lshw\"");
+        JsonObject results6 = searchCommands("查看安装驱动 \"lSHw\"");
         System.out.println("搜索结果6: " + results6);
     }
 
