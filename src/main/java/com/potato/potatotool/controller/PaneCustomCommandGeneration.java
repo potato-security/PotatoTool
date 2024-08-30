@@ -101,8 +101,11 @@ public class PaneCustomCommandGeneration {
         // 分割查询条件
         List<SearchTerm> searchTerms = parseQuery(query);
 
-        // 遍历JSON进行搜索
+        // 遍历JSON进行搜索，添加排序标记
         JsonObject results = searchJson(jsonData, searchTerms);
+
+        // 递归处理JsonObject，进行排序、剔除无关元素、剔除排序标记符
+        results = processJsonObjectRecursively(results);
 
         return results;
     }
@@ -124,7 +127,6 @@ public class PaneCustomCommandGeneration {
         return searchTerms;
     }
 
-    // JSON搜索逻辑
     private static JsonObject searchJson(JsonObject jsonObject, List<SearchTerm> searchTerms) {
         JsonObject result = new JsonObject();
 
@@ -132,14 +134,13 @@ public class PaneCustomCommandGeneration {
             String key = entry.getKey().toLowerCase();
             JsonElement value = entry.getValue();
 
+            int keyCount = matchesQuery(key, searchTerms);
+
+            JsonElement originalValue = new JsonObject();
+
             // 递归搜索子对象
-            if (matchesQuery(key, searchTerms)) {
-                result.add(entry.getKey(), value);
-            } else if (value.isJsonObject()) {
-                JsonObject subResult = searchJson(value.getAsJsonObject(), searchTerms);
-                if (!subResult.entrySet().isEmpty()) {
-                    result.add(entry.getKey(), subResult);
-                }
+            if (value.isJsonObject()) {
+                originalValue = searchJson(value.getAsJsonObject(), searchTerms);
             } else if (value.isJsonArray()) {
                 // 处理数组中的command和describe字段
                 JsonArray matchedArray = new JsonArray();
@@ -147,45 +148,84 @@ public class PaneCustomCommandGeneration {
                     JsonObject commandObj = commandInfo.getAsJsonObject();
                     String command = commandObj.get("command").getAsString().toLowerCase();
                     String describe = commandObj.get("describe").getAsString().toLowerCase();
+                    String commandInfoStr = command + " " + describe;
 
-                    // 分别对 command 和 describe 进行匹配
-                    boolean commandMatches = matchesQuery(command, searchTerms);
-                    boolean describeMatches = matchesQuery(describe, searchTerms);
+                    // 合并匹配
+                    int allMatchesKeyCount = matchesQuery(commandInfoStr, searchTerms);
+                    // 对 command 和 describe 分别进行匹配（为兼容^以及$检索语法）
+                    int commandMatchesKeyCount = matchesQuery(command, searchTerms);
+                    int describeMatchesKeyCount = matchesQuery(describe, searchTerms);
 
-                    if (commandMatches || describeMatches) {
-                        matchedArray.add(commandObj.get("command").getAsString() + " - " + commandObj.get("describe").getAsString());
-                    }
+                    int matchesKeyCount = Math.max(allMatchesKeyCount, Math.max(commandMatchesKeyCount, describeMatchesKeyCount));
+
+                    JsonObject newValue = new JsonObject();
+                    newValue.add("$$value$$", commandInfo);
+                    newValue.addProperty("$$count$$", matchesKeyCount);
+                    newValue.addProperty("$$valueMaxCount$$", matchesKeyCount);
+
+                    matchedArray.add(newValue);
+
                 });
 
-                // 如果有匹配的数组项，则保留该数组
-                if (matchedArray.size() > 0) {
-                    result.add(entry.getKey(), matchedArray);
-                }
+                originalValue = matchedArray;
             }
+
+            JsonObject newValue = new JsonObject();
+            newValue.add("$$value$$", originalValue);
+            newValue.addProperty("$$count$$", keyCount);
+            newValue.addProperty("$$valueMaxCount$$", findMaxCount(originalValue));
+            result.add(entry.getKey(), newValue);
         }
 
         return result;
     }
 
-    // 匹配查询条件，不区分大小写
-    private static boolean matchesQuery(String text, List<SearchTerm> searchTerms) {
-        boolean orMatched = false;
+    private static int findMaxCount(JsonElement jsonElement) {
+        int maxCount = Integer.MIN_VALUE;
 
-        for (SearchTerm term : searchTerms) {
-            if (term.isExactMatch) {
-                // 必须存在的关键词（支持开头和结尾匹配）
-                if (!matchesExact(term.word, text)) {
-                    return false; // 如果某个必须匹配的关键词不存在，返回false
+        if (jsonElement.isJsonObject()) {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            for (String key : jsonObject.keySet()) {
+                JsonElement element = jsonObject.get(key);
+
+                if (element.isJsonObject() || element.isJsonArray()) {
+                    maxCount = Math.max(maxCount, findMaxCount(element));
+                } else if (key.equals("$$count$$")) {
+                    maxCount = Math.max(maxCount, element.getAsInt());
                 }
-            } else {
-                if (matchesExact(term.word, text)) {
-                    orMatched = true; // 只要有一个匹配即可
+            }
+        } else if (jsonElement.isJsonArray()) {
+            JsonArray jsonArray = jsonElement.getAsJsonArray();
+            for (JsonElement element : jsonArray) {
+                if (element.isJsonObject() || element.isJsonArray()) {
+                    maxCount = Math.max(maxCount, findMaxCount(element));
                 }
             }
         }
 
-        // 如果有必须匹配的关键词，OR逻辑则可有可无；否则必须有至少一个OR匹配
-        return searchTerms.stream().anyMatch(t -> t.isExactMatch) || orMatched;
+        return maxCount;
+    }
+
+    // 匹配查询条件，不区分大小写
+    private static int matchesQuery(String text, List<SearchTerm> searchTerms) {
+        int keywordMatchCount = 0;
+
+        for (SearchTerm term : searchTerms) {
+            if (term.isExactMatch) {
+                // 必须存在的关键词（支持开头和结尾匹配）
+                if (matchesExact(term.word, text)) {
+                    keywordMatchCount++; // 匹配到必须存在的关键词，增加计数
+                } else {
+                    return 0; // 如果某个必须匹配的关键词不存在，返回0
+                }
+            } else {
+                if (matchesExact(term.word, text)) {
+                    keywordMatchCount++; // 匹配到非必须的关键词，增加计数
+                }
+            }
+        }
+
+        return keywordMatchCount;
     }
 
     // 支持^xxx和xxx$的开头/结尾匹配
@@ -208,6 +248,102 @@ public class PaneCustomCommandGeneration {
             this.word = word;
             this.isExactMatch = isExactMatch;
         }
+    }
+
+    // 进行排序、剔除无关元素、剔除排序标记符
+    private static JsonObject processJsonObjectRecursively(JsonObject jsonObject) {
+        // 创建一个键值对集合，用于存储原始的键值对
+        List<Map.Entry<String, JsonElement>> entryList = new ArrayList<>(jsonObject.entrySet());
+
+        // 根据 $$count$$ 值进行排序
+        entryList.sort((e1, e2) -> {
+            JsonObject obj1 = e1.getValue().isJsonObject() ? e1.getValue().getAsJsonObject() : null;
+            JsonObject obj2 = e2.getValue().isJsonObject() ? e2.getValue().getAsJsonObject() : null;
+
+            // 获取 $$count$$ 值
+            int count1 = obj1 != null && obj1.has("$$count$$") ? obj1.get("$$count$$").getAsInt() : 0;
+            int count2 = obj2 != null && obj2.has("$$count$$") ? obj2.get("$$count$$").getAsInt() : 0;
+
+            // 如果 $$count$$ 相等，继续比较 $$valueMaxCount$$
+            if (count1 == count2) {
+                int valueMaxCount1 = obj1 != null && obj1.has("$$valueMaxCount$$") ? obj1.get("$$valueMaxCount$$").getAsInt() : 0;
+                int valueMaxCount2 = obj2 != null && obj2.has("$$valueMaxCount$$") ? obj2.get("$$valueMaxCount$$").getAsInt() : 0;
+                return Integer.compare(valueMaxCount2, valueMaxCount1);  // 按 $$valueMaxCount$$ 值降序排列
+            }
+
+            // 按降序排列
+            return Integer.compare(count2, count1);
+        });
+
+        // 创建一个新的 JsonObject 用于存放排序后的结果
+        JsonObject sortedJsonObject = new JsonObject();
+
+        for (Map.Entry<String, JsonElement> entry : entryList) {
+            String key = entry.getKey();
+            JsonElement value = entry.getValue();
+
+
+
+            JsonObject innerObject = value.getAsJsonObject();
+
+            // 并判断是否要移除节点
+            int count = innerObject.get("$$count$$").getAsInt();
+            int valueMaxCount = innerObject.get("$$valueMaxCount$$").getAsInt();
+
+            // 如果 $$count$$ 和 $$valueMaxCount$$ 都为 0，并且不是数组情况，跳过该节点
+            if (count == 0 && valueMaxCount == 0 && !innerObject.get("$$value$$").isJsonArray()) {
+                continue;
+            }
+
+            // 剔除排序标签，value=$$value$$
+            JsonElement innerValue = innerObject.get("$$value$$");
+
+            // 递归地处理嵌套的 JsonObject、JsonArray
+            if(innerValue == null) {
+                // value层级不存在key为$$value$$，直接递归value
+                sortedJsonObject.add(key, processJsonObjectRecursively(value.getAsJsonObject()));
+            }else {
+                // value层级存在key为$$value$$，递归$$value$$的值
+                if(innerValue.isJsonObject()) {
+                    sortedJsonObject.add(key, processJsonObjectRecursively(innerValue.getAsJsonObject()));
+                }else if(innerValue.isJsonArray()){
+                    JsonArray sortedArray = sortJsonArrayByCount(innerValue.getAsJsonArray());
+                    sortedJsonObject.add(key, sortedArray);
+                }
+            }
+        }
+
+        return sortedJsonObject;
+    }
+
+    private static JsonArray sortJsonArrayByCount(JsonArray jsonArray) {
+        // 创建一个列表来存储 JsonArray 中的元素
+        List<JsonElement> elementList = new ArrayList<>();
+        jsonArray.forEach(elementList::add);
+
+        // 对 JsonArray 进行排序
+        elementList.sort((e1, e2) -> {
+            JsonObject obj1 = e1.isJsonObject() ? e1.getAsJsonObject() : null;
+            JsonObject obj2 = e2.isJsonObject() ? e2.getAsJsonObject() : null;
+
+            // 获取 $$count$$ 值
+            int count1 = obj1 != null && obj1.has("$$count$$") ? obj1.get("$$count$$").getAsInt() : 0;
+            int count2 = obj2 != null && obj2.has("$$count$$") ? obj2.get("$$count$$").getAsInt() : 0;
+
+            // 按 $$count$$ 值降序排列
+            return Integer.compare(count2, count1);
+        });
+
+        // 创建排序后的 JsonArray，剔除排序标签
+        JsonArray sortedArray = new JsonArray();
+        for (JsonElement element : elementList) {
+            if (element.isJsonObject()) {
+                JsonObject obj = element.getAsJsonObject();
+                sortedArray.add(obj.get("$$value$$"));
+            }
+        }
+
+        return sortedArray;
     }
 
     public static void main(String[] args) {
@@ -236,9 +372,6 @@ public class PaneCustomCommandGeneration {
         JsonObject results6 = searchCommands("查看安装驱动 \"lSHw\"");
         System.out.println("搜索结果6: " + results6);
 
-        // 测试排序
-        JsonObject results7 = searchCommands("我的 祖国 111");
-        System.out.println("搜索结果7: " + results7);
     }
 
 }
