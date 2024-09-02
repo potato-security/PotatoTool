@@ -12,7 +12,7 @@ import javafx.scene.control.TextField;
 import java.io.File;
 import java.util.HashMap;
 
-import static com.potato.potatotool.content.webShell.getWebShell;
+import static com.potato.potatotool.content.redTeam.webShell.getWebShell;
 
 /**
  * @author Potato

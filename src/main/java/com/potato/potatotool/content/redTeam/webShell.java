@@ -1,4 +1,4 @@
-package com.potato.potatotool.content;
+package com.potato.potatotool.content.redTeam;
 
 import com.potato.potatotool.utils.strUtils;
 

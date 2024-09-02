@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.effect.DropShadow?>
+<?import com.dlsc.gemsfx.CFCheckBox?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/PaneKbRootQuery.css"
@@ -16,21 +17,29 @@
             <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请粘贴补丁号或systeminfo信息"  />
         </Pane>
 
-        <Button minHeight="48.0" minWidth="${sPane.width}" text="提取查询" onAction="#searchKb">
-            <effect>
-                <DropShadow />
-            </effect>
-        </Button>
+        <HBox alignment="CENTER_LEFT">
+            <HBox alignment="CENTER" minWidth="${sPane.width / 4}">
+                <CFCheckBox fx:id="mucFilter" alignment="CENTER" mnemonicParsing="false" selected="false" text="检测平替KB编号" VBox.vgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="『较慢』通过Microsoft Update在线对比可替换的KB编号，减少误报，提升准确性" />
+                    </tooltip>
+                </CFCheckBox>
+            </HBox>
+
+            <Button minHeight="48.0" minWidth="${sPane.width / 2}" text="提取查询" onAction="#searchKb">
+                <effect>
+                    <DropShadow />
+                </effect>
+            </Button>
+        </HBox>
 
     </VBox>
 
-    <Label prefWidth="${sPane.width}" prefHeight="${sPane.height}"/>
-    <Label prefWidth="550" prefHeight="500">
-        <graphic>
-            <Region styleClass="closeImg"/>
-        </graphic>
-    </Label>
-
-
+<!--    <Label prefWidth="${sPane.width}" prefHeight="${sPane.height}"/>-->
+<!--    <Label prefWidth="550" prefHeight="500">-->
+<!--        <graphic>-->
+<!--            <Region styleClass="closeImg"/>-->
+<!--        </graphic>-->
+<!--    </Label>-->
 
 </StackPane>

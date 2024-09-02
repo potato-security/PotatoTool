@@ -6,7 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import org.json.JSONObject;
 
-import static com.potato.potatotool.content.taskListCheck.*;
+import static com.potato.potatotool.content.redTeam.taskListCheck.*;
 
 /**
  * @author Potato

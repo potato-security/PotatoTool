@@ -25,7 +25,7 @@ import static com.potato.potatotool.utils.Constants.getResourceStream;
  * @author Potato
  * @date 2023/4/12 14:21
  */
-public class kbCheck_bk {
+public class kbCheck {
 
     // 版本号和版本之间的映射表，以正确识别
     // 系统信息输出中指定的Windows 10/11/Server 2016/2019/2022版本
@@ -447,19 +447,6 @@ public class kbCheck_bk {
         }
 
         Map<String, Set<String>> supersededBy = new HashMap<>();
-//  TODO ss
-
-//        for (Map<String, String> cve : found) {
-//            String kb = cve.get("KB编号");
-//            if (!supersededBy.containsKey(kb)) {
-//                supersededBy.put(kb, new HashSet<>(lookupSupersedence(kb)));
-//            }
-//        }
-//
-//        Set<String> finalKbsInstalled = new HashSet<>(kbsInstalled);
-//        return found.stream()
-//                .filter(cve -> !supersededBy.getOrDefault(cve.get("KB编号"), Collections.emptySet()).stream().anyMatch(finalKbsInstalled::contains))
-//                .collect(Collectors.toList());
         List<Future<?>> futures = found.stream()
                 .map(cve -> executor.submit(() -> {
                     String kb = cve.get("KB编号");
@@ -586,6 +573,31 @@ public class kbCheck_bk {
         }
     }
 
+    public static List<Map<String, String>> filterKB(String inputText,boolean isMucFilter){
+        determineProduct(inputText);
+
+        Map<String, List<Map<String, String>>> determineMissingPatches = determineMissingPatches();
+        List<Map<String, String>> filtered = determineMissingPatches.get("filtered");
+        List<Map<String, String>> found = determineMissingPatches.get("found");
+
+        // 如果是windows serer类型，过滤重复漏洞
+        filtered = filterDuplicates(found);
+
+        // 在Microsoft Update目录中查找被取代的KB
+        if(isMucFilter) {
+            filtered = applyMucFilter(filtered, hotfixes);
+        }
+
+        // 拆分KB列表和可用的潜在服务包/累积更新
+        Map<String, Object> patchesServicepacks = getPatchesServicepacks(filtered);
+        List<Map<String,String>> kbs = (List<Map<String, String>>) patchesServicepacks.get("kbs");
+
+        // 按发布日期从大到小排序
+        kbs.sort((map1, map2) -> map2.get("发布日期").compareTo(map1.get("发布日期")));
+
+        return kbs;
+    }
+
     public static void main(String[] args) {
         String systeminfo = "主机名:           DESKTOP-EMGF5BE\n" +
                 "OS 名称:          Microsoft Windows 10 专业版\n" +
@@ -687,6 +699,9 @@ public class kbCheck_bk {
         Map<String, Object> patchesServicepacks = getPatchesServicepacks(filtered);
         List<Map<String,String>> kbs = (List<Map<String, String>>) patchesServicepacks.get("kbs");
         Map<String, String> lastPatch = (Map<String, String>) patchesServicepacks.get("lastPatch");
+
+        // 按发布日期从大到小排序
+        kbs.sort((map1, map2) -> map2.get("发布日期").compareTo(map1.get("发布日期")));
 
         // 统计补丁编号
         Set<String> missingPatches = kbs.stream()
