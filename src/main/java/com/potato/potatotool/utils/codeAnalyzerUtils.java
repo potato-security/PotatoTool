@@ -45,4 +45,10 @@ public class codeAnalyzerUtils {
 
     }
 
+    public static void main(String[] args) {
+        aiUtil aiObj=new aiUtil();
+
+        aiObj.askAi("请告诉我关于```获取当前系统用户```的命令", null);
+    }
+
 }

@@ -167,6 +167,7 @@
             </ImageView>
             <Pane minHeight="20"/>
             <Label text="或扫描二维码添加微信进行反馈，备注PotatoTool建议反馈"/>
+            <Label text="加交流群，备注PotatoTool交流群"/>
         </VBox>
         <VBox fx:id="webBox" alignment="CENTER"/>
         <Pane minHeight="15" styleClass="linenoPane"/>

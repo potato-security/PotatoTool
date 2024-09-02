@@ -3,6 +3,7 @@ package com.potato.potatotool.content;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,7 +67,7 @@ public class kbCheck {
         List<Map<String, String>> csvData = new ArrayList<>();
 
         try (InputStream winKbInfoInputStream = getResourceStream("winKbInfo");
-             CSVReader reader = new CSVReader(new InputStreamReader(winKbInfoInputStream))) {
+             CSVReader reader = new CSVReader(new InputStreamReader(winKbInfoInputStream, StandardCharsets.UTF_8))) {
 
             String[] headers = reader.readNext();
             if (headers == null) {

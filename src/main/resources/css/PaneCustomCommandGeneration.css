@@ -18,3 +18,20 @@
     -fx-border-radius: 26;
     -fx-background-radius: 26;
 }
+.sysTitle{
+    -fx-border-width: 1;
+    -fx-border-color: white;
+    -fx-border-radius: 5;
+    -fx-padding: 3;
+}
+.commandInfoHBox{
+    -fx-border-width: 1;
+    -fx-border-color: -main-lineno-color;
+    -fx-border-radius: 8;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+}
+.comandVBox{
+    -fx-spacing: 5;
+    -fx-padding: 5 10 15 10;;
+}

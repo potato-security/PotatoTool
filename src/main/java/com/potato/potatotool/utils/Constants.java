@@ -233,7 +233,7 @@ public class Constants {
             JsonObject config = new JsonObject();
             if (Files.exists(configFile)) {
                 // 读取已有配置
-                String content = new String(Files.readAllBytes(configFile));
+                String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
                 config = gson.fromJson(content, JsonObject.class);
             }
 
@@ -265,7 +265,7 @@ public class Constants {
             JsonObject config = new JsonObject();
             if (Files.exists(configFile)) {
                 // 读取已有配置
-                String content = new String(Files.readAllBytes(configFile));
+                String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
                 config = gson.fromJson(content, JsonObject.class);
             }
 
@@ -297,7 +297,7 @@ public class Constants {
             JsonObject config = new JsonObject();
             if (Files.exists(configFile)) {
                 // 读取已有配置
-                String content = new String(Files.readAllBytes(configFile));
+                String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
                 config = gson.fromJson(content, JsonObject.class);
             }
 

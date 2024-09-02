@@ -179,22 +179,22 @@ public class MainController {
 
         Pane p15 = FXMLLoader.load(getClass().getResource("/fxml/pane_customCommandGeneration.fxml"));
         RXCarouselPane customCommandGenerationPane = new RXCarouselPane(p15);
-        p15.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p15.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p15.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p16 = FXMLLoader.load(getClass().getResource("/fxml/pane_kbRootQuery.fxml"));
         RXCarouselPane kbRootQueryPane = new RXCarouselPane(p16);
-        p16.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p16.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p16.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p17 = FXMLLoader.load(getClass().getResource("/fxml/pane_processQuery.fxml"));
         RXCarouselPane processQueryPane = new RXCarouselPane(p17);
-        p17.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p17.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p17.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p18 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoGeneration.fxml"));
         RXCarouselPane infoGenerationPane = new RXCarouselPane(p18);
-        p18.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p18.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p18.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p19 = FXMLLoader.load(getClass().getResource("/fxml/pane_extension.fxml"));

@@ -914,7 +914,7 @@ public class strUtils {
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
             byte[] decrypted = cipher.doFinal(in);
 
-            return new String(decrypted);
+            return new String(decrypted, StandardCharsets.UTF_8);
         } catch (Exception e){
             if(debugMode)e.printStackTrace();
             return null;
@@ -1407,7 +1407,7 @@ public class strUtils {
     }
     // 兼容String传参，单独异或可使用这个
     public String xorEncode(String data, String key) {
-        return new String( xorEncode(data.getBytes(StandardCharsets.UTF_8), key.getBytes(StandardCharsets.UTF_8)) );
+        return new String( xorEncode(data.getBytes(StandardCharsets.UTF_8), key.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8 );
     }
 
     public byte[] xorEncode(byte[] data, String key) {

@@ -51,67 +51,70 @@
                     </right>
                 </BorderPane>
                 <VBox alignment="CENTER_LEFT" spacing="20" prefWidth="${an.width - 18}" style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置代理："/>
                     <StackPane>
-                        <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" StackPane.alignment="CENTER"/>
-                        <CFSwitch fx:id="proxyButton" StackPane.alignment="CENTER_RIGHT"/>
+                        <Label fx:id="maxWidthlabel" style="-fx-text-fill: -main-topBar-color;" textAlignment="RIGHT" text="长格式占位符："/>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置代理："/>
+                            <StackPane>
+                                <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" StackPane.alignment="CENTER"/>
+                                <CFSwitch fx:id="proxyButton" StackPane.alignment="CENTER_RIGHT"/>
+                            </StackPane>
+                        </HBox>
                     </StackPane>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label fx:id="maxWidthlabel" textAlignment="RIGHT" text="默认反编译器："/>
-                    <ComboBox fx:id="decompileType" prefHeight="20.0" prefWidth="250">
-                        <items>
-                            <FXCollections fx:factory="observableArrayList">
-                                <String fx:value="idea" />
-                                <String fx:value="procyon" />
-                            </FXCollections>
-                        </items>
-                    </ComboBox>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="GPT_Model："/>
-                    <ComboBox fx:id="gptModel" prefHeight="20.0" prefWidth="250">
-                        <items>
-                            <FXCollections fx:factory="observableArrayList">
-                                <String fx:value="gpt-4" />
-                                <String fx:value="gpt-4-0314" />
-                                <String fx:value="gpt-4-0613" />
-                                <String fx:value="gpt-4-32k" />
-                                <String fx:value="gpt-4-32k-0314" />
-                                <String fx:value="gpt-4-32k-0613" />
-                                <String fx:value="gpt-4-1106-preview" />
-                                <String fx:value="gpt-4-version-preview" />
-                                <String fx:value="gpt-3.5-turbo" />
-                                <String fx:value="gpt-3.5-turbo-0301" />
-                                <String fx:value="gpt-3.5-turbo-0613" />
-                                <String fx:value="gpt-3.5-turbo-1106" />
-                                <String fx:value="gpt-3.5-turbo-16k" />
-                                <String fx:value="gpt-3.5-turbo-16k-0613" />
-                            </FXCollections>
-                        </items>
-                    </ComboBox>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="GPT_API_Key："/>
-                    <TextField fx:id="gptApiKey"  prefWidth="250"/>
-                </HBox>
-                <HBox alignment="CENTER" spacing="10">
-                    <Button fx:id="viewProfileButton" minHeight="48.0" minWidth="250" text="查看配置文件" onAction="#viewProfile">
-                        <effect>
-                            <DropShadow />
-                        </effect>
-                    </Button>
-                </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="默认反编译器："/>
+                        <ComboBox fx:id="decompileType" prefHeight="20.0" prefWidth="250">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="idea" />
+                                    <String fx:value="procyon" />
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="GPT_Model："/>
+                        <ComboBox fx:id="gptModel" prefHeight="20.0" prefWidth="250">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="gpt-4" />
+                                    <String fx:value="gpt-4-0314" />
+                                    <String fx:value="gpt-4-0613" />
+                                    <String fx:value="gpt-4-32k" />
+                                    <String fx:value="gpt-4-32k-0314" />
+                                    <String fx:value="gpt-4-32k-0613" />
+                                    <String fx:value="gpt-4-1106-preview" />
+                                    <String fx:value="gpt-4-version-preview" />
+                                    <String fx:value="gpt-3.5-turbo" />
+                                    <String fx:value="gpt-3.5-turbo-0301" />
+                                    <String fx:value="gpt-3.5-turbo-0613" />
+                                    <String fx:value="gpt-3.5-turbo-1106" />
+                                    <String fx:value="gpt-3.5-turbo-16k" />
+                                    <String fx:value="gpt-3.5-turbo-16k-0613" />
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="GPT_API_Key："/>
+                        <TextField fx:id="gptApiKey"  prefWidth="250"/>
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="10">
+                        <Button fx:id="viewProfileButton" minHeight="48.0" minWidth="250" text="查看配置文件" onAction="#viewProfile">
+                            <effect>
+                                <DropShadow />
+                            </effect>
+                        </Button>
+                    </HBox>
 
-                <HBox alignment="CENTER">
-                    <Button fx:id="saveButton" minHeight="48.0" minWidth="150" text="保存" onAction="#save">
-                        <effect>
-                            <DropShadow />
-                        </effect>
-                    </Button>
-                </HBox>
-            </VBox>
+                    <HBox alignment="CENTER">
+                        <Button fx:id="saveButton" minHeight="48.0" minWidth="150" text="保存" onAction="#save">
+                            <effect>
+                                <DropShadow />
+                            </effect>
+                        </Button>
+                    </HBox>
+                </VBox>
             </VBox>
         </Pane>
     </children>

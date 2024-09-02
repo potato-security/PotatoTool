@@ -70,7 +70,6 @@ public class PaneAiAnswer {
                     && !event.isAltDown()
                     && event.getCode() != KeyCode.META
             ) {
-                question.deleteText(question.getLength() - 1, question.getLength());;
                 ask();
             }else if(
                     (event.getCode() == KeyCode.ENTER && event.isShiftDown())
@@ -87,7 +86,7 @@ public class PaneAiAnswer {
     @FXML
     void ask(){
 
-        String req = question.getText();
+        String req = question.getText().trim();
 
         if( req.isEmpty() || req.length() < 1 ) return;
 
@@ -114,7 +113,9 @@ public class PaneAiAnswer {
 
         msgBox.getChildren().add(myHBox);
 
-        question.clear();
+        Platform.runLater(() -> {
+            question.clear();  // 在JavaFX应用线程中执行clear操作
+        });
 
         //  创建AI对话cell
         Pane aiSpacer = new Pane();

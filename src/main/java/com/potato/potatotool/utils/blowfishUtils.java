@@ -352,7 +352,7 @@ public class blowfishUtils {
             key_Blowfish.set("jaas is the way");
             iv_Blowfish.set("null");
 
-            return new String(encoding);
+            return new String(encoding, StandardCharsets.UTF_8);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
             return null;

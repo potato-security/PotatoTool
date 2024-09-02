@@ -4,9 +4,10 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.effect.DropShadow?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
-           stylesheets="@../css/PaneCustomCommandGeneration.css"
+           stylesheets="@../css/PaneCustomCommandGeneration.css,@../css/extension.css"
            fx:id="sPane"
            fx:controller="com.potato.potatotool.controller.PaneCustomCommandGeneration"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
@@ -54,8 +55,8 @@
     <ScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}">
         <VBox alignment="CENTER" spacing="20" prefWidth="${sPane.width - 15}">
 
-            <HBox alignment="CENTER" prefWidth="${sPane.width - 15}">
-                <Label alignment="CENTER" prefWidth="${sPane.width / 2}" styleClass="titleText" text="系统操作命令查询工具"/>
+            <HBox alignment="CENTER_LEFT" prefWidth="${sPane.width - 15}">
+                <Label alignment="CENTER" prefWidth="${(sPane.width / 2) - 200}" styleClass="titleText" text="系统操作命令查询工具"/>
                 <StackPane maxWidth="${sPane.width / 2}">
                     <TextField fx:id="question" prefWidth="${sPane.width / 2}" minHeight="0" promptText="请输入需要查询的命令/操作……" />
                     <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
@@ -75,15 +76,38 @@
             </HBox>
 
             <HBox alignment="CENTER" prefWidth="${sPane.width - 15}">
-                <VBox fx:id="vBoxBar">
-                    <Accordion fx:id="accordionPane"/>
-                </VBox>
+                <ScrollPane maxHeight="${sPane.height - 80}" hbarPolicy="NEVER">
+                    <VBox fx:id="vBoxBar">
+                        <Accordion fx:id="accordionPane"/>
+                    </VBox>
+                </ScrollPane>
 
-                <VBox></VBox>
+                <Region HBox.hgrow="ALWAYS" />
+
+                <StackPane>
+                    <ListView fx:id="listView" prefWidth="${sPane.width - 215}" prefHeight="${sPane.height - 80}" maxHeight="${sPane.height - 100}" />
+                    <Label fx:id="toBack" visible="false" managed="false" translateX="-10" translateY="5" StackPane.alignment="TOP_RIGHT" onMouseClicked="#goBack">
+                        <graphic>
+                            <Region styleClass="back"/>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND" />
+                        </cursor>
+                        <tooltip>
+                            <Tooltip text="返回" />
+                        </tooltip>
+                    </Label>
+                </StackPane>
             </HBox>
 
         </VBox>
     </ScrollPane>
 
 
+    <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="200" alignment="CENTER" StackPane.alignment="CENTER">
+        <effect>
+            <DropShadow/>
+        </effect>
+        <Label fx:id="prompt" text="复制成功"/>
+    </StackPane>
 </StackPane>

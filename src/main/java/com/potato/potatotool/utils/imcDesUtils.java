@@ -1,6 +1,8 @@
 package com.potato.potatotool.utils;
 
 
+import java.nio.charset.StandardCharsets;
+
 import static com.potato.potatotool.ToStart.debugMode;
 
 /**
@@ -41,7 +43,7 @@ public class imcDesUtils {
             }
         }
 
-        String str = new String(bytes);    //这里把之前算出来的b，就是存放入bytes[]数组里的数据转换成字符，不知道怎么转换的，参考十进制的ASCII码表，转换之后把结果存放到变量str。举例的结果解密结果为“a~~”
+        String str = new String(bytes, StandardCharsets.UTF_8);    //这里把之前算出来的b，就是存放入bytes[]数组里的数据转换成字符，不知道怎么转换的，参考十进制的ASCII码表，转换之后把结果存放到变量str。举例的结果解密结果为“a~~”
         if (!str.endsWith("~~")) {   //最后检查是否以字符“~~”结尾
             System.out.println("Invalid encrypted text: "+et);
             return null;

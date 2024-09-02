@@ -102,7 +102,7 @@ public class PaneExtension {
                     TitledPane titledPane = new TitledPane(key, vBox);
                     titledPane.setPrefWidth(200);
                     accordionPane.getPanes().add(titledPane);
-                } else if (tmpValue instanceof JsonArray) {
+                } else if (tmpValue instanceof JsonArray || tmpValue.isJsonNull()) {
 
                     TitledPane titledPane = new TitledPane();
                     titledPane.setText(key);

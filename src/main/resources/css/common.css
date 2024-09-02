@@ -701,6 +701,7 @@
 }
 .list-view .list-cell {
     -fx-background-color: transparent;
+    -fx-alignment: center-left;
 }
 .list-view .corner {
     -fx-background-color: transparent;

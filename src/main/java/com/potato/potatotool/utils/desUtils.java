@@ -369,7 +369,7 @@ public class desUtils {
             padding_DES.set(PADDING_PKCS5_PADDING);
             key_DES.set("(hex)"+strUtils.byteToHex(key));
             iv_DES.set("null");
-            return new String(decryptedData);
+            return new String(decryptedData, StandardCharsets.UTF_8);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
             return null;

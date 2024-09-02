@@ -370,7 +370,6 @@ public class PaneWebshellDecode {
             currentThread.stop();
         }
 
-
         tipTitle.setText("");
         tipTitle.setVisible(false);
         tipTitle.setManaged(false);

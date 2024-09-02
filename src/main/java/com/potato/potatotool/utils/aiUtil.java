@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import javafx.application.Platform;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import org.fxmisc.richtext.CodeArea;
 import org.json.JSONArray;
@@ -138,7 +139,7 @@ public class aiUtil {
                                         addHistory("assistant", responseJson.get("delta").getAsString());
                                         res = "";
                                     } else {
-                                        //System.out.println("Received ResponseJson: " + reponseJson);
+//                                        System.out.println("Received ResponseJson: " + responseJson);
                                         res = responseJson.get("delta").getAsString();
                                     }
                                 }
@@ -155,7 +156,7 @@ public class aiUtil {
                                     textArea.appendText(finalRes);
 
                                 });
-                            } else {
+                            } else if(node instanceof CodeArea) {
                                 CodeArea textArea = (CodeArea) node;
                                 String finalRes = res;
                                 Platform.runLater(() -> {
@@ -169,6 +170,14 @@ public class aiUtil {
                                         textArea.appendText(finalRes);
                                     }
                                 });
+                            } else if(node instanceof Label) {
+                                Label textArea = (Label) node;
+                                String finalRes = res;
+                                Platform.runLater(() -> {
+                                    textArea.setText(textArea.getText() + finalRes);
+                                });
+                            } else {
+                                System.out.print(res);
                             }
                         }
 
@@ -191,7 +200,7 @@ public class aiUtil {
                         }
                         textArea.appendText(res);
                     });
-                } else {
+                } else if(node instanceof CodeArea) {
                     CodeArea textArea = (CodeArea) node;
                     Platform.runLater(() -> {
                         if (isFirstResponse) {
@@ -200,6 +209,13 @@ public class aiUtil {
                         }
                         textArea.appendText(res);
                     });
+                } else if(node instanceof Label) {
+                    Label textArea = (Label) node;
+                    Platform.runLater(() -> {
+                        textArea.setText(textArea.getText() + res);
+                    });
+                } else {
+                    System.out.println(res);
                 }
             }
         }

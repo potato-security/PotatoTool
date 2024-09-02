@@ -5,6 +5,7 @@ import org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -42,7 +43,7 @@ public class ideaDecompileUtils {
             System.out.println("-----------------");
             System.out.println(classPath);
             System.out.println(javaTempFilePath);
-            res = new String(strUtils.readFile(javaTempFilePath));
+            res = new String(strUtils.readFile(javaTempFilePath), StandardCharsets.UTF_8);
 
             if (outfilePath.length == 1) {
                 strUtils.moveFile(javaTempFilePath, outfilePath[0]);

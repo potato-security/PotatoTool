@@ -4,6 +4,7 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -26,7 +27,7 @@ public class ivmsDes {
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(2, new SecretKeySpec(secretKey.getEncoded(), "AES"));
             byte[] result = cipher.doFinal(strUtils.hexToByteArray(str));
-            return new String(result, "utf-8");
+            return new String(result, StandardCharsets.UTF_8);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
             return null;

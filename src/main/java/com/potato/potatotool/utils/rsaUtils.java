@@ -46,7 +46,7 @@ public class rsaUtils {
         }
         byte[] cipherBytes = strUtils.base64Decode(cipherText.getBytes(StandardCharsets.UTF_8));
         byte[] plainBytes = cipher.doFinal(cipherBytes);
-        return new String(plainBytes);
+        return new String(plainBytes, StandardCharsets.UTF_8);
     }
 
     public static PublicKey getPublicKey(String publicKeyText) {

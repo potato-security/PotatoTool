@@ -393,7 +393,7 @@ public class aesUtils {
                     "CBC",
                     PADDING_NO_PADDING
             );
-            System.out.println("result:"+new String(result) );
+            System.out.println("result:"+new String(result, StandardCharsets.UTF_8) );
         } catch (Exception e) {
             e.printStackTrace();
         }
