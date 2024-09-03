@@ -74,9 +74,9 @@ public class PaneAbout {
     private Timeline scrollTimeline;
 
     private void scrollThankPane() {
-        scrollTimeline = new Timeline(new KeyFrame(Duration.millis(30), event -> {
+        scrollTimeline = new Timeline(new KeyFrame(Duration.millis(16), event -> {
             double currentScroll = thanksScrollPane.getVvalue();
-            double newScroll = currentScroll + 0.001;
+            double newScroll = currentScroll + 0.003;
             if (newScroll > 1.0) {
                 newScroll = 0.0;
             }
