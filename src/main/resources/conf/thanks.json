@@ -1,0 +1,62 @@
+[
+  {
+    "version": "1.4",
+    "name": ["enomothem"],
+    "content": "调试并复现出导航模块乱码问题",
+    "type": "反馈"
+  },
+  {
+    "version": "1.2",
+    "name": ["enomothem"],
+    "content": "文件元信息支持解析二维码",
+    "type": "建议"
+  },
+  {
+    "version": "1.2",
+    "name": ["fz1lin"],
+    "content": "手机号归属地的精确度优化",
+    "type": "技术"
+  },
+  {
+    "version": "1.2",
+    "name": ["hugh"],
+    "content": "md5解密优化，提高速率，优化存储",
+    "type": "反馈"
+  },
+  {
+    "version": "1.2",
+    "name": ["Dot5"],
+    "content": "aes的zeropadding模式解密存在问题",
+    "type": "反馈"
+  },
+  {
+    "version": "1.2",
+    "name": ["lei_sec", "dragon"],
+    "content": "增加软件最小化、最大化按钮",
+    "type": "建议"
+  },
+  {
+    "version": "1.0",
+    "name": ["狐狸"],
+    "content": "提供cmd5的50w付费及个人整理的字典，支持md5_32/md5_16/sha1解密功能",
+    "type": "资源"
+  },
+  {
+    "version": "1.0",
+    "name": ["H7lan"],
+    "content": "添加手机号归属地、银行卡开户行、区块链追溯功能",
+    "type": "建议"
+  },
+  {
+    "version": "1.0",
+    "name": ["Allan"],
+    "content": "人工智能专家支持",
+    "type": "技术"
+  },
+  {
+    "version": "1.0",
+    "name": ["Kevin"],
+    "content": "UI美化",
+    "type": "美工"
+  }
+]

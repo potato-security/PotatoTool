@@ -56,11 +56,18 @@
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: normal;
 }
+.nameLable .text{
+    -fx-fill: -main-smallbtnBg-color;
+}
 .tooltip {
     -fx-font-size: 16;
 }
 .tips .text {
     -fx-font-size: 16;
+    -fx-fill: -main-linenoText-color;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
+}
+.tipsLabel .text {
     -fx-fill: -main-linenoText-color;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }

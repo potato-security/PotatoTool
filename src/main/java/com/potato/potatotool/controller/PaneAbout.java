@@ -1,7 +1,12 @@
 package com.potato.potatotool.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
 import com.potato.potatotool.MainApplication;
+import com.potato.potatotool.utils.jsonUtils;
 import javafx.animation.*;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -24,9 +29,14 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import org.json.JSONObject;
 
+import java.io.InputStream;
 import java.net.*;
 import java.util.function.Function;
+
+import static com.potato.potatotool.utils.Constants.getResourceStream;
+import static com.potato.potatotool.utils.Constants.getResourceString;
 
 /**
  * @author Potato
@@ -67,8 +77,46 @@ public class PaneAbout {
 
     public void initialize() {
 
+        initRenderThanksData();
         scrollThankPane();
 
+    }
+
+    public void initRenderThanksData() {
+        String tmpJsonStr = getResourceString("thanks");
+        JsonArray thanksJsonObject = (new Gson()).fromJson(tmpJsonStr, JsonArray.class);
+
+        for (JsonElement element : thanksJsonObject) {
+            JsonObject jsonObject = element.getAsJsonObject();
+
+            String version = jsonObject.get("version").getAsString();
+            String type = jsonObject.get("type").getAsString();
+            String content = jsonObject.get("content").getAsString();
+
+            HBox hBox = new HBox();
+            Label versionLabel = new Label("· V" + version + " ");
+            versionLabel.getStyleClass().add("tipsLabel");
+            hBox.getChildren().add(versionLabel);
+
+            JsonArray names = jsonObject.get("name").getAsJsonArray();
+            for (JsonElement nameElement : names) {
+                String name = nameElement.getAsString();
+                Label text1 = new Label("@");
+                Label nameLabel = new Label(name);
+                nameLabel.getStyleClass().add("nameLable");
+                hBox.getChildren().addAll(text1, nameLabel);
+            }
+
+            Label typeLabel = new Label("「" + type + "」");
+            typeLabel.setStyle("-fx-font-size: 12;");
+            Label text2 = new Label("：");
+            Label contentLabel = new Label(content);
+            contentLabel.prefWidthProperty().bind(thanksScrollPane.widthProperty().subtract(200));
+            contentLabel.setWrapText(true);
+            hBox.getChildren().addAll(typeLabel, text2, contentLabel);
+
+            thanksVBox.getChildren().add(hBox);
+        }
     }
 
     private Timeline scrollTimeline;

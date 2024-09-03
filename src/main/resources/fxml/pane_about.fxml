@@ -91,60 +91,6 @@
             <Pane minWidth="20"/>
             <ScrollPane fx:id="thanksScrollPane" vbarPolicy="NEVER" hbarPolicy="NEVER" prefWidth="${sPane.width - 270}" prefHeight="260">
                 <VBox fx:id="thanksVBox" spacing="10">
-                    <HBox>
-                        <Label text="V1.2 @enomothem" />
-                        <Label text="[建议]" style="-fx-font-size: 12"/>
-                        <Label text="：" />
-                        <Label text="文件元信息支持解析二维码" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
-                    </HBox>
-                    <HBox>
-                        <Label text="V1.2 @fz1lin" />
-                        <Label text="[技术]" style="-fx-font-size: 12"/>
-                        <Label text="：" />
-                        <Label text="手机号归属地的精确度优化" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
-                    </HBox>
-                    <HBox>
-                        <Label text="V1.2 @hugh" />
-                        <Label text="[反馈]" style="-fx-font-size: 12"/>
-                        <Label text="：" />
-                        <Label text="md5解密优化，提高速率，优化存储" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
-                    </HBox>
-                    <HBox>
-                        <Label text="V1.2 @Dot5" />
-                        <Label text="[反馈]" style="-fx-font-size: 12"/>
-                        <Label text="：" />
-                        <Label text="aes的zeropadding模式解密存在问题" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
-                    </HBox>
-                    <HBox>
-                        <Label text="V1.2 @lei_sec、dragon" />
-                        <Label text="[建议]" style="-fx-font-size: 12"/>
-                        <Label text="：" />
-                        <Label text="增加软件最小化、最大化按钮" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
-                    </HBox>
-                    <HBox>
-                        <Label text="V1.0 @狐狸" />
-                        <Label text="[资源]" style="-fx-font-size: 12"/>
-                        <Label text="：" />
-                        <Label text="提供cmd5的50w付费及个人整理的字典，支持md5_32/md5_16/sha1解密功能" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
-                    </HBox>
-                    <HBox>
-                        <Label text="V1.0 @H7lan" />
-                        <Label text="[建议]" style="-fx-font-size: 12"/>
-                        <Label text="：" />
-                        <Label text="添加手机号归属地、银行卡开户行、区块链追溯功能" maxWidth="${thanksScrollPane.width - 200}" wrapText="true"/>
-                    </HBox>
-                    <HBox>
-                        <Label text="V1.0 @Allan" />
-                        <Label text="[技术]" style="-fx-font-size: 12"/>
-                        <Label text="：" />
-                        <Label text="人工智能专家支持" maxWidth="470" wrapText="true"/>
-                    </HBox>
-                    <HBox>
-                        <Label text="V1.0 @Kevin" />
-                        <Label text="[美工]" style="-fx-font-size: 12"/>
-                        <Label text="：" />
-                        <Label text="UI美化" maxWidth="470" wrapText="true"/>
-                    </HBox>
                 </VBox>
             </ScrollPane>
         </HBox>

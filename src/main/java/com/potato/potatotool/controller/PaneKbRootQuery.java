@@ -17,6 +17,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -61,6 +62,7 @@ public class PaneKbRootQuery {
         filterView = new FilterView<>();
         filterView.setShowHeader(false);
 
+        tableView.setEditable(true);
         tableView.setSortPolicy(table -> false);
 
         filterView.getFilterGroups().setAll(productGroup, componentGroup, severityGroup, impactGroup, pocGroup);
@@ -85,15 +87,25 @@ public class PaneKbRootQuery {
         TableColumn<KbInfo, String> pocColumn = new TableColumn<>("漏洞利用");
 
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
+        dateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         cveColumn.setCellValueFactory(new PropertyValueFactory<>("cve"));
+        cveColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         kbColumn.setCellValueFactory(new PropertyValueFactory<>("kb"));
+        kbColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+        titleColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         productColumn.setCellValueFactory(new PropertyValueFactory<>("product"));
+        productColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         componentColumn.setCellValueFactory(new PropertyValueFactory<>("component"));
+        componentColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         severityColumn.setCellValueFactory(new PropertyValueFactory<>("severity"));
+        severityColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         impactColumn.setCellValueFactory(new PropertyValueFactory<>("impact"));
+        impactColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         repKbColumn.setCellValueFactory(new PropertyValueFactory<>("repKb"));
+        repKbColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         pocColumn.setCellValueFactory(new PropertyValueFactory<>("poc"));
+        pocColumn.setCellFactory(TextFieldTableCell.forTableColumn());
 
         tableView.getColumns().setAll(dateColumn, cveColumn, kbColumn, titleColumn, productColumn, componentColumn, severityColumn, impactColumn, repKbColumn, pocColumn);
 
@@ -107,7 +119,7 @@ public class PaneKbRootQuery {
         ChangeListener<Number> widthListener = new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> obs, Number oldWidth, Number newWidth) {
-                double totalWidth = newWidth.doubleValue();
+                double totalWidth = newWidth.doubleValue() - 20;
                 int columnCount = tableView.getColumns().size();
                 double columnWidth = totalWidth / columnCount;
 
