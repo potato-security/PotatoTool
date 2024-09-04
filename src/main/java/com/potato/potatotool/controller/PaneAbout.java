@@ -119,18 +119,19 @@ public class PaneAbout {
         }
     }
 
-    private Timeline scrollTimeline;
+    private Timeline scrollTimeline=new Timeline();
 
     private void scrollThankPane() {
-        scrollTimeline = new Timeline(new KeyFrame(Duration.millis(16), event -> {
-            double currentScroll = thanksScrollPane.getVvalue();
-            double newScroll = currentScroll + 0.003;
-            if (newScroll > 1.0) {
-                newScroll = 0.0;
-            }
-            thanksScrollPane.setVvalue(newScroll);
-        }));
-        scrollTimeline.setCycleCount(Timeline.INDEFINITE);
+        double contentHeight = thanksScrollPane.getContent().getBoundsInLocal().getHeight();
+        double viewportHeight = thanksScrollPane.getViewportBounds().getHeight();
+
+        double time = (contentHeight - viewportHeight)/ 0.05;
+        System.out.println(time);
+
+        KeyValue kv = new KeyValue(thanksScrollPane.vvalueProperty(), 1);
+        KeyFrame kf = new KeyFrame(Duration.seconds(time), kv);
+
+        scrollTimeline.getKeyFrames().add(kf);
     }
 
     @FXML
