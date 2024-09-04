@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.effect.DropShadow?>
+<StackPane xmlns="http://javafx.com/javafx/"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../css/PaneCommandQuery.css,@../css/extension.css"
+           fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.PaneCommandQuery"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+
+<!--    <VBox fx:id="paneBox" spacing="25" alignment="TOP_CENTER">-->
+
+<!--        <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">-->
+<!--            <HBox>-->
+<!--                <Label id="tipTitle" text="当前版本"/>-->
+<!--                <Label wrapText="true" id="tipSymbol" text="："/>-->
+<!--                <Label  wrapText="true" text="社区版"/>-->
+<!--            </HBox>-->
+
+<!--            <HBox>-->
+<!--                <Label id="tipTitle" text="支持类型"/>-->
+<!--                <Label wrapText="true" id="tipSymbol" text="："/>-->
+<!--                <Label  wrapText="true" text="支持反向shell、正向shell、MSFVenom、HoaxShell、内网代理、文件下载、痕迹清理命令生成，满足渗透测试和攻击需求，提供一站式解决方案"/>-->
+<!--            </HBox>-->
+<!--            <HBox>-->
+<!--                <Label id="tipTitle" text="自定义化"/>-->
+<!--                <Label wrapText="true" id="tipSymbol" text="："/>-->
+<!--                <Label  wrapText="true" text="可根据特定环境输入IP和端口，系统根据参数生成多种定制化方案，确保适用性和灵活性。"/>-->
+<!--            </HBox>-->
+<!--            <HBox>-->
+<!--                <Label id="tipTitle" text="防检测化"/>-->
+<!--                <Label wrapText="true" id="tipSymbol" text="："/>-->
+<!--                <Label  wrapText="true" text="支持添加编码防止检测，在一定程度上提高生成Payload的免杀能力，确保攻击效果。"/>-->
+<!--            </HBox>-->
+<!--            <HBox>-->
+<!--                <Label id="tipTitle" text="常用命令检索"/>-->
+<!--                <Label wrapText="true" id="tipSymbol" text="："/>-->
+<!--                <Label  wrapText="true" text="支持对常用的内网横向攻击系统命令进行模糊检索，方便用户快速获取所需信息。"/>-->
+<!--            </HBox>-->
+<!--        </VBox>-->
+
+
+<!--    </VBox>-->
+
+<!--    <Label prefWidth="550" prefHeight="500">-->
+<!--        <graphic>-->
+<!--            <Region styleClass="closeImg"/>-->
+<!--        </graphic>-->
+<!--    </Label>-->
+
+    <ScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}">
+        <VBox alignment="CENTER" spacing="20" prefWidth="${sPane.width - 15}">
+
+            <HBox alignment="CENTER_LEFT" prefWidth="${sPane.width - 15}">
+                <Label alignment="CENTER" prefWidth="${(sPane.width / 2) - 200}" styleClass="titleText" text="系统操作命令查询工具"/>
+                <StackPane maxWidth="${sPane.width / 2}">
+                    <TextField fx:id="question" prefWidth="${sPane.width / 2}" minHeight="0" promptText="请输入需要查询的命令/操作……" />
+                    <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
+                        <Label layoutX="-40" layoutY="3" onMouseClicked="#searchInput">
+                            <graphic>
+                                <Region styleClass="send"/>
+                            </graphic>
+                            <cursor>
+                                <Cursor fx:constant="HAND" />
+                            </cursor>
+                            <tooltip>
+                                <Tooltip text="查询" />
+                            </tooltip>
+                        </Label>
+                    </Pane>
+                </StackPane>
+            </HBox>
+
+            <HBox alignment="CENTER" prefWidth="${sPane.width - 15}">
+                <ScrollPane maxHeight="${sPane.height - 80}" hbarPolicy="NEVER">
+                    <VBox fx:id="vBoxBar">
+                        <Accordion fx:id="accordionPane"/>
+                    </VBox>
+                </ScrollPane>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <StackPane>
+                    <ListView fx:id="listView" prefWidth="${sPane.width - 215}" prefHeight="${sPane.height - 80}" maxHeight="${sPane.height - 100}" />
+                    <Label fx:id="toBack" visible="false" managed="false" translateX="-10" translateY="5" StackPane.alignment="TOP_RIGHT" onMouseClicked="#goBack">
+                        <graphic>
+                            <Region styleClass="back"/>
+                        </graphic>
+                        <cursor>
+                            <Cursor fx:constant="HAND" />
+                        </cursor>
+                        <tooltip>
+                            <Tooltip text="返回" />
+                        </tooltip>
+                    </Label>
+                </StackPane>
+            </HBox>
+
+        </VBox>
+    </ScrollPane>
+
+
+    <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="200" alignment="CENTER" StackPane.alignment="CENTER">
+        <effect>
+            <DropShadow/>
+        </effect>
+        <Label fx:id="prompt" text="复制成功"/>
+    </StackPane>
+</StackPane>

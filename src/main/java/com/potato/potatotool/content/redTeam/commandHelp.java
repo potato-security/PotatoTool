@@ -4,21 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.controller.PaneCustomCommandGeneration;
-import javafx.scene.input.MouseEvent;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import com.potato.potatotool.utils.jsonUtils;
 
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.potato.potatotool.utils.Constants.getResourceStream;
 import static com.potato.potatotool.utils.Constants.getResourceString;
 
 /**
