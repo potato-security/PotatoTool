@@ -345,7 +345,7 @@ public class PaneCommandQuery {
         listView.getItems().clear();
 
         if(searchJsonObj.size() == 0){
-            Label tips = new Label("库中未找到有关\"" + query + "\"的命令，AI帮你分析……");
+            Label tips = new Label("库中未找到有关\"" + query + "\"的命令，可尝试模糊搜索，AI帮你分析……");
             tips.setAlignment(Pos.CENTER);
             tips.setId("tipTitle");
             tips.setPrefWidth(sPane.getWidth() - 215);
