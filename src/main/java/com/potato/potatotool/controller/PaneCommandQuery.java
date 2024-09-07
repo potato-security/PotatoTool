@@ -123,11 +123,6 @@ public class PaneCommandQuery {
             }
             Label labelTitle = new Label(key);
             labelTitle.setAlignment(Pos.CENTER_LEFT);
-//            Region regionAdd = new Region();
-//            regionAdd.getStyleClass().add("addIcon");
-//            Tooltip tooltips = new Tooltip("修改内容");
-//            Tooltip.install(regionAdd, tooltips);
-//            regionAdd.setOnMouseClicked(even->modify(even));
             if(recursionCount == 1){
                 Region regionTitle = new Region();
                 regionTitle.getStyleClass().add("tipIcon");
@@ -168,23 +163,18 @@ public class PaneCommandQuery {
 
                 ObjList.add(label);
             }else {
-
                 Label titleLabel = new Label(key);
                 titleLabel.setPrefWidth(150);
                 TitledPane titledPane = new TitledPane();
+                titledPane.getStyleClass().add("titledPane_"+recursionCount);
+                titledPane.setExpanded(false);
                 titledPane.setGraphic(titleLabel);  // 使用 Graphic 代替 setText (使用setText超出部分无法变为省略号)
 
                 List innerContentList = createDirectoryNode(tmpValue, recursionCount);
-                if(isLabelList(innerContentList)) {
-                    VBox vBox = new VBox(5);
-                    vBox.getStyleClass().add("vBox");
-                    vBox.getChildren().addAll(innerContentList);
-                    titledPane.setContent(vBox);
-                }else {
-                    Accordion innerAccordion = new Accordion();
-                    innerAccordion.getPanes().addAll(innerContentList);
-                    titledPane.setContent(innerAccordion);
-                }
+                VBox vBox = new VBox(5);
+                vBox.getStyleClass().add("vBox");
+                vBox.getChildren().addAll(innerContentList);
+                titledPane.setContent(vBox);
 
                 titleLabel.setOnMouseClicked(even->redirect(key));
                 Tooltip tooltip = new Tooltip(key);
@@ -205,6 +195,20 @@ public class PaneCommandQuery {
         }
 
         return isLabelList;
+    }
+
+    public static boolean isAllNotLabelList(List<?> innerContent) {
+        if (innerContent.isEmpty()) {
+            return false;
+        }
+
+        for (Object item : innerContent) {
+            if (!(item instanceof Label)) {
+                return true; // 如果发现一个非 Label 的元素，返回 true
+            }
+        }
+
+        return false;
     }
 
     private void addNode(JsonObject tmpJsonObj) {

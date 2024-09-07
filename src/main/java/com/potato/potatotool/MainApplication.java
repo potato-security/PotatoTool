@@ -139,10 +139,6 @@ public class MainApplication extends Application {
             preload.set(true);
         });
         executor.submit(task);
-
-
-
-
     }
 
     private void loadMainStage(Stage passwdStage, AtomicReference<FadeTransition> fadeTransition1) {

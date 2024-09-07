@@ -73,17 +73,39 @@ public class ReadabilityChecker {
             printableRatioSet = 0.9;
         }
 
-        if(printableRatioSetAndgibberishCountSet.length == 2){
+        if(printableRatioSetAndgibberishCountSet.length == 2 && (!(printableRatioSetAndgibberishCountSet[0]==0.5 && printableRatioSetAndgibberishCountSet[1]==0))){
             printableRatioSet = printableRatioSetAndgibberishCountSet[0];
             gibberishCountSet = (int) printableRatioSetAndgibberishCountSet[1];
         }
 
         // 自定义阈值，根据实际情况进行调整
+        // 当设置可打印率=0.5，乱码字符数量=0，为js的base64加密(字符串utf-16编码，转二进制进行的base64加密，正常解密每个正常字符后面都会有不可见字符)
         if (printableRatio >= printableRatioSet && gibberishCount <= gibberishCountSet) {
             return true;  // 可读性高
         } else {
+
+            if(printableRatioSetAndgibberishCountSet.length == 2 && printableRatioSetAndgibberishCountSet[0]==0.5 && printableRatioSetAndgibberishCountSet[1]==0){
+                StringBuilder oddIndexChars = new StringBuilder(); // 存储单数索引字符
+                StringBuilder evenIndexChars = new StringBuilder(); // 存储双数索引字符
+                for (int i = 0; i < decryptedString.length(); i++) {
+                    if ((i % 2) == 0) {
+                        evenIndexChars.append(decryptedString.charAt(i));
+                    } else {
+                        oddIndexChars.append(decryptedString.charAt(i));
+                    }
+                }
+
+                double even_printableRatio = calculatePrintableRatio(evenIndexChars.toString());
+                int even_gibberishCount = detectGibberishPattern(evenIndexChars.toString());
+                double odd_printableRatio = calculatePrintableRatio(oddIndexChars.toString());
+                int odd_gibberishCount = detectGibberishPattern(oddIndexChars.toString());
+
+                if(even_printableRatio==1 && even_gibberishCount==0 && odd_printableRatio==0 && odd_gibberishCount==0) return true;
+            }
+
             return false;  // 可读性低
         }
+
     }
 
     public static boolean assessReadability(byte[] decryptedByte,double... printableRatioSetAndgibberishCountSet) {

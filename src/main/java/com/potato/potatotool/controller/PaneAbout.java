@@ -122,16 +122,36 @@ public class PaneAbout {
     private Timeline scrollTimeline=new Timeline();
 
     private void scrollThankPane() {
-        double contentHeight = thanksScrollPane.getContent().getBoundsInLocal().getHeight();
-        double viewportHeight = thanksScrollPane.getViewportBounds().getHeight();
+        thanksScrollPane.getContent().layoutBoundsProperty().addListener((observable, oldValue, newValue) -> {
+            double contentHeight = newValue.getHeight();
+            double viewportHeight = thanksScrollPane.getViewportBounds().getHeight();
 
-        double time = (contentHeight - viewportHeight)/ 0.05;
-        System.out.println(time);
+            double speed = 14;
+            double time = (contentHeight - viewportHeight) / speed;
 
-        KeyValue kv = new KeyValue(thanksScrollPane.vvalueProperty(), 1);
-        KeyFrame kf = new KeyFrame(Duration.seconds(time), kv);
+            if(time<0) return;
 
-        scrollTimeline.getKeyFrames().add(kf);
+            scrollTimeline.getKeyFrames().clear();
+
+            Duration pauseBeforeDuration = Duration.seconds(1);
+            Duration scrollDuration = Duration.seconds(time);
+            Duration pauseAfterDuration = Duration.seconds(1);
+
+            KeyFrame pauseBeforeKF = new KeyFrame(pauseBeforeDuration, new KeyValue(thanksScrollPane.vvalueProperty(), 0));
+            KeyFrame scrollKF = new KeyFrame(pauseBeforeDuration.add(scrollDuration), new KeyValue(thanksScrollPane.vvalueProperty(), 1)); // Scroll
+            KeyFrame pauseAfterKF = new KeyFrame(pauseBeforeDuration.add(scrollDuration).add(pauseAfterDuration));
+
+            scrollTimeline.getKeyFrames().addAll(pauseBeforeKF, scrollKF, pauseAfterKF);
+            scrollTimeline.setCycleCount(Timeline.INDEFINITE);
+        });
+
+        thanksScrollPane.setOnMouseEntered(event -> {
+            scrollTimeline.pause();
+        });
+
+        thanksScrollPane.setOnMouseExited(event -> {
+            scrollTimeline.play();
+        });
     }
 
     @FXML

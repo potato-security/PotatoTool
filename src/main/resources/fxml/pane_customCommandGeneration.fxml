@@ -2,11 +2,76 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.Cursor?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/PaneCustomCommandGeneration.css,@../css/extension.css"
            fx:id="sPane"
            fx:controller="com.potato.potatotool.controller.PaneCustomCommandGeneration"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+
+    <ScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}">
+        <VBox alignment="CENTER" spacing="20" prefWidth="${sPane.width - 15}">
+
+            <HBox alignment="CENTER_LEFT" prefWidth="${sPane.width - 15}">
+                <Label alignment="CENTER" prefWidth="${(sPane.width / 2) - 200}" styleClass="titleText" text="系统操作命令查询工具 "/>
+                <HBox alignment="CENTER" prefWidth="${sPane.width / 2}">
+                    <StackPane>
+                        <TextField fx:id="ipField" prefWidth="${sPane.width / 5}" minHeight="0" promptText="请输入IP……" text="127.0.0.1" />
+                        <Label translateX="1" prefWidth="65" styleClass="textFieldLeft" text="IP" alignment="CENTER" StackPane.alignment="CENTER_LEFT"/>
+                    </StackPane>
+                    <Label prefWidth="${sPane.width / 13}" />
+                    <StackPane>
+                        <TextField fx:id="portField" prefWidth="${sPane.width / 5}" minHeight="0" promptText="请输入Port……" text="9001" />
+                        <Label translateX="1" prefWidth="65" styleClass="textFieldLeft" text="Port" alignment="CENTER" StackPane.alignment="CENTER_LEFT"/>
+                    </StackPane>
+                    <Label prefWidth="${sPane.width / 13}" />
+                    <HBox alignment="CENTER">
+                        <Label fx:id="shellLabel" minWidth="75" styleClass="comboBoxLeft" text="Shell" alignment="CENTER" StackPane.alignment="CENTER_LEFT"/>
+                        <ComboBox fx:id="shellComboBox" prefHeight="${shellLabel.height}" minWidth="140" prefWidth="140" >
+                            <cursor>
+                                <Cursor fx:constant="HAND" />
+                            </cursor>
+                        </ComboBox>
+                    </HBox>
+                </HBox>
+            </HBox>
+
+            <HBox alignment="CENTER" prefWidth="${sPane.width - 15}">
+                <ScrollPane maxHeight="${sPane.height - 80}" hbarPolicy="NEVER">
+                    <VBox fx:id="vBoxBar">
+                        <Accordion fx:id="accordionPane"/>
+                    </VBox>
+                </ScrollPane>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <StackPane>
+                    <ListView fx:id="listView" prefWidth="${sPane.width - 215}" prefHeight="${sPane.height - 80}" maxHeight="${sPane.height - 100}" />
+<!--                    <Label fx:id="toBack" visible="false" managed="false" translateX="-10" translateY="5" StackPane.alignment="TOP_RIGHT" onMouseClicked="#goBack">-->
+<!--                        <graphic>-->
+<!--                            <Region styleClass="back"/>-->
+<!--                        </graphic>-->
+<!--                        <cursor>-->
+<!--                            <Cursor fx:constant="HAND" />-->
+<!--                        </cursor>-->
+<!--                        <tooltip>-->
+<!--                            <Tooltip text="返回" />-->
+<!--                        </tooltip>-->
+<!--                    </Label>-->
+                </StackPane>
+            </HBox>
+
+        </VBox>
+    </ScrollPane>
+
+
+    <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="200" alignment="CENTER" StackPane.alignment="CENTER">
+        <effect>
+            <DropShadow/>
+        </effect>
+        <Label fx:id="prompt" text="复制成功"/>
+    </StackPane>
 
 </StackPane>

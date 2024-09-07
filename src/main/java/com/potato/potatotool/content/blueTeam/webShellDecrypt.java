@@ -527,7 +527,12 @@ public class webShellDecrypt {
             // 判断该解密后字符串可读性，默认阈值：可视化比例0.8 乱码5个
             conText7 = ReadabilityChecker.assessReadability(conText7) ? conText7 : conText6;
             String conText8 = str.base64Decode(conText7);
-            conText8 = ReadabilityChecker.assessReadability(conText8) ? conText8 : conText7;
+            if(conText8 != null && conText8.length() > 100) {
+                // 兼容js的btoa(toBinary(payload))
+                conText8 = ReadabilityChecker.assessReadability(conText8, 0.5, 0) ? conText8 : conText7;
+            }else {
+                conText8 = ReadabilityChecker.assessReadability(conText8) ? conText8 : conText7;
+            }
             String conText9 = str.seeyonBase64Decode(conText8);
             conText9 = ReadabilityChecker.assessReadability(conText9) ? conText9 : conText8;
 

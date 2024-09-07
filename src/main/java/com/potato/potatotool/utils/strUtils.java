@@ -969,7 +969,7 @@ public class strUtils {
                 serializeCode = true;
             }
 
-            return new String(decodeBytes, "UTF-8");
+            return new String(decodeBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
             return null;
