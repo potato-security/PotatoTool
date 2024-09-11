@@ -5,7 +5,9 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.getResourceString;
@@ -71,11 +73,10 @@ public class DeserializerUtils{
 
             // 反序列化恶意内容存储
             // cc6攻击链解析导出class及反编译java、其他的存储为ser
+            String uuid = UUID.randomUUID().toString();
+            strUtils.createFile(decryptedTextBytes,"./serialize_" + uuid +".ser");
             if(resultByte!=null){
-
-                strUtils.createFile(decryptedTextBytes,"./serialize.ser");
-
-                strUtils.createFile(resultByte,"./serialize.class");
+                strUtils.createFile(resultByte,"./serialize_" + uuid +".class");
                 // 导出java
                 String tips = "// 部分反序列化构造链暂不支持解析抽取还原class及java文件，如文件内容存在缺失，请查看原始serialize.ser文件，工具会逐步兼容所有构造链\n";
                 //  初始化默认反编译模式配置
@@ -83,12 +84,15 @@ public class DeserializerUtils{
                 String decompileMode = tmpJsonObj.getAsJsonPrimitive("decompileMode").getAsString();
 
                 String outputCode = tips + Decompile(resultByte, decompileMode);
-                strUtils.createFile(outputCode,"./serialize.java");
+                strUtils.createFile(outputCode,"./serialize_" + uuid +".java");
                 resultData = outputCode.getBytes(StandardCharsets.UTF_8);
 
             }else{
-                strUtils.createFile(decryptedTextBytes,"./serialize.ser");
-                resultData = decryptedTextBytes;
+                byte[] prefix = "【ser文件未能完全反编译，可能存在分段传输导致抽取class内容不完整，请自行在上下请求包中拼接16进制的ser文件内容进行单独解密。】\n".getBytes(StandardCharsets.UTF_8);
+                resultData = ByteBuffer.allocate(prefix.length + decryptedTextBytes.length)
+                        .put(prefix)
+                        .put(decryptedTextBytes)
+                        .array();
             }
         }
         return resultData;
@@ -104,8 +108,9 @@ public class DeserializerUtils{
 
         // class数据流数据标志，开头="cafebabe"  / byte[] {(byte)0xCA, (byte)0xFE, (byte)0xBA, (byte)0xBE})
         if(byteStartsWith(byteData, 0, new byte[] {(byte)0xCA, (byte)0xFE, (byte)0xBA, (byte)0xBE})){
+            String uuid = UUID.randomUUID().toString();
             System.out.println("可能存在class字节码数据，尝试导出class及java文件");
-            String path="./tmpDataOut.class";
+            String path="./tmpDataOut_" + uuid +".class";
             path = strUtils.filePathtoAbsolute(path);
             strUtils.createFile(byteData, path);
             try {
@@ -114,7 +119,11 @@ public class DeserializerUtils{
                 JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Decompile");
                 String decompileMode = tmpJsonObj.getAsJsonPrimitive("decompileMode").getAsString();
                 String code = Decompile(byteData, decompileMode, path);
-                if(code!=null)resultData = code.getBytes(StandardCharsets.UTF_8);
+                if(code!=null){
+                    resultData = code.getBytes(StandardCharsets.UTF_8);
+                }else {
+                    System.out.println("未能完全反编译，可能存在分段传输导致class内容不完整，请在上下请求包中拼接16进制的class文件内容进行单独解密");
+                }
             } catch (Exception e) {
                 if(debugMode)e.printStackTrace();
             }

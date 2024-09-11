@@ -75,7 +75,17 @@
 
       <Pane minHeight="15"/>
       <HBox alignment="CENTER">
-         <Button minHeight="48.0" minWidth="${sPane.width}" text="一键解密" onAction="#toDecode">
+         <Button minHeight="48.0" minWidth="${sPane.width * 0.4}" text="上传流量包" onAction="#toDecodePcap">
+            <effect>
+               <DropShadow />
+            </effect>
+            <tooltip>
+               <Tooltip text="应对多种加密组合、数据混淆轻松推理还原（非CTF版）&#10;&#10;注：反序列化/class数据等中间产物会在程序根目录保存" >
+               </Tooltip>
+            </tooltip>
+         </Button>
+         <Label minWidth="${sPane.width * 0.1}"/>
+         <Button minHeight="48.0" minWidth="${sPane.width * 0.4}" text="一键解密" onAction="#toDecode">
             <effect>
                <DropShadow />
             </effect>

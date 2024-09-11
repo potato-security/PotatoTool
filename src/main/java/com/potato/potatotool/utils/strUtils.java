@@ -1077,7 +1077,7 @@ public class strUtils {
                 serializeCode = true;
             }
 
-            return (new String(tmpRes, StandardCharsets.UTF_8));
+            return new String(tmpRes, StandardCharsets.UTF_8);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
             return oldData;

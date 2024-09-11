@@ -41,6 +41,10 @@ public class webShellDecrypt {
      * @return
      */
     public Map<String, Object> dealBody(String conText){
+        if(conText.equals("")){
+            System.out.println("解密的conText不可为空");
+            return null;
+        }
         Map<String, Object> resultDict = new HashMap<>();
         String resultData = "" ;
 
@@ -95,8 +99,8 @@ public class webShellDecrypt {
                     String value = keyValue[1];
                     jsonData.put(key, value);
                 }else {
-                    System.out.println("分割存在异常："+ Arrays.toString(keyValue));
-                    System.out.println("分割存在异常，该组参数等号个数："+ keyValue.length);
+                    if(debugMode) System.out.println("分割存在异常："+ Arrays.toString(keyValue));
+                    if(debugMode) System.out.println("分割存在异常，该组参数等号个数："+ keyValue.length);
                     jsonData.clear();
                 }
             }
@@ -107,7 +111,7 @@ public class webShellDecrypt {
                 jsonData = new jsonUtils.OrderedJSONObject(postData);
             } catch (Exception e) {
                 if(debugMode)e.printStackTrace();
-                System.out.println("json格式错误，确定是json格式么？");
+                if(debugMode) System.out.println("json格式错误，确定是json格式么？");
             }
         }
 
@@ -218,7 +222,7 @@ public class webShellDecrypt {
 
 
         // byte组合解密
-        if(conText.length() > 100){
+        if(conText.length() > 100 && !isAllZero(conText)){
             byte[] byteByte = byteD.decrypt(conText);
             if(byteByte!=null){
                 String byteData = new String(byteByte ,StandardCharsets.UTF_8);
@@ -311,9 +315,11 @@ public class webShellDecrypt {
                 if(!conText.contains("=")) continue;
                 int indexEq = conText.indexOf("=") + 1;
                 int indexAnd = conText.contains("&") ? conText.indexOf("&") : conText.length();
-                tmpConText = conText.substring(indexEq, indexAnd);
-                tmpPassStr = conText.substring(0,indexEq);
-                if(tmpConText.contains("=")) continue;
+                if(indexEq < indexAnd) {
+                    tmpConText = conText.substring(indexEq, indexAnd);
+                    tmpPassStr = conText.substring(0, indexEq);
+                    if (tmpConText.contains("=")) continue;
+                }
             }
 
             // 针对开头结尾存在pass+key的情况
@@ -322,6 +328,7 @@ public class webShellDecrypt {
                 if(conText.length()<33 || conText.contains("&")) continue;
                 tempMd5PassKey = "流量中提取到md5(pass+md5(key))=" + conText.substring(0,16) + conText.substring(conText.length()-16, conText.length()) + "\n";
                 tmpConText = conText.substring(16, conText.length()-16 );
+                if(!ReadabilityChecker.assessReadability(tempMd5PassKey) || !ReadabilityChecker.assessReadability(tmpConText)) continue;
             }
 
             String conText1 = str.urlDecode(tmpConText);
@@ -469,8 +476,8 @@ public class webShellDecrypt {
 
         // 尝试Navicat解密
         String conText_navicat11 = navicat11Des.decryptString(conText);
-        if(conText_navicat11 != null){
-            encodeMode.add("Navicat11(Blowfish\\ECB\\NoPadding<key:iv>7A3F4B8A1C2E6A4A9B3A6B8FA6A0B3F2C0A4F4C7:3B2E68F7D4CCD6E3)");
+        if(conText_navicat11 != null && conText.length() > 3){
+            encodeMode.add("Navicat11(Blowfish\\ECB\\NoPadding<key:iv>7A3F4B8A1C2E6A4A9B3A6B8FA6A0B3F2C0A4F4C7:3B2E68F7D4CCD6E3)\\误报概率大");
             encodeModeList.add(encodeMode);
             return conText_navicat11;
         }
@@ -523,9 +530,13 @@ public class webShellDecrypt {
             String conText4 = str.ROT13FuncDecode(conText3);
             String conText5 = str.strFuncRev(conText4);
             String conText6 = str.decodeUnicode(conText5);
+            boolean hexBefore_serializeCode =str.serializeCode;
+            boolean hexBefore_classCode =str.classCode;
             String conText7 = str.hexDecode(conText6);
+            boolean hexAfter_serializeCode =str.serializeCode;
+            boolean hexAfter_classCode =str.classCode;
             // 判断该解密后字符串可读性，默认阈值：可视化比例0.8 乱码5个
-            conText7 = ReadabilityChecker.assessReadability(conText7) ? conText7 : conText6;
+            conText7 = ReadabilityChecker.assessReadability(conText7)|| hexBefore_serializeCode!=hexAfter_serializeCode || hexBefore_classCode!=hexAfter_classCode ? conText7 : conText6;
             String conText8 = str.base64Decode(conText7);
             if(conText8 != null && conText8.length() > 100) {
                 // 兼容js的btoa(toBinary(payload))
@@ -582,6 +593,16 @@ public class webShellDecrypt {
         encodeModeList.add(encodeMode);
 
         return conText;
+    }
+
+    public boolean isAllZero(String input) {
+        int length = input.length();
+        for (int i = 0; i < length; i++) {
+            if (input.charAt(i) != '0') {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -703,7 +724,8 @@ public class webShellDecrypt {
 
 
     public static void main(String[] args) {
-        // 这里调用会失败，不知道为啥
+        // 非项目启动调用，需要单独初始化安全证书套件
+        SecurityInitializer.initializeSecurityProvider();
         webShellDecrypt www=new webShellDecrypt();
         www.inputKey = null;
         www.inputIv = null;

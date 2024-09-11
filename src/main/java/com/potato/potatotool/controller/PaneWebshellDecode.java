@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
+import com.potato.potatotool.content.blueTeam.ReadPacketFile;
 import com.potato.potatotool.content.blueTeam.webShellDecrypt;
 import com.potato.potatotool.utils.*;
 import javafx.animation.FadeTransition;
@@ -456,7 +457,7 @@ public class PaneWebshellDecode {
     @FXML
     void rulesComboChoose(ActionEvent e){
 
-        // 0-使用默认Key快速解密 1-指定Key快速解密 2-使用内置50wKey字典解密 3-指定Key字典解密
+        // 0-使用默认Key快速解密 1-指定Key快速解密 2-使用内置50wKey字典解密 3-指定Key字典解密ƒ
 
         int selectedIndex = rulesComboBox.getSelectionModel().getSelectedIndex();
 
@@ -540,4 +541,93 @@ public class PaneWebshellDecode {
         inputText.setText(data);
     }
 
+    public void toDecodePcap(ActionEvent event) {
+        FileChooser chooser = new FileChooser();
+        FileChooser.ExtensionFilter filterPcap = new FileChooser.ExtensionFilter("PCAP文件", "*.pcap");
+        FileChooser.ExtensionFilter filterPcapng = new FileChooser.ExtensionFilter("PCAPNG文件", "*.pcapng");
+        chooser.getExtensionFilters().addAll(filterPcap, filterPcapng);
+
+        Stage stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+        String path = null;
+        try {
+            path = chooser.showOpenDialog(stage).getAbsolutePath();
+        }catch (Exception exception){
+            System.out.println("没有文件被选择");
+            return;
+        }
+
+        if (path == null) {
+            System.out.println("没有文件被选择");
+            return;
+        }
+
+        ExecutorServiceManager.getInstance().forceShutdown();
+
+        if (currentTask != null && !currentTask.isDone()) {
+            currentThread.stop();
+        }
+
+        tipTitle.setText("");
+        tipTitle.setVisible(false);
+        tipTitle.setManaged(false);
+
+        tipTitle.setText("");
+        tipTitle.setVisible(false);
+        tipTitle.setManaged(false);
+
+        //  配置参数
+        int selectedIndex = rulesComboBox.getSelectionModel().getSelectedIndex();
+        int modeIndex = modeComboBox.getSelectionModel().getSelectedIndex();
+
+        if(modeIndex == 0){
+            traverse.add("AES");
+        }else if(modeIndex == 1){
+            traverse.add("DES");
+        }else if(modeIndex == 2){
+            traverse.add("XOR");
+        }else if(modeIndex == 3){
+            traverse.add("AES");
+            traverse.add("DES");
+            traverse.add("XOR");
+        }
+
+        if(selectedIndex == 0){
+            inputKey = null;
+            inputIv = null;
+            traverse.clear();
+        }else if(selectedIndex == 1){
+            inputKey = customKey.getText();
+            inputIv = customIv.getText();
+            traverse.clear();
+        }else if(selectedIndex == 2){
+            inputKey = null;
+            inputIv = null;
+        }else if(selectedIndex == 3){
+            inputKey = null;
+            inputIv = null;
+        }
+
+        result.replaceText(!traverse.isEmpty()? "请稍等，数据包正在遍历使用大型字典进行解密，可能需要一些时间……" : "数据包遍历解密进行中，可能需要一些时间……");
+
+        String finalPath = path;
+        currentTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                ReadPacketFile reader = new ReadPacketFile(finalPath, inputKey, inputIv, traverse, filePath);
+                String outputFilePath = reader.getPackets();
+                Platform.runLater(() -> {
+                    result.replaceText("流量包解密完成，已输出至：" + outputFilePath);
+                });
+                ExecutorServiceManager.getInstance().forceShutdown();
+                return null;
+            }
+        };
+        currentTask.setOnFailed(e -> {
+            Throwable error = currentTask.getException();
+            if (debugMode) error.printStackTrace();
+        });
+        // 启动任务
+        currentThread = new Thread(currentTask);
+        currentThread.start();
+    }
 }
