@@ -185,8 +185,8 @@
                                  <children>
                                     <RXToggleButton text="信息收集" toggleGroup="$navGroup" />
                                     <RXToggleButton text="漏洞扫描" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="免杀webshell" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="自定义内存码" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="免杀" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="自定义内存马" toggleGroup="$navGroup" />
                                     <RXToggleButton text="命令生成" toggleGroup="$navGroup" />
                                     <RXToggleButton text="命令查询" toggleGroup="$navGroup" />
                                     <RXToggleButton text="KB提权查询" toggleGroup="$navGroup" />

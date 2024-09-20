@@ -26,6 +26,7 @@ import javafx.scene.layout.VBox;
 import java.time.LocalDate;
 import java.util.*;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.kbCheck.*;
 
 /**
@@ -134,120 +135,135 @@ public class PaneKbRootQuery {
 
     }
 
+    private Thread currentThread;
     @FXML
     public void searchKb(ActionEvent event) {
         String input = inputText.getText();
         boolean isMucFilter = mucFilter.isSelected();
 
-        if(!input.toLowerCase().contains("kb")){
+        if(!input.toLowerCase().contains("kb") && !input.toLowerCase().contains("]: q")){
             inputText.setText("输入信息有误，请粘贴补丁号或systeminfo信息");
             return;
         }
-        new Thread(() -> {
-            Platform.runLater(() -> {
-                if(isMucFilter) {
-                    Label tipTitle = new Label("平替KB编号轮检中，请稍等……");
+
+        if (currentThread != null && currentThread.isAlive()) {
+            currentThread.stop();   // 强行中断当前线程
+        }
+
+        currentThread = new Thread(() -> {
+            try {
+                Platform.runLater(() -> {
+
+                    Label tipTitle = new Label();
+                    if(isMucFilter) {
+                        tipTitle.setText("平替KB编号轮检中，请稍等……");
+                    }else {
+                        tipTitle.setText("查询中，请稍等……");
+                    }
                     tipTitle.setId("tipTitle");
                     tableView.setPlaceholder(tipTitle);
-                }
-                filterView.getItems().clear();
-                productGroup.getFilters().clear();
-                componentGroup.getFilters().clear();
-                severityGroup.getFilters().clear();
-                impactGroup.getFilters().clear();
-                pocGroup.getFilters().clear();
-            });
+                    filterView.getItems().clear();
+                    productGroup.getFilters().clear();
+                    componentGroup.getFilters().clear();
+                    severityGroup.getFilters().clear();
+                    impactGroup.getFilters().clear();
+                    pocGroup.getFilters().clear();
+                });
 
-            List<Map<String, String>> filteredKB = filterKB(input, isMucFilter);
-            List<KbInfo> kbInfo = new ArrayList<>();
+                List<Map<String, String>> filteredKB = filterKB(input, isMucFilter);
+                List<KbInfo> kbInfo = new ArrayList<>();
 
-            List<FilterView.Filter<KbInfo>> productFilterView = new ArrayList<>();
-            List<String> productList = new ArrayList<>();
-            List<FilterView.Filter<KbInfo>> componentFilterView = new ArrayList<>();
-            List<String> componentList = new ArrayList<>();
-            List<FilterView.Filter<KbInfo>> severityFilterView = new ArrayList<>();
-            List<String> severityList = new ArrayList<>();
-            List<FilterView.Filter<KbInfo>> impactFilterView = new ArrayList<>();
-            List<String> impactList = new ArrayList<>();
+                List<FilterView.Filter<KbInfo>> productFilterView = new ArrayList<>();
+                List<String> productList = new ArrayList<>();
+                List<FilterView.Filter<KbInfo>> componentFilterView = new ArrayList<>();
+                List<String> componentList = new ArrayList<>();
+                List<FilterView.Filter<KbInfo>> severityFilterView = new ArrayList<>();
+                List<String> severityList = new ArrayList<>();
+                List<FilterView.Filter<KbInfo>> impactFilterView = new ArrayList<>();
+                List<String> impactList = new ArrayList<>();
 
-            filteredKB.forEach(map -> {
-                KbInfo info = new KbInfo(map.get("发布日期"), map.get("CVE编号"), map.get("KB编号"), map.get("标题"), map.get("影响产品"), map.get("影响组件"), map.get("严重性"), map.get("漏洞影响"), map.get("替代KB编号"), map.get("漏洞利用"));
-                kbInfo.add(info);
+                filteredKB.forEach(map -> {
+                    KbInfo info = new KbInfo(map.get("发布日期"), map.get("CVE编号"), map.get("KB编号"), map.get("标题"), map.get("影响产品"), map.get("影响组件"), map.get("严重性"), map.get("漏洞影响"), map.get("替代KB编号"), map.get("漏洞利用"));
+                    kbInfo.add(info);
 
-                String product = map.get("影响产品");
-                String component = map.get("影响组件");
-                String severity = map.get("严重性");
-                String impact = map.get("漏洞影响");
+                    String product = map.get("影响产品");
+                    String component = map.get("影响组件");
+                    String severity = map.get("严重性");
+                    String impact = map.get("漏洞影响");
 
-                if (!productList.contains(product) && !product.isEmpty()) {
-                    productList.add(product);
-                    FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(product) {
-                        @Override
-                        public boolean test(KbInfo kbinfo) {
-                                return kbinfo.getProduct().equals(product);
-                            }
-                    };
-                    productFilterView.add(tmpFilter);
-                }
-                if (!componentList.contains(component) && !component.isEmpty()) {
-                    componentList.add(component);
-                    FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(component) {
-                        @Override
-                        public boolean test(KbInfo kbinfo) {
-                                return kbinfo.getComponent().equals(component);
-                            }
-                    };
-                    componentFilterView.add(tmpFilter);
-                }
-                if (!severityList.contains(severity) && !severity.isEmpty()) {
-                    severityList.add(severity);
-                    FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(severity) {
-                        @Override
-                        public boolean test(KbInfo kbinfo) {
-                                return kbinfo.getComponent().equals(severity);
-                            }
-                    };
-                    severityFilterView.add(tmpFilter);
-                }
-                if (!impactList.contains(impact) && !impact.isEmpty()) {
-                    impactList.add(impact);
-                    FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(impact) {
-                        @Override
-                        public boolean test(KbInfo kbinfo) {
-                                return kbinfo.getComponent().equals(impact);
-                            }
-                    };
-                    impactFilterView.add(tmpFilter);
-                }
-            });
-
-            Platform.runLater(() -> {
-                filterView.getItems().addAll(kbInfo);
-
-                productGroup.getFilters().addAll(productFilterView);
-                componentGroup.getFilters().addAll(componentFilterView);
-                severityGroup.getFilters().addAll(severityFilterView);
-                impactGroup.getFilters().addAll(impactFilterView);
-
-                pocGroup.getFilters().add(new FilterView.Filter<KbInfo>("存在漏洞利用") {
-                    @Override
-                    public boolean test(KbInfo KbInfo) {
-                        return !KbInfo.getPoc().isEmpty();
+                    if (!productList.contains(product) && !product.isEmpty()) {
+                        productList.add(product);
+                        FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(product) {
+                            @Override
+                            public boolean test(KbInfo kbinfo) {
+                                    return kbinfo.getProduct().equals(product);
+                                }
+                        };
+                        productFilterView.add(tmpFilter);
+                    }
+                    if (!componentList.contains(component) && !component.isEmpty()) {
+                        componentList.add(component);
+                        FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(component) {
+                            @Override
+                            public boolean test(KbInfo kbinfo) {
+                                    return kbinfo.getComponent().equals(component);
+                                }
+                        };
+                        componentFilterView.add(tmpFilter);
+                    }
+                    if (!severityList.contains(severity) && !severity.isEmpty()) {
+                        severityList.add(severity);
+                        FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(severity) {
+                            @Override
+                            public boolean test(KbInfo kbinfo) {
+                                    return kbinfo.getComponent().equals(severity);
+                                }
+                        };
+                        severityFilterView.add(tmpFilter);
+                    }
+                    if (!impactList.contains(impact) && !impact.isEmpty()) {
+                        impactList.add(impact);
+                        FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(impact) {
+                            @Override
+                            public boolean test(KbInfo kbinfo) {
+                                    return kbinfo.getComponent().equals(impact);
+                                }
+                        };
+                        impactFilterView.add(tmpFilter);
                     }
                 });
-                pocGroup.getFilters().add(new FilterView.Filter<KbInfo>("不存在漏洞利用") {
-                    @Override
-                    public boolean test(KbInfo KbInfo) {
-                        return KbInfo.getPoc().isEmpty();
-                    }
-                });
-                filterView.getFilterGroups().setAll(productGroup, componentGroup, severityGroup, impactGroup, pocGroup);
 
-                Label tipTitle = new Label("未检测到存在相应漏洞");
-                tipTitle.setId("tipTitle");
-                tableView.setPlaceholder(tipTitle);
-            });
-        }).start();
+                Platform.runLater(() -> {
+                    filterView.getItems().addAll(kbInfo);
+
+                    productGroup.getFilters().addAll(productFilterView);
+                    componentGroup.getFilters().addAll(componentFilterView);
+                    severityGroup.getFilters().addAll(severityFilterView);
+                    impactGroup.getFilters().addAll(impactFilterView);
+
+                    pocGroup.getFilters().add(new FilterView.Filter<KbInfo>("存在漏洞利用") {
+                        @Override
+                        public boolean test(KbInfo KbInfo) {
+                            return !KbInfo.getPoc().isEmpty();
+                        }
+                    });
+                    pocGroup.getFilters().add(new FilterView.Filter<KbInfo>("不存在漏洞利用") {
+                        @Override
+                        public boolean test(KbInfo KbInfo) {
+                            return KbInfo.getPoc().isEmpty();
+                        }
+                    });
+                    filterView.getFilterGroups().setAll(productGroup, componentGroup, severityGroup, impactGroup, pocGroup);
+
+                    Label tipTitle = new Label("未检测到存在相应漏洞");
+                    tipTitle.setId("tipTitle");
+                    tableView.setPlaceholder(tipTitle);
+                });
+            } catch (Exception e) {
+                if(debugMode) System.out.println(e.toString());
+            }
+        });
+        currentThread.start();
     }
 
 

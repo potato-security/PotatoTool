@@ -6,6 +6,7 @@ import com.potato.potatotool.content.redTeam.memshell.config.MemoryShellConstant
 import me.gv7.woodpecker.tools.common.FileUtil;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class ShowResultsUtil {
 //                e.printStackTrace();
 //            }
             String[] results = JexprUtil.generateExp(memoryObj);
-            resultMap.put("表达式封装结果", String.valueOf(results));
+            resultMap.put("表达式封装结果", String.join("", results));
         } else {
             switch (memoryObj.getOutputFormat()) {
                 case MemoryShellConstants.OUTPUTFORMAT_CLASS:
@@ -79,7 +80,7 @@ public class ShowResultsUtil {
                 case MemoryShellConstants.OUTPUTFORMAT_BIGINTEGER:
                     try {
                         // base64/bcel/js/biginteger 根据配置对象，生成格式化后的字节码文本
-                        String result = new String(transformOutputFormat(memoryObj));
+                        String result = new String(transformOutputFormat(memoryObj), StandardCharsets.UTF_8);
                         resultMap.put("结果", result);
                     } catch (Throwable e) {
                         resultMap.put("结果", "错误");
@@ -107,7 +108,6 @@ public class ShowResultsUtil {
         if (outputPath.endsWith(".class") || outputPath.endsWith(".jar") || outputPath.endsWith(".jsp")) {
             outputPath = file.getParent();
         }
-
         // 检查路径是否是文件路径
         boolean isFilePath = outputPath.contains(".");
         if (isFilePath) {

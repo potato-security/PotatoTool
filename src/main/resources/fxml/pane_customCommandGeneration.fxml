@@ -49,17 +49,6 @@
 
                 <StackPane>
                     <ListView fx:id="listView" prefWidth="${sPane.width - 215}" prefHeight="${sPane.height - 80}" maxHeight="${sPane.height - 100}" />
-<!--                    <Label fx:id="toBack" visible="false" managed="false" translateX="-10" translateY="5" StackPane.alignment="TOP_RIGHT" onMouseClicked="#goBack">-->
-<!--                        <graphic>-->
-<!--                            <Region styleClass="back"/>-->
-<!--                        </graphic>-->
-<!--                        <cursor>-->
-<!--                            <Cursor fx:constant="HAND" />-->
-<!--                        </cursor>-->
-<!--                        <tooltip>-->
-<!--                            <Tooltip text="返回" />-->
-<!--                        </tooltip>-->
-<!--                    </Label>-->
                 </StackPane>
             </HBox>
 

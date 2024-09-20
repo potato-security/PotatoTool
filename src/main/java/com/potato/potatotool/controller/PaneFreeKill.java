@@ -1,24 +1,52 @@
 package com.potato.potatotool.controller;
 
+import com.potato.potatotool.utils.decompileUtils;
 import com.potato.potatotool.utils.strUtils;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.UUID;
 
+import static com.potato.potatotool.content.redTeam.QRCodeGenerator.generateQRCodeImageWithLogo;
+import static com.potato.potatotool.content.redTeam.Signature.signature;
 import static com.potato.potatotool.content.redTeam.webShell.getWebShell;
+import static com.potato.potatotool.controller.MainController.clipRect;
 
 /**
  * @author Potato
  * @date 2023/2/19 15:05
  */
-public class PaneWebshellGeneration {
+public class PaneFreeKill {
+
+    @FXML
+    private VBox vBoxBar;
+
+    @FXML
+    private VBox webshellContent;
+    @FXML
+    private VBox signatureContent;
+    @FXML
+    private VBox QRContent;
+    @FXML
+    private VBox secureProtectContent;
+
     @FXML
     private TextField webShellKey;
 
@@ -60,6 +88,87 @@ public class PaneWebshellGeneration {
     private TextField cmdKey;
     @FXML
     private Label tipTitleCmd;
+
+    @FXML
+    private TextField exePath;
+    @FXML
+    private TextField sigFilePath;
+    @FXML
+    private Label tipTitleSigna;
+
+    @FXML
+    private TextField contentQR;
+    @FXML
+    private TextField widthQR;
+    @FXML
+    private TextField logoPath;
+    @FXML
+    private TextField widthLogo;
+    @FXML
+    private Label tipTitleQR;
+
+    @FXML
+    private VBox vBoxBarFunc;
+
+    public void initialize() {
+        SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(10.0);
+        Rectangle clip = clipRect(
+                vBoxBar, arcProperty
+        );
+        vBoxBar.setClip(clip);
+        Rectangle clipFunc = clipRect(
+                vBoxBarFunc, arcProperty
+        );
+        vBoxBarFunc.setClip(clipFunc);
+    }
+
+    @FXML
+    void toWebshell(MouseEvent mouseEvent) {
+        webshellContent.setManaged(true);
+        webshellContent.setVisible(true);
+        signatureContent.setManaged(false);
+        signatureContent.setVisible(false);
+        QRContent.setManaged(false);
+        QRContent.setVisible(false);
+        secureProtectContent.setManaged(false);
+        secureProtectContent.setVisible(false);
+    }
+
+    @FXML
+    void toSignature(MouseEvent mouseEvent) {
+        webshellContent.setManaged(false);
+        webshellContent.setVisible(false);
+        signatureContent.setManaged(true);
+        signatureContent.setVisible(true);
+        QRContent.setManaged(false);
+        QRContent.setVisible(false);
+        secureProtectContent.setManaged(false);
+        secureProtectContent.setVisible(false);
+    }
+
+    @FXML
+    void toQR(MouseEvent mouseEvent) {
+        webshellContent.setManaged(false);
+        webshellContent.setVisible(false);
+        signatureContent.setManaged(false);
+        signatureContent.setVisible(false);
+        QRContent.setManaged(true);
+        QRContent.setVisible(true);
+        secureProtectContent.setManaged(false);
+        secureProtectContent.setVisible(false);
+    }
+
+    @FXML
+    void toSecureProtect(MouseEvent mouseEvent) {
+        webshellContent.setManaged(false);
+        webshellContent.setVisible(false);
+        signatureContent.setManaged(false);
+        signatureContent.setVisible(false);
+        QRContent.setManaged(false);
+        QRContent.setVisible(false);
+        secureProtectContent.setManaged(true);
+        secureProtectContent.setVisible(true);
+    }
 
     @FXML
     public void webshellGeneration() {
@@ -357,5 +466,150 @@ public class PaneWebshellGeneration {
             tipTitleCmd.setText("webShell生成失败，详细请查看命令窗口报错");
         }
         tipTitleCmd.setVisible(true);
+    }
+
+    @FXML
+    public void getExePath(ActionEvent event) {
+        FileChooser chooser = new FileChooser();
+
+        Stage stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+        String path = null;
+        try {
+            path = chooser.showOpenDialog(stage).getAbsolutePath();
+        }catch (Exception exception){
+            System.out.println("没有文件被选择");
+            return;
+        }
+
+        if (path == null) {
+            System.out.println("没有文件被选择");
+        }else {
+            exePath.setText(path);
+        }
+
+        return;
+    }
+
+    @FXML
+    public void getSigFilePath(ActionEvent event) {
+        FileChooser chooser = new FileChooser();
+
+        Stage stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+        String path = null;
+        try {
+            path = chooser.showOpenDialog(stage).getAbsolutePath();
+        }catch (Exception exception){
+            System.out.println("没有文件被选择");
+            return;
+        }
+
+        if (path == null) {
+            System.out.println("没有文件被选择");
+        }else {
+            sigFilePath.setText(path);
+        }
+
+        return;
+    }
+
+    @FXML
+    public void toSigna(ActionEvent event) {
+        tipTitleSigna.setVisible(false);
+
+        String exePathStr = exePath.getText();
+        String sigFilePathStr = sigFilePath.getText();
+
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    String outputPath = signature(exePathStr, sigFilePathStr);
+                    Platform.runLater(() -> {
+                        tipTitleSigna.setText("签名附加完成，文件已导出至：" + outputPath);
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        tipTitleSigna.setText("报错："+e.toString());
+                    });
+                    e.printStackTrace();
+                }
+                Platform.runLater(() -> {
+                    tipTitleSigna.setVisible(true);
+                });
+                return null;
+            }
+        };
+        task.setOnFailed(e -> {
+            Throwable error = task.getException();
+            error.printStackTrace();
+        });
+
+        // 启动任务
+        new Thread(task).start();
+    }
+
+    @FXML
+    public void getLogoPath(ActionEvent event) {
+        FileChooser chooser = new FileChooser();
+
+        Stage stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+        String path = null;
+        try {
+            path = chooser.showOpenDialog(stage).getAbsolutePath();
+        }catch (Exception exception){
+            System.out.println("没有文件被选择");
+            return;
+        }
+
+        if (path == null) {
+            System.out.println("没有文件被选择");
+        }else {
+            logoPath.setText(path);
+        }
+
+        return;
+    }
+
+    @FXML
+    public void toQr(ActionEvent event) {
+        tipTitleQR.setVisible(false);
+
+        String contentQrStr = contentQR.getText();
+        int widthQrStr = Integer.parseInt(widthQR.getText());
+        String logoPathStr = logoPath.getText();
+        int widthLogoStr = Integer.parseInt(widthLogo.getText());
+
+        String uuid = UUID.randomUUID().toString();
+        String outFilePath = "./二维码_" + uuid + ".png";
+        String filePath = strUtils.filePathtoAbsolute(outFilePath);
+
+
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    generateQRCodeImageWithLogo(contentQrStr, widthQrStr, widthQrStr, widthLogoStr, widthLogoStr, filePath, logoPathStr);
+                    Platform.runLater(() -> {
+                        tipTitleQR.setText("二维码生成完成，文件已导出至：" + outFilePath);
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        tipTitleQR.setText("报错："+e.toString());
+                    });
+                    e.printStackTrace();
+                }
+                Platform.runLater(() -> {
+                    tipTitleQR.setVisible(true);
+                });
+                return null;
+            }
+        };
+        task.setOnFailed(e -> {
+            Throwable error = task.getException();
+            error.printStackTrace();
+        });
+
+        // 启动任务
+        new Thread(task).start();
     }
 }

@@ -55,7 +55,7 @@ public class shiroDecrypt {
         } else {
             if(keyArray_Shiro.isEmpty()){ // 优先读取缓存数据
                 try (InputStream shiroKeyInputStream = getResourceStream("shiroKey");
-                     BufferedReader reader = new BufferedReader(new InputStreamReader(shiroKeyInputStream))) {
+                     BufferedReader reader = new BufferedReader(new InputStreamReader(shiroKeyInputStream, StandardCharsets.UTF_8))) {
 
                     String line;
                     while ((line = reader.readLine()) != null) {

@@ -1,4 +1,5 @@
 #tipTitle {
+    -fx-alignment: center;
     -fx-pref-width: 300;
     -fx-min-width: 300;
 }

@@ -10,36 +10,6 @@
            fx:controller="com.potato.potatotool.controller.PaneProcessQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-<!--    <VBox fx:id="paneBox" spacing="25" alignment="TOP_CENTER">-->
-
-<!--        <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">-->
-<!--            <HBox>-->
-<!--                <Label id="tipTitle" text="当前版本"/>-->
-<!--                <Label wrapText="true" id="tipSymbol" text="："/>-->
-<!--                <Label  wrapText="true" text="社区版"/>-->
-<!--            </HBox>-->
-
-<!--            <HBox>-->
-<!--                <Label id="tipTitle" text="进程利用分析"/>-->
-<!--                <Label wrapText="true" id="tipSymbol" text="："/>-->
-<!--                <Label  wrapText="true" text="分析输入的进程信息，检索可能存在提权或深度利用的进程，并提供相关信息。"/>-->
-<!--            </HBox>-->
-<!--            <HBox>-->
-<!--                <Label id="tipTitle" text="杀软检测"/>-->
-<!--                <Label wrapText="true" id="tipSymbol" text="："/>-->
-<!--                <Label  wrapText="true" text="自动检索当前系统中已安装的杀软，并列出其对应的进程信息。"/>-->
-<!--            </HBox>-->
-<!--        </VBox>-->
-
-
-<!--    </VBox>-->
-
-<!--    <Label prefWidth="550" prefHeight="500">-->
-<!--        <graphic>-->
-<!--            <Region styleClass="closeImg"/>-->
-<!--        </graphic>-->
-<!--    </Label>-->
-
     <VBox alignment="CENTER" spacing="15">
 
         <Pane style="-fx-background-radius: 10;-fx-background-color: null">
@@ -60,7 +30,7 @@
 
             <StackPane>
                 <TextArea fx:id="canRoot" prefWidth="${sPane.width * 0.5 - 10}" prefHeight="${sPane.height * 0.6 - 83}"/>
-                <Label styleClass="titleText" translateY="-15" text="可能提权的进程" StackPane.alignment="TOP_CENTER"/>
+                <Label styleClass="titleText" translateY="-15" text="其他进程" StackPane.alignment="TOP_CENTER"/>
             </StackPane>
         </HBox>
 

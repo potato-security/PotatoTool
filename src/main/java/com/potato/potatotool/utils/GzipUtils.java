@@ -5,6 +5,8 @@ package com.potato.potatotool.utils;
  * @date 2024/7/1 09:43
  */
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.zip.*;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -12,7 +14,7 @@ import static com.potato.potatotool.ToStart.debugMode;
 public class GzipUtils {
 
     public static void main(String[] args) {
-        GzipFile("/Users/a/.PotatoTool/md5_database.db","/Users/a/.PotatoTool/md51_database.db");
+        GzipFile("/Users/a/.PotatoTool/md5_database.db","/Users/a/.PotatoTool/md5_database_gzip.db");
     }
 
     /**
@@ -39,20 +41,26 @@ public class GzipUtils {
     /**
      *  对目标文件进行GZIP解压
      */
-    public static void unGzipFile(String gzipFilePath, String destFilePath) {
-        try (FileInputStream fis = new FileInputStream(gzipFilePath);
-             GZIPInputStream gzipIS = new GZIPInputStream(fis);
-             FileOutputStream fos = new FileOutputStream(destFilePath)) {
-
+    public static void unGzipFile(String gzipFilePath, String destFilePath, boolean deleteGzipFile) {
+        try (
+                FileInputStream fis = new FileInputStream(gzipFilePath);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                GZIPInputStream gzipIS = new GZIPInputStream(bis);
+                FileOutputStream fos = new FileOutputStream(destFilePath);
+                BufferedOutputStream bos = new BufferedOutputStream(fos)
+        ) {
             byte[] buffer = new byte[16 * 1024];
             int length;
             while ((length = gzipIS.read(buffer)) > 0) {
-                fos.write(buffer, 0, length);
+                bos.write(buffer, 0, length);
             }
-
+            if(deleteGzipFile){
+                Files.delete(Paths.get(gzipFilePath));
+            }
             System.out.println("File decompressed to: " + destFilePath);
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("【Error】" + gzipFilePath +"解压失败!");
         }
     }
 

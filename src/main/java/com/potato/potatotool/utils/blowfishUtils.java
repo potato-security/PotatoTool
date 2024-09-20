@@ -245,7 +245,7 @@ public class blowfishUtils {
             }else {
                 if(keyArray_Blowfish.isEmpty()){ // 优先读取缓存数据
                     try(InputStream blowfishKeyInputStream = getResourceStream("aesKey");
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(blowfishKeyInputStream))){
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(blowfishKeyInputStream, StandardCharsets.UTF_8))){
 
                         String line;
                         while ((line = reader.readLine()) != null) {

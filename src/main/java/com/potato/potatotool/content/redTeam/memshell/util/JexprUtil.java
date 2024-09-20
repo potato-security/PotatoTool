@@ -3,6 +3,8 @@ package com.potato.potatotool.content.redTeam.memshell.util;
 import com.potato.potatotool.content.redTeam.memshell.config.MemoryObj;
 import me.gv7.woodpecker.plugin.exprs.*;
 
+import static com.potato.potatotool.content.redTeam.memshell.config.MemoryShellConstants.*;
+
 /**
  * @author Potato
  * @date 2024/7/29 17:42
@@ -17,17 +19,17 @@ public class JexprUtil {
         String exprEncoder = memoryObj.getExprEncoder();
 
         switch (exprEncoder) {
-            case "EL":
+            case EXPRENCODER_EL:
                 return new ELExpr().genMemShell(injectorBytes);
-            case "FreeMarker":
+            case EXPRENCODER_FREEMARKER:
                 return new FreeMarkerExpr().genMemShell(injectorBytes);
-            case "OGNL":
+            case EXPRENCODER_OGNL:
                 return new OGNLExpr().genMemShell(injectorBytes);
-            case "SpEL":
+            case EXPRENCODER_SPEL:
                 return new SpELExpr().genMemShell(injectorBytes);
-            case "Velocity":
+            case EXPRENCODER_VELOCITY:
                 return new VelocityExpr().genMemShell(injectorBytes);
-            case "ScriptEngineManager(JS)":
+            case EXPRENCODER_JS:
                 return new ScriptEngineManagerExpr().genMemShell(injectorBytes);
             default:
                 return null;

@@ -6,14 +6,14 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.unZipUtils;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,9 +72,10 @@ public class update {
                         String topKey = "UpDate";
                         JsonObject tmpJsonObj_UpDate = (JsonObject) Constants.getOutsideConfig(topKey);
                         JsonObject tmpJsonObj_arg = tmpJsonObj_UpDate.getAsJsonObject(argKey);
+                        String path = tmpJsonObj_arg.get("Path").getAsString();
                         String Date = tmpJsonObj_arg.get("Date").getAsString();
                         String newDate = extractDateFromFileName(fileName);
-                        if (Date.equals(newDate)) {
+                        if (Date.equals(newDate) && Files.exists(Paths.get(path))) {
                             needUpdate = false;
                             System.out.println(fileName + "已经是最新的文件");
                         }
@@ -105,6 +106,72 @@ public class update {
     }
 
 
+    public static String checkResAndGetDownUrl(String argKey){
+        String downUrl = null;
+        try {
+            if(!argKey.equals("md5")) {
+                String resourceUrl = getConfigInfo("resourceUrl");
+                String downloadUrl = null;
+                String fileName = null;
+
+                RequestObj obj = new RequestObj();
+                obj.setUrl(resourceUrl);
+
+                CustomHttpResponse con = requests(obj);
+                JsonArray resJson = con.getJson().getAsJsonArray();
+
+                for (JsonElement element : resJson) {
+                    JsonObject jsonObject = element.getAsJsonObject();
+                    fileName = jsonObject.get("name").getAsString();
+
+                    if (fileName.startsWith(argKey)) {
+                        downloadUrl = jsonObject.get("download_url").getAsString();
+                        break;
+                    }
+                }
+
+                if (downloadUrl != null) {
+                    boolean needUpdate = true;
+                    try {
+                        String topKey = "UpDate";
+                        JsonObject tmpJsonObj_UpDate = (JsonObject) Constants.getOutsideConfig(topKey);
+                        JsonObject tmpJsonObj_arg = tmpJsonObj_UpDate.getAsJsonObject(argKey);
+                        String path = tmpJsonObj_arg.get("Path").getAsString();
+                        String Date = tmpJsonObj_arg.get("Date").getAsString();
+                        String newDate = extractDateFromFileName(fileName);
+                        if (Date.equals(newDate) && Files.exists(Paths.get(path))) {
+                            needUpdate = false;
+                            System.out.println(fileName + "已经是最新的文件");
+                        }
+                    } catch (Exception e) {}
+
+                    if (needUpdate) downUrl = downloadUrl;
+
+                } else {
+                    throw new Exception("未找到以 " + argKey + " 开头的文件");
+                }
+
+            }else {
+                String md5DownUrl = getConfigInfo("md5DownUrl");
+                String TMP_FOLDER = ".PotatoTool";
+                Path md5Path = Paths.get(System.getProperty("user.home"), TMP_FOLDER).resolve("md5_database.db");
+                if(Files.exists(md5Path) && Files.size(md5Path) > (long) (1.66 * 1024 * 1024 * 1024)){
+                    System.out.println("md5_database已经是最新的文件");
+                }else {
+                    downUrl = md5DownUrl;
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("github访问失败，请检查尝试使用代理");
+            downUrl = "[Error]github访问失败，请检查尝试使用代理";
+            e.printStackTrace();
+        }
+
+        return downUrl;
+    }
+
+
     // 写入本地目录
     public static String downloadAndSaveResource(String argKey, String urlPath) {
 
@@ -128,6 +195,47 @@ public class update {
 
             // 上传的md5也是gzip加工后的
             savePathResult = con.saveToFileByGzip(configFolder.toString(), false);
+
+            if (savePathResult != null){
+                System.out.println("文件写入成功");
+                if(argKey.equals("md5")){
+                    Constants.saveConfig("Md5", savePathResult);
+                }else {
+                    updateLocalResourceConfig(argKey, savePathResult);
+                }
+            }else {
+                System.out.println("文件写入失败");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return savePathResult;
+    }
+
+    public static String downloadAndSaveResource(String argKey, String urlPath, ProgressBar progressBar, Label progressLabel) {
+
+        String TMP_FOLDER = ".PotatoTool";
+        Path configFolder = Paths.get(System.getProperty("user.home"), TMP_FOLDER);
+
+        String savePathResult = "";
+
+        try {
+            Map<String ,String> headers = new HashMap<>();
+            if(!argKey.equals("md5")){
+                headers.put("Accept-Encoding","gzip");
+            }
+
+            RequestObj obj = new RequestObj();
+            obj.setUrl(urlPath);
+            obj.setHeaders(headers);
+            obj.setFollowRedirects(true);
+
+            CustomHttpResponse con = requests(obj);
+
+            // 上传的md5也是gzip加工后的
+            savePathResult = con.saveToFileByGzip(configFolder.toString(), progressBar, progressLabel);
 
             if (savePathResult != null){
                 System.out.println("文件写入成功");

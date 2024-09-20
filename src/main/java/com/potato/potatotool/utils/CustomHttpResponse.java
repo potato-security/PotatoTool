@@ -3,11 +3,16 @@ package com.potato.potatotool.utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import javafx.application.Platform;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -121,11 +126,35 @@ public class CustomHttpResponse{
                     if (elapsedTime >= 1000){
                         long currentBytesRead = bytesRead;
                         long bytesPerSecond = (currentBytesRead - lastBytesRead) * 1000 / elapsedTime;
-                        long remainingTime = (fileSize - currentBytesRead) / bytesPerSecond;
+                        long remainingTimeInSeconds = (fileSize - currentBytesRead) / bytesPerSecond;
 
-                        int progress = (int) ((bytesRead / (float) fileSize) * 100);
-                        System.out.printf("下载进度: %d%%, 速度: %d KB/s, 预估时间: %d s\n",
-                                progress, bytesPerSecond / 16*1024, remainingTime);
+                        String timeUnit;
+                        long remainingTime;
+                        if (remainingTimeInSeconds >= 3600) {
+                            timeUnit = "小时";
+                            remainingTime = remainingTimeInSeconds / 3600;
+                        } else if (remainingTimeInSeconds >= 60) {
+                            timeUnit = "分钟";
+                            remainingTime = remainingTimeInSeconds / 60;
+                        } else {
+                            timeUnit = "秒";
+                            remainingTime = remainingTimeInSeconds;
+                        }
+
+                        String speedUnit;
+                        double speed;
+                        if (bytesPerSecond >= 1024 * 1024) {
+                            speedUnit = "MB/s";
+                            speed = bytesPerSecond / (1024.0 * 1024.0);
+                        } else {
+                            speedUnit = "KB/s";
+                            speed = bytesPerSecond / 1024.0;
+                        }
+
+                        double progress = (double) bytesRead / fileSize; // 基于压缩文件大小计算进度
+
+                        System.out.printf("下载进度: %.0f%%, 速度: %.2f %s, 预估时间: %d %s\n",
+                                progress * 100, speed, speedUnit, remainingTime, timeUnit);
 
                         lastBytesRead = currentBytesRead;
                         startTime = currentTime;
@@ -147,6 +176,85 @@ public class CustomHttpResponse{
 
     }
 
+
+    public String saveToFileByGzip(String filePath, ProgressBar progressBar, Label progressLabel){
+
+        try (InputStream inputStream = con.getInputStream();
+             FileOutputStream fos = new FileOutputStream(getSaveGzipFile(filePath))) {
+
+            File saveFile = getSaveGzipFile(filePath);
+
+            byte[] buffer = new byte[16 * 1024];
+            int bytesRead = 0, len;
+            long startTime = System.currentTimeMillis(), lastBytesRead = 0;
+            int fileSize = con.getContentLength();
+
+            while ((len = inputStream.read(buffer)) != -1) {
+                fos.write(buffer, 0, len);
+                bytesRead += len;
+
+                long currentTime = System.currentTimeMillis();
+                long elapsedTime = currentTime - startTime;
+                if (elapsedTime >= 1000) {
+                    long currentBytesRead = bytesRead;
+                    long bytesPerSecond = (currentBytesRead - lastBytesRead) * 1000 / elapsedTime;
+                    long remainingTimeInSeconds = (fileSize - currentBytesRead) / bytesPerSecond;
+
+                    String timeUnit;
+                    long remainingTime;
+                    if (remainingTimeInSeconds >= 3600) {
+                        timeUnit = "小时";
+                        remainingTime = remainingTimeInSeconds / 3600;
+                    } else if (remainingTimeInSeconds >= 60) {
+                        timeUnit = "分钟";
+                        remainingTime = remainingTimeInSeconds / 60;
+                    } else {
+                        timeUnit = "秒";
+                        remainingTime = remainingTimeInSeconds;
+                    }
+
+                    String speedUnit;
+                    double speed;
+                    if (bytesPerSecond >= 1024 * 1024) {
+                        speedUnit = "MB/s";
+                        speed = bytesPerSecond / (1024.0 * 1024.0);
+                    } else {
+                        speedUnit = "KB/s";
+                        speed = bytesPerSecond / 1024.0;
+                    }
+
+                    double progress = (double) bytesRead / fileSize; // 基于压缩文件大小计算进度
+
+                    Platform.runLater(() -> {
+                        progressBar.setProgress(progress); // 更新进度条
+                        progressLabel.setText(String.format("下载进度: %.0f%%, 速度: %.2f %s, 预估时间: %d %s",
+                                progress * 100, speed, speedUnit, remainingTime, timeUnit));
+                    });
+
+                    lastBytesRead = currentBytesRead;
+                    startTime = currentTime;
+                }
+            }
+            Platform.runLater(() -> {
+                progressBar.setProgress(1);
+                progressLabel.setText("解压中，请稍等……");
+            });
+
+            String gzipAbsolutePath = saveFile.getAbsolutePath();
+            String absolutePath = gzipAbsolutePath.replace(".gzip","");
+
+            GzipUtils.unGzipFile(gzipAbsolutePath, absolutePath, true);
+
+            return absolutePath;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+
     public String saveToFileByGzip(String filePath,Boolean showSpeed){
 
         try (InputStream inputStream = con.getInputStream();
@@ -154,8 +262,6 @@ public class CustomHttpResponse{
              FileOutputStream fos = new FileOutputStream(getSaveFile(filePath))) {
 
             File saveFile = getSaveFile(filePath);
-            System.out.println(saveFile.getName());
-            System.out.println(saveFile.getAbsolutePath());
 
             byte[] buffer = new byte[16 * 1024];
             int bytesRead = 0, len;
@@ -174,11 +280,35 @@ public class CustomHttpResponse{
                     if (elapsedTime >= 1000){
                         long currentBytesRead = bytesRead;
                         long bytesPerSecond = (currentBytesRead - lastBytesRead) * 1000 / elapsedTime;
-                        long remainingTime = (fileSize - currentBytesRead) / bytesPerSecond;
+                        long remainingTimeInSeconds = (fileSize - currentBytesRead) / bytesPerSecond;
 
-                        int progress = (int) ((bytesRead / (float) fileSize) * 100);
-                        System.out.printf("下载进度: %d%%, 速度: %d KB/s, 预估时间: %d s\n",
-                                progress, bytesPerSecond / 16*1024, remainingTime);
+                        String timeUnit;
+                        long remainingTime;
+                        if (remainingTimeInSeconds >= 3600) {
+                            timeUnit = "小时";
+                            remainingTime = remainingTimeInSeconds / 3600;
+                        } else if (remainingTimeInSeconds >= 60) {
+                            timeUnit = "分钟";
+                            remainingTime = remainingTimeInSeconds / 60;
+                        } else {
+                            timeUnit = "秒";
+                            remainingTime = remainingTimeInSeconds;
+                        }
+
+                        String speedUnit;
+                        double speed;
+                        if (bytesPerSecond >= 1024 * 1024) {
+                            speedUnit = "MB/s";
+                            speed = bytesPerSecond / (1024.0 * 1024.0);
+                        } else {
+                            speedUnit = "KB/s";
+                            speed = bytesPerSecond / 1024.0;
+                        }
+
+                        double progress = (double) bytesRead / fileSize;
+
+                        System.out.printf("下载进度: %.0f%%, 速度: %.2f %s, 预估时间: %d %s\n",
+                                progress * 100, speed, speedUnit, remainingTime, timeUnit);
 
                         lastBytesRead = currentBytesRead;
                         startTime = currentTime;
@@ -200,6 +330,7 @@ public class CustomHttpResponse{
 
     }
 
+
     private File getSaveFile(String filePath) throws IOException {
         File saveFile = new File(filePath);
         if (saveFile.isDirectory()) {
@@ -207,6 +338,19 @@ public class CustomHttpResponse{
                 saveFile.mkdirs();
             }
             saveFile = new File(saveFile, getFileName(con));
+        }
+        return saveFile;
+    }
+
+    private File getSaveGzipFile(String filePath) throws IOException {
+        File saveFile = new File(filePath);
+        if (saveFile.isDirectory()) {
+            if (!saveFile.exists()) {
+                saveFile.mkdirs();
+            }
+            String fileName = getFileName(con);
+            if (fileName!="" && !fileName.endsWith(".gzip")) fileName = fileName + ".gzip";
+            saveFile = new File(saveFile, fileName);
         }
         return saveFile;
     }

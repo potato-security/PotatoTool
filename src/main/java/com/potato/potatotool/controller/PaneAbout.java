@@ -155,9 +155,9 @@ public class PaneAbout {
     }
 
     @FXML
-    public void stopScrolling() {
+    public void pauseScrolling() {
         if (scrollTimeline != null) {
-            scrollTimeline.stop();
+            scrollTimeline.pause();
         }
     }
 

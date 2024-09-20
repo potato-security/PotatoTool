@@ -129,7 +129,7 @@ class JARAgentGenerator {
         String classFileName = simpleName.replace('.', '/') + ".class";
         ClassPool pool = ClassPool.getDefault();
 
-        InputStream jarStream = JARAgentGenerator.class.getClassLoader().getResourceAsStream("agent.jar");
+        InputStream jarStream = JARAgentGenerator.class.getClassLoader().getResourceAsStream("conf/agent.jar");
         File jarFile = File.createTempFile("agent", ".jar");
         try (FileOutputStream out = new FileOutputStream(jarFile)) {
             byte[] buffer = new byte[16 * 1024];

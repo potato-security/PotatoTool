@@ -319,6 +319,7 @@ public class PaneCommandQuery {
         });
     }
 
+    @FXML
     public void goBack(MouseEvent mouseEvent) {
         question.setText("");
         searchInput(null);
@@ -327,6 +328,7 @@ public class PaneCommandQuery {
         toBack.setManaged(false);
     }
 
+    @FXML
     public void searchInput(MouseEvent mouseEvent) {
         String query = question.getText().trim();
 

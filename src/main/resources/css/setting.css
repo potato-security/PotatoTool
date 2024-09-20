@@ -7,3 +7,34 @@
 #viewProfileButton{
     -fx-font-size: 13;
 }
+.content{
+    -fx-padding: 20;
+    -fx-background-color: -main-topBar-color;
+    -fx-background-radius: 0 0 4 4;
+}
+.contentCell{
+    -fx-padding: 20;
+    -fx-border-color: -main-lineno-color;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+}
+.tipTitle_input_big .text{
+    -fx-font-size: 22;
+    -fx-font-weight: bold;
+}
+.tips{
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+}
+.tips .text{
+    -fx-fill: -main-border-color;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
+}
+.progressLabel{
+    -fx-alignment: center;
+}
+.progressLabel .text{
+    -fx-font-size: 13;
+    -fx-fill: -main-border-color;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
+}

@@ -1,5 +1,6 @@
 package com.potato.potatotool.content.redTeam;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -348,6 +349,23 @@ public class Signature {
     public static void signature(String exePath, String sigFilePath, String outputPath) throws IOException {
         byte[] cert = copyCert(exePath);
         writeCert(cert, sigFilePath, outputPath);
+    }
+
+    public static String signature(String exePath, String sigFilePath) throws Exception{
+        String outputPath = "";
+        File file = new File(exePath);
+        String absolutePath = file.getAbsolutePath();
+        int dotIndex = absolutePath.lastIndexOf('.');
+
+        if (dotIndex != -1) {
+            outputPath = absolutePath.substring(0, dotIndex) + "_hasSignature" + absolutePath.substring(dotIndex);
+        } else {
+            outputPath = absolutePath + "_hasSignature";
+        }
+
+        signature(exePath, sigFilePath, outputPath);
+
+        return outputPath;
     }
 
 

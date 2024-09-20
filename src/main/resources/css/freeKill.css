@@ -1,0 +1,70 @@
+.contentHbox{
+    -fx-background-color: -main-topBar-color;
+    -fx-border-color: -main-lineno-color;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-padding: 20;
+    -fx-alignment: center;
+}
+.tipInfo{
+    -fx-padding: 10 0 0 0;
+    -fx-spacing: 50;
+}
+#tipTitle_input_big .text{
+    -fx-font-size: 25;
+    -fx-font-weight: bold;
+}
+#contentSp{
+    -fx-background-color: -main-topBar-color;
+    -fx-background-radius: 7;
+    -fx-padding: 20;
+}
+#webshellContent{
+    -fx-spacing: 10;
+}
+.paddingVBox{
+    -fx-border-color: -main-lineno-color;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 50;
+}
+#assemblyCode{
+    -fx-border-color: -main-lineno-color;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 10;
+}
+#tipTitleSigna{
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+}
+#tipTitleSigna .text{
+    -fx-fill: -main-border-color;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
+}
+#tipTitleQR{
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+}
+#tipTitleQR .text{
+    -fx-fill: -main-border-color;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
+}
+.vBox {
+    -fx-padding: 0;
+}
+.vBox > .label {
+    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 30%, -main-lineno-color 70%, transparent 100%);
+    -fx-padding: 10 10 10 20;
+    -fx-border-width: 0 0 1 0;
+    -fx-cursor: hand;
+    -fx-pref-width: 180;
+}
+.vBox > .label:hover {
+    -fx-background-color: -main-menuBg-color;
+}
+#vBoxBarFunc{
+    -fx-border-width: 1;
+    -fx-border-color: -main-lineno-color;
+    -fx-border-radius: 4;
+}

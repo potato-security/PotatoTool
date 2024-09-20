@@ -541,7 +541,8 @@ public class PaneWebshellDecode {
         inputText.setText(data);
     }
 
-    public void toDecodePcap(ActionEvent event) {
+    @FXML
+    void toDecodePcap(ActionEvent event) {
         FileChooser chooser = new FileChooser();
         FileChooser.ExtensionFilter filterPcap = new FileChooser.ExtensionFilter("PCAP文件", "*.pcap");
         FileChooser.ExtensionFilter filterPcapng = new FileChooser.ExtensionFilter("PCAPNG文件", "*.pcapng");

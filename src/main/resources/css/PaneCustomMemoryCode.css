@@ -1,4 +1,15 @@
-#tipTitle {
-    -fx-pref-width: 144;
-    -fx-min-width: 144;
+.tipInfo{
+    -fx-padding: 10 0 0 0;
+    -fx-spacing: 50;
+}
+.tipTitle_input_big .text{
+    -fx-font-size: 25;
+    -fx-font-weight: bold;
+}
+.tipVBox{
+    -fx-padding: 20;
+    -fx-border-color: -main-border-color;
+    -fx-background-color: -main-topBar-color;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
 }

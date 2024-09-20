@@ -280,7 +280,7 @@ public class aesUtils {
             }else {
                 if(keyArray_AES.isEmpty()){ // 优先读取缓存数据
                     try (InputStream aesKeyInputStream = getResourceStream("aesKey");
-                         BufferedReader reader = new BufferedReader(new InputStreamReader(aesKeyInputStream))) {
+                         BufferedReader reader = new BufferedReader(new InputStreamReader(aesKeyInputStream, StandardCharsets.UTF_8))) {
 
                         String line;
                         while ((line = reader.readLine()) != null) {

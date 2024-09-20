@@ -816,3 +816,17 @@
     -fx-border-color: -cf-primary-color;
     -fx-background-color: -cf-primary-color;
 }
+
+/* 进度条 */
+.progress-bar{
+    -fx-background-radius: 10;
+    -fx-padding: 0;
+}
+/* 设置进度条的高度 */
+.progress-bar .bar {
+    -fx-min-height: 10;
+    -fx-background-color: -main-border-color;
+    -fx-background-radius: 8px;
+    -fx-padding: 0;
+}
+

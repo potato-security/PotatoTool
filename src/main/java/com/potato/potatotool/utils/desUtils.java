@@ -254,7 +254,7 @@ public class desUtils {
             }else {
                 if(keyArray_DES.isEmpty()){ // 优先读取缓存数据
                     try(InputStream desKeyInputStream = getResourceStream("aesKey");
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(desKeyInputStream))){
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(desKeyInputStream, StandardCharsets.UTF_8))){
 
                         String line;
                         while ((line = reader.readLine()) != null) {

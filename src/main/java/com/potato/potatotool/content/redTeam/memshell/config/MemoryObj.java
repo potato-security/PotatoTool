@@ -7,6 +7,8 @@ import com.potato.potatotool.content.redTeam.memshell.util.ShowResultsUtil;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.potato.potatotool.utils.strUtils.getCurrentJarDir;
+
 public class MemoryObj {
 
     private String injectorClassName;
@@ -22,7 +24,7 @@ public class MemoryObj {
     private String shellGzipBase64String;
     private String urlPattern;
     private String outputFormat;
-    private String savePath;
+    private String savePath = getCurrentJarDir();
     private String pass;
     private String key;
     private String serverType;

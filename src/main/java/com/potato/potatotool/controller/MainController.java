@@ -9,8 +9,6 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -167,9 +165,9 @@ public class MainController {
         p12.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p12.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p13 = FXMLLoader.load(getClass().getResource("/fxml/pane_webshellGeneration.fxml"));
-        RXCarouselPane webshellGenerationPane = new RXCarouselPane(p13);
-        p13.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        Pane p13 = FXMLLoader.load(getClass().getResource("/fxml/pane_freeKill.fxml"));
+        RXCarouselPane freeKillPane = new RXCarouselPane(p13);
+        p13.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p13.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p14 = FXMLLoader.load(getClass().getResource("/fxml/pane_customMemoryCode.fxml"));
@@ -215,7 +213,7 @@ public class MainController {
         p_pane_about_1.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
 
         mainCarousel.setPaneList(webshellDecodePane, separateDecodePane, ipInFoPane, aiAnswerPane, decompilePane, blockchainPane, locationQueryPane, exifPane, extensionPane, aboutPane,
-                infoSearchPane, vulScanPane, webshellGenerationPane, customMemoryCodePane, customCommandGenerationPane, commandQueryPane, kbRootQueryPane, processQueryPane, infoGenerationPane, extensionPane_1, aboutPane_1);
+                infoSearchPane, vulScanPane, freeKillPane, customMemoryCodePane, customCommandGenerationPane, commandQueryPane, kbRootQueryPane, processQueryPane, infoGenerationPane, extensionPane_1, aboutPane_1);
         mainCarousel.setCarouselAnimation(new AnimNone());  // AnimFade
         mainCarousel.setAnimationTime(Duration.seconds(0));  // 0.2
 
@@ -229,12 +227,12 @@ public class MainController {
             if(mainCarousel.getPaneList().get(index) == aboutPane){
                 PaneAbout.startScrolling();
             }else{
-                PaneAbout.stopScrolling();
+                PaneAbout.pauseScrolling();
             }
             if(mainCarousel.getPaneList().get(index) == aboutPane_1){
                 PaneAbout_1.startScrolling();
             }else{
-                PaneAbout_1.stopScrolling();
+                PaneAbout_1.pauseScrolling();
             }
 
             if (isBlueMode) {

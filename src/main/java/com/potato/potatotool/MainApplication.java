@@ -4,6 +4,7 @@ import com.potato.potatotool.controller.MainController;
 import com.potato.potatotool.controller.PaneLoad;
 import com.potato.potatotool.controller.PanePasswd;
 import com.potato.potatotool.utils.Constants;
+import com.potato.potatotool.utils.GzipUtils;
 import com.potato.potatotool.utils.SecurityInitializer;
 import com.potato.potatotool.utils.Util;
 import javafx.animation.FadeTransition;
@@ -217,15 +218,17 @@ public class MainApplication extends Application {
             e.printStackTrace();
         }
 
-        // 取消内置MD5库
-//        try {
-//            String propertyName = "md5";
-//            String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
-//            copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (1.66 * 1024 * 1024 * 1024));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            System.out.println("【Error】请检查电脑剩余可用内存，是否低于2G！！");
-//        }
+        try {
+            Path md5GzipPath = configFolder.resolve("md5_database.db.gzip");
+            if(Files.exists(md5GzipPath)){
+                String gzipAbsolutePath = md5GzipPath.toString();
+                String absolutePath = gzipAbsolutePath.replace(".gzip","");
+
+                GzipUtils.unGzipFile(gzipAbsolutePath, absolutePath, true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
