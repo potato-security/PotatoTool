@@ -32,7 +32,7 @@ public class ipInfo {
         // System.out.println(ipAddress);
 
         // 使用ip2region
-        Searcher searcher = init();  //TODO !软件初始化调用一次就行! !!!不要每次都调用!!!
+        Searcher searcher = init();
 
         // 模拟用户传参
         String inputStr="\n活动连接\n\n  协议  本地地址          外部地址        状态           PID\n  TCP    0.0.0.0:21             0.0.0.0:0              LISTENING       1176\n  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       4\n" +

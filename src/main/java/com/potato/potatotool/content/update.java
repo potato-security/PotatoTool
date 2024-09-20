@@ -99,7 +99,6 @@ public class update {
             }
 
         } catch (Exception e) {
-            // TODO 右上角提示？
             System.out.println("github访问失败，请检查尝试使用代理");
             e.printStackTrace();
         }

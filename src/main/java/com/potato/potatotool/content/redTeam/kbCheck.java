@@ -479,17 +479,9 @@ public class kbCheck {
             Document doc = Jsoup.connect("https://www.catalog.update.microsoft.com/Search.aspx?q=" + kb).headers(DEFAULT_HEADERS).get();
             Element rows = doc.getElementById("ctl00_catalogBody_updateMatches");
             if (rows != null) {
-                // 查找替代编号 TODO 用时较长，提示用户等待
+                // 查找替代编号
 
                 Elements updates = rows.select("a[onclick*=goToDetails]");
-                // TODO ss
-//                List<String> ids = updates.stream()
-//                        .map(a -> a.attr("id").split("_")[0])
-//                        .collect(Collectors.toList());
-//
-//                for (String uid : ids) {
-//                    kbids.addAll(lookupSupersedenceByUid(uid));
-//                }
                 List<Future<Set<String>>> futures = updates.stream()
                         .map(a -> executor.submit(() -> lookupSupersedenceByUid(a.attr("id").split("_")[0])))
                         .collect(Collectors.toList());
@@ -666,7 +658,7 @@ public class kbCheck {
         List<Map<String, String>> filtered = determineMissingPatches.get("filtered");
         List<Map<String, String>> found = determineMissingPatches.get("found");
 
-//        // 如果-d  TODO 不一定调用
+//        // 选择性使用
 //        // 获取最新安装的补丁信息
 //        Map<String, String> recentKb = getMostRecentKb(found);
 //        if (recentKb != null) {
@@ -681,7 +673,7 @@ public class kbCheck {
         // 如果是windows serer类型，过滤重复漏洞
         found = filterDuplicates(found);
 
-        // TODO 如果-h / -onlyExp / -impacts / -serverities
+        // 如果存在过滤
         List<String> hiddenVulns = null;
         boolean onlyExploits = false;
         List<String> impacts = null;
