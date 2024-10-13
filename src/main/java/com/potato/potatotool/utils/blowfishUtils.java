@@ -200,7 +200,7 @@ public class blowfishUtils {
     public AtomicReference<String> padding_Blowfish = new AtomicReference<>("");
     public AtomicReference<String> key_Blowfish = new AtomicReference<>("");
     public AtomicReference<String> iv_Blowfish = new AtomicReference<>("Null");
-    public Set<String> keyArray_Blowfish = new HashSet<>();
+    public Set<String> keyArray_Blowfish = new LinkedHashSet<>();
     //  50w字典爆破调用方法：
     //  blowfishUtils blowfish=new blowfishUtils();
     //  String res = blowfish.blowfishWebShellDecode(encodeStr, null,true);

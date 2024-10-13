@@ -168,7 +168,7 @@ public class kbCheck {
         while (hotfixMatcher.find()) {
             hotfixes.add(hotfixMatcher.group(1));
         }
-        return new ArrayList<>(new HashSet<>(hotfixes));
+        return new ArrayList<>(new LinkedHashSet<>(hotfixes));
     }
 
     // 从提供的文本中提取产品构建信息
@@ -256,7 +256,7 @@ public class kbCheck {
         // 收集已被替换的补丁，并于系统上安装的补丁合并
         String superseededHotfixes = String.join(";", hotfixesOrig);
 
-        Set<String> marked = new HashSet<>();
+        Set<String> marked = new LinkedHashSet<>();
         markSuperseededHotfix(filtered, superseededHotfixes, marked);
 
         // 检查剩余的KB是否包含重叠，例如单独的安全修补程序，该修补程序也包含在每月汇总更新中
@@ -466,7 +466,7 @@ public class kbCheck {
             }
         }
 
-        Set<String> finalKbsInstalled = new HashSet<>(kbsInstalled);
+        Set<String> finalKbsInstalled = new LinkedHashSet<>(kbsInstalled);
         return found.stream()
                 .filter(cve -> !supersededBy.getOrDefault(cve.get("KB编号"), Collections.emptySet()).stream().anyMatch(finalKbsInstalled::contains))
                 .collect(Collectors.toList());
@@ -474,7 +474,7 @@ public class kbCheck {
 
 
     private static Set<String> lookupSupersedence(String kb) {
-        Set<String> kbids = new HashSet<>();
+        Set<String> kbids = new LinkedHashSet<>();
         try {
             Document doc = Jsoup.connect("https://www.catalog.update.microsoft.com/Search.aspx?q=" + kb).headers(DEFAULT_HEADERS).get();
             Element rows = doc.getElementById("ctl00_catalogBody_updateMatches");
@@ -497,7 +497,7 @@ public class kbCheck {
     }
 
     private static Set<String> lookupSupersedenceByUid(String uid) {
-        Set<String> kbids = new HashSet<>();
+        Set<String> kbids = new LinkedHashSet<>();
         try {
             Document doc = Jsoup.connect("https://www.catalog.update.microsoft.com/ScopedViewInline.aspx?updateid=" + uid).headers(DEFAULT_HEADERS)
                     .timeout(60000).get();
@@ -723,7 +723,7 @@ public class kbCheck {
         // 显示额外缺少的KBs（当使用--missing参数时）
         if (missingPatches.size() > grouped.size()) {
             Set<String> foundKBs = grouped.keySet();
-            Set<String> difference = new HashSet<>(missingPatches);
+            Set<String> difference = new LinkedHashSet<>(missingPatches);
             difference.removeAll(foundKBs);
 
             for (String kb : difference) {

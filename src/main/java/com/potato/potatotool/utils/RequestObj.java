@@ -1,6 +1,5 @@
 package com.potato.potatotool.utils;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.json.JSONObject;
 
@@ -9,17 +8,30 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-
-import static com.potato.potatotool.utils.Constants.getResourceString;
 
 /**
  * @author Potato
  * @date 2023/4/13 14:03
  */
 
-
+/**
+ * url               请求URL
+ * method            请求方式（默：GET）
+ * headers           请求头
+ * followRedirects   是否允许重定向（默：否）
+ * randomUserAgent   是否随机UA头（默：是）
+ * noUserAgent       是否不设置UA头（默：否）
+ * proxies           代理（如携带代理类型会自动提取）
+ * proxiesType       代理类型（默：HTTP）
+ * timeOut           请求和读取超时时间
+ * maxRetries        服务器异常/无响应时重放次数
+ * retryWaitTime     重放间隔（秒）
+ * postMethod        POST请求传输模式（默：Raw）
+ * postData          POST数据byte[]
+ * formParameters    form表单Map格式
+ * file              上传的文件File
+ */
 public class RequestObj {
     private String method = "GET";
     private String url;
@@ -33,6 +45,9 @@ public class RequestObj {
     private int timeOut = 10;
     private File file;
     private Map<String, Object> formParameters;
+    private int retries = 1;
+    private int retryWaitTime = 1;
+    private boolean noUserAgent = false;
 
     public RequestObj(){
         initializeProxySettings();
@@ -57,7 +72,7 @@ public class RequestObj {
     }
 
     private void validateMethod(String method) {
-        if (!Arrays.asList("GET", "POST", "OPTIONS", "PUT", "DELETE").contains(method.toUpperCase())) {
+        if (!Arrays.asList("GET", "POST", "OPTIONS", "PUT", "DELETE", "HEAD").contains(method.toUpperCase())) {
             throw new IllegalArgumentException("[×] 请求方法不应为" + method);
         }
     }
@@ -198,4 +213,31 @@ public class RequestObj {
         return this.timeOut;
     }
 
+
+    public int getRetries() {
+        return retries;
+    }
+
+    public RequestObj setRetries(int retries) {
+        this.retries = retries;
+        return this;
+    }
+
+    public int getRetryWaitTime() {
+        return retryWaitTime;
+    }
+
+    public RequestObj setRetryWaitTime(int retryWaitTime) {
+        this.retryWaitTime = retryWaitTime;
+        return this;
+    }
+
+    public RequestObj setNoUserAgent(boolean noUserAgent) {
+        this.noUserAgent = noUserAgent;
+        if(noUserAgent) this.randomUserAgent = false;
+        return this;
+    }
+    public boolean getNoUserAgent() {
+        return noUserAgent;
+    }
 }

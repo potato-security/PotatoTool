@@ -238,7 +238,7 @@ public class aesUtils {
     public AtomicReference<String> padding_AES = new AtomicReference<>("");
     public AtomicReference<String> key_AES = new AtomicReference<>("");
     public AtomicReference<String> iv_AES = new AtomicReference<>("Null");
-    public Set<String> keyArray_AES = new HashSet<>();
+    public Set<String> keyArray_AES = new LinkedHashSet<>();
     //  50w字典爆破调用方法：
     //  aesUtils aes=new aesUtils();
     //  String res = aes.aesWebShellDecode(encodeStr, null,true);

@@ -16,6 +16,7 @@ import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -55,6 +56,20 @@ public class strUtils {
         byte[] messageDigest = md.digest(input.getBytes(StandardCharsets.UTF_8));
         BigInteger no = new BigInteger(1, messageDigest);
         String hashtext = no.toString(16);
+        while (hashtext.length() < 32) {
+            hashtext = "0" + hashtext;
+        }
+
+        return hashtext;
+
+    }
+    public static String md5(byte[] input) throws NoSuchAlgorithmException {
+
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        byte[] messageDigest = md.digest(input);
+        BigInteger no = new BigInteger(1, messageDigest);
+        String hashtext = no.toString(16);
+
         while (hashtext.length() < 32) {
             hashtext = "0" + hashtext;
         }
@@ -684,7 +699,7 @@ public class strUtils {
      * @return
      */
     public static boolean containsAnyWithSet(String str, List<String> list) {
-        Set<String> set = new HashSet<>(list);
+        Set<String> set = new LinkedHashSet<>(list);
         for (String item : set) {
             if (str.contains(item)) {
                 return true;
@@ -755,6 +770,21 @@ public class strUtils {
             return "";
         }
     }
+    public static String urlComponentEncode(String conText) {
+        try {
+            return URLEncoder.encode(conText, "UTF-8")
+                    .replaceAll("\\+", "%20")
+                    .replaceAll("%21", "!")
+                    .replaceAll("%27", "'")
+                    .replaceAll("%28", "(")
+                    .replaceAll("%29", ")")
+                    .replaceAll("%7E", "~");
+        } catch (UnsupportedEncodingException e) {
+            // 处理编码异常
+            if(debugMode)e.printStackTrace();
+            return "";
+        }
+    }
 
     /**
      * @param urlText   原始字符串
@@ -798,7 +828,18 @@ public class strUtils {
     public static String base64Encode(byte[] conText) {
         return Base64.getEncoder().encodeToString(conText);
     }
-
+    // 等同python中的codecs.encode(content, "base64")
+    public static String base64Encode_codesc(byte[] content) {
+        // 使用Base64类对内容进行编码，并在每76个字符后换行（和Python中codecs类似）
+        String encoded = Base64.getMimeEncoder(76, "\n".getBytes(StandardCharsets.UTF_8)).encodeToString(content);
+        if(encoded.length()>0) encoded=encoded+"\n";
+        return encoded;
+    }
+    // 符合 RFC 4648 标准的 base64url 编码   (replace('=', '').replace('+', '-').replace('/', '_'))
+    public static String base64UrlEncoder(String input) {
+        byte[] encodedBytes = Base64.getUrlEncoder().withoutPadding().encode(input.getBytes(StandardCharsets.UTF_8));
+        return new String(encodedBytes);
+    }
 
     /**
      * 支持变种base64变种解密
@@ -1453,6 +1494,19 @@ public class strUtils {
     }
 
 
+    /**
+     * 获取字符串中的数字，无则返回0
+     * @param str
+     * @return
+     */
+    public static int extractNumber(String str) {
+        String numberStr = str.replaceAll("[^0-9]", "");
+        if (numberStr.isEmpty()) {
+            return 0;
+        }
+        return Integer.parseInt(numberStr);
+    }
+
 
     /**
      * ！！！！！【兼容联合Gzip解密】！！！！！
@@ -1463,7 +1517,7 @@ public class strUtils {
      * @param customPath    自定义字典路径
      * @return              异或后的byte数组
      */
-    public Set<String> keyArray_AES = new HashSet<>();
+    public Set<String> keyArray_AES = new LinkedHashSet<>();
     public String xorKey = "";
     public String xorEncode(byte[] data, String inputKeyStr, List traverse, String customPath) {
         if(data == null) return null;

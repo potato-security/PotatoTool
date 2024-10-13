@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -27,8 +29,8 @@ import java.util.zip.GZIPInputStream;
 
 /**
  * README：
- *          con.getTextStr() \ con.getJson() \ con.saveToFile(savePath)
- * 【为保证最高运行效率】，以上三种结果输出不能同时出现，否则会报错java.io.IOException: stream is closed
+ *          con.getTextStr() \ getDocument() \ con.getJson() \ con.saveToFile(savePath)
+ * 【为保证最高运行效率】，以上四种结果输出不能同时出现，否则会报错java.io.IOException: stream is closed
  *
  * Tips:
  *              若强行支持，请读取响应结果存储 private byte[] textBuffer复用;
@@ -55,6 +57,16 @@ public class CustomHttpResponse{
             e.printStackTrace();
             return null;
         }
+
+    }
+
+    public Document getDocument() { // 转换Jsoup 的 Document 对象，用于解析标签，获取标签内容
+
+        String textStr = getTextStr();
+        if (textStr != null && !textStr.isEmpty()) {
+            return Jsoup.parse(textStr);
+        }
+        return null;
 
     }
 
@@ -400,6 +412,21 @@ public class CustomHttpResponse{
 
     public InputStream getInputStream() throws Exception {
         return con.getInputStream();
+    }
+
+    public byte[] getByteArray() throws Exception {
+        try (InputStream inputStream = con.getInputStream();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+            byte[] buffer = new byte[16 * 1024];
+            int bytesRead;
+
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+
+            return outputStream.toByteArray();
+        }
     }
 
     public String getContentEncoding() {

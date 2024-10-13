@@ -57,14 +57,14 @@ public class JavassistUtil {
     // 将指定的CtClass扩展为另一个类
     public static void extendSuperclass(CtClass targetClass, String superClassName) throws Exception {
         targetClass.defrost();
-        CtClass superClass = CLASS_POOL.get(superClassName);
-        targetClass.setSuperclass(superClass);
+        CtClass superClass = CLASS_POOL.makeClass(superClassName);
+        targetClass.setSuperclass(CLASS_POOL.get(superClass.getName()));
     }
 
     // 使指定的CtClass实现一个接口
     public static void implementInterface(CtClass targetClass, String interfaceName) throws Exception {
         targetClass.defrost();
-        CtClass interfaceClass = CLASS_POOL.get(interfaceName);
+        CtClass interfaceClass = CLASS_POOL.makeInterface(interfaceName);
         targetClass.setInterfaces(new CtClass[]{interfaceClass});
     }
 

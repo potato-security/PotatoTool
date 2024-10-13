@@ -39,7 +39,7 @@ public class PaneSetting {
     private ComboBox decompileType;
 
     @FXML
-    private ComboBox gptModel;
+    private TextField gptModel;
 
     @FXML
     private TextField gptApiKey;
@@ -97,7 +97,7 @@ public class PaneSetting {
         JsonObject tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig("AI");
         String GPT_Model = tmpJsonObj_AI.getAsJsonPrimitive("GPT_Model").getAsString();
         String GPT_API_Key = tmpJsonObj_AI.getAsJsonPrimitive("GPT_API_Key").getAsString();
-        gptModel.setValue(GPT_Model);
+        gptModel.setText(GPT_Model);
         gptApiKey.setText(GPT_API_Key);
 
     }
@@ -151,7 +151,7 @@ public class PaneSetting {
         configMap.put("Decompile", decompileMap);
 
         Map<String, Object> aiMap = new HashMap<>();
-        aiMap.put("GPT_Model", (String)gptModel.getSelectionModel().getSelectedItem());
+        aiMap.put("GPT_Model", gptModel.getText());
         aiMap.put("GPT_API_Key", gptApiKey.getText());
         configMap.put("AI", aiMap);
 

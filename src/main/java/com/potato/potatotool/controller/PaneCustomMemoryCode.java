@@ -5,8 +5,10 @@ import com.potato.potatotool.content.redTeam.memshell.config.MemoryObj;
 import com.potato.potatotool.content.redTeam.memshell.util.ClassNameUtil;
 import com.potato.potatotool.content.redTeam.memshell.util.RandomHeaderUtil;
 import com.potato.potatotool.utils.strUtils;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -145,22 +147,37 @@ public class PaneCustomMemoryCode {
 
     @FXML
     public void toGenerateMemoryShell(ActionEvent event) {
-        try {
-            MemoryObj memoryObj = initMemoryObj();
+        outTextArea.setText("");
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    MemoryObj memoryObj = initMemoryObj();
 
-            memoryObj.buildMemoryShellAndInjector();
+                    memoryObj.buildMemoryShellAndInjector();
 
-            Map<String, String> showResultMap = memoryObj.getShowResultMap();
+                    Map<String, String> showResultMap = memoryObj.getShowResultMap();
 
-            StringBuilder sb = new StringBuilder();
-            for (Map.Entry<String, String> entry : showResultMap.entrySet()) {
-                sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+                    StringBuilder sb = new StringBuilder();
+                    for (Map.Entry<String, String> entry : showResultMap.entrySet()) {
+                        sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+                    }
+                    Platform.runLater(() -> {
+                        outTextArea.setText(sb.toString());
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
             }
-            outTextArea.setText(sb.toString());
+        };
+        task.setOnFailed(e -> {
+            Throwable error = task.getException();
+            error.printStackTrace();
+        });
+        new Thread(task).start();
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private MemoryObj initMemoryObj() {

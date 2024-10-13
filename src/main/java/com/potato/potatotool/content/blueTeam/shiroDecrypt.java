@@ -23,7 +23,7 @@ import static com.potato.potatotool.utils.Constants.getResourceStream;
  */
 public class shiroDecrypt {
 
-    public Set<String> keyArray_Shiro = new HashSet<>();
+    public Set<String> keyArray_Shiro = new LinkedHashSet<>();
 
     /**
      * shiro流量反编译

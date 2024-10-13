@@ -211,7 +211,7 @@ public class desUtils {
     public AtomicReference<String> padding_DES = new AtomicReference<>("");
     public AtomicReference<String> key_DES = new AtomicReference<>("");
     public AtomicReference<String> iv_DES = new AtomicReference<>("Null");
-    public Set<String> keyArray_DES = new HashSet<>();
+    public Set<String> keyArray_DES = new LinkedHashSet<>();
     //  50w字典爆破调用方法：
     //  desUtils des=new desUtils();
     //  String res = des.desWebShellDecode(encodeStr, null,true);
