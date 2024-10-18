@@ -42,7 +42,7 @@ public class FofaSearch {
             briefExtendedInfo = con.getJson().getAsJsonObject();
 
         }catch (Exception e){
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return briefExtendedInfo;
@@ -84,13 +84,21 @@ public class FofaSearch {
         return search_fofa(qInfo);
     }
 
-    // TODO domain="potato.gold"  ip="220.181.111.1/24" 	icp="京ICP证030173号"
+    public static JsonArray getDomainByIp_fofa(String ip) {
+        String qInfo = "ip=\"" + ip + "\"";
+        return search_fofa(qInfo);
+    }
+
+    // TODO domain="potato.gold"	icp="京ICP证030173号"
 
     public static void main(String[] args) {
 
-        JsonArray domainInfo = getDomainByCompanyOrDomain_fofa("国家能源投资集团有限责任公司");
-        System.out.println(domainInfo);
+//        JsonArray domainInfo = getDomainByCompanyOrDomain_fofa("国家能源投资集团有限责任公司");
+//        System.out.println(domainInfo);
 //        System.out.println(domainInfo.size());
+
+        JsonArray ipInfo = getDomainByIp_fofa("13.227.83.19");
+        System.out.println(ipInfo);
 //
 //        JsonArray domainInfo1 = getDomainByIcon_fofa("37578595");
 //        System.out.println(domainInfo1);

@@ -1,8 +1,9 @@
 package com.potato.potatotool.content.redTeam.infoGathering;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import static com.potato.potatotool.content.redTeam.infoGathering.GetSeo.*;
@@ -26,12 +27,14 @@ public class AssetMapper {
     );
 
     public static void searchInfo(String input) {
+        AssetObj assetObj = new AssetObj();
+
         if (isIPAddress(input)) {
-            handleIPAddress(input);
+            handleIPAddress(input, assetObj);
         } else if (isDomainName(input)) {
-            handleDomainName(input);
+            handleDomainName(input, assetObj);
         } else {
-            handleCompanyName(input);
+            handleCompanyName(input, assetObj);
         }
     }
 
@@ -46,26 +49,125 @@ public class AssetMapper {
     }
 
     // 处理IP地址的逻辑
-    private static void handleIPAddress(String ip) {
-        System.out.println("这是一个IP地址: " + ip);
+    private static void handleIPAddress(String ip, AssetObj assetObj) {
+        System.out.println("输入了一个IP地址: " + ip);
         JsonArray domainList = getDomainByIp(ip);
-        System.out.println("size");
-        System.out.println(domainList.size());
-        // 添加处理IP地址的逻辑
+        System.out.println("反查IP");
+        System.out.println(domainList);
+        JsonArray domainListChoose = domainList;
+        // TODO 选择需要展示的、需要深度检索的、
+        for (JsonElement jsonElement :domainListChoose){
+            String domain = jsonElement.getAsJsonObject().get("domain").getAsString();
+            String addtime = jsonElement.getAsJsonObject().get("addtime").getAsString();
+            String uptime = jsonElement.getAsJsonObject().get("uptime").getAsString();
+            boolean show = jsonElement.getAsJsonObject().get("show").getAsBoolean();
+            boolean deepGet = true;//jsonElement.getAsJsonObject().get("deepGet").getAsBoolean();
+
+            if(deepGet) {
+                assetObj.addDomain(domain);
+            }
+        }
+
+        for (String domain : assetObj.getDomain()){
+            JsonObject seoMap = getSeo(domain);
+            String ipcType = seoMap.getAsJsonObject("备案信息").get("备案性质").getAsString();
+
+            if(!ipcType.equals("个人")){
+                String companyName = seoMap.getAsJsonObject("备案信息").get("备案所属").getAsString();
+                if(companyName.isEmpty()||companyName.equals("-")) companyName = seoMap.getAsJsonObject("域名信息").get("注册人/机构").getAsString();
+
+                JsonArray companyList = GetCompany.getCompany_chinaz(companyName);
+                if(companyList.size()>0){
+                    JsonObject companyDetailsMap = GetCompany.getCompanyDetails_chinaz(companyList.get(0).getAsJsonObject().get("企业ID").getAsString());
+                }
+
+                JsonArray companyInfoMap = AiqichaSearch.getCompanyInfoIteration(companyName);
+            }
+        }
+
+
+
+
     }
 
     // 处理域名的逻辑
-    private static void handleDomainName(String domain) {
-        System.out.println("这是一个域名: " + domain);
-        Map<String, Map<String, String>> seoMap = getSeo(domain);
+    private static void handleDomainName(String domain, AssetObj assetObj) {
+        System.out.println("输入了一个域名: " + domain);
+        JsonObject seoMap = getSeo(domain);
+        System.out.println("基础域名信息");
         System.out.println(seoMap);
-        // 添加处理域名的逻辑
+
+        String ipcType = seoMap.getAsJsonObject("备案信息").get("备案性质").getAsString();
+        if(!ipcType.equals("个人")){
+            String companyName = seoMap.getAsJsonObject("备案信息").get("备案所属").getAsString();
+            if(companyName.isEmpty()||companyName.equals("-")) companyName = seoMap.getAsJsonObject("域名信息").get("注册人/机构").getAsString();
+
+            JsonArray companyList = GetCompany.getCompany_chinaz(companyName);
+            System.out.println("公司列表");
+            System.out.println(companyList);
+            if(companyList.size()>0){
+                JsonObject companyDetailsMap = GetCompany.getCompanyDetails_chinaz(companyList.get(0).getAsJsonObject().get("企业ID").getAsString());
+                System.out.println("公司信息详情_1");
+                System.out.println(companyDetailsMap);
+
+                JsonArray icpInfo = companyDetailsMap.getAsJsonArray("网站备案");
+
+                for(JsonElement jsonElement : icpInfo) {
+                    String icpNo = jsonElement.getAsJsonObject().get("备案号").getAsString();
+                    String domainStr = jsonElement.getAsJsonObject().get("网站域名").getAsString();
+                    assetObj.addIcp(icpNo);
+                    assetObj.addDomain(domainStr);
+                }
+            }
+
+            JsonArray companyInfoMap = AiqichaSearch.getCompanyInfoIteration(companyName);
+            System.out.println("公司信息详情_2");
+            System.out.println(companyInfoMap);
+            for(JsonElement jsonElement : companyInfoMap) {
+                JsonObject jsonObject = jsonElement.getAsJsonObject();
+                String subCompanyName = jsonObject.entrySet().iterator().next().getKey();
+                JsonArray domainAndIcp = jsonObject.getAsJsonObject(subCompanyName).getAsJsonArray("domainAndIcp");
+                for(JsonElement subJsonElement :domainAndIcp){
+                    String icpNo = subJsonElement.getAsJsonObject().get("icpNo").getAsString();
+                    String domainStr = jsonElement.getAsJsonObject().get("domain").getAsString();
+                    assetObj.addIcp(icpNo);
+                    assetObj.addDomain(domainStr);
+                }
+            }
+
+            for(String icpNo : assetObj.getIcp()){
+                // TODO FOFA 等平台 ipc号查询
+            }
+
+        }
     }
 
     // 处理公司名称的逻辑
-    private static void handleCompanyName(String companyName) {
-        System.out.println("这是一个公司名称: " + companyName);
-        // 添加处理公司名称的逻辑
+    private static void handleCompanyName(String companyName, AssetObj assetObj) {
+        System.out.println("输入了一个公司名称: " + companyName);
+        JsonArray companyList = GetCompany.getCompany_chinaz(companyName);
+        System.out.println("公司列表");
+        System.out.println(companyList);
+        // TODO 用户选择公司名
+        JsonArray companyListChoose = companyList;
+        for(JsonElement jsonElement : companyListChoose) {
+            boolean deepGet = true;//jsonElement.getAsJsonObject().get("deepGet").getAsBoolean();
+            if(deepGet) {
+                String companyId= jsonElement.getAsJsonObject().get("企业ID").getAsString();
+                String companyNameChoose = jsonElement.getAsJsonObject().get("企业名称").getAsString();
+                JsonObject companyDetailsMap = GetCompany.getCompanyDetails_chinaz(companyId);
+                System.out.println("公司信息详情_1");
+                System.out.println(companyDetailsMap);
+
+
+                JsonArray companyInfoMap = AiqichaSearch.getCompanyInfoIteration(companyNameChoose);
+                System.out.println("公司信息详情_2");
+                System.out.println(companyInfoMap);
+
+            }
+        }
+
+
     }
 
 
@@ -75,13 +177,17 @@ public class AssetMapper {
 
     public static void main(String[] args) {
         // 示例输入
-        searchInfo("124.232.185.44");
-        searchInfo("82.157.56.206");
-        searchInfo("www.ceic.com");
-        searchInfo("ceic.com");
-        searchInfo("www.potato.gold");
+//        searchInfo("124.232.185.44");
+//        searchInfo("82.157.56.206");
+//        searchInfo("183.3.221.110");
+//        searchInfo("www.ceic.com");
+//        searchInfo("ceic.com");
+//        searchInfo("www.potato.gold");
         searchInfo("www.shenhuagroup.com.cn");
-        searchInfo("国家能源投资集团有限责任公司");
+//        searchInfo("www.shenhuagroup.com.cn");
+//        searchInfo("www.pinyin.cn");
+//        searchInfo("北京搜狗信息服务有限公司");
+//        searchInfo("国家能源投资集团有限责任公司");
 //        System.out.println(InternetDomainName.from("yjglj.chuzhou.gov.cn").publicSuffix().toString());
 //        System.out.println(InternetDomainName.from("yjglj.chuzhou.gov.cn").topPrivateDomain().toString());
 //        System.out.println(getIpListBydomain("www.szciic.com"));

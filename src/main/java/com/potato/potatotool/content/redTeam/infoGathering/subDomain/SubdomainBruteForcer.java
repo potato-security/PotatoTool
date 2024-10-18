@@ -16,7 +16,15 @@ import java.util.concurrent.*;
 public class SubdomainBruteForcer {
     private static final int THREAD_POOL_SIZE = ExecutorServiceManager.getOptimalThreadPoolSize() * 140; // 线程池大小，调整以适应资源
     private static final String DOMAIN = "baidu.com"; // 主域名
-    private static final String[] DNS_SERVERS = {"8.8.8.8", "1.1.1.1"}; // DNS服务器列表
+    private static final String[] DNS_SERVERS = {
+            "8.8.8.8",
+            "1.1.1.1",
+            "114.114.114.114",
+            "223.5.5.5",
+            "119.29.29.29",
+            "180.76.76.76",
+            "1.2.4.8",
+    }; // DNS服务器列表
     private static final ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>(); // 结果缓存
 
     public static void main(String[] args) throws InterruptedException, IOException {

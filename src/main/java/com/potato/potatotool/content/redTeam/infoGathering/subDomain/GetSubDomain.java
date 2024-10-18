@@ -74,7 +74,7 @@ public class GetSubDomain {
             }
 
         }catch (Exception e){
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return subDomain;
@@ -104,7 +104,7 @@ public class GetSubDomain {
             }
 
         }catch (Exception e){
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return subDomain;
@@ -159,7 +159,7 @@ public class GetSubDomain {
             }
 
         }catch (Exception e){
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return subDomain;
@@ -195,7 +195,7 @@ public class GetSubDomain {
             }
 
         }catch (Exception e){
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return subDomain;
@@ -226,7 +226,7 @@ public class GetSubDomain {
             }
 
         }catch (Exception e){
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return subDomain;
@@ -285,7 +285,7 @@ public class GetSubDomain {
             }
 
         } catch (Exception e) {
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return subDomain;

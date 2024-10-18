@@ -21,12 +21,12 @@ public class AiUtils {
     }
 
     // 获取内容相关性
-    public static Set<String> getContentRelevance_Ai(Map<String, String> webInfoMap, String company){
+    public static Set<String> getContentRelevance_Ai(Map<String, Object> webInfoMap, String company){
         aiUtil aiObj=new aiUtil();
 
-        String url = webInfoMap.getOrDefault("url", "");
-        String title = webInfoMap.getOrDefault("title", "");
-        String body = webInfoMap.getOrDefault("body", "");
+        String url = webInfoMap.getOrDefault("url", "").toString();
+        String title = webInfoMap.getOrDefault("title", "").toString();
+        String body = webInfoMap.getOrDefault("body", "").toString();
         String url_Q = url.isEmpty()? url : "网址为```" + url + "```，";
         String title_Q = url.isEmpty()? url : "标题为```" + title + "```，";
         String body_Q = url.isEmpty()? url : "部分内容为```" + body + "```，";

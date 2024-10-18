@@ -98,12 +98,12 @@ public class ImgSimilarity {
 
     public static void main(String[] args) throws Exception {
 
-        Map<String, String> webInfoMap = Utils.getWebInfo("https://211.160.72.129");
+        Map<String, Object> webInfoMap = Utils.getWebInfo("https://211.160.72.129");
         System.out.println(webInfoMap);
-        byte[] srcFile = Base64.getDecoder().decode(webInfoMap.get("iconBase64"));
-        Map<String, String> webInfoMap1 = Utils.getWebInfo("https://43.143.141.199:8443");
+        byte[] srcFile = Base64.getDecoder().decode(webInfoMap.get("iconBase64").toString());
+        Map<String, Object> webInfoMap1 = Utils.getWebInfo("https://43.143.141.199:8443");
         System.out.println(webInfoMap1);
-        byte[] canFile = Base64.getDecoder().decode(webInfoMap1.get("iconBase64"));
+        byte[] canFile = Base64.getDecoder().decode(webInfoMap1.get("iconBase64").toString());
         boolean similarity = new ImgSimilarity().matchSimilar(srcFile, canFile);
         System.out.println("是否相似: " + similarity);
 

@@ -30,8 +30,9 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class GetCompany {
 
-    public static List<Map<String, String>> getCompany_chinaz(String company) {
-        List<Map<String, String>> companyList = new ArrayList<>();
+    public static JsonArray getCompany_chinaz(String company) {
+        JsonArray companyList = new JsonArray();
+        if(company.isEmpty()) return companyList;
 
         try {
             int index = 0;
@@ -53,14 +54,15 @@ public class GetCompany {
 
                 if (ulElements.size() > 1) {
                     for (int i = 1; i < ulElements.size(); i++) { // 从第二个ul开始(第一个ul为头部标签)
-                        Map<String, String> companyInfo = new HashMap<>();
+                        JsonObject companyInfo = new JsonObject();
                         Element ul = ulElements.get(i);
-                        companyInfo.put("企业名称", getElementText(ul, "li:nth-of-type(2) > a"));
-                        companyInfo.put("企业ID", getElementAttr(ul, "li:nth-of-type(2) > a", "href") .replace("/company/", ""));
-                        companyInfo.put("企业状态", getElementText(ul, "li:nth-of-type(3)"));
-                        companyInfo.put("法定代表人", getElementText(ul, "li:nth-of-type(5)"));
-                        companyInfo.put("注册资本", getElementText(ul, "li:nth-of-type(6)"));
-                        companyInfo.put("注册时间", getElementText(ul, "li:nth-of-type(7)"));
+                        companyInfo.addProperty("企业名称", getElementText(ul, "li:nth-of-type(2) > a"));
+                        companyInfo.addProperty("企业ID", getElementAttr(ul, "li:nth-of-type(2) > a", "href") .replace("/company/", ""));
+                        companyInfo.addProperty("企业状态", getElementText(ul, "li:nth-of-type(3)"));
+                        companyInfo.addProperty("法定代表人", getElementText(ul, "li:nth-of-type(5)"));
+                        companyInfo.addProperty("注册资本", getElementText(ul, "li:nth-of-type(6)"));
+                        companyInfo.addProperty("注册时间", getElementText(ul, "li:nth-of-type(7)"));
+                        companyInfo.addProperty("deepGet", false);
                         companyList.add(companyInfo);
                     }
                     if (ulElements.size() < 21) break;
@@ -77,8 +79,8 @@ public class GetCompany {
         return companyList;
     }
 
-    public static Map<String, Object> getCompanyDetails_chinaz(String companyId) {
-        Map<String, Object> companyDetailsMap = new HashMap<>();
+    public static JsonObject getCompanyDetails_chinaz(String companyId) {
+        JsonObject companyDetailsMap = new JsonObject();
 
         try {
             Map<String, String> headers = new HashMap<>();
@@ -96,84 +98,84 @@ public class GetCompany {
             Document doc = con.getDocument();
 
             // 提取信息
-            Map<String, String> businessInfoMap = extractBusinessInfo_chinaz(doc);
-            List<Map<String, String>> wxInfoList = extractWxInfo_chinaz(doc);
-            List<Map<String, String>> softwareInfoList = extractSoftwareInfo_chinaz(doc);
-            List<Map<String, String>> icpInfoList = extractIcpInfo_chinaz(doc);
+            JsonObject businessInfoMap = extractBusinessInfo_chinaz(doc);
+            JsonArray wxInfoList = extractWxInfo_chinaz(doc);
+            JsonArray softwareInfoList = extractSoftwareInfo_chinaz(doc);
+            JsonArray icpInfoList = extractIcpInfo_chinaz(doc);
 
-            companyDetailsMap.put("工商信息", businessInfoMap);
-            companyDetailsMap.put("微信公众号", wxInfoList);
-            companyDetailsMap.put("软件著作", softwareInfoList);
-            companyDetailsMap.put("网站备案", icpInfoList);
+            companyDetailsMap.add("工商信息", businessInfoMap);
+            companyDetailsMap.add("微信公众号", wxInfoList);
+            companyDetailsMap.add("软件著作", softwareInfoList);
+            companyDetailsMap.add("网站备案", icpInfoList);
 
         } catch (Exception e) {
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return companyDetailsMap;
     }
 
-    private static List<Map<String, String>> extractIcpInfo_chinaz(Document doc) {
-        List<Map<String, String>> IcpInfoList = new ArrayList<>();
+    private static JsonArray extractIcpInfo_chinaz(Document doc) {
+        JsonArray IcpInfoList = new JsonArray();
 
         Elements trElements = getElements(doc, "#wzba-module + * > tbody > tr");
 
         for (Element tr : trElements){
-            Map<String, String> icpInfo = new HashMap<>();
+            JsonObject icpInfo = new JsonObject();
 
             String domain = getElementText(tr, "td:nth-of-type(5)");
-            icpInfo.put("网站域名", domain);
-            icpInfo.put("备案号", getElementText(tr, "td:nth-of-type(6)"));
-            icpInfo.put("网站名称", getElementText(tr, "td:nth-of-type(3)"));
+            icpInfo.addProperty("网站域名", domain);
+            icpInfo.addProperty("备案号", getElementText(tr, "td:nth-of-type(6)"));
+            icpInfo.addProperty("网站名称", getElementText(tr, "td:nth-of-type(3)"));
             IcpInfoList.add(icpInfo);
         }
 
         return IcpInfoList;
     }
 
-    private static List<Map<String, String>> extractSoftwareInfo_chinaz(Document doc) {
-        List<Map<String, String>> SoftwareInfoList = new ArrayList<>();
+    private static JsonArray extractSoftwareInfo_chinaz(Document doc) {
+        JsonArray SoftwareInfoList = new JsonArray();
 
         Elements trElements = getElements(doc, "#rjzzq-module + * > tbody > tr");
 
         for (Element tr : trElements){
-            Map<String, String> softwareInfo = new HashMap<>();
+            JsonObject softwareInfo = new JsonObject();
 
-            softwareInfo.put("软件简称", getElementText(tr, "td:nth-of-type(4)"));
-            softwareInfo.put("版本号", getElementText(tr, "td:nth-of-type(7)"));
+            softwareInfo.addProperty("软件简称", getElementText(tr, "td:nth-of-type(4)"));
+            softwareInfo.addProperty("版本号", getElementText(tr, "td:nth-of-type(7)"));
             SoftwareInfoList.add(softwareInfo);
         }
 
         return SoftwareInfoList;
     }
 
-    private static List<Map<String, String>> extractWxInfo_chinaz(Document doc) {
-        List<Map<String, String>> WxInfoList = new ArrayList<>();
+    private static JsonArray extractWxInfo_chinaz(Document doc) {
+        JsonArray WxInfoList = new JsonArray();
 
         Elements trElements = getElements(doc, "#wxgzh-module + * > tbody > tr");
 
         for (Element tr : trElements){
-            Map<String, String> wxInfo = new HashMap<>();
+            JsonObject wxInfo = new JsonObject();
 
-            wxInfo.put("公众号名称", getElementText(tr, "td:nth-of-type(2)"));
-            wxInfo.put("微信号", getElementText(tr, "td:nth-of-type(3)"));
-            wxInfo.put("公众号简介", getElementText(tr, "td:nth-of-type(4)"));
+            wxInfo.addProperty("公众号名称", getElementText(tr, "td:nth-of-type(2)"));
+            wxInfo.addProperty("微信号", getElementText(tr, "td:nth-of-type(3)"));
+            wxInfo.addProperty("公众号简介", getElementText(tr, "td:nth-of-type(4)"));
             WxInfoList.add(wxInfo);
         }
 
         return WxInfoList;
     }
 
-    private static Map<String, String> extractBusinessInfo_chinaz(Document doc) {
+    private static JsonObject extractBusinessInfo_chinaz(Document doc) {
 
-        Map<String, String> businessInfoMap = new HashMap<>();
-        businessInfoMap.put("工商注册号", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)"));
-        businessInfoMap.put("组织机构代码", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(4)"));
-        businessInfoMap.put("统一社会信用代码", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2)"));
-        businessInfoMap.put("纳税人识别号", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(2)"));
-        businessInfoMap.put("公司类型", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(4)"));
-        businessInfoMap.put("所属行业", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(4)"));
-        businessInfoMap.put("地址", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(2) > div > div:nth-of-type(2) > div > div:nth-of-type(2)"));
+        JsonObject businessInfoMap = new JsonObject();
+        businessInfoMap.addProperty("工商注册号", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)"));
+        businessInfoMap.addProperty("组织机构代码", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(4)"));
+        businessInfoMap.addProperty("统一社会信用代码", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2)"));
+        businessInfoMap.addProperty("纳税人识别号", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(2)"));
+        businessInfoMap.addProperty("公司类型", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(4)"));
+        businessInfoMap.addProperty("所属行业", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(1) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(4)"));
+        businessInfoMap.addProperty("地址", getElementText(doc, "body > div:nth-of-type(3) > div:nth-of-type(2) > div > div:nth-of-type(2) > div > div:nth-of-type(2)"));
 
         return businessInfoMap;
     }
@@ -189,61 +191,61 @@ public class GetCompany {
 //        System.out.println(companyDetailsMap);
 //        System.out.println(companyDetailsMap.size());
 
-        try (BufferedReader br = new BufferedReader(new FileReader("/Users/a/Library/Containers/com.tencent.WeWorkMac/Data/Documents/Profiles/72E3F51AB224938EF8C93E98DF173761/Caches/Files/2024-10/d45c19ed4b78299a023b215065d7995b/123.txt"));
-            CSVWriter writer = new CSVWriter(new FileWriter("/Users/a/Library/Containers/com.tencent.WeWorkMac/Data/Documents/Profiles/72E3F51AB224938EF8C93E98DF173761/Caches/Files/2024-10/d45c19ed4b78299a023b215065d7995b/website_info.csv"));
-        ) {
-            String[] header = {"公司名", "网站域名"};
-            writer.writeNext(header);
-            String line;
-            while ((line = br.readLine()) != null) {
-                String companyName = line.trim();
-                if(companyName.isEmpty()) continue;
-                System.out.println(companyName);
-
-                JsonArray domainInfo_fofa = FofaSearch.getDomainByCompanyOrDomain_fofa(companyName);
-                JsonArray domainInfo_hunter = HunterSearch.getDomainByCompanyOrDomain_hunter(companyName);
-
-                try {
-                    List<Map<String, String>> companyList = getCompany_chinaz(companyName);
-                    if(companyList.size()==0) continue;
-                    Map<String, Object> companyDetailsMap = getCompanyDetails_chinaz(companyList.get(0).get("企业ID"));
-
-                    // 获取网站备案信息并写入 CSV 文件
-                    List<Map<String, String>> websiteRegistrations = (List<Map<String, String>>) companyDetailsMap.get("网站备案");
-                    Set<String> domainList =new HashSet<>();
-                    for (Map<String, String> registration : websiteRegistrations) {
-                        domainList.add(registration.get("网站域名"));
-                    }
-                    for(JsonElement jsonElement : domainInfo_fofa ){
-                        JsonArray jsonElement_Array = jsonElement.getAsJsonArray();
-                        String tmpDomain = jsonElement_Array.get(1).getAsString();
-                        if (tmpDomain.isEmpty()) jsonElement_Array.get(2).getAsString();
-                        domainList.add(tmpDomain);
-                    }
-                    for(JsonElement jsonElement : domainInfo_hunter){
-                        JsonObject jsonElement_obj = jsonElement.getAsJsonObject();
-                        String tmpDomain = jsonElement_obj.get("domain").getAsString();
-                        if (tmpDomain.isEmpty()) jsonElement_obj.get("url").getAsString();
-                        domainList.add(tmpDomain);
-                    }
-                    Set<String> tmpDomainList = new HashSet<>();
-                    for(String str : domainList){
-                        tmpDomainList.addAll(GetSubDomain.getSubByDomainOrDomainCert(str));
-                    }
-                    domainList.addAll(tmpDomainList);
-                    for(String str : domainList){
-                        writer.writeNext(new String[]{
-                                companyName,
-                                str
-                        });
-                    }
-                }catch (Exception ee){
-                    System.out.println(ee);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try (BufferedReader br = new BufferedReader(new FileReader("/Users/a/Library/Containers/com.tencent.WeWorkMac/Data/Documents/Profiles/72E3F51AB224938EF8C93E98DF173761/Caches/Files/2024-10/d45c19ed4b78299a023b215065d7995b/123.txt"));
+//            CSVWriter writer = new CSVWriter(new FileWriter("/Users/a/Library/Containers/com.tencent.WeWorkMac/Data/Documents/Profiles/72E3F51AB224938EF8C93E98DF173761/Caches/Files/2024-10/d45c19ed4b78299a023b215065d7995b/website_info.csv"));
+//        ) {
+//            String[] header = {"公司名", "网站域名"};
+//            writer.writeNext(header);
+//            String line;
+//            while ((line = br.readLine()) != null) {
+//                String companyName = line.trim();
+//                if(companyName.isEmpty()) continue;
+//                System.out.println(companyName);
+//
+//                JsonArray domainInfo_fofa = FofaSearch.getDomainByCompanyOrDomain_fofa(companyName);
+//                JsonArray domainInfo_hunter = HunterSearch.getDomainByCompanyOrDomain_hunter(companyName);
+//
+//                try {
+//                    List<Map<String, String>> companyList = getCompany_chinaz(companyName);
+//                    if(companyList.size()==0) continue;
+//                    Map<String, Object> companyDetailsMap = getCompanyDetails_chinaz(companyList.get(0).get("企业ID"));
+//
+//                    // 获取网站备案信息并写入 CSV 文件
+//                    List<Map<String, String>> websiteRegistrations = (List<Map<String, String>>) companyDetailsMap.get("网站备案");
+//                    Set<String> domainList =new HashSet<>();
+//                    for (Map<String, String> registration : websiteRegistrations) {
+//                        domainList.add(registration.get("网站域名"));
+//                    }
+//                    for(JsonElement jsonElement : domainInfo_fofa ){
+//                        JsonArray jsonElement_Array = jsonElement.getAsJsonArray();
+//                        String tmpDomain = jsonElement_Array.get(1).getAsString();
+//                        if (tmpDomain.isEmpty()) jsonElement_Array.get(2).getAsString();
+//                        domainList.add(tmpDomain);
+//                    }
+//                    for(JsonElement jsonElement : domainInfo_hunter){
+//                        JsonObject jsonElement_obj = jsonElement.getAsJsonObject();
+//                        String tmpDomain = jsonElement_obj.get("domain").getAsString();
+//                        if (tmpDomain.isEmpty()) jsonElement_obj.get("url").getAsString();
+//                        domainList.add(tmpDomain);
+//                    }
+//                    Set<String> tmpDomainList = new HashSet<>();
+//                    for(String str : domainList){
+//                        tmpDomainList.addAll(GetSubDomain.getSubByDomainOrDomainCert(str));
+//                    }
+//                    domainList.addAll(tmpDomainList);
+//                    for(String str : domainList){
+//                        writer.writeNext(new String[]{
+//                                companyName,
+//                                str
+//                        });
+//                    }
+//                }catch (Exception ee){
+//                    System.out.println(ee);
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
 

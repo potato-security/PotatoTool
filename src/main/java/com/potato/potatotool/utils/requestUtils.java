@@ -135,6 +135,8 @@ public class requestUtils {
                     boundary = "----" + UUID.randomUUID().toString().replaceAll("-", "");
 
                     con.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                } else if (postMethod.equalsIgnoreCase("Json")) {
+                    con.setRequestProperty("Content-Type", "application/json");
                 }
                 // 设置是否重定向
                 con.setInstanceFollowRedirects(followRedirects);
@@ -235,7 +237,9 @@ public class requestUtils {
                 // 处理IO异常（包括 5xx 响应、读取超时、网络连接问题、连接超时、其他 I/O 错误），根据情况重试
                 if (retryCount < maxRetries) {
                     retryCount++;
-                    Thread.sleep(retryWaitTime * 1000); // 等待一段时间再重试
+                    requestObj.setTimeOut(requestObj.getTimeOut() * 2);
+                    Thread.sleep(retryWaitTime * 1000); // 重试间隔时间
+                    System.out.println(1);
                     continue; // 继续重试
                 }
                 throw new Exception("[×] 请求失败，超出重试次数", e);

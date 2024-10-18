@@ -81,7 +81,7 @@ public class HunterSearch {
                 rest_quota = strUtils.extractNumber(jsonData.get("rest_quota").getAsString());
 
             }catch (Exception e){
-                if(debugMode) System.out.println(e);
+                if(debugMode) e.printStackTrace();
                 e.printStackTrace();
             }
 

@@ -7,7 +7,9 @@ import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -81,6 +83,8 @@ public class GetDomain {
                     JsonObject jsonObject = con_sub.getJson().getAsJsonObject();
                     if (jsonObject.has("data") && jsonObject.get("data").isJsonArray()) {
                         for (JsonElement element : jsonObject.getAsJsonArray("data")) {
+                            element.getAsJsonObject().addProperty("show", false);
+                            element.getAsJsonObject().addProperty("deepGet", false);
                             domainDataArray.add(element);
                         }
                     } else {
@@ -91,7 +95,7 @@ public class GetDomain {
             }
 
         } catch (Exception e) {
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return domainDataArray;
@@ -135,6 +139,8 @@ public class GetDomain {
                     if (jsonObject.has("data") && jsonObject.get("data").isJsonArray() && jsonObject.get("data").getAsJsonArray().size()>0) {
                         for (JsonElement element : jsonObject.getAsJsonArray("data")) {
                             element.getAsJsonObject().remove("_id");
+                            element.getAsJsonObject().addProperty("show", false);
+                            element.getAsJsonObject().addProperty("deepGet", false);
                             domainDataArray.add(element);
                         }
                     } else {
@@ -145,7 +151,7 @@ public class GetDomain {
             }
 
         } catch (Exception e) {
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return domainDataArray;
@@ -182,7 +188,7 @@ public class GetDomain {
             }
 
         } catch (Exception e) {
-            if(debugMode) System.out.println(e);
+            if(debugMode) e.printStackTrace();
         }
 
         return domainDataArray;
@@ -215,9 +221,19 @@ public class GetDomain {
             }
         }
 
-        // 将去重后的结果转换为JsonArray
+        // 将Map中的JsonObject转换为List并按照uptime降序排序
+        List<JsonObject> sortedList = new ArrayList<>(domainMap.values());
+        sortedList.sort((o1, o2) -> {
+            String uptime1 = o1.get("uptime").getAsString();
+            String uptime2 = o2.get("uptime").getAsString();
+            return uptime2.compareTo(uptime1); // 降序排序
+        });
+
+        // 将排序后的List转换回JsonArray
         JsonArray resultArray = new JsonArray();
-        domainMap.values().forEach(resultArray::add);
+        for (JsonObject jsonObject : sortedList) {
+            resultArray.add(jsonObject);
+        }
 
         return resultArray;
     }

@@ -30,11 +30,9 @@ public class ShodanSearch {
                     .setMethod("GET")
                     .setNoUserAgent(true)
                     .setRetries(3);
-            System.out.println(obj.getUrl());
 
             CustomHttpResponse con = requests(obj);
             int statusCode = con.getResponseCode();
-            System.out.println(statusCode);
             // 检查请求状态码
             if (statusCode!= 200) {
                 return domainInfo;
@@ -47,7 +45,7 @@ public class ShodanSearch {
         return domainInfo;
     }
 
-    public static JsonArray getDomainByDomainCert_hunter(String domain) {
+    public static JsonArray getDomainByDomainCert_shodan(String domain) {
         String qInfo = null;
 
         if(isDomainName(domain)){
@@ -60,6 +58,6 @@ public class ShodanSearch {
     // TODO net:118.69.133.0/24 ip:123  hostname:googld.com  http.favicon.hash:iconMmh3   ssl.cert.subject.cn:googld.com http.html:body内容
 
     public static void main(String[] args) {
-        System.out.println(getDomainByDomainCert_hunter("potato.gold"));
+        System.out.println(getDomainByDomainCert_shodan("potato.gold"));
     }
 }

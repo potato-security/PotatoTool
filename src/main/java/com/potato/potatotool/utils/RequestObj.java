@@ -150,8 +150,8 @@ public class RequestObj {
     }
 
     private void validatePostMethod(String postMethod) {
-        if (!Arrays.asList("FORM", "RAW", "CHUNKED").contains(postMethod.toUpperCase())) {
-            throw new IllegalArgumentException("[×] POST模式支持'Form'、'Raw'、'Chunked'，不应为" + postMethod);
+        if (!Arrays.asList("FORM", "RAW", "CHUNKED", "JSON").contains(postMethod.toUpperCase())) {
+            throw new IllegalArgumentException("[×] POST模式支持'Form'、'Raw'、'Chunked'、'Json'，不应为" + postMethod);
         }
     }
 
@@ -179,10 +179,12 @@ public class RequestObj {
     }
 
     public RequestObj setPostData(JSONObject postJsonData) {
+        this.postMethod = "Json";
         this.postData = postJsonData.toString().getBytes(StandardCharsets.UTF_8);
         return this;
     }
     public RequestObj setPostData(JsonObject postJsonData) {
+        this.postMethod = "Json";
         this.postData = postJsonData.toString().getBytes(StandardCharsets.UTF_8);
         return this;
     }

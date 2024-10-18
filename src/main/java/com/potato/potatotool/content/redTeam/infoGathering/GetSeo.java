@@ -1,5 +1,8 @@
 package com.potato.potatotool.content.redTeam.infoGathering;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import org.jsoup.nodes.Document;
@@ -27,23 +30,23 @@ public class GetSeo {
 
 
 
-    public static Map<String, Map<String, String>> getSeo(String domain) {
-        CompletableFuture<Map<String, Map<String, String>>> futureChinaz = CompletableFuture.supplyAsync(() -> getSeo_chinaz(domain));
-        CompletableFuture<Map<String, Map<String, String>>> futureAizhan = CompletableFuture.supplyAsync(() -> getSeo_aizhan(domain));
+    public static JsonObject getSeo(String domain) {
+        CompletableFuture<JsonObject> futureChinaz = CompletableFuture.supplyAsync(() -> getSeo_chinaz(domain));
+        CompletableFuture<JsonObject> futureAizhan = CompletableFuture.supplyAsync(() -> getSeo_aizhan(domain));
 
-        CompletableFuture<Map<String, Map<String, String>>> combinedFuture = futureChinaz.thenCombine(futureAizhan, GetSeo::mergeMaps);
+        CompletableFuture<JsonObject> combinedFuture = futureChinaz.thenCombine(futureAizhan, GetSeo::mergeJsonObjects);
 
         try {
             return combinedFuture.get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
-            return new HashMap<>();
+            return new JsonObject();
         }
     }
 
     // 使用chinaz对Domain进行SEO综合查询
-    private static Map<String, Map<String, String>> getSeo_chinaz(String domain) {
-        Map<String, Map<String, String>> seoMap = new HashMap<>();
+    private static JsonObject getSeo_chinaz(String domain) {
+        JsonObject seoMap = new JsonObject();
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://seo.chinaz.com/" + domain)
@@ -59,13 +62,13 @@ public class GetSeo {
             Document doc = con.getDocument();
 
             // 提取信息
-            Map<String, String> domainInfo = extractDomainInfo_chinaz(doc);
-            Map<String, String> icpInfo = extractIcpInfo_chinaz(doc);
-            Map<String, String> websiteInfo = extractWebsiteInfo(doc);
+            JsonObject domainInfo = extractDomainInfo_chinaz(doc);
+            JsonObject icpInfo = extractIcpInfo_chinaz(doc);
+            JsonObject websiteInfo = extractWebsiteInfo(doc);
 
-            seoMap.put("域名信息", domainInfo);
-            seoMap.put("备案信息", icpInfo);
-            seoMap.put("网站信息", websiteInfo);
+            seoMap.add("域名信息", domainInfo);
+            seoMap.add("备案信息", icpInfo);
+            seoMap.add("网站信息", websiteInfo);
 
         } catch (Exception e) {
             if (debugMode) System.out.println(e);
@@ -75,8 +78,8 @@ public class GetSeo {
     }
 
     // 使用aizhan对Domain进行SEO综合查询
-    private static Map<String, Map<String, String>> getSeo_aizhan(String domain) {
-        Map<String, Map<String, String>> seoMap = new HashMap<>();
+    private static JsonObject getSeo_aizhan(String domain) {
+        JsonObject seoMap = new JsonObject();
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://www.aizhan.com/cha/" + domain + "/")
@@ -92,13 +95,13 @@ public class GetSeo {
             Document doc = con.getDocument();
 
             // 提取信息
-            Map<String, String> domainInfo = extractDomainInfo_aizhan(doc);
-            Map<String, String> icpInfo = extractIcpInfo_aizhan(doc);
-            Map<String, String> rankInfo = extractRankInfo_aizhan(doc);
+            JsonObject domainInfo = extractDomainInfo_aizhan(doc);
+            JsonObject icpInfo = extractIcpInfo_aizhan(doc);
+            JsonObject rankInfo = extractRankInfo_aizhan(doc);
 
-            seoMap.put("域名信息", domainInfo);
-            seoMap.put("备案信息", icpInfo);
-            seoMap.put("权重信息", rankInfo);
+            seoMap.add("域名信息", domainInfo);
+            seoMap.add("备案信息", icpInfo);
+            seoMap.add("权重信息", rankInfo);
 
         } catch (Exception e) {
             if (debugMode) System.out.println(e);
@@ -108,73 +111,98 @@ public class GetSeo {
     }
 
 
-    // 融合map1和map2
-    // map1 中的值不被 map2 的值覆盖，只有在 map1 中对应的 key 不存在或者值为空的情况下，才从 map2 中赋值
-    private static Map<String, Map<String, String>> mergeMaps(Map<String, Map<String, String>> map1, Map<String, Map<String, String>> map2) {
-        for (Map.Entry<String, Map<String, String>> entry : map2.entrySet()) {
-            // 使用 merge 方法将 map2 的条目合并到 map1
-            map1.merge(entry.getKey(), entry.getValue(), (subMap1, subMap2) -> {
-                // 遍历 subMap2 中的每个键值对
-                for (Map.Entry<String, String> innerEntry : subMap2.entrySet()) {
-                    String innerKey = innerEntry.getKey();
-                    String innerValue = innerEntry.getValue();
-
-                    // 只有当 subMap1 中没有该 key 或者其值为空时，才赋值
-                    if (!subMap1.containsKey(innerKey) || subMap1.get(innerKey) == null || subMap1.get(innerKey).isEmpty()) {
-                        subMap1.put(innerKey, innerValue);
-                    }
-                }
-                return subMap1; // 返回合并后的 subMap1
-            });
+    // 深度融合jsonObject1和jsonObject2
+    public static JsonObject mergeJsonObjects(JsonObject obj1, JsonObject obj2) {
+        JsonObject merged = new JsonObject();
+        for (String key : obj1.keySet()) {
+            JsonElement value1 = obj1.get(key);
+            if (obj2.has(key) && obj2.get(key)!=null && !obj2.get(key).isJsonNull()) {
+                JsonElement value2 = obj2.get(key);
+                JsonElement mergedValue = mergeElements(value1, value2);
+                merged.add(key, mergedValue);
+            } else {
+                merged.add(key, value1);
+            }
         }
-        return map1; // 返回最终的合并结果
+        for (String key : obj2.keySet()) {
+            if (!merged.has(key)) {
+                merged.add(key, obj2.get(key));
+            }
+        }
+        return merged;
     }
 
-    private static Map<String, String> extractDomainInfo_chinaz(Document doc) {
-        Map<String, String> domainInfo = new HashMap<>();
+    private static JsonElement mergeElements(JsonElement elem1, JsonElement elem2) {
+        if (elem1.isJsonObject() && elem2.isJsonObject()) {
+            return mergeJsonObjects(elem1.getAsJsonObject(), elem2.getAsJsonObject());
+        } else if (elem1.isJsonArray() && elem2.isJsonArray()) {
+            return mergeJsonArrays(elem1.getAsJsonArray(), elem2.getAsJsonArray());
+        } else {
+            return elem2; // 如果不是 JsonObject 或 JsonArray，则返回 elem2
+        }
+    }
 
-        domainInfo.put("注册人/机构", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1) > i"));
-        domainInfo.put("域名年龄", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > div:nth-of-type(2) > span > a > i"));
+    private static JsonArray mergeJsonArrays(JsonArray array1, JsonArray array2) {
+        JsonArray mergedArray = new JsonArray();
+        for (JsonElement elem : array1) {
+            mergedArray.add(elem);
+        }
+        for (JsonElement elem : array2) {
+            if(!mergedArray.contains(elem)) mergedArray.add(elem);
+        }
+        return mergedArray;
+    }
+
+    private static JsonObject extractDomainInfo_chinaz(Document doc) {
+        JsonObject domainInfo = new JsonObject();
+
+        domainInfo.addProperty("域名", getElementAttr(doc, "body > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > div > input", "value").trim());
+        domainInfo.addProperty("注册人/机构", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1) > i"));
+        domainInfo.addProperty("域名年龄", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > div:nth-of-type(2) > span > a > i"));
+        System.out.println(domainInfo);
 
         return domainInfo;
     }
 
-    private static Map<String, String> extractDomainInfo_aizhan(Document doc) {
-        Map<String, String> domainInfo = new HashMap<>();
+    private static JsonObject extractDomainInfo_aizhan(Document doc) {
+        JsonObject domainInfo = new JsonObject();
+
+        domainInfo.addProperty("域名", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(2) > form > input[1]", "value").trim());
+//        domainInfo.addProperty("域名", getElementAttr(doc, "input#domain", "value").trim());
+        System.out.println(domainInfo);
 
         Elements liElements = doc.select("body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(2) > ul > li");
-
         for (Element li : liElements) {
             String liText = li.text().trim();
 
             if (liText.contains("注册人/机构")) {
                 String org = li.selectFirst("a") != null ? li.selectFirst("a").text().trim() : "";
                 if (org.startsWith("//whois.ename.net") || org.contains("（更新）")) org = "";
-                domainInfo.put("注册人/机构", org);
+                domainInfo.addProperty("注册人/机构", org);
             }
 
             if (liText.contains("年龄：")) {
-                domainInfo.put("域名年龄", liText.replace("年龄：", "").trim());
+                domainInfo.addProperty("域名年龄", liText.replace("年龄：", "").trim());
             }
 
             if (liText.contains("邮箱") || liText.matches(".*@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}.*")) {
                 String emailHref = li.selectFirst("a") != null ? li.selectFirst("a").attr("href").trim() : "";
-                domainInfo.put("注册邮箱", getEmail(emailHref));
+                domainInfo.addProperty("注册邮箱", getEmail(emailHref));
             }
         }
 
         return domainInfo;
     }
 
-    private static Map<String, String> extractRankInfo_aizhan(Document doc) {
-        Map<String, String> rankInfo = new HashMap<>();
+    private static JsonObject extractRankInfo_aizhan(Document doc) {
+        JsonObject rankInfo = new JsonObject();
 
-        rankInfo.put("百度权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(1) > a > img", "alt").replace("n", "0"));
-        rankInfo.put("移动权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(2) > a > img", "alt").replace("n", "0"));
-        rankInfo.put("360权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(3) > a > img", "alt").replace("n", "0"));
-        rankInfo.put("神马权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(4) > a > img", "alt").replace("n", "0"));
-        rankInfo.put("搜狗权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(5) > a > img", "alt").replace("n", "0"));
-        rankInfo.put("谷歌权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(6) > a > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("百度权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(1) > a > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("移动权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(2) > a > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("360权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(3) > a > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("神马权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(4) > a > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("搜狗权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(5) > a > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("谷歌权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(6) > a > img", "alt").replace("n", "0"));
 
         return rankInfo;
     }
@@ -204,49 +232,49 @@ public class GetSeo {
         return email;
     }
 
-    private static Map<String, String> extractIcpInfo_chinaz(Document doc) {
-        Map<String, String> icpInfo = new HashMap<>();
+    private static JsonObject extractIcpInfo_chinaz(Document doc) {
+        JsonObject icpInfo = new JsonObject();
 
-        icpInfo.put("备案号", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > span:nth-of-type(1) > i > a"));
-        icpInfo.put("备案所属", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > span:nth-of-type(2) > i"));
-        icpInfo.put("备案性质", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > span:nth-of-type(3) > i"));
-
-        return icpInfo;
-    }
-
-    private static Map<String, String> extractIcpInfo_aizhan(Document doc) {
-        Map<String, String> icpInfo = new HashMap<>();
-        icpInfo.put("备案号", getElementText(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > ul > li:nth-of-type(1) > a"));
-        icpInfo.put("备案所属", getElementText(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > ul > li:nth-of-type(3) > span"));
-        icpInfo.put("备案性质", getElementText(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > ul > li:nth-of-type(2) > span"));
+        icpInfo.addProperty("备案号", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > span:nth-of-type(1) > i > a"));
+        icpInfo.addProperty("备案所属", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > span:nth-of-type(2) > i"));
+        icpInfo.addProperty("备案性质", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > span:nth-of-type(3) > i"));
 
         return icpInfo;
     }
 
-    private static Map<String, String> extractWebsiteInfo(Document doc) {
-        Map<String, String> websiteInfo = new HashMap<>();
+    private static JsonObject extractIcpInfo_aizhan(Document doc) {
+        JsonObject icpInfo = new JsonObject();
+        icpInfo.addProperty("备案号", getElementText(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > ul > li:nth-of-type(1) > a"));
+        icpInfo.addProperty("备案所属", getElementText(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > ul > li:nth-of-type(3) > span"));
+        icpInfo.addProperty("备案性质", getElementText(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > ul > li:nth-of-type(2) > span"));
+
+        return icpInfo;
+    }
+
+    private static JsonObject extractWebsiteInfo(Document doc) {
+        JsonObject websiteInfo = new JsonObject();
 
         // IP及所属地
         String elementText = getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1) > i > a");
         parseIpInfo(elementText, websiteInfo);
 
         // 网站描述
-        websiteInfo.put("网站描述", getElementText(doc, "body > div:nth-of-type(10) > div:nth-of-type(2) > div:nth-of-type(1) > div"));
+        websiteInfo.addProperty("网站描述", getElementText(doc, "body > div:nth-of-type(10) > div:nth-of-type(2) > div:nth-of-type(1)"));
 
         return websiteInfo;
     }
 
-    private static void parseIpInfo(String elementText, Map<String, String> websiteInfo) {
+    private static void parseIpInfo(String elementText, JsonObject websiteInfo) {
         Pattern pattern = Pattern.compile("^(\\d+\\.\\d+\\.\\d+\\.\\d+)\\[(.*?)\\]$");
         Matcher matcher = pattern.matcher(elementText);
 
         if (matcher.find()) {
             String ip = matcher.group(1);
             String location = matcher.group(2);
-            websiteInfo.put("IP", ip);
-            websiteInfo.put("IP所属", location);
+            websiteInfo.addProperty("IP", ip);
+            websiteInfo.addProperty("IP所属", location);
         } else {
-            websiteInfo.put("IP", elementText);
+            websiteInfo.addProperty("IP", elementText);
         }
     }
 
