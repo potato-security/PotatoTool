@@ -306,6 +306,15 @@ public class aesUtils {
             keyArray.add("1234567890123456");
         } else if( inputKeyStr != null ){
             keyArray.add(inputKeyStr);
+            // 为符合部分加解密方案，强行指定key为16位
+            if(inputKeyStr.length() < 16){
+                byte[] keyBytes = new byte[16];
+                byte[] originalKeyBytes = inputKeyStr.getBytes();
+                System.arraycopy(originalKeyBytes, 0, keyBytes, 0, Math.min(originalKeyBytes.length, keyBytes.length));
+                keyArray.add(new String(keyBytes));
+            }else if (inputKeyStr.length() > 16){
+                keyArray.add(inputKeyStr.substring(0, 16));
+            }
         }
 
         String[] modeArray = {"CBC", "ECB"};    //  webShell常见两种模式
