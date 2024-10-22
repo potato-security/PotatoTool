@@ -46,7 +46,7 @@ public class GetSubDomain {
                     .flatMap(Set::stream)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         } catch (Exception e) {
-            if (debugMode) System.out.println(e);
+            if (debugMode) e.printStackTrace();
             return new LinkedHashSet<>();
         }
     }

@@ -5,9 +5,16 @@ import org.xbill.DNS.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.*;
+
+import static com.potato.potatotool.ToStart.debugMode;
+import static com.potato.potatotool.utils.Constants.getResourceStream;
 
 /**
  * @author Potato
@@ -15,7 +22,7 @@ import java.util.concurrent.*;
  */
 public class SubdomainBruteForcer {
     private static final int THREAD_POOL_SIZE = ExecutorServiceManager.getOptimalThreadPoolSize() * 140; // 线程池大小，调整以适应资源
-    private static final String DOMAIN = "baidu.com"; // 主域名
+    private static final String DOMAIN = "szjky.edu.cn"; // 主域名
     private static final String[] DNS_SERVERS = {
             "8.8.8.8",
             "1.1.1.1",
@@ -25,30 +32,40 @@ public class SubdomainBruteForcer {
             "180.76.76.76",
             "1.2.4.8",
     }; // DNS服务器列表
-    private static final ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>(); // 结果缓存
+    private static final Set<String> cache = Collections.newSetFromMap(new ConcurrentHashMap<>()); // 多线程时安全的缓存结果
 
-    public static void main(String[] args) throws InterruptedException, IOException {
-        ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-        long startTime = System.nanoTime();
-        // 使用CompletableFuture异步处理子域名查询
-        try (BufferedReader reader = new BufferedReader(new FileReader("/Users/a/Desktop/项目开发/PotatoTool/src/main/resources/conf/subDomains/subDomains.txt"))) {
-            String subdomain;
-            while ((subdomain = reader.readLine()) != null) {
-                String fullSubdomain = subdomain.trim() + "." + DOMAIN; // 组合完整的子域名
-                CompletableFuture.runAsync(() -> resolveSubdomain(fullSubdomain), executor);
+    public static Set<String> getSubDomain(String domain){
+        try {
+            ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+            long startTime = System.nanoTime();
+            // 使用CompletableFuture异步处理子域名查询
+            try (InputStream aesKeyInputStream = getResourceStream("subDomains");
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(aesKeyInputStream, StandardCharsets.UTF_8))) {
+                String subdomain;
+                while ((subdomain = reader.readLine()) != null) {
+                    String fullSubdomain = subdomain.trim() + "." + domain; // 组合完整的子域名
+                    CompletableFuture.runAsync(() -> resolveSubdomain(fullSubdomain), executor);
+                }
+            } catch (Exception e) {
+                if(debugMode)e.printStackTrace();
             }
+
+            // 关闭线程池，等待所有任务完成
+            executor.shutdown();
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // 阻塞当前线程，等待所有任务完成
+            long endTime = System.nanoTime();
+            long duration = endTime - startTime;
+
+            // 将纳米时间转换为秒
+            double durationInSeconds = duration / 1_000_000_000.0;
+            System.out.println("程序运行时长为：" + durationInSeconds + " 秒");
+            System.out.println(cache.size());
+
+        }catch (Exception e){
+            if (debugMode) e.printStackTrace();
         }
 
-        // 关闭线程池，等待所有任务完成
-        executor.shutdown();
-        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // 阻塞当前线程，等待所有任务完成
-        long endTime = System.nanoTime();
-        long duration = endTime - startTime;
-
-        // 将纳米时间转换为秒
-        double durationInSeconds = duration / 1_000_000_000.0;
-        System.out.println("程序运行时长为：" + durationInSeconds + " 秒");
-        System.out.println(cache.size());
+        return cache;
     }
 
 
@@ -66,7 +83,7 @@ public class SubdomainBruteForcer {
                     lookup.run();
 
                     if (lookup.getResult() == Lookup.SUCCESSFUL) {
-                        cache.put(subdomain, "123");
+                        cache.add(subdomain);
                         System.out.println("Subdomain found: " + subdomain);
                         break; // 成功后跳出DNS服务器循环
                     }
@@ -75,7 +92,7 @@ public class SubdomainBruteForcer {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (debugMode) e.printStackTrace();
         }
     }
 }
