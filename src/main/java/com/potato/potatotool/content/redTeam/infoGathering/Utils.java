@@ -369,93 +369,6 @@ public class Utils {
         }
     }
 
-    private static final String INPUT_FILE_PATH = "/Users/a/Documents/12345.txt";
-    private static final String CSV_FILE_PATH = "/Users/a/Documents/outputSensitive_12345.csv";
-    public static void main(String[] args) {
-//        System.out.println(completeUrl("www.potato.gold"));
-//        System.out.println(completeUrl("www.potato.gold:3000"));
-
-        processUrl("https://www.potato.gold");
-
-//        ExecutorService executorService = Executors.newFixedThreadPool(ExecutorServiceManager.getOptimalThreadPoolSize());
-//
-//        try (CSVWriter writer = new CSVWriter(new FileWriter(CSV_FILE_PATH, false))) {
-//            String[] header = {"Url", "OAuthToken", "ApiKey", "ExternalIP", "Email", "PhoneNumber", "IdCard", "InternalIP"};
-//            writer.writeNext(header);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        try (BufferedReader br = new BufferedReader(new FileReader(INPUT_FILE_PATH))) {
-//            String urlStr;
-//            while ((urlStr = br.readLine()) != null) {
-//                final String url = urlStr.trim(); // 去除可能的空格
-//                System.out.println(url);
-//                executorService.submit(() -> processUrl(url));
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } finally {
-//            executorService.shutdown();
-//        }
-
-
-
-
-//        String inputFilePath = "/Users/a/Documents/123.txt"; // 输入的文件路径
-//        String outputFilePath = "/Users/a/Documents/output.txt"; // 输出的文件路径
-//
-//        try (BufferedReader reader = new BufferedReader(new FileReader(inputFilePath));
-//             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath))) {
-//
-//            String line;
-//            while ((line = reader.readLine()) != null) {
-//                // 处理每一行的URL
-//                String completeUrl = completeUrl(line.trim());
-//                if (completeUrl != null) {
-//                    writer.write(completeUrl);
-//                    writer.newLine();
-//                } else {
-//                    System.out.println("URL不可达: " + line);
-//                }
-//            }
-//            System.out.println("URL处理完成，生成新文件：" + outputFilePath);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-    }
-    private static void processUrl(String urlStr) {
-        Map<String, Object> webInfoMap = getWebInfo(urlStr);
-        System.out.println(webInfoMap);
-
-        List<Map<String, Object>> sensitiveList = (List<Map<String, Object>>) webInfoMap.get("sensitive");
-
-        System.out.println(sensitiveList);
-//        try (CSVWriter writer = new CSVWriter(new FileWriter(CSV_FILE_PATH, true))) {
-//
-//            // 遍历 sensitive 数据
-//            for (Map<String, Object> sensitiveObject : sensitiveList) {
-//                String url = (String) sensitiveObject.get("Url");
-//                String oauthToken = joinList((List<String>) sensitiveObject.get("OAuthToken"));
-//                String apiKey = joinList((List<String>) sensitiveObject.get("ApiKey"));
-//                String externalIP = joinList((List<String>) sensitiveObject.get("ExternalIP"));
-//                String email = joinList((List<String>) sensitiveObject.get("Email"));
-//                String phoneNumber = joinList((List<String>) sensitiveObject.get("PhoneNumber"));
-//                String idCard = joinList((List<String>) sensitiveObject.get("IdCard"));
-//                String internalIP = joinList((List<String>) sensitiveObject.get("InternalIP"));
-//
-//                // 检查是否所有字段（除了 Url）为空
-//                if (!isEmpty(oauthToken, apiKey, externalIP, email, phoneNumber, idCard, internalIP)) {
-//                    // 写入 CSV 行
-//                    String[] csvRow = {url, oauthToken, apiKey, externalIP, email, phoneNumber, idCard, internalIP};
-//                    writer.writeNext(csvRow);
-//                }
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-    }
 
     private static String joinList(List<String> list) {
         return String.join("\n", list);
@@ -468,5 +381,9 @@ public class Utils {
             }
         }
         return true;
+    }
+
+
+    public static void main(String[] args) {
     }
 }

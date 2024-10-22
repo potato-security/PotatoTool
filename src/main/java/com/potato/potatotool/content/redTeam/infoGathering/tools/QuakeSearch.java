@@ -1,8 +1,8 @@
 package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 
@@ -18,9 +18,12 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2024/10/14 09:42
  */
 public class QuakeSearch {
-    private static String QUAKE_KEY = "***REMOVED***";
+    private static String QUAKE_KEY;
+    public QuakeSearch(String QUAKE_KEY){
+        this.QUAKE_KEY = QUAKE_KEY;
+    }
 
-    public static JsonArray search_quake(String qInfo) {
+    public JsonArray search_Quake(String qInfo) {
         JsonArray domainInfo = new JsonArray();
         if( qInfo==null || qInfo.isEmpty() ) return domainInfo;
         if( QUAKE_KEY==null || QUAKE_KEY.isEmpty() ){
@@ -56,14 +59,33 @@ public class QuakeSearch {
         return domainInfo;
     }
 
-    // TODO  OR  模糊搜索公司名记得需要带双引号  ip: "1.1.1.1/16"  domain:"360.cn"  icp:"京ICP备08010314号" body:"奇虎" favicon:"0488faca4c19046b94d07c3ee83cf9d6"
+    public JsonArray getInfoByIcpNo_Quake(String icpNo) {
+        if(icpNo==null || icpNo.isEmpty()) return new JsonArray();
+        String qInfo = "icp:\"" + icpNo + "\"";
+        return search_Quake(qInfo);
+    }
 
-    public static JsonArray getDomainByCompanyOrDomain_quake(String companyOrDomain) {
+    // TODO  OR  模糊搜索公司名记得需要带双引号  ip: "1.1.1.1/16" body:"奇虎" favicon:"0488faca4c19046b94d07c3ee83cf9d6"
+
+    public JsonArray getInfoByBodyFilteIcp_Quake(String companyNameStr, String domainStr) {
+        if(companyNameStr==null || companyNameStr.isEmpty()) return new JsonArray();
+        String qInfo = "body:\"" + companyNameStr + "\" AND NOT cert:\"" + companyNameStr + "\" AND NOT domain:\"" + domainStr + "\"";
+        return search_Quake(qInfo);
+    }
+
+    public JsonArray getInfoByCompanyOrDomain_Quake(String companyOrDomain) {
+        if(companyOrDomain==null || companyOrDomain.isEmpty()) return new JsonArray();
         String qInfo = "cert:\"" + companyOrDomain + "\"";
-        return search_quake(qInfo);
+        if(isDomainName(companyOrDomain)){
+            qInfo += " OR domain:\"" + companyOrDomain + "\"";
+        }
+        return search_Quake(qInfo);
     }
 
     public static void main(String[] args) {
-        System.out.println(getDomainByCompanyOrDomain_quake("360.net"));
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        QuakeSearch quakeSearch = new QuakeSearch(tmpJsonObj.getAsJsonPrimitive("Quake_Key").getAsString());
+        System.out.println(quakeSearch.getInfoByCompanyOrDomain_Quake("360.net"));
     }
+
 }

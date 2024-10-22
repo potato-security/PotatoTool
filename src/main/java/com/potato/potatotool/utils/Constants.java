@@ -166,6 +166,34 @@ public class Constants {
     }
 
 
+    public static ArrayList<String> getResourceList(String propertyName) {
+        ArrayList<String> list = new ArrayList();
+
+        String resourceFilePath = props.getProperty(propertyName);
+
+        try {
+            InputStream inputStream = Constants.class.getClassLoader().getResourceAsStream(resourceFilePath);
+
+            if (inputStream == null) {
+                throw new RuntimeException("资源文件不存在或为空资源，请检查config.properties, propertyName=" + propertyName);
+            }
+
+            // 使用缓冲区读取文件数据
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                list.add(line.trim());
+            }
+            reader.close();
+
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+
     /**
      * @param propertyName  config.properties内设置好的key名称
      * @return              返回key对应的resources绝对路径    //打包jar不适用

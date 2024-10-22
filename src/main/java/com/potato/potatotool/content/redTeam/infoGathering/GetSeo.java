@@ -9,8 +9,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
@@ -71,7 +69,7 @@ public class GetSeo {
             seoMap.add("网站信息", websiteInfo);
 
         } catch (Exception e) {
-            if (debugMode) System.out.println(e);
+            if (debugMode) e.printStackTrace();
         }
 
         return seoMap;
@@ -104,7 +102,7 @@ public class GetSeo {
             seoMap.add("权重信息", rankInfo);
 
         } catch (Exception e) {
-            if (debugMode) System.out.println(e);
+            if (debugMode) e.printStackTrace();
         }
 
         return seoMap;

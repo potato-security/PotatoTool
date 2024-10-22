@@ -3,7 +3,11 @@ package com.potato.potatotool.content.redTeam.infoGathering;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.subDomain.GetSubDomain;
+import com.potato.potatotool.content.redTeam.infoGathering.subDomain.SubdomainBruteForcer;
+import com.potato.potatotool.content.redTeam.infoGathering.tools.*;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static com.potato.potatotool.content.redTeam.infoGathering.GetSeo.*;
@@ -26,8 +30,34 @@ public class AssetMapper {
             "^(?!-)([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,63}$"
     );
 
+    private static String Fofa_Key;
+    private static Set<String> Hunter_Key;
+    private static String Quake_Key;
+    private static String Shodan_Key;
+    private static String Zoomeye_Key;
+
+    private static FofaSearch fofaSearch;
+    private static HunterSearch hunterSearch;
+    private static QuakeSearch quakeSearch;
+    private static ShodanSearch shodanSearch;
+    private static ZoomeyeSearch zoomeyeSearch;
+
     public static void searchInfo(String input) {
         AssetObj assetObj = new AssetObj();
+
+        Fofa_Key = assetObj.getFofa_Key();
+        Hunter_Key = assetObj.getHunter_Key();
+        Quake_Key = assetObj.getQuake_Key();
+        Shodan_Key = assetObj.getShodan_Key();
+        Zoomeye_Key = assetObj.getZoomeye_Key();
+
+        fofaSearch = new FofaSearch(Fofa_Key);
+        hunterSearch = new HunterSearch(Hunter_Key);
+        quakeSearch = new QuakeSearch(Quake_Key);
+        shodanSearch = new ShodanSearch(Shodan_Key);
+        zoomeyeSearch = new ZoomeyeSearch(Zoomeye_Key);
+
+        // TODO 网址换成域名/ip
 
         if (isIPAddress(input)) {
             handleIPAddress(input, assetObj);
@@ -135,9 +165,63 @@ public class AssetMapper {
                 }
             }
 
-            for(String icpNo : assetObj.getIcp()){
-                // TODO FOFA 等平台 ipc号查询
+
+            for(String domainStr : assetObj.getDomain()) {
+                if (assetObj.isGetSubdomain()) {
+                    assetObj.setDomain(GetSubDomain.getSubByDomainOrDomainCert(domainStr));
+                    if (assetObj.isBruteForceSubdomain()) {
+                        assetObj.setDomain(SubdomainBruteForcer.getSubDomain(domainStr));
+                    }
+                }
             }
+
+            // TODO 展示备案号、手动传入、修改备案号
+            if(Fofa_Key.isEmpty() && Quake_Key.isEmpty() && Shodan_Key.isEmpty() && Zoomeye_Key.isEmpty() && Hunter_Key.size()==0) {
+                for(String domainStr : assetObj.getDomain()) {
+                    JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa(domainStr);
+                    // TODO 处理格式
+                }
+            }else {
+
+                for (String domainStr : assetObj.getDomain()){
+                    JsonArray domainInfo_Fofa = fofaSearch.getInfoByCompanyOrDomain_Fofa(domainStr);
+                    JsonArray info_Hunter = hunterSearch.getInfoByCompanyOrDomain_Hunter(domainStr);
+                    JsonArray info_Quake = quakeSearch.getInfoByCompanyOrDomain_Quake(domainStr);
+                    JsonArray info_Shodan = shodanSearch.getInfoByDomain_shodan(domainStr);
+                    JsonArray info_Zoomeye = zoomeyeSearch.getInfoByCompanyOrDomain_zoomeye(domainStr);
+                    // TODO 处理格式   获取最新icp 排除遗漏的icp  并加入
+                }
+
+
+                for (String icpNo : assetObj.getIcp()) {
+                    JsonArray icpInfo_Fofa = fofaSearch.getInfoByIcpNo_Fofa(icpNo);
+                    JsonArray icpInfo_Hunter = hunterSearch.getInfoByIcpNo_Hunter(icpNo);
+                    JsonArray icpInfo_Quake = quakeSearch.getInfoByIcpNo_Quake(icpNo);
+                    // TODO 处理格式
+                }
+            }
+
+            // 开始检索影子资产
+            if(assetObj.isSearchShadowAssets()){
+                Set<String> companyNameSet = AiUtils.getCompanyName_Ai(companyName);
+                // TODO 用户修改公司名列表
+                
+                for(String companyNameStr : companyNameSet){
+                    JsonArray info_Fofa = fofaSearch.getInfoByBodyFilterIcp_Fofa(companyNameStr, domain);
+                    JsonArray info_Hunter = hunterSearch.getInfoByBodyFilterIcp_Hunter(companyNameStr, domain);
+                    JsonArray info_Quake = quakeSearch.getInfoByBodyFilteIcp_Quake(companyNameStr, domain);
+                    JsonArray info_Shodan = shodanSearch.getInfoByBodyFilterIcp_shodan(companyNameStr, domain);
+                    JsonArray info_Zoomeye = zoomeyeSearch.getInfoByBodyFilterIcp_zoomeye(companyNameStr, domain);
+                    // TODO 处理格式
+                    // TODO title、body相关性过滤
+                    // icon 图标相关性
+                    // 手动选择icon、剔除不相关
+                    // 合并去重
+                    // C端口聚合
+                }
+            }
+
+
 
         }
     }

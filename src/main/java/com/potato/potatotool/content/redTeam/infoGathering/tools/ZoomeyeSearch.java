@@ -2,6 +2,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.potato.potatotool.ToStart.debugMode;
+import static com.potato.potatotool.content.redTeam.infoGathering.AssetMapper.isDomainName;
 import static com.potato.potatotool.utils.requestUtils.requests;
 
 /**
@@ -17,9 +19,12 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2024/10/14 09:41
  */
 public class ZoomeyeSearch {
-    private static String ZOOMEYE_KEY = "***REMOVED***";
+    private static String ZOOMEYE_KEY;
+    public ZoomeyeSearch(String ZOOMEYE_KEY){
+        this.ZOOMEYE_KEY = ZOOMEYE_KEY;
+    }
 
-    public static JsonArray search_zoomeye(String qInfo) {
+    public JsonArray search_zoomeye(String qInfo) {
         JsonArray domainInfo = new JsonArray();
         if( qInfo==null || qInfo.isEmpty() ) return domainInfo;
         if( ZOOMEYE_KEY==null || ZOOMEYE_KEY.isEmpty() ){
@@ -56,14 +61,26 @@ public class ZoomeyeSearch {
         return domainInfo;
     }
 
-    // TODO  cidr:52.2.254.36/24 ip:"8.8.8.8"  site:google.com hostname:google.com iconhash:"37578595"  dig:"模糊搜索body"
+    // TODO  cidr:52.2.254.36/24 ip:"8.8.8.8"  iconhash:"37578595"  dig:"模糊搜索body"
 
-    public static JsonArray getDomainByCompanyOrDomain_zoomeye(String companyOrDomain) {
+    public JsonArray getInfoByCompanyOrDomain_zoomeye(String companyOrDomain) {
+        if(companyOrDomain==null || companyOrDomain.isEmpty()) return new JsonArray();
         String qInfo = "ssl:\"" + companyOrDomain + "\" org:\"" + companyOrDomain + "\"";
+        if(isDomainName(companyOrDomain)){
+            qInfo += " hostname:\"" + companyOrDomain + "\" site:\"" + companyOrDomain;
+        }
         return search_zoomeye(qInfo);
     }
 
     public static void main(String[] args) {
-        System.out.println(getDomainByCompanyOrDomain_zoomeye("360.net"));
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        ZoomeyeSearch zoomeyeSearch = new ZoomeyeSearch(tmpJsonObj.getAsJsonPrimitive("Zoomeye_Key").getAsString());
+        System.out.println(zoomeyeSearch.getInfoByCompanyOrDomain_zoomeye("360.net"));
+    }
+
+    public JsonArray getInfoByBodyFilterIcp_zoomeye(String companyNameStr, String domain) {
+        if(companyNameStr==null || companyNameStr.isEmpty()) return new JsonArray();
+        String qInfo = "dig:\"" + companyNameStr + "\"-org:\"" + companyNameStr + "\"-hostname:\"" + domain + "\"-site:\"" + domain + "\"";
+        return search_zoomeye(qInfo);
     }
 }

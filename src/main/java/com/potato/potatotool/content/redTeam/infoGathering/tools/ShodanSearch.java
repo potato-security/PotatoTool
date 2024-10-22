@@ -1,12 +1,13 @@
 package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.content.redTeam.infoGathering.AssetMapper.isDomainName;
 import static com.potato.potatotool.utils.requestUtils.requests;
 
 /**
@@ -14,9 +15,12 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2023/10/12 11:54
  */
 public class ShodanSearch {
-    private static String SHODAN_KEY = "***REMOVED***";
+    private static String SHODAN_KEY;
+    public ShodanSearch(String SHODAN_KEY){
+        this.SHODAN_KEY = SHODAN_KEY;
+    }
 
-    public static JsonArray search_shodan(String qInfo) {
+    public JsonArray search_shodan(String qInfo) {
         JsonArray domainInfo = new JsonArray();
         if( qInfo==null || qInfo.isEmpty() ) return domainInfo;
         if( SHODAN_KEY==null || SHODAN_KEY.isEmpty() ){
@@ -45,19 +49,25 @@ public class ShodanSearch {
         return domainInfo;
     }
 
-    public static JsonArray getDomainByDomainCert_shodan(String domain) {
-        String qInfo = null;
-
-        if(isDomainName(domain)){
-            qInfo = "ssl.cert.subject.cn:" + domain;
-        }
+    public JsonArray getInfoByDomain_shodan(String domain) {
+        if(domain==null || domain.isEmpty()) return new JsonArray();
+        String qInfo = "ssl.cert.subject.cn:" + domain + " hostname:" + domain;
 
         return search_shodan(qInfo);
     }
 
-    // TODO net:118.69.133.0/24 ip:123  hostname:googld.com  http.favicon.hash:iconMmh3   ssl.cert.subject.cn:googld.com http.html:body内容
+    // TODO net:118.69.133.0/24 ip:123  http.favicon.hash:iconMmh3  http.html:body内容
 
     public static void main(String[] args) {
-        System.out.println(getDomainByDomainCert_shodan("potato.gold"));
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        ShodanSearch shodanSearch = new ShodanSearch(tmpJsonObj.getAsJsonPrimitive("Shodan_Key").getAsString());
+        System.out.println(shodanSearch.getInfoByDomain_shodan("potato.gold"));
+    }
+
+    public JsonArray getInfoByBodyFilterIcp_shodan(String companyNameStr, String domain) {
+        if(companyNameStr==null || companyNameStr.isEmpty()) return new JsonArray();
+        String qInfo = "http.html:" + companyNameStr;
+
+        return search_shodan(qInfo);
     }
 }

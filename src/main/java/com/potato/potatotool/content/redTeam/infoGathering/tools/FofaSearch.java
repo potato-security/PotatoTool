@@ -2,6 +2,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
@@ -15,7 +16,10 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2023/10/1 15:53
  */
 public class FofaSearch {
-    private static String FOFA_KEY = "***REMOVED***";
+    private static String FOFA_KEY;
+    public FofaSearch(String FOFA_KEY){
+        this.FOFA_KEY = FOFA_KEY;
+    }
 
     /**
      *         单独一个不需要认证的FOFA接口
@@ -23,8 +27,9 @@ public class FofaSearch {
      * @param ipOrDomain
      * @return
      */
-    public static JsonObject getBriefExtendedInfo_fofa(String ipOrDomain) {
+    public JsonObject getBriefExtendedInfo_Fofa(String ipOrDomain) {
         JsonObject briefExtendedInfo = new JsonObject();
+        if(ipOrDomain==null || ipOrDomain.isEmpty()) return briefExtendedInfo;
 
         try {
             RequestObj obj = new RequestObj()
@@ -48,7 +53,7 @@ public class FofaSearch {
         return briefExtendedInfo;
     }
 
-    public static JsonArray search_fofa(String qInfo) {
+    public JsonArray search_Fofa(String qInfo) {
         JsonArray domainInfo = new JsonArray();
         if( qInfo==null || qInfo.isEmpty() ) return domainInfo;
         if( FOFA_KEY==null || FOFA_KEY.isEmpty() ){
@@ -74,38 +79,56 @@ public class FofaSearch {
         return domainInfo;
     }
 
-    public static JsonArray getDomainByIcon_fofa(String hash_mmh3) {
+    public JsonArray getInfoByIcon_Fofa(String hash_mmh3) {
+        if(hash_mmh3==null || hash_mmh3.isEmpty()) return new JsonArray();
         String qInfo = "icon_hash=\"" + hash_mmh3 + "\"";
-        return search_fofa(qInfo);
+        return search_Fofa(qInfo);
     }
 
-    public static JsonArray getDomainByCompanyOrDomain_fofa(String companyOrDomain) { // TODO 需要完全确定的公司名，不要模糊匹配
+    public JsonArray getInfoByCompanyOrDomain_Fofa(String companyOrDomain) {
+        if(companyOrDomain==null || companyOrDomain.isEmpty()) return new JsonArray();
         String qInfo = "cert=\"" + companyOrDomain + "\"";
-        return search_fofa(qInfo);
+        if(isDomainName(companyOrDomain)){
+            qInfo += "||domain=\"" + companyOrDomain + "\"";
+        }
+        return search_Fofa(qInfo);
     }
 
-    public static JsonArray getDomainByIp_fofa(String ip) {
+    public JsonArray getInfoByIp_Fofa(String ip) {
+        if(ip==null || ip.isEmpty()) return new JsonArray();
         String qInfo = "ip=\"" + ip + "\"";
-        return search_fofa(qInfo);
+        return search_Fofa(qInfo);
     }
 
-    // TODO domain="potato.gold"	icp="京ICP证030173号"
+    public JsonArray getInfoByIcpNo_Fofa(String icpNo) {
+        if(icpNo==null || icpNo.isEmpty()) return new JsonArray();
+        String qInfo = "icp=\"" + icpNo + "\"";
+        return search_Fofa(qInfo);
+    }
+
+    public JsonArray getInfoByBodyFilterIcp_Fofa(String companyNameStr, String domainStr) {
+        if(companyNameStr==null || companyNameStr.isEmpty()) return new JsonArray();
+        String qInfo = "body=\"" + companyNameStr + "\" && cert!=\"" + companyNameStr + "\" && domain!=\"" + domainStr + "\"";
+        return search_Fofa(qInfo);
+    }
 
     public static void main(String[] args) {
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive("Fofa_Key").getAsString());
 
-//        JsonArray domainInfo = getDomainByCompanyOrDomain_fofa("国家能源投资集团有限责任公司");
+//        JsonArray domainInfo = fofaSearch.getDomainByCompanyOrDomain_Fofa("国家能源投资集团有限责任公司");
 //        System.out.println(domainInfo);
 //        System.out.println(domainInfo.size());
 
-        JsonArray ipInfo = getDomainByIp_fofa("13.227.83.19");
+        JsonArray ipInfo = fofaSearch.getInfoByIp_Fofa("13.227.83.19");
         System.out.println(ipInfo);
 //
-//        JsonArray domainInfo1 = getDomainByIcon_fofa("37578595");
+//        JsonArray domainInfo1 = fofaSearch.getDomainByIcon_Fofa("37578595");
 //        System.out.println(domainInfo1);
 //        System.out.println(domainInfo1.size());
 //
 //
-//        JsonObject briefExtendedInfo = getBriefExtendedInfo_fofa("potato.gold");
+//        JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa("potato.gold");
 //        System.out.println(briefExtendedInfo);
     }
 }
