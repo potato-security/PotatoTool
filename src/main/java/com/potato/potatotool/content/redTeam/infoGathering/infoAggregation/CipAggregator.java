@@ -1,0 +1,40 @@
+package com.potato.potatotool.content.redTeam.infoGathering.infoAggregation;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * @author Potato
+ * @date 2024/10/22 15:30
+ */
+public class CipAggregator {
+
+    // 提取C段出现的次数
+    public static Map<String, Integer> getFrequentCSegments(List<String> ipList) {
+        // 使用Map来统计每个C段出现的次数
+        Map<String, Integer> cSegmentCountMap = new HashMap<>();
+
+        // 遍历每个IP地址，统计C段的出现次数
+        for (String ip : ipList) {
+            String cSegment = getCSegment(ip);  // 获取C段
+            cSegmentCountMap.put(cSegment, cSegmentCountMap.getOrDefault(cSegment, 0) + 1);
+        }
+
+        // 只保留出现次数大于1的C段
+        return cSegmentCountMap.entrySet().stream()
+                .filter(entry -> entry.getValue() > 1)  // 过滤出出现次数超过1的C段
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    // 提取C段（即前三个段）
+    private static String getCSegment(String ip) {
+        String[] parts = ip.split("\\.");
+        if (parts.length != 4) {
+            throw new IllegalArgumentException("无效的IP地址: " + ip);
+        }
+        // 返回前三段，即C段部分
+        return parts[0] + "." + parts[1] + "." + parts[2];
+    }
+}
