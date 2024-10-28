@@ -70,6 +70,21 @@ public class AiUtils {
         return getContentRelevance_Ai(webBaseInfoMap, company, targetWebBaseInfoMap);
     }
 
+    public static boolean getGitRepoRelevance_Ai(String repoName, String repoDes, String companyNames){
+        if((repoName.isEmpty() && repoDes.isEmpty()) || companyNames.isEmpty()) return false;
+        aiUtil aiObj=new aiUtil();
+        String companyNameListStr = aiObj.askAi_NoStream("有一个git项目，项目名为：" + repoName + "，项目描述：" + repoDes +"。请推断该网站是否与```" + companyNames + "```相关，并使用方括号将结果括起来，以便强调。比如，像[[[相关]]]、[[[不相关]]]、[[[无法推断]]]");
+
+        Set<String> result = aiObj.get_re_result(companyNameListStr);
+        for(String item: result){
+            if(item.equals("相关")){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     // 提取泄露的敏感信息
     public static Set<String> getLeakage_Ai(String content){
@@ -84,13 +99,14 @@ public class AiUtils {
     public static void main(String[] args) {
         System.out.println(getCompanyName_Ai("国电"));
 
-        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "国能", null));
-        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "国家能源集团", null));
-        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "中国", null));
-        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "中国网站", null));
-        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "中国网站", "https://www.potato.gold"));
-        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "美国", null));
-        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "土豆", null));
-        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "山东", null));
+//        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "国能", null));
+//        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "国家能源集团", null));
+//        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "中国", null));
+//        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "中国网站", null));
+//        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "中国网站", "https://www.potato.gold"));
+//        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "美国", null));
+//        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "土豆", null));
+//        System.out.println(getContentRelevance_Ai("https://www.potato.gold", "山东", null));
+        System.out.println(getGitRepoRelevance_Ai("18704476796/guonengyt-console", "国能英泰管理后台项目", "\"国家能源集团\" OR \"国能\""));
     }
 }

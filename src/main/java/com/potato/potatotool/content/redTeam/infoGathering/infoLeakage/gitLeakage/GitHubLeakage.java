@@ -3,10 +3,14 @@ package com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.gitLeaka
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.AiUtils;
 import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.requestUtils.requests;
@@ -26,11 +30,11 @@ public class GitHubLeakage {
 //    }
 
     // 再模糊点检索，可以直接检索code而非repo
-    public JsonArray getRepo(String companyName, String domain){
+    public JsonArray getRepo(Set<String> companyNameList, String domain){
         JsonArray repoArray = new JsonArray();
         String question = "";
-        if(companyName!=null && !companyName.isEmpty()) {
-            question += "\"" + companyName + "\"";
+        if(companyNameList!=null && !companyNameList.isEmpty()) {
+            question +=  "\"" + String.join("\" OR \"", companyNameList) + "\"";
         }
         if(domain!=null && !domain.isEmpty()){
             if(!question.isEmpty()) question += " OR ";
@@ -56,15 +60,21 @@ public class GitHubLeakage {
             }
 
             JsonObject repoArrayObj = con.getJson().getAsJsonObject();
+            System.out.println(question);
+            System.out.println(repoArrayObj);
 
             if(repoArrayObj.has("items")){
                 JsonArray items = repoArrayObj.getAsJsonArray("items");
                 for(JsonElement item : items){
                     JsonObject repoObj = new JsonObject();
-                    repoObj.addProperty("repoName", item.getAsJsonObject().get("full_name").getAsString());
-                    repoObj.addProperty("repoUrl", item.getAsJsonObject().get("html_url").getAsString());
-                    repoObj.addProperty("repoDes", item.getAsJsonObject().get("description").getAsString());
-                    repoArray.add(repoObj);
+                    String repoName = item.getAsJsonObject().get("full_name").getAsString();
+                    String repoDes = item.getAsJsonObject().get("description").getAsString();
+                    if(AiUtils.getGitRepoRelevance_Ai(repoName, repoDes, question)) {
+                        repoObj.addProperty("repoName", repoName);
+                        repoObj.addProperty("repoUrl", item.getAsJsonObject().get("html_url").getAsString());
+                        repoObj.addProperty("repoDes", repoDes);
+                        repoArray.add(repoObj);
+                    }
                 }
             }
 
@@ -76,9 +86,8 @@ public class GitHubLeakage {
     }
 
 
-    // TODO 目前API不支持正则
+    // TODO 目前API不支持正则、不支持OR、不支持|  本地浏览器打开
     public JsonArray getLeakageCode(JsonArray repoArray){
-//        JsonObject repoInfo = new JsonObject();
         for(JsonElement repoJsonElement : repoArray){
             JsonObject repoObj = repoJsonElement.getAsJsonObject();
             String repoName = repoObj.get("repoName").getAsString();
@@ -129,10 +138,14 @@ public class GitHubLeakage {
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
         GitHubLeakage gitHubLeakage = new GitHubLeakage(tmpJsonObj.getAsJsonPrimitive("GitHub_Token").getAsString());
 
-        JsonArray xxx= new JsonArray();
-        JsonObject qqq = new JsonObject();
-        qqq.addProperty("repoName","sendgrid/sendgrid-csharp");
-        xxx.add(qqq);
-        System.out.println(gitHubLeakage.getLeakageCode(xxx));
+//        JsonArray xxx= new JsonArray();
+//        JsonObject qqq = new JsonObject();
+//        qqq.addProperty("repoName","sendgrid/sendgrid-csharp");
+//        xxx.add(qqq);
+//        System.out.println(gitHubLeakage.getLeakageCode(xxx));
+        Set<String> companyNameList = new HashSet<>();
+        companyNameList.add("国家能源集团");
+        companyNameList.add("国能");
+        System.out.println(gitHubLeakage.getRepo(companyNameList, null));
     }
 }
