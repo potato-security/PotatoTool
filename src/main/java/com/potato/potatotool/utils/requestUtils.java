@@ -72,6 +72,7 @@ public class requestUtils {
                 String method = requestObj.getMethod();
                 String url = requestObj.getUrl();
                 Map<String, String> headers = requestObj.getHeaders();
+                String bearerToken = requestObj.getBearerToken();
                 Boolean randomUserAgent = requestObj.getRandomUserAgent();
                 boolean followRedirects = requestObj.getFollowRedirects();
                 String proxies = requestObj.getProxies();
@@ -113,6 +114,9 @@ public class requestUtils {
                 con.setRequestProperty("Tool-Test", "Potato-Test");
                 if (randomUserAgent) {
                     con.setRequestProperty("User-Agent", strUtils.RandomUserAgent());
+                }
+                if (!bearerToken.isEmpty()){
+                    con.setRequestProperty("Authorization", "Bearer " + bearerToken.replace("Bearer ", ""));
                 }
                 // 设置自定义头部信息
                 if (headers != null) {
@@ -239,7 +243,6 @@ public class requestUtils {
                     retryCount++;
                     requestObj.setTimeOut(requestObj.getTimeOut() * 2);
                     Thread.sleep(retryWaitTime * 1000); // 重试间隔时间
-                    System.out.println(1);
                     continue; // 继续重试
                 }
                 throw new Exception("[×] 请求失败，超出重试次数", e);

@@ -85,6 +85,15 @@ public class ImgSimilarity {
 
         return (histogramSimilarity > histogramThreshold || pHshSimilarity > phashThreshold);
     }
+    public boolean matchSimilar(URL srcURL, URL canURL) throws Exception {
+        // 获取直方图相似度
+        double histogramSimilarity = imgHistogram.match(srcURL, canURL);
+
+        // 获取pHash相似度
+        double pHshSimilarity = imgPHsh.match(srcURL, canURL);
+
+        return (histogramSimilarity > histogramThreshold || pHshSimilarity > phashThreshold);
+    }
 
     // 设置直方图相似度的权重
     public void setHistogramWeight(double histogramWeight) {

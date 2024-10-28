@@ -1,0 +1,170 @@
+package com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.searchEnginesLeakage;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.AiUtils;
+import com.potato.potatotool.utils.Constants;
+import com.potato.potatotool.utils.CustomHttpResponse;
+import com.potato.potatotool.utils.RequestObj;
+import com.potato.potatotool.utils.strUtils;
+
+import java.util.*;
+
+import static com.potato.potatotool.ToStart.debugMode;
+import static com.potato.potatotool.utils.requestUtils.requests;
+
+/**
+ * @author Potato
+ * @date 2023/10/1 15:53
+ */
+public class GoogleSearch {
+    public GoogleSearch(List<HashMap<String, String>> Google_API_List){
+        this.Google_API_List = Google_API_List;
+    }
+    private static List<HashMap<String, String>> Google_API_List;
+    private static int keyIndex = 0;
+
+
+    public JsonArray searchLeakageByDomain(String domain){
+        String input = "site:" + domain + " cominurl:sql | 密码 | 内部 | password | inurl:apidocs | inurl:api-docs | inurl:swagger | inurl:api-explorer | intext:\"sql syntax near\" | intext:\"syntax error has occurred\" | intext:\"incorrect syntax near\" | intext:\"unexpected end of SQL command\" | intext:\"Warning: mysql_connect()\" | intext:\"Warning: mysql_query()\" | intext:\"Warning: pg_connect()\" | filetype:sqlext:sql | ext:dbf | ext:mdb";
+        if(domain.isEmpty()){
+            input = "";
+        }
+        return search(input, null, true);
+    }
+
+    public JsonArray searchLeakageByIp(String ip){
+        String input = "\"" + ip + "\" cominurl:sql | 密码 | 内部 | password | inurl:apidocs | inurl:api-docs | inurl:swagger | inurl:api-explorer | intext:\"sql syntax near\" | intext:\"syntax error has occurred\" | intext:\"incorrect syntax near\" | intext:\"unexpected end of SQL command\" | intext:\"Warning: mysql_connect()\" | intext:\"Warning: mysql_query()\" | intext:\"Warning: pg_connect()\" | filetype:sqlext:sql | ext:dbf | ext:mdb";
+        if(ip.isEmpty()){
+            input = "";
+        }
+        return search(input, null, true);
+    }
+
+    // 获取影子资产domain，已经过icon\ai过滤
+    public JsonArray searchDomainByCompanyName(String companyName, String targetUrl){
+        String input = "\"" + companyName + "\"";
+        if(companyName.isEmpty()){
+            input = "";
+        }
+        return search(input, targetUrl, false);
+    }
+
+
+    public JsonArray search(String input, String targetUrl, boolean isSearchLeakage){
+        JsonArray repoArray = new JsonArray();
+        if(input.isEmpty() ||Google_API_List.size()==0|| Google_API_List.get(0).isEmpty()){
+            return repoArray;
+        }
+
+        int index = 0;
+
+        while (true) {
+            if(index==10) break; // 最多100条
+            int currentIndex = index * 10 + 1;
+            index += 1;
+
+            if(keyIndex+1 == Google_API_List.size()){
+                System.out.println("所有Google_Key今日均无免费额度可使用。");
+                // TODO 提示
+                break;
+            }
+            String Google_Key = Google_API_List.get(keyIndex).get("Google_Key");
+            String Google_Cx = Google_API_List.get(keyIndex).get("Google_Cx");
+
+            try {
+                RequestObj obj = new RequestObj()
+                        .setUrl("https://customsearch.googleapis.com/customsearch/v1?key=" + Google_Key + "&q=" + strUtils.urlEncode(input) + "&cx=" + Google_Cx + "&start=" + currentIndex)
+                        .setMethod("GET")
+                        .setProxies("http://127.0.0.1:8080")
+                        .setRetries(3);
+
+                CustomHttpResponse con = requests(obj);
+
+                int statusCode = con.getResponseCode();
+                // 检查请求状态码
+                if (statusCode != 200) {
+                    if(statusCode == 429){
+                        // TODO 提示
+                        keyIndex += 1;
+                        index -= 1;
+                        continue;
+                    }
+                    break;
+                }
+
+                JsonObject repoArrayObj = con.getJson().getAsJsonObject();
+
+                if (repoArrayObj.has("items")) {
+                    JsonArray items = repoArrayObj.getAsJsonArray("items");
+                    for (JsonElement item : items) {
+                        JsonObject repoObj = new JsonObject();
+                        String url = item.getAsJsonObject().get("link").getAsString();
+                        String domain = item.getAsJsonObject().get("displayLink").getAsString();
+                        String title = item.getAsJsonObject().get("title").getAsString();
+                        String content = item.getAsJsonObject().get("snippet").getAsString();
+                        String des = item.getAsJsonObject().get("snippet").getAsString();
+
+                        if(isSearchLeakage){
+                            // ip/domain
+                            Set<String> leakageList = AiUtils.getLeakage_Ai(content);
+                            JsonArray leakageArray = new JsonArray();
+                            if(leakageList.size()>0){
+                                for (String leakage : leakageList) {
+                                    leakageArray.add(leakage);
+                                }
+                                repoObj.add("leakageArray", leakageArray);
+                            }else {
+                                continue;
+                            }
+                        }else {
+                            // 公司名
+                            boolean isContentRelevance = AiUtils.getContentRelevance_Ai(domain, input.replace("\"",""), targetUrl);
+                            if(!isContentRelevance){
+                                continue;
+                            }
+                        }
+
+                        repoObj.addProperty("url", url);
+                        repoObj.addProperty("domain", domain);
+                        repoObj.addProperty("title", title);
+                        repoObj.addProperty("content", content);
+                        repoObj.addProperty("des", des);
+                        repoArray.add(repoObj);
+                    }
+                }else {
+                    break;
+                }
+
+            } catch (Exception e) {
+                if (debugMode) e.printStackTrace();
+                break;
+            }
+        }
+
+        return repoArray;
+    }
+
+
+    public static void main(String[] args) {
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        JsonArray jsonArray = tmpJsonObj.getAsJsonArray("Google_API");
+        List<HashMap<String, String>> google_API_List = new ArrayList<>();
+        for (JsonElement element : jsonArray) {
+            HashMap<String, String> map = new HashMap<>();
+            JsonObject obj = element.getAsJsonObject();
+
+            for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
+                map.put(entry.getKey(), entry.getValue().getAsString());
+            }
+            google_API_List.add(map);
+        }
+        GoogleSearch googleSearch = new GoogleSearch(google_API_List);
+
+
+        System.out.println(googleSearch.searchLeakageByDomain("aabyss.cn"));
+
+        System.out.println(googleSearch.searchLeakageByIp("127.0.0.1"));
+    }
+}

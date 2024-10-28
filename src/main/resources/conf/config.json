@@ -23,7 +23,14 @@
     ],
     "Quake_Key": "***REMOVED***",
     "Shodan_Key": "***REMOVED***",
-    "Zoomeye_Key": "***REMOVED***"
+    "Zoomeye_Key": "***REMOVED***",
+    "GitHub_Token": "***REMOVED***",
+    "Google_API": [
+      {
+        "Google_Key": "***REMOVED***",
+        "Google_Cx": "***REMOVED***"
+      }
+    ]
   },
   "AI": {
     "GPT_Model": "gpt-4",

@@ -1,24 +1,16 @@
 package com.potato.potatotool.content.redTeam.infoGathering;
 
 import com.google.common.hash.Hashing;
-import com.google.gson.*;
-import com.opencsv.CSVWriter;
 import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.ExecutorServiceManager;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,11 +51,56 @@ public class Utils {
         return elements.isEmpty() ? "" : elements.first().attr(attr).trim();
     }
 
+    public static Map<String, Object> getWebBaseInfo(String url, boolean hasIconUrl){
+        Map<String, Object> webBaseInfoMap = new HashMap<>();
+
+        if(!url.startsWith("http")) {
+            url = completeUrl(url);
+            if(url==null) return webBaseInfoMap;
+        }
+
+        try {
+            RequestObj obj = new RequestObj().setUrl(url)
+                    .setMethod("GET").setRetries(3).setFollowRedirects(true);
+
+            CustomHttpResponse con = requests(obj);
+
+            int statusCode = con.getResponseCode();
+            if (statusCode != 200) {
+                return webBaseInfoMap;
+            }
+
+            Document doc = con.getDocument();
+
+            String bodyText = doc.body().text();
+            String preview = bodyText.length() > 500 ? bodyText.substring(0, 500) : bodyText;
+
+            if(hasIconUrl) {
+                Element iconElement = doc.select("link[rel~=(?i)^(shortcut icon|icon|apple-touch-icon)$]").first();
+                String iconUrl = (iconElement != null && iconElement.hasAttr("href")) ? iconElement.attr("href") : "/favicon.ico";
+                if (!iconUrl.startsWith("http")) iconUrl = new URL(new URL(url), iconUrl).toString();
+                webBaseInfoMap.put("iconUrl", iconUrl);
+            }
+
+            webBaseInfoMap.put("url", url);
+            webBaseInfoMap.put("title", doc.title());
+            webBaseInfoMap.put("body", preview);
+        }catch (Exception e){
+            if(debugMode) e.printStackTrace();
+        }
+        return webBaseInfoMap;
+    }
+
     public static Map<String, Object> getWebInfo(String url){
         Map<String, Object> webInfoMap = new HashMap<>();
         List<Map<String, Object>> allSensitiveInfo = new ArrayList<>();
         Set<String> allInternalLinks = new HashSet<>();
         Set<String> visitedLinks = new HashSet<>();
+
+        if(!url.startsWith("http")) {
+            url = completeUrl(url);
+            if(url==null) return webInfoMap;
+        }
 
         try {
             RequestObj obj = new RequestObj().setUrl(url)
@@ -360,6 +397,7 @@ public class Utils {
     private static boolean isReachable(String urlStr) {
         try {
             RequestObj obj = new RequestObj().setUrl(urlStr)
+                    .setFollowRedirects(true)
                     .setMethod("HEAD");
             CustomHttpResponse con = requests(obj);
             int statusCode = con.getResponseCode();

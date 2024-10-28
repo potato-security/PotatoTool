@@ -142,7 +142,7 @@ public class PaneKbRootQuery {
         boolean isMucFilter = mucFilter.isSelected();
 
         if(!input.toLowerCase().contains("kb") && !input.toLowerCase().contains("]: q")){
-            inputText.setText("输入信息有误，请粘贴补丁号或systeminfo信息");
+            inputText.setText("输入信息有误，请粘贴完整的systeminfo信息");
             return;
         }
 
@@ -216,7 +216,7 @@ public class PaneKbRootQuery {
                         FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(severity) {
                             @Override
                             public boolean test(KbInfo kbinfo) {
-                                    return kbinfo.getComponent().equals(severity);
+                                    return kbinfo.getSeverity().equals(severity);
                                 }
                         };
                         severityFilterView.add(tmpFilter);
@@ -226,7 +226,7 @@ public class PaneKbRootQuery {
                         FilterView.Filter tmpFilter = new FilterView.Filter<KbInfo>(impact) {
                             @Override
                             public boolean test(KbInfo kbinfo) {
-                                    return kbinfo.getComponent().equals(impact);
+                                    return kbinfo.getImpact().equals(impact);
                                 }
                         };
                         impactFilterView.add(tmpFilter);
@@ -260,7 +260,12 @@ public class PaneKbRootQuery {
                     tableView.setPlaceholder(tipTitle);
                 });
             } catch (Exception e) {
-                if(debugMode) System.out.println(e.toString());
+                if(debugMode) e.printStackTrace();
+                Platform.runLater(() -> {
+                    Label tipTitle = new Label("请检查systeminfo信息是否完整或正确");
+                    tipTitle.setId("tipTitle");
+                    tableView.setPlaceholder(tipTitle);
+                });
             }
         });
         currentThread.start();

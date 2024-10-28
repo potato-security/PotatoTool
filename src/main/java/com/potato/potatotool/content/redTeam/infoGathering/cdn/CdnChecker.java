@@ -4,17 +4,8 @@ import com.potato.potatotool.utils.Constants;
 import org.apache.commons.net.util.SubnetUtils;
 import org.xbill.DNS.*;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
-
-import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.utils.Constants.getResourceStream;
 
 /**
  * @author Potato
@@ -66,8 +57,7 @@ public class CdnChecker {
                 for (Record record : aRecords) {
                     ARecord aRecord = (ARecord) record;
                     String ipAddress = aRecord.getAddress().getHostAddress();
-                    System.out.println(ipAddress);
-                    if (isIpInCidrList(ipAddress, cdnIpList)) {
+                    if (isIpInCidrList(ipAddress)) {
                         return true;
                     }
                 }

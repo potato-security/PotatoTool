@@ -40,11 +40,6 @@ public class HunterSearch {
             return domainInfo;
         }
 
-        if(rest_quota == 0 && keyIndex+1 == HUNTER_KEY_LIST.size()){
-            System.out.println("所有HUNTER_KEY均无积分可用，无法调用Hunter接口");
-            return domainInfo;
-        }
-
         for(int i=1; true ;i++){
             // 判断剩余积分是否够用
             if(rest_quota == 0 && keyIndex+1 == HUNTER_KEY_LIST.size()){
@@ -58,7 +53,6 @@ public class HunterSearch {
                 String HUNTER_KEY = HUNTER_KEY_LIST.size() > 0 ? HUNTER_KEY_LIST.get(keyIndex) : null;
                 RequestObj obj = new RequestObj().setUrl("https://hunter.qianxin.com/openApi/search?api-key=" + HUNTER_KEY + "&search=" + strUtils.base64UrlEncoder(qInfo) + "&page=" + i +"&page_size=100&is_web=1")
                         .setMethod("GET").setRandomUserAgent(false).setRetries(3);
-                System.out.println(obj.getUrl());
 
                 CustomHttpResponse con = requests(obj);
 
@@ -71,6 +65,7 @@ public class HunterSearch {
                 JsonObject json = con.getJson().getAsJsonObject();
                 String message = json.get("message").getAsString();
                 if((message.contains("积分用完了")||json.get("data")==null) && keyIndex+1 < HUNTER_KEY_LIST.size()){
+                    // TODO 提示
                     keyIndex += 1;
                     i -= 1;
                     continue;

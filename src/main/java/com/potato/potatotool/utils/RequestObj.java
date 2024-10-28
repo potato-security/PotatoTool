@@ -36,6 +36,7 @@ public class RequestObj {
     private String method = "GET";
     private String url;
     private Map<String, String> headers;
+    private String bearerToken = "";
     private boolean randomUserAgent = true;
     private boolean followRedirects = false;
     private String postMethod = "Raw";
@@ -241,5 +242,14 @@ public class RequestObj {
     }
     public boolean getNoUserAgent() {
         return noUserAgent;
+    }
+
+    public RequestObj setBearerToken(String bearerToken) {
+        this.bearerToken = bearerToken;
+        return this;
+    }
+
+    public String getBearerToken() {
+        return bearerToken;
     }
 }
