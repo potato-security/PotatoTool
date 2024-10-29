@@ -65,11 +65,6 @@ public class GoogleSearch {
             int currentIndex = index * 10 + 1;
             index += 1;
 
-            if(keyIndex+1 == Google_API_List.size()){
-                System.out.println("所有Google_Key今日均无免费额度可使用。");
-                // TODO 提示
-                break;
-            }
             String Google_Key = Google_API_List.get(keyIndex).get("Google_Key");
             String Google_Cx = Google_API_List.get(keyIndex).get("Google_Cx");
 
@@ -86,10 +81,15 @@ public class GoogleSearch {
                 // 检查请求状态码
                 if (statusCode != 200) {
                     if(statusCode == 429){
-                        // TODO 提示
                         keyIndex += 1;
                         index -= 1;
-                        continue;
+                        if(keyIndex+1 > Google_API_List.size()){
+                            System.out.println("所有Google账号今日均无免费额度可使用。");
+                            // TODO 提示
+                            break;
+                        }else {
+                            continue;
+                        }
                     }
                     break;
                 }

@@ -24,7 +24,15 @@
     "Quake_Key": "***REMOVED***",
     "Shodan_Key": "***REMOVED***",
     "Zoomeye_Key": "***REMOVED***",
-    "GitHub_Token": "***REMOVED***",
+    "GitHub_Token": [
+      "***REMOVED***",
+      "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",
+      "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",
+      "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"
+    ],
+    "Gitee_Token": [
+      "fab3c2118d655f362135067f57e89b05"
+    ],
     "Google_API": [
       {
         "Google_Key": "***REMOVED***",

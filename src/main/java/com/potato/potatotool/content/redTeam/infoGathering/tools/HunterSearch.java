@@ -65,10 +65,15 @@ public class HunterSearch {
                 JsonObject json = con.getJson().getAsJsonObject();
                 String message = json.get("message").getAsString();
                 if((message.contains("积分用完了")||json.get("data")==null) && keyIndex+1 < HUNTER_KEY_LIST.size()){
-                    // TODO 提示
                     keyIndex += 1;
                     i -= 1;
-                    continue;
+                    if(keyIndex+1 > HUNTER_KEY_LIST.size()){
+                        System.out.println("所有Hunter账号今日均无积分可使用。");
+                        // TODO 提示
+                        break;
+                    }else {
+                        continue;
+                    }
                 }
 
                 JsonObject jsonData = json.get("data").getAsJsonObject();
@@ -127,7 +132,7 @@ public class HunterSearch {
     public static void main(String[] args) {
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
         Set<String> Hunter_Key_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonPrimitive("Hunter_Key").getAsJsonArray()) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray("Hunter_Key")) {
             Hunter_Key_Set.add(element.getAsString());
         }
         HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set);
