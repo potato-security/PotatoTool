@@ -1,10 +1,10 @@
-package com.potato.potatotool.content.redTeam.infoGathering;
+package com.potato.potatotool.content.redTeam.infoGathering.utils;
 
 import com.potato.potatotool.content.redTeam.infoGathering.imgSimilarity.ImgSimilarity;
+import com.potato.potatotool.content.redTeam.infoGathering.utils.Utils;
 import com.potato.potatotool.utils.aiUtil;
 
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 

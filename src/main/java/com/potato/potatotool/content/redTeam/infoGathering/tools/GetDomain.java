@@ -1,11 +1,10 @@
-package com.potato.potatotool.content.redTeam.infoGathering;
+package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.strUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

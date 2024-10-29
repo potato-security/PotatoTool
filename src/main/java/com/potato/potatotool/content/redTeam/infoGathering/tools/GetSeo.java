@@ -1,4 +1,4 @@
-package com.potato.potatotool.content.redTeam.infoGathering;
+package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.content.redTeam.infoGathering.Utils.*;
+import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.*;
 import static com.potato.potatotool.utils.requestUtils.requests;
 
 /**

@@ -3,15 +3,19 @@ package com.potato.potatotool.content.redTeam.infoGathering;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetObj;
 import com.potato.potatotool.content.redTeam.infoGathering.subDomain.GetSubDomain;
 import com.potato.potatotool.content.redTeam.infoGathering.subDomain.SubdomainBruteForcer;
 import com.potato.potatotool.content.redTeam.infoGathering.tools.*;
+import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
+import com.potato.potatotool.content.redTeam.infoGathering.tools.GetCompany;
+import com.potato.potatotool.content.redTeam.infoGathering.utils.Utils;
 
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static com.potato.potatotool.content.redTeam.infoGathering.GetSeo.*;
-import static com.potato.potatotool.content.redTeam.infoGathering.GetDomain.*;
+import static com.potato.potatotool.content.redTeam.infoGathering.tools.GetSeo.*;
+import static com.potato.potatotool.content.redTeam.infoGathering.tools.GetDomain.*;
 
 /**
  * @author Potato
@@ -20,15 +24,6 @@ import static com.potato.potatotool.content.redTeam.infoGathering.GetDomain.*;
  * 空间测绘主类
  */
 public class AssetMapper {
-    // 正则表达式匹配IP地址
-    private static final Pattern IP_PATTERN = Pattern.compile(
-            "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
-    );
-
-    // 正则表达式匹配域名
-    private static final Pattern DOMAIN_PATTERN = Pattern.compile(
-            "^(?!-)([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,63}$"
-    );
 
     private static String Fofa_Key;
     private static Set<String> Hunter_Key;
@@ -59,24 +54,16 @@ public class AssetMapper {
 
         // TODO 网址换成域名/ip
 
-        if (isIPAddress(input)) {
+        if (Utils.isIPAddress(input)) {
             handleIPAddress(input, assetObj);
-        } else if (isDomainName(input)) {
+        } else if (Utils.isDomainName(input)) {
             handleDomainName(input, assetObj);
         } else {
             handleCompanyName(input, assetObj);
         }
     }
 
-    // 判断是否为IP地址
-    public static boolean isIPAddress(String input) {
-        return IP_PATTERN.matcher(input).matches();
-    }
 
-    // 判断是否为域名
-    public static boolean isDomainName(String input) {
-        return DOMAIN_PATTERN.matcher(input).matches();
-    }
 
     // 处理IP地址的逻辑
     private static void handleIPAddress(String ip, AssetObj assetObj) {

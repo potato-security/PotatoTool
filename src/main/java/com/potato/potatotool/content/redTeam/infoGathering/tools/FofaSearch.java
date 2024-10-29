@@ -8,7 +8,7 @@ import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.content.redTeam.infoGathering.AssetMapper.isDomainName;
+import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.isDomainName;
 import static com.potato.potatotool.utils.requestUtils.requests;
 
 /**

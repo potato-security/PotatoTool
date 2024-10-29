@@ -1,6 +1,5 @@
-package com.potato.potatotool.content.redTeam.infoGathering;
+package com.potato.potatotool.content.redTeam.infoGathering.classObj;
 
-import com.beust.ah.A;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

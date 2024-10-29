@@ -3,7 +3,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.gitLeaka
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.redTeam.infoGathering.AiUtils;
+import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
 import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;

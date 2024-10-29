@@ -1,6 +1,6 @@
 package com.potato.potatotool.content.redTeam.infoGathering.imgSimilarity;
 
-import com.potato.potatotool.content.redTeam.infoGathering.Utils;
+import com.potato.potatotool.content.redTeam.infoGathering.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;

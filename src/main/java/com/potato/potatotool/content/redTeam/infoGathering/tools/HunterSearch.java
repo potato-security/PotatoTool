@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.content.redTeam.infoGathering.AssetMapper.isDomainName;
+import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.isDomainName;
 import static com.potato.potatotool.utils.requestUtils.requests;
 
 /**

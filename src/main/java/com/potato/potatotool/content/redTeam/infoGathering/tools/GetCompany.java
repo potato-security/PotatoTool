@@ -1,12 +1,7 @@
-package com.potato.potatotool.content.redTeam.infoGathering;
+package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.opencsv.CSVWriter;
-import com.potato.potatotool.content.redTeam.infoGathering.subDomain.GetSubDomain;
-import com.potato.potatotool.content.redTeam.infoGathering.tools.FofaSearch;
-import com.potato.potatotool.content.redTeam.infoGathering.tools.HunterSearch;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
@@ -14,14 +9,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.util.*;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.content.redTeam.infoGathering.Utils.*;
-import static com.potato.potatotool.content.redTeam.infoGathering.Utils.getElementText;
+import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.*;
+import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.getElementText;
 import static com.potato.potatotool.utils.requestUtils.requests;
 
 /**

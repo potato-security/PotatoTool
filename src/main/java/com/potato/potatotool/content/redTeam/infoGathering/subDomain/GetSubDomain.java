@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.content.redTeam.infoGathering.Utils.getElementText;
-import static com.potato.potatotool.content.redTeam.infoGathering.Utils.getElements;
+import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.getElementText;
+import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.getElements;
 import static com.potato.potatotool.utils.requestUtils.requests;
 
 /**

@@ -1,16 +1,12 @@
-package com.potato.potatotool.content.redTeam.infoGathering;
+package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.opencsv.CSVWriter;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static com.potato.potatotool.ToStart.debugMode;

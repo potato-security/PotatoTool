@@ -1,4 +1,4 @@
-package com.potato.potatotool.content.redTeam.infoGathering;
+package com.potato.potatotool.content.redTeam.infoGathering.utils;
 
 import com.google.common.hash.Hashing;
 import com.potato.potatotool.utils.CustomHttpResponse;
@@ -22,6 +22,26 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2023/9/28 11:31
  */
 public class Utils {
+
+    // 正则表达式匹配IP地址
+    private static final Pattern IP_PATTERN = Pattern.compile(
+            "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+    );
+
+    // 正则表达式匹配域名
+    private static final Pattern DOMAIN_PATTERN = Pattern.compile(
+            "^(?!-)([A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,63}$"
+    );
+
+    // 判断是否为IP地址
+    public static boolean isIPAddress(String input) {
+        return IP_PATTERN.matcher(input).matches();
+    }
+
+    // 判断是否为域名
+    public static boolean isDomainName(String input) {
+        return DOMAIN_PATTERN.matcher(input).matches();
+    }
 
     public static Elements getElements(Document doc, String selector) {
         return doc.select(selector);
