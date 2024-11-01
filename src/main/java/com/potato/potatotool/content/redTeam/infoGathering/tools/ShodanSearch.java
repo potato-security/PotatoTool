@@ -20,7 +20,7 @@ public class ShodanSearch {
         this.SHODAN_KEY = SHODAN_KEY;
     }
 
-    public JsonArray search_shodan(String qInfo) {
+    public JsonArray search_Shodan(String qInfo) {
         JsonArray domainInfo = new JsonArray();
         if( qInfo==null || qInfo.isEmpty() ) return domainInfo;
         if( SHODAN_KEY==null || SHODAN_KEY.isEmpty() ){
@@ -49,11 +49,11 @@ public class ShodanSearch {
         return domainInfo;
     }
 
-    public JsonArray getInfoByDomain_shodan(String domain) {
+    public JsonArray getInfoByDomain_Shodan(String domain) {
         if(domain==null || domain.isEmpty()) return new JsonArray();
         String qInfo = "ssl.cert.subject.cn:" + domain + " hostname:" + domain;
 
-        return search_shodan(qInfo);
+        return search_Shodan(qInfo);
     }
 
     // TODO net:118.69.133.0/24 ip:123  http.favicon.hash:iconMmh3  http.html:body内容
@@ -61,13 +61,13 @@ public class ShodanSearch {
     public static void main(String[] args) {
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
         ShodanSearch shodanSearch = new ShodanSearch(tmpJsonObj.getAsJsonPrimitive("Shodan_Key").getAsString());
-        System.out.println(shodanSearch.getInfoByDomain_shodan("potato.gold"));
+        System.out.println(shodanSearch.getInfoByDomain_Shodan("potato.gold"));
     }
 
     public JsonArray getInfoByBodyFilterIcp_shodan(String companyNameStr, String domain) {
         if(companyNameStr==null || companyNameStr.isEmpty()) return new JsonArray();
         String qInfo = "http.html:" + companyNameStr;
 
-        return search_shodan(qInfo);
+        return search_Shodan(qInfo);
     }
 }

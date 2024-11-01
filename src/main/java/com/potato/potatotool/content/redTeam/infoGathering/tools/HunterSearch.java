@@ -76,7 +76,9 @@ public class HunterSearch {
                     }
                 }
 
+                if(!json.has("data")|| json.get("data").isJsonNull()) break;
                 JsonObject jsonData = json.get("data").getAsJsonObject();
+                if(!jsonData.has("arr")|| jsonData.get("arr").isJsonNull()) break;
                 domainInfo = jsonData.get("arr").getAsJsonArray();
                 total = jsonData.get("total").getAsInt();
                 rest_quota = strUtils.extractNumber(jsonData.get("rest_quota").getAsString());

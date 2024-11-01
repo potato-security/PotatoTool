@@ -1,11 +1,15 @@
 package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.isDomainName;
@@ -61,9 +65,12 @@ public class FofaSearch {
             return domainInfo;
         }
 
+        List<String> itemKeys = Arrays.asList("ip", "domain", "host", "icp", "port", "protocol", "title", "certs_subject_org");
+        String item = String.join(",", itemKeys);
+
         try {
             RequestObj obj = new RequestObj()
-                    .setUrl("https://fofa.info/api/v1/search/all?&size=10000&fields=ip,domain,host,icp,port,protocol,title,certs_subject_org&key=" + FOFA_KEY + "&qbase64=" + strUtils.urlEncode(strUtils.base64Encode(qInfo)))
+                    .setUrl("https://fofa.info/api/v1/search/all?&size=10000&fields=" + item + "&key=" + FOFA_KEY + "&qbase64=" + strUtils.urlEncode(strUtils.base64Encode(qInfo)))
                     .setMethod("GET")
                     .setRetries(3);
             CustomHttpResponse con = requests(obj);
@@ -72,7 +79,18 @@ public class FofaSearch {
             if (statusCode!= 200) {
                 return domainInfo;
             }
-            domainInfo = con.getJson().getAsJsonObject().get("results").getAsJsonArray();
+            JsonArray tmpJsonArray = con.getJson().getAsJsonObject().get("results").getAsJsonArray();
+            for (JsonElement element : tmpJsonArray) {
+                JsonArray innerArray = element.getAsJsonArray();
+                JsonObject jsonObject = new JsonObject();
+
+                for (int i = 0; i < itemKeys.size(); i++) {
+                    String value = innerArray.size() > i ? innerArray.get(i).getAsString() : "";
+                    jsonObject.addProperty(itemKeys.get(i), value);
+                }
+
+                domainInfo.add(jsonObject);
+            }
         } catch (Exception e) {
             if (debugMode) System.out.println(e);
         }
@@ -120,15 +138,18 @@ public class FofaSearch {
 //        System.out.println(domainInfo);
 //        System.out.println(domainInfo.size());
 
-        JsonArray ipInfo = fofaSearch.getInfoByIp_Fofa("13.227.83.19");
-        System.out.println(ipInfo);
+//        JsonArray ipInfo = fofaSearch.getInfoByIp_Fofa("13.227.83.19");
+//        System.out.println(ipInfo);
 //
 //        JsonArray domainInfo1 = fofaSearch.getDomainByIcon_Fofa("37578595");
 //        System.out.println(domainInfo1);
 //        System.out.println(domainInfo1.size());
 //
 //
-//        JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa("potato.gold");
-//        System.out.println(briefExtendedInfo);
+        JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa("potato.gold");
+        System.out.println(briefExtendedInfo);
+
+        JsonObject briefExtendedInfox = fofaSearch.getBriefExtendedInfo_Fofa("82.157.56.206");
+        System.out.println(briefExtendedInfox);
     }
 }

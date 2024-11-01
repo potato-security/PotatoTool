@@ -26,7 +26,7 @@ public class AssetObj {
     public AssetObj() {
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
         this.setFofa_Key(tmpJsonObj.getAsJsonPrimitive("Fofa_Key").getAsString());
-        this.setHunter_Key(tmpJsonObj.getAsJsonPrimitive("Hunter_Key").getAsJsonArray());
+        this.setHunter_Key(tmpJsonObj.getAsJsonArray("Hunter_Key"));
         this.setQuake_Key(tmpJsonObj.getAsJsonPrimitive("Quake_Key").getAsString());
         this.setShodan_Key(tmpJsonObj.getAsJsonPrimitive("Shodan_Key").getAsString());
         this.setZoomeye_Key(tmpJsonObj.getAsJsonPrimitive("Zoomeye_Key").getAsString());
