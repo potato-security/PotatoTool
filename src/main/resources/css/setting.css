@@ -1,6 +1,16 @@
 #proxy{
     -fx-padding: 5 50 5 5;
 }
+.paddingRightButton{
+    -fx-padding: 5 25 5 5;
+}
+.rightButton{
+    -fx-alignment: center;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-width: 30;
+    -fx-pref-height: 30;
+}
 #proxyButton{
     -fx-padding: 5;
 }
@@ -9,8 +19,26 @@
 }
 .content{
     -fx-padding: 20;
-    -fx-background-color: -main-topBar-color;
+    -fx-background-color: transparent;
     -fx-background-radius: 0 0 4 4;
+}
+.SPane{
+    -fx-background-color: -main-topBar-color;
+    -fx-padding: 0;
+    -fx-background-radius: 0 0 4 4;
+}
+#outerBorderPane{
+    -fx-background-radius: 4;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.tipNextIcon{
+    -fx-pref-width: 13;
+    -fx-pref-height: 17;
+    -fx-max-width: 13;
+    -fx-max-height: 17;
+    -fx-shape: "M750.976 532.288c7.68-19.456 3.84-42.688-11.456-58.496l0 0 0 0L358.4 79.808c-20.416-21.12-53.44-21.12-73.856 0-20.416 21.12-20.416 55.232 0 76.352L628.672 512l-344.192 355.84c-20.416 21.12-20.416 55.296 0 76.352 20.416 21.056 53.44 21.056 73.856 0l381.056-393.984C744.576 544.896 748.416 538.816 750.976 532.288z";
+    -fx-background-color: -main-font-color;
 }
 .contentCell{
     -fx-padding: 20;
@@ -37,4 +65,34 @@
     -fx-font-size: 13;
     -fx-fill: -main-border-color;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
+}
+.delIcon{
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
+    -fx-shape: "M511.7606 0.479775c282.637514 0 511.760112 229.122599 511.760112 511.760113s-229.122599 511.760112-511.760112 511.760112-511.760112-229.122599-511.760113-511.760112c0.009995-282.637514 229.132594-511.760112 511.760113-511.760113z m0 950.414493c242.266438 0 438.654381-196.387943 438.65438-438.65438 0-242.236452-196.407934-438.654381-438.65438-438.654381-242.236452 0-438.654381 196.407934-438.654381 438.654381 0.009995 242.246447 196.417929 438.654381 438.654381 438.65438zM219.337673 512.239888c0-20.18054 16.36233-36.552866 36.552866-36.552866h511.760112c20.18054 0 36.552866 16.36233 36.552866 36.552866s-16.36233 36.552866-36.552866 36.552865h-511.760112c-20.030611-0.389817-36.173044-16.522255-36.552866-36.552865z m0 0";
+    -fx-background-color: -main-font-color;
+    -fx-cursor: hand;
+}
+.delIcon:hover{
+    -fx-background-color: -main-border-color;
+}
+.delIcon:pressed{
+    -fx-background-color: -main-borderHover-color;
+}
+.addIcon{
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
+    -fx-shape: "M475.397511 475.467497V256.052496c0-20.18862 16.368881-36.5675 36.5675-36.5675s36.5675 16.368881 36.567501 36.5675V475.467497h219.415c20.18862 0 36.5675 16.368881 36.567501 36.567501s-16.368881 36.5675-36.567501 36.5675H548.532512v219.415001c0 20.18862-16.368881 36.5675-36.567501 36.5675-20.18862 0-36.5675-16.368881-36.5675-36.5675V548.602498H255.98251c-20.028631-0.389973-36.177527-16.52887-36.5675-36.5675 0-20.18862 16.368881-36.5675 36.5675-36.567501H475.397511zM511.965011 0.069995c282.750671 0 511.965002 229.214331 511.965003 511.965003s-229.214331 511.965002-511.965003 511.965002-511.965002-229.214331-511.965002-511.965002 229.214331-511.965002 511.965002-511.965003z m0 950.795004c242.363432 0 438.830002-196.46657 438.830002-438.830001 0-242.333434-196.486568-438.830002-438.830002-438.830002-242.333434 0-438.830002 196.486568-438.830002 438.830002s196.486568 438.830002 438.830002 438.830001z m0 0";
+    -fx-background-color: -main-font-color;
+    -fx-cursor: hand;
+}
+.addIcon:hover{
+    -fx-background-color: -main-border-color;
+}
+.addIcon:pressed{
+    -fx-background-color: -main-borderHover-color;
 }

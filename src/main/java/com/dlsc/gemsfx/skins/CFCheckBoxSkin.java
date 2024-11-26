@@ -39,6 +39,7 @@ public class CFCheckBoxSkin extends CFLabelSkin<CFCheckBox> {
             mark.setScaleY(0);
         }
         skinnable.selectedProperty().addListener((observableValue, aBoolean, t1) -> {
+            scaleTransition.stop();
             if (t1) {
                 scaleTransition.setToX(1);
                 scaleTransition.setToY(1);

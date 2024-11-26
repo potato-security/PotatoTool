@@ -273,6 +273,7 @@ public class Constants {
             Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
 
             System.out.println("配置已保存");
+            cachedConfig = null;
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -282,7 +283,7 @@ public class Constants {
     /**
      * 兼容批量修改
      */
-    public static void saveConfig(Map<String, Object> configMap) {
+    public static boolean saveConfig(Map<String, Object> configMap) {
 
         try {
             Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
@@ -309,10 +310,12 @@ public class Constants {
             Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
 
             System.out.println("配置已保存");
-
+            cachedConfig = null;
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
     }
     public static void saveConfig(Map<String, Object> configMap, String topKey) {
 
@@ -348,20 +351,32 @@ public class Constants {
             Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
 
             System.out.println("配置已保存");
+            cachedConfig = null;
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+//    public static JsonObject getCachedConfig() {
+//        return cachedConfig;
+//    }
+//
+//    public static void setCachedConfig(JsonObject cachedConfig) {
+//        Constants.cachedConfig = cachedConfig;
+//    }
+
+    public static JsonObject cachedConfig = null;
     public static Object getOutsideConfig(String key) {
         try {
             Path configFile = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER, CONFIG_FILE);
 
             if (Files.exists(configFile)) {
-                String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
-                JsonObject jsonObject = (new Gson()).fromJson(content, JsonObject.class);
-                return jsonObject.get(key);
+                if(cachedConfig==null) {
+                    String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
+                    cachedConfig = (new Gson()).fromJson(content, JsonObject.class);
+                }
+                return cachedConfig.get(key);
             }
         } catch (Exception e) {
             e.printStackTrace();

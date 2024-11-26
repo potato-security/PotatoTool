@@ -331,6 +331,7 @@ public class PaneWebshellDecode {
     // 输出进程池数
     private static void monitorExecutorStatus(ExecutorService executor) {
         if (executor instanceof ForkJoinPool) {
+            // CPU 密集型任务
             ForkJoinPool forkJoinPool = (ForkJoinPool) executor;
             int runningThreadCount = forkJoinPool.getRunningThreadCount();
             int activeThreadCount = forkJoinPool.getActiveThreadCount();
@@ -340,17 +341,28 @@ public class PaneWebshellDecode {
             int parallelism = forkJoinPool.getParallelism();
             int activeTaskCount = forkJoinPool.getActiveThreadCount();
 
-            System.out.println("==== ExecutorService Status ====");
-            System.out.println("Running Thread Count: " + runningThreadCount);
-            System.out.println("Active Thread Count: " + activeThreadCount);
-            System.out.println("Queued Task Count: " + queuedTaskCount);
-            System.out.println("Queued Submission Count: " + queuedSubmissionCount);
-            System.out.println("Pool Size: " + poolSize);
-            System.out.println("Parallelism: " + parallelism);
-            System.out.println("Active Task Count: " + activeTaskCount);
-            System.out.println("===============================");
+            System.out.println("==== ExecutorService 状态 ====");
+            System.out.println("运行中的线程数: " + runningThreadCount);
+            System.out.println("活跃线程数: " + activeThreadCount);
+            System.out.println("已排队的任务数: " + queuedTaskCount);
+            System.out.println("已排队的提交数: " + queuedSubmissionCount);
+            System.out.println("线程池大小: " + poolSize);
+            System.out.println("并行数: " + parallelism);
+            System.out.println("活跃任务数: " + activeTaskCount);
+            System.out.println("============================");
+        } else if (executor instanceof ThreadPoolExecutor) {
+            //  IO 密集型任务
+            ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
+            System.out.println("==== ThreadPoolExecutor 状态 ====");
+            System.out.println("核心线程数: " + threadPoolExecutor.getCorePoolSize());
+            System.out.println("最大线程数: " + threadPoolExecutor.getMaximumPoolSize());
+            System.out.println("当前线程数: " + threadPoolExecutor.getPoolSize());
+            System.out.println("活跃线程数: " + threadPoolExecutor.getActiveCount());
+            System.out.println("已完成任务数: " + threadPoolExecutor.getCompletedTaskCount());
+            System.out.println("任务队列大小: " + threadPoolExecutor.getQueue().size());
+            System.out.println("==============================");
         } else {
-            System.out.println("The provided executor is not an instance of ForkJoinPool.");
+            System.out.println("提供的 executor 不是 ForkJoinPool 或 ThreadPoolExecutor 的实例。");
         }
     }
 
@@ -484,7 +496,7 @@ public class PaneWebshellDecode {
                 filePath = chooser.showOpenDialog(stage).getAbsolutePath();
                 customPath.setText(filePath);
             }catch (Exception exception){
-                System.out.println("没有文件被选择");
+                if(debugMode) System.out.println("没有文件被选择");
             }
         }else {
             filePath = null;
@@ -553,12 +565,12 @@ public class PaneWebshellDecode {
         try {
             path = chooser.showOpenDialog(stage).getAbsolutePath();
         }catch (Exception exception){
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
             return;
         }
 
         if (path == null) {
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
             return;
         }
 

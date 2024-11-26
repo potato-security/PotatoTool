@@ -3,10 +3,7 @@ package com.potato.potatotool;
 import com.potato.potatotool.controller.MainController;
 import com.potato.potatotool.controller.PaneLoad;
 import com.potato.potatotool.controller.PanePasswd;
-import com.potato.potatotool.utils.Constants;
-import com.potato.potatotool.utils.GzipUtils;
-import com.potato.potatotool.utils.SecurityInitializer;
-import com.potato.potatotool.utils.Util;
+import com.potato.potatotool.utils.*;
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.application.HostServices;
@@ -63,11 +60,6 @@ public class MainApplication extends Application {
         };
 
         executor.submit(taskInit);
-
-
-
-        System.setProperty("prism.lcdtext", "false");// 关闭字体锯齿效果
-        System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");// 关闭Polyglot告警
 
         //  输入密码界面stage
         Stage passwdStage = new Stage();
@@ -132,6 +124,7 @@ public class MainApplication extends Application {
             }
         };
         task.setOnFailed(e -> {
+            ExecutorServiceManager.getInstance().forceShutdown();
             Throwable error = task.getException();
             error.printStackTrace();
             System.exit(0);

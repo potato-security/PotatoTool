@@ -102,7 +102,8 @@ public class ipInfo {
                 "  UDP    [::]:500               *:*                                    712\n" +
                 "  UDP    [::]:3389              *:*                                    2244\n" +
                 "  UDP    [::]:4500              *:*                                    712\n" +
-                "  UDP    [::]:5355              *:*                                    844\n";
+                "  UDP    [::]:5355              *:*                                    844\n" +
+                "Extracted IPv6 addresses: [2400:cb00:2048:1::c629:d7a2, 2001:db8:85a3:0:0:8a2e:370:7334 , fe80::1ff:fe23:4567:890a]";
 
         LinkedHashSet<String> ipList = getIpListFromReg(inputStr);
         LinkedHashMap<String, String> ipPosDict = getIpPosDict(searcher, ipList);
@@ -135,8 +136,6 @@ public class ipInfo {
 
 
     }
-
-
 
 
     public static Searcher init() {
@@ -175,7 +174,16 @@ public class ipInfo {
      */
     public static LinkedHashSet<String> getIpListFromReg(String inputStr){
 
-        Pattern pattern = Pattern.compile("(?<!\\d)(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)(?!\\d)");
+//        Pattern pattern = Pattern.compile("(?<!\\d)(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)(?!\\d)");
+        String ipv4Pattern = "(?<!\\d)(25[0-5]|2[0-4]\\d|[0-1]?\\d{1,2})\\." +
+                "(25[0-5]|2[0-4]\\d|[0-1]?\\d{1,2})\\." +
+                "(25[0-5]|2[0-4]\\d|[0-1]?\\d{1,2})\\." +
+                "(25[0-5]|2[0-4]\\d|[0-1]?\\d{1,2})(?!\\d)";
+
+        // 定义 IPv6 的正则表达式
+        String ipv6Pattern = "(([0-9a-fA-F]{1,4}:){1,7}(:[0-9a-fA-F]{1,4}){1,7}|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))" ;
+
+        Pattern pattern = Pattern.compile(ipv4Pattern + "|" + ipv6Pattern);
         Matcher matcher = pattern.matcher(inputStr);
 
         LinkedHashSet<String> ipList = new LinkedHashSet<String>(); // 该类型插入内容不重复且按顺序
@@ -187,19 +195,21 @@ public class ipInfo {
     }
 
 
-
     /**
      * @param searcher  检索对象
      * @param ipList    检索ip数组
      * @return          返回ip:pos字典
      * @throws Exception
      */
-    public static LinkedHashMap<String, String> getIpPosDict(Searcher searcher, Set<String> ipList) throws Exception {
+    public static LinkedHashMap<String, String> getIpPosDict(Searcher searcher, Set<String> ipList) {
 
         LinkedHashMap<String, String> ipPosDict = new LinkedHashMap<>();
 
         for (String ipData : ipList) {
-            String posData =formatSearchPos(searcher.search(ipData));
+            String posData = "暂未收录";
+            try {
+                formatSearchPos(searcher.search(ipData));
+            }catch (Exception e){}
             ipPosDict.put(ipData, posData);
         }
 

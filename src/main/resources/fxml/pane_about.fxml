@@ -62,7 +62,7 @@
 
         <Text fx:id="notice" text="公告" styleClass="titleText"/>
         <HBox alignment="CENTER" style="-fx-padding: 10">
-            <Label id="tipTitle" text="目前本项目由我独立维护，持续招募维护人员，宁缺毋滥，严格选拔" />
+            <Label id="tipTitle" text="目前本项目由本人独立维护，持续招募维护人员，宁缺毋滥，严格选拔" />
         </HBox>
         <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 0 120">
             <Label id="tipTitle"  text="招募要求"/>

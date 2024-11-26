@@ -40,9 +40,12 @@ public class ExecutorServiceManager {
 
     // 强制关闭，立即中断任务
     public void forceShutdown() {
+//        System.out.println("强制关闭，立即中断任务");
         if (executor != null && !executor.isShutdown()) {
             for (Future<?> future : futures) {
-                future.cancel(true); // 尝试取消每个任务
+                try {
+                    future.cancel(true); // 尝试取消每个任务
+                }catch (Exception e){}
             }
             futures.clear(); // 清空列表
 

@@ -7,6 +7,8 @@ import org.xbill.DNS.*;
 import java.io.IOException;
 import java.util.List;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2024/10/22 11:39
@@ -21,6 +23,7 @@ public class CdnChecker {
     }
 
     public static boolean isCdnDomain(String domain) {
+        if(domain==null||domain.isEmpty()) return false;
         try {
             // 1. 判断 CNAME
             Record[] cnameRecords = getRecord(domain, Type.CNAME);
@@ -63,8 +66,7 @@ public class CdnChecker {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();
-            System.out.println("Failed to resolve domain: " + domain);
+            if(debugMode) e.printStackTrace();
         }
         return false; // 不是 CDN
     }
@@ -83,10 +85,15 @@ public class CdnChecker {
     public static boolean isIpInRange(String ip, String cidr) {
         SubnetUtils subnetUtils = new SubnetUtils(cidr);
         subnetUtils.setInclusiveHostCount(true); // 包含主机
-        return subnetUtils.getInfo().isInRange(ip);
+        try {
+            return subnetUtils.getInfo().isInRange(ip);
+        }catch (Exception e){
+            return false; // 暂无ipv6得cdn地址库
+        }
     }
 
     public static boolean isIpInCidrList(String ip) {
+        if(ip==null||ip.isEmpty()) return false;
         for (String cidr : cdnIpList) {
             if (isIpInRange(ip, cidr)) {
                 return true;

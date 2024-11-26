@@ -21,6 +21,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.getResourceString;
 
 /**
@@ -121,12 +122,12 @@ public class PaneAddBarDialog {
         try {
             path = chooser.showOpenDialog(stage).getAbsolutePath();
         }catch (Exception exception){
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
             return;
         }
 
         if (path == null) {
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
         }else {
             icon.setText(path);
         }

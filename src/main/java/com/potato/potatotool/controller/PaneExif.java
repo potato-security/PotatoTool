@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.blueTeam.exifUtils.*;
 
 /**
@@ -44,12 +45,12 @@ public class PaneExif {
         try {
             path = chooser.showOpenDialog(stage).getAbsolutePath();
         }catch (Exception exception){
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
             return;
         }
 
         if (path == null) {
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
             return;
         }
 

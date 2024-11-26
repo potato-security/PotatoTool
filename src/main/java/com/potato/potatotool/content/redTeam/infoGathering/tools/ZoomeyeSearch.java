@@ -21,17 +21,15 @@ import static com.potato.potatotool.utils.requestUtils.requests;
 public class ZoomeyeSearch {
     // Zoomeye接口均需翻墙
     private static String ZOOMEYE_KEY;
+    private static boolean isEffectiveKey = true;
     public ZoomeyeSearch(String ZOOMEYE_KEY){
         this.ZOOMEYE_KEY = ZOOMEYE_KEY;
     }
 
     public JsonArray search_Zoomeye(String qInfo) {
         JsonArray domainInfo = new JsonArray();
-        if( qInfo==null || qInfo.isEmpty() ) return domainInfo;
-        if( ZOOMEYE_KEY==null || ZOOMEYE_KEY.isEmpty() ){
-            System.out.println("未设置QUAKE_KEY，无法调用Zoomeye接口");
-            return domainInfo;
-        }
+        if( qInfo==null || qInfo.isEmpty()  || !isEffectiveKey) return domainInfo;
+        if( ZOOMEYE_KEY==null || ZOOMEYE_KEY.isEmpty() ) return domainInfo;
 
 
         try {
@@ -62,7 +60,17 @@ public class ZoomeyeSearch {
         return domainInfo;
     }
 
-    // TODO  cidr:52.2.254.36/24 ip:"8.8.8.8"  iconhash:"37578595"  dig:"模糊搜索body"
+    public static String getError_Zoomeye() {
+        isEffectiveKey = true;
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        ZoomeyeSearch zoomeyeSearch = new ZoomeyeSearch(tmpJsonObj.getAsJsonPrimitive("Zoomeye_Key").getAsString());
+        String qInfo = "ip:\"8.8.8.8\"";
+        if (zoomeyeSearch.search_Zoomeye(qInfo).isEmpty()){
+            isEffectiveKey = false;
+            return "无效的Zoomeye_Key/限国外IP";
+        }
+        return null;
+    }
 
     public JsonArray getInfoByCompanyOrDomain_Zoomeye(String companyOrDomain) {
         if(companyOrDomain==null || companyOrDomain.isEmpty()) return new JsonArray();
@@ -73,15 +81,28 @@ public class ZoomeyeSearch {
         return search_Zoomeye(qInfo);
     }
 
+    public JsonArray getInfoByBodyFilterIcp_zoomeye(String companyNameStr) {
+        if(companyNameStr==null || companyNameStr.isEmpty()) return new JsonArray();
+        String qInfo = "dig:\"" + companyNameStr + "\" -org:\"" + companyNameStr + "\"";
+        return search_Zoomeye(qInfo);
+    }
+
+    public JsonArray getInfoByIp_Zoomeye(String ip) {
+        if(ip==null || ip.isEmpty()) return new JsonArray();
+        String qInfo = "ip:\"" + ip + "\"";
+        if(ip.contains("/")) qInfo = "cidr:" + ip;
+        return search_Zoomeye(qInfo);
+    }
+
+    public JsonArray getInfoByIcon_Zoomeye(String iconMmh3) {
+        if(iconMmh3==null || iconMmh3.isEmpty()) return new JsonArray();
+        String qInfo = "iconhash:\"" + iconMmh3 + "\"";
+        return search_Zoomeye(qInfo);
+    }
+
     public static void main(String[] args) {
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
         ZoomeyeSearch zoomeyeSearch = new ZoomeyeSearch(tmpJsonObj.getAsJsonPrimitive("Zoomeye_Key").getAsString());
         System.out.println(zoomeyeSearch.getInfoByCompanyOrDomain_Zoomeye("360.net"));
-    }
-
-    public JsonArray getInfoByBodyFilterIcp_zoomeye(String companyNameStr, String domain) {
-        if(companyNameStr==null || companyNameStr.isEmpty()) return new JsonArray();
-        String qInfo = "dig:\"" + companyNameStr + "\"-org:\"" + companyNameStr + "\"-hostname:\"" + domain + "\"-site:\"" + domain + "\"";
-        return search_Zoomeye(qInfo);
     }
 }

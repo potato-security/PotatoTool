@@ -31,6 +31,7 @@ import java.util.Map;
  * postData          POST数据byte[]
  * formParameters    form表单Map格式
  * file              上传的文件File
+ * strictSslValidation 严格的SSL校验（默：否） 一般校验协议是否适用SSL使用
  */
 public class RequestObj {
     private String method = "GET";
@@ -49,6 +50,7 @@ public class RequestObj {
     private int retries = 1;
     private int retryWaitTime = 1;
     private boolean noUserAgent = false;
+    private boolean strictSslValidation = false;
 
     public RequestObj(){
         initializeProxySettings();
@@ -251,5 +253,14 @@ public class RequestObj {
 
     public String getBearerToken() {
         return bearerToken;
+    }
+
+    public RequestObj setStrictSslValidation(boolean strictSslValidation) {
+        this.strictSslValidation = strictSslValidation;
+        return this;
+    }
+
+    public boolean getStrictSslValidation(){
+        return strictSslValidation;
     }
 }

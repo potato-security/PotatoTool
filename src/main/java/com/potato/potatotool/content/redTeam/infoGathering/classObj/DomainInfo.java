@@ -4,28 +4,37 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Potato
  * @date 2024/10/31 09:09
  */
 public class DomainInfo {
-    private static String ip;
-    private static String port;
-    private static String protocol;// http / https / http/ssl 等
-    private static String domain;
-    private static String host;
-    private static String url;
-    private static String statusCode;
-    private static String title;
-    private static String icp;
-    private static String certsSubjectOrg;
-    private static List<String> components;
-    private static String os;
-    private static String company;
-    private static String country;
-    private static String city;
-    private static String response;
+    private String ip;
+    private String port;
+    private String protocol;// http / https / http/ssl 等
+    private String domain;
+    private boolean isCND;
+    private String host;
+    private String url;
+    private String statusCode;
+    private String title;
+    private String icp;
+    private String certsSubjectOrg;
+    private List<String> components;
+    private String os;
+    private String company;
+    private String country;
+    private String city;
+    private String response;
+    private boolean doWebInfoMap;
+    private Map<String, Object> webInfoMap;
+    private JsonArray googldLeakage;
+    private JsonArray gitRepoLeakage;
+
+    public DomainInfo() {
+    }
 
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
@@ -33,6 +42,7 @@ public class DomainInfo {
         jsonObject.addProperty("port", this.getPort());
         jsonObject.addProperty("protocol", this.getProtocol());
         jsonObject.addProperty("domain", this.getDomain());
+        jsonObject.addProperty("isCND", this.isCND());
         jsonObject.addProperty("host", this.getHost());
         jsonObject.addProperty("url", this.getUrl());
         jsonObject.addProperty("statusCode", this.getStatusCode());
@@ -54,135 +64,175 @@ public class DomainInfo {
         return jsonObject;
     }
 
-    public static String getIp() {
+    public String getIp() {
         return ip;
     }
 
-    public static void setIp(String ip) {
-        DomainInfo.ip = ip;
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 
-    public static String getPort() {
+    public String getPort() {
         return port;
     }
 
-    public static void setPort(String port) {
-        DomainInfo.port = port;
+    public void setPort(String port) {
+        this.port = port;
     }
 
-    public static String getProtocol() {
+    public String getProtocol() {
         return protocol;
     }
 
-    public static void setProtocol(String protocol) {
-        DomainInfo.protocol = protocol;
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
-    public static String getDomain() {
+    public String getDomain() {
         return domain;
     }
 
-    public static void setDomain(String domain) {
-        DomainInfo.domain = domain;
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 
-    public static String getHost() {
+    public String getHost() {
         return host;
     }
 
-    public static void setHost(String host) {
-        DomainInfo.host = host;
+    public void setHost(String host) {
+        this.host = host;
     }
 
-    public static String getUrl() {
+    public String getUrl() {
         return url;
     }
 
-    public static void setUrl(String url) {
+    public void setUrl(String url) {
         if(url.equals("暂无权限")) return;
-        DomainInfo.url = url;
+        this.url = url;
     }
 
-    public static String getStatusCode() {
+    public String getStatusCode() {
         return statusCode;
     }
 
-    public static void setStatusCode(String statusCode) {
+    public void setStatusCode(String statusCode) {
         if(statusCode.equals("暂无权限")) return;
-        DomainInfo.statusCode = statusCode;
+        this.statusCode = statusCode;
     }
 
-    public static String getTitle() {
+    public String getTitle() {
         return title;
     }
 
-    public static void setTitle(String title) {
-        DomainInfo.title = title;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public static String getIcp() {
+    public String getIcp() {
         return icp;
     }
 
-    public static void setIcp(String icp) {
+    public void setIcp(String icp) {
         if(icp.equals("暂无权限")) return;
-        DomainInfo.icp = icp;
+        this.icp = icp;
     }
 
-    public static String getCertsSubjectOrg() {
+    public String getCertsSubjectOrg() {
         return certsSubjectOrg;
     }
 
-    public static void setCertsSubjectOrg(String certsSubjectOrg) {
-        DomainInfo.certsSubjectOrg = certsSubjectOrg;
+    public void setCertsSubjectOrg(String certsSubjectOrg) {
+        this.certsSubjectOrg = certsSubjectOrg;
     }
 
-    public static List<String> getComponents() {
+    public List<String> getComponents() {
         return components;
     }
 
-    public static void setComponents(List<String> components) {
-        DomainInfo.components = components;
+    public void setComponents(List<String> components) {
+        this.components = components;
     }
 
-    public static String getOs() {
+    public String getOs() {
         return os;
     }
 
-    public static void setOs(String os) {
-        DomainInfo.os = os;
+    public void setOs(String os) {
+        this.os = os;
     }
 
-    public static String getCompany() {
+    public String getCompany() {
         return company;
     }
 
-    public static void setCompany(String company) {
+    public void setCompany(String company) {
         if(company.equals("暂无权限")) return;
-        DomainInfo.company = company;
+        this.company = company;
     }
 
-    public static String getCountry() {
+    public String getCountry() {
         return country;
     }
 
-    public static void setCountry(String country) {
-        DomainInfo.country = country;
+    public void setCountry(String country) {
+        this.country = country;
     }
 
-    public static String getCity() {
+    public String getCity() {
         return city;
     }
 
-    public static void setCity(String city) {
-        DomainInfo.city = city;
+    public void setCity(String city) {
+        this.city = city;
     }
 
-    public static String getResponse() {
+    public String getResponse() {
         return response;
     }
 
-    public static void setResponse(String response) {
-        DomainInfo.response = response.length() > 500 ? response.substring(0, 500) : response;;
+    public void setResponse(String response) {
+        this.response = response.length() > 500 ? response.substring(0, 500) : response;;
+    }
+
+    public boolean isCND() {
+        return isCND;
+    }
+
+    public void setCND(boolean CND) {
+        this.isCND = CND;
+    }
+
+    public Map<String, Object> getWebInfoMap() {
+        return webInfoMap;
+    }
+
+    public void setWebInfoMap(Map<String, Object> webInfoMap) {
+        this.webInfoMap = webInfoMap;
+    }
+
+    public JsonArray getGoogldLeakage() {
+        return googldLeakage;
+    }
+
+    public void setGoogldLeakage(JsonArray googldLeakage) {
+        this.googldLeakage = googldLeakage;
+    }
+
+    public JsonArray getGitRepoLeakage() {
+        return gitRepoLeakage;
+    }
+
+    public void setGitRepoLeakage(JsonArray gitRepoLeakage) {
+        this.gitRepoLeakage = gitRepoLeakage;
+    }
+
+    public boolean isDoWebInfoMap() {
+        return doWebInfoMap;
+    }
+
+    public void setDoWebInfoMap(boolean doWebInfoMap) {
+        this.doWebInfoMap = doWebInfoMap;
     }
 }

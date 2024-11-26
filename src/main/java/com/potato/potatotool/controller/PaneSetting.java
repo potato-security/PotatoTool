@@ -1,22 +1,30 @@
 package com.potato.potatotool.controller;
 
 import com.dlsc.gemsfx.CFSwitch;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.Constants;
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.util.Duration;
 
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static com.potato.potatotool.content.update.checkResAndGetDownUrl;
 import static com.potato.potatotool.content.update.downloadAndSaveResource;
@@ -31,9 +39,28 @@ public class PaneSetting {
 
     @FXML
     private TextField proxy;
-
     @FXML
     private CFSwitch proxyButton;
+
+    @FXML
+    private StackPane promptPane;
+    @FXML
+    private Label prompt;
+
+    @FXML
+    private TextField fofaKey;
+    @FXML
+    private VBox hunterVBox;
+    @FXML
+    private VBox quakeVBox;
+    @FXML
+    private TextField shodanKey;
+    @FXML
+    private TextField zoomeyeKey;
+    @FXML
+    private VBox googleVBox;
+    @FXML
+    private VBox githubVBox;
 
     @FXML
     private ComboBox decompileType;
@@ -75,10 +102,19 @@ public class PaneSetting {
     private ProgressBar kbProgressBar;
     @FXML
     private Label kbProgressLabel;
+    @FXML
+    private TextField chinazCookie;
+    @FXML
+    private TextField aiqichaCookie;
     
     private double offsetX,offsetY;
 
     public void initialize() {
+        initData();
+    }
+
+    private void initData() {
+
         proxy.setFocusTraversable(false);
 
         //  初始化默认代理配置
@@ -100,6 +136,59 @@ public class PaneSetting {
         gptModel.setText(GPT_Model);
         gptApiKey.setText(GPT_API_Key);
 
+        // 初始化资产测绘
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig("Asset");
+        String Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive("Chinaz_Cookie").getAsString();
+        String Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive("Aiqicha_Cookie").getAsString();
+        String Fofa_Key = tmpJsonObj_Asset.getAsJsonPrimitive("Fofa_Key").getAsString();
+        String Zoomeye_Key = tmpJsonObj_Asset.getAsJsonPrimitive("Zoomeye_Key").getAsString();
+        String Shodan_Key = tmpJsonObj_Asset.getAsJsonPrimitive("Shodan_Key").getAsString();
+        chinazCookie.setText(Chinaz_Cookie);
+        aiqichaCookie.setText(Aiqicha_Cookie);
+        fofaKey.setText(Fofa_Key);
+        zoomeyeKey.setText(Zoomeye_Key);
+        shodanKey.setText(Shodan_Key);
+        JsonArray Hunter_Key_List = tmpJsonObj_Asset.getAsJsonArray("Hunter_Key");
+        JsonArray Quake_Key_List = tmpJsonObj_Asset.getAsJsonArray("Quake_Key");
+        JsonArray GitHub_Token_List = tmpJsonObj_Asset.getAsJsonArray("GitHub_Token");
+        JsonArray Google_API_List = tmpJsonObj_Asset.getAsJsonArray("Google_API");
+        setTextArrayData(Hunter_Key_List, hunterVBox);
+        setTextArrayData(Quake_Key_List, quakeVBox);
+        setTextArrayData(GitHub_Token_List, githubVBox);
+        setTextArrayData(Google_API_List, googleVBox);
+
+    }
+
+    private void setTextArrayData(JsonArray jsonArray, VBox vBox){
+        StackPane firstStackPane = (StackPane) vBox.getChildren().get(0);
+        Label addLabel = (Label) firstStackPane.getChildren().get(1);
+        if(jsonArray.size() > 1) {
+            for (int i = 0; i < jsonArray.size() - 1; i++) {
+                addLabel.fireEvent(new MouseEvent(
+                        javafx.scene.input.MouseEvent.MOUSE_CLICKED,
+                        0, 0, 0, 0,
+                        javafx.scene.input.MouseButton.PRIMARY, 1,
+                        true, true, true, true,
+                        true, true, true, true,
+                        true, true, null
+                ));
+            }
+        }
+
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonElement jsonElement = jsonArray.get(i);
+
+            StackPane stackPane = (StackPane) vBox.getChildren().get(i);
+            TextField textField = (TextField) stackPane.getChildren().get(0);
+
+            if(jsonElement.isJsonPrimitive()) {
+                textField.setText(jsonElement.getAsString());
+            }else if(jsonElement.isJsonObject()){
+                String Google_Key = jsonElement.getAsJsonObject().get("Google_Key").getAsString();
+                String Google_Cx = jsonElement.getAsJsonObject().get("Google_Cx").getAsString();
+                textField.setText(Google_Key + ":" + Google_Cx);
+            }
+        }
     }
 
     @FXML
@@ -155,8 +244,11 @@ public class PaneSetting {
         aiMap.put("GPT_API_Key", gptApiKey.getText());
         configMap.put("AI", aiMap);
 
-        Constants.saveConfig(configMap);
-        exitAction();
+        if(Constants.saveConfig(configMap)){
+            showTip("保存成功");
+        }else {
+            showTip("保存失败，请查看日志");
+        }
     }
 
     private Thread md5CheckThread;
@@ -356,5 +448,180 @@ public class PaneSetting {
         if (kbUpdateThread != null && kbUpdateThread.isAlive()) {
             kbUpdateThread.stop();
         }
+    }
+
+    @FXML
+    public void delTextField(MouseEvent event) {
+        Node source = (Node) event.getSource();
+        Parent stackPane = source.getParent();
+
+        if (stackPane != null && stackPane.getParent() instanceof VBox) {
+            VBox parentPane = (VBox) stackPane.getParent();
+            parentPane.getChildren().remove(stackPane);
+        }
+    }
+
+    @FXML
+    public void addTextField(MouseEvent event) {
+        StackPane newStackPane = new StackPane();
+        newStackPane.setOnMouseEntered(this::showDel);
+        newStackPane.setOnMouseExited(this::hiddenDel);
+
+        // 创建新的 TextField，并添加鼠标进入和离开事件
+        TextField newTextField = new TextField();
+        newTextField.getStyleClass().add("paddingRightButton");
+        newTextField.setPrefWidth(250);
+        StackPane.setAlignment(newTextField, Pos.CENTER);
+
+        // 创建删除按钮的 Label
+        Label delLabel = new Label();
+        delLabel.setAlignment(Pos.CENTER);
+        delLabel.setManaged(false);
+        delLabel.setVisible(false);
+        delLabel.getStyleClass().add("rightButton");
+        delLabel.setOnMouseClicked(this::delTextField);
+        StackPane.setAlignment(delLabel, Pos.CENTER_RIGHT);
+        // 添加删除按钮的图标
+        Region delIcon = new Region();
+        delIcon.getStyleClass().add("delIcon");
+        delLabel.setGraphic(delIcon);
+        delLabel.setTooltip(new Tooltip("删除"));
+
+        // 将 TextField 和删除按钮 Label 添加到新的 StackPane
+        newStackPane.getChildren().addAll(newTextField, delLabel);
+
+        Node source = (Node) event.getSource();
+        Parent stackPane = source.getParent();
+        VBox parentPane = (VBox) stackPane.getParent();
+        // 将新 StackPane 添加到 VBox
+        parentPane.getChildren().add(newStackPane);
+        // 获取焦点
+        newTextField.requestFocus();
+    }
+
+    public void showDel(MouseEvent event) {
+        Parent parent = (Parent) event.getSource();
+        for (Node node : parent.getChildrenUnmodifiable()) {
+            if (node instanceof Label) {
+                node.setManaged(true);
+                node.setVisible(true);
+                break;
+            }
+        }
+    }
+
+    public void hiddenDel(MouseEvent event) {
+        Parent parent = (Parent) event.getSource();
+        for (Node node : parent.getChildrenUnmodifiable()) {
+            if (node instanceof Label) {
+                node.setManaged(false);
+                node.setVisible(false);
+                break;
+            }
+        }
+    }
+
+    @FXML
+    public void saveAsset(ActionEvent event) {
+        String Chinaz_Cookie = chinazCookie.getText().trim();
+        String Aiqicha_Cookie = aiqichaCookie.getText().trim();
+        String Fofa_Key = fofaKey.getText().trim();
+        String Zoomeye_Key = zoomeyeKey.getText().trim();
+        String Shodan_Key = shodanKey.getText().trim();
+        JsonArray Hunter_Key = getContentTextFieldValue(hunterVBox);
+        JsonArray Quake_Key = getContentTextFieldValue(quakeVBox);
+        JsonArray GitHub_Token = getContentTextFieldValue(githubVBox);
+        JsonArray Google_API = transformGoogleApi(getContentTextFieldValue(googleVBox));
+
+        Map<String, Object> configMap = new HashMap<>();
+        Map<String, Object> assetMap = new HashMap<>();
+        assetMap.put("Chinaz_Cookie", Chinaz_Cookie);
+        assetMap.put("Aiqicha_Cookie", Aiqicha_Cookie);
+        assetMap.put("Fofa_Key", Fofa_Key);
+        assetMap.put("Hunter_Key", Hunter_Key);
+        assetMap.put("Quake_Key", Quake_Key);
+        assetMap.put("Zoomeye_Key", Zoomeye_Key);
+        assetMap.put("Shodan_Key", Shodan_Key);
+        assetMap.put("GitHub_Token", GitHub_Token);
+        assetMap.put("Google_API", Google_API);
+        configMap.put("Asset", assetMap);
+
+        if(Constants.saveConfig(configMap)){
+            showTip("保存成功");
+        }else {
+            showTip("保存失败，请查看日志");
+        }
+    }
+
+    private JsonArray transformGoogleApi(JsonArray originalArray){
+        JsonArray newArray = new JsonArray();
+        for (int i = 0; i < originalArray.size(); i++) {
+            String item = originalArray.get(i).getAsString();
+
+            // 使用冒号分隔字符串
+            String[] parts = item.split(":");
+            if (parts.length == 2) {
+                // 创建一个新的JsonObject，并将分割后的值添加到对象中
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("Google_Key", parts[0]);
+                jsonObject.addProperty("Google_Cx", parts[1]);
+
+                // 将JsonObject添加到新的JsonArray
+                newArray.add(jsonObject);
+            }
+        }
+        return newArray;
+    }
+
+    private JsonArray getContentTextFieldValue(VBox vbox){
+        JsonArray jsonArray = new JsonArray();
+        for (Node node : vbox.getChildren()) {
+            if (node instanceof StackPane) {
+                // 进一步检查StackPane中的子节点
+                StackPane stackPane = (StackPane) node;
+                for (Node innerNode : stackPane.getChildren()) {
+                    if (innerNode instanceof TextField) {
+                        // 获取TextField的值
+                        TextField textField = (TextField) innerNode;
+                        String textValue = textField.getText().trim();
+
+                        // 将TextField的值添加到JsonArray中
+                        if(!textValue.isEmpty()) jsonArray.add(textValue);
+                    }
+                }
+            }
+        }
+        return jsonArray;
+    }
+
+    public void showTip(String tip){
+        prompt.setText(tip);
+        copyAnimation();
+    }
+
+    public void copyAnimation() {
+        // 显示提示组件
+        promptPane.setVisible(true);
+        promptPane.setManaged(true);
+
+        // 创建渐入动画
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+
+        // 创建渐出动画
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        fadeOut.setDelay(Duration.seconds(1)); // 延迟1秒执行渐出动画
+
+        // 播放渐入动画，完成后播放渐出动画
+        fadeIn.setOnFinished(event -> fadeOut.play());
+        fadeIn.play();
+
+        fadeOut.setOnFinished(event -> {
+            promptPane.setVisible(false);
+            promptPane.setManaged(false);
+        });
     }
 }

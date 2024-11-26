@@ -86,7 +86,7 @@ public class aiUtil {
             jsonData.addProperty("query", question);
             jsonData.add("history", historyList);
 
-            obj = new RequestObj().setMethod("POST").setUrl(aiUrl).setHeaders(headers).setPostData(jsonData);
+            obj = new RequestObj().setMethod("POST").setUrl(aiUrl).setHeaders(headers).setPostData(jsonData).setProxies(null);
 
         }
 
@@ -280,7 +280,7 @@ public class aiUtil {
             jsonData.addProperty("query", question);
             jsonData.add("history", historyList);
 
-            obj = new RequestObj().setMethod("POST").setUrl(aiUrl).setHeaders(headers).setPostData(jsonData);
+            obj = new RequestObj().setMethod("POST").setUrl(aiUrl).setHeaders(headers).setPostData(jsonData).setProxies(null);
 
         }
 

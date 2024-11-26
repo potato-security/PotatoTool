@@ -4,18 +4,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.CustomHttpResponse;
+import com.potato.potatotool.utils.ExecutorServiceManager;
 import com.potato.potatotool.utils.RequestObj;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.potato.potatotool.ToStart.debugMode;
+import static com.potato.potatotool.content.redTeam.infoGathering.tools.GetSeo.getSeo;
 import static com.potato.potatotool.utils.requestUtils.requests;
 
 /**
@@ -24,20 +22,35 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class GetDomain {
 
-    public static JsonArray getDomainByIp(String ip) {
-        // 使用CompletableFuture异步调用两个HTTP请求方法
-        CompletableFuture<JsonArray> futureIp138 = CompletableFuture.supplyAsync(() -> getDomainByIp_ip138(ip));
-        CompletableFuture<JsonArray> futureIpchaxun = CompletableFuture.supplyAsync(() -> getDomainByIp_ipchaxun(ip));
+    private static ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
+    private static List<Future<?>> futures = ExecutorServiceManager.futures;
 
-        // 等待两个请求都完成后，合并并去重
-        CompletableFuture<JsonArray> combinedFuture = futureIp138.thenCombine(futureIpchaxun, GetDomain::domainDataDeduplication);
+    public static JsonArray getDomainByIp(String ip, int MaxSize) {
+        Future<JsonArray> futureIp138 = executor.submit(() -> getDomainByIp_ip138(ip, MaxSize));
+        Future<JsonArray> futureIpchaxun = executor.submit(() -> getDomainByIp_ipchaxun(ip, MaxSize));
+        futures.add(futureIp138);
+        futures.add(futureIpchaxun);
 
-        try {
-            return combinedFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return new JsonArray();
+        JsonArray result1 = new JsonArray();
+        JsonArray result2 = new JsonArray();
+        for (Future<?> future : futures) {
+            try {
+                JsonArray tempResult = (JsonArray) future.get();
+                if (future == futureIp138) {
+                    result1 = tempResult;
+                } else if (future == futureIpchaxun) {
+                    result2 = tempResult;
+                }
+            } catch (CancellationException ce) {} catch (Exception e) {
+                if(debugMode) e.printStackTrace();
+            }
         }
+
+        // 停止所有线程
+        ExecutorServiceManager.getInstance().forceShutdown();
+
+        return domainDataDeduplication(result1, result2, MaxSize);
+
     }
 
     // 正则表达式匹配ip138的token
@@ -45,7 +58,7 @@ public class GetDomain {
             "_TOKEN\\s*=\\s*'(.*?)';"
     );
     // 使用ip138进行 域名反查
-    private static JsonArray getDomainByIp_ip138(String ip) {
+    private static JsonArray getDomainByIp_ip138(String ip, int MaxSize) {
         JsonArray domainDataArray = new JsonArray(); // 爬取反查域名信息
 
         try {
@@ -85,6 +98,7 @@ public class GetDomain {
                             element.getAsJsonObject().addProperty("show", false);
                             element.getAsJsonObject().addProperty("deepGet", false);
                             domainDataArray.add(element);
+                            if(domainDataArray.size()==MaxSize) return domainDataArray;
                         }
                     } else {
                         break;
@@ -100,7 +114,7 @@ public class GetDomain {
         return domainDataArray;
     }
 
-    private static JsonArray getDomainByIp_ipchaxun(String ip){
+    private static JsonArray getDomainByIp_ipchaxun(String ip, int MaxSize){
         JsonArray domainDataArray = new JsonArray(); // 爬取反查域名信息
 
         try {
@@ -141,6 +155,7 @@ public class GetDomain {
                             element.getAsJsonObject().addProperty("show", false);
                             element.getAsJsonObject().addProperty("deepGet", false);
                             domainDataArray.add(element);
+                            if(domainDataArray.size()==MaxSize) return domainDataArray;
                         }
                     } else {
                         break;
@@ -157,7 +172,7 @@ public class GetDomain {
     }
 
     // webscan的api均属于国外cdn，需翻墙且很卡。备选暂不使用
-    private static JsonArray getDomainByIp_webscan(String ip){
+    private static JsonArray getDomainByIp_webscan(String ip, int MaxSize){
         JsonArray domainDataArray = new JsonArray();
 
         try {
@@ -184,6 +199,7 @@ public class GetDomain {
                 newObject.addProperty("uptime", "");
 
                 domainDataArray.add(newObject);
+                if(domainDataArray.size()==MaxSize) break;
             }
 
         } catch (Exception e) {
@@ -193,8 +209,8 @@ public class GetDomain {
         return domainDataArray;
     }
 
-    // 根据domain字段去重，保留uptime较新的数据
-    private static JsonArray domainDataDeduplication(JsonArray jsonArray1, JsonArray jsonArray2) {
+    // 根据domain字段去重，保留uptime较新的数据，并获取域名SEO信息
+    private static JsonArray domainDataDeduplication(JsonArray jsonArray1, JsonArray jsonArray2, int MaxSize) {
         Map<String, JsonObject> domainMap = new HashMap<>();
 
         // 处理第一个JsonArray
@@ -231,6 +247,12 @@ public class GetDomain {
         // 将排序后的List转换回JsonArray
         JsonArray resultArray = new JsonArray();
         for (JsonObject jsonObject : sortedList) {
+            if(resultArray.size()==MaxSize) break;
+
+            String domain = jsonObject.get("domain").getAsString();
+            JsonObject seoMap = getSeo(domain);
+            jsonObject.add("seoMap", seoMap);
+
             resultArray.add(jsonObject);
         }
 

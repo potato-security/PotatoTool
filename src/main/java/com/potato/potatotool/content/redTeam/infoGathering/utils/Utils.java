@@ -111,7 +111,12 @@ public class Utils {
         return webBaseInfoMap;
     }
 
-    public static Map<String, Object> getWebInfo(String url){
+    // hasCrawlLinks 默认 true // 是否爬取链接
+    // hasFindSensitiveInfo 默认 true // 是否获取敏感信息
+    // maxDepth 默认 2; // 设置深度
+    // maxSubPathCount 默认 30; // 设置最大子链接数
+    // TODO 指纹识别
+    public static Map<String, Object> getWebInfo(String url, boolean hasCrawlLinks, boolean hasFindSensitiveInfo, int maxDepth, int maxSubPathCount){
         Map<String, Object> webInfoMap = new HashMap<>();
         List<Map<String, Object>> allSensitiveInfo = new ArrayList<>();
         Set<String> allInternalLinks = new HashSet<>();
@@ -153,25 +158,26 @@ public class Utils {
             webInfoMap.putAll(getIconInfo(iconUrl));
 
             // 匹配特定敏感信息
-            Map<String, Object> sensitiveInfoMap = findSensitiveInformation(pageContent, con.getURL());
-            allSensitiveInfo.add(sensitiveInfoMap);
+            if(hasFindSensitiveInfo) {
+                Map<String, Object> sensitiveInfoMap = findSensitiveInformation(pageContent, con.getURL());
+                allSensitiveInfo.add(sensitiveInfoMap);
+            }
 
             // 爬取网站内子链接并匹配敏感信息
-            int maxDepth = 2; // 设置深度
-            int maxSubPathCount = 30; // 设置最大子链接数
-            Set<String> internalLinks = getInternalLinks(doc, con);
-            allInternalLinks.addAll(internalLinks);
+            if(hasCrawlLinks) {
+                Set<String> internalLinks = getInternalLinks(doc, con);
+                allInternalLinks.addAll(internalLinks);
 
-            for (String link : internalLinks) {
-                if (!visitedLinks.contains(link)) { // 判断链接是否已访问
-                    visitedLinks.add(link); // 将链接添加到已访问集合
-                    crawlAndExtract(link, maxDepth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks);
+                for (String link : internalLinks) {
+                    if (!visitedLinks.contains(link)) { // 判断链接是否已访问
+                        visitedLinks.add(link); // 将链接添加到已访问集合
+                        crawlAndExtract(link, maxDepth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks, hasFindSensitiveInfo);
+                    }
                 }
             }
 
         } catch (Exception e) {
             if(debugMode) e.printStackTrace();
-            System.out.println(e);
         }
 
         webInfoMap.put("sensitive", allSensitiveInfo);
@@ -189,7 +195,8 @@ public class Utils {
 
             CustomHttpResponse con_icon = requests(obj_icon);
             int statusCode_icon = con_icon.getResponseCode();
-            if (statusCode_icon != 200) {
+            String contentType = con_icon.getContentType();
+            if (statusCode_icon != 200 || !contentType.startsWith("image/")) {
                 return iconInfo;
             }
 
@@ -198,6 +205,7 @@ public class Utils {
             String tmpData = strUtils.base64Encode_codesc(iconBytes);
             int iconSha1 = Hashing.murmur3_32().hashString(tmpData, StandardCharsets.UTF_8).asInt();
 
+            iconInfo.put("iconUrl", iconUrl);
             iconInfo.put("iconBase64", strUtils.base64Encode(iconBytes));
             iconInfo.put("iconMd5", iconMd5);
             iconInfo.put("iconMmh3", String.valueOf(iconSha1));
@@ -309,7 +317,7 @@ public class Utils {
     }
 
     // 递归爬取链接并提取信息
-    private static void crawlAndExtract(String url, int depth, int maxSubPathCount, List<Map<String, Object>> allSensitiveInfo, Set<String> allInternalLinks, Set<String> visitedLinks) {
+    private static void crawlAndExtract(String url, int depth, int maxSubPathCount, List<Map<String, Object>> allSensitiveInfo, Set<String> allInternalLinks, Set<String> visitedLinks, boolean hasFindSensitiveInfo) {
 
         try {
             RequestObj obj = new RequestObj().setUrl(url)
@@ -331,8 +339,10 @@ public class Utils {
             String pageContent = sb.toString();
 
             // 匹配特定敏感信息
-            Map<String, Object> sensitiveInfoMap = findSensitiveInformation(pageContent, con.getURL());
-            allSensitiveInfo.add(sensitiveInfoMap);
+            if(hasFindSensitiveInfo) {
+                Map<String, Object> sensitiveInfoMap = findSensitiveInformation(pageContent, con.getURL());
+                allSensitiveInfo.add(sensitiveInfoMap);
+            }
 
             if (depth < 0 || allInternalLinks.size() > maxSubPathCount) return; // 达到最大深度，停止爬取
             // 获取网站内的子链接并继续爬取
@@ -341,7 +351,7 @@ public class Utils {
             for (String link : internalLinks) {
                 if (!visitedLinks.contains(link)) {
                     visitedLinks.add(link);
-                    crawlAndExtract(link, depth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks);
+                    crawlAndExtract(link, depth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks, hasFindSensitiveInfo);
                 }
             }
 
@@ -400,11 +410,11 @@ public class Utils {
         String httpUrl = "http://" + host;
 
         // 先尝试 HTTPS
-        if (isReachable(httpsUrl)) {
+        if (isReachable(httpsUrl, true)) {
             return httpsUrl;
         }
         // 如果 HTTPS 失败，尝试 HTTP
-        else if (isReachable(httpUrl)) {
+        else if (isReachable(httpUrl, false)) {
             return httpUrl;
         }
 
@@ -414,14 +424,17 @@ public class Utils {
         }
     }
 
-    private static boolean isReachable(String urlStr) {
+    private static boolean isReachable(String urlStr, boolean isHttps) {
         try {
             RequestObj obj = new RequestObj().setUrl(urlStr)
                     .setFollowRedirects(true)
-                    .setMethod("HEAD");
+                    .setStrictSslValidation(isHttps)
+                    .setMethod("GET");// 建议使用HEAD，但是部分网站单独设置不允许HEAD请求
             CustomHttpResponse con = requests(obj);
             int statusCode = con.getResponseCode();
-            return (statusCode >= 200 && statusCode < 400); // 2xx 或 3xx 响应码表示服务器正常响应
+            String content = con.getTextStr();
+            // 2xx 或 3xx 响应码 并且 不能是burp中间层代错  表示服务器正常响应
+            return (statusCode >= 200 && statusCode < 400) && !content.startsWith("<html><head><title>Burp Suite Professional</title>");
         } catch (Exception e) {
             return false;  // 连接失败或不可达
         }
@@ -443,5 +456,7 @@ public class Utils {
 
 
     public static void main(String[] args) {
+        System.out.println(getWebInfo("potato.gold:3000",false,false,2,2));
+        System.out.println(getWebInfo("potato.gold",false,false,2,2));
     }
 }

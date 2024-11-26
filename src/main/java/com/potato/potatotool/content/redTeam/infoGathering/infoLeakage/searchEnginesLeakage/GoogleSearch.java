@@ -3,6 +3,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.searchEn
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.gitLeakage.GitHubLeakage;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
 import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.CustomHttpResponse;
@@ -19,10 +20,11 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2023/10/1 15:53
  */
 public class GoogleSearch {
-    public GoogleSearch(List<HashMap<String, String>> Google_API_List){
-        this.Google_API_List = Google_API_List;
+    public GoogleSearch(Set<HashMap<String, String>> Google_API_List){
+        this.Google_API_List = new ArrayList<HashMap<String, String>>(Google_API_List);
     }
     private static List<HashMap<String, String>> Google_API_List;
+    private static boolean isEffectiveKey = true;
     private static int keyIndex = 0;
 
 
@@ -54,7 +56,7 @@ public class GoogleSearch {
 
     public JsonArray search(String input, String targetUrl, boolean isSearchLeakage){
         JsonArray repoArray = new JsonArray();
-        if(input.isEmpty() ||Google_API_List.size()==0|| Google_API_List.get(0).isEmpty()){
+        if(input.isEmpty() ||Google_API_List.size()==0|| Google_API_List.get(0).isEmpty() || !isEffectiveKey){
             return repoArray;
         }
 
@@ -71,9 +73,8 @@ public class GoogleSearch {
             try {
                 RequestObj obj = new RequestObj()
                         .setUrl("https://customsearch.googleapis.com/customsearch/v1?key=" + Google_Key + "&q=" + strUtils.urlEncode(input) + "&cx=" + Google_Cx + "&start=" + currentIndex)
-                        .setMethod("GET")
-                        .setProxies("http://127.0.0.1:8080")
-                        .setRetries(3);
+                        .setMethod("GET");
+//                        .setProxies("http://127.0.0.1:8080");
 
                 CustomHttpResponse con = requests(obj);
 
@@ -85,7 +86,6 @@ public class GoogleSearch {
                         index -= 1;
                         if(keyIndex+1 > Google_API_List.size()){
                             System.out.println("所有Google账号今日均无免费额度可使用。");
-                            // TODO 提示
                             break;
                         }else {
                             continue;
@@ -95,46 +95,56 @@ public class GoogleSearch {
                 }
 
                 JsonObject repoArrayObj = con.getJson().getAsJsonObject();
+                if(!input.contains("【Check】")) {
+                    if (repoArrayObj.has("items")) {
+                        JsonArray items = repoArrayObj.getAsJsonArray("items");
+                        for (JsonElement item : items) {
+                            JsonObject repoObj = new JsonObject();
+                            String url = item.getAsJsonObject().get("link").getAsString();
+                            String domain = item.getAsJsonObject().get("displayLink").getAsString();
+                            String title = item.getAsJsonObject().get("title").getAsString();
+                            String content = item.getAsJsonObject().get("snippet").getAsString();
+                            String des = item.getAsJsonObject().get("snippet").getAsString();
 
-                if (repoArrayObj.has("items")) {
-                    JsonArray items = repoArrayObj.getAsJsonArray("items");
-                    for (JsonElement item : items) {
-                        JsonObject repoObj = new JsonObject();
-                        String url = item.getAsJsonObject().get("link").getAsString();
-                        String domain = item.getAsJsonObject().get("displayLink").getAsString();
-                        String title = item.getAsJsonObject().get("title").getAsString();
-                        String content = item.getAsJsonObject().get("snippet").getAsString();
-                        String des = item.getAsJsonObject().get("snippet").getAsString();
-
-                        if(isSearchLeakage){
-                            // ip/domain
-                            Set<String> leakageList = AiUtils.getLeakage_Ai(content);
-                            JsonArray leakageArray = new JsonArray();
-                            if(leakageList.size()>0){
-                                for (String leakage : leakageList) {
-                                    leakageArray.add(leakage);
+                            if (isSearchLeakage) {
+                                // ip/domain
+                                Set<String> leakageList = AiUtils.getLeakage_Ai(content);
+                                JsonArray leakageArray = new JsonArray();
+                                if (leakageList.size() > 0) {
+                                    for (String leakage : leakageList) {
+                                        leakageArray.add(leakage);
+                                    }
+                                    repoObj.add("leakageArray", leakageArray);
+                                } else {
+                                    continue;
                                 }
-                                repoObj.add("leakageArray", leakageArray);
-                            }else {
-                                continue;
+                            } else {
+                                // 公司名
+                                boolean isContentRelevance = AiUtils.getContentRelevance_Ai(domain, input.replace("\"", ""), targetUrl);
+                                if (!isContentRelevance) {
+                                    continue;
+                                }
                             }
-                        }else {
-                            // 公司名
-                            boolean isContentRelevance = AiUtils.getContentRelevance_Ai(domain, input.replace("\"",""), targetUrl);
-                            if(!isContentRelevance){
-                                continue;
-                            }
-                        }
 
-                        repoObj.addProperty("url", url);
-                        repoObj.addProperty("domain", domain);
-                        repoObj.addProperty("title", title);
-                        repoObj.addProperty("content", content);
-                        repoObj.addProperty("des", des);
-                        repoArray.add(repoObj);
+                            repoObj.addProperty("url", url);
+                            repoObj.addProperty("domain", domain);
+                            repoObj.addProperty("title", title);
+                            repoObj.addProperty("content", content);
+                            repoObj.addProperty("des", des);
+                            repoArray.add(repoObj);
+                        }
+                    } else {
+                        break;
                     }
                 }else {
-                    break;
+                    // 仅做检查使用
+                    if(repoArrayObj.has("queries")){
+                        JsonArray res = repoArrayObj.getAsJsonObject("queries").getAsJsonArray("request");
+                        if(res.size()>0){
+                            repoArray.add("OK");
+                            break;
+                        }
+                    }
                 }
 
             } catch (Exception e) {
@@ -146,11 +156,34 @@ public class GoogleSearch {
         return repoArray;
     }
 
+    public static String getError_Google() {
+        isEffectiveKey = true;
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        JsonArray jsonArray = tmpJsonObj.getAsJsonArray("Google_API");
+        Set<HashMap<String, String>> google_API_List = new HashSet<>();
+        for (JsonElement element : jsonArray) {
+            HashMap<String, String> map = new HashMap<>();
+            JsonObject obj = element.getAsJsonObject();
+
+            for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
+                map.put(entry.getKey(), entry.getValue().getAsString());
+            }
+            google_API_List.add(map);
+        }
+        GoogleSearch googleSearch = new GoogleSearch(google_API_List);
+        String domain = "【Check】";
+        if (googleSearch.searchLeakageByDomain(domain).isEmpty()){
+            isEffectiveKey = false;
+            return "无效的Google_API/限国外IP";
+        }
+        return null;
+    }
+
 
     public static void main(String[] args) {
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
         JsonArray jsonArray = tmpJsonObj.getAsJsonArray("Google_API");
-        List<HashMap<String, String>> google_API_List = new ArrayList<>();
+        Set<HashMap<String, String>> google_API_List = new HashSet<>();
         for (JsonElement element : jsonArray) {
             HashMap<String, String> map = new HashMap<>();
             JsonObject obj = element.getAsJsonObject();

@@ -9,6 +9,8 @@
     "AI_optimization": false
   },
   "Asset": {
+    "Chinaz_Cookie": "***REMOVED***",
+    "Aiqicha_Cookie": "***REMOVED***",
     "Fofa_Key": "***REMOVED***",
     "Hunter_Key": [
       "ec5110203c89eb842caf712c183b23c51555c1196bad4579f051813eca6aa33b",
@@ -21,17 +23,16 @@
       "e951140a45219801d586ee89923a529b2ff67726fa6cb62324082c8a0c2b4930",
       "4477092ae1d42de75c9c15962c5f5ecdb8902a27fcf3af767c628e01fc4bf768"
     ],
-    "Quake_Key": "***REMOVED***",
-    "Shodan_Key": "***REMOVED***",
+    "Quake_Key": [
+      "***REMOVED***"
+    ],
     "Zoomeye_Key": "***REMOVED***",
+    "Shodan_Key": "***REMOVED***",
     "GitHub_Token": [
       "***REMOVED***",
       "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",
       "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",
       "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"
-    ],
-    "Gitee_Token": [
-      "fab3c2118d655f362135067f57e89b05"
     ],
     "Google_API": [
       {

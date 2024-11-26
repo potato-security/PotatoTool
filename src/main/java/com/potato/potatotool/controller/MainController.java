@@ -3,6 +3,7 @@ package com.potato.potatotool.controller;
 import com.leewyatt.rxcontrols.animation.carousel.*;
 import com.leewyatt.rxcontrols.controls.RXCarousel;
 import com.leewyatt.rxcontrols.pane.RXCarouselPane;
+import com.potato.potatotool.utils.ExecutorServiceManager;
 import com.potato.potatotool.utils.Util;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -340,6 +341,7 @@ public class MainController {
 
     @FXML
     void exitAction(ActionEvent event) {
+        ExecutorServiceManager.getInstance().forceShutdown();
         Platform.exit();
         System.exit(0);
     }

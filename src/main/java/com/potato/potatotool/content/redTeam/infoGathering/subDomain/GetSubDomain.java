@@ -4,17 +4,18 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.CustomHttpResponse;
+import com.potato.potatotool.utils.ExecutorServiceManager;
 import com.potato.potatotool.utils.RequestObj;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.getElementText;
@@ -28,27 +29,37 @@ import static com.potato.potatotool.utils.requestUtils.requests;
 public class GetSubDomain {
     public static int timeOut = 5;
 
+    private static ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
+    private static List<Future<?>> futures = ExecutorServiceManager.futures;
     public static Set<String> getSubByDomainOrDomainCert(String domain) {
         if(domain==null || domain.isEmpty() || domain.startsWith("http")) return new LinkedHashSet<>();
+        Set<String> subDomainSet = new HashSet<>();
 
-        // 使用CompletableFuture异步调用两个HTTP请求方法
-        CompletableFuture<Set<String>> future_crt = CompletableFuture.supplyAsync(() -> getSubByDomainCert_crt(domain));
-        CompletableFuture<Set<String>> future_certspotter = CompletableFuture.supplyAsync(() -> getSubByDomainCert_certspotter(domain));
-        CompletableFuture<Set<String>> future_chaziyu = CompletableFuture.supplyAsync(() -> getSubByDomain_chaziyu(domain));
-        CompletableFuture<Set<String>> future_rapiddns = CompletableFuture.supplyAsync(() -> getSubByDomain_rapiddns(domain));
-        CompletableFuture<Set<String>> future_lienvault = CompletableFuture.supplyAsync(() -> getSubByDomain_alienvault(domain));
-        CompletableFuture<Set<String>> future_ip138 = CompletableFuture.supplyAsync(() -> getSubByDomain_ip138(domain));
+        Future<Set<String>> future_crt = executor.submit(() -> getSubByDomainCert_crt(domain));
+        Future<Set<String>> future_certspotter = executor.submit(() -> getSubByDomainCert_certspotter(domain));
+        Future<Set<String>> future_chaziyu = executor.submit(() -> getSubByDomain_chaziyu(domain));
+        Future<Set<String>> future_rapiddns = executor.submit(() -> getSubByDomain_rapiddns(domain));
+        Future<Set<String>> future_lienvault = executor.submit(() -> getSubByDomain_alienvault(domain));
+        Future<Set<String>> future_ip138 = executor.submit(() -> getSubByDomain_ip138(domain));
+        futures.add(future_crt);
+        futures.add(future_certspotter);
+        futures.add(future_chaziyu);
+        futures.add(future_rapiddns);
+        futures.add(future_lienvault);
+        futures.add(future_ip138);
 
-
-        try {
-            return Stream.of(future_crt, future_certspotter, future_chaziyu, future_rapiddns, future_lienvault, future_ip138)
-                    .map(CompletableFuture::join)
-                    .flatMap(Set::stream)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-        } catch (Exception e) {
-            if (debugMode) e.printStackTrace();
-            return new LinkedHashSet<>();
+        for (Future<?> future : futures) {
+            try {
+                subDomainSet.addAll((Set<String>) future.get());
+            } catch (CancellationException ce) {} catch (Exception e) {
+                if(debugMode) e.printStackTrace();
+            }
         }
+
+        // 停止所有线程
+        ExecutorServiceManager.getInstance().forceShutdown();
+
+        return subDomainSet;
     }
 
     private static Set<String> getSubByDomainCert_crt(String domain) {

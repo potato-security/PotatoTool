@@ -4,7 +4,6 @@ import com.potato.potatotool.utils.ExecutorServiceManager;
 import org.xbill.DNS.*;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -21,8 +20,7 @@ import static com.potato.potatotool.utils.Constants.getResourceStream;
  * @date 2024/10/12 17:59
  */
 public class SubdomainBruteForcer {
-    private static final int THREAD_POOL_SIZE = ExecutorServiceManager.getOptimalThreadPoolSize() * 140; // 线程池大小，调整以适应资源
-    private static final String DOMAIN = "szjky.edu.cn"; // 主域名
+    private static final int THREAD_POOL_SIZE = ExecutorServiceManager.getOptimalThreadPoolSize() * 160; // 线程池大小，调整以适应资源
     private static final String[] DNS_SERVERS = {
             "8.8.8.8",
             "1.1.1.1",
@@ -58,8 +56,7 @@ public class SubdomainBruteForcer {
 
             // 将纳米时间转换为秒
             double durationInSeconds = duration / 1_000_000_000.0;
-            System.out.println("程序运行时长为：" + durationInSeconds + " 秒");
-            System.out.println(cache.size());
+            System.out.println("子域名爆破运行时长为：" + durationInSeconds + " 秒");
 
         }catch (Exception e){
             if (debugMode) e.printStackTrace();
@@ -84,15 +81,19 @@ public class SubdomainBruteForcer {
 
                     if (lookup.getResult() == Lookup.SUCCESSFUL) {
                         cache.add(subdomain);
-                        System.out.println("Subdomain found: " + subdomain);
                         break; // 成功后跳出DNS服务器循环
                     }
                 } catch (Exception e) {
-                    System.err.println("Failed on DNS server: " + dnsServer + " " + e.toString());
+                    if (debugMode) System.err.println("Failed on DNS server: " + dnsServer + " " + e.toString());
                 }
             }
         } catch (Exception e) {
             if (debugMode) e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(getSubDomain("potato.gold"));
+
     }
 }

@@ -10,6 +10,10 @@ public class ToStart {
 
     public static void main(String[] args) {
 
+        System.setProperty("java.net.useSystemProxies", "false");// 关闭使用系统代理
+        System.setProperty("prism.lcdtext", "false");// 关闭字体锯齿效果
+        System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");// 关闭Polyglot告警
+
         // 检查命令行参数是否包含 "debug" 参数
         for (String arg : args) {
             if (arg.equals("debug")) {

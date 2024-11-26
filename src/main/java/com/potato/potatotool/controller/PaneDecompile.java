@@ -30,6 +30,8 @@ import org.fxmisc.richtext.CodeArea;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 /**
  * @author Potato
  * @date 2023/10/24 16:51
@@ -134,12 +136,12 @@ public class PaneDecompile {
         try {
             path = chooser.showOpenDialog(stage).getAbsolutePath();
         }catch (Exception exception){
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
             return;
         }
 
         if (path == null) {
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
             return;
         }
 

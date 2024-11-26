@@ -4,13 +4,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.CustomHttpResponse;
+import com.potato.potatotool.utils.ExecutorServiceManager;
 import com.potato.potatotool.utils.RequestObj;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,20 +27,35 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class GetSeo {
 
-
+    private static ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
+    private static List<Future<?>> futures = ExecutorServiceManager.futures;
 
     public static JsonObject getSeo(String domain) {
-        CompletableFuture<JsonObject> futureChinaz = CompletableFuture.supplyAsync(() -> getSeo_chinaz(domain));
-        CompletableFuture<JsonObject> futureAizhan = CompletableFuture.supplyAsync(() -> getSeo_aizhan(domain));
+        Future<JsonObject> futureChinaz = executor.submit(() -> getSeo_chinaz(domain));
+        Future<JsonObject> futureAizhan = executor.submit(() -> getSeo_aizhan(domain));
+        futures.add(futureChinaz);
+        futures.add(futureAizhan);
 
-        CompletableFuture<JsonObject> combinedFuture = futureChinaz.thenCombine(futureAizhan, GetSeo::mergeJsonObjects);
-
-        try {
-            return combinedFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return new JsonObject();
+        JsonObject result1 = new JsonObject();
+        JsonObject result2 = new JsonObject();
+        for (Future<?> future : futures) {
+            try {
+                JsonObject tempResult = (JsonObject) future.get();
+                if (future == futureChinaz) {
+                    result1 = tempResult;
+                } else if (future == futureAizhan) {
+                    result2 = tempResult;
+                }
+            } catch (CancellationException ce) {} catch (Exception e) {
+                if(debugMode) e.printStackTrace();
+            }
         }
+
+        // 停止所有线程
+        ExecutorServiceManager.getInstance().forceShutdown();
+
+        return mergeJsonObjects(result1, result2);
+
     }
 
     // 使用chinaz对Domain进行SEO综合查询
@@ -136,7 +152,8 @@ public class GetSeo {
         } else if (elem1.isJsonArray() && elem2.isJsonArray()) {
             return mergeJsonArrays(elem1.getAsJsonArray(), elem2.getAsJsonArray());
         } else {
-            return elem2; // 如果不是 JsonObject 或 JsonArray，则返回 elem2
+            if(elem1.equals("-") || elem1.isJsonNull() || elem1.getAsString().isEmpty()) return elem2;
+            return elem1;
         }
     }
 
@@ -155,9 +172,8 @@ public class GetSeo {
         JsonObject domainInfo = new JsonObject();
 
         domainInfo.addProperty("域名", getElementAttr(doc, "body > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > div > input", "value").trim());
-        domainInfo.addProperty("注册人/机构", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1) > i"));
+        domainInfo.addProperty("注册人/机构", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1) > i").replace("redacted for privacy",""));
         domainInfo.addProperty("域名年龄", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > div:nth-of-type(2) > span > a > i"));
-        System.out.println(domainInfo);
 
         return domainInfo;
     }
@@ -165,9 +181,7 @@ public class GetSeo {
     private static JsonObject extractDomainInfo_aizhan(Document doc) {
         JsonObject domainInfo = new JsonObject();
 
-        domainInfo.addProperty("域名", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(2) > form > input[1]", "value").trim());
-//        domainInfo.addProperty("域名", getElementAttr(doc, "input#domain", "value").trim());
-        System.out.println(domainInfo);
+        domainInfo.addProperty("域名", getElementAttr(doc, "input#domain", "value").trim());
 
         Elements liElements = doc.select("body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(2) > ul > li");
         for (Element li : liElements) {
@@ -175,7 +189,7 @@ public class GetSeo {
 
             if (liText.contains("注册人/机构")) {
                 String org = li.selectFirst("a") != null ? li.selectFirst("a").text().trim() : "";
-                if (org.startsWith("//whois.ename.net") || org.contains("（更新）")) org = "";
+                if (org.startsWith("//whois.ename.net") || org.contains("（更新）") || org.contains("redacted for privacy")) org = "";
                 domainInfo.addProperty("注册人/机构", org);
             }
 
@@ -224,7 +238,7 @@ public class GetSeo {
             email = getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(2) > form > input:nth-of-type(1)", "value");
 
         } catch (Exception e) {
-            if (debugMode) System.out.println(e);
+            if (debugMode) e.printStackTrace();
         }
 
         return email;
@@ -274,6 +288,11 @@ public class GetSeo {
         } else {
             websiteInfo.addProperty("IP", elementText);
         }
+    }
+
+    public static void main(String[] args) {
+        JsonObject jsonObject = getSeo("www.39599.com");
+        System.out.println(jsonObject);
     }
 
 }

@@ -117,21 +117,8 @@ public class PaneKbRootQuery {
         VBox.setVgrow(tableView, Priority.ALWAYS);
         vBox.getChildren().add(box);
 
-        ChangeListener<Number> widthListener = new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> obs, Number oldWidth, Number newWidth) {
-                double totalWidth = newWidth.doubleValue() - 20;
-                int columnCount = tableView.getColumns().size();
-                double columnWidth = totalWidth / columnCount;
-
-                for (TableColumn<?, ?> column : tableView.getColumns()) {
-                    column.setPrefWidth(columnWidth);
-                }
-                tableView.widthProperty().removeListener(this);
-            }
-        };
-
-        tableView.widthProperty().addListener(widthListener);
+        // 列宽自动
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
     }
 

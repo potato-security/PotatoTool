@@ -10,21 +10,26 @@ import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.potato.potatotool.ToStart.debugMode;
+
 public class requestUtils {
+    static {
+        System.setProperty("http.keepAlive", "true");
+        System.setProperty("http.maxConnections", "200");
+    }
 
     /**
-     * 信任所有SSL证书(默认开启)
+     * 信任所有SSL证书(默认开启) 非全局模式，存在线程隔离，支持多线程
      * @throws Exception
      */
-    public static void TrustAllSSL() throws Exception {
-
+    public static SSLSocketFactory createTrustAllSSLSocketFactory() throws Exception {
         SSLContext sslContext = SSLContext.getInstance("TLS");
         sslContext.init(null, new TrustManager[]{new X509TrustManager() {
             public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
             public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
             public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
         }}, new SecureRandom());
-        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+        return sslContext.getSocketFactory();
     }
 
     // 禁用主机名验证   不要和TrustAllSSL默认同时使用，否则无法判断部分https何时需要转http
@@ -81,9 +86,6 @@ public class requestUtils {
                 int timeOut = requestObj.getTimeOut();
                 String boundary = null;
 
-                // 信任所有SSL证书
-                TrustAllSSL();
-
                 // 创建URL对象
                 URL obj = new URL(url);
                 if (proxies != null && !proxies.isEmpty()) {
@@ -99,7 +101,14 @@ public class requestUtils {
                     con = (HttpURLConnection) obj.openConnection(proxy);
 
                 } else {
-                    con = (HttpURLConnection) obj.openConnection();
+                    con = (HttpURLConnection) obj.openConnection(Proxy.NO_PROXY);
+                }
+
+                // 信任所有SSL证书 (未设定强SSL认证时 || 开代理时)
+                if (!requestObj.getStrictSslValidation() || (proxies != null && !proxies.isEmpty())) {
+                    if (con instanceof HttpsURLConnection) {
+                        ((HttpsURLConnection) con).setSSLSocketFactory(createTrustAllSSLSocketFactory());
+                    }
                 }
 
                 // 设置请求方法
@@ -110,7 +119,6 @@ public class requestUtils {
                     con.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36");
                 }
                 con.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
-                con.setRequestProperty("Connection", "close");
                 con.setRequestProperty("Tool-Test", "Potato-Test");
                 if (randomUserAgent) {
                     con.setRequestProperty("User-Agent", strUtils.RandomUserAgent());
@@ -230,6 +238,9 @@ public class requestUtils {
                 return new CustomHttpResponse(con);
 
             } catch (IOException e) {
+                if (con != null) {
+                    con.disconnect();
+                }
                 if(e.toString().contains("No subject alternative names matching IP address")){
                     requestObj.setUrl(requestObj.getUrl().replaceAll("https://","http://"));
                     continue;
@@ -237,6 +248,8 @@ public class requestUtils {
                     TrustAllHost();
                     sslTrustDisabled = true;
                     continue;
+                }else {
+                    if (debugMode) e.printStackTrace();
                 }
                 // 处理IO异常（包括 5xx 响应、读取超时、网络连接问题、连接超时、其他 I/O 错误），根据情况重试
                 if (retryCount < maxRetries) {

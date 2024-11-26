@@ -1,5 +1,7 @@
 package com.potato.potatotool.utils;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -247,6 +249,21 @@ public class jsonUtils {
 
         return resultJsonObj;
 
+    }
+
+
+    public static String jsonArrayToString(JsonArray jsonArray, String delimiter) {
+        if (jsonArray == null) {
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        for (JsonElement element : jsonArray) {
+            result.append(element.toString());
+            if (element!= jsonArray.get(jsonArray.size() - 1)) {
+                result.append(delimiter);
+            }
+        }
+        return result.toString();
     }
 
 

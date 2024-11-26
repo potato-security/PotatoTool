@@ -3,17 +3,23 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.strUtils;
+import com.opencsv.CSVWriter;
+import com.potato.potatotool.MainApplication;
+import com.potato.potatotool.controller.PaneInfoSearch;
+import com.potato.potatotool.utils.*;
+import javafx.application.HostServices;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -25,43 +31,57 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class AiqichaSearch {
 
-    private static Map<String, String> headers = new HashMap<>();
+    private static ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
+    private static List<Future<?>> futures = ExecutorServiceManager.futures;
 
-    private static List<Integer> weightThresholdList = new ArrayList<>();
+    private Map<String, String> headers = new HashMap<>();
+
+    private List<Integer> weightThresholdList = new ArrayList<>();
+
+    HostServices services = MainApplication.letGetHostServices();
+
+    private  static String Aiqicha_Cookie = "";
     static {
-//        weightThresholdList.add(100);
-//        weightThresholdList.add(100);
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig("Asset");
+        Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive("Aiqicha_Cookie").getAsString();
+    }
+
+    private PaneInfoSearch paneInfoSearch;
+
+    public AiqichaSearch(List<Integer> weightThresholdList, PaneInfoSearch paneInfoSearch){
+        this.weightThresholdList = weightThresholdList;
         //TODO 界面说明 view-source:https://aiqicha.baidu.com
-        headers.put("Cookie", "***REMOVED***");
-        headers.put("Referer", "https://aiqicha.baidu.com");
-        headers.put("Connection", "close");
+        this.headers.put("Cookie", Aiqicha_Cookie);
+        this.headers.put("Referer", "https://aiqicha.baidu.com");
+        this.headers.put("Connection", "close");
+
+        this.paneInfoSearch = paneInfoSearch;
     }
 
-    public static List<Integer> getWeightThresholdList() {
-        return weightThresholdList;
-    }
-    public static void setWeightThresholdList(List<Integer> weightThresholdList) {
-        AiqichaSearch.weightThresholdList = weightThresholdList;
-    }
-
-    public static JsonArray getCompanyInfoIteration(String companyName){
+    public JsonArray getCompanyInfoIteration(String companyName){
         JsonArray result = new JsonArray();
         if(companyName.isEmpty()) return result;
 
         JsonObject companyInfo = getCompanyInfo(companyName,null);
         result.add(companyInfo);
 
-        JsonArray weightCompany = companyInfo.getAsJsonObject(companyName).getAsJsonArray("weightCompany");
-        for(JsonElement jsonElement : weightCompany){
-            String subCompanyName = jsonElement.getAsJsonObject().get("entName").getAsString();
-            String subPid = jsonElement.getAsJsonObject().get("pid").getAsString();
-            result.add(getCompanyInfo(subCompanyName, subPid));
+        if(companyInfo!=null && companyInfo.size()>0) {
+            JsonArray weightCompany = companyInfo.getAsJsonObject(companyName).getAsJsonArray("weightCompany");
+            for (JsonElement jsonElement : weightCompany) {
+                String subCompanyName = jsonElement.getAsJsonObject().get("entName").getAsString();
+                String subPid = jsonElement.getAsJsonObject().get("pid").getAsString();
+                result.add(getCompanyInfo(subCompanyName, subPid));
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                }
+            }
         }
 
         return result;
     }
 
-    public static JsonObject getCompanyInfo(String companyName, String subPid){
+    public JsonObject getCompanyInfo(String companyName, String subPid){
         JsonObject result = new JsonObject();
         if(companyName.isEmpty()) return result;
 
@@ -72,51 +92,63 @@ public class AiqichaSearch {
             companyId = subPid;
         }
 
-        CompletableFuture<JsonArray> appFuture = CompletableFuture.supplyAsync(() -> getApp(companyId));
-        CompletableFuture<JsonArray> wxFuture = CompletableFuture.supplyAsync(() -> getWx(companyId));
-        CompletableFuture<JsonArray> domainAndIcpFuture = CompletableFuture.supplyAsync(() -> getDomainAndIcp(companyId));
-        CompletableFuture<Void> allOf;
-        CompletableFuture<JsonArray> weightCompanyFuture = new CompletableFuture<>();
-        if(subPid == null) {
-            weightCompanyFuture = CompletableFuture.supplyAsync(() -> getWeightCompany(companyId));
-            allOf = CompletableFuture.allOf(appFuture, wxFuture, domainAndIcpFuture, weightCompanyFuture);
-        }else {
-            allOf = CompletableFuture.allOf(appFuture, wxFuture, domainAndIcpFuture);
+        if (companyId==null||companyId.isEmpty()) return result;
+
+        Future<JsonArray> appFuture = executor.submit(() -> getApp(companyId));
+        Future<JsonArray> wxFuture = executor.submit(() -> getWx(companyId));
+        Future<JsonArray> domainAndIcpFuture = executor.submit(() -> getDomainAndIcp(companyId));
+        Future<JsonArray> weightCompanyFuture = null;
+        futures.add(appFuture);
+        futures.add(wxFuture);
+        futures.add(domainAndIcpFuture);
+        if (subPid == null) {
+            weightCompanyFuture = executor.submit(() -> getWeightCompany(companyId));
+            futures.add(weightCompanyFuture);
         }
 
-        allOf.join();
-
-        try {
-            JsonObject tmpData = new JsonObject();
-            tmpData.add("app", appFuture.get());
-            tmpData.add("wx", wxFuture.get());
-            tmpData.add("domainAndIcp", domainAndIcpFuture.get());
-            if(subPid == null) tmpData.add("weightCompany", weightCompanyFuture.get());
-            result.add(companyName, tmpData);
-        } catch (Exception e) {
-            e.printStackTrace();  // 处理可能的异常
+        JsonObject tmpData = new JsonObject();
+        for (Future<?> future : futures) {
+            try {
+                JsonArray tmpJsonArray = (JsonArray) future.get();
+                if (future == appFuture) {
+                    tmpData.add("app", tmpJsonArray);
+                } else if (future == wxFuture) {
+                    tmpData.add("wx", tmpJsonArray);
+                } else if (future == domainAndIcpFuture) {
+                    tmpData.add("domainAndIcp", tmpJsonArray);
+                } else if (future == weightCompanyFuture) {
+                    tmpData.add("weightCompany", tmpJsonArray);
+                }
+                result.add(companyName, tmpData);
+            } catch (CancellationException ce) {} catch (Exception e) {
+                if (debugMode) e.printStackTrace();
+            }
         }
+
+        ExecutorServiceManager.getInstance().forceShutdown();
 
         return result;
     }
 
-    private static JsonArray getApp(String companyId){
+    private JsonArray getApp(String companyId){
         return getDataByC("https://aiqicha.baidu.com/c/appinfoAjax?size=100&pid=" + companyId);
+//        return null;
     }
 
-    private static JsonArray getWx(String companyId){
+    private JsonArray getWx(String companyId){
         return getDataByC("https://aiqicha.baidu.com/c/wechatoaAjax?size=100&pid=" + companyId);
+//        return null;
     }
 
-    private static JsonArray getDomainAndIcp(String companyId){
+    private JsonArray getDomainAndIcp(String companyId){
         return getDataByC("https://aiqicha.baidu.com/cs/icpInfoAjax?size=1000&pid=" + companyId);
     }
 
-    private static JsonArray getWeightCompany(String companyId){
+    private JsonArray getWeightCompany(String companyId){
         return getWeightCompany(companyId, 0);
     }
 
-    private static JsonArray getWeightCompany(String companyId, int currentIndex){
+    private JsonArray getWeightCompany(String companyId, int currentIndex){
         JsonArray finalJsonArray = new JsonArray();
         if(weightThresholdList.size() == 0) return finalJsonArray;
 
@@ -136,7 +168,7 @@ public class AiqichaSearch {
         return finalJsonArray;
     }
 
-    public static JsonArray filterByRegRate(JsonArray inputArray, int weightThreshold) {
+    public JsonArray filterByRegRate(JsonArray inputArray, int weightThreshold) {
         if(inputArray==null) return new JsonArray();
         return StreamSupport.stream(inputArray.spliterator(), false)
                 .map(JsonElement::getAsJsonObject)  // 将每个 JsonElement 转换为 JsonObject
@@ -156,7 +188,7 @@ public class AiqichaSearch {
     }
 
 
-    private static JsonArray getDataByC(String url){
+    private JsonArray getDataByC(String url){
         JsonArray jsonArray = new JsonArray();
 
         try {
@@ -196,8 +228,7 @@ public class AiqichaSearch {
         return jsonArray;
     }
 
-    // TODO 如果code=300  弹出页面验证码验证一下
-    private static String getCompanyId(String companyName){
+    private String getCompanyId(String companyName){
         String pidValue = null;
 
         try {
@@ -205,13 +236,20 @@ public class AiqichaSearch {
                     .setUrl("https://aiqicha.baidu.com/s?q=" + strUtils.urlEncode(companyName))
                     .setMethod("GET")
                     .setHeaders(headers)
-//                    .setProxies("http://127.0.0.1:8080")
+                    .setRetryWaitTime(5)
                     .setRetries(3);
 
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
+                if(statusCode == 302) {
+                    if(paneInfoSearch!=null) paneInfoSearch.showTip("请尽快验证个人账号，10秒后重试……", false);
+                    Thread.sleep(2000);
+                    services.showDocument("https://aiqicha.baidu.com/s?q=%E6%B8%85%E5%8D%8E%E5%A4%A7%E5%AD%A6");
+                    Thread.sleep(10000);
+                    return getCompanyId(companyName);
+                }
                 return null;
             }
 
@@ -225,17 +263,23 @@ public class AiqichaSearch {
             }
         } catch (Exception e) {
             if(debugMode) e.printStackTrace();
-            System.out.println(e);
         }
 
         return pidValue;
     }
 
     public static void main(String[] args) {
-        System.out.println(getCompanyInfoIteration("北京搜狗信息服务有限公司"));
+        List<Integer> weightThresholdList = new ArrayList<>();
+        weightThresholdList.add(100);
+        weightThresholdList.add(100);
+        System.out.println(new AiqichaSearch(weightThresholdList, null).getCompanyInfoIteration("北京搜狗信息服务有限公司"));
 
-//        try (BufferedReader br = new BufferedReader(new FileReader("/Users/a/Library/Containers/com.tencent.WeWorkMac/Data/Documents/Profiles/72E3F51AB224938EF8C93E98DF173761/Caches/Files/2024-10/d45c19ed4b78299a023b215065d7995b/123.txt"));
-//             CSVWriter writer = new CSVWriter(new FileWriter("/Users/a/Library/Containers/com.tencent.WeWorkMac/Data/Documents/Profiles/72E3F51AB224938EF8C93E98DF173761/Caches/Files/2024-10/d45c19ed4b78299a023b215065d7995b/1234.csv"));
+//        weightThresholdList.add(100);
+//        weightThresholdList.add(100);
+//        System.out.println(new AiqichaSearch(weightThresholdList).getCompanyInfoIteration("北京搜狗信息服务有限公司"));
+
+//        try (BufferedReader br = new BufferedReader(new FileReader("/Users/a/Desktop/项目开发/111/123.txt"));
+//             CSVWriter writer = new CSVWriter(new FileWriter("/Users/a/Desktop/项目开发/111/123.csv"));
 //        ) {
 //            String[] header = {"公司名", "域名", "备案号", "网站名称"};
 //            writer.writeNext(header);
@@ -245,28 +289,33 @@ public class AiqichaSearch {
 //                if(companyName.isEmpty()) continue;
 //                System.out.println(companyName);
 //
-//                JsonArray infoArray = getCompanyInfoIteration(companyName);
+//                JsonArray infoArray = new AiqichaSearch(weightThresholdList).getCompanyInfoIteration(companyName);
 //                System.out.println(infoArray);
 //
 //                for(JsonElement jsonElement : infoArray){
 //                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-//                    String subCompanyName = jsonObject.entrySet().iterator().next().getKey();
-//                    JsonArray domainAndIcp = jsonObject.getAsJsonObject(subCompanyName).getAsJsonArray("domainAndIcp");
-//                    for(JsonElement subJsonElement :domainAndIcp){
-//                        JsonArray domainList = subJsonElement.getAsJsonObject().get("domain").getAsJsonArray();
-//                        String domain = StreamSupport.stream(domainList.spliterator(), false)
-//                                .map(JsonElement::getAsString)
-//                                .collect(Collectors.joining("\n"));
-//                        String icpNo = subJsonElement.getAsJsonObject().get("icpNo").getAsString();
-//                        String siteName = subJsonElement.getAsJsonObject().get("siteName").getAsString();
-//                        writer.writeNext(new String[]{
-//                                subCompanyName, domain, icpNo, siteName
-//                        });
+//                    if(jsonObject.size()>0) {
+//                        String subCompanyName = jsonObject.entrySet().iterator().next().getKey();
+//                        JsonArray domainAndIcp = jsonObject.getAsJsonObject(subCompanyName).getAsJsonArray("domainAndIcp");
+//                        for (JsonElement subJsonElement : domainAndIcp) {
+//                            JsonArray domainList = subJsonElement.getAsJsonObject().get("domain").getAsJsonArray();
+//                            String domain = StreamSupport.stream(domainList.spliterator(), false)
+//                                    .map(JsonElement::getAsString)
+//                                    .collect(Collectors.joining("\n"));
+//                            String icpNo = subJsonElement.getAsJsonObject().get("icpNo").getAsString();
+//                            String siteName = subJsonElement.getAsJsonObject().get("siteName").getAsString();
+//                            System.out.println(111);
+//                            writer.writeNext(new String[]{
+//                                    subCompanyName, domain, icpNo, siteName
+//                            });
+//                        }
 //                    }
 //                }
+////                Thread.sleep(2000);
 //            }
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
     }
+
 }

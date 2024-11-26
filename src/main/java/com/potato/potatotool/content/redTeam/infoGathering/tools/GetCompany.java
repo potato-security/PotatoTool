@@ -2,6 +2,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
@@ -21,6 +22,12 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2023/9/28 11:16
  */
 public class GetCompany {
+
+    private  static String Chinaz_Cookie = "";
+    static {
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig("Asset");
+        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive("Chinaz_Cookie").getAsString();
+    }
 
     public static JsonArray getCompany_chinaz(String company) {
         JsonArray companyList = new JsonArray();
@@ -76,9 +83,9 @@ public class GetCompany {
 
         try {
             Map<String, String> headers = new HashMap<>();
-            headers.put("Cookie", "***REMOVED***");
+            headers.put("Cookie", Chinaz_Cookie);
             RequestObj obj = new RequestObj().setUrl("https://data.chinaz.com/company/" + companyId)
-                    .setMethod("GET").setRetries(3).setHeaders(headers); // TODO 设置Cookie才能读取到备案网站
+                    .setMethod("GET").setRetries(3).setHeaders(headers);
 
             CustomHttpResponse con = requests(obj);
 
@@ -173,6 +180,10 @@ public class GetCompany {
     }
 
     public static void main(String[] args) throws Exception {
+//        JsonArray companyList = getCompany_chinaz("清华大学");
+        JsonObject companyDetailsMap = getCompanyDetails_chinaz("5d54cf13f1ae7a274b7cf610");//清华大学
+        System.out.println(companyDetailsMap);
+//        System.out.println(companyList);
 //        List<Map<String, String>> companyList = getCompany_chinaz("清华大学");
 //        List<Map<String, String>> companyList = getCompany_chinaz("神华集团有限责任公司北京服务分公司");
 

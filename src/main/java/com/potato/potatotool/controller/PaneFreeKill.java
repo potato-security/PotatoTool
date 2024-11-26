@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.UUID;
 
+import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.QRCodeGenerator.generateQRCodeImageWithLogo;
 import static com.potato.potatotool.content.redTeam.Signature.signature;
 import static com.potato.potatotool.content.redTeam.webShell.getWebShell;
@@ -120,6 +121,15 @@ public class PaneFreeKill {
                 vBoxBarFunc, arcProperty
         );
         vBoxBarFunc.setClip(clipFunc);
+
+        godComboBox.getSelectionModel().select(0);
+        godModeComboBox.getSelectionModel().select(0);
+        behComboBox.getSelectionModel().select(0);
+        behModeComboBox.getSelectionModel().select(0);
+        antComboBox.getSelectionModel().select(0);
+        antModeComboBox.getSelectionModel().select(0);
+        cmdComboBox.getSelectionModel().select(0);
+        cmdModeComboBox.getSelectionModel().select(0);
     }
 
     @FXML
@@ -477,12 +487,12 @@ public class PaneFreeKill {
         try {
             path = chooser.showOpenDialog(stage).getAbsolutePath();
         }catch (Exception exception){
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
             return;
         }
 
         if (path == null) {
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
         }else {
             exePath.setText(path);
         }
@@ -499,12 +509,12 @@ public class PaneFreeKill {
         try {
             path = chooser.showOpenDialog(stage).getAbsolutePath();
         }catch (Exception exception){
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
             return;
         }
 
         if (path == null) {
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
         }else {
             sigFilePath.setText(path);
         }
@@ -557,12 +567,12 @@ public class PaneFreeKill {
         try {
             path = chooser.showOpenDialog(stage).getAbsolutePath();
         }catch (Exception exception){
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
             return;
         }
 
         if (path == null) {
-            System.out.println("没有文件被选择");
+            if(debugMode) System.out.println("没有文件被选择");
         }else {
             logoPath.setText(path);
         }

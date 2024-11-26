@@ -21,6 +21,7 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class FofaSearch {
     private static String FOFA_KEY;
+    private static boolean isEffectiveKey = true;
     public FofaSearch(String FOFA_KEY){
         this.FOFA_KEY = FOFA_KEY;
     }
@@ -59,11 +60,8 @@ public class FofaSearch {
 
     public JsonArray search_Fofa(String qInfo) {
         JsonArray domainInfo = new JsonArray();
-        if( qInfo==null || qInfo.isEmpty() ) return domainInfo;
-        if( FOFA_KEY==null || FOFA_KEY.isEmpty() ){
-            System.out.println("未设置FOFA_KEY，无法调用FOFA接口");
-            return domainInfo;
-        }
+        if( qInfo==null || qInfo.isEmpty() || !isEffectiveKey) return domainInfo;
+        if( FOFA_KEY==null || FOFA_KEY.isEmpty() ) return domainInfo;
 
         List<String> itemKeys = Arrays.asList("ip", "domain", "host", "icp", "port", "protocol", "title", "certs_subject_org");
         String item = String.join(",", itemKeys);
@@ -79,22 +77,37 @@ public class FofaSearch {
             if (statusCode!= 200) {
                 return domainInfo;
             }
-            JsonArray tmpJsonArray = con.getJson().getAsJsonObject().get("results").getAsJsonArray();
-            for (JsonElement element : tmpJsonArray) {
-                JsonArray innerArray = element.getAsJsonArray();
-                JsonObject jsonObject = new JsonObject();
+            JsonObject res = con.getJson().getAsJsonObject();
+            if(res.has("results")) {
+                JsonArray tmpJsonArray = res.get("results").getAsJsonArray();
+                for (JsonElement element : tmpJsonArray) {
+                    JsonArray innerArray = element.getAsJsonArray();
+                    JsonObject jsonObject = new JsonObject();
 
-                for (int i = 0; i < itemKeys.size(); i++) {
-                    String value = innerArray.size() > i ? innerArray.get(i).getAsString() : "";
-                    jsonObject.addProperty(itemKeys.get(i), value);
+                    for (int i = 0; i < itemKeys.size(); i++) {
+                        String value = innerArray.size() > i ? innerArray.get(i).getAsString() : "";
+                        jsonObject.addProperty(itemKeys.get(i), value);
+                    }
+
+                    domainInfo.add(jsonObject);
                 }
-
-                domainInfo.add(jsonObject);
             }
         } catch (Exception e) {
-            if (debugMode) System.out.println(e);
+            if (debugMode) e.printStackTrace();
         }
         return domainInfo;
+    }
+
+    public static String getError_Fofa() {
+        isEffectiveKey = true;
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive("Fofa_Key").getAsString());
+        String qInfo = "ip=\"8.8.8.8\"";
+        if (fofaSearch.search_Fofa(qInfo).isEmpty()){
+            isEffectiveKey = false;
+            return "无效的Fofa_Key";
+        }
+        return null;
     }
 
     public JsonArray getInfoByIcon_Fofa(String hash_mmh3) {
@@ -124,9 +137,9 @@ public class FofaSearch {
         return search_Fofa(qInfo);
     }
 
-    public JsonArray getInfoByBodyFilterIcp_Fofa(String companyNameStr, String domainStr) {
+    public JsonArray getInfoByBodyFilterIcp_Fofa(String companyNameStr) {
         if(companyNameStr==null || companyNameStr.isEmpty()) return new JsonArray();
-        String qInfo = "body=\"" + companyNameStr + "\" && cert!=\"" + companyNameStr + "\" && domain!=\"" + domainStr + "\"";
+        String qInfo = "body=\"" + companyNameStr + "\" && cert==\"\"";
         return search_Fofa(qInfo);
     }
 
@@ -145,11 +158,11 @@ public class FofaSearch {
 //        System.out.println(domainInfo1);
 //        System.out.println(domainInfo1.size());
 //
+//        JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa("potato.gold");
+//        System.out.println(briefExtendedInfo);
 //
-        JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa("potato.gold");
-        System.out.println(briefExtendedInfo);
-
-        JsonObject briefExtendedInfox = fofaSearch.getBriefExtendedInfo_Fofa("82.157.56.206");
-        System.out.println(briefExtendedInfox);
+//        JsonObject briefExtendedInfox = fofaSearch.getBriefExtendedInfo_Fofa("82.157.56.206");
+//        System.out.println(briefExtendedInfox);
+        System.out.println(fofaSearch.getError_Fofa());
     }
 }

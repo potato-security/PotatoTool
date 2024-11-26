@@ -1,27 +1,43 @@
 package com.potato.potatotool.content.redTeam.infoGathering.utils;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.potato.potatotool.content.redTeam.infoGathering.cdn.CdnChecker;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * @author Potato
  * @date 2024/11/1 10:31
  */
 public class DomainInfoMerger {
-    private static final Gson gson = new Gson();
 
-    // 封装has\!=null\.isJsonNull
-    // 抛出异常
-    // 过滤筛选
-    // 更新AssetObj
+    public static List<DomainInfo> mergeDomainInfos(JsonObject jsonObject) {
+        List<DomainInfo> mergedList = new ArrayList<>();
+        if(jsonObjectHasKey(jsonObject, "ports")){
+            for (JsonElement jsonElement : jsonObject.getAsJsonArray("ports")) {
+                DomainInfo domainInfo = new DomainInfo();
+                String ip = jsonObject.get("ip").getAsString();
+                String domain = jsonObject.get("domain").getAsString();
+                domainInfo.setIp(ip);
+                domainInfo.setDomain(domain);
+                domainInfo.setCND(CdnChecker.isCdnIp(ip) && CdnChecker.isCdnDomain(domain));
+                JsonObject portsInfo = jsonElement.getAsJsonObject();
+                domainInfo.setPort(portsInfo.get("port").getAsString());
+                domainInfo.setProtocol(portsInfo.get("protocol").getAsString());
+                mergedList.add(domainInfo);
+            }
+        }
+        return mergedList;
+    }
 
-    public List<DomainInfo> mergeDomainInfos(JsonArray... jsonArrays) {
+    public static List<DomainInfo> mergeDomainInfos(JsonArray... jsonArrays) {
         List<DomainInfo> mergedList = new ArrayList<>();
 
         for (JsonArray jsonArray : jsonArrays) {
@@ -30,80 +46,93 @@ public class DomainInfoMerger {
 
                 DomainInfo domainInfo = new DomainInfo();
 
-                if (jsonObject.has("ip") && jsonObject.get("ip") != null && !jsonObject.get("ip").isJsonNull() && !jsonObject.get("ip").getAsString().contains("*")) {
+                if (jsonObjectHasKey(jsonObject, "ip") && !jsonObject.get("ip").getAsString().contains("*")) {
                     domainInfo.setIp(jsonObject.get("ip").getAsString());
-                    if(jsonObject.has("ip_str") && jsonObject.get("ip_str") != null && !jsonObject.get("ip_str").isJsonNull()){
+                    if(jsonObjectHasKey(jsonObject, "ip_str")){
                         domainInfo.setIp(jsonObject.get("ip_str").getAsString());
                     }
                 }
-                if (jsonObject.has("port") && jsonObject.get("ip") != null && !jsonObject.get("port").isJsonNull()) {
-                    domainInfo.setPort(String.valueOf(jsonObject.get("port")));
+                if (jsonObjectHasKey(jsonObject, "port")) {
+                    domainInfo.setPort(stringValueOf(jsonObject.get("port")));
                 }
-                if (jsonObject.has("portinfo") && jsonObject.get("portinfo") != null && !jsonObject.get("portinfo").isJsonNull()){
+                if (jsonObjectHasKey(jsonObject, "portinfo")){
                     JsonObject portinfoJsonObject = jsonObject.getAsJsonObject("portinfo");
 
-                    domainInfo.setPort(String.valueOf(portinfoJsonObject.get("port")));
+                    domainInfo.setPort(stringValueOf(portinfoJsonObject.get("port")));
 
-                    if (portinfoJsonObject.has("title") && portinfoJsonObject.get("title") != null && !portinfoJsonObject.get("title").isJsonNull()) {
-                        domainInfo.setTitle(portinfoJsonObject.get("title").getAsString());
+                    if (jsonObjectHasKey(portinfoJsonObject, "title")) {
+                        JsonElement title = portinfoJsonObject.get("title");
+                        if(title.isJsonArray()){
+                            JsonArray titleList = title.getAsJsonArray();
+                            domainInfo.setTitle(titleList.get(titleList.size() - 1).getAsString());
+                        }else {
+                            domainInfo.setTitle(title.getAsString());
+                        }
                     }
 
-                    if (portinfoJsonObject.has("os") && portinfoJsonObject.get("os") != null && !portinfoJsonObject.get("os").isJsonNull()) {
+                    if (jsonObjectHasKey(portinfoJsonObject, "os")) {
                         domainInfo.setOs(portinfoJsonObject.get("os").getAsString());
                     }
                 }
-                if (jsonObject.has("protocol") && jsonObject.get("protocol") != null && !jsonObject.get("protocol").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "protocol")) {
                     if(jsonObject.get("protocol").isJsonObject()){
                         domainInfo.setProtocol(jsonObject.getAsJsonObject("protocol").get("application").getAsString());
                     }else {
                         domainInfo.setProtocol(jsonObject.get("protocol").getAsString());
                     }
                 }
-                if (jsonObject.has("service") && jsonObject.get("service") != null && !jsonObject.get("service").isJsonNull()){
+                if (jsonObjectHasKey(jsonObject, "service")){
                     JsonObject serviceJsonObject = jsonObject.getAsJsonObject("service");
 
-                    if(serviceJsonObject.has("name") && serviceJsonObject.get("name") != null && !serviceJsonObject.get("name").isJsonNull()){
+                    if(jsonObjectHasKey(serviceJsonObject, "name")){
                         domainInfo.setProtocol(serviceJsonObject.get("name").getAsString());
                     }
 
-                    if(serviceJsonObject.has("html") && serviceJsonObject.get("html") != null && !serviceJsonObject.get("html").isJsonNull()){
+                    if(jsonObjectHasKey(serviceJsonObject, "http")){
                         JsonObject httpJsonObject = serviceJsonObject.getAsJsonObject("http");
 
-                        if(httpJsonObject.has("host") && httpJsonObject.get("host") != null && !httpJsonObject.get("host").isJsonNull()){
+                        if(jsonObjectHasKey(httpJsonObject, "host")){
                             domainInfo.setHost(httpJsonObject.get("host").getAsString());
                         }
 
-                        if(httpJsonObject.has("status_code") && httpJsonObject.get("status_code") != null && !httpJsonObject.get("status_code").isJsonNull()){
-                            domainInfo.setStatusCode(String.valueOf(httpJsonObject.get("status_code")));
+                        if(jsonObjectHasKey(httpJsonObject, "status_code")){
+                            domainInfo.setStatusCode(stringValueOf(httpJsonObject.get("status_code")));
                         }
 
-                        if (httpJsonObject.has("title") && httpJsonObject.get("title") != null && !httpJsonObject.get("title").isJsonNull()) {
+                        if (jsonObjectHasKey(httpJsonObject, "title")) {
                             domainInfo.setTitle(httpJsonObject.get("title").getAsString());
                         }
 
-                        if (httpJsonObject.has("icp") && httpJsonObject.get("icp") != null && !httpJsonObject.get("icp").isJsonNull()) {
-                            domainInfo.setIcp(httpJsonObject.get("icp").getAsString());
+                        if (jsonObjectHasKey(httpJsonObject, "icp")) {
+                            JsonElement icpJsonElement = httpJsonObject.get("icp");
+                            if(icpJsonElement.isJsonPrimitive()){
+                                domainInfo.setIcp(httpJsonObject.get("icp").getAsString());
+                            }else{
+                                if(jsonObjectHasKey(icpJsonElement.getAsJsonObject(), "main_licence")){
+                                    domainInfo.setIcp(icpJsonElement.getAsJsonObject().getAsJsonObject("main_licence").get("licence").getAsString());
+                                }
+                            }
                         }
                     }
 
-                    if (serviceJsonObject.has("response") && serviceJsonObject.get("response") != null && !serviceJsonObject.get("response").isJsonNull()) {
+                    if (jsonObjectHasKey(serviceJsonObject, "response")) {
                         domainInfo.setResponse(serviceJsonObject.get("response").getAsString());
                     }
                 }
-                if (jsonObject.has("http") && jsonObject.get("http") != null && !jsonObject.get("http").isJsonNull()){
+                if (jsonObjectHasKey(jsonObject, "http")){
                     JsonObject httpJsonObject = jsonObject.getAsJsonObject("http");
-                    if(httpJsonObject.has("html") && httpJsonObject.get("html") != null && !httpJsonObject.get("html").isJsonNull()){
+                    if(jsonObjectHasKey(httpJsonObject, "html")){
                         domainInfo.setProtocol("http");
                         domainInfo.setResponse(httpJsonObject.get("html").getAsString());
                     }
-                    if(httpJsonObject.has("host") && httpJsonObject.get("host") != null && !httpJsonObject.get("host").isJsonNull()){
+                    if(jsonObjectHasKey(httpJsonObject, "host")){
                         domainInfo.setHost(httpJsonObject.get("host").getAsString());
                     }
-                    if (httpJsonObject.has("title") && httpJsonObject.get("title") != null && !httpJsonObject.get("title").isJsonNull()) {
+                    if (jsonObjectHasKey(httpJsonObject, "title")) {
                         domainInfo.setTitle(httpJsonObject.get("title").getAsString());
                     }
                 }
-                if (jsonObject.has("domain") && jsonObject.get("domain") != null && !jsonObject.get("domain").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "domain")) {
                     if(jsonObject.get("domain").isJsonArray()){
                         StringBuilder result = new StringBuilder();
                         for (JsonElement element : jsonArray) {
@@ -114,32 +143,35 @@ public class DomainInfoMerger {
                         domainInfo.setDomain(jsonObject.get("domain").getAsString());
                     }
                 }
-                if (jsonObject.has("host") && jsonObject.get("host") != null && !jsonObject.get("host").isJsonNull()) {
+
+                domainInfo.setCND(CdnChecker.isCdnIp(domainInfo.getIp()) && CdnChecker.isCdnDomain(domainInfo.getDomain()));
+
+                if (jsonObjectHasKey(jsonObject, "host")) {
                     domainInfo.setHost(jsonObject.get("host").getAsString());
                 }
-                if (jsonObject.has("url") && jsonObject.get("url") != null && !jsonObject.get("url").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "url")) {
                     domainInfo.setUrl(jsonObject.get("url").getAsString());
                 }
-                if (jsonObject.has("status_code")) {
-                    domainInfo.setStatusCode(String.valueOf(jsonObject.get("status_code")));
+                if (jsonObjectHasKey(jsonObject, "status_code")) {
+                    domainInfo.setStatusCode(stringValueOf(jsonObject.get("status_code")));
                 }
-                if (jsonObject.has("title") && jsonObject.get("title") != null && !jsonObject.get("title").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "title")) {
                     domainInfo.setTitle(jsonObject.get("title").getAsString());
                 }
-                if (jsonObject.has("web_title") && jsonObject.get("web_title") != null && !jsonObject.get("web_title").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "web_title")) {
                     domainInfo.setTitle(jsonObject.get("web_title").getAsString());
                 }
-                if (jsonObject.has("icp") && jsonObject.get("icp") != null && !jsonObject.get("icp").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "icp")) {
                     domainInfo.setIcp(jsonObject.get("icp").getAsString());
                 }
-                if (jsonObject.has("number") && jsonObject.get("number") != null && !jsonObject.get("number").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "number")) {
                     domainInfo.setIcp(jsonObject.get("number").getAsString());
                 }
-                if (jsonObject.has("certs_subject_org") && jsonObject.get("certs_subject_org") != null && !jsonObject.get("certs_subject_org").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "certs_subject_org")) {
                     domainInfo.setCertsSubjectOrg(jsonObject.get("certs_subject_org").getAsString());
                 }
 
-                if (jsonObject.has("component") && jsonObject.get("component") != null && !jsonObject.get("component").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "component")) {
                     List<String> components = new ArrayList<>();
                     jsonObject.getAsJsonArray("component").forEach(comp -> {
                         JsonObject componentObj = comp.getAsJsonObject();
@@ -148,7 +180,7 @@ public class DomainInfoMerger {
                     domainInfo.setComponents(components);
                 }
 
-                if (jsonObject.has("components") && jsonObject.get("components") != null && !jsonObject.get("components").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "components")) {
                     List<String> components = new ArrayList<>();
                     jsonObject.getAsJsonArray("components").forEach(comp -> {
                         JsonObject componentObj = comp.getAsJsonObject();
@@ -162,68 +194,68 @@ public class DomainInfoMerger {
                     domainInfo.setComponents(components);
                 }
 
-                if (jsonObject.has("os")) {
+                if (jsonObjectHasKey(jsonObject, "os")) {
                     domainInfo.setOs(jsonObject.get("os").getAsString());
                 }
-                if (jsonObject.has("company") && jsonObject.get("company") != null && !jsonObject.get("company").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "company")) {
                     domainInfo.setCompany(jsonObject.get("company").getAsString());
                 }
-                if (jsonObject.has("country") && jsonObject.get("country") != null && !jsonObject.get("country").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "country")) {
                     domainInfo.setCountry(jsonObject.get("country").getAsString());
                 }
-                if (jsonObject.has("city") && jsonObject.get("city") != null && !jsonObject.get("city").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "city")) {
                     domainInfo.setCity(jsonObject.get("city").getAsString());
                 }
-                if (jsonObject.has("location") && jsonObject.get("location") != null && !jsonObject.get("location").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "location")) {
                     JsonObject locationJsonObject = jsonObject.getAsJsonObject("location");
 
-                    if (locationJsonObject.has("country_cn") && locationJsonObject.get("country_cn") != null && !locationJsonObject.get("country_cn").isJsonNull()) {
+                    if (jsonObjectHasKey(locationJsonObject, "country_cn")) {
                         domainInfo.setCountry(locationJsonObject.get("country_cn").getAsString());
-                    }else if(locationJsonObject.has("country_en") && locationJsonObject.get("country_en") != null && !locationJsonObject.get("country_en").isJsonNull()){
+                    }else if(jsonObjectHasKey(locationJsonObject, "country_en")){
                         domainInfo.setCountry(locationJsonObject.get("country_en").getAsString());
                     }
 
-                    if (locationJsonObject.has("city_cn") && locationJsonObject.get("city_cn") != null && !locationJsonObject.get("city_cn").isJsonNull()) {
+                    if (jsonObjectHasKey(locationJsonObject, "city_cn")) {
                         domainInfo.setCity(locationJsonObject.get("city_cn").getAsString());
-                    }else if(locationJsonObject.has("city_en") && locationJsonObject.get("city_en") != null && !locationJsonObject.get("city_en").isJsonNull()){
+                    }else if(jsonObjectHasKey(locationJsonObject, "city_en")){
                         domainInfo.setCity(locationJsonObject.get("city_en").getAsString());
                     }
 
-                    if (locationJsonObject.has("country_name") && locationJsonObject.get("country_name") != null && !locationJsonObject.get("country_name").isJsonNull()) {
+                    if (jsonObjectHasKey(locationJsonObject, "country_name")) {
                         domainInfo.setCountry(locationJsonObject.get("country_name").getAsString());
                     }
-                    if (locationJsonObject.has("city") && locationJsonObject.get("city") != null && !locationJsonObject.get("city").isJsonNull()) {
+                    if (jsonObjectHasKey(locationJsonObject, "city")) {
                         domainInfo.setCity(locationJsonObject.get("city").getAsString());
                     }
                 }
-                if (jsonObject.has("geoinfo") && jsonObject.get("geoinfo") != null && !jsonObject.get("geoinfo").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "geoinfo")) {
                     JsonObject geoinfoJsonObject = jsonObject.getAsJsonObject("geoinfo");
 
-                    if (geoinfoJsonObject.has("country") && geoinfoJsonObject.get("country") != null && !geoinfoJsonObject.get("country").isJsonNull()) {
-                        if(geoinfoJsonObject.getAsJsonObject("country").getAsJsonObject("name").get("zh-CN")!=null && !geoinfoJsonObject.getAsJsonObject("country").getAsJsonObject("name").get("zh-CN").isJsonNull()) {
-                            domainInfo.setCountry(geoinfoJsonObject.getAsJsonObject("country").getAsJsonObject("name").get("zh-CN").getAsString());
+                    if (jsonObjectHasKey(geoinfoJsonObject, "country")) {
+                        JsonObject nameJsonObject = geoinfoJsonObject.getAsJsonObject("country").getAsJsonObject("names");
+                        if(jsonObjectHasKey(nameJsonObject, "zh-CN")) {
+                            domainInfo.setCountry(nameJsonObject.get("zh-CN").getAsString());
                         }else {
-                            domainInfo.setCountry(geoinfoJsonObject.getAsJsonObject("country").getAsJsonObject("name").get("en").getAsString());
+                            domainInfo.setCountry(nameJsonObject.get("en").getAsString());
                         }
                     }
 
-                    if (geoinfoJsonObject.has("city") && geoinfoJsonObject.get("city") != null && !geoinfoJsonObject.get("city").isJsonNull()) {
-                        if(geoinfoJsonObject.getAsJsonObject("city").getAsJsonObject("name").get("zh-CN")!=null && !geoinfoJsonObject.getAsJsonObject("city").getAsJsonObject("name").get("zh-CN").isJsonNull()) {
-                            domainInfo.setCity(geoinfoJsonObject.getAsJsonObject("city").getAsJsonObject("name").get("zh-CN").getAsString());
+                    if (jsonObjectHasKey(geoinfoJsonObject, "city")) {
+                        JsonObject nameJsonObject = geoinfoJsonObject.getAsJsonObject("city").getAsJsonObject("names");
+                        if(jsonObjectHasKey(nameJsonObject, "zh-CN")) {
+                            domainInfo.setCity(nameJsonObject.get("zh-CN").getAsString());
                         }else {
-                            domainInfo.setCity(geoinfoJsonObject.getAsJsonObject("city").getAsJsonObject("name").get("en").getAsString());
+                            domainInfo.setCity(nameJsonObject.get("en").getAsString());
                         }
                     }
 
                 }
-                if (jsonObject.has("response") && jsonObject.get("response") != null && !jsonObject.get("response").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "response")) {
                     domainInfo.setResponse(jsonObject.get("response").getAsString());
                 }
-                if (jsonObject.has("banner") && jsonObject.get("banner") != null && !jsonObject.get("banner").isJsonNull()) {
+                if (jsonObjectHasKey(jsonObject, "banner")) {
                     domainInfo.setResponse(jsonObject.get("banner").getAsString());
                 }
-
-
 
                 mergedList.add(domainInfo);
             }
@@ -231,5 +263,84 @@ public class DomainInfoMerger {
         }
 
         return mergedList;
+    }
+
+    private static String stringValueOf(JsonElement jsonElement) {
+        if (jsonElement == null || jsonElement.isJsonNull()) {
+            return null;
+        }
+
+        if (jsonElement.isJsonPrimitive()) {
+            JsonPrimitive primitive = jsonElement.getAsJsonPrimitive();
+            return primitive.getAsString();
+        }
+
+        return null;
+    }
+
+    private static boolean jsonObjectHasKey(JsonObject jsonObject, String key) {
+        return jsonObject.has(key) && jsonObject.get(key) != null && !jsonObject.get(key).isJsonNull();
+    }
+
+    public static List<DomainInfo> mergeDomainInfoList(List<DomainInfo> domainInfoList) {
+        Map<String, DomainInfo> mergedMap = new HashMap<>();
+
+        for (DomainInfo domainInfo : domainInfoList) {
+            String key = domainInfo.getIp() + ":" + domainInfo.getPort();
+
+            if (mergedMap.containsKey(key)) {
+                DomainInfo existingInfo = mergedMap.get(key);
+                mergeDomainInfo(existingInfo, domainInfo);
+            } else {
+                mergedMap.put(key, domainInfo);
+            }
+        }
+
+        return new ArrayList<>(mergedMap.values());
+    }
+
+    private static void mergeDomainInfo(DomainInfo target, DomainInfo source) {
+        setIfNull(target::getProtocol, source.getProtocol(), target::setProtocol);
+        setIfNull(target::getDomain, source.getDomain(), target::setDomain);
+        setIfNull(target::getHost, source.getHost(), target::setHost);
+        setIfNull(target::getUrl, source.getUrl(), target::setUrl);
+        setIfNull(target::getStatusCode, source.getStatusCode(), target::setStatusCode);
+        setIfNull(target::getTitle, source.getTitle(), target::setTitle);
+        setIfNull(target::getIcp, source.getIcp(), target::setIcp);
+        setIfNull(target::getCertsSubjectOrg, source.getCertsSubjectOrg(), target::setCertsSubjectOrg);
+        setIfNull(target::getOs, source.getOs(), target::setOs);
+        setIfNull(target::getCompany, source.getCompany(), target::setCompany);
+        setIfNull(target::getCountry, source.getCountry(), target::setCountry);
+        setIfNull(target::getCity, source.getCity(), target::setCity);
+        setIfNull(target::getResponse, source.getResponse(), target::setResponse);
+
+        // Merge components and remove duplicates
+        if (source.getComponents() != null) {
+            if (target.getComponents() == null) {
+                target.setComponents(new ArrayList<>());
+            }
+            Set<String> mergedComponents = new LinkedHashSet<>(target.getComponents());
+            mergedComponents.addAll(source.getComponents());
+            target.setComponents(new ArrayList<>(mergedComponents));
+        }
+    }
+
+    private static <T> void setIfNull(Supplier<T> getter, T sourceValue, Consumer<T> setter) {
+        if (getter.get() == null && sourceValue != null) {
+            setter.accept(sourceValue);
+        }
+    }
+
+    // 获取List<DomainInfo> B 中 ip 在 A 中不存在的所有元素。
+    public static List<DomainInfo> getUniqueDomainInfoInB(List<DomainInfo> listA, List<DomainInfo> listB) {
+        // 获取List A中的所有IP，存入Set
+        Set<String> ipSetA = listA.stream()
+                .map(DomainInfo::getIp)
+                .collect(Collectors.toSet());
+
+        // 过滤出List B中IP不在Set A中的DomainInfo
+        return listB.stream()
+                .filter(domainInfo -> !ipSetA.contains(domainInfo.getIp()))
+                .collect(Collectors.toList());
     }
 }
