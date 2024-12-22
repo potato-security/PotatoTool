@@ -13,23 +13,30 @@ import java.util.UUID;
 import static com.potato.potatotool.ToStart.debugMode;
 
 public class requestUtils {
-    static {
-        System.setProperty("http.keepAlive", "true");
-        System.setProperty("http.maxConnections", "200");
-    }
 
     /**
      * 信任所有SSL证书(默认开启) 非全局模式，存在线程隔离，支持多线程
      * @throws Exception
      */
-    public static SSLSocketFactory createTrustAllSSLSocketFactory() throws Exception {
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, new TrustManager[]{new X509TrustManager() {
-            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
-            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
-            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-        }}, new SecureRandom());
+    public static SSLSocketFactory createTrustAllSSLSocketFactory(){
+        SSLContext sslContext = null;
+        try {
+            sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{new X509TrustManager() {
+                public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+                public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+            }}, new SecureRandom());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return sslContext.getSocketFactory();
+    }
+
+    private static final SSLSocketFactory trustAllSSLSocketFactory = createTrustAllSSLSocketFactory();
+
+    public static SSLSocketFactory getTrustAllSSLSocketFactory() {
+        return trustAllSSLSocketFactory;
     }
 
     // 禁用主机名验证   不要和TrustAllSSL默认同时使用，否则无法判断部分https何时需要转http
@@ -69,6 +76,7 @@ public class requestUtils {
         boolean sslTrustDisabled = false;
 
         while (retryCount < maxRetries) {
+
             // 创建HttpURLConnection对象 防止重复创建
             HttpURLConnection con = null;
 
@@ -107,7 +115,7 @@ public class requestUtils {
                 // 信任所有SSL证书 (未设定强SSL认证时 || 开代理时)
                 if (!requestObj.getStrictSslValidation() || (proxies != null && !proxies.isEmpty())) {
                     if (con instanceof HttpsURLConnection) {
-                        ((HttpsURLConnection) con).setSSLSocketFactory(createTrustAllSSLSocketFactory());
+                        ((HttpsURLConnection) con).setSSLSocketFactory(getTrustAllSSLSocketFactory());
                     }
                 }
 

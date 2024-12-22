@@ -107,8 +107,8 @@ public class ImgSimilarity {
 
     public static void main(String[] args) throws Exception {
 
-        Map<String, Object> webInfoMap = Utils.getWebBaseInfo("https://211.160.72.129", true);
-        Map<String, Object> webInfoMap1 = Utils.getWebBaseInfo("https://43.143.141.199:8443", true);
+        Map<String, Object> webInfoMap = Utils.getWebBaseInfo("https://211.160.72.129", true, true);
+        Map<String, Object> webInfoMap1 = Utils.getWebBaseInfo("https://43.143.141.199:8443", true, true);
         boolean similarity = new ImgSimilarity().matchSimilar(new URL(webInfoMap.get("iconUrl").toString()), new URL(webInfoMap1.get("iconUrl").toString()));
         System.out.println("是否相似: " + similarity);
 

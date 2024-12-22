@@ -1,22 +1,19 @@
 package com.potato.potatotool.utils;
 
 import java.io.*;
+import java.lang.annotation.ElementType;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 import com.google.gson.*;
 
-import java.util.Map;
-import java.util.Properties;
+import static com.potato.potatotool.ToStart.debugMode;
 
-import com.potato.potatotool.utils.jsonUtils.OrderedJSONObject;
-import org.json.JSONObject;
 
 /**
  * @author Potato
@@ -284,7 +281,6 @@ public class Constants {
      * 兼容批量修改
      */
     public static boolean saveConfig(Map<String, Object> configMap) {
-
         try {
             Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
             Files.createDirectories(configFolder);
@@ -316,6 +312,25 @@ public class Constants {
             e.printStackTrace();
         }
         return false;
+    }
+    public static void saveConfig(JsonObject configJsonObj) {
+        try {
+            Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
+            Files.createDirectories(configFolder);
+            Path configFile = configFolder.resolve(CONFIG_FILE);
+
+            // 写入更新后的配置
+            String json = gson.toJson(configJsonObj);
+            Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
+
+            System.out.println("配置已保存");
+            cachedConfig = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void saveConfig(JsonElement configJsonElement) {
+        saveConfig(configJsonElement.getAsJsonObject());
     }
     public static void saveConfig(Map<String, Object> configMap, String topKey) {
 
@@ -358,13 +373,188 @@ public class Constants {
         }
     }
 
-//    public static JsonObject getCachedConfig() {
-//        return cachedConfig;
-//    }
-//
-//    public static void setCachedConfig(JsonObject cachedConfig) {
-//        Constants.cachedConfig = cachedConfig;
-//    }
+    /**
+     * 获取JsonElement的类型
+     */
+    private static ElementType getJsonElementType(JsonElement element) {
+        if (element.isJsonObject()) return ElementType.OBJECT;
+        if (element.isJsonArray()) return ElementType.ARRAY;
+        if (element.isJsonPrimitive()) {
+            JsonPrimitive primitive = element.getAsJsonPrimitive();
+            if (primitive.isString()) return ElementType.STRING;
+            if (primitive.isNumber()) return ElementType.NUMBER;
+            if (primitive.isBoolean()) return ElementType.BOOLEAN;
+        }
+        return ElementType.NULL;
+    }
+    private enum ElementType {
+        OBJECT, ARRAY, STRING, NUMBER, BOOLEAN, NULL
+    }
+
+    /**
+     * 递归合并两个JsonElement  本地文件Json和资源文件Json
+     * 规则：
+     * 1. 保留本地配置中的现有值
+     * 2. 添加新配置中新增的字段
+     * 3. 对于对象，递归合并
+     * @return
+     */
+    public static JsonElement mergeJsonElements(JsonElement localElement, JsonElement newElement){
+        // 如果本地配置为 null 或 不存在 或 不同类型，使用资源中的新配置
+        if (localElement == null || localElement.isJsonNull() || getJsonElementType(localElement) != getJsonElementType(newElement)) {
+            return newElement;
+        }
+
+        // 根据类型分别处理
+        if (localElement.isJsonObject()) {
+            return mergeJsonObjects(localElement.getAsJsonObject(), newElement.getAsJsonObject());
+        } else if (localElement.isJsonArray()) {
+            return mergeJsonArrays(localElement.getAsJsonArray(), newElement.getAsJsonArray());
+        } else {
+            // 基本类型（字符串、数字、布尔值），保留本地值
+            return localElement;
+        }
+    }
+
+    /**
+     * 递归合并两个JsonObject
+     */
+    public static JsonObject mergeJsonObjects(JsonObject localObj, JsonObject newObj) {
+        JsonObject merged = new JsonObject();
+
+        // 首先复制所有本地配置
+        for (Map.Entry<String, JsonElement> entry : localObj.entrySet()) {
+            merged.add(entry.getKey(), entry.getValue());
+        }
+
+        // 遍历新配置中的所有字段
+        for (Map.Entry<String, JsonElement> entry : newObj.entrySet()) {
+            String key = entry.getKey();
+            JsonElement newValue = entry.getValue();
+
+            // 如果本地配置没有这个字段，直接添加
+            if (!localObj.has(key)) {
+                merged.add(key, newValue);
+                continue;
+            }
+
+            // 递归合并现有字段
+            JsonElement localValue = localObj.get(key);
+            merged.add(key, mergeJsonElements(localValue, newValue));
+        }
+
+        return merged;
+    }
+
+    /**
+     * 合并两个JsonArray
+     * 根据数组元素的类型采用不同的合并策略
+     */
+    private static JsonArray mergeJsonArrays(JsonArray localArr, JsonArray newArr) {
+        // 如果本地数组为空，使用新数组
+        if (localArr.size() == 0) {
+            return newArr;
+        }
+
+        // 如果数组内容是对象，尝试智能合并
+        if (isArrayOfObjects(localArr) && isArrayOfObjects(newArr)) {
+            return mergeArraysOfObjects(localArr, newArr);
+        }
+
+        // 如果是简单类型的数组，保留本地值，但添加新的不重复项
+        return mergeSimpleArrays(localArr, newArr);
+    }
+
+    /**
+     * 检查是否是对象数组
+     */
+    private static boolean isArrayOfObjects(JsonArray arr) {
+        return arr.size() > 0 && arr.get(0).isJsonObject();
+    }
+
+    /**
+     * 合并对象数组
+     * 如果对象有唯一标识符（如id、title等），根据标识符合并
+     */
+    private static JsonArray mergeArraysOfObjects(JsonArray localArr, JsonArray newArr) {
+        JsonArray merged = new JsonArray();
+        Map<String, JsonObject> objectMap = new HashMap<>();
+
+        // 尝试找到可能的标识符字段
+        String idField = findIdentifierField(localArr.get(0).getAsJsonObject());
+
+        // 如果没有标识符字段，返回本地数组
+        if (idField == null) {
+            return localArr;
+        }
+
+        // 将本地数组中的对象放入Map
+        for (JsonElement element : localArr) {
+            JsonObject obj = element.getAsJsonObject();
+            String id = obj.get(idField).getAsString();
+            objectMap.put(id, obj);
+        }
+
+        // 合并新数组中的对象
+        for (JsonElement element : newArr) {
+            JsonObject newObj = element.getAsJsonObject();
+            String id = newObj.get(idField).getAsString();
+
+            if (objectMap.containsKey(id)) {
+                // 如果对象已存在，递归合并
+                JsonObject localObj = objectMap.get(id);
+                objectMap.put(id, mergeJsonObjects(localObj, newObj));
+            } else {
+                // 如果是新对象，直接添加
+                objectMap.put(id, newObj);
+            }
+        }
+
+        // 构建结果数组
+        for (JsonObject obj : objectMap.values()) {
+            merged.add(obj);
+        }
+
+        return merged;
+    }
+
+    /**
+     * 查找可能的标识符字段
+     */
+    private static String findIdentifierField(JsonObject obj) {
+        String[] possibleIds = {"id", "title", "name", "key"};
+        for (String field : possibleIds) {
+            if (obj.has(field)) {
+                return field;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 合并简单类型数组（字符串、数字等）
+     * 保留本地值，添加新的不重复项
+     */
+    private static JsonArray mergeSimpleArrays(JsonArray localArr, JsonArray newArr) {
+        JsonArray merged = new JsonArray();
+        Set<String> values = new HashSet<>();
+
+        // 添加本地数组的所有元素
+        for (JsonElement element : localArr) {
+            merged.add(element);
+            values.add(element.toString());
+        }
+
+        // 添加新数组中不重复的元素
+        for (JsonElement element : newArr) {
+            if (!values.contains(element.toString())) {
+                merged.add(element);
+                values.add(element.toString());
+            }
+        }
+
+        return merged;
+    }
 
     public static JsonObject cachedConfig = null;
     public static Object getOutsideConfig(String key) {
@@ -376,10 +566,11 @@ public class Constants {
                     String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
                     cachedConfig = (new Gson()).fromJson(content, JsonObject.class);
                 }
+                if(key==null) return cachedConfig;
                 return cachedConfig.get(key);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode) e.printStackTrace();
             System.out.println("读取配置时出错!");
         }
         return null;

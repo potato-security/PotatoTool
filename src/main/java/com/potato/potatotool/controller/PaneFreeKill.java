@@ -21,6 +21,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -130,6 +134,10 @@ public class PaneFreeKill {
         antModeComboBox.getSelectionModel().select(0);
         cmdComboBox.getSelectionModel().select(0);
         cmdModeComboBox.getSelectionModel().select(0);
+        godChoose(null);
+        behChoose(null);
+        antChoose(null);
+        cmdChoose(null);
     }
 
     @FXML
@@ -265,6 +273,7 @@ public class PaneFreeKill {
             ObservableList<String> items = FXCollections.observableArrayList("CSHARP_AES_RAW");
             godModeComboBox.setItems(items);
         }
+        godModeComboBox.getSelectionModel().select(0);
     }
 
     @FXML
@@ -285,6 +294,7 @@ public class PaneFreeKill {
             ObservableList<String> items = FXCollections.observableArrayList("default");
             antModeComboBox.setItems(items);
         }
+        antModeComboBox.getSelectionModel().select(0);
     }
 
     @FXML
@@ -305,6 +315,7 @@ public class PaneFreeKill {
             ObservableList<String> items = FXCollections.observableArrayList("default");
             behModeComboBox.setItems(items);
         }
+        behModeComboBox.getSelectionModel().select(0);
     }
 
     @FXML
@@ -319,6 +330,7 @@ public class PaneFreeKill {
             ObservableList<String> items = FXCollections.observableArrayList("default");
             cmdModeComboBox.setItems(items);
         }
+        cmdModeComboBox.getSelectionModel().select(0);
     }
 
     @FXML
@@ -590,8 +602,16 @@ public class PaneFreeKill {
         int widthLogoStr = Integer.parseInt(widthLogo.getText());
 
         String uuid = UUID.randomUUID().toString();
-        String outFilePath = "./二维码_" + uuid + ".png";
-        String filePath = strUtils.filePathtoAbsolute(outFilePath);
+        String filePath = strUtils.getCurrentJarDir() + File.separator + "Qr" + File.separator + "二维码_" + uuid + ".png";
+
+        Path outputDirPath = Paths.get(filePath).getParent();
+        if (!Files.exists(outputDirPath)) {
+            try {
+                Files.createDirectories(outputDirPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
 
         Task<Void> task = new Task<Void>() {
@@ -600,7 +620,7 @@ public class PaneFreeKill {
                 try {
                     generateQRCodeImageWithLogo(contentQrStr, widthQrStr, widthQrStr, widthLogoStr, widthLogoStr, filePath, logoPathStr);
                     Platform.runLater(() -> {
-                        tipTitleQR.setText("二维码生成完成，文件已导出至：" + outFilePath);
+                        tipTitleQR.setText("二维码生成完成，文件已导出至：" + filePath);
                     });
                 } catch (Exception e) {
                     Platform.runLater(() -> {

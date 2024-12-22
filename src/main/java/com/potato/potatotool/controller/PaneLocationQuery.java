@@ -1,9 +1,7 @@
 package com.potato.potatotool.controller;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.opencsv.CSVWriter;
-import com.potato.potatotool.utils.decompileUtils;
 import com.potato.potatotool.utils.strUtils;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -15,11 +13,10 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -140,7 +137,16 @@ public class PaneLocationQuery {
         idCardInput.setText("批量查询中，请稍等……");
 
         String finalPath = path;
-        String csvFile = strUtils.getCurrentJarDir() + File.separator +"idCard.csv";
+        String csvFile = strUtils.getCurrentJarDir() + File.separator + "Location" + File.separator +"idCard.csv";
+        Path outputDirPath = Paths.get(csvFile).getParent();
+        if (!Files.exists(outputDirPath)) {
+            try {
+                Files.createDirectories(outputDirPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         String[] header = {"idCard", "born", "sex", "att"};
         Task<Void> task = new Task<Void>() {
             @Override
@@ -148,7 +154,10 @@ public class PaneLocationQuery {
 
                 long totalLines = Files.lines(Paths.get(finalPath)).count();
 
-                try (CSVWriter writer = new CSVWriter(new FileWriter(csvFile))) {
+                try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(csvFile), StandardCharsets.UTF_8);
+                     CSVWriter writer = new CSVWriter(osw)) {
+                    osw.write('\ufeff');
+
                     writer.writeNext(header);
                     try (BufferedReader br = new BufferedReader(new FileReader(finalPath))) {
                         String line;
@@ -257,7 +266,16 @@ public class PaneLocationQuery {
         bankCardInput.setText("批量查询中，请稍等……");
 
         String finalPath = path;
-        String csvFile = strUtils.getCurrentJarDir() + File.separator +"bankCard.csv";
+        String csvFile = strUtils.getCurrentJarDir() + File.separator + "Location" + File.separator +"bankCard.csv";
+        Path outputDirPath = Paths.get(csvFile).getParent();
+        if (!Files.exists(outputDirPath)) {
+            try {
+                Files.createDirectories(outputDirPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         String[] header = {"bankCard", "cardType", "bank"};
         Task<Void> task = new Task<Void>() {
             @Override
@@ -265,7 +283,10 @@ public class PaneLocationQuery {
 
                 long totalLines = Files.lines(Paths.get(finalPath)).count();
 
-                try (CSVWriter writer = new CSVWriter(new FileWriter(csvFile))) {
+                try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(csvFile), StandardCharsets.UTF_8);
+                     CSVWriter writer = new CSVWriter(osw)) {
+                    osw.write('\ufeff');
+
                     writer.writeNext(header);
                     try (BufferedReader br = new BufferedReader(new FileReader(finalPath))) {
                         String line;
@@ -357,7 +378,16 @@ public class PaneLocationQuery {
         phoneInput.setText("批量查询中，请稍等……");
 
         String finalPath = path;
-        String csvFile = strUtils.getCurrentJarDir() + File.separator +"phoneInfo.csv";
+        String csvFile = strUtils.getCurrentJarDir() + File.separator + "Location" + File.separator +"phoneInfo.csv";
+        Path outputDirPath = Paths.get(csvFile).getParent();
+        if (!Files.exists(outputDirPath)) {
+            try {
+                Files.createDirectories(outputDirPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         String[] header = {"phone", "Province", "City", "Operator" , "AreaCode", "PostalCode"};
         Task<Void> task = new Task<Void>() {
             @Override
@@ -365,7 +395,10 @@ public class PaneLocationQuery {
 
                 long totalLines = Files.lines(Paths.get(finalPath)).count();
 
-                try (CSVWriter writer = new CSVWriter(new FileWriter(csvFile))) {
+                try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(csvFile), StandardCharsets.UTF_8);
+                     CSVWriter writer = new CSVWriter(osw)) {
+                    osw.write('\ufeff');
+
                     writer.writeNext(header);
                     try (BufferedReader br = new BufferedReader(new FileReader(finalPath))) {
                         String line;

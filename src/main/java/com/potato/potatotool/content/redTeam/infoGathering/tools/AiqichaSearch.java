@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.opencsv.CSVWriter;
 import com.potato.potatotool.MainApplication;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
 import com.potato.potatotool.controller.PaneInfoSearch;
 import com.potato.potatotool.utils.*;
 import javafx.application.HostServices;
@@ -40,22 +41,27 @@ public class AiqichaSearch {
 
     HostServices services = MainApplication.letGetHostServices();
 
-    private  static String Aiqicha_Cookie = "";
+    private static String Aiqicha_Cookie = "";
+    private static Boolean Proxy = false;
     static {
-        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig("Asset");
-        Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive("Aiqicha_Cookie").getAsString();
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.AIQICHA_COOKIE).getAsString();
+        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.AIQICHA_COOKIE);
     }
 
     private PaneInfoSearch paneInfoSearch;
 
     public AiqichaSearch(List<Integer> weightThresholdList, PaneInfoSearch paneInfoSearch){
         this.weightThresholdList = weightThresholdList;
-        //TODO 界面说明 view-source:https://aiqicha.baidu.com
         this.headers.put("Cookie", Aiqicha_Cookie);
         this.headers.put("Referer", "https://aiqicha.baidu.com");
         this.headers.put("Connection", "close");
 
         this.paneInfoSearch = paneInfoSearch;
+
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.AIQICHA_COOKIE).getAsString();
+        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.AIQICHA_COOKIE);
     }
 
     public JsonArray getCompanyInfoIteration(String companyName){
@@ -197,11 +203,13 @@ public class AiqichaSearch {
                     .setMethod("GET")
                     .setHeaders(headers)
                     .setRetries(3);
+            if(!Proxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
+                con.disconnect();
                 return null;
             }
 
@@ -228,6 +236,7 @@ public class AiqichaSearch {
         return jsonArray;
     }
 
+    private boolean openedWeb = false;
     private String getCompanyId(String companyName){
         String pidValue = null;
 
@@ -238,17 +247,28 @@ public class AiqichaSearch {
                     .setHeaders(headers)
                     .setRetryWaitTime(5)
                     .setRetries(3);
+            if(!Proxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
+                con.disconnect();
                 if(statusCode == 302) {
-                    if(paneInfoSearch!=null) paneInfoSearch.showTip("请尽快验证个人账号，10秒后重试……", false);
-                    Thread.sleep(2000);
-                    services.showDocument("https://aiqicha.baidu.com/s?q=%E6%B8%85%E5%8D%8E%E5%A4%A7%E5%AD%A6");
-                    Thread.sleep(10000);
-                    return getCompanyId(companyName);
+                    String location= con.getHeaderField("Location").get(0);
+                    if(location.equals("https://aiqicha.baidu.com/acount/accessrestriction")) {
+                        paneInfoSearch.showTip("启动软件时关闭代理，使用中国IP", false);
+                        Thread.sleep(5000);
+                        return getCompanyId(companyName);
+                    }else {
+                        if (paneInfoSearch != null) paneInfoSearch.showTip("请尽快验证个人账号，10秒后重试……", false);
+                        Thread.sleep(2000);
+                        if (!openedWeb)
+                            services.showDocument("https://aiqicha.baidu.com/s?q=%E6%B8%85%E5%8D%8E%E5%A4%A7%E5%AD%A6");
+                        openedWeb = true;
+                        Thread.sleep(10000);
+                        return getCompanyId(companyName);
+                    }
                 }
                 return null;
             }

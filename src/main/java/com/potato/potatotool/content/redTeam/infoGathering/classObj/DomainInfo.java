@@ -15,7 +15,7 @@ public class DomainInfo {
     private String port;
     private String protocol;// http / https / http/ssl 等
     private String domain;
-    private boolean isCND;
+    private boolean isCND = false;
     private String host;
     private String url;
     private String statusCode;
@@ -28,10 +28,11 @@ public class DomainInfo {
     private String country;
     private String city;
     private String response;
-    private boolean doWebInfoMap;
+    private boolean doWebInfoMap = false;
     private Map<String, Object> webInfoMap;
     private JsonArray googldLeakage;
     private JsonArray gitRepoLeakage;
+    private String dataSource;
 
     public DomainInfo() {
     }
@@ -49,6 +50,7 @@ public class DomainInfo {
         jsonObject.addProperty("title", this.getTitle());
         jsonObject.addProperty("icp", this.getIcp());
         jsonObject.addProperty("certsSubjectOrg", this.getCertsSubjectOrg());
+        jsonObject.addProperty("dataSource", this.getDataSource());
 
         JsonArray componentsArray = new JsonArray();
         if (this.getComponents() != null) {
@@ -234,5 +236,15 @@ public class DomainInfo {
 
     public void setDoWebInfoMap(boolean doWebInfoMap) {
         this.doWebInfoMap = doWebInfoMap;
+    }
+
+
+    public String getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(String dataSource) {
+        if(dataSource==null) dataSource = "";
+        this.dataSource = dataSource;
     }
 }

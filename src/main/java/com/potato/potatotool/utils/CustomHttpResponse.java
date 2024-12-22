@@ -88,6 +88,13 @@ public class CustomHttpResponse{
         }
 
     }
+
+    public void disconnect() {
+        if (con!= null) {
+            con.disconnect();
+        }
+    }
+
     interface ResponseCallback {
         void onResponse(String line);
     }

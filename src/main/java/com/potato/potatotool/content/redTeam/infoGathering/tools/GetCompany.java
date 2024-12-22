@@ -2,10 +2,8 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.utils.Constants;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
+import com.potato.potatotool.utils.*;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -24,27 +22,38 @@ import static com.potato.potatotool.utils.requestUtils.requests;
 public class GetCompany {
 
     private  static String Chinaz_Cookie = "";
+    private static Boolean Proxy = false;
     static {
-        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig("Asset");
-        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive("Chinaz_Cookie").getAsString();
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.CHINAZ_COOKIE).getAsString();
+        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
     }
 
     public static JsonArray getCompany_chinaz(String company) {
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.CHINAZ_COOKIE).getAsString();
+        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
+
         JsonArray companyList = new JsonArray();
         if(company.isEmpty()) return companyList;
 
         try {
             int index = 0;
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Cookie", Chinaz_Cookie);
 
             while (true) {
                 index += 1;
 
                 RequestObj obj = new RequestObj().setUrl("https://data.chinaz.com/company/t0-p0-c0-i0-d0-s-" + strUtils.urlEncode(company) + "/" + index)
-                        .setMethod("GET").setRetries(3);
+                        .setMethod("GET").setRetries(3).setHeaders(headers);
+                if(!Proxy) obj.setProxies(null);
+
                 CustomHttpResponse con = requests(obj);
 
                 int statusCode = con.getResponseCode();
                 if (statusCode != 200) {
+                    con.disconnect();
                     return companyList;
                 }
 
@@ -72,13 +81,17 @@ public class GetCompany {
 
             }
         } catch (Exception e) {
-            if (debugMode) System.out.println(e);
+            if (debugMode) e.printStackTrace();
         }
 
         return companyList;
     }
 
-    public static JsonObject getCompanyDetails_chinaz(String companyId) {
+    public static JsonObject getCompanyDetails_chinaz(String companyId, String companyName) {
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.CHINAZ_COOKIE).getAsString();
+        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
+
         JsonObject companyDetailsMap = new JsonObject();
 
         try {
@@ -91,6 +104,7 @@ public class GetCompany {
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
+                con.disconnect();
                 return companyDetailsMap;
             }
 
@@ -102,6 +116,7 @@ public class GetCompany {
             JsonArray softwareInfoList = extractSoftwareInfo_chinaz(doc);
             JsonArray icpInfoList = extractIcpInfo_chinaz(doc);
 
+            companyDetailsMap.addProperty("企业名称", companyName);
             companyDetailsMap.add("工商信息", businessInfoMap);
             companyDetailsMap.add("微信公众号", wxInfoList);
             companyDetailsMap.add("软件著作", softwareInfoList);
@@ -181,7 +196,7 @@ public class GetCompany {
 
     public static void main(String[] args) throws Exception {
 //        JsonArray companyList = getCompany_chinaz("清华大学");
-        JsonObject companyDetailsMap = getCompanyDetails_chinaz("5d54cf13f1ae7a274b7cf610");//清华大学
+        JsonObject companyDetailsMap = getCompanyDetails_chinaz("5d54cf13f1ae7a274b7cf610", "清华大学");//清华大学
         System.out.println(companyDetailsMap);
 //        System.out.println(companyList);
 //        List<Map<String, String>> companyList = getCompany_chinaz("清华大学");

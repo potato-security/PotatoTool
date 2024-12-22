@@ -18,11 +18,12 @@ import java.util.stream.Collectors;
  */
 public class DomainInfoMerger {
 
-    public static List<DomainInfo> mergeDomainInfos(JsonObject jsonObject) {
+    public static List<DomainInfo> mergeDomainInfos(String dataSource, JsonObject jsonObject) {
         List<DomainInfo> mergedList = new ArrayList<>();
         if(jsonObjectHasKey(jsonObject, "ports")){
             for (JsonElement jsonElement : jsonObject.getAsJsonArray("ports")) {
                 DomainInfo domainInfo = new DomainInfo();
+                domainInfo.setDataSource(dataSource);
                 String ip = jsonObject.get("ip").getAsString();
                 String domain = jsonObject.get("domain").getAsString();
                 domainInfo.setIp(ip);
@@ -37,7 +38,7 @@ public class DomainInfoMerger {
         return mergedList;
     }
 
-    public static List<DomainInfo> mergeDomainInfos(JsonArray... jsonArrays) {
+    public static List<DomainInfo> mergeDomainInfos(String dataSource, JsonArray... jsonArrays) {
         List<DomainInfo> mergedList = new ArrayList<>();
 
         for (JsonArray jsonArray : jsonArrays) {
@@ -45,6 +46,7 @@ public class DomainInfoMerger {
                 JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
 
                 DomainInfo domainInfo = new DomainInfo();
+                domainInfo.setDataSource(dataSource);
 
                 if (jsonObjectHasKey(jsonObject, "ip") && !jsonObject.get("ip").getAsString().contains("*")) {
                     domainInfo.setIp(jsonObject.get("ip").getAsString());

@@ -1,20 +1,23 @@
 package com.potato.potatotool.controller;
 
-
 import com.dlsc.gemsfx.CFCheckBox;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.AssetMapper;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetObj;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DataTypeConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
+import com.potato.potatotool.content.redTeam.infoGathering.utils.AssetExcelExporter;
 import com.potato.potatotool.utils.ExecutorServiceManager;
 import com.potato.potatotool.utils.Util;
 import com.potato.potatotool.utils.strUtils;
 import javafx.animation.*;
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -48,6 +51,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -91,11 +95,19 @@ public class PaneInfoSearch {
     @FXML
     private CFCheckBox bruteForceSubdomainBox;
     @FXML
+    private CFCheckBox searchSslSubdomainBox;
+    @FXML
     private CFCheckBox searchShadowAssetsBox;
     @FXML
     private CFCheckBox hasCrawlLinksBox;
     @FXML
     private CFCheckBox hasFindSensitiveInfoBox;
+    @FXML
+    private CFCheckBox hasCipAggregatorBox;
+    @FXML
+    private CFCheckBox hasLocalFullDetectionBox;
+    @FXML
+    private CFCheckBox hasIconSearchBox;
     @FXML
     private TextField weightStr;
     @FXML
@@ -103,11 +115,31 @@ public class PaneInfoSearch {
     @FXML
     private TextField maxSubPathCount;
     @FXML
+    private TextField maxGoogleSearchCount;
+    @FXML
+    private TextField maxGithubSearchCount;
+    @FXML
+    private TextField cipThreshold;
+    @FXML
+    private TextField localFullDetectionThreshold;
+    @FXML
+    private TextField shadowAssetsThreshold;
+    @FXML
     private HBox weightHBox;
     @FXML
     private HBox maxDepthHBox;
     @FXML
     private HBox maxSubPathCountHBox;
+    @FXML
+    private HBox maxGoogleSearchCountHBox;
+    @FXML
+    private HBox maxGithubSearchCountHBox;
+    @FXML
+    private HBox cipThresholdHBox;
+    @FXML
+    private HBox localFullDetectionThresholdHBox;
+    @FXML
+    private HBox shadowAssetsThresholdHBox;
     @FXML
     private StackPane promptPane;
     @FXML
@@ -130,38 +162,99 @@ public class PaneInfoSearch {
     private Button domainSave;
     @FXML
     private Button iconSave;
+    @FXML
+    private HBox advancedSetting;
+    @FXML
+    private Label uploadLabel;
+    @FXML
+    private Label sendLabel;
+    @FXML
+    private Label stopLabel;
+    @FXML
+    private ScrollPane scroll;
 
     private final Object lock = new Object(); // 用于线程同步
 
     @FXML
     private VBox echoVbox;
 
+    private final List<CFCheckBox> checkBoxList = new ArrayList<>();
+
     public void initialize() {
         listenSearch();
         searchModeBox.getSelectionModel().select(0);
+
+        checkBoxList.add(fofaBox);
+        checkBoxList.add(hunterBox);
+        checkBoxList.add(quakeBox);
+        checkBoxList.add(zoomeyeBox);
+        checkBoxList.add(shodanBox);
     }
 
     //  监听输入时回车
     private void listenSearch() {
         question.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER) {
+            if (event.getCode() == KeyCode.ENTER && !stopLabel.isVisible()) {
                 searchInput(null);
             }
         });
     }
 
+
     @FXML
     public void chooseSearcchMode(ActionEvent event) {
-        if(searchModeBox.getSelectionModel().getSelectedIndex() == 0){
-            // 智能检索
+        echoVbox.getChildren().clear();
+        boolean isIntelligentMode = searchModeBox.getSelectionModel().getSelectedIndex() == 0;
+
+        advancedSetting.setManaged(isIntelligentMode);
+        advancedSetting.setVisible(isIntelligentMode);
+        googleBox.setManaged(isIntelligentMode);
+        googleBox.setVisible(isIntelligentMode);
+        githubBox.setManaged(isIntelligentMode);
+        githubBox.setVisible(isIntelligentMode);
+        uploadLabel.setVisible(isIntelligentMode);
+
+        for (CFCheckBox checkbox : checkBoxList) {
+            checkbox.setSelected(false);
         }
+
+        if (isIntelligentMode) {
+            for (CFCheckBox checkbox : checkBoxList) {
+                checkbox.selectedProperty().removeListener(singleSelectListener); // 移除监听器
+            }
+        } else {
+            for (CFCheckBox checkbox : checkBoxList) {
+                checkbox.selectedProperty().addListener(singleSelectListener); // 添加监听器
+            }
+        }
+
     }
+
+    private final ChangeListener<Boolean> singleSelectListener = (observable, oldValue, newValue) -> {
+        CFCheckBox currentCheckbox = (CFCheckBox) ((ReadOnlyBooleanProperty) observable).getBean();
+
+        if (newValue) { // 当前复选框被选中时
+            for (CFCheckBox checkbox : checkBoxList) {
+                if (checkbox != currentCheckbox) {
+                    checkbox.setSelected(false); // 取消其他复选框选中状态
+                }
+            }
+            // 再次确保当前复选框的选中状态为 true，防止状态被覆盖
+            currentCheckbox.setSelected(true);
+        }
+    };
+
 
     private Task<Void> currentTask;
     private Thread currentThread;
     @FXML
     public void searchInput(MouseEvent mouseEvent) {
         echoVbox.getChildren().clear();
+        uploadLabel.setVisible(false);
+        sendLabel.setVisible(false);
+        sendLabel.setManaged(false);
+        stopLabel.setVisible(true);
+        stopLabel.setManaged(true);
 
         // 初始化任务状态
         if (currentTask != null && !currentTask.isDone()) {
@@ -169,10 +262,19 @@ public class PaneInfoSearch {
         }
         ExecutorServiceManager.getInstance().forceShutdown();
 
+        boolean isSmart = searchModeBox.getSelectionModel().getSelectedIndex() == 0;
         currentTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                search(question.getText());
+                search(question.getText(), isSmart);
+
+                Platform.runLater(() -> {
+                    uploadLabel.setVisible(true);
+                    sendLabel.setVisible(true);
+                    sendLabel.setManaged(true);
+                    stopLabel.setVisible(false);
+                    stopLabel.setManaged(false);
+                });
                 return null;
             }
         };
@@ -206,6 +308,11 @@ public class PaneInfoSearch {
         }
 
         echoVbox.getChildren().clear();
+        uploadLabel.setVisible(false);
+        sendLabel.setVisible(false);
+        sendLabel.setManaged(false);
+        stopLabel.setVisible(true);
+        stopLabel.setManaged(true);
 
         // 初始化任务状态
         if (currentTask != null && !currentTask.isDone()) {
@@ -214,6 +321,7 @@ public class PaneInfoSearch {
         ExecutorServiceManager.getInstance().forceShutdown();
 
         String finalPath = path;
+        boolean isSmart = searchModeBox.getSelectionModel().getSelectedIndex() == 0;
         currentTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -224,7 +332,7 @@ public class PaneInfoSearch {
                         line = line.trim();
                         if (!line.isEmpty()) {
                             try {
-                                search(line);
+                                search(line, isSmart);
                             }catch (Exception e){
                                 if(debugMode) e.printStackTrace();
                             }
@@ -233,6 +341,13 @@ public class PaneInfoSearch {
                 } catch (IOException e) {
                     if(debugMode) e.printStackTrace();
                 }
+                Platform.runLater(() -> {
+                    uploadLabel.setVisible(true);
+                    sendLabel.setVisible(true);
+                    sendLabel.setManaged(true);
+                    stopLabel.setVisible(false);
+                    stopLabel.setManaged(false);
+                });
                 return null;
             }
         };
@@ -245,44 +360,58 @@ public class PaneInfoSearch {
 
     }
 
-    private void search(String questionStr){
+    AssetMapper assetMapper = null;
+    AssetObj assetObj = null;
+    private void search(String questionStr, boolean isSmart){
         currentLoadingBox = null;
+        currentInput = questionStr;
 
-        AssetMapper assetMapper = new AssetMapper();
+        assetMapper = new AssetMapper();
         assetMapper.setController(PaneInfoSearch.this);
-        AssetObj assetObj = new AssetObj();
+        assetObj = new AssetObj();
         if(!fofaBox.isSelected()) assetObj.setFofa_Key(null);
         if(!hunterBox.isSelected()) assetObj.setHunter_Key(new JsonArray());
         if(!quakeBox.isSelected()) assetObj.setQuake_Key(new JsonArray());
         if(!zoomeyeBox.isSelected()) assetObj.setZoomeye_Key(null);
         if(!shodanBox.isSelected()) assetObj.setShodan_Key(null);
-        if(!googleBox.isSelected()) {
-            assetObj.setGoogle_API(new JsonArray());
-            assetObj.setUseGithub(false);
-        }else {
-            assetObj.setUseGoogle(true);
-        }
-        if(!githubBox.isSelected()) {
-            assetObj.setGitHub_Token(new JsonArray());
-            assetObj.setUseGithub(false);
-        }else {
-            assetObj.setUseGithub(true);
-        }
-        if(weightBox.isSelected()){
-            String splitRegex = "[,，]";
-            List<Integer> weightList = Arrays.stream(weightStr.getText().split(splitRegex))
-                    .map(s -> Integer.parseInt(s))
-                    .collect(Collectors.toList());
-            if(weightList.size()>0) assetObj.setWeightThresholdList(weightList);
-        }
-        assetObj.setMaxDepth(Integer.parseInt(maxDepth.getText()));
-        assetObj.setMaxSubPathCount(Integer.parseInt(maxSubPathCount.getText()));
-        assetObj.setBruteForceSubdomain(bruteForceSubdomainBox.isSelected());
-        assetObj.setSearchShadowAssets(searchShadowAssetsBox.isSelected());
-        assetObj.setHasCrawlLinks(hasCrawlLinksBox.isSelected());
-        assetObj.setHasFindSensitiveInfo(hasFindSensitiveInfoBox.isSelected());
 
-        assetMapper.searchInfo(questionStr, assetObj);
+        if(isSmart) {
+            try {
+//                if (!googleBox.isSelected()) assetObj.setGoogle_API(new JsonArray());
+//                if (!githubBox.isSelected()) assetObj.setGitHub_Token(new JsonArray());
+                if (weightBox.isSelected()) {
+                    String splitRegex = "[,，]";
+                    List<Integer> weightList = Arrays.stream(weightStr.getText().split(splitRegex))
+                            .map(s -> Integer.parseInt(s))
+                            .collect(Collectors.toList());
+                    if (weightList.size() > 0) assetObj.setWeightThresholdList(weightList);
+                }
+                assetObj.setUseGoogle(googleBox.isSelected());
+                assetObj.setUseGithub(githubBox.isSelected());
+                assetObj.setMaxDepth(Integer.parseInt(maxDepth.getText()));
+                assetObj.setMaxSubPathCount(Integer.parseInt(maxSubPathCount.getText()));
+                assetObj.setMaxGoogleSearchCount(Integer.parseInt(maxGoogleSearchCount.getText()));
+                assetObj.setMaxGithubSearchCount(Integer.parseInt(maxGithubSearchCount.getText()));
+                assetObj.setBruteForceSubdomain(bruteForceSubdomainBox.isSelected());
+                assetObj.setSearchSslSubdomainBox(searchSslSubdomainBox.isSelected());
+                assetObj.setSearchShadowAssets(searchShadowAssetsBox.isSelected());
+                assetObj.setHasCrawlLinks(hasCrawlLinksBox.isSelected());
+                assetObj.setHasFindSensitiveInfo(hasFindSensitiveInfoBox.isSelected());
+                assetObj.setHasCipAggregator(hasCipAggregatorBox.isSelected());
+                assetObj.setCipThreshold(Integer.parseInt(cipThreshold.getText()));
+                assetObj.setHasLocalFullDetection(hasLocalFullDetectionBox.isSelected());
+                assetObj.setHasIconSearch(hasIconSearchBox.isSelected());
+                assetObj.setLocalFullDetectionThreshold(Integer.parseInt(localFullDetectionThreshold.getText()));
+                assetObj.setShadowAssetsThreshold(Integer.parseInt(shadowAssetsThreshold.getText()));
+            }catch (Exception e){
+                showTip(e.getMessage(), true);
+                if(debugMode) e.printStackTrace();
+            }
+
+            assetMapper.searchInfo(questionStr, assetObj);
+        }else {
+            assetMapper.searchInfo_standard(questionStr, assetObj);
+        }
     }
 
     @FXML
@@ -292,9 +421,9 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if (!hasSetKey(FOFA_KEY)) {
+                    if (!hasSetKey(AssetKeyConstants.FOFA_KEY)) {
                         Platform.runLater(() -> {
-                            fofaBox.setSelected(!fofaBox.isSelected());
+                            fofaBox.setSelected(false);
                             showTip("Fofa_Key未设置", true);
                         });
                     } else {
@@ -324,9 +453,9 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(HUNTER_KEY)){
+                    if(!hasSetKey(AssetKeyConstants.HUNTER_KEY)){
                         Platform.runLater(() -> {
-                            hunterBox.setSelected(!hunterBox.isSelected());
+                            hunterBox.setSelected(false);
                             showTip("Hunter_Key未设置", true);
                         });
                     } else {
@@ -352,9 +481,9 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(QUAKE_KEY)){
+                    if(!hasSetKey(AssetKeyConstants.QUAKE_KEY)){
                         Platform.runLater(() -> {
-                            quakeBox.setSelected(!quakeBox.isSelected());
+                            quakeBox.setSelected(false);
                             showTip("Quake_Key未设置", true);
                         });
                     } else {
@@ -380,9 +509,9 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(ZOOMEYE_KEY)){
+                    if(!hasSetKey(AssetKeyConstants.ZOOMEYE_KEY)){
                         Platform.runLater(() -> {
-                            zoomeyeBox.setSelected(!zoomeyeBox.isSelected());
+                            zoomeyeBox.setSelected(false);
                             showTip("Zoomeye_Key未设置", true);
                         });
                     } else {
@@ -408,9 +537,9 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(SHODAN_KEY)){
+                    if(!hasSetKey(AssetKeyConstants.SHODAN_KEY)){
                         Platform.runLater(() -> {
-                            shodanBox.setSelected(!shodanBox.isSelected());
+                            shodanBox.setSelected(false);
                             showTip("Shodan_Key未设置", true);
                         });
                     } else {
@@ -434,13 +563,18 @@ public class PaneInfoSearch {
     public void checkGoogle(MouseEvent event) {
         googleBox.setSelected(!googleBox.isSelected());
         if(googleBox.isSelected()){
+            maxGoogleSearchCountHBox.setVisible(true);
+            maxGoogleSearchCountHBox.setManaged(true);
+
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(GOOGLE_API)){
+                    if(!hasSetKey(AssetKeyConstants.GOOGLE_API)){
                         Platform.runLater(() -> {
-                            googleBox.setSelected(!googleBox.isSelected());
+                            googleBox.setSelected(false);
                             showTip("Google_Api未设置", true);
+                            maxGoogleSearchCountHBox.setVisible(false);
+                            maxGoogleSearchCountHBox.setManaged(false);
                         });
                     } else {
                         String error = getError_Google();
@@ -448,6 +582,8 @@ public class PaneInfoSearch {
                             Platform.runLater(() -> {
                                 googleBox.setSelected(!googleBox.isSelected());
                                 showTip(error, true);
+                                maxGoogleSearchCountHBox.setVisible(false);
+                                maxGoogleSearchCountHBox.setManaged(false);
                             });
                         }
                     }
@@ -455,6 +591,9 @@ public class PaneInfoSearch {
                 }
             };
             new Thread(task).start();
+        }else {
+            maxGoogleSearchCountHBox.setVisible(false);
+            maxGoogleSearchCountHBox.setManaged(false);
         }
     }
 
@@ -462,13 +601,18 @@ public class PaneInfoSearch {
     public void checkGithub(MouseEvent event) {
         githubBox.setSelected(!githubBox.isSelected());
         if(githubBox.isSelected()){
+            maxGithubSearchCountHBox.setVisible(true);
+            maxGithubSearchCountHBox.setManaged(true);
+
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(GITHUB_TOKEN)){
+                    if(!hasSetKey(AssetKeyConstants.GITHUB_TOKEN)){
                         Platform.runLater(() -> {
-                            githubBox.setSelected(!githubBox.isSelected());
+                            githubBox.setSelected(false);
                             showTip("Github_Token未设置", true);
+                            maxGithubSearchCountHBox.setVisible(false);
+                            maxGithubSearchCountHBox.setManaged(false);
                         });
                     } else {
                         String error = getError_Github();
@@ -476,6 +620,8 @@ public class PaneInfoSearch {
                             Platform.runLater(() -> {
                                 githubBox.setSelected(!githubBox.isSelected());
                                 showTip(error, true);
+                                maxGithubSearchCountHBox.setVisible(false);
+                                maxGithubSearchCountHBox.setManaged(false);
                             });
                         }
                     }
@@ -483,23 +629,62 @@ public class PaneInfoSearch {
                 }
             };
             new Thread(task).start();
+        }else {
+            maxGithubSearchCountHBox.setVisible(false);
+            maxGithubSearchCountHBox.setManaged(false);
         }
     }
 
     @FXML
     public void checkWeight(MouseEvent event) {
-        weightHBox.setManaged(!weightBox.isSelected());
-        weightHBox.setVisible(!weightBox.isSelected());
         weightBox.setSelected(!weightBox.isSelected());
+        weightHBox.setManaged(weightBox.isSelected());
+        weightHBox.setVisible(weightBox.isSelected());
     }
 
     @FXML
     public void checkhasCrawlLinks(MouseEvent event) {
-        maxDepthHBox.setManaged(!hasCrawlLinksBox.isSelected());
-        maxDepthHBox.setVisible(!hasCrawlLinksBox.isSelected());
-        maxSubPathCountHBox.setManaged(!hasCrawlLinksBox.isSelected());
-        maxSubPathCountHBox.setVisible(!hasCrawlLinksBox.isSelected());
         hasCrawlLinksBox.setSelected(!hasCrawlLinksBox.isSelected());
+        maxDepthHBox.setManaged(hasCrawlLinksBox.isSelected());
+        maxDepthHBox.setVisible(hasCrawlLinksBox.isSelected());
+        maxSubPathCountHBox.setManaged(hasCrawlLinksBox.isSelected());
+        maxSubPathCountHBox.setVisible(hasCrawlLinksBox.isSelected());
+    }
+
+    @FXML
+    public void checkSearchShadowAssets(MouseEvent event) {
+        searchShadowAssetsBox.setSelected(!searchShadowAssetsBox.isSelected());
+        shadowAssetsThresholdHBox.setManaged(searchShadowAssetsBox.isSelected());
+        shadowAssetsThresholdHBox.setVisible(searchShadowAssetsBox.isSelected());
+    }
+
+    @FXML
+    public void checkhasLocalFullDetection(MouseEvent event) {
+        hasLocalFullDetectionBox.setSelected(!hasLocalFullDetectionBox.isSelected());
+        localFullDetectionThresholdHBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        localFullDetectionThresholdHBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        hasCrawlLinksBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        hasCrawlLinksBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        hasFindSensitiveInfoBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        hasFindSensitiveInfoBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+    }
+
+    @FXML
+    public void checkhasIconSearch(MouseEvent event) {
+        hasIconSearchBox.setSelected(!hasIconSearchBox.isSelected());
+        localFullDetectionThresholdHBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        localFullDetectionThresholdHBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        hasCrawlLinksBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        hasCrawlLinksBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        hasFindSensitiveInfoBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        hasFindSensitiveInfoBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+    }
+
+    @FXML
+    public void checkhasCipAggregator(MouseEvent event) {
+        hasCipAggregatorBox.setSelected(!hasCipAggregatorBox.isSelected());
+        cipThresholdHBox.setManaged(hasCipAggregatorBox.isSelected());
+        cipThresholdHBox.setVisible(hasCipAggregatorBox.isSelected());
     }
 
     public void showTip(String tip, boolean showSet){
@@ -722,7 +907,7 @@ public class PaneInfoSearch {
         });
     }
 
-    private static final int COUNTDOWN_TIME = 20;
+    private static final int COUNTDOWN_TIME = 10;
     private int countdown = COUNTDOWN_TIME;
     private Timeline countdownTimeline;
     private void startCountdown(Button button, Runnable onCountdownComplete) {
@@ -955,6 +1140,7 @@ public class PaneInfoSearch {
                     ((Label) dynamicContent).setText(message);
                 }
             }
+            scroll.setVvalue(1.0);
         });
     }
 
@@ -1317,6 +1503,7 @@ public class PaneInfoSearch {
         return domainListChoose;
     }
 
+    @FXML
     public void saveDomainField(ActionEvent event) {
         hideDomainChoosePaneBox();
 
@@ -1330,4 +1517,46 @@ public class PaneInfoSearch {
         }
     }
 
+    private String currentInput = "";
+    @FXML
+    public void stopSearch(MouseEvent event) {
+        stopLabel.setDisable(true);
+
+        if (currentTask != null && !currentTask.isDone()) {
+            currentThread.stop();
+        }
+        ExecutorServiceManager.getInstance().forceShutdown();
+
+        currentTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                if(assetMapper!=null) {
+                    updateEchoVBox("主动结束查询", true, null);
+
+                    updateEchoVBox("导出报告中……", false, null);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+                    String timeStr = sdf.format(new Date(System.currentTimeMillis()));
+                    String outXlsxFile = strUtils.getCurrentJarDir() + File.separator + "AssetResult" + File.separator + currentInput + "_" + timeStr +".xlsx";
+                    String error = new AssetExcelExporter().exportToExcel(assetObj, outXlsxFile);
+                    updateEchoVBox(error==null ? "报告导出至:" + outXlsxFile : "导出失败_[Error]：" + error, true, null);
+                }
+
+                Platform.runLater(() -> {
+                    uploadLabel.setVisible(true);
+                    sendLabel.setVisible(true);
+                    sendLabel.setManaged(true);
+                    stopLabel.setVisible(false);
+                    stopLabel.setManaged(false);
+                    stopLabel.setDisable(false);
+                });
+                return null;
+            }
+        };
+        currentTask.setOnFailed(e -> {
+            Throwable exception = currentTask.getException();
+            if (exception != null) exception.printStackTrace();
+        });
+        currentThread = new Thread(currentTask);
+        currentThread.start();
+    }
 }

@@ -1,8 +1,14 @@
 {
+  "ConfigVersion": "2.x",
   "StartPassword": "",
   "Proxy": {
     "enable": false,
     "address": "http://127.0.0.1:7890"
+  },
+  "AI": {
+    "Local_Ai_Url": "uhEfqpTkk7sSRs8YFPUSr42cWi8VrmEg15IcTk6G8r4dPZgvnAkYWwOz1qOsuI57",
+    "GPT_Model": "gpt-4",
+    "GPT_API_Key": ""
   },
   "Decompile": {
     "decompileMode": "idea",
@@ -39,11 +45,13 @@
         "Google_Key": "***REMOVED***",
         "Google_Cx": "***REMOVED***"
       }
+    ],
+    "Proxy_Key": [
+      "Zoomeye_Key",
+      "GitHub_Token",
+      "Google_API",
+      "SSL"
     ]
-  },
-  "AI": {
-    "GPT_Model": "gpt-4",
-    "GPT_API_Key": ""
   },
   "UpDate": {
     "winKbInfo": {

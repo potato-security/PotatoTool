@@ -4,6 +4,7 @@ import com.dlsc.gemsfx.CFSwitch;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
 import com.potato.potatotool.utils.Constants;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
@@ -13,7 +14,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -21,10 +21,10 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static com.potato.potatotool.content.update.checkResAndGetDownUrl;
 import static com.potato.potatotool.content.update.downloadAndSaveResource;
@@ -106,11 +106,51 @@ public class PaneSetting {
     private TextField chinazCookie;
     @FXML
     private TextField aiqichaCookie;
-    
+    @FXML
+    private CFSwitch aiqichaProxy;
+    @FXML
+    private CFSwitch chinazProxy;
+    @FXML
+    private CFSwitch fofaProxy;
+    @FXML
+    private CFSwitch hunterProxy;
+    @FXML
+    private CFSwitch quakeProxy;
+    @FXML
+    private CFSwitch shodanProxy;
+    @FXML
+    private CFSwitch zoomeyeProxy;
+    @FXML
+    private CFSwitch googleProxy;
+    @FXML
+    private CFSwitch githubProxy;
+    @FXML
+    private CFSwitch crawlProxy;
+    @FXML
+    private CFSwitch sslProxy;
+
     private double offsetX,offsetY;
 
+    // 初始化Map，建立checkbox和key的对应关系
+    Map<CFSwitch, String> proxyMap = new HashMap<>();
+
     public void initialize() {
+        initProxyMap();
         initData();
+    }
+
+    private void initProxyMap() {
+        proxyMap.put(aiqichaProxy, AssetKeyConstants.AIQICHA_COOKIE);
+        proxyMap.put(chinazProxy, AssetKeyConstants.CHINAZ_COOKIE);
+        proxyMap.put(fofaProxy, AssetKeyConstants.FOFA_KEY);
+        proxyMap.put(hunterProxy, AssetKeyConstants.HUNTER_KEY);
+        proxyMap.put(quakeProxy, AssetKeyConstants.QUAKE_KEY);
+        proxyMap.put(shodanProxy, AssetKeyConstants.SHODAN_KEY);
+        proxyMap.put(zoomeyeProxy, AssetKeyConstants.ZOOMEYE_KEY);
+        proxyMap.put(googleProxy, AssetKeyConstants.GOOGLE_API);
+        proxyMap.put(githubProxy, AssetKeyConstants.GITHUB_TOKEN);
+        proxyMap.put(sslProxy, AssetKeyConstants.SSL);
+        proxyMap.put(crawlProxy, AssetKeyConstants.CRAWL);
     }
 
     private void initData() {
@@ -123,6 +163,7 @@ public class PaneSetting {
         String address = tmpJsonObj_Proxy.getAsJsonPrimitive("address").getAsString();
         proxy.setText(address);
         proxyButton.setSelected(isProxy);
+
 
         //  初始化默认反编译模式配置
         JsonObject tmpJsonObj_Decompile = (JsonObject) Constants.getOutsideConfig("Decompile");
@@ -137,25 +178,33 @@ public class PaneSetting {
         gptApiKey.setText(GPT_API_Key);
 
         // 初始化资产测绘
-        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig("Asset");
-        String Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive("Chinaz_Cookie").getAsString();
-        String Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive("Aiqicha_Cookie").getAsString();
-        String Fofa_Key = tmpJsonObj_Asset.getAsJsonPrimitive("Fofa_Key").getAsString();
-        String Zoomeye_Key = tmpJsonObj_Asset.getAsJsonPrimitive("Zoomeye_Key").getAsString();
-        String Shodan_Key = tmpJsonObj_Asset.getAsJsonPrimitive("Shodan_Key").getAsString();
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        String Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.CHINAZ_COOKIE).getAsString();
+        String Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.AIQICHA_COOKIE).getAsString();
+        String Fofa_Key = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.FOFA_KEY).getAsString();
+        String Zoomeye_Key = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.ZOOMEYE_KEY).getAsString();
+        String Shodan_Key = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.SHODAN_KEY).getAsString();
         chinazCookie.setText(Chinaz_Cookie);
         aiqichaCookie.setText(Aiqicha_Cookie);
         fofaKey.setText(Fofa_Key);
         zoomeyeKey.setText(Zoomeye_Key);
         shodanKey.setText(Shodan_Key);
-        JsonArray Hunter_Key_List = tmpJsonObj_Asset.getAsJsonArray("Hunter_Key");
-        JsonArray Quake_Key_List = tmpJsonObj_Asset.getAsJsonArray("Quake_Key");
-        JsonArray GitHub_Token_List = tmpJsonObj_Asset.getAsJsonArray("GitHub_Token");
-        JsonArray Google_API_List = tmpJsonObj_Asset.getAsJsonArray("Google_API");
+        JsonArray Hunter_Key_List = tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.HUNTER_KEY);
+        JsonArray Quake_Key_List = tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.QUAKE_KEY);
+        JsonArray GitHub_Token_List = tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.GITHUB_TOKEN);
+        JsonArray Google_API_List = tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.GOOGLE_API);
+        JsonArray Proxy_Key_List = tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY);
         setTextArrayData(Hunter_Key_List, hunterVBox);
         setTextArrayData(Quake_Key_List, quakeVBox);
         setTextArrayData(GitHub_Token_List, githubVBox);
         setTextArrayData(Google_API_List, googleVBox);
+        // 设置子项代理状态
+        List<String> savedKeys = new ArrayList<>();
+        Proxy_Key_List.forEach(element -> savedKeys.add(element.getAsString()));
+        proxyMap.forEach((checkbox, key) -> {
+            checkbox.setSelected(savedKeys.contains(key));
+            checkbox.setDisable(!proxyButton.isSelected());
+        });
 
     }
 
@@ -532,19 +581,26 @@ public class PaneSetting {
         JsonArray Quake_Key = getContentTextFieldValue(quakeVBox);
         JsonArray GitHub_Token = getContentTextFieldValue(githubVBox);
         JsonArray Google_API = transformGoogleApi(getContentTextFieldValue(googleVBox));
+        JsonArray Proxy_Key = new JsonArray();
+        proxyMap.forEach((checkbox, key) -> {
+            if (checkbox.isSelected()) {
+                Proxy_Key.add(key);
+            }
+        });
 
         Map<String, Object> configMap = new HashMap<>();
         Map<String, Object> assetMap = new HashMap<>();
-        assetMap.put("Chinaz_Cookie", Chinaz_Cookie);
-        assetMap.put("Aiqicha_Cookie", Aiqicha_Cookie);
-        assetMap.put("Fofa_Key", Fofa_Key);
-        assetMap.put("Hunter_Key", Hunter_Key);
-        assetMap.put("Quake_Key", Quake_Key);
-        assetMap.put("Zoomeye_Key", Zoomeye_Key);
-        assetMap.put("Shodan_Key", Shodan_Key);
-        assetMap.put("GitHub_Token", GitHub_Token);
-        assetMap.put("Google_API", Google_API);
-        configMap.put("Asset", assetMap);
+        assetMap.put(AssetKeyConstants.CHINAZ_COOKIE, Chinaz_Cookie);
+        assetMap.put(AssetKeyConstants.AIQICHA_COOKIE, Aiqicha_Cookie);
+        assetMap.put(AssetKeyConstants.FOFA_KEY, Fofa_Key);
+        assetMap.put(AssetKeyConstants.HUNTER_KEY, Hunter_Key);
+        assetMap.put(AssetKeyConstants.QUAKE_KEY, Quake_Key);
+        assetMap.put(AssetKeyConstants.ZOOMEYE_KEY, Zoomeye_Key);
+        assetMap.put(AssetKeyConstants.SHODAN_KEY, Shodan_Key);
+        assetMap.put(AssetKeyConstants.GITHUB_TOKEN, GitHub_Token);
+        assetMap.put(AssetKeyConstants.GOOGLE_API, Google_API);
+        assetMap.put(AssetKeyConstants.PROXY_KEY, Proxy_Key);
+        configMap.put(AssetKeyConstants.ASSET, assetMap);
 
         if(Constants.saveConfig(configMap)){
             showTip("保存成功");
@@ -622,6 +678,14 @@ public class PaneSetting {
         fadeOut.setOnFinished(event -> {
             promptPane.setVisible(false);
             promptPane.setManaged(false);
+        });
+    }
+
+    @FXML
+    public void proxyBtn(MouseEvent event) {
+        proxyButton.setSelected(!proxyButton.isSelected());
+        proxyMap.forEach((checkbox, key) -> {
+            checkbox.setDisable(!proxyButton.isSelected());
         });
     }
 }

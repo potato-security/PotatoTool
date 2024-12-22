@@ -3,10 +3,8 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.utils.Constants;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
+import com.potato.potatotool.utils.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,9 +19,11 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class FofaSearch {
     private static String FOFA_KEY;
+    private static boolean Proxy = false;
     private static boolean isEffectiveKey = true;
-    public FofaSearch(String FOFA_KEY){
+    public FofaSearch(String FOFA_KEY, boolean Proxy){
         this.FOFA_KEY = FOFA_KEY;
+        this.Proxy = Proxy;
     }
 
     /**
@@ -39,13 +39,16 @@ public class FofaSearch {
         try {
             RequestObj obj = new RequestObj()
                     .setUrl("https://amap.fofa.info/host/" + ipOrDomain)
-                    .setMethod("GET").setRetries(3);
+                    .setTimeOut(30)
+                    .setMethod("GET").setRetries(4);
+            if(!Proxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return briefExtendedInfo;
             }
 
@@ -70,11 +73,15 @@ public class FofaSearch {
             RequestObj obj = new RequestObj()
                     .setUrl("https://fofa.info/api/v1/search/all?&size=10000&fields=" + item + "&key=" + FOFA_KEY + "&qbase64=" + strUtils.urlEncode(strUtils.base64Encode(qInfo)))
                     .setMethod("GET")
+                    .setTimeOut(20)
                     .setRetries(3);
+            if(!Proxy) obj.setProxies(null);
+
             CustomHttpResponse con = requests(obj);
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode!= 200) {
+                con.disconnect();
                 return domainInfo;
             }
             JsonObject res = con.getJson().getAsJsonObject();
@@ -100,8 +107,9 @@ public class FofaSearch {
 
     public static String getError_Fofa() {
         isEffectiveKey = true;
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
-        FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive("Fofa_Key").getAsString());
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.FOFA_KEY);
+        FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive(AssetKeyConstants.FOFA_KEY).getAsString(), Proxy);
         String qInfo = "ip=\"8.8.8.8\"";
         if (fofaSearch.search_Fofa(qInfo).isEmpty()){
             isEffectiveKey = false;
@@ -144,11 +152,12 @@ public class FofaSearch {
     }
 
     public static void main(String[] args) {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
-        FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive("Fofa_Key").getAsString());
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.FOFA_KEY);
+        FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive(AssetKeyConstants.FOFA_KEY).getAsString(), Proxy);
 
-//        JsonArray domainInfo = fofaSearch.getDomainByCompanyOrDomain_Fofa("国家能源投资集团有限责任公司");
-//        System.out.println(domainInfo);
+        JsonArray domainInfo = fofaSearch.getInfoByCompanyOrDomain_Fofa("国家能源投资集团有限责任公司");
+        System.out.println(domainInfo);
 //        System.out.println(domainInfo.size());
 
 //        JsonArray ipInfo = fofaSearch.getInfoByIp_Fofa("13.227.83.19");
@@ -163,6 +172,6 @@ public class FofaSearch {
 //
 //        JsonObject briefExtendedInfox = fofaSearch.getBriefExtendedInfo_Fofa("82.157.56.206");
 //        System.out.println(briefExtendedInfox);
-        System.out.println(fofaSearch.getError_Fofa());
+//        System.out.println(fofaSearch.getError_Fofa());
     }
 }

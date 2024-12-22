@@ -3,9 +3,11 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
 import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
+import com.potato.potatotool.utils.jsonUtils;
 
 import java.util.*;
 
@@ -19,9 +21,11 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class QuakeSearch {
     private static List<String> QUAKE_KEY_LIST;
+    private static boolean Proxy = false;
     private static boolean isEffectiveKey = true;
-    public QuakeSearch(Set<String> QUAKE_KEY_LIST){
+    public QuakeSearch(Set<String> QUAKE_KEY_LIST, boolean Proxy){
         this.QUAKE_KEY_LIST =  new ArrayList<String>(QUAKE_KEY_LIST);
+        this.Proxy = Proxy;
     }
 
     public JsonArray search_Quake(String qInfo) {
@@ -42,12 +46,15 @@ public class QuakeSearch {
                         .setMethod("POST")
                         .setHeaders(headers)
                         .setPostData(jsonData)
+                        .setTimeOut(20)
                         .setRetries(3);
+                if(!Proxy) obj.setProxies(null);
 
                 CustomHttpResponse con = requests(obj);
                 int statusCode = con.getResponseCode();
                 // 检查请求状态码
                 if (statusCode != 200) {
+                    con.disconnect();
                     return domainInfo;
                 }
                 JsonObject res = con.getJson().getAsJsonObject();
@@ -69,12 +76,13 @@ public class QuakeSearch {
 
     public static String getError_Quake() {
         isEffectiveKey = true;
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Set<String> Quake_Key_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonArray("Quake_Key")) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.QUAKE_KEY)) {
             Quake_Key_Set.add(element.getAsString());
         }
-        QuakeSearch quakeSearch = new QuakeSearch(Quake_Key_Set);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.QUAKE_KEY);
+        QuakeSearch quakeSearch = new QuakeSearch(Quake_Key_Set, Proxy);
         String qInfo = "ip:\"8.8.8.8\"";
         if (quakeSearch.search_Quake(qInfo).isEmpty()){
             isEffectiveKey = false;
@@ -117,12 +125,13 @@ public class QuakeSearch {
     }
 
     public static void main(String[] args) {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Set<String> Quake_Key_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonArray("Quake_Key")) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.QUAKE_KEY)) {
             Quake_Key_Set.add(element.getAsString());
         }
-        QuakeSearch quakeSearch = new QuakeSearch(Quake_Key_Set);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.QUAKE_KEY);
+        QuakeSearch quakeSearch = new QuakeSearch(Quake_Key_Set, Proxy);
         System.out.println(quakeSearch.getInfoByCompanyOrDomain_Quake("360.net"));
     }
 

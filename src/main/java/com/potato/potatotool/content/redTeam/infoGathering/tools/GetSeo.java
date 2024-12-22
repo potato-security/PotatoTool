@@ -3,14 +3,15 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.ExecutorServiceManager;
-import com.potato.potatotool.utils.RequestObj;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
+import com.potato.potatotool.utils.*;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,18 +59,30 @@ public class GetSeo {
 
     }
 
+    private static final Pattern PERSONAL_SITE_PATTERN = Pattern.compile("是(.*?)个人网站，");
+    private static final Pattern COMPANY_SITE_PATTERN = Pattern.compile("是(.*?)旗下网站，");
+
     // 使用chinaz对Domain进行SEO综合查询
     private static JsonObject getSeo_chinaz(String domain) {
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        String Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.CHINAZ_COOKIE).getAsString();
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
+
         JsonObject seoMap = new JsonObject();
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Cookie", Chinaz_Cookie);
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://seo.chinaz.com/" + domain)
-                    .setMethod("GET").setRetries(3);
+                    .setMethod("GET").setRetries(3).setHeaders(headers);
+            if(!Proxy) obj.setProxies(null);
+
             CustomHttpResponse con = requests(obj);
             int statusCode = con.getResponseCode();
 
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return seoMap;
             }
 
@@ -80,6 +93,9 @@ public class GetSeo {
             JsonObject icpInfo = extractIcpInfo_chinaz(doc);
             JsonObject websiteInfo = extractWebsiteInfo(doc);
 
+            // 尝试从描述中提取信息
+            icpInfo = extractFromDescription(websiteInfo, icpInfo);
+
             seoMap.add("域名信息", domainInfo);
             seoMap.add("备案信息", icpInfo);
             seoMap.add("网站信息", websiteInfo);
@@ -89,6 +105,39 @@ public class GetSeo {
         }
 
         return seoMap;
+    }
+
+    private static boolean isIcpInfoEmpty(JsonObject icpInfo) {
+        return isEmptyOrNull(icpInfo.get("备案号")) &&
+                isEmptyOrNull(icpInfo.get("备案所属")) &&
+                isEmptyOrNull(icpInfo.get("备案性质"));
+    }
+
+    private static boolean isEmptyOrNull(JsonElement element) {
+        return element == null ||
+                element.isJsonNull() ||
+                element.getAsString().trim().isEmpty();
+    }
+
+    private static JsonObject extractFromDescription(JsonObject websiteInfo, JsonObject icpInfo) {
+        String description = websiteInfo.get("网站描述").toString();
+        // 检查个人网站模式
+        Matcher personalMatcher = PERSONAL_SITE_PATTERN.matcher(description);
+        if (personalMatcher.find()) {
+            String owner = personalMatcher.group(1);
+            icpInfo.addProperty("备案所属", owner);
+            icpInfo.addProperty("备案性质", "个人");
+        }
+
+        // 检查企业网站模式
+        Matcher companyMatcher = COMPANY_SITE_PATTERN.matcher(description);
+        if (companyMatcher.find()) {
+            String owner = companyMatcher.group(1);
+            icpInfo.addProperty("备案所属", owner);
+            icpInfo.addProperty("备案性质", "企业");
+        }
+
+        return icpInfo;
     }
 
     // 使用aizhan对Domain进行SEO综合查询
@@ -103,6 +152,7 @@ public class GetSeo {
 
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return seoMap;
             }
 
@@ -171,9 +221,9 @@ public class GetSeo {
     private static JsonObject extractDomainInfo_chinaz(Document doc) {
         JsonObject domainInfo = new JsonObject();
 
-        domainInfo.addProperty("域名", getElementAttr(doc, "body > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > div > input", "value").trim());
-        domainInfo.addProperty("注册人/机构", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1) > i").replace("redacted for privacy",""));
-        domainInfo.addProperty("域名年龄", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > div:nth-of-type(2) > span > a > i"));
+        domainInfo.addProperty("域名", getElementAttr(doc, "#host", "value").trim());
+        domainInfo.addProperty("注册人/机构", getElementText(doc, "span:contains(注册人/机构：) > i").replace("redacted for privacy",""));
+        domainInfo.addProperty("域名年龄", getElementText(doc, "span:contains(域名年龄：) > a > i"));
 
         return domainInfo;
     }
@@ -181,9 +231,9 @@ public class GetSeo {
     private static JsonObject extractDomainInfo_aizhan(Document doc) {
         JsonObject domainInfo = new JsonObject();
 
-        domainInfo.addProperty("域名", getElementAttr(doc, "input#domain", "value").trim());
+        domainInfo.addProperty("域名", getElementAttr(doc, "#domain", "value").trim());
 
-        Elements liElements = doc.select("body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(2) > ul > li");
+        Elements liElements = doc.select("#whois > li");
         for (Element li : liElements) {
             String liText = li.text().trim();
 
@@ -209,12 +259,12 @@ public class GetSeo {
     private static JsonObject extractRankInfo_aizhan(Document doc) {
         JsonObject rankInfo = new JsonObject();
 
-        rankInfo.addProperty("百度权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(1) > a > img", "alt").replace("n", "0"));
-        rankInfo.addProperty("移动权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(2) > a > img", "alt").replace("n", "0"));
-        rankInfo.addProperty("360权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(3) > a > img", "alt").replace("n", "0"));
-        rankInfo.addProperty("神马权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(4) > a > img", "alt").replace("n", "0"));
-        rankInfo.addProperty("搜狗权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(5) > a > img", "alt").replace("n", "0"));
-        rankInfo.addProperty("谷歌权重", getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td > ul > li:nth-of-type(6) > a > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("百度权重", getElementAttr(doc, "#baidurank_br > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("移动权重", getElementAttr(doc, "#baidurank_mbr > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("360权重", getElementAttr(doc, "#360_pr > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("神马权重", getElementAttr(doc, "#sm_pr > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("搜狗权重", getElementAttr(doc, "#sogou_pr > img", "alt").replace("n", "0"));
+        rankInfo.addProperty("谷歌权重", getElementAttr(doc, "#google_pr > img", "alt").replace("n", "0"));
 
         return rankInfo;
     }
@@ -231,11 +281,12 @@ public class GetSeo {
 
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return email;
             }
 
             Document doc = con.getDocument();
-            email = getElementAttr(doc, "body > div:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(2) > form > input:nth-of-type(1)", "value");
+            email = getElementAttr(doc, "#domain", "value");
 
         } catch (Exception e) {
             if (debugMode) e.printStackTrace();
@@ -244,6 +295,7 @@ public class GetSeo {
         return email;
     }
 
+    // TODO 不要用绝对路径  https://seo.chinaz.com/www.shenhuagroup.com.cn   备案信息暂时隐藏了
     private static JsonObject extractIcpInfo_chinaz(Document doc) {
         JsonObject icpInfo = new JsonObject();
 
@@ -256,9 +308,9 @@ public class GetSeo {
 
     private static JsonObject extractIcpInfo_aizhan(Document doc) {
         JsonObject icpInfo = new JsonObject();
-        icpInfo.addProperty("备案号", getElementText(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > ul > li:nth-of-type(1) > a"));
-        icpInfo.addProperty("备案所属", getElementText(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > ul > li:nth-of-type(3) > span"));
-        icpInfo.addProperty("备案性质", getElementText(doc, "body > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > ul > li:nth-of-type(2) > span"));
+        icpInfo.addProperty("备案号", getElementText(doc, "#icp > li:nth-of-type(1) > a"));
+        icpInfo.addProperty("备案所属", getElementText(doc, "#icp > li:nth-of-type(3) > span"));
+        icpInfo.addProperty("备案性质", getElementText(doc, "#icp > li:nth-of-type(2) > span"));
 
         return icpInfo;
     }
@@ -267,11 +319,11 @@ public class GetSeo {
         JsonObject websiteInfo = new JsonObject();
 
         // IP及所属地
-        String elementText = getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1) > i > a");
+        String elementText = getElementText(doc, "span:contains(IP：) > i > a");
         parseIpInfo(elementText, websiteInfo);
 
         // 网站描述
-        websiteInfo.addProperty("网站描述", getElementText(doc, "body > div:nth-of-type(10) > div:nth-of-type(2) > div:nth-of-type(1)"));
+        websiteInfo.addProperty("网站描述", getElementText(doc, "#siteDetails"));
 
         return websiteInfo;
     }
@@ -291,8 +343,12 @@ public class GetSeo {
     }
 
     public static void main(String[] args) {
-        JsonObject jsonObject = getSeo("www.39599.com");
+        JsonObject jsonObject = getSeo("www.shenhuagroup.com.cn");
         System.out.println(jsonObject);
+
+
+        JsonObject jsonObject1 = getSeo("potato.gold");
+        System.out.println(jsonObject1);
     }
 
 }

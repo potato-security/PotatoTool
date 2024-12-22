@@ -1,11 +1,14 @@
 package com.potato.potatotool.content.redTeam;
 
+import com.potato.potatotool.utils.strUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -353,14 +356,18 @@ public class Signature {
 
     public static String signature(String exePath, String sigFilePath) throws Exception{
         String outputPath = "";
-        File file = new File(exePath);
-        String absolutePath = file.getAbsolutePath();
-        int dotIndex = absolutePath.lastIndexOf('.');
+        File file = new File(sigFilePath);
+        String fileName = file.getName();
 
-        if (dotIndex != -1) {
-            outputPath = absolutePath.substring(0, dotIndex) + "_hasSignature" + absolutePath.substring(dotIndex);
-        } else {
-            outputPath = absolutePath + "_hasSignature";
+        outputPath = strUtils.getCurrentJarDir() + File.separator + "Signature" + File.separator + "hasSignature_" + fileName;
+
+        Path outputDirPath = Paths.get(outputPath).getParent();
+        if (!Files.exists(outputDirPath)) {
+            try {
+                Files.createDirectories(outputDirPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         signature(exePath, sigFilePath, outputPath);
@@ -371,7 +378,7 @@ public class Signature {
 
 
     public static void main(String[] args) throws IOException {
-        // 示例调用
+        // 示例调用 提取exePath文件签名，给sigFilePath目标文件添加
         String exePath = "./src/main/java/com/potato/potatotool/content/redTeam/explorer.exe";
         String sigFilePath = "./src/main/java/com/potato/potatotool/content/redTeam/123.exe";
         String outputPath = "./src/main/java/com/potato/potatotool/content/redTeam/345.exe";

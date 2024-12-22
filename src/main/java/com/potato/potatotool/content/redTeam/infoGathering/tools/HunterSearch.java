@@ -3,10 +3,8 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.utils.Constants;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
+import com.potato.potatotool.utils.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,12 +22,14 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class HunterSearch {
     private static List<String> HUNTER_KEY_LIST;
+    private static boolean Proxy = false;
     private static boolean isEffectiveKey = true;
     private static int keyIndex = 0;
     public static int rest_quota = -1;
 
-    public HunterSearch(Set<String> HUNTER_KEY_LIST){
+    public HunterSearch(Set<String> HUNTER_KEY_LIST, boolean Proxy){
         this.HUNTER_KEY_LIST = new ArrayList<String>(HUNTER_KEY_LIST);
+        this.Proxy = Proxy;
     }
 
     public JsonArray search_Hunter(String qInfo) {
@@ -42,6 +42,7 @@ public class HunterSearch {
             // 判断剩余积分是否够用
             if(rest_quota == 0 && keyIndex+1 == HUNTER_KEY_LIST.size()){
                 System.out.println("所有Hunter账号今日均无积分可使用。");
+                isEffectiveKey = false;
                 break;
             }
 
@@ -51,12 +52,14 @@ public class HunterSearch {
                 RequestObj obj = new RequestObj().setUrl("https://hunter.qianxin.com/openApi/search?api-key=" + HUNTER_KEY + "&search=" + strUtils.base64UrlEncoder(qInfo) + "&page=" + i +"&page_size=100")//&is_web=1
                         .setTimeOut(20)
                         .setMethod("GET").setRandomUserAgent(false).setRetries(3);
+                if(!Proxy) obj.setProxies(null);
 
                 CustomHttpResponse con = requests(obj);
 
                 int statusCode = con.getResponseCode();
                 // 检查请求状态码
                 if (statusCode != 200) {
+                    con.disconnect();
                     return domainInfo;
                 }
 
@@ -67,6 +70,7 @@ public class HunterSearch {
                     i -= 1;
                     if(keyIndex+1 > HUNTER_KEY_LIST.size()){
                         System.out.println("所有Hunter账号今日均无积分可使用。");
+                        isEffectiveKey = false;
                         break;
                     }else {
                         continue;
@@ -96,12 +100,13 @@ public class HunterSearch {
 
     public static String getError_Hunter() {
         isEffectiveKey = true;
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Set<String> Hunter_Key_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonArray("Hunter_Key")) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.HUNTER_KEY)) {
             Hunter_Key_Set.add(element.getAsString());
         }
-        HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.HUNTER_KEY);
+        HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set, Proxy);
         String qInfo = "ip=\"8.8.8.8\"";
         if (hunterSearch.search_Hunter(qInfo).isEmpty()){
             isEffectiveKey = false;
@@ -155,12 +160,13 @@ public class HunterSearch {
     }
 
     public static void main(String[] args) {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Set<String> Hunter_Key_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonArray("Hunter_Key")) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.HUNTER_KEY)) {
             Hunter_Key_Set.add(element.getAsString());
         }
-        HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.HUNTER_KEY);
+        HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set, Proxy);
         System.out.println(hunterSearch.getInfoByCompanyOrDomain_Hunter("深圳湾科技发展有限公司"));
     }
 }

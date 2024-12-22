@@ -27,20 +27,19 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2023/9/29 14:56
  */
 public class GetSubDomain {
-    public static int timeOut = 5;
 
     private static ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
     private static List<Future<?>> futures = ExecutorServiceManager.futures;
-    public static Set<String> getSubByDomainOrDomainCert(String domain) {
+    public static Set<String> getSubByDomainOrDomainCert(String domain, boolean isSslProxy) {
         if(domain==null || domain.isEmpty() || domain.startsWith("http")) return new LinkedHashSet<>();
         Set<String> subDomainSet = new HashSet<>();
 
-        Future<Set<String>> future_crt = executor.submit(() -> getSubByDomainCert_crt(domain));
-        Future<Set<String>> future_certspotter = executor.submit(() -> getSubByDomainCert_certspotter(domain));
-        Future<Set<String>> future_chaziyu = executor.submit(() -> getSubByDomain_chaziyu(domain));
-        Future<Set<String>> future_rapiddns = executor.submit(() -> getSubByDomain_rapiddns(domain));
-        Future<Set<String>> future_lienvault = executor.submit(() -> getSubByDomain_alienvault(domain));
-        Future<Set<String>> future_ip138 = executor.submit(() -> getSubByDomain_ip138(domain));
+        Future<Set<String>> future_crt = executor.submit(() -> getSubByDomainCert_crt(domain, isSslProxy));
+        Future<Set<String>> future_certspotter = executor.submit(() -> getSubByDomainCert_certspotter(domain, isSslProxy));
+        Future<Set<String>> future_chaziyu = executor.submit(() -> getSubByDomain_chaziyu(domain, isSslProxy));
+        Future<Set<String>> future_rapiddns = executor.submit(() -> getSubByDomain_rapiddns(domain, isSslProxy));
+        Future<Set<String>> future_lienvault = executor.submit(() -> getSubByDomain_alienvault(domain, isSslProxy));
+        Future<Set<String>> future_ip138 = executor.submit(() -> getSubByDomain_ip138(domain, isSslProxy));
         futures.add(future_crt);
         futures.add(future_certspotter);
         futures.add(future_chaziyu);
@@ -62,18 +61,20 @@ public class GetSubDomain {
         return subDomainSet;
     }
 
-    private static Set<String> getSubByDomainCert_crt(String domain) {
+    private static Set<String> getSubByDomainCert_crt(String domain, boolean isSslProxy) {
         Set<String> subDomain = new LinkedHashSet<>();
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://crt.sh/?q=%." + domain + "&output=json")  // ?O=公司名&output=json 不兼容公司名为中文名
-                    .setMethod("GET").setRandomUserAgent(false).setRetries(2).setTimeOut(timeOut);
+                    .setMethod("GET").setRandomUserAgent(false).setRetries(2);
+            if(!isSslProxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return subDomain;
             }
 
@@ -91,18 +92,20 @@ public class GetSubDomain {
         return subDomain;
     }
 
-    private static Set<String> getSubByDomainCert_certspotter(String domain) {
+    private static Set<String> getSubByDomainCert_certspotter(String domain, boolean isSslProxy) {
         Set<String> subDomain = new LinkedHashSet<>();
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://api.certspotter.com/v1/issuances?domain=" + domain + "&include_subdomains=true&expand=dns_names")
-                    .setMethod("GET").setRandomUserAgent(false).setRetries(2).setTimeOut(timeOut);
+                    .setMethod("GET").setRandomUserAgent(false).setRetries(2);
+            if(!isSslProxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return subDomain;
             }
 
@@ -122,18 +125,20 @@ public class GetSubDomain {
     }
 
     // 有频次限制
-    private static Set<String> getSubByDomain_chaziyu(String domain) {
+    private static Set<String> getSubByDomain_chaziyu(String domain, boolean isSslProxy) {
         Set<String> subDomain = new LinkedHashSet<>();
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://chaziyu.com/" + domain + "/")
-                    .setMethod("GET").setRandomUserAgent(false).setRetries(2).setTimeOut(timeOut);
+                    .setMethod("GET").setRandomUserAgent(false).setRetries(2);
+            if(!isSslProxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return subDomain;
             }
 
@@ -154,6 +159,7 @@ public class GetSubDomain {
 
                     int statusCode_next = con.getResponseCode();
                     if (statusCode_next != 200) {
+                        con.disconnect();
                         return subDomain;
                     }
 
@@ -177,7 +183,7 @@ public class GetSubDomain {
     }
 
 
-    private static Set<String> getSubByDomain_rapiddns(String domain) {
+    private static Set<String> getSubByDomain_rapiddns(String domain, boolean isSslProxy) {
         Set<String> subDomain = new LinkedHashSet<>();
 
         try {
@@ -185,13 +191,15 @@ public class GetSubDomain {
             while (true) {
                 index += 1;
                 RequestObj obj = new RequestObj().setUrl("https://rapiddns.io/s/" + domain + "?page=" + index)
-                        .setMethod("GET").setRandomUserAgent(false).setRetries(2).setTimeOut(timeOut);
+                        .setMethod("GET").setRandomUserAgent(false).setRetries(2);
+                if(!isSslProxy) obj.setProxies(null);
 
                 CustomHttpResponse con = requests(obj);
 
                 int statusCode = con.getResponseCode();
                 // 检查请求状态码
                 if (statusCode != 200) {
+                    con.disconnect();
                     return subDomain;
                 }
 
@@ -213,18 +221,20 @@ public class GetSubDomain {
     }
 
 
-    private static Set<String> getSubByDomain_alienvault(String domain) {
+    private static Set<String> getSubByDomain_alienvault(String domain, boolean isSslProxy) {
         Set<String> subDomain = new LinkedHashSet<>();
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://otx.alienvault.com/api/v1/indicators/domain/" + domain + "/passive_dns")
-                    .setMethod("GET").setRandomUserAgent(false).setRetries(2).setTimeOut(timeOut);
+                    .setMethod("GET").setRandomUserAgent(false).setRetries(2);
+            if(!isSslProxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return subDomain;
             }
 
@@ -247,12 +257,13 @@ public class GetSubDomain {
     private static final Pattern TOKEN_PATTERN_ip138_Or_ipchaxun = Pattern.compile(
             "_TOKEN\\s*=\\s*'(.*?)';"
     );
-    private static Set<String> getSubByDomain_ip138(String domain){
+    private static Set<String> getSubByDomain_ip138(String domain, boolean isSslProxy){
         Set<String> subDomain = new LinkedHashSet<>();
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://site.ip138.com/" + domain + "/domain.htm")
-                    .setMethod("GET").setRandomUserAgent(false).setRetries(2).setTimeOut(timeOut);
+                    .setMethod("GET").setRandomUserAgent(false).setRetries(2);
+            if(!isSslProxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
             String content = con.getTextStr();
@@ -260,6 +271,7 @@ public class GetSubDomain {
 
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return subDomain;
             }
 
@@ -277,6 +289,7 @@ public class GetSubDomain {
 
                     int statusCode_sub = con_sub.getResponseCode();
                     if (statusCode_sub != 200) {
+                        con.disconnect();
                         break;
                     }
 

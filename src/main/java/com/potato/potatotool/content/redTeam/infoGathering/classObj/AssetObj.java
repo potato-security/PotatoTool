@@ -20,6 +20,16 @@ public class AssetObj {
     private String Shodan_Key = "";
     private String Zoomeye_Key = "";
     private boolean hasAssetKey = false;
+    
+    private boolean fofaProxy = false;
+    private boolean hunterProxy = false;
+    private boolean quakeProxy = false;
+    private boolean shodanProxy = false;
+    private boolean zoomeyeProxy = false;
+    private boolean googleProxy = false;
+    private boolean githubProxy = false;
+    private boolean crawlProxy = false;
+    private boolean sslProxy = false;
 
     private Set<HashMap<String, String>> Google_API = new HashSet<>();
     private Set<String> GitHub_Token = new HashSet<>();
@@ -28,42 +38,62 @@ public class AssetObj {
     private boolean useGoogle = false;
     private boolean useGithub = false;
     private boolean bruteForceSubdomain = false;
-    private boolean searchShadowAssets = true;
-    private boolean hasCrawlLinks = true;
-    private boolean hasFindSensitiveInfo = true;
+    private boolean searchSslSubdomainBox = false;
+    private boolean searchShadowAssets = false;
+    private boolean hasCrawlLinks = false;
+    private boolean hasFindSensitiveInfo = false;
+    private boolean hasCipAggregator = false;
+    private boolean hasLocalFullDetection = false;
+    private boolean hasIconSearch = true;
     private int maxDepth = 2;
     private int maxSubPathCount = 3;
+    private int maxGoogleSearchCount = 10;
+    private int maxGithubSearchCount = 10;
+    private int cipThreshold = 4;
+    private int localFullDetectionThreshold = 20;
+    private int shadowAssetsThreshold = 50;
     private Set<String> domain = new HashSet<>();
     private Set<String> icp = new HashSet<>();
-//    private List<DomainInfo> domainInfoList = new ArrayList<>();
     private List<NetAssets> companyDomainInfoList = new ArrayList<>();
+    private JsonObject seoMap;
+    private JsonObject companyInfoMap;
+    private JsonArray companyDetailsInfoMap;
 
-    public static String FOFA_KEY = "Fofa_Key";
-    public static String HUNTER_KEY = "Hunter_Key";
-    public static String QUAKE_KEY = "Quake_Key";
-    public static String SHODAN_KEY = "Shodan_Key";
-    public static String ZOOMEYE_KEY = "Zoomeye_Key";
-    public static String GOOGLE_API = "Google_API";
-    public static String GITHUB_TOKEN = "GitHub_Token";
 
     public AssetObj() {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
-        this.setFofa_Key(tmpJsonObj.get(FOFA_KEY).getAsString());
-        this.setHunter_Key(tmpJsonObj.getAsJsonArray(HUNTER_KEY));
-        this.setQuake_Key(tmpJsonObj.getAsJsonArray(QUAKE_KEY));
-        this.setShodan_Key(tmpJsonObj.get(SHODAN_KEY).getAsString());
-        this.setZoomeye_Key(tmpJsonObj.get(ZOOMEYE_KEY).getAsString());
-        this.setGoogle_API(tmpJsonObj.getAsJsonArray(GOOGLE_API));
-        this.setGitHub_Token(tmpJsonObj.getAsJsonArray(GITHUB_TOKEN));
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        this.setFofa_Key(tmpJsonObj.get(AssetKeyConstants.FOFA_KEY).getAsString());
+        this.setHunter_Key(tmpJsonObj.getAsJsonArray(AssetKeyConstants.HUNTER_KEY));
+        this.setQuake_Key(tmpJsonObj.getAsJsonArray(AssetKeyConstants.QUAKE_KEY));
+        this.setShodan_Key(tmpJsonObj.get(AssetKeyConstants.SHODAN_KEY).getAsString());
+        this.setZoomeye_Key(tmpJsonObj.get(AssetKeyConstants.ZOOMEYE_KEY).getAsString());
+        this.setGoogle_API(tmpJsonObj.getAsJsonArray(AssetKeyConstants.GOOGLE_API));
+        this.setGitHub_Token(tmpJsonObj.getAsJsonArray(AssetKeyConstants.GITHUB_TOKEN));
+
+        JsonArray proxyKeyArray = tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY);
+        for (JsonElement element : proxyKeyArray) {
+            String key = element.getAsString();
+            switch (key) {
+                case AssetKeyConstants.FOFA_KEY: setFofaProxy(true); break;
+                case AssetKeyConstants.HUNTER_KEY: setHunterProxy(true); break;
+                case AssetKeyConstants.QUAKE_KEY: setQuakeProxy(true); break;
+                case AssetKeyConstants.SHODAN_KEY: setShodanProxy(true); break;
+                case AssetKeyConstants.ZOOMEYE_KEY: setZoomeyeProxy(true); break;
+                case AssetKeyConstants.GOOGLE_API: setGoogleProxy(true); break;
+                case AssetKeyConstants.GITHUB_TOKEN: setGithubProxy(true); break;
+                case AssetKeyConstants.SSL: setSslProxy(true); break;
+                case AssetKeyConstants.CRAWL: setCrawlProxy(true); break;
+            }
+        }
     }
 
     public static boolean hasSetKey(String key){
         try {
-            JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
-            if(key.equals(FOFA_KEY) || key.equals(QUAKE_KEY) || key.equals(SHODAN_KEY) || key.equals(ZOOMEYE_KEY)){
+            JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+            if(key.equals(AssetKeyConstants.FOFA_KEY) || key.equals(AssetKeyConstants.QUAKE_KEY) || key.equals(AssetKeyConstants.SHODAN_KEY) || key.equals(AssetKeyConstants.ZOOMEYE_KEY)){
                 String value = tmpJsonObj.get(key).getAsString();
                 if(value!=null && !value.isEmpty()) return true;
-            }else if(key.equals(HUNTER_KEY) || key.equals(GOOGLE_API) || key.equals(GITHUB_TOKEN)){
+            }else if(key.equals(AssetKeyConstants.HUNTER_KEY) || key.equals(AssetKeyConstants.GOOGLE_API) || key.equals(AssetKeyConstants.GITHUB_TOKEN)){
                 JsonArray value = tmpJsonObj.getAsJsonArray(key);
                 if(value!=null && !value.isEmpty()) return true;
             }
@@ -297,5 +327,147 @@ public class AssetObj {
 
     public void setUseGithub(boolean useGithub) {
         this.useGithub = useGithub;
+    }
+
+    public boolean isFofaProxy(){ return fofaProxy; }
+    public boolean isHunterProxy(){ return hunterProxy; }
+    public boolean isQuakeProxy(){ return quakeProxy; }
+    public boolean isShodanProxy(){ return shodanProxy; }
+    public boolean isZoomeyeProxy(){ return zoomeyeProxy; }
+    public boolean isGoogleProxy(){ return googleProxy; }
+    public boolean isGithubProxy(){ return githubProxy; }
+    public boolean isCrawlProxy(){ return crawlProxy; }
+    public boolean isSslProxy() { return sslProxy; }
+
+    public void setFofaProxy(boolean fofaProxy) {
+        this.fofaProxy = fofaProxy;
+    }
+
+    public void setHunterProxy(boolean hunterProxy) {
+        this.hunterProxy = hunterProxy;
+    }
+
+    public void setQuakeProxy(boolean quakeProxy) {
+        this.quakeProxy = quakeProxy;
+    }
+
+    public void setShodanProxy(boolean shodanProxy) {
+        this.shodanProxy = shodanProxy;
+    }
+
+    public void setZoomeyeProxy(boolean zoomeyeProxy) {
+        this.zoomeyeProxy = zoomeyeProxy;
+    }
+
+    public void setGoogleProxy(boolean googleProxy) {
+        this.googleProxy = googleProxy;
+    }
+
+    public void setGithubProxy(boolean githubProxy) {
+        this.githubProxy = githubProxy;
+    }
+
+    public void setCrawlProxy(boolean crawlProxy) {
+        this.crawlProxy = crawlProxy;
+    }
+
+    public JsonObject getSeoMap() {
+        return seoMap;
+    }
+
+    public void setSeoMap(JsonObject seoMap) {
+        this.seoMap = seoMap;
+    }
+
+    public JsonObject getCompanyInfoMap() {
+        return companyInfoMap;
+    }
+
+    public void setCompanyInfoMap(JsonObject companyInfoMap) {
+        this.companyInfoMap = companyInfoMap;
+    }
+
+    public JsonArray getCompanyDetailsInfoMap() {
+        return companyDetailsInfoMap;
+    }
+
+    public void setCompanyDetailsInfoMap(JsonArray companyDetailsInfoMap) {
+        this.companyDetailsInfoMap = companyDetailsInfoMap;
+    }
+
+    public void setSearchSslSubdomainBox(boolean searchSslSubdomainBox) {
+        this.searchSslSubdomainBox = searchSslSubdomainBox;
+    }
+
+    public boolean isSearchSslSubdomainBox() {
+        return searchSslSubdomainBox;
+    }
+
+    public int getMaxGoogleSearchCount() {
+        return maxGoogleSearchCount;
+    }
+
+    public void setMaxGoogleSearchCount(int maxGoogleSearchCount) {
+        this.maxGoogleSearchCount = maxGoogleSearchCount;
+    }
+
+    public int getMaxGithubSearchCount() {
+        return maxGithubSearchCount;
+    }
+
+    public void setMaxGithubSearchCount(int maxGithubSearchCount) {
+        this.maxGithubSearchCount = maxGithubSearchCount;
+    }
+
+    public boolean isHasCipAggregator() {
+        return hasCipAggregator;
+    }
+
+    public void setHasCipAggregator(boolean hasCipAggregator) {
+        this.hasCipAggregator = hasCipAggregator;
+    }
+
+    public int getCipThreshold() {
+        return cipThreshold;
+    }
+
+    public void setCipThreshold(int cipThreshold) {
+        this.cipThreshold = cipThreshold;
+    }
+
+    public int getShadowAssetsThreshold() {
+        return shadowAssetsThreshold;
+    }
+
+    public void setShadowAssetsThreshold(int shadowAssetsThreshold) {
+        this.shadowAssetsThreshold = shadowAssetsThreshold;
+    }
+
+    public int getLocalFullDetectionThreshold() {
+        return localFullDetectionThreshold;
+    }
+
+    public void setLocalFullDetectionThreshold(int localFullDetectionThreshold) {
+        this.localFullDetectionThreshold = localFullDetectionThreshold;
+    }
+
+    public boolean isHasLocalFullDetection() {
+        return hasLocalFullDetection;
+    }
+
+    public void setHasLocalFullDetection(boolean hasLocalFullDetection) {
+        this.hasLocalFullDetection = hasLocalFullDetection;
+    }
+
+    public boolean isHasIconSearch() {
+        return hasIconSearch;
+    }
+
+    public void setHasIconSearch(boolean hasIconSearch) {
+        this.hasIconSearch = hasIconSearch;
+    }
+
+    public void setSslProxy(boolean sslProxy) {
+        this.sslProxy = sslProxy;
     }
 }

@@ -31,7 +31,7 @@ import static com.potato.potatotool.utils.requestUtils.requests;
 public class aiUtil {
 
     private JsonArray historyList = new JsonArray();
-
+    private String Local_Ai_Url = null;
     public boolean isFirstResponse = true;
 
     public void askAi(String question, Object node){
@@ -40,6 +40,9 @@ public class aiUtil {
         JsonObject tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig("AI");
         String GPT_Model = tmpJsonObj_AI.getAsJsonPrimitive("GPT_Model").getAsString();
         String GPT_API_Key = tmpJsonObj_AI.getAsJsonPrimitive("GPT_API_Key").getAsString();
+        if(Local_Ai_Url == null) {
+            Local_Ai_Url = new aesUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive("Local_Ai_Url").getAsString());
+        }
 
         RequestObj obj;
         if (!GPT_API_Key.equals("")){
@@ -77,8 +80,6 @@ public class aiUtil {
 
         }else {
 
-            String aiUrl = getConfigInfo("aiUrl");
-
             HashMap<String, String> headers = new HashMap();
             headers.put("Content-Type", "application/json");
 
@@ -86,7 +87,7 @@ public class aiUtil {
             jsonData.addProperty("query", question);
             jsonData.add("history", historyList);
 
-            obj = new RequestObj().setMethod("POST").setUrl(aiUrl).setHeaders(headers).setPostData(jsonData).setProxies(null);
+            obj = new RequestObj().setMethod("POST").setUrl(Local_Ai_Url).setHeaders(headers).setPostData(jsonData).setProxies(null);
 
         }
 
@@ -234,6 +235,9 @@ public class aiUtil {
         JsonObject tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig("AI");
         String GPT_Model = tmpJsonObj_AI.getAsJsonPrimitive("GPT_Model").getAsString();
         String GPT_API_Key = tmpJsonObj_AI.getAsJsonPrimitive("GPT_API_Key").getAsString();
+        if(Local_Ai_Url == null) {
+            Local_Ai_Url = new aesUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive("Local_Ai_Url").getAsString());
+        }
 
         RequestObj obj;
         if (!GPT_API_Key.equals("")){
@@ -271,8 +275,6 @@ public class aiUtil {
 
         }else {
 
-            String aiUrl = getConfigInfo("aiUrl");
-
             HashMap<String, String> headers = new HashMap();
             headers.put("Content-Type", "application/json");
 
@@ -280,7 +282,7 @@ public class aiUtil {
             jsonData.addProperty("query", question);
             jsonData.add("history", historyList);
 
-            obj = new RequestObj().setMethod("POST").setUrl(aiUrl).setHeaders(headers).setPostData(jsonData).setProxies(null);
+            obj = new RequestObj().setMethod("POST").setUrl(Local_Ai_Url).setHeaders(headers).setPostData(jsonData).setProxies(null);
 
         }
 

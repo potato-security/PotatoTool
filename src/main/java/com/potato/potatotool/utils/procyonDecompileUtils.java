@@ -7,7 +7,9 @@ import com.strobel.decompiler.PlainTextOutput;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static com.potato.potatotool.utils.strUtils.createFile;
@@ -42,6 +44,17 @@ public class procyonDecompileUtils {
 
         if (outfilePath.length == 1){
             createFile(result, outfilePath[0]);
+        }else{
+            String javaTempFilePath = strUtils.getCurrentJarDir() + File.separator + "Decompile" + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
+            Path outputDirPath = Paths.get(javaTempFilePath).getParent();
+            if (!Files.exists(outputDirPath)) {
+                try {
+                    Files.createDirectories(outputDirPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            createFile(result, javaTempFilePath);
         }
 
         return result;

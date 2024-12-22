@@ -3,12 +3,10 @@ package com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.gitLeaka
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.tools.FofaSearch;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
-import com.potato.potatotool.utils.Constants;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,14 +22,16 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class GitHubLeakage {
     private static List<String> GitHub_Token;
+    private static boolean Proxy = false;
     private static boolean isEffectiveKey = true;
     private static int keyIndex = 0;
-    public GitHubLeakage(Set<String> GitHub_Token){
+    public GitHubLeakage(Set<String> GitHub_Token, boolean Proxy){
         this.GitHub_Token = new ArrayList<String>(GitHub_Token);
+        this.Proxy = Proxy;
     }
 
     // 再模糊点检索，可以直接检索code而非repo
-    public JsonArray getRepo(Set<String> companyNameList, String domain){
+    public JsonArray getRepo(Set<String> companyNameList, String domain, int maxGithubSearchCount){
         JsonArray repoArray = new JsonArray();
         String question = "";
         if(companyNameList!=null && !companyNameList.isEmpty()) {
@@ -45,22 +45,23 @@ public class GitHubLeakage {
             return repoArray;
         }
 
-
+        if(maxGithubSearchCount > 100) maxGithubSearchCount = 100;
         while (true) {
 
             try {
                 RequestObj obj = new RequestObj()
-                        .setUrl("https://api.github.com/search/repositories?per_page=100&q=" + strUtils.urlEncode(question))
+                        .setUrl("https://api.github.com/search/repositories?per_page=" + maxGithubSearchCount + "&q=" + strUtils.urlEncode(question))
                         .setMethod("GET")
                         .setBearerToken(GitHub_Token.get(keyIndex))
-//                        .setProxies("https://127.0.0.1:8080")
                         .setRetries(3);
+                if(!Proxy) obj.setProxies(null);
 
                 CustomHttpResponse con = requests(obj);
 
                 int statusCode = con.getResponseCode();
                 // 检查请求状态码
                 if (statusCode != 200) {
+                    con.disconnect();
                     if (statusCode == 403 || statusCode == 401) {
                         keyIndex += 1;
                         if(keyIndex + 1 > GitHub_Token.size()){
@@ -81,7 +82,8 @@ public class GitHubLeakage {
                         JsonObject repoObj = new JsonObject();
                         String repoName = item.getAsJsonObject().get("full_name").getAsString();
                         String repoDes =item.getAsJsonObject().get("description").isJsonNull() ? "" : item.getAsJsonObject().get("description").getAsString() ;
-                        if (domain.equals("HotBoy-java/PotatoTool") || AiUtils.getGitRepoRelevance_Ai(repoName, repoDes, question)) {
+
+                        if ((domain!=null && domain.equals("HotBoy-java/PotatoTool")) || AiUtils.getGitRepoRelevance_Ai(repoName, repoDes, question)) {
                             repoObj.addProperty("repoName", repoName);
                             repoObj.addProperty("repoUrl", item.getAsJsonObject().get("html_url").getAsString());
                             repoObj.addProperty("repoDes", repoDes);
@@ -101,14 +103,15 @@ public class GitHubLeakage {
 
     public static String getError_Github() {
         isEffectiveKey = true;
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Set<String> GitHub_Token_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonArray("GitHub_Token")) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.GITHUB_TOKEN)) {
             GitHub_Token_Set.add(element.getAsString());
         }
-        GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GITHUB_TOKEN);
+        GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set, Proxy);
         String domain = "HotBoy-java/PotatoTool";
-        if (gitHubLeakage.getRepo(null, domain).isEmpty()){
+        if (gitHubLeakage.getRepo(null, domain, 1).isEmpty()){
             isEffectiveKey = false;
             return "无效的GitHub_Token";
         }
@@ -133,15 +136,16 @@ public class GitHubLeakage {
                     RequestObj obj = new RequestObj()
                             .setUrl("https://api.github.com/search/code?per_page=100&q=" + strUtils.urlEncode(question))
                             .setMethod("GET")
-//                            .setBearerToken(GitHub_Token)
-//                            .setProxies("https://127.0.0.1:8080")
+                            .setBearerToken(GitHub_Token.get(keyIndex))
                             .setRetries(3);
+                    if(!Proxy) obj.setProxies(null);
 
                     CustomHttpResponse con = requests(obj);
 
                     int statusCode = con.getResponseCode();
                     // 检查请求状态码
                     if (statusCode != 200) {
+                        con.disconnect();
                         continue;
                     }
 
@@ -165,12 +169,13 @@ public class GitHubLeakage {
 
 
     public static void main(String[] args) {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Set<String> GitHub_Token_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonArray("GitHub_Token")) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.GITHUB_TOKEN)) {
             GitHub_Token_Set.add(element.getAsString());
         }
-        GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GITHUB_TOKEN);
+        GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set, Proxy);
 
 //        JsonArray xxx= new JsonArray();
 //        JsonObject qqq = new JsonObject();
@@ -180,6 +185,6 @@ public class GitHubLeakage {
         Set<String> companyNameList = new HashSet<>();
 //        companyNameList.add("国家能源集团");
         companyNameList.add("国能");
-        System.out.println(gitHubLeakage.getRepo(companyNameList, null));
+        System.out.println(gitHubLeakage.getRepo(companyNameList, null, 10));
     }
 }

@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class CipAggregator {
 
     // 提取C段出现的次数
-    public static Map<String, Integer> getFrequentCSegments(Set<String> ipList) {
+    public static Map<String, Integer> getFrequentCSegments(Set<String> ipList, int cipThreshold) {
         // 使用Map来统计每个C段出现的次数
         Map<String, Integer> cSegmentCountMap = new HashMap<>();
 
@@ -25,9 +25,9 @@ public class CipAggregator {
             }catch (Exception e){}
         }
 
-        // 只保留出现次数大于1的C段
+        // 只保留出现次数大于等于【cipThreshold阈值】的C段
         return cSegmentCountMap.entrySet().stream()
-                .filter(entry -> entry.getValue() > 1)  // 过滤出出现次数超过1的C段
+                .filter(entry -> entry.getValue() >= cipThreshold)  // 过滤出出现次数大于等于【cipThreshold阈值】的C段
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

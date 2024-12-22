@@ -250,19 +250,19 @@
                 </VBox>
 
                 <VBox fx:id="signatureContent" maxHeight="${sPane.height}" alignment="CENTER" managed="false" visible="false">
-                    <VBox styleClass="paddingVBox" spacing="30" alignment="CENTER">
+                    <VBox styleClass="paddingVBox" prefWidth="${signatureContent.width}" spacing="30" alignment="CENTER">
                         <HBox alignment="CENTER" spacing="10">
                             <Label text="无签名木马文件路径："/>
                             <StackPane>
-                                <TextField style="-fx-padding: 5 80 5 5;" fx:id="exePath" promptText="输入文件路径" prefWidth="400" StackPane.alignment="CENTER"/>
-                                <Button style="-fx-padding: 5;" text="选择文件" onAction="#getExePath" StackPane.alignment="CENTER_RIGHT"/>
+                                <TextField style="-fx-padding: 5 80 5 5;" fx:id="sigFilePath" promptText="输入文件路径" prefWidth="400" StackPane.alignment="CENTER"/>
+                                <Button style="-fx-padding: 5;" text="选择文件" onAction="#getSigFilePath" StackPane.alignment="CENTER_RIGHT"/>
                             </StackPane>
                         </HBox>
                         <HBox alignment="CENTER" spacing="10">
                             <Label text="有签名正规文件路径："/>
                             <StackPane>
-                                <TextField style="-fx-padding: 5 80 5 5;" fx:id="sigFilePath" promptText="输入文件路径" prefWidth="400" StackPane.alignment="CENTER"/>
-                                <Button style="-fx-padding: 5;" text="选择文件" onAction="#getSigFilePath" StackPane.alignment="CENTER_RIGHT"/>
+                                <TextField style="-fx-padding: 5 80 5 5;" fx:id="exePath" promptText="输入文件路径" prefWidth="400" StackPane.alignment="CENTER"/>
+                                <Button style="-fx-padding: 5;" text="选择文件" onAction="#getExePath" StackPane.alignment="CENTER_RIGHT"/>
                             </StackPane>
                         </HBox>
                         <HBox alignment="CENTER">
@@ -272,12 +272,12 @@
                                 </effect>
                             </Button>
                         </HBox>
-                        <Label fx:id="tipTitleSigna" visible="false"/>
+                        <Label fx:id="tipTitleSigna" wrapText="true" textAlignment="CENTER" visible="false"/>
                     </VBox>
                 </VBox>
 
                 <VBox fx:id="QRContent" maxHeight="${sPane.height}" alignment="CENTER" managed="false" visible="false">
-                    <VBox styleClass="paddingVBox" spacing="30" alignment="CENTER">
+                    <VBox styleClass="paddingVBox" prefWidth="${QRContent.width}" spacing="30" alignment="CENTER">
                         <HBox alignment="CENTER" spacing="10">
                             <Label fx:id="contentQrLabel" text="二维码内容："/>
                             <TextField style="-fx-padding: 5 80 5 5;" fx:id="contentQR" text="https://www.baidu.com" promptText="输入二维码内容/网址" prefWidth="400" StackPane.alignment="CENTER"/>
@@ -304,7 +304,7 @@
                                 </effect>
                             </Button>
                         </HBox>
-                        <Label fx:id="tipTitleQR" visible="false"/>
+                        <Label fx:id="tipTitleQR" wrapText="true" textAlignment="CENTER" visible="false"/>
                     </VBox>
                 </VBox>
 

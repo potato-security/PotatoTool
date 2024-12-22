@@ -14,10 +14,14 @@ import com.potato.potatotool.content.redTeam.infoGathering.utils.*;
 import com.potato.potatotool.content.redTeam.infoGathering.tools.GetCompany;
 import com.potato.potatotool.controller.PaneInfoSearch;
 import com.potato.potatotool.utils.ExecutorServiceManager;
+import com.potato.potatotool.utils.strUtils;
 
+import java.io.File;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -66,13 +70,13 @@ public class AssetMapper {
         Shodan_Key = assetObj.getShodan_Key();
         Zoomeye_Key = assetObj.getZoomeye_Key();
 
-        fofaSearch = new FofaSearch(Fofa_Key);
-        hunterSearch = new HunterSearch(Hunter_Key);
-        quakeSearch = new QuakeSearch(Quake_Key);
-        shodanSearch = new ShodanSearch(Shodan_Key);
-        zoomeyeSearch = new ZoomeyeSearch(Zoomeye_Key);
-        googleSearch = new GoogleSearch(assetObj.getGoogle_API());
-        gitHubLeakage = new GitHubLeakage(assetObj.getGitHub_Token());
+        fofaSearch = new FofaSearch(Fofa_Key, assetObj.isFofaProxy());
+        hunterSearch = new HunterSearch(Hunter_Key, assetObj.isHunterProxy());
+        quakeSearch = new QuakeSearch(Quake_Key, assetObj.isQuakeProxy());
+        shodanSearch = new ShodanSearch(Shodan_Key, assetObj.isShodanProxy());
+        zoomeyeSearch = new ZoomeyeSearch(Zoomeye_Key, assetObj.isZoomeyeProxy());
+        googleSearch = new GoogleSearch(assetObj.getGoogle_API(), assetObj.isGoogleProxy());
+        gitHubLeakage = new GitHubLeakage(assetObj.getGitHub_Token(), assetObj.isGithubProxy());
 
         aiqichaSearch = new AiqichaSearch(assetObj.getWeightThresholdList(), paneInfoSearch);
 
@@ -83,6 +87,65 @@ public class AssetMapper {
         } else {
             handleCompanyName(input, assetObj, null, null);
         }
+
+        paneInfoSearch.updateEchoVBox("导出报告中……", false, null);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String timeStr = sdf.format(new Date(System.currentTimeMillis()));
+        String outXlsxFile = strUtils.getCurrentJarDir() + File.separator + "AssetResult" + File.separator + input + "_" + timeStr +".xlsx";
+        String error = new AssetExcelExporter().exportToExcel(assetObj, outXlsxFile);
+        paneInfoSearch.updateEchoVBox(error==null ? "报告导出至:" + outXlsxFile : "导出失败_[Error]：" + error, true, null);
+    }
+
+
+    public void searchInfo_standard(String input, AssetObj assetObj) {
+        input = input.trim();
+        if(input.isEmpty()) return;
+
+        Fofa_Key = assetObj.getFofa_Key();
+        Hunter_Key = assetObj.getHunter_Key();
+        Quake_Key = assetObj.getQuake_Key();
+        Shodan_Key = assetObj.getShodan_Key();
+        Zoomeye_Key = assetObj.getZoomeye_Key();
+
+        fofaSearch = new FofaSearch(Fofa_Key, assetObj.isFofaProxy());
+        hunterSearch = new HunterSearch(Hunter_Key, assetObj.isHunterProxy());
+        quakeSearch = new QuakeSearch(Quake_Key, assetObj.isQuakeProxy());
+        shodanSearch = new ShodanSearch(Shodan_Key, assetObj.isShodanProxy());
+        zoomeyeSearch = new ZoomeyeSearch(Zoomeye_Key, assetObj.isZoomeyeProxy());
+
+        List<DomainInfo> mergedList = new ArrayList<>();
+        if(!assetObj.isHasAssetKey()) {
+            paneInfoSearch.updateEchoVBox("搜索语法：" + input +"，初始化数据-（未选择平台，仅支持输入纯域名/IP）", true, null);
+            paneInfoSearch.updateEchoVBox("Amap检索：" + input, false, null);
+            JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa(input);
+            mergedList = DomainInfoMerger.mergeDomainInfos("Amap检索：" + input, briefExtendedInfo);
+            paneInfoSearch.updateEchoVBox("Amap检索：" + input, true, null);
+        }else {
+            paneInfoSearch.updateEchoVBox("搜索语法：" + input +"，初始化数据-（需输入对应平台语法）", true, null);
+            paneInfoSearch.updateEchoVBox("平台检索：" + input, false, null);
+            JsonArray info_Fofa = fofaSearch.search_Fofa(input);
+            JsonArray info_Hunter = hunterSearch.search_Hunter(input);
+            JsonArray info_Quake = quakeSearch.search_Quake(input);
+            JsonArray info_Shodan = shodanSearch.search_Shodan(input);
+            JsonArray info_Zoomeye = zoomeyeSearch.search_Zoomeye(input);
+            paneInfoSearch.updateEchoVBox("平台检索：" + input, true, null);
+
+            // 合并信息
+            paneInfoSearch.updateEchoVBox("数据格式化", true, null);
+            mergedList = DomainInfoMerger.mergeDomainInfos("空间测绘平台：" + input, info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
+        }
+        NetAssets netAssets = new NetAssets();
+        netAssets.setCompanyName("-");
+        netAssets.setDomainInfoList(mergedList);
+        assetObj.addCompanyDomainInfoList(netAssets);
+        paneInfoSearch.updateEchoVBox("查询结束", true, null);
+
+        paneInfoSearch.updateEchoVBox("导出报告中……", false, null);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String timeStr = sdf.format(new Date(System.currentTimeMillis()));
+        String outXlsxFile = strUtils.getCurrentJarDir() + File.separator + "AssetResult" + File.separator + input + "_" + timeStr +".xlsx";
+        String error = new AssetExcelExporter().exportToExcel(assetObj, outXlsxFile);
+        paneInfoSearch.updateEchoVBox(error==null ? "报告导出至:" + outXlsxFile : "导出失败_[Error]：" + error, true, null);
     }
 
     public static String standardFormat(String input) {
@@ -141,7 +204,7 @@ public class AssetMapper {
 
         // 合并信息
         paneInfoSearch.updateEchoVBox("数据整合：" + ip, false, null);
-        List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos(info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
+        List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos("检索原始IP：" + ip, info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
         NetAssets netAssets = new NetAssets();
         netAssets.setCompanyName("-");
         netAssets.setDomainInfoList(mergedList);
@@ -171,29 +234,25 @@ public class AssetMapper {
         } else {
             paneInfoSearch.updateEchoVBox("检索域名基础信息", false, null);
             seoMap = getSeo(domain);
+            assetObj.setSeoMap(seoMap);
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("type", DataTypeConstants.SEO);
             dataMap.put("data", seoMap);
             paneInfoSearch.updateEchoVBox("检索域名基础信息", true, dataMap);
         }
-        String ipcType = seoMap.getAsJsonObject("备案信息").get("备案性质").getAsString();
+        String icpType = seoMap.getAsJsonObject("备案信息").get("备案性质").getAsString();
         String icpNoStr = seoMap.getAsJsonObject("备案信息").get("备案号").getAsString();
         String companyName = seoMap.getAsJsonObject("备案信息").get("备案所属").getAsString();
         icpNoSet.add(icpNoStr);
-        if(!ipcType.isEmpty() && !ipcType.equals("-") && !ipcType.equals("个人") && !companyName.isEmpty() && !companyName.equals("-")){
+        if(!icpType.isEmpty() && !icpType.equals("-") && !icpType.equals("个人") && !companyName.isEmpty() && !companyName.equals("-")){
             handleCompanyName(companyName, assetObj, icpNoSet, tmpDomainSet);
         }else {
-            List<DomainInfo> tmpDomainInfoList = getData(assetObj, null, tmpDomainSet, icpNoSet);
             NetAssets netAssets = new NetAssets();
             netAssets.setCompanyName(companyName);
-            netAssets.setDomainInfoList(tmpDomainInfoList);
-            assetObj.addCompanyDomainInfoList(netAssets);
+            getData(assetObj, netAssets, null, tmpDomainSet, icpNoSet);
         }
 
         if (hasSeoMap==null) paneInfoSearch.updateEchoVBox("查询结束", true, null);
-
-        String error = new AssetExcelExporter().exportToExcel(assetObj, "/Users/a/Desktop/项目开发/PotatoTool/123.xlsx");
-        paneInfoSearch.updateEchoVBox(error==null ? "导出至" : "导出失败_[Error]：" + error, true, null);
     }
 
     private ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
@@ -205,40 +264,79 @@ public class AssetMapper {
      * @param domainSet            域名
      * @param icpNoSet             icp备案号
      */
-    private List<DomainInfo> getData(AssetObj assetObj, Set<String> companyNameSet, Set<String> domainSet, Set<String> icpNoSet){
+    private void getData(AssetObj assetObj, NetAssets netAssets, Set<String> companyNameSet, Set<String> domainSet, Set<String> icpNoSet){
         // 初始化变量
         Set<String> tmpDomainSet = new HashSet<>(domainSet);
         List<DomainInfo> domainInfoList = new ArrayList<>();
         Set<String> tmpIcpNoSet = new HashSet<>(icpNoSet);
+        netAssets.setDomainInfoList(domainInfoList);
+        assetObj.addCompanyDomainInfoList(netAssets);
 
         // 提取配置信息
         boolean hasCrawlLinks = assetObj.isHasCrawlLinks();
         boolean hasFindSensitiveInfo = assetObj.isHasFindSensitiveInfo();
         int maxDepth = assetObj.getMaxDepth();
         int maxSubPathCount = assetObj.getMaxSubPathCount();
+        int maxGoogleSearchCount = assetObj.getMaxGoogleSearchCount();
+        int maxGithubSearchCount = assetObj.getMaxGithubSearchCount();
+        boolean isHasAssetKey = assetObj.isHasAssetKey();
+        boolean isUseGithub = assetObj.isUseGithub();
+        boolean isUseGoogle = assetObj.isUseGoogle();
         boolean isSearchShadowAssets = assetObj.isSearchShadowAssets();
+        boolean isHasCipAggregator = assetObj.isHasCipAggregator();
+        boolean isHasLocalFullDetection = assetObj.isHasLocalFullDetection();
+        boolean isHasIconSearch = assetObj.isHasIconSearch();
+        boolean isSslProxy = assetObj.isSslProxy();
+        int localFullDetectionThreshold = assetObj.getLocalFullDetectionThreshold();
+        int shadowAssetsThreshold = assetObj.getShadowAssetsThreshold();
+        int cipThreshold = assetObj.getCipThreshold();
 
         // 根据主域名获取子域
-        for(String domainStr : domainSet) {
-            paneInfoSearch.updateEchoVBox("获取子域名By_SSL：" +  domainStr, false, null);
-            tmpDomainSet.addAll(GetSubDomain.getSubByDomainOrDomainCert(domainStr));
-            if (assetObj.isBruteForceSubdomain()) {
-                paneInfoSearch.updateEchoVBox("爆破子域名：" +  domainStr, false, null);
+        int currentIndex = 0;
+        if(assetObj.isSearchSslSubdomainBox()){
+            int totalNum = domainSet.size();
+            for(String domainStr : domainSet) {
+                currentIndex++;
+                double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+                String showText = String.format("正在查询子域名By_SSL [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, domainStr, progress);
+                paneInfoSearch.updateEchoVBox(showText, false, null);
+                tmpDomainSet.addAll(GetSubDomain.getSubByDomainOrDomainCert(domainStr, isSslProxy));
+            }
+        }
+        currentIndex = 0;
+        if (assetObj.isBruteForceSubdomain()) {
+            int totalNum = domainSet.size();
+            for(String domainStr : domainSet) {
+                currentIndex++;
+                double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+                String showText = String.format("正在爆破子域名 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, domainStr, progress);
+                paneInfoSearch.updateEchoVBox(showText, false, null);
                 tmpDomainSet.addAll((SubdomainBruteForcer.getSubDomain(domainStr)));
             }
         }
         paneInfoSearch.updateEchoVBox("获取子域名", true, null);
 
 
-        if(!assetObj.isHasAssetKey()) {
+        if(!isHasAssetKey) {
             // 无任何平台Key时，调用amap
             paneInfoSearch.updateEchoVBox("Amap检索域名信息", false, null);
+
+            int totalTasks = tmpDomainSet.size();
+            AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
+
             for (String domainStr : tmpDomainSet) {
                 // 将每个任务提交到线程池
                 Future<List<DomainInfo>> future = executor.submit(() -> {
-                    paneInfoSearch.updateEchoVBox("检索域名信息" + domainStr, false, null);
                     JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa(domainStr);
-                    return DomainInfoMerger.mergeDomainInfos(briefExtendedInfo);
+
+                    int progress = completedTasks.incrementAndGet();
+                    double percentage = ((progress - 0.5) * 100.0) / totalTasks;
+                    String showText = String.format("正在检索域名信息 [%d/%d]：%s | 进度：%.2f%%",
+                            progress, totalTasks , domainStr, percentage);
+                    paneInfoSearch.updateEchoVBox(showText, false, null);
+                    return DomainInfoMerger.mergeDomainInfos("Amap检索：" + domainStr, briefExtendedInfo);
                 });
                 futures.add(future);
             }
@@ -262,8 +360,14 @@ public class AssetMapper {
             // 平台查询原始域名  【平台api存在频率限制，不建议多线程调用】
             paneInfoSearch.updateEchoVBox("平台检索原始域名", false, null);
 
+            currentIndex = 0;
+            int totalNum = domainSet.size();
             for (String domainStr : domainSet) {
-                paneInfoSearch.updateEchoVBox("平台检索原始域名：" + domainStr, false, null);
+                currentIndex++;
+                double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+                String showText = String.format("正在检索原始域名_by_平台 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, domainStr, progress);
+                paneInfoSearch.updateEchoVBox(showText, false, null);
 
                 // 获取不同平台的域名信息
                 JsonArray info_Fofa = fofaSearch.getInfoByCompanyOrDomain_Fofa(domainStr);
@@ -273,17 +377,20 @@ public class AssetMapper {
                 JsonArray info_Zoomeye = zoomeyeSearch.getInfoByCompanyOrDomain_Zoomeye(domainStr);
 
                 // 合并信息
-
-                paneInfoSearch.updateEchoVBox("数据整合：" + domainStr, false, null);
-                List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos(info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
+                String showText_merge = String.format("数据整合 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, domainStr, progress);
+                paneInfoSearch.updateEchoVBox(showText_merge, false, null);
+                List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos("检索原始域名：" + domainStr, info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
                 domainInfoList.addAll(mergedList);           // 添加到总的域名信息列表
 
-                paneInfoSearch.updateEchoVBox("更新相关域名列表及ICP列表：" + domainStr, false, null);
+                String showText_update = String.format("更新相关域名列表及ICP列表 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, domainStr, progress);
+                paneInfoSearch.updateEchoVBox(showText_update, false, null);
                 // 更新域名列表和 ICP 列表
                 for (DomainInfo domainInfo : mergedList) {
                     String icp = domainInfo.getIcp();
                     String tmpDomainStr = domainInfo.getDomain();
-                    if (icp != null && !icp.isEmpty()) {
+                    if (icp != null && !icp.equals("-") && !icp.isEmpty()) {
                         tmpIcpNoSet.add(icp.replaceAll("\\s*-\\s*\\d+$", ""));
                     }
                     if (tmpDomainStr != null && !tmpDomainStr.isEmpty()) {
@@ -297,8 +404,14 @@ public class AssetMapper {
 
             // icp查询
             paneInfoSearch.updateEchoVBox("平台检索ICP", false, null);
+            currentIndex = 0;
+            totalNum = tmpIcpNoSet.size();
             for (String icpNoStr : tmpIcpNoSet) {
-                paneInfoSearch.updateEchoVBox("平台检索ICP：" + icpNoStr, false, null);
+                currentIndex++;
+                double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+                String showText = String.format("正在检索ICP_by_平台 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, icpNoStr, progress);
+                paneInfoSearch.updateEchoVBox(showText, false, null);
 
                 // 获取不同平台的 ICP 信息
                 JsonArray icpInfo_Fofa = fofaSearch.getInfoByIcpNo_Fofa(icpNoStr);
@@ -306,12 +419,16 @@ public class AssetMapper {
                 JsonArray icpInfo_Quake = quakeSearch.getInfoByIcpNo_Quake(icpNoStr);
 
                 // 合并信息
-                paneInfoSearch.updateEchoVBox("数据整合：" + icpNoStr, false, null);
-                List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos(icpInfo_Fofa, icpInfo_Hunter, icpInfo_Quake);
+                String showText_merge = String.format("数据整合 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, icpNoStr, progress);
+                paneInfoSearch.updateEchoVBox(showText_merge, false, null);
+                List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos("检索ICP：" + icpNoStr, icpInfo_Fofa, icpInfo_Hunter, icpInfo_Quake);
                 domainInfoList.addAll(mergedList);  // 添加到总的域名信息列表
 
                 // 更新域名列表
-                paneInfoSearch.updateEchoVBox("更新相关域名列表：" + icpNoStr, false, null);
+                String showText_update = String.format("更新相关域名列表 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, icpNoStr, progress);
+                paneInfoSearch.updateEchoVBox(showText_update, false, null);
                 for (DomainInfo domainInfo : mergedList) {
                     String tmpDomainStr = domainInfo.getDomain();
                     if (tmpDomainStr != null && !tmpDomainStr.isEmpty()) {
@@ -327,8 +444,14 @@ public class AssetMapper {
                     .filter(domainInfo -> domainInfo.getIp()!= null &&!domainInfo.isCND())
                     .map(DomainInfo::getIp)
                     .collect(Collectors.toSet());
+            currentIndex = 0;
+            totalNum = oldIpSet.size();
             for (String ip : oldIpSet) {
-                paneInfoSearch.updateEchoVBox("平台检索IP：" + ip, false, null);
+                currentIndex++;
+                double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+                String showText = String.format("正在检索IP_by_平台 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, ip, progress);
+                paneInfoSearch.updateEchoVBox(showText, false, null);
 
                 // 获取不同平台的 IP 信息
                 JsonArray info_Fofa = fofaSearch.getInfoByIp_Fofa(ip);
@@ -338,8 +461,10 @@ public class AssetMapper {
                 JsonArray info_Zoomeye = zoomeyeSearch.getInfoByIp_Zoomeye(ip);
 
                 // 合并信息
-                paneInfoSearch.updateEchoVBox("数据整合：" + ip, false, null);
-                List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos(info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
+                String showText_merge = String.format("数据整合 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, ip, progress);
+                paneInfoSearch.updateEchoVBox(showText_merge, false, null);
+                List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos("检索IP：" + ip, info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
                 domainInfoList.addAll(mergedList);  // 添加到总的域名信息列表
             }
             paneInfoSearch.updateEchoVBox("剔除CDN_Ip，平台检索IP", true, null);
@@ -350,15 +475,28 @@ public class AssetMapper {
             domainInfoList = DomainInfoMerger.mergeDomainInfoList(domainInfoList);
             paneInfoSearch.updateEchoVBox("第一波数据去重", true, null);
             paneInfoSearch.updateEchoVBox("第一波全量深度信息探测", false, null);
+            int totalTasks = domainInfoList.size();
+            AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
+            int tmpIndex = 0;
             for (DomainInfo domainInfo : domainInfoList) {
+                tmpIndex ++;
+                if(!isHasLocalFullDetection && tmpIndex > localFullDetectionThreshold) break;
                 // 提交每个 DomainInfo 的 Web 信息获取任务
                 Future<Void> future = executor.submit(() -> {
+                    String domainStr = domainInfo.getDomain();
+                    if(domainStr==null||domainStr.isEmpty()) domainStr = domainInfo.getIp();
+
                     String baseUrl = getBaseUrl(domainInfo);
                     if (baseUrl != null && !baseUrl.isEmpty()) {
-                        paneInfoSearch.updateEchoVBox("全量深度信息探测：" + baseUrl, false, null);
-                        domainInfo.setWebInfoMap(Utils.getWebInfo(baseUrl, hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount));
+                         domainInfo.setWebInfoMap(Utils.getWebInfo(baseUrl, hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount, assetObj.isCrawlProxy()));
                     }
                     domainInfo.setDoWebInfoMap(true);
+
+                    int progress = completedTasks.incrementAndGet();
+                    double percentage = ((progress - 0.5) * 100.0) / totalTasks;
+                    String showText = String.format("正在全量深度信息探测 [%d/%d]：%s | 进度：%.2f%%",
+                            progress, totalTasks , domainStr, percentage);
+                    paneInfoSearch.updateEchoVBox(showText, false, null);
                     return null;
                 });
                 futures.add(future);
@@ -375,39 +513,49 @@ public class AssetMapper {
             ExecutorServiceManager.getInstance().forceShutdown();
 
             paneInfoSearch.updateEchoVBox("第一波全量深度信息探测", true, null);
+            List<DomainInfo> chooseWebInfoMapList = new ArrayList<>();
+            if(isHasIconSearch) {
+                paneInfoSearch.showIconChoosePaneBox(domainInfoList);
+                paneInfoSearch.updateEchoVBox("用户选择企业相关icon", false, null);
+                chooseWebInfoMapList = paneInfoSearch.waitAndGetIconDomainInfoList();
+                paneInfoSearch.updateEchoVBox("获取企业相关icon", true, null);
 
-            paneInfoSearch.showIconChoosePaneBox(domainInfoList);
-            paneInfoSearch.updateEchoVBox("用户选择企业相关icon", false, null);
-            List<DomainInfo> chooseWebInfoMapList = paneInfoSearch.waitAndGetIconDomainInfoList();
-            paneInfoSearch.updateEchoVBox("获取企业相关icon", true, null);
+                Set<String> md5Record = ConcurrentHashMap.newKeySet();
+                paneInfoSearch.updateEchoVBox("平台检索icon", false, null);
 
-            Set<String> md5Record = ConcurrentHashMap.newKeySet();
-            paneInfoSearch.updateEchoVBox("平台检索icon", false, null);
-            for (DomainInfo domainInfo : chooseWebInfoMapList) {
+                currentIndex = 0;
+                totalNum = chooseWebInfoMapList.size();
+                for (DomainInfo domainInfo : chooseWebInfoMapList) {
+                    currentIndex++;
+                    double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+                    String domainStr = domainInfo.getDomain();
+                    if (domainStr == null || domainStr.isEmpty()) domainStr = domainInfo.getIp();
+                    String showText = String.format("正在检索icon_by_平台 [%d/%d]：%s | 进度：%.2f%%",
+                            currentIndex, totalNum, domainStr, progress);
+                    paneInfoSearch.updateEchoVBox(showText, false, null);
 
-                Map<String, Object> webInfoMap = domainInfo.getWebInfoMap();
-                if (webInfoMap == null || !webInfoMap.containsKey("iconMd5") || webInfoMap.get("iconMd5") == null) {
-                    return Collections.emptyList();
+                    Map<String, Object> webInfoMap = domainInfo.getWebInfoMap();
+                    if (webInfoMap == null || !webInfoMap.containsKey("iconMd5") || webInfoMap.get("iconMd5") == null || webInfoMap.get("iconMd5").toString().isEmpty()) {
+                        continue;
+                    }
+
+                    String iconMd5 = webInfoMap.get("iconMd5").toString();
+                    if (!md5Record.add(iconMd5)) {
+                        continue;
+                    }
+
+                    String iconMmh3 = webInfoMap.get("iconMmh3").toString();
+                    JsonArray info_Fofa = fofaSearch.getInfoByIcon_Fofa(iconMmh3);
+                    JsonArray info_Hunter = hunterSearch.getInfoByIcon_Hunter(iconMd5);
+                    JsonArray info_Quake = quakeSearch.getInfoByIcon_Quake(iconMd5);
+                    JsonArray info_Shodan = shodanSearch.getInfoByIcon_Shodan(iconMmh3);
+                    JsonArray info_Zoomeye = zoomeyeSearch.getInfoByIcon_Zoomeye(iconMd5);
+
+                    List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos("检索选中图标：" + iconMd5, info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
+                    domainInfoList.addAll(mergedList);
                 }
-
-                String iconMd5 = webInfoMap.get("iconMd5").toString();
-                if (!md5Record.add(iconMd5)) {
-                    return Collections.emptyList(); // 排除重复icon
-                }
-
-                String iconMmh3 = webInfoMap.get("iconMmh3").toString();
-                JsonArray info_Fofa = fofaSearch.getInfoByIcon_Fofa(iconMmh3);
-                JsonArray info_Hunter = hunterSearch.getInfoByIcon_Hunter(iconMd5);
-                JsonArray info_Quake = quakeSearch.getInfoByIcon_Quake(iconMd5);
-                JsonArray info_Shodan = shodanSearch.getInfoByIcon_Shodan(iconMmh3);
-                JsonArray info_Zoomeye = zoomeyeSearch.getInfoByIcon_Zoomeye(iconMd5);
-
-                List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos(info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
-                domainInfoList.addAll(mergedList);
-                System.out.println(mergedList);
+                paneInfoSearch.updateEchoVBox("平台检索icon", true, null);
             }
-            paneInfoSearch.updateEchoVBox("平台检索icon", true, null);
-
             // 去重处理
             paneInfoSearch.updateEchoVBox("第二波数据去重", false, null);
             domainInfoList = DomainInfoMerger.mergeDomainInfoList(domainInfoList);
@@ -418,8 +566,15 @@ public class AssetMapper {
                 paneInfoSearch.updateEchoVBox("检索影子资产", false, null);
                 if(companyNameSet!=null && companyNameSet.size()>0) {
                     String companyNamesStr = String.join("、", companyNameSet);
+
+                    currentIndex = 0;
+                    totalNum = companyNameSet.size();
                     for (String companyNameStr : companyNameSet) {
-                        paneInfoSearch.updateEchoVBox("泛型搜索：" + companyNamesStr, false, null);
+                        currentIndex++;
+                        double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+                        String showText = String.format("正在泛型检索 [%d/%d]：%s | 进度：%.2f%%",
+                                currentIndex, totalNum, companyNameStr, progress);
+                        paneInfoSearch.updateEchoVBox(showText, false, null);
 
                         // 查询各平台数据
                         JsonArray info_Fofa = fofaSearch.getInfoByBodyFilterIcp_Fofa(companyNameStr);
@@ -429,24 +584,33 @@ public class AssetMapper {
                         JsonArray info_Zoomeye = zoomeyeSearch.getInfoByBodyFilterIcp_zoomeye(companyNameStr);
 
                         // 整合影子资产并过滤非已确定的资产
-                        paneInfoSearch.updateEchoVBox("数据整合：" + companyNameStr, false, null);
-                        List<DomainInfo> tmpMergedList = DomainInfoMerger.mergeDomainInfos(info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
-                        paneInfoSearch.updateEchoVBox("过滤非已确定的资产", false, null);
+                        String showText_merge = String.format("数据整合 [%d/%d]：%s | 进度：%.2f%%",
+                                currentIndex, totalNum, companyNameStr, progress);
+                        String showText_filter = String.format("过滤非已确定的资产 [%d/%d]：%s | 进度：%.2f%%",
+                                currentIndex, totalNum, companyNameStr, progress);
+                        paneInfoSearch.updateEchoVBox(showText_merge, false, null);
+                        List<DomainInfo> tmpMergedList = DomainInfoMerger.mergeDomainInfos("泛型检索：" + companyNameStr, info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
+                        paneInfoSearch.updateEchoVBox(showText_filter, false, null);
                         tmpMergedList = DomainInfoMerger.getUniqueDomainInfoInB(domainInfoList, tmpMergedList);
-
+                        tmpMergedList = tmpMergedList.subList(0, Math.min(shadowAssetsThreshold, tmpMergedList.size()));
 
                         // 根据图标相似度和内容识别关联资产
-                        paneInfoSearch.updateEchoVBox("根据图标相似度、内容识别过滤资产：" + companyNameStr, false, null);
+                        String showText_ai = String.format("根据图标相似度、内容识别过滤资产 [%d/%d]：%s | 进度：%.2f%%",
+                                currentIndex, totalNum, companyNameStr, progress);
+                        paneInfoSearch.updateEchoVBox(showText_ai, false, null);
                         List<DomainInfo> relevantDomains = new ArrayList<>();
+                        Map<String, Object> chooseWebBaseInfoMap = chooseWebInfoMapList.size()> 0 ? chooseWebInfoMapList.get(0).getWebInfoMap() : null;
                         for (DomainInfo domainInfo : tmpMergedList) {
                             String baseUrl = getBaseUrl(domainInfo);
-                            if (baseUrl != null && !baseUrl.isEmpty() && AiUtils.getContentRelevance_Ai(baseUrl, companyNamesStr, "tmpDomain")) {
+                            if (baseUrl != null && !baseUrl.isEmpty() && AiUtils.getContentRelevance_Ai(baseUrl, companyNamesStr, chooseWebBaseInfoMap, assetObj.isCrawlProxy())) {
                                 relevantDomains.add(domainInfo);
                             }
                         }
 
                         // 去重
-                        paneInfoSearch.updateEchoVBox("数据去重：" + companyNameStr, false, null);
+                        String showText_rem = String.format("数据去重 [%d/%d]：%s | 进度：%.2f%%",
+                                currentIndex, totalNum, companyNameStr, progress);
+                        paneInfoSearch.updateEchoVBox(showText_rem + companyNameStr, false, null);
                         List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfoList(relevantDomains);
                         domainInfoList.addAll(mergedList);
                     }
@@ -466,8 +630,15 @@ public class AssetMapper {
                     .filter(ip ->!finalOldIpSet.contains(ip))
                     .collect(Collectors.toSet());
             if(addedIps.size()>0) paneInfoSearch.updateEchoVBox("第二波平台检索IP", false, null);
+
+            currentIndex = 0;
+            totalNum = addedIps.size();
             for (String ip : addedIps) {
-                paneInfoSearch.updateEchoVBox("平台检索IP：" + ip, false, null);
+                currentIndex++;
+                double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+                String showText = String.format("正在检索IP_by_平台 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, ip, progress);
+                paneInfoSearch.updateEchoVBox(showText, false, null);
 
                 // 获取不同平台的 IP 信息
                 JsonArray info_Fofa = fofaSearch.getInfoByIp_Fofa(ip);
@@ -477,8 +648,10 @@ public class AssetMapper {
                 JsonArray info_Zoomeye = zoomeyeSearch.getInfoByIp_Zoomeye(ip);
 
                 // 合并信息
-                paneInfoSearch.updateEchoVBox("数据整合：" + ip, false, null);
-                List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos(info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
+                String showText_merge = String.format("数据整合 [%d/%d]：%s | 进度：%.2f%%",
+                        currentIndex, totalNum, ip, progress);
+                paneInfoSearch.updateEchoVBox(showText_merge, false, null);
+                List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos("检索IP：" + ip, info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
                 domainInfoList.addAll(mergedList);  // 添加到总的域名信息列表
             }
             if(addedIps.size()>0) {
@@ -487,29 +660,39 @@ public class AssetMapper {
 
 
             // 剔除cdnIp，进行C段聚合
-            paneInfoSearch.updateEchoVBox("剔除CDN_Ip，C段聚合", false, null);
-            Map<String, Integer> getFrequentCSegments = CipAggregator.getFrequentCSegments(newIpSet);
-            paneInfoSearch.updateEchoVBox("剔除CDN_Ip，C段聚合", true, null);
+            if(isHasCipAggregator) {
+                paneInfoSearch.updateEchoVBox("剔除CDN_Ip，C段聚合", false, null);
+                Map<String, Integer> getFrequentCSegments = CipAggregator.getFrequentCSegments(newIpSet, cipThreshold);
+                paneInfoSearch.updateEchoVBox("剔除CDN_Ip，C段聚合", true, null);
 
-            if(getFrequentCSegments.size()>0) {
-                paneInfoSearch.updateEchoVBox("平台检索C段", false, null);
-                for (String ip : getFrequentCSegments.keySet()) {
-                    // 提交每个 IP 查询任务
-                    paneInfoSearch.updateEchoVBox("平台检索C段：" + ip, false, null);
+                currentIndex = 0;
+                totalNum = getFrequentCSegments.size();
+                if (getFrequentCSegments.size() > 0) {
+                    paneInfoSearch.updateEchoVBox("平台检索C段", false, null);
+                    for (String ip : getFrequentCSegments.keySet()) {
+                        // 提交每个 IP 查询任务
+                        currentIndex++;
+                        double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+                        String showText = String.format("正在检索C段_by_平台 [%d/%d]：%s | 进度：%.2f%%",
+                                currentIndex, totalNum, ip, progress);
+                        paneInfoSearch.updateEchoVBox(showText, false, null);
 
-                    // 获取不同平台的 C段 信息
-                    JsonArray info_Fofa = fofaSearch.getInfoByIp_Fofa(ip);
-                    JsonArray info_Hunter = hunterSearch.getInfoByIp_Hunter(ip);
-                    JsonArray info_Quake = quakeSearch.getInfoByIp_Quake(ip);
-                    JsonArray info_Shodan = shodanSearch.getInfoByIp_Shodan(ip);
-                    JsonArray info_Zoomeye = zoomeyeSearch.getInfoByIp_Zoomeye(ip);
+                        // 获取不同平台的 C段 信息
+                        JsonArray info_Fofa = fofaSearch.getInfoByIp_Fofa(ip);
+                        JsonArray info_Hunter = hunterSearch.getInfoByIp_Hunter(ip);
+                        JsonArray info_Quake = quakeSearch.getInfoByIp_Quake(ip);
+                        JsonArray info_Shodan = shodanSearch.getInfoByIp_Shodan(ip);
+                        JsonArray info_Zoomeye = zoomeyeSearch.getInfoByIp_Zoomeye(ip);
 
-                    // 合并信息
-                    paneInfoSearch.updateEchoVBox("数据整合：" + ip, false, null);
-                    List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos(info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
-                    domainInfoList.addAll(mergedList);  // 添加到总的域名信息列表
+                        // 合并信息
+                        String showText_merge = String.format("数据整合 [%d/%d]：%s | 进度：%.2f%%",
+                                currentIndex, totalNum, ip, progress);
+                        paneInfoSearch.updateEchoVBox(showText_merge, false, null);
+                        List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos("检索C段", info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
+                        domainInfoList.addAll(mergedList);  // 添加到总的域名信息列表
+                    }
+                    paneInfoSearch.updateEchoVBox("平台检索C段", true, null);
                 }
-                paneInfoSearch.updateEchoVBox("平台检索C段", true, null);
             }
         }
 
@@ -519,11 +702,14 @@ public class AssetMapper {
         paneInfoSearch.updateEchoVBox("第三波数据去重", true, null);
 
 
-        boolean isUseGoogle = assetObj.isUseGoogle();
         // 使用线程安全的集合来存储已处理过的域名信息
         if(isUseGoogle) {
             paneInfoSearch.updateEchoVBox("检索Google信息泄露", false, null);
             ConcurrentMap<String, DoDomainInfo> doGoogleDomainInfoMap = new ConcurrentHashMap<>();
+
+            int totalTasks = domainInfoList.size();
+            AtomicInteger completedTasks = new AtomicInteger(0);
+
             for (DomainInfo domainInfo : domainInfoList) {
                 Future<?> future = executor.submit(() -> {
                     String domainStr = domainInfo.getDomain();
@@ -533,8 +719,7 @@ public class AssetMapper {
                             DoDomainInfo newDoDomainInfo = new DoDomainInfo();
                             newDoDomainInfo.setDomain(domain);
 
-                            paneInfoSearch.updateEchoVBox("检索Google信息泄露：" + domainStr, false, null);
-                            JsonArray googleLeakage = googleSearch.searchLeakageByDomain(domain);
+                            JsonArray googleLeakage = googleSearch.searchLeakageByDomain(domain, assetObj.isCrawlProxy(), maxGoogleSearchCount);
                             newDoDomainInfo.setGoogldLeakage(googleLeakage);
 
                             return newDoDomainInfo;
@@ -542,6 +727,12 @@ public class AssetMapper {
 
                         domainInfo.setGoogldLeakage(doDomainInfo.getGoogldLeakage());
                     }
+
+                    int progress = completedTasks.incrementAndGet();
+                    double percentage = ((progress - 0.5) * 100.0) / totalTasks;
+                    String showText = String.format("正在检索Google信息泄露 [%d/%d]：%s | 进度：%.2f%%",
+                            progress, totalTasks , domainStr, percentage);
+                    paneInfoSearch.updateEchoVBox(showText, false, null);
                 });
 
                 // 添加到 futures 列表，稍后等待所有任务完成
@@ -562,11 +753,14 @@ public class AssetMapper {
             paneInfoSearch.updateEchoVBox("检索Google信息泄露", true, null);
         }
 
-        boolean isUseGithub = assetObj.isUseGithub();
         if(isUseGithub) {
             paneInfoSearch.updateEchoVBox("检索Github信息泄露", false, null);
             // 使用线程安全的集合来存储已处理过的域名信息
             ConcurrentMap<String, DoDomainInfo> doGitDomainInfoMap = new ConcurrentHashMap<>();
+
+            int totalTasks = domainInfoList.size();
+            AtomicInteger completedTasks = new AtomicInteger(0);
+
             for (DomainInfo domainInfo : domainInfoList) {
                 Future<?> future = executor.submit(() -> {
                     String domainStr = domainInfo.getDomain();
@@ -576,8 +770,7 @@ public class AssetMapper {
                             DoDomainInfo newDoDomainInfo = new DoDomainInfo();
                             newDoDomainInfo.setDomain(domain);
 
-                            paneInfoSearch.updateEchoVBox("检索Github信息泄露：" + domainStr, false, null);;
-                            JsonArray gitRepoLeakage = gitHubLeakage.getRepo(companyNameSet, domain);
+                            JsonArray gitRepoLeakage = gitHubLeakage.getRepo(companyNameSet, domain, maxGithubSearchCount);
                             newDoDomainInfo.setGitRepoLeakage(gitRepoLeakage);
 
                             return newDoDomainInfo;
@@ -585,6 +778,12 @@ public class AssetMapper {
 
                         domainInfo.setGitRepoLeakage(doDomainInfo.getGitRepoLeakage());
                     }
+
+                    int progress = completedTasks.incrementAndGet();
+                    double percentage = ((progress - 0.5) * 100.0) / totalTasks;
+                    String showText = String.format("正在检索Github信息泄露 [%d/%d]：%s | 进度：%.2f%%",
+                            progress, totalTasks , domainStr, percentage);
+                    paneInfoSearch.updateEchoVBox(showText, false, null);
                 });
 
                 // 添加到 futures 列表，稍后等待所有任务完成
@@ -605,54 +804,58 @@ public class AssetMapper {
             paneInfoSearch.updateEchoVBox("检索Github信息泄露", true, null);
         }
 
-        paneInfoSearch.updateEchoVBox("第二波全量深度信息探测", false, null);
-        for (DomainInfo domainInfo : domainInfoList) {
-            Future<?> future = executor.submit(() -> {
-                String domainStr = domainInfo.getDomain();
-                if (domainStr != null && !domainStr.isEmpty()) {
-                    // 针对尚未获取网站信息的域名进行处理
-                    if (domainInfo.isDoWebInfoMap()) {
+        if(isHasLocalFullDetection) {
+            paneInfoSearch.updateEchoVBox("第二波全量深度信息探测", false, null);
+            int totalTasks = domainInfoList.size();
+            AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
+            for (DomainInfo domainInfo : domainInfoList) {
+                Future<?> future = executor.submit(() -> {
+                    String domainStr = domainInfo.getDomain();
+                    if (domainStr == null || domainStr.isEmpty()) domainStr = domainInfo.getIp();
+                    int progress = completedTasks.incrementAndGet();
+                    double percentage = ((progress - 0.5) * 100.0) / totalTasks;
+                    String showText = String.format("正在全量深度信息探测 [%d/%d]：%s | 进度：%.2f%%",
+                            progress, totalTasks, domainStr, percentage);
+
+                    if (!domainInfo.isDoWebInfoMap()) {
                         // 获取网站信息
                         String baseUrl = getBaseUrl(domainInfo);
                         if (baseUrl != null && !baseUrl.isEmpty()) {
-                            paneInfoSearch.updateEchoVBox("第二波全量深度信息探测: " + baseUrl, false, null);
-                            domainInfo.setWebInfoMap(Utils.getWebInfo(baseUrl, hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount));
+                            domainInfo.setWebInfoMap(Utils.getWebInfo(baseUrl, hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount, assetObj.isCrawlProxy()));
                         }
                         domainInfo.setDoWebInfoMap(true);
                     }
-                }
-            });
 
-            // 添加到 futures 列表，稍后等待所有任务完成
-            futures.add(future);
-        }
-        // 等待所有任务完成
-        for (Future<?> future : futures) {
-            try {
-                future.get(); // 阻塞直到任务完成
-            } catch (CancellationException ce) {} catch (Exception e) {
-                if(debugMode) e.printStackTrace();
+                    paneInfoSearch.updateEchoVBox(showText, false, null);
+                });
+
+                // 添加到 futures 列表，稍后等待所有任务完成
+                futures.add(future);
             }
+            // 等待所有任务完成
+            for (Future<?> future : futures) {
+                try {
+                    future.get(); // 阻塞直到任务完成
+                } catch (CancellationException ce) {
+                } catch (Exception e) {
+                    if (debugMode) e.printStackTrace();
+                }
+            }
+            // 停止所有线程
+            ExecutorServiceManager.getInstance().forceShutdown();
+
+            paneInfoSearch.updateEchoVBox("第二波全量深度信息探测", true, null);
         }
-        // 停止所有线程
-        ExecutorServiceManager.getInstance().forceShutdown();
-
-        paneInfoSearch.updateEchoVBox("第二波全量深度信息探测", true, null);
-
-        return domainInfoList;
     }
 
     public String getBaseUrl(DomainInfo domainInfo){
-        String baseUrl = domainInfo.getUrl();
-        if (baseUrl == null || baseUrl.isEmpty()) {
-            baseUrl = domainInfo.getDomain();
-            String port = domainInfo.getPort();
-            if (baseUrl == null || baseUrl.isEmpty()){
-                baseUrl = domainInfo.getIp();
-            }
-            if (port != null && !port.isEmpty()) {
-                baseUrl += ":" + port;
-            }
+        String baseUrl = domainInfo.getDomain();
+        String port = domainInfo.getPort();
+        if (baseUrl == null || baseUrl.isEmpty()){
+            baseUrl = domainInfo.getIp();
+        }
+        if (port != null && !port.isEmpty()) {
+            baseUrl += ":" + port;
         }
         if(baseUrl.startsWith(":")) return null;
         return baseUrl;
@@ -671,9 +874,9 @@ public class AssetMapper {
         paneInfoSearch.updateEchoVBox("检索相关公司信息", false, null);
         JsonArray companyList = GetCompany.getCompany_chinaz(companyName);
         if(companyList.size()>0){
-            JsonObject companyDetailsMap = GetCompany.getCompanyDetails_chinaz(companyList.get(0).getAsJsonObject().get("企业ID").getAsString());
-
-            JsonArray icpInfo = companyDetailsMap.getAsJsonArray("网站备案");
+            JsonObject companyInfoMap = GetCompany.getCompanyDetails_chinaz(companyList.get(0).getAsJsonObject().get("企业ID").getAsString(), companyList.get(0).getAsJsonObject().get("企业名称").getAsString());
+            assetObj.setCompanyInfoMap(companyInfoMap);
+            JsonArray icpInfo = companyInfoMap.getAsJsonArray("网站备案");
 
             for(JsonElement jsonElement : icpInfo) {
                 String icpNo = jsonElement.getAsJsonObject().get("备案号").getAsString();
@@ -684,19 +887,23 @@ public class AssetMapper {
             }
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("type", DataTypeConstants.ICP);
-            dataMap.put("data", companyDetailsMap);
+            dataMap.put("data", companyInfoMap);
             paneInfoSearch.updateEchoVBox("检索公司相关的备案号及域名信息", true, dataMap);
         }
 
         paneInfoSearch.updateEchoVBox("检索公司相关的微信公众号、APP、子公司信息", false, null);
-        JsonArray companyInfoMap = aiqichaSearch.getCompanyInfoIteration(companyName);
+        JsonArray companyDetailsInfoMap = aiqichaSearch.getCompanyInfoIteration(companyName);
+        assetObj.setCompanyDetailsInfoMap(companyDetailsInfoMap);
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("type", DataTypeConstants.WXAPPSUBCOM);
-        dataMap.put("data", companyInfoMap);
+        dataMap.put("data", companyDetailsInfoMap);
         paneInfoSearch.updateEchoVBox("检索公司及符合权重的子公司相关的备案号、域名、微信公众号、APP等信息", true, dataMap);
 
         boolean hasSubCompanyName = false;
-        for(JsonElement jsonElement : companyInfoMap) {
+        int currentIndex = 0;
+        int totalNum = companyDetailsInfoMap.size();
+        for(JsonElement jsonElement : companyDetailsInfoMap) {
+            currentIndex++;
             JsonObject jsonObject = jsonElement.getAsJsonObject();
             if(jsonObject!=null && !jsonObject.isJsonNull() && jsonObject.size()>0) {
                 String subCompanyName = jsonObject.entrySet().iterator().next().getKey();
@@ -718,51 +925,59 @@ public class AssetMapper {
                             }
                         });
                     }
-                    // 获取企业别名by_Ai
-                    paneInfoSearch.updateEchoVBox("获取[" + subCompanyName + " ]企业别名_By_Ai", false, null);
-                    Set<String> subCompanyNameSet = AiUtils.getCompanyName_Ai(subCompanyName);
-                    paneInfoSearch.updateEchoVBox("修改[" + subCompanyName + " ]企业别名_By_User", false, null);
-                    paneInfoSearch.showCompanyNameChoosePaneBox(subCompanyNameSet);
-                    subCompanyNameSet = paneInfoSearch.waitAndGetCompanyNameSet();
-                    paneInfoSearch.updateEchoVBox("获取[" + subCompanyName + " ]企业别名", true, null);
 
-                    List<DomainInfo> tmpDomainInfoList = getData(assetObj, subCompanyNameSet, subComDomainSet, subIcpNoSet);
+                    double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+                    String showText_data = String.format("检索企业 [%d/%d]：%s | 进度：%.2f%%",
+                            currentIndex, totalNum, subCompanyName, progress);
+                    paneInfoSearch.updateEchoVBox(showText_data, true, null);
+
+                    Set<String> subCompanyNameSet = new HashSet<>();
+                    if(assetObj.isSearchShadowAssets() && assetObj.isUseGithub()) {
+                        String showText_Ai = String.format("正在获取企业别名_By_Ai [%d/%d]：%s | 进度：%.2f%%",
+                                currentIndex, totalNum, subCompanyName, progress);
+                        String showText_User = String.format("正在获取企业别名_By_User [%d/%d]：%s | 进度：%.2f%%",
+                                currentIndex, totalNum, subCompanyName, progress);
+                        String showText = String.format("企业别名 [%d/%d]：%s | 进度：%.2f%%",
+                                currentIndex, totalNum, subCompanyName, progress);
+                        if (totalNum == 1) showText = "获取企业别名：" + subCompanyName;
+                        // 获取企业别名by_Ai
+                        paneInfoSearch.updateEchoVBox(showText_Ai, false, null);
+                        subCompanyNameSet = AiUtils.getCompanyName_Ai(subCompanyName);
+                        paneInfoSearch.updateEchoVBox(showText_User, false, null);
+                        paneInfoSearch.showCompanyNameChoosePaneBox(subCompanyNameSet);
+                        subCompanyNameSet = paneInfoSearch.waitAndGetCompanyNameSet();
+                        paneInfoSearch.updateEchoVBox(showText, true, null);
+                    }else {
+                        subCompanyNameSet.add(subCompanyName);
+                    }
 
                     NetAssets netAssets = new NetAssets();
                     netAssets.setCompanyName(subCompanyName);
-                    netAssets.setDomainInfoList(tmpDomainInfoList);
-                    assetObj.addCompanyDomainInfoList(netAssets);
+                    getData(assetObj, netAssets, subCompanyNameSet, subComDomainSet, subIcpNoSet);
                 }
             }
         }
 
         if(!hasSubCompanyName){
-            paneInfoSearch.updateEchoVBox("获取[" + companyName + " ]企业别名_By_Ai", false, null);
-            Set<String> companyNameSet = AiUtils.getCompanyName_Ai(companyName);
-            paneInfoSearch.updateEchoVBox("修改[" + companyName + " ]企业别名_By_User", false, null);
-            paneInfoSearch.showCompanyNameChoosePaneBox(companyNameSet);
-            companyNameSet = paneInfoSearch.waitAndGetCompanyNameSet();
-            paneInfoSearch.updateEchoVBox("获取[" + companyName + " ]企业别名", true, null);
-
-            List<DomainInfo> tmpDomainInfoList = getData(assetObj, companyNameSet, tmpDomainSet, icpNoSet);
+            Set<String> companyNameSet = new HashSet<>();
+            if(assetObj.isSearchShadowAssets() && assetObj.isUseGithub()) {
+                paneInfoSearch.updateEchoVBox("正在获取企业别名_By_Ai：" + companyName, false, null);
+                companyNameSet = AiUtils.getCompanyName_Ai(companyName);
+                paneInfoSearch.updateEchoVBox("正在获取企业别名_By_User：" + companyName, false, null);
+                paneInfoSearch.showCompanyNameChoosePaneBox(companyNameSet);
+                companyNameSet = paneInfoSearch.waitAndGetCompanyNameSet();
+                paneInfoSearch.updateEchoVBox("企业别名：" + companyName, true, null);
+            }else {
+                companyNameSet.add(companyName);
+            }
 
             NetAssets netAssets = new NetAssets();
             netAssets.setCompanyName(companyName);
-            netAssets.setDomainInfoList(tmpDomainInfoList);
-            assetObj.addCompanyDomainInfoList(netAssets);
+            getData(assetObj, netAssets, companyNameSet, tmpDomainSet, icpNoSet);
         }
 
         if(hasIcpNoSet==null&& hasTmpDomainSet==null) paneInfoSearch.updateEchoVBox("查询结束", true, null);
     }
-
-
-    public static String getFirstFromSet(Set<String> domain) {
-        for (String value : domain) {
-            return value;
-        }
-        return null;
-    }
-
 
 
     public static void main(String[] args) {

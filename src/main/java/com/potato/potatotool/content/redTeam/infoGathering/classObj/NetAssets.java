@@ -1,5 +1,8 @@
 package com.potato.potatotool.content.redTeam.infoGathering.classObj;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import java.util.List;
 import java.util.Map;
 

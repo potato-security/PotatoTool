@@ -20,7 +20,7 @@ import static com.potato.potatotool.utils.Constants.getResourceStream;
  * @date 2024/10/12 17:59
  */
 public class SubdomainBruteForcer {
-    private static final int THREAD_POOL_SIZE = ExecutorServiceManager.getOptimalThreadPoolSize() * 160; // 线程池大小，调整以适应资源
+    private static final int THREAD_POOL_SIZE = ExecutorServiceManager.getOptimalThreadPoolSize() * 140; // 线程池大小，调整以适应资源
     private static final String[] DNS_SERVERS = {
             "8.8.8.8",
             "1.1.1.1",

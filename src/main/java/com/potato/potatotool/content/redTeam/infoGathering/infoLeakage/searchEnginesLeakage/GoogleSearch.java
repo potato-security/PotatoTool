@@ -3,12 +3,10 @@ package com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.searchEn
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.gitLeakage.GitHubLeakage;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
-import com.potato.potatotool.utils.Constants;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.*;
 
 import java.util.*;
 
@@ -20,41 +18,43 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2023/10/1 15:53
  */
 public class GoogleSearch {
-    public GoogleSearch(Set<HashMap<String, String>> Google_API_List){
-        this.Google_API_List = new ArrayList<HashMap<String, String>>(Google_API_List);
-    }
     private static List<HashMap<String, String>> Google_API_List;
+    private static boolean Proxy = false;
     private static boolean isEffectiveKey = true;
     private static int keyIndex = 0;
 
+    public GoogleSearch(Set<HashMap<String, String>> Google_API_List, boolean Proxy){
+        this.Google_API_List = new ArrayList<HashMap<String, String>>(Google_API_List);
+        this.Proxy = Proxy;
+    }
 
-    public JsonArray searchLeakageByDomain(String domain){
+    public JsonArray searchLeakageByDomain(String domain, boolean isCrawlProxy, int maxGoogleSearchCount){
         String input = "site:" + domain + " cominurl:sql | 密码 | 内部 | password | inurl:apidocs | inurl:api-docs | inurl:swagger | inurl:api-explorer | intext:\"sql syntax near\" | intext:\"syntax error has occurred\" | intext:\"incorrect syntax near\" | intext:\"unexpected end of SQL command\" | intext:\"Warning: mysql_connect()\" | intext:\"Warning: mysql_query()\" | intext:\"Warning: pg_connect()\" | filetype:sqlext:sql | ext:dbf | ext:mdb";
         if(domain.isEmpty()){
             input = "";
         }
-        return search(input, null, true);
+        return search(input, null, true, isCrawlProxy, maxGoogleSearchCount);
     }
 
-    public JsonArray searchLeakageByIp(String ip){
+    public JsonArray searchLeakageByIp(String ip, boolean isCrawlProxy, int maxGoogleSearchCount){
         String input = "\"" + ip + "\" cominurl:sql | 密码 | 内部 | password | inurl:apidocs | inurl:api-docs | inurl:swagger | inurl:api-explorer | intext:\"sql syntax near\" | intext:\"syntax error has occurred\" | intext:\"incorrect syntax near\" | intext:\"unexpected end of SQL command\" | intext:\"Warning: mysql_connect()\" | intext:\"Warning: mysql_query()\" | intext:\"Warning: pg_connect()\" | filetype:sqlext:sql | ext:dbf | ext:mdb";
         if(ip.isEmpty()){
             input = "";
         }
-        return search(input, null, true);
+        return search(input, null, true, isCrawlProxy, maxGoogleSearchCount);
     }
 
     // 获取影子资产domain，已经过icon\ai过滤
-    public JsonArray searchDomainByCompanyName(String companyName, String targetUrl){
+    public JsonArray searchDomainByCompanyName(String companyName, Map<String, Object> targetWebBaseInfoMap, boolean isCrawlProxy, int maxGoogleSearchCount){
         String input = "\"" + companyName + "\"";
         if(companyName.isEmpty()){
             input = "";
         }
-        return search(input, targetUrl, false);
+        return search(input, targetWebBaseInfoMap, false, isCrawlProxy, maxGoogleSearchCount);
     }
 
 
-    public JsonArray search(String input, String targetUrl, boolean isSearchLeakage){
+    public JsonArray search(String input, Map<String, Object> targetWebBaseInfoMap, boolean isSearchLeakage, boolean isCrawlProxy, int maxGoogleSearchCount){
         JsonArray repoArray = new JsonArray();
         if(input.isEmpty() ||Google_API_List.size()==0|| Google_API_List.get(0).isEmpty() || !isEffectiveKey){
             return repoArray;
@@ -63,7 +63,7 @@ public class GoogleSearch {
         int index = 0;
 
         while (true) {
-            if(index==10) break; // 最多100条
+            if(index * 10 >= maxGoogleSearchCount || index==10) break; // 一页10条，当前index=上次页数
             int currentIndex = index * 10 + 1;
             index += 1;
 
@@ -74,13 +74,14 @@ public class GoogleSearch {
                 RequestObj obj = new RequestObj()
                         .setUrl("https://customsearch.googleapis.com/customsearch/v1?key=" + Google_Key + "&q=" + strUtils.urlEncode(input) + "&cx=" + Google_Cx + "&start=" + currentIndex)
                         .setMethod("GET");
-//                        .setProxies("http://127.0.0.1:8080");
+                if(!Proxy) obj.setProxies(null);
 
                 CustomHttpResponse con = requests(obj);
 
                 int statusCode = con.getResponseCode();
                 // 检查请求状态码
                 if (statusCode != 200) {
+                    con.disconnect();
                     if(statusCode == 429){
                         keyIndex += 1;
                         index -= 1;
@@ -120,7 +121,7 @@ public class GoogleSearch {
                                 }
                             } else {
                                 // 公司名
-                                boolean isContentRelevance = AiUtils.getContentRelevance_Ai(domain, input.replace("\"", ""), targetUrl);
+                                boolean isContentRelevance = AiUtils.getContentRelevance_Ai(domain, input.replace("\"", ""), targetWebBaseInfoMap, isCrawlProxy);
                                 if (!isContentRelevance) {
                                     continue;
                                 }
@@ -158,8 +159,8 @@ public class GoogleSearch {
 
     public static String getError_Google() {
         isEffectiveKey = true;
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
-        JsonArray jsonArray = tmpJsonObj.getAsJsonArray("Google_API");
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        JsonArray jsonArray = tmpJsonObj.getAsJsonArray(AssetKeyConstants.GOOGLE_API);
         Set<HashMap<String, String>> google_API_List = new HashSet<>();
         for (JsonElement element : jsonArray) {
             HashMap<String, String> map = new HashMap<>();
@@ -170,9 +171,10 @@ public class GoogleSearch {
             }
             google_API_List.add(map);
         }
-        GoogleSearch googleSearch = new GoogleSearch(google_API_List);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GOOGLE_API);
+        GoogleSearch googleSearch = new GoogleSearch(google_API_List, Proxy);
         String domain = "【Check】";
-        if (googleSearch.searchLeakageByDomain(domain).isEmpty()){
+        if (googleSearch.searchLeakageByDomain(domain, true, 1).isEmpty()){
             isEffectiveKey = false;
             return "无效的Google_API/限国外IP";
         }
@@ -181,8 +183,8 @@ public class GoogleSearch {
 
 
     public static void main(String[] args) {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
-        JsonArray jsonArray = tmpJsonObj.getAsJsonArray("Google_API");
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        JsonArray jsonArray = tmpJsonObj.getAsJsonArray(AssetKeyConstants.GOOGLE_API);
         Set<HashMap<String, String>> google_API_List = new HashSet<>();
         for (JsonElement element : jsonArray) {
             HashMap<String, String> map = new HashMap<>();
@@ -193,11 +195,12 @@ public class GoogleSearch {
             }
             google_API_List.add(map);
         }
-        GoogleSearch googleSearch = new GoogleSearch(google_API_List);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GOOGLE_API);
+        GoogleSearch googleSearch = new GoogleSearch(google_API_List, Proxy);
 
 
-        System.out.println(googleSearch.searchLeakageByDomain("aabyss.cn"));
+        System.out.println(googleSearch.searchLeakageByDomain("aabyss.cn", true, 10));
 
-        System.out.println(googleSearch.searchLeakageByIp("127.0.0.1"));
+        System.out.println(googleSearch.searchLeakageByIp("127.0.0.1", true, 10));
     }
 }

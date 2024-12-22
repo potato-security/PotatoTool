@@ -1,5 +1,9 @@
 package com.potato.potatotool;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
 import com.potato.potatotool.controller.MainController;
 import com.potato.potatotool.controller.PaneLoad;
 import com.potato.potatotool.controller.PanePasswd;
@@ -175,10 +179,19 @@ public class MainApplication extends Application {
         try {
             Files.createDirectories(configFolder);
             Path configFile = configFolder.resolve("config.json");
-
-            if (!Files.exists(configFile)) {
-                String tmpDataJsonStr = getResourceString("config");
+            JsonElement tmpJsonObj = (JsonElement) Constants.getOutsideConfig("ConfigVersion");
+            String tmpDataJsonStr = getResourceString("config");
+            if (!Files.exists(configFile)) {    // 不存在本地配置文件
+                System.out.println("检测到本地配置文件不存在");
                 Files.write(configFile, tmpDataJsonStr.getBytes(StandardCharsets.UTF_8));
+                Constants.cachedConfig = null;
+                System.out.println("本地配置文件初始化完成");
+            }else if(tmpJsonObj == null || !tmpJsonObj.getAsString().equals("2.x")){    // 本地配置文件版本不对应
+                System.out.println("检测到本地配置文件版本较低");
+                JsonElement merged = mergeJsonElements((JsonElement) Constants.getOutsideConfig(null),  (JsonElement) (new Gson()).fromJson(tmpDataJsonStr, JsonObject.class));
+                saveConfig(merged);
+                Constants.cachedConfig = null;
+                System.out.println("本地配置文件更新完成");
             }
         }catch (Exception e){
             e.printStackTrace();

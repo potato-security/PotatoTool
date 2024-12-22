@@ -1,6 +1,7 @@
 package com.potato.potatotool.content.redTeam.infoGathering.utils;
 
 import com.google.common.hash.Hashing;
+import com.google.gson.*;
 import com.potato.potatotool.utils.CustomHttpResponse;
 import com.potato.potatotool.utils.RequestObj;
 import com.potato.potatotool.utils.strUtils;
@@ -8,6 +9,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -71,22 +73,25 @@ public class Utils {
         return elements.isEmpty() ? "" : elements.first().attr(attr).trim();
     }
 
-    public static Map<String, Object> getWebBaseInfo(String url, boolean hasIconUrl){
+    public static Map<String, Object> getWebBaseInfo(String url, boolean hasIconUrl, boolean isCrawlProxy){
         Map<String, Object> webBaseInfoMap = new HashMap<>();
 
         if(!url.startsWith("http")) {
-            url = completeUrl(url);
+            url = completeUrl(url, isCrawlProxy);
             if(url==null) return webBaseInfoMap;
         }
 
         try {
             RequestObj obj = new RequestObj().setUrl(url)
-                    .setMethod("GET").setRetries(3).setFollowRedirects(true);
+                    .setMethod("GET").setRetries(2).setFollowRedirects(true)
+                    .setTimeOut(20);
+            if(!isCrawlProxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
+                con.disconnect();
                 return webBaseInfoMap;
             }
 
@@ -103,6 +108,7 @@ public class Utils {
             }
 
             webBaseInfoMap.put("url", url);
+            webBaseInfoMap.put("statusCode", statusCode);
             webBaseInfoMap.put("title", doc.title());
             webBaseInfoMap.put("body", preview);
         }catch (Exception e){
@@ -115,26 +121,30 @@ public class Utils {
     // hasFindSensitiveInfo 默认 true // 是否获取敏感信息
     // maxDepth 默认 2; // 设置深度
     // maxSubPathCount 默认 30; // 设置最大子链接数
+    // isCrawlProxy // 是否使用代理
     // TODO 指纹识别
-    public static Map<String, Object> getWebInfo(String url, boolean hasCrawlLinks, boolean hasFindSensitiveInfo, int maxDepth, int maxSubPathCount){
+    public static Map<String, Object> getWebInfo(String url, boolean hasCrawlLinks, boolean hasFindSensitiveInfo, int maxDepth, int maxSubPathCount, boolean isCrawlProxy){
         Map<String, Object> webInfoMap = new HashMap<>();
         List<Map<String, Object>> allSensitiveInfo = new ArrayList<>();
         Set<String> allInternalLinks = new HashSet<>();
         Set<String> visitedLinks = new HashSet<>();
 
         if(!url.startsWith("http")) {
-            url = completeUrl(url);
+            url = completeUrl(url, isCrawlProxy);
             if(url==null) return webInfoMap;
         }
 
         try {
             RequestObj obj = new RequestObj().setUrl(url)
-                    .setMethod("GET").setRetries(3).setFollowRedirects(true);
+                    .setMethod("GET").setRetries(2).setFollowRedirects(true)
+                    .setTimeOut(20);
+            if(!isCrawlProxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
+                con.disconnect();
                 return webInfoMap;
             }
 
@@ -153,9 +163,10 @@ public class Utils {
             String iconUrl = (iconElement != null && iconElement.hasAttr("href")) ? iconElement.attr("href") : "/favicon.ico";
             if (!iconUrl.startsWith("http")) iconUrl = new URL(new URL(url), iconUrl).toString();
             webInfoMap.put("url", url);
+            webInfoMap.put("statusCode", statusCode);
             webInfoMap.put("title", doc.title());
             webInfoMap.put("body", preview);
-            webInfoMap.putAll(getIconInfo(iconUrl));
+            webInfoMap.putAll(getIconInfo(iconUrl, isCrawlProxy));
 
             // 匹配特定敏感信息
             if(hasFindSensitiveInfo) {
@@ -171,7 +182,7 @@ public class Utils {
                 for (String link : internalLinks) {
                     if (!visitedLinks.contains(link)) { // 判断链接是否已访问
                         visitedLinks.add(link); // 将链接添加到已访问集合
-                        crawlAndExtract(link, maxDepth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks, hasFindSensitiveInfo);
+                        crawlAndExtract(link, maxDepth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks, hasFindSensitiveInfo, isCrawlProxy);
                     }
                 }
             }
@@ -187,11 +198,13 @@ public class Utils {
     }
 
     // 获取网站图标信息
-    private static Map<String, String> getIconInfo(String iconUrl) {
+    private static Map<String, String> getIconInfo(String iconUrl, boolean isCrawlProxy) {
         Map<String, String> iconInfo = new HashMap<>();
         try {
             RequestObj obj_icon = new RequestObj().setUrl(iconUrl)
-                    .setMethod("GET").setRetries(3);
+                    .setMethod("GET").setRetries(2)
+                    .setTimeOut(20);
+            if(!isCrawlProxy) obj_icon.setProxies(null);
 
             CustomHttpResponse con_icon = requests(obj_icon);
             int statusCode_icon = con_icon.getResponseCode();
@@ -210,7 +223,7 @@ public class Utils {
             iconInfo.put("iconMd5", iconMd5);
             iconInfo.put("iconMmh3", String.valueOf(iconSha1));
         } catch (Exception e) {
-            if (debugMode) System.out.println(e);
+            if (debugMode) e.printStackTrace();
         }
         return iconInfo;
     }
@@ -317,19 +330,24 @@ public class Utils {
     }
 
     // 递归爬取链接并提取信息
-    private static void crawlAndExtract(String url, int depth, int maxSubPathCount, List<Map<String, Object>> allSensitiveInfo, Set<String> allInternalLinks, Set<String> visitedLinks, boolean hasFindSensitiveInfo) {
+    private static void crawlAndExtract(String url, int depth, int maxSubPathCount, List<Map<String, Object>> allSensitiveInfo, Set<String> allInternalLinks, Set<String> visitedLinks, boolean hasFindSensitiveInfo, boolean isCrawlProxy) {
 
         try {
             RequestObj obj = new RequestObj().setUrl(url)
-                    .setMethod("GET").setRetries(3).setFollowRedirects(true);
+                    .setMethod("GET").setRetries(2).setFollowRedirects(true)
+                    .setTimeOut(20);
+            if(!isCrawlProxy) obj.setProxies(null);
+
             CustomHttpResponse con = requests(obj);
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
+                con.disconnect();
                 return;
             }
 
             Document doc = con.getDocument();
+            if(doc==null) return;
 
             StringBuilder sb = new StringBuilder();
             for (Element element : doc.body().children()) {
@@ -351,12 +369,12 @@ public class Utils {
             for (String link : internalLinks) {
                 if (!visitedLinks.contains(link)) {
                     visitedLinks.add(link);
-                    crawlAndExtract(link, depth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks, hasFindSensitiveInfo);
+                    crawlAndExtract(link, depth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks, hasFindSensitiveInfo, isCrawlProxy);
                 }
             }
 
         } catch (Exception e) {
-            if (debugMode) System.out.println(e);
+            if (debugMode) e.printStackTrace();
         }
     }
 
@@ -367,7 +385,7 @@ public class Utils {
         // 定义正则表达式
         String phonePattern = "(?<!\\d)(1[3-9]\\d{9})(?!\\d)";  // 中国手机号
         String idCardPattern = "(?<!\\d)([1-9]\\d{5}[1-9]\\d{3}(0[1-9]|1[0-2])(0[1-9]|[1-2]\\d|3[0-1])\\d{3}[\\dXx])(?!\\d)";  // 身份证号
-        String passwordPattern = "(?i)['\"]?(password|pwd|pass|secret|passwd|auth|token)['\"]?\\s*[:=]\\s*['\\\"][a-zA-Z0-9_\\-!@#$%^&*()+=]{3,64}['\\\"]";  // 密码
+        String passwordPattern = "(?i)['\"]?(password|pwd|pass|secret|passwd|auth|token)['\"]?\\s*[:=]\\s*['\"][a-zA-Z0-9_\\-!@#$%^&*()+=]{3,64}['\"]";  // 密码
         String ipPattern = "(?<!\\d)((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)(?!\\d)|(?:(?:(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(?:(?:[0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(?:(?:[0-9A-Fa-f]{1,4}:){5}(?::[0-9A-Fa-f]{1,4}){1,2})|(?:(?:[0-9A-Fa-f]{1,4}:){4}(?::[0-9A-Fa-f]{1,4}){1,3})|(?:(?:[0-9A-Fa-f]{1,4}:){3}(?::[0-9A-Fa-f]{1,4}){1,4})|(?:(?:[0-9A-Fa-f]{1,4}:){2}(?::[0-9A-Fa-f]{1,4}){1,5})|(?:(?:[0-9A-Fa-f]{1,4}:){1}(?::[0-9A-Fa-f]{1,4}){1,6})|(?::(?::[0-9A-Fa-f]{1,4}){1,7})|(?:[Ff]{4}(?::0{1,4}){0,2}))\\b";  // IP
         String internalIpPattern = "(?<!\\d)(10\\.(?:[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.(?:[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.(?:[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5]))(?!\\d)|" +
                 "(?<!\\d)(172\\.(?:1[6-9]|2[0-9]|3[0-1])\\.(?:[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.(?:[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5]))(?!\\d)|" +
@@ -403,18 +421,30 @@ public class Utils {
     }
 
     // 完善拼接URL
-    public static String completeUrl(String host) {
+    public static String completeUrl(String host, boolean isCrawlProxy) {
         if(host.toLowerCase(Locale.ROOT).startsWith("http")) return host;
+
+        String[] hostParts = host.split(":");
+        if (!host.contains("[") && hostParts.length == 2) { // 排除了ipV6 和 没有端口的host
+            try {
+                int port = Integer.parseInt(hostParts[1]);
+                // 排除明显不是 HTTP/HTTPS 的端口
+                if (isInvalidHttpPort(port)) {
+                    return null;
+                }
+            } catch (Exception e) {}
+        }
+
         // 拼接 HTTPS 和 HTTP 的URL
         String httpsUrl = "https://" + host;
         String httpUrl = "http://" + host;
 
         // 先尝试 HTTPS
-        if (isReachable(httpsUrl, true)) {
+        if (isReachable(httpsUrl, isCrawlProxy, true)) {
             return httpsUrl;
         }
         // 如果 HTTPS 失败，尝试 HTTP
-        else if (isReachable(httpUrl, false)) {
+        else if (isReachable(httpUrl, isCrawlProxy, false)) {
             return httpUrl;
         }
 
@@ -424,12 +454,24 @@ public class Utils {
         }
     }
 
-    private static boolean isReachable(String urlStr, boolean isHttps) {
+    // 判断是否是无效的 HTTP/HTTPS 端口
+    private static boolean isInvalidHttpPort(int port) {
+        // 常见 HTTP/HTTPS 默认端口：80 和 443
+        // 如果有明确的无效端口规则可以在这里补充
+        return port != 80 && port != 443 && (port < 1024 || port > 49151);
+    }
+
+    private static boolean isReachable(String urlStr, boolean isCrawlProxy, boolean isHttps) {
         try {
             RequestObj obj = new RequestObj().setUrl(urlStr)
                     .setFollowRedirects(true)
                     .setStrictSslValidation(isHttps)
-                    .setMethod("GET");// 建议使用HEAD，但是部分网站单独设置不允许HEAD请求
+                    .setMethod("HEAD")
+//                    .setMethod("GET")   // 建议使用HEAD，但是部分网站单独设置不允许HEAD请求
+//                    .setTimeOut(20)
+                    .setRetries(2);
+            if(!isCrawlProxy) obj.setProxies(null);
+
             CustomHttpResponse con = requests(obj);
             int statusCode = con.getResponseCode();
             String content = con.getTextStr();
@@ -454,9 +496,16 @@ public class Utils {
         return true;
     }
 
-
-    public static void main(String[] args) {
-        System.out.println(getWebInfo("potato.gold:3000",false,false,2,2));
-        System.out.println(getWebInfo("potato.gold",false,false,2,2));
+    public static void main(String[] args) throws Exception {
+        System.out.println(getWebInfo("potato.gold:443",false,false,2,2, false));
+//        System.out.println(completeUrl("potato.gocurlld:443", true));
+//        System.out.println(findSensitiveInformation("手机号测试：18666677777\n" +
+//                "身份证号：441400198203221497\n" +
+//                "`password='1433223'`\n" +
+//                "`\"password\":\"a132a3a3\"`\n" +
+//                "IP：152.23.24.25\n" +
+//                "内网IP：192.168.5.17\n" +
+//                "邮箱：TestEmail@126.com\n" +
+//                "`access_key=\"potatoTestData\"`", new URL("http://www.baidu.com")));
     }
 }

@@ -237,7 +237,7 @@ public class PaneCommandQuery {
                 StackPane commandSP = new StackPane();
                 RXLineButton commandLabel = new RXLineButton(command);
                 commandLabel.setWrapText(true);
-                commandLabel.setPrefHeight(25);
+                commandLabel.setPrefHeight(30);
                 Button commandCopyBt = new Button("复制");
                 commandCopyBt.getStyleClass().add("copyButton");
                 commandCopyBt.setVisible(false);
@@ -254,6 +254,7 @@ public class PaneCommandQuery {
 
                 vBox.setAlignment(Pos.CENTER);
                 vBox.getChildren().addAll(commandSP, describeLabel);
+                vBox.prefWidthProperty().bind(listView.widthProperty().multiply(0.75));
                 vBoxs.getChildren().add(vBox);
             });
             comandVBox.getChildren().addAll(sysTitle, vBoxs);

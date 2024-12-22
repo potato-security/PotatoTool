@@ -66,7 +66,7 @@ public class MemoryObj {
         this.injectorBytes = injectorBytes;
     }
 
-    // TODO 非调试不需要
+    // 非调试不需要
     public int getInjectorBytesLength() {
         return injectorBytesLength;
     }
@@ -115,7 +115,7 @@ public class MemoryObj {
         this.shellBytes = shellBytes;
     }
 
-    // TODO 非调试不需要
+    // 非调试不需要
     public int getShellBytesLength() {
         return shellBytesLength;
     }

@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -38,11 +39,16 @@ public class ideaDecompileUtils {
         try {
             ConsoleDecompiler.main(arguments);
 
-            String javaTempFilePath = jarDir + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
+            String javaTempFilePath = jarDir + File.separator + "Decompile" + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
+            Path outputDirPath = Paths.get(javaTempFilePath).getParent();
+            if (!Files.exists(outputDirPath)) {
+                try {
+                    Files.createDirectories(outputDirPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 
-            System.out.println("-----------------");
-            System.out.println(classPath);
-            System.out.println(javaTempFilePath);
             res = new String(strUtils.readFile(javaTempFilePath), StandardCharsets.UTF_8);
 
             if (outfilePath.length == 1) {

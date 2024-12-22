@@ -290,9 +290,16 @@ public class jsonUtils {
 
             }
         }
-
         return arrayList;
+    }
 
+    public static boolean containsString(JsonArray jsonArray, String target) {
+        for (JsonElement element : jsonArray) {
+            if (element.getAsString().equals(target)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

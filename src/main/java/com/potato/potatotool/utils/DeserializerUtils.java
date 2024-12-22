@@ -7,6 +7,9 @@ import org.graalvm.polyglot.Value;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -74,9 +77,18 @@ public class DeserializerUtils{
             // 反序列化恶意内容存储
             // cc6攻击链解析导出class及反编译java、其他的存储为ser
             String uuid = UUID.randomUUID().toString();
-            strUtils.createFile(decryptedTextBytes,"./serialize_" + uuid +".ser");
+            String serTempFilePath = strUtils.getCurrentJarDir() + File.separator + "Decompile" + File.separator + "serialize_" + uuid +".ser";
+            Path outputDirPath = Paths.get(serTempFilePath).getParent();
+            if (!Files.exists(outputDirPath)) {
+                try {
+                    Files.createDirectories(outputDirPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            strUtils.createFile(decryptedTextBytes, serTempFilePath);
             if(resultByte!=null){
-                strUtils.createFile(resultByte,"./serialize_" + uuid +".class");
+                strUtils.createFile(resultByte,strUtils.getCurrentJarDir() + File.separator + "Decompile" + File.separator + "serialize_" + uuid +".class");
                 // 导出java
                 String tips = "// 部分反序列化构造链暂不支持解析抽取还原class及java文件，如文件内容存在缺失，请查看原始serialize.ser文件，工具会逐步兼容所有构造链\n";
                 //  初始化默认反编译模式配置
@@ -84,7 +96,7 @@ public class DeserializerUtils{
                 String decompileMode = tmpJsonObj.getAsJsonPrimitive("decompileMode").getAsString();
 
                 String outputCode = tips + Decompile(resultByte, decompileMode);
-                strUtils.createFile(outputCode,"./serialize_" + uuid +".java");
+                strUtils.createFile(outputCode,strUtils.getCurrentJarDir() + File.separator + "Decompile" + File.separator + "serialize_" + uuid +".java");
                 resultData = outputCode.getBytes(StandardCharsets.UTF_8);
 
             }else{
@@ -110,8 +122,16 @@ public class DeserializerUtils{
         if(byteStartsWith(byteData, 0, new byte[] {(byte)0xCA, (byte)0xFE, (byte)0xBA, (byte)0xBE})){
             String uuid = UUID.randomUUID().toString();
             System.out.println("可能存在class字节码数据，尝试导出class及java文件");
-            String path="./tmpDataOut_" + uuid +".class";
-            path = strUtils.filePathtoAbsolute(path);
+            String serTempFilePath = strUtils.getCurrentJarDir() + File.separator + "Decompile" + File.separator + "tmpDataOut_" + uuid +".class";
+            Path outputDirPath = Paths.get(serTempFilePath).getParent();
+            if (!Files.exists(outputDirPath)) {
+                try {
+                    Files.createDirectories(outputDirPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            String path = serTempFilePath;
             strUtils.createFile(byteData, path);
             try {
                 path = path + ".java";

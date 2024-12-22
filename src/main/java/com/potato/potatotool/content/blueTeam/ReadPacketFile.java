@@ -1,9 +1,8 @@
 package com.potato.potatotool.content.blueTeam;
 
-import java.io.EOFException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -13,6 +12,7 @@ import com.opencsv.CSVWriter;
 import com.potato.potatotool.utils.ReadabilityChecker;
 import com.potato.potatotool.utils.SecurityInitializer;
 import com.potato.potatotool.utils.strUtils;
+import lombok.SneakyThrows;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.*;
 import org.pcap4j.packet.namednumber.DnsResourceRecordType;
@@ -46,13 +46,27 @@ public class ReadPacketFile {
         String baseName = path.getFileName().toString();
         String nameWithoutExt = baseName.substring(0, baseName.lastIndexOf('.'));
         String uuid = UUID.randomUUID().toString();
-        return nameWithoutExt + "_" + uuid + ".csv";
+        String outputFilePath = strUtils.getCurrentJarDir() + File.separator + "PcapDecrypt" + File.separator + nameWithoutExt + "_" + uuid + ".csv";
+
+        Path outputDirPath = Paths.get(outputFilePath).getParent();
+        if (!Files.exists(outputDirPath)) {
+            try {
+                Files.createDirectories(outputDirPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return outputFilePath;
     }
 
 
     public String getPackets() {
         try (PcapHandle handle = Pcaps.openOffline(pcapFilePath);
-             CSVWriter writer = new CSVWriter(new FileWriter(outputFilePath))) {
+             OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(outputFilePath), StandardCharsets.UTF_8);
+             CSVWriter writer = new CSVWriter(osw)) {
+            osw.write('\ufeff');
+
             String[] header = {"No.", "时间", "源IP", "目的IP", "源端口", "目的端口", "协议", "协议-1", "Payload", "Payload_HEX", "解密内容", "解密方式"};
             writer.writeNext(header);
 

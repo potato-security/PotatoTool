@@ -387,6 +387,30 @@ public class aesUtils {
         return res==null ? conText.getBytes(StandardCharsets.UTF_8) : res;
     }
 
+    public static String encryptLocalConfig(String data){
+        String res3 = null;
+        try {
+            String res1 = strUtils.strRev(data);
+            String res2 = strUtils.base64Encode(new aesUtils().encrypt(res1.getBytes(StandardCharsets.UTF_8), ("PotatoTool"+"Is"+"Good").getBytes(StandardCharsets.UTF_8), ("ILikeYou"+"ILikeYou").getBytes(StandardCharsets.UTF_8), AES_MODE_CBC, PADDING_PKCS5_PADDING));
+            res3 = strUtils.strRev(res2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res3;
+    }
+
+    public static String decryptLocalConfig(String data){
+        String res3 = null;
+        try {
+            String res1 = strUtils.strRev(data);
+            String res2 = new String((new aesUtils()).decrypt((new strUtils()).base64Decode(res1.getBytes(StandardCharsets.UTF_8)), ("PotatoTool"+"Is"+"Good").getBytes(StandardCharsets.UTF_8), ("ILikeYou"+"ILikeYou").getBytes(StandardCharsets.UTF_8), AES_MODE_CBC, PADDING_PKCS5_PADDING), StandardCharsets.UTF_8);
+            res3 = strUtils.strRev(res2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res3;
+    }
+
     public static void main(String []args) {
         SecurityInitializer.initializeSecurityProvider();
         byte[] encryptData = strUtils.base64Decode("qK+uRdRsYAa2jdP6kGdhEg==".getBytes(StandardCharsets.UTF_8));
@@ -402,10 +426,11 @@ public class aesUtils {
                     "CBC",
                     PADDING_NO_PADDING
             );
-            System.out.println("result:"+new String(result, StandardCharsets.UTF_8) );
+            System.out.println("result:"+new String(result, StandardCharsets.UTF_8));
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println(encryptLocalConfig("http://124.128.55.46:50003/stream"));
     }
 
     /**

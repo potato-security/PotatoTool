@@ -1,5 +1,6 @@
 package com.potato.potatotool.content.redTeam.infoGathering.utils;
 
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
 import com.potato.potatotool.content.redTeam.infoGathering.imgSimilarity.ImgSimilarity;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.Utils;
 import com.potato.potatotool.utils.aiUtil;
@@ -70,14 +71,9 @@ public class AiUtils {
         return false;
     }
 
-    public static boolean getContentRelevance_Ai(String url, String company,String targetUrl){
+    public static boolean getContentRelevance_Ai(String url, String company, Map<String, Object> targetWebBaseInfoMap, boolean isCrawlProxy){
         boolean hasIconUrl = false;
-        Map<String, Object> targetWebBaseInfoMap = null;
-        if ( targetUrl!=null && !targetUrl.isEmpty()){
-            hasIconUrl = true;
-            targetWebBaseInfoMap = Utils.getWebBaseInfo(targetUrl, hasIconUrl);
-        }
-        Map<String, Object> webBaseInfoMap = Utils.getWebBaseInfo(url, hasIconUrl);
+        Map<String, Object> webBaseInfoMap = Utils.getWebBaseInfo(url, hasIconUrl, isCrawlProxy);
 
         return getContentRelevance_Ai(webBaseInfoMap, company, targetWebBaseInfoMap);
     }

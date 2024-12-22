@@ -71,6 +71,7 @@ public class GetDomain {
 
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return domainDataArray;
             }
 
@@ -89,6 +90,7 @@ public class GetDomain {
 
                     int statusCode_sub = con_sub.getResponseCode();
                     if (statusCode_sub != 200) {
+                        con.disconnect();
                         break;
                     }
 
@@ -127,6 +129,7 @@ public class GetDomain {
 
             // 检查请求状态码
             if (statusCode != 200) {
+                con.disconnect();
                 return domainDataArray;
             }
 
@@ -145,6 +148,7 @@ public class GetDomain {
 
                     int statusCode_sub = con_sub.getResponseCode();
                     if (statusCode_sub != 200) {
+                        con.disconnect();
                         break;
                     }
 
@@ -183,6 +187,7 @@ public class GetDomain {
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
+                con.disconnect();
                 return domainDataArray;
             }
 

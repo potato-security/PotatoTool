@@ -2,10 +2,8 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.utils.Constants;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
+import com.potato.potatotool.utils.*;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.requestUtils.requests;
@@ -16,9 +14,11 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class ShodanSearch {
     private static String SHODAN_KEY;
+    private static boolean Proxy = false;
     private static boolean isEffectiveKey = true;
-    public ShodanSearch(String SHODAN_KEY){
+    public ShodanSearch(String SHODAN_KEY, boolean Proxy){
         this.SHODAN_KEY = SHODAN_KEY;
+        this.Proxy = Proxy;
     }
 
     public JsonArray search_Shodan(String qInfo) {
@@ -31,26 +31,30 @@ public class ShodanSearch {
                     .setUrl("https://api.shodan.io/shodan/host/search?key=" + SHODAN_KEY + "&query=" + strUtils.urlEncode(qInfo))
                     .setMethod("GET")
                     .setNoUserAgent(true)
+                    .setTimeOut(20)
                     .setRetries(3);
+            if(!Proxy) obj.setProxies(null);
 
             CustomHttpResponse con = requests(obj);
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode!= 200) {
+                con.disconnect();
                 return domainInfo;
             }
 
             domainInfo = con.getJson().getAsJsonObject().get("matches").getAsJsonArray();
         } catch (Exception e) {
-            if (debugMode) System.out.println(e);
+            if (debugMode) e.printStackTrace();
         }
         return domainInfo;
     }
 
     public static String getError_Shodan() {
         isEffectiveKey = true;
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
-        ShodanSearch shodanSearch = new ShodanSearch(tmpJsonObj.getAsJsonPrimitive("Shodan_Key").getAsString());
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.SHODAN_KEY);
+        ShodanSearch shodanSearch = new ShodanSearch(tmpJsonObj.getAsJsonPrimitive(AssetKeyConstants.SHODAN_KEY).getAsString(), Proxy);
         String qInfo = "ip:8.8.8.8";
         if (shodanSearch.search_Shodan(qInfo).isEmpty()){
             isEffectiveKey = false;
@@ -89,8 +93,9 @@ public class ShodanSearch {
     }
 
     public static void main(String[] args) {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Asset");
-        ShodanSearch shodanSearch = new ShodanSearch(tmpJsonObj.getAsJsonPrimitive("Shodan_Key").getAsString());
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.SHODAN_KEY);
+        ShodanSearch shodanSearch = new ShodanSearch(tmpJsonObj.getAsJsonPrimitive(AssetKeyConstants.SHODAN_KEY).getAsString(), Proxy);
         System.out.println(shodanSearch.getInfoByDomain_Shodan("potato.gold"));
     }
 

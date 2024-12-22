@@ -33,7 +33,7 @@
                 <TextField fx:id="question" prefWidth="${sPane.width / 2}" minHeight="50" promptText="请输入需要检索的IP/域名/企业名称……" />
                 <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
                     <HBox layoutX="-70" spacing="5" layoutY="3">
-                        <Label onMouseClicked="#searchUploadInput">
+                        <Label fx:id="uploadLabel" visible="true" managed="true" onMouseClicked="#searchUploadInput">
                             <graphic>
                                 <Region styleClass="upload"/>
                             </graphic>
@@ -44,7 +44,7 @@
                                 <Tooltip text="批量检索" />
                             </tooltip>
                         </Label>
-                        <Label onMouseClicked="#searchInput">
+                        <Label fx:id="sendLabel" visible="true" managed="true" onMouseClicked="#searchInput">
                             <graphic>
                                 <Region styleClass="send"/>
                             </graphic>
@@ -53,6 +53,17 @@
                             </cursor>
                             <tooltip>
                                 <Tooltip text="检索" />
+                            </tooltip>
+                        </Label>
+                        <Label  fx:id="stopLabel" visible="false" managed="false" onMouseClicked="#stopSearch">
+                            <graphic>
+                                <Region styleClass="stop"/>
+                            </graphic>
+                            <cursor>
+                                <Cursor fx:constant="HAND" />
+                            </cursor>
+                            <tooltip>
+                                <Tooltip text="停止检索" />
                             </tooltip>
                         </Label>
                     </HBox>
@@ -76,7 +87,7 @@
                 </FlowPane>
             </HBox>
 
-            <HBox alignment="CENTER" prefWidth="${sPane.width}">
+            <HBox fx:id="advancedSetting" alignment="CENTER" prefWidth="${sPane.width}" visible="true" managed="true">
                 <HBox alignment="CENTER" id="bottomLeftTitle" prefWidth="130">
                     <Label text="高级设置："/>
                 </HBox>
@@ -86,51 +97,91 @@
                             <Tooltip text="例:80,90【二级公司权重>=90%，三级公司权重>=90%】" />
                         </tooltip>
                     </CFCheckBox>
-                    <CFCheckBox fx:id="bruteForceSubdomainBox" alignment="CENTER" mnemonicParsing="false" selected="true" text="爆破子域" VBox.vgrow="ALWAYS">
-                        <tooltip>
-                            <Tooltip text="较为耗时，请自行评估是否开启" />
-                        </tooltip>
-                    </CFCheckBox>
-                    <CFCheckBox fx:id="searchShadowAssetsBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="检索影子资产" VBox.vgrow="ALWAYS">
-                        <tooltip>
-                            <Tooltip text="极度耗时，请自行评估是否开启" />
-                        </tooltip>
-                    </CFCheckBox>
-                    <CFCheckBox fx:id="hasCrawlLinksBox" alignment="CENTER" mnemonicParsing="false" selected="true" text="爬取链接" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasCrawlLinks" >
-                        <tooltip>
-                            <Tooltip text="较为耗时，请自行评估是否开启" />
-                        </tooltip>
-                    </CFCheckBox>
-                    <CFCheckBox fx:id="hasFindSensitiveInfoBox" alignment="CENTER" mnemonicParsing="false" selected="true" text="获取敏感信息" VBox.vgrow="ALWAYS">
+                    <CFCheckBox fx:id="searchSslSubdomainBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="查询子域" VBox.vgrow="ALWAYS">
                         <tooltip>
                             <Tooltip text="略微耗时，请自行评估是否开启" />
                         </tooltip>
                     </CFCheckBox>
+                    <CFCheckBox fx:id="bruteForceSubdomainBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="爆破子域" VBox.vgrow="ALWAYS">
+                        <tooltip>
+                            <Tooltip text="较为耗时，请自行评估是否开启" />
+                        </tooltip>
+                    </CFCheckBox>
+                    <CFCheckBox fx:id="searchShadowAssetsBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="检索影子资产" VBox.vgrow="ALWAYS" onMouseClicked="#checkSearchShadowAssets" >
+                        <tooltip>
+                            <Tooltip text="极度耗时，请自行评估是否开启" />
+                        </tooltip>
+                    </CFCheckBox>
+                    <CFCheckBox fx:id="hasLocalFullDetectionBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="本地全量探测" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasLocalFullDetection" >
+                        <tooltip>
+                            <Tooltip text="较为耗时，请自行评估是否开启" />
+                        </tooltip>
+                    </CFCheckBox>
+                    <CFCheckBox fx:id="hasIconSearchBox" alignment="CENTER" mnemonicParsing="false" selected="true" text="Icon检索" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasIconSearch" >
+                        <tooltip>
+                            <Tooltip text="较为耗时，请自行评估是否开启" />
+                        </tooltip>
+                    </CFCheckBox>
+                    <CFCheckBox fx:id="hasCrawlLinksBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="爬取链接" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasCrawlLinks" >
+                        <tooltip>
+                            <Tooltip text="较为耗时，请自行评估是否开启" />
+                        </tooltip>
+                    </CFCheckBox>
+                    <CFCheckBox fx:id="hasFindSensitiveInfoBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="获取敏感信息" VBox.vgrow="ALWAYS">
+                        <tooltip>
+                            <Tooltip text="略微耗时，请自行评估是否开启" />
+                        </tooltip>
+                    </CFCheckBox>
+                    <CFCheckBox fx:id="hasCipAggregatorBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="C段聚合" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasCipAggregator" >
+                        <tooltip>
+                            <Tooltip text="容易出现非资产内容，请自行评估是否开启" />
+                        </tooltip>
+                    </CFCheckBox>
 
-                    <HBox spacing="20" alignment="CENTER">
+                    <FlowPane alignment="CENTER_LEFT"  prefWidth="${sPane.width - 170}" hgap="20" vgap="10">
                         <HBox alignment="CENTER" fx:id="weightHBox" visible="true" managed="true">
                             <Label text="子公司权重："/>
                             <TextField fx:id="weightStr" prefWidth="150" text="100,100"/>
                         </HBox>
-                        <HBox alignment="CENTER" fx:id="maxDepthHBox" visible="true" managed="true">
-                            <Label text="爬取深度："/>
+                        <HBox alignment="CENTER" fx:id="maxDepthHBox" visible="false" managed="false">
+                            <Label text="爬链接深度："/>
                             <TextField fx:id="maxDepth" prefWidth="150" text="2"/>
                         </HBox>
-                        <HBox alignment="CENTER" fx:id="maxSubPathCountHBox" visible="true" managed="true">
+                        <HBox alignment="CENTER" fx:id="maxSubPathCountHBox" visible="false" managed="false">
                             <Label text="最大链接数："/>
                             <TextField fx:id="maxSubPathCount" prefWidth="150" text="30"/>
                         </HBox>
-                    </HBox>
+                        <HBox alignment="CENTER" fx:id="localFullDetectionThresholdHBox" visible="true" managed="true">
+                            <Label text="本地探阈值："/>
+                            <TextField fx:id="localFullDetectionThreshold" prefWidth="150" text="20"/>
+                        </HBox>
+                        <HBox alignment="CENTER" fx:id="shadowAssetsThresholdHBox" visible="false" managed="false">
+                            <Label text="影资量阈值："/>
+                            <TextField fx:id="shadowAssetsThreshold" prefWidth="150" text="50"/>
+                        </HBox>
+                        <HBox alignment="CENTER" fx:id="maxGoogleSearchCountHBox" visible="false" managed="false">
+                            <Label text="谷歌检索数："/>
+                            <TextField fx:id="maxGoogleSearchCount" prefWidth="150" text="10"/>
+                        </HBox>
+                        <HBox alignment="CENTER" fx:id="maxGithubSearchCountHBox" visible="false" managed="false">
+                            <Label text="仓库检索数："/>
+                            <TextField fx:id="maxGithubSearchCount" prefWidth="150" text="10"/>
+                        </HBox>
+                        <HBox alignment="CENTER" fx:id="cipThresholdHBox" visible="false" managed="false">
+                            <Label text=" C聚合阈值："/>
+                            <TextField fx:id="cipThreshold" prefWidth="150" text="4"/>
+                        </HBox>
+                    </FlowPane>
                 </FlowPane>
             </HBox>
         </VBox>
 
-        <ScrollPane VBox.vgrow="ALWAYS">
+        <ScrollPane fx:id="scroll" VBox.vgrow="ALWAYS">
             <VBox fx:id="echoVbox" alignment="TOP_LEFT" spacing="10" />
         </ScrollPane>
     </VBox>
 
-    <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="250" alignment="CENTER" StackPane.alignment="CENTER">
+    <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="350" alignment="CENTER" StackPane.alignment="CENTER">
         <effect>
             <DropShadow/>
         </effect>
