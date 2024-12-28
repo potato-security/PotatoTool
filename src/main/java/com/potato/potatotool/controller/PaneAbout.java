@@ -108,7 +108,7 @@ public class PaneAbout {
             }
 
             Label typeLabel = new Label("「" + type + "」");
-            typeLabel.setStyle("-fx-font-size: 12;");
+            typeLabel.setStyle("-fx-font-size: 10;");
             Label text2 = new Label("：");
             Label contentLabel = new Label(content);
             contentLabel.prefWidthProperty().bind(thanksScrollPane.widthProperty().subtract(200));

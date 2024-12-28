@@ -21,6 +21,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -128,7 +129,7 @@ public class PaneDecompile {
 
         FileChooser chooser = new FileChooser();
         FileChooser.ExtensionFilter filter =
-                new FileChooser.ExtensionFilter("Class文件", "*.class");
+                new FileChooser.ExtensionFilter("Class文件", "*.*");
         chooser.getExtensionFilters().add(filter);
 
         Stage stage = (Stage) ((Node)e.getSource()).getScene().getWindow();
@@ -169,6 +170,54 @@ public class PaneDecompile {
         // 启动任务
         new Thread(task).start();
     }
+
+
+    @FXML
+    public void toDecompileBat(ActionEvent e) {
+        result.clear();
+
+        DirectoryChooser chooser = new DirectoryChooser();
+
+        Stage stage = (Stage) ((Node)e.getSource()).getScene().getWindow();
+        String path = null;
+        try {
+            path = chooser.showDialog(stage).getAbsolutePath();
+        }catch (Exception exception){
+            if(debugMode) System.out.println("没有文件被选择");
+            return;
+        }
+
+        if (path == null) {
+            if(debugMode) System.out.println("没有文件被选择");
+            return;
+        }
+        System.out.println(path);
+
+        result.replaceText("反编译中，请稍等……");
+
+        String decompileMode = (String) rulesComboBox.getSelectionModel().getSelectedItem();
+
+
+        String finalPath = path;
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                res = decompileUtils.Decompile(finalPath, decompileMode);
+                Platform.runLater(() -> {
+                    result.replaceText(res);
+                });
+                return null;
+            }
+        };
+        task.setOnFailed(event -> {
+            Throwable error = task.getException();
+            error.printStackTrace();
+        });
+
+        // 启动任务
+        new Thread(task).start();
+    }
+
 
     private String oldData = "";
     private boolean isAiVisible = false;

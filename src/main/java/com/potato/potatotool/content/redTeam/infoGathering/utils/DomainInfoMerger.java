@@ -285,20 +285,25 @@ public class DomainInfoMerger {
     }
 
     public static List<DomainInfo> mergeDomainInfoList(List<DomainInfo> domainInfoList) {
-        Map<String, DomainInfo> mergedMap = new HashMap<>();
+        Map<String, DomainInfo> tmpMergedMap = new HashMap<>();
 
         for (DomainInfo domainInfo : domainInfoList) {
             String key = domainInfo.getIp() + ":" + domainInfo.getPort();
 
-            if (mergedMap.containsKey(key)) {
-                DomainInfo existingInfo = mergedMap.get(key);
+            if (tmpMergedMap.containsKey(key)) {
+                DomainInfo existingInfo = tmpMergedMap.get(key);
                 mergeDomainInfo(existingInfo, domainInfo);
             } else {
-                mergedMap.put(key, domainInfo);
+                tmpMergedMap.put(key, domainInfo);
             }
         }
+        // 外侧Obj直接使用了入参domainInfoList地址，故多此一步
+        domainInfoList.clear();
+        for (DomainInfo domainInfo : new ArrayList<>(tmpMergedMap.values())) {
+            domainInfoList.add(domainInfo);
+        }
 
-        return new ArrayList<>(mergedMap.values());
+        return domainInfoList;
     }
 
     private static void mergeDomainInfo(DomainInfo target, DomainInfo source) {

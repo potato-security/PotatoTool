@@ -27,42 +27,70 @@ public class ideaDecompileUtils {
     public static String Decompile(String classPath, String... outfilePath){
         String res = null;
 
-        if(!Files.exists(Paths.get(classPath))){
+        Path path = Paths.get(classPath);
+
+        if(!Files.exists(path)){
             System.out.println("classPath路径存在问题，请重新选择位置");
             return null;
         }
 
         String jarDir = strUtils.getCurrentJarDir();
-        String javaTempFilePath = jarDir + File.separator + "Decompile" + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
-        Path outputDirPath = Paths.get(javaTempFilePath).getParent();
+        String javaTempFilePath = null;
+        Path outputDirPath = null;
 
-        if (!Files.exists(outputDirPath)) {
+        if (Files.isDirectory(path)) {
+            String dirName = path.getFileName().toString();
+            javaTempFilePath = jarDir + File.separator + "Decompile" + File.separator + dirName;
+            outputDirPath = Paths.get(javaTempFilePath);
+
+            if (!Files.exists(outputDirPath)) {
+                try {
+                    Files.createDirectories(outputDirPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            String[] arguments = {classPath, String.valueOf(outputDirPath)};
+
             try {
-                Files.createDirectories(outputDirPath);
-            } catch (IOException e) {
-                e.printStackTrace();
+                ConsoleDecompiler.main(arguments);
+                return "反编译完成:" + javaTempFilePath;
+            } catch (Exception e) {
+                return "遍历目录时出错: " + e.getMessage();
             }
+        } else {
+            javaTempFilePath = jarDir + File.separator + "Decompile" + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
+            outputDirPath = Paths.get(javaTempFilePath).getParent();
+
+            if (!Files.exists(outputDirPath)) {
+                try {
+                    Files.createDirectories(outputDirPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            String[] arguments = {classPath, String.valueOf(outputDirPath)};
+
+            try {
+                ConsoleDecompiler.main(arguments);
+
+                if (!Files.exists(Paths.get(javaTempFilePath))) {
+                    System.out.println("java文件不存在");
+                }
+
+                res = new String(strUtils.readFile(javaTempFilePath), StandardCharsets.UTF_8);
+
+                if (outfilePath.length == 1) {
+                    strUtils.moveFile(javaTempFilePath, outfilePath[0]);
+                }
+            } catch (Exception e) {
+                return null;
+            }
+
+            return res;
         }
-
-        String[] arguments = {classPath, String.valueOf(outputDirPath)};
-
-        try {
-            ConsoleDecompiler.main(arguments);
-
-            if(!Files.exists(Paths.get(javaTempFilePath))){
-                System.out.println("java文件不存在");
-            }
-
-            res = new String(strUtils.readFile(javaTempFilePath), StandardCharsets.UTF_8);
-
-            if (outfilePath.length == 1) {
-                strUtils.moveFile(javaTempFilePath, outfilePath[0]);
-            }
-        } catch (Exception e) {
-            return null;
-        }
-
-        return res;
 
     }
 

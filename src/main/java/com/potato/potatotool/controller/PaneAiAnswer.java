@@ -39,7 +39,7 @@ public class PaneAiAnswer {
             Text t = (Text) ((Group)((Region)lookup.getContent()).getChildrenUnmodifiable().get(1)).getChildren().get(0);
             t.layoutBoundsProperty().addListener((o,n,v)->{
                 if(v.getHeight()==0) return;
-                double newHeight = v.getHeight() == 23 ? 57 : v.getHeight() + 57 ;  //不故意隐藏scroll 请修改为+44
+                double newHeight = v.getHeight() == 23 ? 35 : v.getHeight() + 35 ;  //不故意隐藏scroll 请修改为+44
                 if(newHeight >= question.getMaxHeight()) {
                     lookup.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
                     newHeight = question.getMaxHeight();
@@ -179,6 +179,7 @@ public class PaneAiAnswer {
             init_width = init_width > max_Width ? max_Width : init_width;
             textArea.setMaxWidth(init_width);  // 因为采用了自动换行，故部分布局方式不可用Pref控制
             textArea.setPrefWidth(init_width);
+            textArea.setPrefHeight(tmpText.getLayoutBounds().getHeight() + 22);
 
             textArea.textProperty().addListener((observable, oldValue, newValue) -> {
                 tmpText.setText(t.getText());

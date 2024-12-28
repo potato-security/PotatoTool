@@ -21,15 +21,15 @@
 }
 
 .filter-view  > .filter-container> .header-box > .title-subtitle-box > .title-box > .title {
-    -fx-font-size: 1.5em;
+    -fx-font-size: 1.3em;
 }
 
 .filter-view  > .filter-container> .header-box > .title-subtitle-box > .title-box > .title-postfix {
-    -fx-font-size: 1.5em;
+    -fx-font-size: 1.3em;
 }
 
 .filter-view > .filter-container> .header-box > .title-subtitle-box > .subtitle {
-    -fx-font-size: 1.2em;
+    -fx-font-size: 1.0em;
 }
 
 .filter-view > .filter-container > .filter-groups {

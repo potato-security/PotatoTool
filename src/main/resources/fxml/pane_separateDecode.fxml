@@ -33,7 +33,7 @@
             <RadioButton text="Rot13" toggleGroup="$checkboxGroup"/>
             <RadioButton text="Chr" toggleGroup="$checkboxGroup"/>
             <RadioButton text="strRev" toggleGroup="$checkboxGroup"/>
-            <Label style="-fx-padding: 0;-fx-text-fill:grey;-fx-font-size: 15 " text="注：byte \ bcel \ cas \ log4j \ shiro \ gzip \ aes \ xor 等加解密暂时内置第一个模块内"/>
+            <Label style="-fx-padding: 0;-fx-text-fill:grey;-fx-font-size: 13 " text="注：byte \ bcel \ cas \ log4j \ shiro \ gzip \ aes \ xor 等加解密暂时内置第一个模块内"/>
         </FlowPane>
 
         <Pane minHeight="15"/>

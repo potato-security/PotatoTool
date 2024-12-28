@@ -498,8 +498,9 @@ public class Utils {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println(getWebInfo("potato.gold:443",false,false,2,2, false));
-//        System.out.println(completeUrl("potato.gocurlld:443", true));
+        System.out.println(getWebInfo("potato.gold:3000",false,false,2,2, false));
+        System.out.println(completeUrl("potato.gold:3000", true));
+        System.out.println(completeUrl("potato.gold:3000", false));
 //        System.out.println(findSensitiveInformation("手机号测试：18666677777\n" +
 //                "身份证号：441400198203221497\n" +
 //                "`password='1433223'`\n" +

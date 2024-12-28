@@ -3,7 +3,7 @@
     -fx-spacing: 50;
 }
 .tipTitle_input_big .text{
-    -fx-font-size: 25;
+    -fx-font-size: 23;
     -fx-font-weight: bold;
 }
 .tipVBox{

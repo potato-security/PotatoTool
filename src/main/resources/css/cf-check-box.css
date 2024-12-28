@@ -19,7 +19,7 @@
 }
 .cf-check-box > .container{
     /*-fx-text-fill: -cf-text-color;*/
-    /*-fx-font-size: 14px;*/
+    /*-fx-font-size: 12px;*/
 }
 .cf-check-box:focused > .container > .box{
     -fx-border-color: -main-border-color;;

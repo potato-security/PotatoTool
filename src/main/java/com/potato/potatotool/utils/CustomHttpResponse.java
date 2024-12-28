@@ -48,12 +48,15 @@ public class CustomHttpResponse{
     public String getTextStr() { // 存在getText方法
         List<String> charsetList = getHeaderField("Content-Type");
         String charsetStr = "UTF-8";
-        for(String data : charsetList){
-            data = data.trim();
-            if(data.toLowerCase().contains("charset=")){
-                charsetStr = data.substring(data.toLowerCase().indexOf("charset=") + 8);
+        if(charsetList!=null) {
+            for (String data : charsetList) {
+                data = data.trim();
+                if (data.toLowerCase().contains("charset=")) {
+                    charsetStr = data.substring(data.toLowerCase().indexOf("charset=") + 8);
+                }
             }
         }
+
         Charset charset = null;
         if(!charsetStr.isEmpty()) charset = Charset.forName(charsetStr);
 

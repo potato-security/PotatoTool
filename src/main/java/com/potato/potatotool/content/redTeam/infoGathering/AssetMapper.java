@@ -478,47 +478,51 @@ public class AssetMapper {
             paneInfoSearch.updateEchoVBox("第一波数据去重", false, null);
             domainInfoList = DomainInfoMerger.mergeDomainInfoList(domainInfoList);
             paneInfoSearch.updateEchoVBox("第一波数据去重", true, null);
-            paneInfoSearch.updateEchoVBox("第一波全量深度信息探测", false, null);
-            int totalTasks = domainInfoList.size();
-            AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
-            int tmpIndex = 0;
-            executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
-            futures = new ArrayList<>();
-            for (DomainInfo domainInfo : domainInfoList) {
-                tmpIndex ++;
-                if(!isHasLocalFullDetection && tmpIndex > localFullDetectionThreshold) break;
-                // 提交每个 DomainInfo 的 Web 信息获取任务
-                CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
-                    String domainStr = domainInfo.getDomain();
-                    if(domainStr==null||domainStr.isEmpty()) domainStr = domainInfo.getIp();
 
-                    String baseUrl = getBaseUrl(domainInfo);
-                    if (baseUrl != null && !baseUrl.isEmpty()) {
-                         domainInfo.setWebInfoMap(Utils.getWebInfo(baseUrl, hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount, assetObj.isCrawlProxy()));
-                    }
-                    domainInfo.setDoWebInfoMap(true);
+            if(isHasLocalFullDetection || isHasIconSearch) {
+                paneInfoSearch.updateEchoVBox("第一波全量深度信息探测", false, null);
+                int totalTasks = domainInfoList.size();
+                AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
+                int tmpIndex = 0;
+                executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+                futures = new ArrayList<>();
+                for (DomainInfo domainInfo : domainInfoList) {
+                    tmpIndex++;
+                    if (!isHasLocalFullDetection && tmpIndex > localFullDetectionThreshold) break;
+                    // 提交每个 DomainInfo 的 Web 信息获取任务
+                    CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
+                        String domainStr = domainInfo.getDomain();
+                        if (domainStr == null || domainStr.isEmpty()) domainStr = domainInfo.getIp();
 
-                    int progress = completedTasks.incrementAndGet();
-                    double percentage = ((progress - 0.5) * 100.0) / totalTasks;
-                    String showText = String.format("正在全量深度信息探测 [%d/%d]：%s | 进度：%.2f%%",
-                            progress, totalTasks , domainStr, percentage);
-                    paneInfoSearch.updateEchoVBox(showText, false, null);
-                    return null;
-                }, executor);
-                futures.add(future);
-            }
-            // 等待所有任务完成
-            for (Future<?> future : futures) {
-                try {
-                    future.get(); // 阻塞直到任务完成
-                } catch (CancellationException ce) {} catch (Exception e) {
-                    if(debugMode) e.printStackTrace();
+                        String baseUrl = getBaseUrl(domainInfo);
+                        if (baseUrl != null && !baseUrl.isEmpty()) {
+                            domainInfo.setWebInfoMap(Utils.getWebInfo(baseUrl, hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount, assetObj.isCrawlProxy()));
+                        }
+                        domainInfo.setDoWebInfoMap(true);
+
+                        int progress = completedTasks.incrementAndGet();
+                        double percentage = ((progress - 0.5) * 100.0) / totalTasks;
+                        String showText = String.format("正在全量深度信息探测 [%d/%d]：%s | 进度：%.2f%%",
+                                progress, totalTasks, domainStr, percentage);
+                        paneInfoSearch.updateEchoVBox(showText, false, null);
+                        return null;
+                    }, executor);
+                    futures.add(future);
                 }
-            }
-            // 停止所有线程
-            ExecutorServiceManager.shutdownExecutor(poolName);
+                // 等待所有任务完成
+                for (Future<?> future : futures) {
+                    try {
+                        future.get(); // 阻塞直到任务完成
+                    } catch (CancellationException ce) {
+                    } catch (Exception e) {
+                        if (debugMode) e.printStackTrace();
+                    }
+                }
+                // 停止所有线程
+                ExecutorServiceManager.shutdownExecutor(poolName);
 
-            paneInfoSearch.updateEchoVBox("第一波全量深度信息探测", true, null);
+                paneInfoSearch.updateEchoVBox("第一波全量深度信息探测", true, null);
+            }
             List<DomainInfo> chooseWebInfoMapList = new ArrayList<>();
             if(isHasIconSearch) {
                 paneInfoSearch.showIconChoosePaneBox(domainInfoList);

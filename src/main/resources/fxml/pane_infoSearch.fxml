@@ -195,7 +195,7 @@
             </effect>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label style="-fx-font-size: 23;-fx-font-weight: bold;" text="公司别名设置"/>
+                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="公司别名设置"/>
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
                     <Label text="请增加/修改公司别名，将用于影子资产检索"/>
@@ -213,7 +213,7 @@
             </effect>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label style="-fx-font-size: 23;-fx-font-weight: bold;" text="icon设置"/>
+                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="icon设置"/>
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
                     <Label text="请选择相关的icon，将用于基础检索 及 影子资产检索"/>
@@ -231,7 +231,7 @@
             </effect>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label style="-fx-font-size: 23;-fx-font-weight: bold;" text="选择域名"/>
+                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="选择域名"/>
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
                     <Label text="以下为反查到的域名，请选择"/>

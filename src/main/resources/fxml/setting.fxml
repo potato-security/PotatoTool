@@ -30,7 +30,7 @@
             <VBox>
                 <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
                     <center>
-                        <Label style="-fx-padding: 0 0 0 30;-fx-font-size: 25;-fx-font-weight: bold;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="修改配置" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                        <Label style="-fx-padding: 0 0 0 30;-fx-font-size: 23;-fx-font-weight: bold;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="修改配置" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
                     </center>
                     <right>
                         <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">

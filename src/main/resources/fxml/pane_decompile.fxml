@@ -37,21 +37,39 @@
         </HBox>
         <Pane minHeight="20"/>
 
-        <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width}" styleClass="btnDecompile" text="选择本地class文件" onAction="#toDecompile" translationDir="BOTTOM_TO_TOP">
-            <graphic>
-                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
-                    <image>
-                        <Image url="@../img/codeFile.png" />
-                    </image>
-                </ImageView>
-            </graphic>
-            <effect>
-                <DropShadow />
-            </effect>
-            <cursor>
-                <Cursor fx:constant="HAND" />
-            </cursor>
-        </RXTranslationButton>
+        <HBox alignment="CENTER">
+            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.4}" styleClass="btnDecompile" text="选择class文件" onAction="#toDecompile" translationDir="BOTTOM_TO_TOP">
+                <graphic>
+                    <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@../img/codeFile.png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+                <effect>
+                    <DropShadow />
+                </effect>
+                <cursor>
+                    <Cursor fx:constant="HAND" />
+                </cursor>
+            </RXTranslationButton>
+            <Label minWidth="${sPane.width * 0.1}"/>
+            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.4}" styleClass="btnDecompile" text="选择文件夹" onAction="#toDecompileBat" translationDir="BOTTOM_TO_TOP">
+                <graphic>
+                    <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@../img/codeFile.png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+                <effect>
+                    <DropShadow />
+                </effect>
+                <cursor>
+                    <Cursor fx:constant="HAND" />
+                </cursor>
+            </RXTranslationButton>
+        </HBox>
 
         <Pane minHeight="20"/>
         <StackPane>

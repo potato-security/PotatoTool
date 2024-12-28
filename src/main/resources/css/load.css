@@ -2,7 +2,7 @@
     -fx-background-color: transparent;
 }
 .text{
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-fill: white;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: normal;

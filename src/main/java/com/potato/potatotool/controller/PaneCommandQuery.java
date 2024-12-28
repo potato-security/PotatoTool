@@ -7,6 +7,7 @@ import com.potato.potatotool.content.redTeam.commandHelp;
 import com.potato.potatotool.utils.aiUtil;
 import com.potato.potatotool.utils.strUtils;
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -44,6 +45,8 @@ public class PaneCommandQuery {
 
     @FXML
     private Accordion accordionPane;
+    @FXML
+    private ScrollPane accordionScroll;
 
     @FXML
     private ListView listView;
@@ -93,6 +96,7 @@ public class PaneCommandQuery {
             List directoryNodeList= createDirectoryNode(searchJsonObj);  // 递归创建目录节点
 
             accordionPane.getPanes().addAll(directoryNodeList);
+            accordionScroll.setVvalue(0);
 
             listView.setItems(contentObj);
         }catch (Exception e){

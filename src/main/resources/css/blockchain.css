@@ -83,7 +83,7 @@
 /*    -fx-padding: 10;*/
 /*}*/
 .tableTitle .label .text{
-    -fx-font-size: 20;
+    -fx-font-size: 18;
     -fx-font-weight: bold;
 }
 .tableTitle{

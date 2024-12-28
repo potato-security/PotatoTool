@@ -44,4 +44,8 @@ public class decompileUtils {
         return null;
     }
 
+    public static void main(String[] args) {
+        System.out.println(Decompile("/Users/a/Desktop/项目开发/PotatoTool/target/classes/com/potato/potatotool", "procyon"));
+    }
+
 }

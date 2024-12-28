@@ -18,13 +18,13 @@
                 <Label alignment="CENTER" prefWidth="${(sPane.width / 2) - 200}" styleClass="titleText" text="系统操作命令查询工具 "/>
                 <HBox alignment="CENTER" prefWidth="${sPane.width / 2}">
                     <StackPane>
-                        <TextField fx:id="ipField" prefWidth="${sPane.width / 5}" minHeight="0" promptText="请输入IP……" text="127.0.0.1" />
+                        <TextField fx:id="ipField" prefWidth="${sPane.width / 5 + 5}" minHeight="0" promptText="请输入IP……" text="127.0.0.1" />
                         <Label translateX="1" prefWidth="65" styleClass="textFieldLeft" text="IP" alignment="CENTER" StackPane.alignment="CENTER_LEFT"/>
                     </StackPane>
                     <Label prefWidth="${sPane.width / 13}" />
                     <StackPane>
                         <TextField fx:id="portField" prefWidth="${sPane.width / 5}" minHeight="0" promptText="请输入Port……" text="9001" />
-                        <Label translateX="1" prefWidth="65" styleClass="textFieldLeft" text="Port" alignment="CENTER" StackPane.alignment="CENTER_LEFT"/>
+                        <Label translateX="1" prefWidth="70" styleClass="textFieldLeft" text="Port" alignment="CENTER" StackPane.alignment="CENTER_LEFT"/>
                     </StackPane>
                     <Label prefWidth="${sPane.width / 13}" />
                     <HBox alignment="CENTER">

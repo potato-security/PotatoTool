@@ -20,7 +20,7 @@
 
         <Pane minHeight="20"/>
         <StackPane>
-            <TextArea fx:id="question" wrapText="true" prefHeight="57" maxHeight="250"  minHeight="0" />
+            <TextArea fx:id="question" wrapText="true" prefHeight="35" maxHeight="250"  minHeight="0" />
             <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
                 <Label layoutX="-57" onMouseClicked="#ask">
                     <graphic>

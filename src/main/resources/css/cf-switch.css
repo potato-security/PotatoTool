@@ -4,7 +4,7 @@
 }
 .cf-switch > .container{
     -fx-text-fill: white;
-    -fx-font-size: 14px;
+    -fx-font-size: 12px;
     -fx-pref-height: 32px;
 }
 .cf-switch:selected{

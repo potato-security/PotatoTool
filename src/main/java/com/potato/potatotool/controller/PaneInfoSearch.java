@@ -663,10 +663,6 @@ public class PaneInfoSearch {
         hasLocalFullDetectionBox.setSelected(!hasLocalFullDetectionBox.isSelected());
         localFullDetectionThresholdHBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
         localFullDetectionThresholdHBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
-        hasCrawlLinksBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
-        hasCrawlLinksBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
-        hasFindSensitiveInfoBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
-        hasFindSensitiveInfoBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
     }
 
     @FXML
@@ -674,10 +670,6 @@ public class PaneInfoSearch {
         hasIconSearchBox.setSelected(!hasIconSearchBox.isSelected());
         localFullDetectionThresholdHBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
         localFullDetectionThresholdHBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
-        hasCrawlLinksBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
-        hasCrawlLinksBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
-        hasFindSensitiveInfoBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
-        hasFindSensitiveInfoBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
     }
 
     @FXML
@@ -1193,7 +1185,7 @@ public class PaneInfoSearch {
 
                     // 创建标题标签
                     Label companyLabel = new Label(companyName);
-                    companyLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+                    companyLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold;");
                     contentBox.getChildren().add(companyLabel);
 
                     // App 数据表格

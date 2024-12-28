@@ -44,7 +44,7 @@ public class DefaultContextMenu extends ContextMenu
         MenuItem[] menuItems = {undo, redo, cut, copy, paste, delete, selectAll};
 
         for (MenuItem menuItem : menuItems) {
-            menuItem.setStyle("-fx-font-size: 18;");
+            menuItem.setStyle("-fx-font-size: 16;");
         }
 
         getItems().addAll( menuItems );

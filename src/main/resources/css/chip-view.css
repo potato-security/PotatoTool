@@ -13,7 +13,7 @@
 
 .chip-view > .chip-container > .label {
     -fx-text-fill: white;
-    -fx-font-size: 12px;
+    -fx-font-size: 10px;
     -fx-padding: 5 10 5 10;
 }
 

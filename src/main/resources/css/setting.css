@@ -15,7 +15,7 @@
     -fx-padding: 5;
 }
 #viewProfileButton{
-    -fx-font-size: 13;
+    -fx-font-size: 11;
 }
 .content{
     -fx-padding: 20;
@@ -47,7 +47,7 @@
     -fx-border-radius: 5;
 }
 .tipTitle_input_big .text{
-    -fx-font-size: 22;
+    -fx-font-size: 20;
     -fx-font-weight: bold;
 }
 .tips{
@@ -62,7 +62,7 @@
     -fx-alignment: center;
 }
 .progressLabel .text{
-    -fx-font-size: 13;
+    -fx-font-size: 11;
     -fx-fill: -main-border-color;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }

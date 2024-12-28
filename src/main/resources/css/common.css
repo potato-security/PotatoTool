@@ -50,7 +50,7 @@
     -main-btnTransitionPressed-color: linear-gradient(to bottom, #FF4D4D, #FF1A1A);
 }
 .text{
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-fill: -main-font-color;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: normal;
@@ -59,10 +59,10 @@
     -fx-fill: -main-smallbtnBg-color;
 }
 .tooltip {
-    -fx-font-size: 16;
+    -fx-font-size: 14;
 }
 .tips .text {
-    -fx-font-size: 16;
+    -fx-font-size: 12;
     -fx-fill: -main-linenoText-color;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
@@ -116,7 +116,7 @@
 }
 
 .rx-line-button{
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-text-fill: -main-font-color;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: normal;
@@ -132,13 +132,13 @@
     -fx-fill: -main-font-color;
 }
 .titleText {
-    -fx-font-size: 23;
+    -fx-font-size: 21;
     -fx-fill: -main-border-color;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: bold;
 }
 .titleText .text {
-    -fx-font-size: 23;
+    -fx-font-size: 21;
     -fx-fill: -main-border-color;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: bold;
@@ -148,13 +148,13 @@
     -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
 }
 .titleTipText .text{
-    -fx-font-size: 23;
+    -fx-font-size: 21;
     -fx-fill: -main-border-color;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     -fx-font-weight: bold;
 }
 #tipTitle_input .text{
-    -fx-font-size: 20;
+    -fx-font-size: 18;
     -fx-fill: white;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
     /*-fx-font-weight: bold;*/
@@ -177,7 +177,7 @@
 }
 .log-label{
     -fx-background-radius: 4 0 0 0;
-    -fx-font-size: 20;
+    -fx-font-size: 18;
     -fx-font-weight: bold;
 }
 #btnSet{
@@ -323,7 +323,7 @@
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-text-fill: -main-font-color;
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-cursor: HAND;
 }
 .box-nav .rx-toggle-button:hover{
@@ -344,7 +344,7 @@
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-text-fill: -main-font-color;
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-cursor: HAND;
 }
 .box-nav-red .rx-toggle-button:hover{
@@ -367,7 +367,7 @@
     -fx-background-color: transparent;
     -fx-border-color: -main-border-color;
     -fx-border-radius: 5;
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-text-fill: -main-font-color;
 }
 #blueModePane{
@@ -386,7 +386,7 @@
     -fx-border-radius: 5 0 0 5;
     -fx-border-width: 1 0 1 1;
     -fx-padding: 0;
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-text-fill: -main-font-color;
 }
 #btnRedMode{
@@ -395,7 +395,7 @@
     -fx-border-radius: 0 5 5 0;
     -fx-border-width: 1 1 1 0;
     -fx-padding: 0;
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-text-fill: -main-font-color;
 }
 
@@ -409,7 +409,7 @@
     -fx-background-radius: 5;
     -fx-background-insets: 0 0 0 1; /*背景色溢出bug解决方式*/
     -fx-text-fill: -main-font-color;
-    -fx-font-size: 20;
+    -fx-font-size: 18;
     -fx-padding: 0;
     -fx-border-width: 0;
     -fx-border-color: black;
@@ -518,7 +518,7 @@
     -fx-background-radius: 10;
     -fx-border-radius: 10;
     -fx-text-fill: -main-font-color;
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-padding: 5;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
@@ -532,7 +532,7 @@
     -fx-background-radius: 7;
     -fx-border-radius: 7;
     -fx-text-fill: -main-font-color;
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-padding: 5;
 }
 
@@ -558,7 +558,7 @@
     /*导航整行cell*/
     -fx-background-color: linear-gradient(#424141 0%, -main-border-color 50%, #424141 100%);
     -fx-background-radius: 8 8 0 0;
-    -fx-font-size: 20;
+    -fx-font-size: 18;
 }
 .table-view .column-header-background .label{
     /*导航单个cell*/
@@ -606,7 +606,7 @@
 }
 .context-menu .menu-item .label {
     -fx-text-fill: -main-font-color;
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-padding: 5 20 5 20;
 }
 .context-menu .menu-item:selected {
@@ -625,7 +625,7 @@
 .combo-box .list-cell {
     -fx-background-color: null;
     -fx-text-fill: -main-font-color;
-    -fx-font-size: 18;
+    -fx-font-size: 16;
 }
 .combo-box .list-cell:hover {
     -fx-background-color: -main-borderHover-color;
@@ -645,7 +645,7 @@
     -fx-min-height: 43;
 }
 .menu-button .text{
-    -fx-font-size: 16;
+    -fx-font-size: 14;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 
@@ -776,11 +776,11 @@
     -fx-background-color: black;
     -fx-opacity: 0.7;
     -fx-fill: -main-border-color;
-    -fx-font-size: 15;
+    -fx-font-size: 13;
     -fx-padding: 5 10 5 10;
 }
 .copyButton .text{
-    -fx-font-size: 15;
+    -fx-font-size: 13;
 }
 .copyButton:pressed{
     -fx-opacity: 0.9;
@@ -824,7 +824,7 @@
 }
 .combo-box > .container{
     -fx-text-fill: -cf-text-color;
-    -fx-font-size: 14px;
+    -fx-font-size: 12px;
 }
 .combo-box:focused > .container > .box{
     -fx-border-color: -cf-primary-color;

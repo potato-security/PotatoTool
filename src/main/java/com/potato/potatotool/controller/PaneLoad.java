@@ -219,7 +219,7 @@ public class PaneLoad {
 
             text = new Text();
 
-            int fontSize = random.nextInt(11) + 20;
+            int fontSize = random.nextInt(11) + 18;
 
             String[] textStyle={
                     ("-fx-font-size: "+fontSize+";-fx-fill: #3ECEE3;-fx-effect: dropshadow(gaussian, #3ECEE3, 20, 0, 0, 0);-fx-font-family: \"PingFang SC\", \"Microsoft YaHei\", Arial, sans-serif;"),

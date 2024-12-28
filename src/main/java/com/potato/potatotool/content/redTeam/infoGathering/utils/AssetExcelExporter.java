@@ -421,9 +421,12 @@ public class AssetExcelExporter {
 
             row.createCell(0).setCellValue(valueOrDefault(domain.getDomain()));
             row.createCell(1).setCellValue(valueOrDefault(domain.getDataSource()));
-            row.createCell(2).setCellValue(valueOrDefault(domain.getIp()));
-            row.createCell(3).setCellValue(valueOrDefault(domain.getPort()));
-            row.createCell(4).setCellValue(valueOrDefault(domain.getProtocol()));
+            String ip = valueOrDefault(domain.getIp());
+            row.createCell(2).setCellValue(ip);
+            String port = valueOrDefault(domain.getPort());
+            row.createCell(3).setCellValue(port);
+            String protocol= valueOrDefault(domain.getProtocol());
+            row.createCell(4).setCellValue(protocol);
             row.createCell(5).setCellValue(valueOrDefault(domain.getStatusCode()));
             row.createCell(6).setCellValue(valueOrDefault(domain.isCND()));
             row.createCell(7).setCellValue(valueOrDefault(domain.getTitle()));
@@ -434,7 +437,11 @@ public class AssetExcelExporter {
             row.createCell(12).setCellValue(valueOrDefault(domain.getCompany()));
             row.createCell(13).setCellValue(valueOrDefault(domain.getCountry()));
             row.createCell(14).setCellValue(valueOrDefault(domain.getCity()));
-            row.createCell(15).setCellValue(valueOrDefault(domain.getUrl()));
+            String url = valueOrDefault(domain.getUrl());
+            if(url.equals("\\") && protocol.toLowerCase().contains("http")){
+                url = protocol + "://" + ip + ":" + port;
+            }
+            row.createCell(15).setCellValue(url);
             row.createCell(16).setCellValue(valueOrDefault(domain.getResponse()));
 
             if (domain.isDoWebInfoMap() && domain.getWebInfoMap() != null) {
@@ -551,19 +558,25 @@ public class AssetExcelExporter {
                     ? String.join("\n", list)
                     : "\\";
         }catch (Exception e){
+            e.printStackTrace();
             return "\\";
         }
     }
 
     private String getStringOrDefault(Map<String, Object> objectMap, String key) {
         try {
-            String res = (String) objectMap.get(key);
-            return (res != null && !res.isEmpty())
-                    ? res
-                    : "\\";
+            Object value = objectMap.get(key);
+            if (value!= null) {
+                String res = value.toString();
+                return (res!= null &&!res.isEmpty())
+                        ? res
+                        : "\\";
+            }
         }catch (Exception e){
-            return "\\";
+            e.printStackTrace();
         }
+
+        return "\\";
     }
 
     private String valueOrDefault(Object value) {
@@ -571,6 +584,10 @@ public class AssetExcelExporter {
 
         if (value instanceof String) {
             return ((String) value).isEmpty() ? "\\" : (String) value;
+        }
+
+        if (value instanceof Integer) {
+            return value.toString();
         }
 
         if (value instanceof List) {

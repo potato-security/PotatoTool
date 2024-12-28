@@ -64,6 +64,8 @@ public class PaneBlockchain {
 
     @FXML
     private ListView listViewCell;
+    @FXML
+    private Label backClearLabel;
 
     @FXML
     private ListView detailedListView;
@@ -147,8 +149,10 @@ public class PaneBlockchain {
         String input = question.getText();
         if( input.isEmpty() || input.length() < 1 ) {
             initTextData();
+            backClearLabel.setVisible(false);
             return;
         }
+        backClearLabel.setVisible(true);
         Label tips = new Label("正在查询有关\"" + input + "\"的信息（v1.0非全接口版本）……");
         tips.setAlignment(Pos.CENTER);
         tips.setId("tipTitle");
@@ -1181,5 +1185,6 @@ public class PaneBlockchain {
     public void goBackAndClear(MouseEvent event) {
         question.setText("");
         searchInput();
+        backClearLabel.setVisible(false);
     }
 }

@@ -35,7 +35,7 @@
             </HBox>
 
             <HBox alignment="CENTER" prefWidth="${sPane.width - 15}">
-                <ScrollPane maxHeight="${sPane.height - 80}" hbarPolicy="NEVER">
+                <ScrollPane fx:id="accordionScroll" maxHeight="${sPane.height - 80}" hbarPolicy="NEVER">
                     <VBox fx:id="vBoxBar">
                         <Accordion fx:id="accordionPane"/>
                     </VBox>

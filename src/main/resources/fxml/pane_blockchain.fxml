@@ -42,7 +42,7 @@
         <StackPane>
             <StackPane>
                 <ListView fx:id="listViewCell" prefWidth="${sPane.width}" prefHeight="${sPane.height - 85}"/>
-                <Label StackPane.alignment="TOP_LEFT" translateX="10" translateY="10" onMouseClicked="#goBackAndClear">
+                <Label fx:id="backClearLabel" StackPane.alignment="TOP_LEFT" visible="false" translateX="10" translateY="10" onMouseClicked="#goBackAndClear">
                     <graphic>
                         <Region styleClass="back"/>
                     </graphic>

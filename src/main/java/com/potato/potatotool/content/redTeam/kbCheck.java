@@ -1,11 +1,12 @@
 package com.potato.potatotool.content.redTeam;
 
+import com.google.gson.JsonObject;
 import com.opencsv.CSVReader;
 
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.opencsv.CSVWriter;
+import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.ExecutorServiceManager;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -87,7 +89,7 @@ public class kbCheck {
 
         List<Map<String, String>> csvData = new ArrayList<>();
 
-        try (InputStream winKbInfoInputStream = getResourceStream("winKbInfo");
+        try (InputStream winKbInfoInputStream = getWinKbInfoInputStream();
              CSVReader reader = new CSVReader(new InputStreamReader(winKbInfoInputStream, StandardCharsets.UTF_8))) {
 
             String[] headers = reader.readNext();
@@ -108,6 +110,38 @@ public class kbCheck {
 
         return csvData;
 
+    }
+
+    private static InputStream getWinKbInfoInputStream() {
+        // 尝试从配置获取路径
+        String pathStr = getPathFromConfig();
+
+        // 检查配置的路径是否可用，不可用则使用默认资源
+        if (isValidPath(pathStr)) {
+            try {
+                System.out.println(pathStr);
+                return new FileInputStream(pathStr);
+            } catch (FileNotFoundException e) {}
+        }
+
+        // 返回默认资源
+        System.out.println("getResourceStream(\"winKbInfo\")");
+        return getResourceStream("winKbInfo");
+    }
+
+    private static String getPathFromConfig() {
+        try {
+            JsonObject updateConfig = (JsonObject) Constants.getOutsideConfig("UpDate");
+            return updateConfig.getAsJsonObject("winKbInfo")
+                    .get("Path")
+                    .getAsString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static boolean isValidPath(String path) {
+        return path != null && !path.trim().isEmpty() && Files.exists(Paths.get(path));
     }
 
 
