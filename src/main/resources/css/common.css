@@ -40,7 +40,6 @@
     -main-smallbtnBg-color: #87CEFA;
     -main-btnTransition-color: linear-gradient(to bottom, #75D6BA, #3C85C5);
     -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0);
-
 }
 
 .redStyle{
@@ -334,6 +333,27 @@
 .box-nav .rx-toggle-button:selected{
     -fx-background-color: -main-border-color;
     -fx-border-color: -main-border-color;
+}
+.box-nav-red{
+    -fx-padding: 15 0 0 0;
+}
+.box-nav-red .rx-toggle-button{
+    -fx-pref-height: 35;
+    -fx-background-color: null;
+    -fx-border-color: #D85550;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: -main-font-color;
+    -fx-font-size: 18;
+    -fx-cursor: HAND;
+}
+.box-nav-red .rx-toggle-button:hover{
+    -fx-background-color: #b04540;
+    -fx-border-color:  #D85550;
+}
+.box-nav-red .rx-toggle-button:selected{
+    -fx-background-color: #D85550;
+    -fx-border-color: #D85550;
 }
 
 .header-panel {

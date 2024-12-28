@@ -298,8 +298,9 @@ public class desUtils {
         String[] modeArray = {"CBC", "ECB"};    //  webShell常见两种模式
         String[] paddingArray = {PADDING_PKCS5_PADDING, PADDING_ZERO_PADDING}; // 数据加密常见的两种padding
 
-        ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
-        List<Future<?>> futures = ExecutorServiceManager.futures;
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.DES_DECRYPT;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<byte[]>> futures = new ArrayList<>();
 
         for (String keyStr : keyArray) {
             for (String mode : modeArray) {
@@ -308,7 +309,7 @@ public class desUtils {
                         if (i == 1 && mode.equals("ECB")) continue;
 
                         int finalI = i;
-                        Callable<byte[]> task = () -> {
+                        CompletableFuture<byte[]> future = CompletableFuture.supplyAsync(() -> {
                             try {
                                 byte[] encryptData = strUtils.base64Decode(conText.getBytes(StandardCharsets.UTF_8));
                                 byte[] key = keyStr.getBytes(StandardCharsets.UTF_8);
@@ -329,6 +330,9 @@ public class desUtils {
                                     iv_DES.set(!iv.equals("Null") ? (mode.equals("ECB") ? "Null" : new String(iv, StandardCharsets.UTF_8)) : "Null");
                                     classCode = des.classCode;
                                     serializeCode = des.serializeCode;
+
+                                    // 停止所有线程
+                                    ExecutorServiceManager.shutdownExecutor(poolName);
                                 }
 
                                 return result;
@@ -336,9 +340,9 @@ public class desUtils {
                                 if (debugMode) e.printStackTrace();
                                 return null;
                             }
-                        };
+                        }, executor);
 
-                        futures.add(executor.submit(task));
+                        futures.add(future);
                     }
                 }
             }
@@ -357,7 +361,7 @@ public class desUtils {
         }
 
         // 停止所有线程
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(poolName);
 
         return res==null ? conText.getBytes(StandardCharsets.UTF_8) : res;
     }

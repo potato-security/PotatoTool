@@ -33,20 +33,24 @@ public class ideaDecompileUtils {
         }
 
         String jarDir = strUtils.getCurrentJarDir();
+        String javaTempFilePath = jarDir + File.separator + "Decompile" + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
+        Path outputDirPath = Paths.get(javaTempFilePath).getParent();
 
-        String[] arguments = {classPath, jarDir};
+        if (!Files.exists(outputDirPath)) {
+            try {
+                Files.createDirectories(outputDirPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        String[] arguments = {classPath, String.valueOf(outputDirPath)};
 
         try {
             ConsoleDecompiler.main(arguments);
 
-            String javaTempFilePath = jarDir + File.separator + "Decompile" + File.separator + classPath.substring(classPath.lastIndexOf(File.separator) + 1, classPath.lastIndexOf(".")) + ".java";
-            Path outputDirPath = Paths.get(javaTempFilePath).getParent();
-            if (!Files.exists(outputDirPath)) {
-                try {
-                    Files.createDirectories(outputDirPath);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            if(!Files.exists(Paths.get(javaTempFilePath))){
+                System.out.println("java文件不存在");
             }
 
             res = new String(strUtils.readFile(javaTempFilePath), StandardCharsets.UTF_8);

@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.potato.potatotool.ToStart.isBlueMode;
 import static com.potato.potatotool.content.update.checkResAndGetDownUrl;
 import static com.potato.potatotool.content.update.downloadAndSaveResource;
 
@@ -131,10 +132,20 @@ public class PaneSetting {
 
     private double offsetX,offsetY;
 
+    private String Local_Ai_Url = "";
+
     // 初始化Map，建立checkbox和key的对应关系
     Map<CFSwitch, String> proxyMap = new HashMap<>();
 
     public void initialize() {
+        if(isBlueMode){
+            an.getStyleClass().remove("redStyle");
+            an.getStyleClass().add("blueStyle");
+        }else {
+            an.getStyleClass().remove("blueStyle");
+            an.getStyleClass().add("redStyle");
+        }
+
         initProxyMap();
         initData();
     }
@@ -174,6 +185,7 @@ public class PaneSetting {
         JsonObject tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig("AI");
         String GPT_Model = tmpJsonObj_AI.getAsJsonPrimitive("GPT_Model").getAsString();
         String GPT_API_Key = tmpJsonObj_AI.getAsJsonPrimitive("GPT_API_Key").getAsString();
+        Local_Ai_Url = tmpJsonObj_AI.getAsJsonPrimitive("Local_Ai_Url").getAsString();
         gptModel.setText(GPT_Model);
         gptApiKey.setText(GPT_API_Key);
 
@@ -291,6 +303,7 @@ public class PaneSetting {
         Map<String, Object> aiMap = new HashMap<>();
         aiMap.put("GPT_Model", gptModel.getText());
         aiMap.put("GPT_API_Key", gptApiKey.getText());
+        aiMap.put("Local_Ai_Url", Local_Ai_Url);
         configMap.put("AI", aiMap);
 
         if(Constants.saveConfig(configMap)){

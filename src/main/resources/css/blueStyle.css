@@ -1,0 +1,21 @@
+.root{
+    -main-border-color: #3ECEE3 !important;
+    -main-borderHover-color: #208e9a !important;
+    -main-smallbtnBg-color: #87CEFA !important;
+    -main-btnTransition-color: linear-gradient(to bottom, #75D6BA, #3C85C5) !important;
+    -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0) !important;
+}
+#root{
+    -main-border-color: #3ECEE3 !important;
+    -main-borderHover-color: #208e9a !important;
+    -main-smallbtnBg-color: #87CEFA !important;
+    -main-btnTransition-color: linear-gradient(to bottom, #75D6BA, #3C85C5) !important;
+    -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0) !important;
+}
+#sPane{
+    -main-border-color: #3ECEE3 !important;
+    -main-borderHover-color: #208e9a !important;
+    -main-smallbtnBg-color: #87CEFA !important;
+    -main-btnTransition-color: linear-gradient(to bottom, #75D6BA, #3C85C5) !important;
+    -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0) !important;
+}

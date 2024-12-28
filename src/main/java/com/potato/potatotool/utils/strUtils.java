@@ -28,6 +28,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
@@ -1575,14 +1576,21 @@ public class strUtils {
             }
         }
 
-        ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
-        List<Future<?>> futures = ExecutorServiceManager.futures;
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.XOR_DECRYPT;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<byte[]>> futures = new ArrayList<>();
 
         for(String key : keyArray){
-            Callable<byte[]> task = () -> {
-                return xorEncode(data, key);
-            };
-            futures.add(executor.submit(task));
+            CompletableFuture<byte[]> future = CompletableFuture.supplyAsync(() -> {
+                byte[] result = xorEncode(data, key);
+                if (result != null && !result.equals("")) {
+                    // 停止所有线程
+                    ExecutorServiceManager.shutdownExecutor(poolName);
+                }
+                return result;
+            }, executor);
+
+            futures.add(future);
         }
 
         for (Future<?> future : futures) {
@@ -1598,7 +1606,7 @@ public class strUtils {
         }
 
         // 停止所有线程
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(poolName);
 
         return new String(res, StandardCharsets.UTF_8);
     }

@@ -17,35 +17,13 @@
   "Asset": {
     "Chinaz_Cookie": "***REMOVED***",
     "Aiqicha_Cookie": "***REMOVED***",
-    "Fofa_Key": "***REMOVED***",
-    "Hunter_Key": [
-      "ec5110203c89eb842caf712c183b23c51555c1196bad4579f051813eca6aa33b",
-      "04f246682bad0d1d80fbd3e9317d982075b79cc7495f548adb3f0242eb841de6",
-      "d0fbe77ef130f76bc95ca416b5f5a174a8fffe589d4a46a8a56e164402b8ab32",
-      "0cf9f42e4d6ebd02bc6be8b7b9f3d5241dc52fa36da647619117d253592d4352",
-      "b5b9c1a7443d344358934c71cffc971d4f225e286c60fe4bf55e556c64bb7c24",
-      "02f2d92f4f8b26e3442fb4d75967fc998d6f7042ecb37668195bccddf1b9d8bc",
-      "b99cbd1bb624aae31c22ed0a59a332e09bd4e96bb9e5799b9262176947df3663",
-      "e951140a45219801d586ee89923a529b2ff67726fa6cb62324082c8a0c2b4930",
-      "4477092ae1d42de75c9c15962c5f5ecdb8902a27fcf3af767c628e01fc4bf768"
-    ],
-    "Quake_Key": [
-      "***REMOVED***"
-    ],
-    "Zoomeye_Key": "***REMOVED***",
-    "Shodan_Key": "***REMOVED***",
-    "GitHub_Token": [
-      "***REMOVED***",
-      "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",
-      "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",
-      "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"
-    ],
-    "Google_API": [
-      {
-        "Google_Key": "***REMOVED***",
-        "Google_Cx": "***REMOVED***"
-      }
-    ],
+    "Fofa_Key": "b3f33bf39073f8718704580af2f962c0",
+    "Hunter_Key": [],
+    "Quake_Key": [],
+    "Zoomeye_Key": "",
+    "Shodan_Key": "",
+    "GitHub_Token": [],
+    "Google_API": [],
     "Proxy_Key": [
       "Zoomeye_Key",
       "GitHub_Token",

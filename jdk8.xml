@@ -6,7 +6,7 @@
 
     <groupId>com.potato</groupId>
     <artifactId>PotatoTool</artifactId>
-    <version>1.3</version>
+    <version>2.1</version>
     <name>PotatoTool</name>
 
     <properties>
@@ -149,21 +149,6 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.46.0.0</version>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>me.ihxq.projects</groupId>-->
-        <!--            <artifactId>phone-number-geo</artifactId>-->
-        <!--            <version>1.0.9-202302</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.slf4j</groupId>-->
-        <!--            <artifactId>slf4j-simple</artifactId>-->
-        <!--            <version>2.0.13</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.slf4j</groupId>-->
-        <!--            <artifactId>slf4j-api</artifactId>-->
-        <!--            <version>2.0.13</version>-->
-        <!--        </dependency>-->
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>javase</artifactId>
@@ -260,7 +245,7 @@
             <version>2.20.0</version>
             <optional>true</optional>
         </dependency>
-        <dependency><!-- 该库位google的java的可辛苦，包含多映射、多集、不可变集合、并发、I/O、哈希、原语、字符串等实用程序，后期部分自写功能可优先使用该库-->
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>33.3.1-jre</version>

@@ -1,8 +1,5 @@
 package com.potato.potatotool.utils;
 
-
-import com.potato.potatotool.content.blueTeam.webShellDecrypt;
-
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
@@ -19,6 +16,7 @@ import java.util.regex.Pattern;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.utils.Constants.getResourceStream;
+import static com.potato.potatotool.utils.decompileUtils.Decompile;
 
 /**
  * @author Potato
@@ -320,8 +318,9 @@ public class aesUtils {
         String[] modeArray = {"CBC", "ECB"};    //  webShell常见两种模式
         String[] paddingArray = {PADDING_PKCS5_PADDING, PADDING_ZERO_PADDING}; // 数据加密常见的两种padding
 
-        ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
-        List<Future<?>> futures = ExecutorServiceManager.futures;
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.AES_DECRYPT;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<byte[]>> futures = new ArrayList<>();
 
         for (String keyStr : keyArray) {
             for (String mode : modeArray) {
@@ -330,7 +329,7 @@ public class aesUtils {
                         if (i == 1 && mode.equals("ECB")) continue;
 
                         int finalI = i;
-                        Callable<byte[]> task = () -> {
+                        CompletableFuture<byte[]> future = CompletableFuture.supplyAsync(() -> {
                             try {
                                 byte[] encryptData = strUtils.base64Decode(conText.getBytes(StandardCharsets.UTF_8));
                                 byte[] key = keyStr.getBytes(StandardCharsets.UTF_8);
@@ -354,6 +353,9 @@ public class aesUtils {
                                     iv_AES.set(!iv.equals("Null") ? (mode.equals("ECB") ? "Null" : new String(iv, StandardCharsets.UTF_8)) : "Null");
                                     classCode = aes.classCode;
                                     serializeCode = aes.serializeCode;
+
+                                    // 停止所有线程
+                                    ExecutorServiceManager.shutdownExecutor(poolName);
                                 }
 
                                 return result;
@@ -361,9 +363,9 @@ public class aesUtils {
                                 if (debugMode) e.printStackTrace();
                                 return null;
                             }
-                        };
+                        }, executor);
 
-                        futures.add(executor.submit(task));
+                        futures.add(future);
                     }
                 }
             }
@@ -382,7 +384,7 @@ public class aesUtils {
         }
 
         // 停止所有线程
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(poolName);
 
         return res==null ? conText.getBytes(StandardCharsets.UTF_8) : res;
     }
@@ -413,24 +415,23 @@ public class aesUtils {
 
     public static void main(String []args) {
         SecurityInitializer.initializeSecurityProvider();
-        byte[] encryptData = strUtils.base64Decode("qK+uRdRsYAa2jdP6kGdhEg==".getBytes(StandardCharsets.UTF_8));
-        byte[] key = "1234567890123456".getBytes(StandardCharsets.UTF_8);
-        byte[] iv = key;//new byte[16];//"1234567890123456".getBytes(StandardCharsets.UTF_8);//inputIv!=null ? inputIv.getBytes(StandardCharsets.UTF_8) : finalI == 0 ? new byte[16] : key;
-
-        aesUtils aes = new aesUtils();
-        try {
-            byte[] result = aes.decrypt(
-                    encryptData,
-                    key,
-                    iv,
-                    "CBC",
-                    PADDING_NO_PADDING
-            );
-            System.out.println("result:"+new String(result, StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println(encryptLocalConfig("http://124.128.55.46:50003/stream"));
+//        byte[] encryptData = strUtils.base64Decode("qK+uRdRsYAa2jdP6kGdhEg==".getBytes(StandardCharsets.UTF_8));
+//        byte[] key = "1234567890123456".getBytes(StandardCharsets.UTF_8);
+//        byte[] iv = key;//new byte[16];//"1234567890123456".getBytes(StandardCharsets.UTF_8);//inputIv!=null ? inputIv.getBytes(StandardCharsets.UTF_8) : finalI == 0 ? new byte[16] : key;
+//
+//        aesUtils aes = new aesUtils();
+//        try {
+//            byte[] result = aes.decrypt(
+//                    encryptData,
+//                    key,
+//                    iv,
+//                    "CBC",
+//                    PADDING_NO_PADDING
+//            );
+//            System.out.println("result:"+new String(result, StandardCharsets.UTF_8));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     /**

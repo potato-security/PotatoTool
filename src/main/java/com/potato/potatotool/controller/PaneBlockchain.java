@@ -24,6 +24,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -62,7 +63,7 @@ public class PaneBlockchain {
     private static final ObservableList<Node> detailedContentObj = FXCollections.observableArrayList();
 
     @FXML
-    private ListView listView;
+    private ListView listViewCell;
 
     @FXML
     private ListView detailedListView;
@@ -116,7 +117,7 @@ public class PaneBlockchain {
 
             contentObj.add(vBoxConent);
         }
-        listView.setItems(contentObj);
+        listViewCell.setItems(contentObj);
     }
 
     void writeTestData(String data) {
@@ -138,7 +139,7 @@ public class PaneBlockchain {
     void searchInput(){
         accordionPane.getPanes().clear();
         detailedPane.setVisible(false);
-        listView.getItems().clear();
+        listViewCell.getItems().clear();
         detailedListView.getItems().clear();
         contentObj.clear();
         detailedContentObj.clear();
@@ -155,7 +156,7 @@ public class PaneBlockchain {
         tips.setMinWidth(sPane.getWidth() - 50);
         tips.setMaxWidth(sPane.getWidth() - 50);
         contentObj.add(tips);
-        listView.setItems(contentObj);
+        listViewCell.setItems(contentObj);
 
         Task<Void> task = new Task<Void>() {
             @Override
@@ -452,18 +453,18 @@ public class PaneBlockchain {
                     }
                 }
                 Platform.runLater(() -> {
-                    listView.setItems(contentObj);
+                    listViewCell.setItems(contentObj);
 
                     if(contentObj.isEmpty()) {
                         contentObj.clear();
-                        listView.getItems().clear();
+                        listViewCell.getItems().clear();
 
                         Label tips = new Label("查询失败，请检查网络是否存在问题，并查看日志……");
                         tips.setAlignment(Pos.CENTER);
                         tips.setId("tipTitle");
                         tips.setPrefWidth(sPane.getWidth() - 280);
                         contentObj.add(tips);
-                        listView.setItems(contentObj);
+                        listViewCell.setItems(contentObj);
                     }
                 });
 
@@ -488,38 +489,227 @@ public class PaneBlockchain {
         Label tips = new Label("正在查询详情信息……");
         tips.setAlignment(Pos.CENTER);
         tips.setId("tipTitle");
-        tips.setPrefWidth(sPane.getWidth() - 280);
+        tips.setPrefWidth(sPane.getWidth() - 80);
+        tips.setMinWidth(sPane.getWidth() - 80);
+        tips.setMaxWidth(sPane.getWidth() - 80);
         detailedContentObj.add(tips);
         detailedListView.setItems(detailedContentObj);
 
         Timeline animation = new Timeline(
                 new KeyFrame(Duration.ZERO, new KeyValue(detailedListView.prefWidthProperty(), 0)),
-                new KeyFrame(Duration.seconds(0.2), new KeyValue(detailedListView.prefWidthProperty(), listView.getWidth()))
+                new KeyFrame(Duration.seconds(0.2), new KeyValue(detailedListView.prefWidthProperty(), listViewCell.getWidth()))
         );
         animation.play();
 
         String type = jsonObject.get("type").getAsString();
 
+        accordionPane.getPanes().clear();
+        accordionPane.setVisible(true);
+
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                try {
+                    if (type.equals("address") && jsonObject.has("network")) {
+                        String address = jsonObject.get("hash").getAsString();
+                        String network = jsonObject.get("network").getAsString();
 
-                if(type.equals("address") && jsonObject.has("network")){
-                    String address = jsonObject.get("hash").getAsString();
-                    String network = jsonObject.get("network").getAsString();
+                        try {
+                            //  获取交易地址基础信息
+                            JsonObject addressInfo = address(network, address);
+                            if (addressInfo != null) {
+                                String key = "地址信息";
+                                JsonObject baseInfo = (JsonObject) ((JsonObject) addressInfo.get("data")).get("baseInfo");
 
-                    try {
+                                TitledPane titledPane = new TitledPane();
+                                titledPane.setText(key);
+                                titledPane.getStyleClass().add("noContentTitlePane");
+                                titledPane.setPrefWidth(200);
+                                titledPane.setOnMouseClicked(even -> redirect(key));
+                                Platform.runLater(() -> {
+                                    accordionPane.getPanes().add(titledPane);
+                                });
+
+                                Text title = new Text(key);
+                                title.getStyleClass().add("titleText");
+
+                                VBox vBox = new VBox();
+                                vBox.setStyle("-fx-padding: 10 10 20 20;");
+                                for (String jsonKey : baseInfo.keySet()) {
+                                    String value = baseInfo.get(jsonKey).getAsString();
+                                    Label keyLabel = new Label(jsonKey);
+                                    keyLabel.setPrefWidth(150);
+                                    Label valueLabel = new Label("：" + value);
+                                    HBox hBox = new HBox(keyLabel, valueLabel);
+                                    vBox.getChildren().add(hBox);
+                                }
+                                Platform.runLater(() -> {
+                                    detailedContentObj.addAll(title, vBox);
+                                    detailedListView.setItems(detailedContentObj);
+                                });
+
+                            }
+                        } catch (Exception e) {
+                            if (debugMode) e.printStackTrace();
+                        }
+
+                        try {
+                            //  近180天余额变化
+                            JsonObject balancetrend = balancetrend(network, address);
+                            if (balancetrend != null) {
+
+                                String key = "近180天余额变化";
+
+                                TitledPane titledPane = new TitledPane();
+                                titledPane.setText(key);
+                                titledPane.getStyleClass().add("noContentTitlePane");
+                                titledPane.setPrefWidth(200);
+                                titledPane.setOnMouseClicked(even -> redirect(key));
+                                Platform.runLater(() -> {
+                                    accordionPane.getPanes().add(titledPane);
+                                });
+
+                                Text title = new Text(key);
+                                title.getStyleClass().add("titleText");
+
+                                JsonArray tmpJArray = (JsonArray) balancetrend.get("data");
+
+                                CategoryAxis xAxis = new CategoryAxis();
+                                NumberAxis yAxis = new NumberAxis();
+                                xAxis.setLabel("时间");
+                                yAxis.setLabel("余额");
+                                LineChart<String, Number> lineChart = new LineChart<String, Number>(xAxis, yAxis);
+                                lineChart.setTitle(key);
+
+                                XYChart.Series series = new XYChart.Series();
+                                series.setName(key);
+                                for (int i = 0; i < tmpJArray.size(); i++) {
+                                    JsonObject tmpJObj = (JsonObject) tmpJArray.get(i);
+                                    String jsonKey = tmpJObj.keySet().iterator().next();
+                                    Double value = tmpJObj.get(jsonKey).getAsDouble();
+                                    series.getData().add(new XYChart.Data(jsonKey, value));
+                                }
+                                lineChart.getData().add(series);
+
+
+                                Platform.runLater(() -> {
+                                    detailedContentObj.addAll(title, lineChart);
+                                    detailedListView.setItems(detailedContentObj);
+                                });
+                            }
+                        } catch (Exception e) {
+                            if (debugMode) e.printStackTrace();
+                        }
+
+                        try {
+                            //  代币余额
+                            JsonObject tokenbalance = tokenbalance(network, address);
+                            if (tokenbalance != null) {
+
+                                String key = "代币余额&转账记录";
+                                JsonArray tokenbalanceInfo = (JsonArray) tokenbalance.get("data");
+
+                                TitledPane titledPane = new TitledPane();
+                                titledPane.setText(key);
+                                titledPane.getStyleClass().add("noContentTitlePane");
+                                titledPane.setPrefWidth(200);
+                                titledPane.setOnMouseClicked(even -> redirect(key));
+                                Platform.runLater(() -> {
+                                    accordionPane.getPanes().add(titledPane);
+                                });
+
+                                Text title = new Text(key);
+                                title.getStyleClass().add("titleText");
+
+                                double tabelWidth = detailedListView.getPrefWidth() - 80;
+
+                                ListView newListView = new ListView();
+                                newListView.getStyleClass().add("tableListView");
+                                ObservableList<Node> newContentObj = FXCollections.observableArrayList();
+                                newListView.setPrefWidth(tabelWidth);
+                                HBox hBox = new HBox();
+                                hBox.getStyleClass().add("tableTitle");
+                                Label label1 = new Label("全称");
+                                label1.setAlignment(Pos.CENTER);
+                                label1.setPrefWidth(tabelWidth / 3);
+                                Label label2 = new Label("余额");
+                                label2.setAlignment(Pos.CENTER);
+                                label2.setPrefWidth(tabelWidth / 3);
+                                Label label3 = new Label("交易详情");
+                                label3.setAlignment(Pos.CENTER);
+                                label3.setPrefWidth(tabelWidth / 3);
+                                hBox.getChildren().addAll(label1, label2, label3);
+                                newContentObj.add(hBox);
+
+                                for (int i = 0; i < tokenbalanceInfo.size(); i++) {
+
+                                    JsonObject tmpJObj = (JsonObject) tokenbalanceInfo.get(i);
+                                    JsonObject tokenInfo = tmpJObj.get("tokenInfo").getAsJsonObject();
+
+                                    String fromName = tokenInfo.get("f").getAsString();
+                                    int decimals = tokenInfo.get("d").getAsInt();
+                                    String balanceNetwork = tokenInfo.get("s").getAsString();
+
+                                    String balanceHash = tmpJObj.get("hash").getAsString();
+                                    String transferCnt = tmpJObj.get("transferCnt").getAsString();
+                                    String balance = new BigDecimal(tmpJObj.get("balance").getAsString())
+                                            .divide(BigDecimal.TEN.pow((int) decimals))
+                                            .toPlainString();
+                                    String spendTransferCnt = tmpJObj.get("spendTransferCnt").getAsString();
+                                    String receiveTransferCnt = tmpJObj.get("receiveTransferCnt").getAsString();
+
+                                    HBox tmpHBox = new HBox();
+                                    tmpHBox.getStyleClass().add("tableContent");
+                                    Label label4 = new Label(fromName);
+                                    label4.setAlignment(Pos.CENTER);
+                                    label4.setPrefWidth(tabelWidth / 3);
+                                    Label label5 = new Label(balance + " " + balanceNetwork);
+                                    label5.setAlignment(Pos.CENTER);
+                                    label5.setPrefWidth(tabelWidth / 3);
+                                    Label label6 = new Label(transferCnt + "笔 ");
+                                    label6.setAlignment(Pos.CENTER);
+                                    label6.setStyle("-fx-border-width: 0;-fx-border-width:0;");
+
+                                    Region regionTokentrans = new Region();
+                                    regionTokentrans.getStyleClass().add("tokentransIcon");
+                                    Tooltip tooltip = new Tooltip("查看交易详情");
+                                    Tooltip.install(regionTokentrans, tooltip);
+                                    regionTokentrans.setOnMouseClicked(even -> showRegionTokentrans());
+                                    HBox finalyHBox = new HBox(label6, regionTokentrans);
+                                    finalyHBox.setPrefWidth(tabelWidth / 3);
+                                    finalyHBox.setAlignment(Pos.CENTER);
+
+                                    tmpHBox.getChildren().addAll(label4, label5, finalyHBox);
+
+                                    newContentObj.add(tmpHBox);
+                                }
+
+                                Platform.runLater(() -> {
+                                    newListView.setItems(newContentObj);
+                                    detailedContentObj.addAll(title, newListView);
+                                    detailedListView.setItems(detailedContentObj);
+                                });
+
+                            }
+                        } catch (Exception e) {
+                            if (debugMode) e.printStackTrace();
+                        }
+
+                    } else if (type.equals("block") && jsonObject.has("network")) {
+                        String block = jsonObject.get("block_no").getAsString();
+                        String network = jsonObject.get("network").getAsString();
+
                         //  获取交易地址基础信息
-                        JsonObject addressInfo = address(network, address);
-                        if(addressInfo!=null){
-                            String key = "地址信息";
-                            JsonObject baseInfo = (JsonObject)((JsonObject)addressInfo.get("data")).get("baseInfo");
+                        JsonObject blockInfo = block(network, block);
+                        JsonObject baseInfo = (JsonObject) ((JsonObject) blockInfo.get("data")).get("baseInfo");
+                        if (blockInfo != null && baseInfo != null && baseInfo.isJsonNull()) {
+                            String key = "区块信息";
 
                             TitledPane titledPane = new TitledPane();
                             titledPane.setText(key);
                             titledPane.getStyleClass().add("noContentTitlePane");
                             titledPane.setPrefWidth(200);
-                            titledPane.setOnMouseClicked(even->redirect(key));
+                            titledPane.setOnMouseClicked(even -> redirect(key));
                             Platform.runLater(() -> {
                                 accordionPane.getPanes().add(titledPane);
                             });
@@ -529,584 +719,416 @@ public class PaneBlockchain {
 
                             VBox vBox = new VBox();
                             vBox.setStyle("-fx-padding: 10 10 20 20;");
-                            for(String jsonKey : baseInfo.keySet()){
+                            for (String jsonKey : baseInfo.keySet()) {
                                 String value = baseInfo.get(jsonKey).getAsString();
                                 Label keyLabel = new Label(jsonKey);
                                 keyLabel.setPrefWidth(150);
-                                Label valueLabel = new Label("："+value);
+                                Label valueLabel = new Label("：" + value);
                                 HBox hBox = new HBox(keyLabel, valueLabel);
                                 vBox.getChildren().add(hBox);
                             }
                             Platform.runLater(() -> {
-                                detailedContentObj.addAll(title,vBox);
+                                detailedContentObj.addAll(title, vBox);
                                 detailedListView.setItems(detailedContentObj);
                             });
 
                         }
-                    }catch (Exception e){if(debugMode)e.printStackTrace();}
 
-                    try {
-                        //  近180天余额变化
-                        JsonObject balancetrend = balancetrend(network, address);
-                        if(balancetrend!=null){
-
-                            String key = "近180天余额变化";
-
-                            TitledPane titledPane = new TitledPane();
-                            titledPane.setText(key);
-                            titledPane.getStyleClass().add("noContentTitlePane");
-                            titledPane.setPrefWidth(200);
-                            titledPane.setOnMouseClicked(even->redirect(key));
-                            Platform.runLater(() -> {
-                                accordionPane.getPanes().add(titledPane);
-                            });
-
-                            Text title = new Text(key);
-                            title.getStyleClass().add("titleText");
-
-                            JsonArray tmpJArray= (JsonArray) balancetrend.get("data");
-
-                            CategoryAxis xAxis = new CategoryAxis();
-                            NumberAxis yAxis = new NumberAxis();
-                            xAxis.setLabel("时间");
-                            yAxis.setLabel("余额");
-                            LineChart<String,Number> lineChart = new LineChart<String,Number>(xAxis,yAxis);
-                            lineChart.setTitle(key);
-
-                            XYChart.Series series = new XYChart.Series();
-                            series.setName(key);
-                            for(int i = 0 ; i < tmpJArray.size() ; i++){
-                                JsonObject tmpJObj = (JsonObject) tmpJArray.get(i);
-                                String jsonKey = tmpJObj.keySet().iterator().next();
-                                Double value = tmpJObj.get(jsonKey).getAsDouble();
-                                series.getData().add(new XYChart.Data(jsonKey, value));
+                        try {
+                            //  获取交易
+                            int num1;
+                            try {
+                                String numStr = ((JsonObject) ((JsonObject) blockInfo.get("data")).get("count")).get("合约调用转帐").getAsString();
+                                num1 = Integer.parseInt(numStr);
+                            } catch (Exception e) {
+                                num1 = 0;
                             }
-                            lineChart.getData().add(series);
+                            if (
+                                    ((JsonObject) blockInfo.get("data")).has("count")
+                                            && ((JsonObject) ((JsonObject) blockInfo.get("data")).get("count")).has("合约调用转帐")
+                                            && num1 != 0
+                            ) {
+                                JsonObject getTxData = getTxData(network, block, "1", "20");
 
+                                String key = "交易(" + num1 + ")";
+                                JsonArray tmpDataInfo = (JsonArray) getTxData.get("data");
 
-                            Platform.runLater(() -> {
-                                detailedContentObj.addAll(title,lineChart);
-                                detailedListView.setItems(detailedContentObj);
-                            });
-                        }
-                    }catch (Exception e){if(debugMode)e.printStackTrace();}
+                                TitledPane titledPane = new TitledPane();
+                                titledPane.setText(key);
+                                titledPane.getStyleClass().add("noContentTitlePane");
+                                titledPane.setPrefWidth(200);
+                                titledPane.setOnMouseClicked(even -> redirect(key));
+                                Platform.runLater(() -> {
+                                    accordionPane.getPanes().add(titledPane);
+                                });
 
-                    try {
-                        //  代币余额
-                        JsonObject tokenbalance = tokenbalance(network, address);
-                        if(tokenbalance!=null){
+                                Text title = new Text(key);
+                                title.getStyleClass().add("titleText");
 
-                            String key = "代币余额&转账记录";
-                            JsonArray tokenbalanceInfo = (JsonArray)tokenbalance.get("data");
+                                double tabelWidth = detailedListView.getPrefWidth() - 80;
 
-                            TitledPane titledPane = new TitledPane();
-                            titledPane.setText(key);
-                            titledPane.getStyleClass().add("noContentTitlePane");
-                            titledPane.setPrefWidth(200);
-                            titledPane.setOnMouseClicked(even->redirect(key));
-                            Platform.runLater(() -> {
-                                accordionPane.getPanes().add(titledPane);
-                            });
-
-                            Text title = new Text(key);
-                            title.getStyleClass().add("titleText");
-
-                            double tabelWidth = detailedListView.getPrefWidth() - 80;
-
-                            ListView newListView = new ListView();
-                            newListView.getStyleClass().add("tableListView");
-                            ObservableList<Node> newContentObj = FXCollections.observableArrayList();
-                            newListView.setPrefWidth(tabelWidth);
-                            HBox hBox = new HBox();
-                            hBox.getStyleClass().add("tableTitle");
-                            Label label1 = new Label("全称");
-                            label1.setAlignment(Pos.CENTER);
-                            label1.setPrefWidth(tabelWidth/3);
-                            Label label2 = new Label("余额");
-                            label2.setAlignment(Pos.CENTER);
-                            label2.setPrefWidth(tabelWidth/3);
-                            Label label3 = new Label("交易详情");
-                            label3.setAlignment(Pos.CENTER);
-                            label3.setPrefWidth(tabelWidth/3);
-                            hBox.getChildren().addAll(label1, label2, label3);
-                            newContentObj.add(hBox);
-
-                            for(int i = 0 ; i < tokenbalanceInfo.size() ; i++){
-
-                                JsonObject tmpJObj = (JsonObject) tokenbalanceInfo.get(i);
-                                JsonObject tokenInfo = tmpJObj.get("tokenInfo").getAsJsonObject();
-
-                                String fromName = tokenInfo.get("f").getAsString();
-                                int decimals = tokenInfo.get("d").getAsInt();
-                                String balanceNetwork = tokenInfo.get("s").getAsString();
-
-                                String balanceHash = tmpJObj.get("hash").getAsString();
-                                String transferCnt = tmpJObj.get("transferCnt").getAsString();
-                                String balance = new BigDecimal(tmpJObj.get("balance").getAsString())
-                                        .divide(BigDecimal.TEN.pow((int) decimals))
-                                        .toPlainString();
-                                String spendTransferCnt = tmpJObj.get("spendTransferCnt").getAsString();
-                                String receiveTransferCnt = tmpJObj.get("receiveTransferCnt").getAsString();
-
-                                HBox tmpHBox = new HBox();
-                                tmpHBox.getStyleClass().add("tableContent");
-                                Label label4 = new Label(fromName);
+                                ListView newListView = new ListView();
+                                newListView.getStyleClass().add("tableListView");
+                                ObservableList<Node> newContentObj = FXCollections.observableArrayList();
+                                newListView.setPrefWidth(tabelWidth);
+                                HBox hBox = new HBox();
+                                hBox.getStyleClass().add("tableTitle");
+                                Label label1 = new Label("交易哈希");
+                                label1.setAlignment(Pos.CENTER);
+                                label1.setPrefWidth(tabelWidth * 0.13);
+                                Label label2 = new Label("函数/ID");
+                                label2.setAlignment(Pos.CENTER);
+                                label2.setPrefWidth(tabelWidth * 0.12);
+                                Label label3 = new Label("区块高度");
+                                label3.setAlignment(Pos.CENTER);
+                                label3.setPrefWidth(tabelWidth * 0.12);
+                                Label label4 = new Label("时间");
                                 label4.setAlignment(Pos.CENTER);
-                                label4.setPrefWidth(tabelWidth/3);
-                                Label label5 = new Label(balance + " " + balanceNetwork);
+                                label4.setPrefWidth(tabelWidth * 0.12);
+                                Label label5 = new Label("从");
                                 label5.setAlignment(Pos.CENTER);
-                                label5.setPrefWidth(tabelWidth/3);
-                                Label label6 = new Label(transferCnt + "笔 ");
+                                label5.setPrefWidth(tabelWidth * 0.13);
+                                Label label6 = new Label("到");
                                 label6.setAlignment(Pos.CENTER);
-                                label6.setStyle("-fx-border-width: 0;-fx-border-width:0;");
+                                label6.setPrefWidth(tabelWidth * 0.13);
+                                Label label7 = new Label("交易总额");
+                                label7.setAlignment(Pos.CENTER);
+                                label7.setPrefWidth(tabelWidth * 0.125);
+                                Label label8 = new Label("手续费");
+                                label8.setAlignment(Pos.CENTER);
+                                label8.setPrefWidth(tabelWidth * 0.125);
+                                hBox.getChildren().addAll(label1, label2, label3, label4, label5, label6, label7, label8);
+                                newContentObj.add(hBox);
 
-                                Region regionTokentrans = new Region();
-                                regionTokentrans.getStyleClass().add("tokentransIcon");
-                                Tooltip tooltip = new Tooltip("查看交易详情");
-                                Tooltip.install(regionTokentrans, tooltip);
-                                regionTokentrans.setOnMouseClicked(even->showRegionTokentrans());
-                                HBox finalyHBox = new HBox(label6, regionTokentrans);
-                                finalyHBox.setPrefWidth(tabelWidth/3);
-                                finalyHBox.setAlignment(Pos.CENTER);
+                                for (int i = 0; i < tmpDataInfo.size(); i++) {
+                                    JsonObject tmpJObj = (JsonObject) tmpDataInfo.get(i);
+                                    String txid = tmpJObj.get("txid").getAsString();
+                                    String block_no = tmpJObj.get("block_no").getAsString();
+                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                                    String time = Instant.ofEpochSecond(tmpJObj.get("time").getAsLong()).atZone(ZoneId.systemDefault()).format(formatter);
+                                    String from = tmpJObj.get("from").getAsString();
+                                    String to = tmpJObj.get("to").getAsString();
+                                    String value = tmpJObj.get("value").getAsString();
+                                    String fee = tmpJObj.get("fee").getAsString();
+                                    String networkFree = tmpJObj.get("network").getAsString();
 
-                                tmpHBox.getChildren().addAll(label4, label5, finalyHBox);
+                                    HBox tmpHBox = new HBox();
+                                    tmpHBox.getStyleClass().add("tableContent");
+                                    Label label9 = new Label(txid);
+                                    label9.setAlignment(Pos.CENTER);
+                                    label9.setPrefWidth(tabelWidth * 0.13);
+                                    Label label10 = new Label(block_no);
+                                    label10.setAlignment(Pos.CENTER);
+                                    label10.setPrefWidth(tabelWidth * 0.12);
+                                    Label label11 = new Label(block_no);
+                                    label11.setAlignment(Pos.CENTER);
+                                    label11.setPrefWidth(tabelWidth * 0.12);
+                                    Label label12 = new Label(time);
+                                    label12.setAlignment(Pos.CENTER);
+                                    label12.setPrefWidth(tabelWidth * 0.12);
+                                    Label label13 = new Label(from);
+                                    label13.setAlignment(Pos.CENTER);
+                                    label13.setPrefWidth(tabelWidth * 0.13);
+                                    Label label14 = new Label(to);
+                                    label14.setAlignment(Pos.CENTER);
+                                    label14.setPrefWidth(tabelWidth * 0.13);
+                                    Label label15 = new Label(value);
+                                    label15.setAlignment(Pos.CENTER);
+                                    label15.setPrefWidth(tabelWidth * 0.125);
+                                    Label label16 = new Label(fee + " " + networkFree);
+                                    label16.setAlignment(Pos.CENTER);
+                                    label16.setPrefWidth(tabelWidth * 0.125);
+                                    tmpHBox.getChildren().addAll(label9, label10, label11, label12, label13, label14, label15, label16);
+                                    newContentObj.add(tmpHBox);
 
-                                newContentObj.add(tmpHBox);
+                                }
+
+                                Platform.runLater(() -> {
+                                    newListView.setItems(newContentObj);
+                                    detailedContentObj.addAll(title, newListView);
+                                    detailedListView.setItems(detailedContentObj);
+                                });
+
                             }
 
-                            Platform.runLater(() -> {
-                                newListView.setItems(newContentObj);
-                                detailedContentObj.addAll(title,newListView);
-                                detailedListView.setItems(detailedContentObj);
-                            });
-
+                        } catch (Exception e) {
+                            if (debugMode) e.printStackTrace();
                         }
-                    }catch (Exception e){if(debugMode)e.printStackTrace();}
 
-                }else if (type.equals("block") && jsonObject.has("network")){
-                    String block = jsonObject.get("block_no").getAsString();
-                    String network = jsonObject.get("network").getAsString();
 
-                    //  获取交易地址基础信息
-                    JsonObject blockInfo = block(network, block);
-                    JsonObject baseInfo = (JsonObject)((JsonObject)blockInfo.get("data")).get("baseInfo");
-                    if(blockInfo!=null && baseInfo!=null && baseInfo.isJsonNull()){
-                        String key = "区块信息";
+                        try {
 
-                        TitledPane titledPane = new TitledPane();
-                        titledPane.setText(key);
-                        titledPane.getStyleClass().add("noContentTitlePane");
-                        titledPane.setPrefWidth(200);
-                        titledPane.setOnMouseClicked(even->redirect(key));
-                        Platform.runLater(() -> {
-                            accordionPane.getPanes().add(titledPane);
-                        });
+                            //  获取代币交易
+                            int num2;
+                            try {
+                                String numStr = ((JsonObject) ((JsonObject) blockInfo.get("data")).get("count")).get("代币交易").getAsString();
+                                num2 = Integer.parseInt(numStr);
+                            } catch (Exception e) {
+                                num2 = 0;
+                            }
+                            if (
+                                    ((JsonObject) blockInfo.get("data")).has("count")
+                                            && ((JsonObject) ((JsonObject) blockInfo.get("data")).get("count")).has("代币交易")
+                                            && num2 != 0
+                            ) {
+                                JsonObject getTokentransferData = getTokentransferData(network, block, "1", "20");
 
-                        Text title = new Text(key);
-                        title.getStyleClass().add("titleText");
+                                String key = "代币交易(" + num2 + ")";
+                                JsonObject tmpDataInfo = (JsonObject) getTokentransferData.get("data");
 
-                        VBox vBox = new VBox();
-                        vBox.setStyle("-fx-padding: 10 10 20 20;");
-                        for(String jsonKey : baseInfo.keySet()){
-                            String value = baseInfo.get(jsonKey).getAsString();
-                            Label keyLabel = new Label(jsonKey);
-                            keyLabel.setPrefWidth(150);
-                            Label valueLabel = new Label("："+value);
-                            HBox hBox = new HBox(keyLabel, valueLabel);
-                            vBox.getChildren().add(hBox);
+                                TitledPane titledPane = new TitledPane();
+                                titledPane.setText(key);
+                                titledPane.getStyleClass().add("noContentTitlePane");
+                                titledPane.setPrefWidth(200);
+                                titledPane.setOnMouseClicked(even -> redirect(key));
+                                Platform.runLater(() -> {
+                                    accordionPane.getPanes().add(titledPane);
+                                });
+
+                                Text title = new Text(key);
+                                title.getStyleClass().add("titleText");
+
+                                double tabelWidth = detailedListView.getPrefWidth() - 80;
+
+                                ListView newListView = new ListView();
+                                newListView.getStyleClass().add("tableListView");
+                                ObservableList<Node> newContentObj = FXCollections.observableArrayList();
+                                newListView.setPrefWidth(tabelWidth);
+                                HBox hBox = new HBox();
+                                hBox.getStyleClass().add("tableTitle");
+                                Label label1 = new Label("交易哈希");
+                                label1.setAlignment(Pos.CENTER);
+                                label1.setPrefWidth(tabelWidth * 0.15);
+                                Label label2 = new Label("区块高度");
+                                label2.setAlignment(Pos.CENTER);
+                                label2.setPrefWidth(tabelWidth * 0.14);
+                                Label label3 = new Label("时间");
+                                label3.setAlignment(Pos.CENTER);
+                                label3.setPrefWidth(tabelWidth * 0.14);
+                                Label label4 = new Label("从");
+                                label4.setAlignment(Pos.CENTER);
+                                label4.setPrefWidth(tabelWidth * 0.15);
+                                Label label5 = new Label("到");
+                                label5.setAlignment(Pos.CENTER);
+                                label5.setPrefWidth(tabelWidth * 0.15);
+                                Label label6 = new Label("交易总额");
+                                label6.setAlignment(Pos.CENTER);
+                                label6.setPrefWidth(tabelWidth * 0.17);
+                                Label label66 = new Label("代币");
+                                label66.setAlignment(Pos.CENTER);
+                                label66.setPrefWidth(tabelWidth * 0.1);
+                                hBox.getChildren().addAll(label1, label2, label3, label4, label5, label6, label66);
+                                newContentObj.add(hBox);
+
+                                for (Map.Entry<String, JsonElement> entry : tmpDataInfo.entrySet()) {
+                                    String entryKey = entry.getKey();
+                                    JsonArray entryValue = (JsonArray) entry.getValue();
+
+                                    for (int i = 0; i < entryValue.size(); i++) {
+                                        JsonObject tmpJObj = (JsonObject) entryValue.get(i);
+                                        String block_no = tmpJObj.get("block_no").getAsString();
+                                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                                        String time = Instant.ofEpochSecond(tmpJObj.get("time").getAsLong()).atZone(ZoneId.systemDefault()).format(formatter);
+                                        String from = tmpJObj.get("from").getAsString();
+                                        String to = tmpJObj.get("to").getAsString();
+                                        String value = tmpJObj.get("value").getAsString();
+                                        String icon = tmpJObj.get("tokenSymbol").getAsString();
+
+
+                                        HBox tmpHBox = new HBox();
+                                        tmpHBox.getStyleClass().add("tableContent");
+                                        Label label7 = new Label(entryKey);
+                                        label7.setAlignment(Pos.CENTER);
+                                        label7.setPrefWidth(tabelWidth * 0.15);
+                                        Label label8 = new Label(block_no);
+                                        label8.setAlignment(Pos.CENTER);
+                                        label8.setPrefWidth(tabelWidth * 0.14);
+                                        Label label9 = new Label(time);
+                                        label9.setAlignment(Pos.CENTER);
+                                        label9.setPrefWidth(tabelWidth * 0.14);
+                                        Label label10 = new Label(from);
+                                        label10.setAlignment(Pos.CENTER);
+                                        label10.setPrefWidth(tabelWidth * 0.15);
+                                        Label label11 = new Label(to);
+                                        label11.setAlignment(Pos.CENTER);
+                                        label11.setPrefWidth(tabelWidth * 0.15);
+                                        Label label12 = new Label(value);
+                                        label12.setAlignment(Pos.CENTER);
+                                        label12.setPrefWidth(tabelWidth * 0.17);
+
+                                        Label label1212 = new Label(icon);
+                                        label1212.setStyle("-fx-padding: 0;-fx-border-width: 0;");
+
+                                        Image image = new Image(blockUrl + "/icon/" + icon + ".png", true);
+                                        ImageView imageView = new ImageView(image);
+                                        imageView.setFitHeight(20.0);
+                                        imageView.setFitWidth(20.0);
+                                        SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(35.0);
+                                        Rectangle clip = clipRect(
+                                                imageView, arcProperty
+                                        );
+                                        imageView.setClip(clip);
+                                        imageView.setPreserveRatio(true);
+                                        imageView.setPickOnBounds(true);
+                                        label1212.setAlignment(Pos.CENTER);
+                                        HBox hBox1 = new HBox(imageView, label1212);
+                                        hBox1.setAlignment(Pos.CENTER);
+                                        label1212.setPrefWidth(tabelWidth * 0.1);
+                                        tmpHBox.getChildren().addAll(label7, label8, label9, label10, label11, label12, hBox1);
+                                        newContentObj.add(tmpHBox);
+
+                                    }
+                                }
+
+                                Platform.runLater(() -> {
+                                    newListView.setItems(newContentObj);
+                                    detailedContentObj.addAll(title, newListView);
+                                    detailedListView.setItems(detailedContentObj);
+                                });
+
+                            }
+
+                        } catch (Exception e) {
+                            if (debugMode) e.printStackTrace();
                         }
-                        Platform.runLater(() -> {
-                            detailedContentObj.addAll(title,vBox);
-                            detailedListView.setItems(detailedContentObj);
-                        });
+
+
+                        try {
+
+                            //  获取合约调用转帐
+                            int num3;
+                            try {
+                                String numStr = ((JsonObject) ((JsonObject) blockInfo.get("data")).get("count")).get("合约调用转帐").getAsString();
+                                num3 = Integer.parseInt(numStr);
+                            } catch (Exception e) {
+                                num3 = 0;
+                            }
+                            if (
+                                    ((JsonObject) blockInfo.get("data")).has("count")
+                                            && ((JsonObject) ((JsonObject) blockInfo.get("data")).get("count")).has("合约调用转帐")
+                                            && num3 != 0
+                            ) {
+                                JsonObject getInternalData = getInternalData(network, block, "1", "20");
+
+                                String key = "合约调用转帐(" + num3 + ")";
+                                JsonObject tmpDataInfo = (JsonObject) getInternalData.get("data");
+
+                                TitledPane titledPane = new TitledPane();
+                                titledPane.setText(key);
+                                titledPane.getStyleClass().add("noContentTitlePane");
+                                titledPane.setPrefWidth(200);
+                                titledPane.setOnMouseClicked(even -> redirect(key));
+                                Platform.runLater(() -> {
+                                    accordionPane.getPanes().add(titledPane);
+                                });
+
+                                Text title = new Text(key);
+                                title.getStyleClass().add("titleText");
+
+                                double tabelWidth = detailedListView.getPrefWidth() - 80;
+
+                                ListView newListView = new ListView();
+                                newListView.getStyleClass().add("tableListView");
+                                ObservableList<Node> newContentObj = FXCollections.observableArrayList();
+                                newListView.setPrefWidth(tabelWidth);
+                                HBox hBox = new HBox();
+                                hBox.getStyleClass().add("tableTitle");
+                                Label label1 = new Label("交易哈希");
+                                label1.setAlignment(Pos.CENTER);
+                                label1.setPrefWidth(tabelWidth * 0.16);
+                                Label label2 = new Label("区块高度");
+                                label2.setAlignment(Pos.CENTER);
+                                label2.setPrefWidth(tabelWidth * 0.16);
+                                Label label3 = new Label("时间");
+                                label3.setAlignment(Pos.CENTER);
+                                label3.setPrefWidth(tabelWidth * 0.16);
+                                Label label4 = new Label("从");
+                                label4.setAlignment(Pos.CENTER);
+                                label4.setPrefWidth(tabelWidth * 0.16);
+                                Label label5 = new Label("到");
+                                label5.setAlignment(Pos.CENTER);
+                                label5.setPrefWidth(tabelWidth * 0.16);
+                                Label label6 = new Label("交易总额");
+                                label6.setAlignment(Pos.CENTER);
+                                label6.setPrefWidth(tabelWidth * 0.2);
+                                hBox.getChildren().addAll(label1, label2, label3, label4, label5, label6);
+                                newContentObj.add(hBox);
+
+                                for (Map.Entry<String, JsonElement> entry : tmpDataInfo.entrySet()) {
+                                    String entryKey = entry.getKey();
+                                    JsonArray entryValue = (JsonArray) entry.getValue();
+
+                                    for (int i = 0; i < entryValue.size(); i++) {
+                                        JsonObject tmpJObj = (JsonObject) entryValue.get(i);
+                                        String block_no = tmpJObj.get("block_no").getAsString();
+                                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                                        String time = Instant.ofEpochSecond(tmpJObj.get("time").getAsLong()).atZone(ZoneId.systemDefault()).format(formatter);
+                                        String from = tmpJObj.get("from").getAsString();
+                                        String to = tmpJObj.get("to").getAsString();
+                                        String value = tmpJObj.get("value").getAsString();
+
+
+                                        HBox tmpHBox = new HBox();
+                                        tmpHBox.getStyleClass().add("tableContent");
+                                        Label label7 = new Label(entryKey);
+                                        label7.setAlignment(Pos.CENTER);
+                                        label7.setPrefWidth(tabelWidth * 0.16);
+                                        Label label8 = new Label(block_no);
+                                        label8.setAlignment(Pos.CENTER);
+                                        label8.setPrefWidth(tabelWidth * 0.16);
+                                        Label label9 = new Label(time);
+                                        label9.setAlignment(Pos.CENTER);
+                                        label9.setPrefWidth(tabelWidth * 0.16);
+                                        Label label10 = new Label(from);
+                                        label10.setAlignment(Pos.CENTER);
+                                        label10.setPrefWidth(tabelWidth * 0.16);
+                                        Label label11 = new Label(to);
+                                        label11.setAlignment(Pos.CENTER);
+                                        label11.setPrefWidth(tabelWidth * 0.16);
+                                        Label label12 = new Label(value + " " + network);
+                                        label12.setAlignment(Pos.CENTER);
+                                        label12.setPrefWidth(tabelWidth * 0.2);
+                                        tmpHBox.getChildren().addAll(label7, label8, label9, label10, label11, label12);
+                                        newContentObj.add(tmpHBox);
+
+                                    }
+                                }
+
+                                Platform.runLater(() -> {
+                                    newListView.setItems(newContentObj);
+                                    detailedContentObj.addAll(title, newListView);
+                                    detailedListView.setItems(detailedContentObj);
+                                });
+
+                            }
+                        } catch (Exception e) {
+                            if (debugMode) e.printStackTrace();
+                        }
 
                     }
 
-                    try {
-                        //  获取交易
-                        int num1;
-                        try {
-                            String numStr = ((JsonObject)((JsonObject)blockInfo.get("data")).get("count")).get("合约调用转帐").getAsString();
-                            num1 = Integer.parseInt(numStr);
-                        } catch (Exception e) {
-                            num1 = 0;
-                        }
-                        if(
-                                ((JsonObject)blockInfo.get("data")).has("count")
-                                        && ((JsonObject)((JsonObject)blockInfo.get("data")).get("count")).has("合约调用转帐")
-                                        && num1 != 0
-                        ){
-                            JsonObject getTxData = getTxData(network, block, "1", "20");
+                    Platform.runLater(() -> {
+                        detailedListView.setItems(detailedContentObj);
 
-                            String key = "交易("+num1+")";
-                            JsonArray tmpDataInfo = (JsonArray)getTxData.get("data");
+                        if (detailedContentObj.isEmpty()) {
+                            detailedContentObj.clear();
+                            detailedListView.getItems().clear();
 
-                            TitledPane titledPane = new TitledPane();
-                            titledPane.setText(key);
-                            titledPane.getStyleClass().add("noContentTitlePane");
-                            titledPane.setPrefWidth(200);
-                            titledPane.setOnMouseClicked(even->redirect(key));
+                            Label tips = new Label("查询失败，请检查网络是否存在问题，并查看日志……");
+                            tips.setAlignment(Pos.CENTER);
+                            tips.setId("tipTitle");
+                            tips.setPrefWidth(sPane.getWidth() - 280);
                             Platform.runLater(() -> {
-                                accordionPane.getPanes().add(titledPane);
-                            });
-
-                            Text title = new Text(key);
-                            title.getStyleClass().add("titleText");
-
-                            double tabelWidth = detailedListView.getPrefWidth() - 80;
-
-                            ListView newListView = new ListView();
-                            newListView.getStyleClass().add("tableListView");
-                            ObservableList<Node> newContentObj = FXCollections.observableArrayList();
-                            newListView.setPrefWidth(tabelWidth);
-                            HBox hBox = new HBox();
-                            hBox.getStyleClass().add("tableTitle");
-                            Label label1 = new Label("交易哈希");
-                            label1.setAlignment(Pos.CENTER);
-                            label1.setPrefWidth(tabelWidth * 0.13);
-                            Label label2 = new Label("函数/ID");
-                            label2.setAlignment(Pos.CENTER);
-                            label2.setPrefWidth(tabelWidth * 0.12);
-                            Label label3 = new Label("区块高度");
-                            label3.setAlignment(Pos.CENTER);
-                            label3.setPrefWidth(tabelWidth * 0.12);
-                            Label label4 = new Label("时间");
-                            label4.setAlignment(Pos.CENTER);
-                            label4.setPrefWidth(tabelWidth * 0.12);
-                            Label label5 = new Label("从");
-                            label5.setAlignment(Pos.CENTER);
-                            label5.setPrefWidth(tabelWidth * 0.13);
-                            Label label6 = new Label("到");
-                            label6.setAlignment(Pos.CENTER);
-                            label6.setPrefWidth(tabelWidth * 0.13);
-                            Label label7 = new Label("交易总额");
-                            label7.setAlignment(Pos.CENTER);
-                            label7.setPrefWidth(tabelWidth * 0.125);
-                            Label label8 = new Label("手续费");
-                            label8.setAlignment(Pos.CENTER);
-                            label8.setPrefWidth(tabelWidth * 0.125);
-                            hBox.getChildren().addAll(label1, label2, label3, label4 , label5, label6, label7, label8);
-                            newContentObj.add(hBox);
-
-                            for (int i = 0; i < tmpDataInfo.size(); i++) {
-                                JsonObject tmpJObj = (JsonObject) tmpDataInfo.get(i);
-                                String txid = tmpJObj.get("txid").getAsString();
-                                String block_no = tmpJObj.get("block_no").getAsString();
-                                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                                String time = Instant.ofEpochSecond(tmpJObj.get("time").getAsLong()).atZone(ZoneId.systemDefault()).format(formatter);
-                                String from = tmpJObj.get("from").getAsString();
-                                String to = tmpJObj.get("to").getAsString();
-                                String value = tmpJObj.get("value").getAsString();
-                                String fee = tmpJObj.get("fee").getAsString();
-                                String networkFree = tmpJObj.get("network").getAsString();
-
-                                HBox tmpHBox = new HBox();
-                                tmpHBox.getStyleClass().add("tableContent");
-                                Label label9 = new Label(txid);
-                                label9.setAlignment(Pos.CENTER);
-                                label9.setPrefWidth(tabelWidth * 0.13);
-                                Label label10 = new Label(block_no);
-                                label10.setAlignment(Pos.CENTER);
-                                label10.setPrefWidth(tabelWidth * 0.12);
-                                Label label11 = new Label(block_no);
-                                label11.setAlignment(Pos.CENTER);
-                                label11.setPrefWidth(tabelWidth * 0.12);
-                                Label label12 = new Label(time);
-                                label12.setAlignment(Pos.CENTER);
-                                label12.setPrefWidth(tabelWidth * 0.12);
-                                Label label13 = new Label(from);
-                                label13.setAlignment(Pos.CENTER);
-                                label13.setPrefWidth(tabelWidth * 0.13);
-                                Label label14 = new Label(to);
-                                label14.setAlignment(Pos.CENTER);
-                                label14.setPrefWidth(tabelWidth * 0.13);
-                                Label label15 = new Label(value);
-                                label15.setAlignment(Pos.CENTER);
-                                label15.setPrefWidth(tabelWidth * 0.125);
-                                Label label16 = new Label(fee + " " + networkFree);
-                                label16.setAlignment(Pos.CENTER);
-                                label16.setPrefWidth(tabelWidth * 0.125);
-                                tmpHBox.getChildren().addAll(label9, label10, label11, label12, label13, label14, label15, label16);
-                                newContentObj.add(tmpHBox);
-
-                            }
-
-                            Platform.runLater(() -> {
-                                newListView.setItems(newContentObj);
-                                detailedContentObj.addAll(title,newListView);
+                                detailedContentObj.add(tips);
                                 detailedListView.setItems(detailedContentObj);
                             });
-
                         }
+                    });
 
-                    }catch (Exception e){if(debugMode)e.printStackTrace();}
-
-
-                    try {
-
-                        //  获取代币交易
-                        int num2;
-                        try {
-                            String numStr = ((JsonObject)((JsonObject)blockInfo.get("data")).get("count")).get("代币交易").getAsString();
-                            num2 = Integer.parseInt(numStr);
-                        } catch (Exception e) {
-                            num2 = 0;
-                        }
-                        if(
-                                ((JsonObject)blockInfo.get("data")).has("count")
-                                        && ((JsonObject)((JsonObject)blockInfo.get("data")).get("count")).has("代币交易")
-                                        && num2 != 0
-                        ){
-                            JsonObject getTokentransferData = getTokentransferData(network, block, "1", "20");
-
-                            String key = "代币交易("+num2+")";
-                            JsonObject tmpDataInfo = (JsonObject)getTokentransferData.get("data");
-
-                            TitledPane titledPane = new TitledPane();
-                            titledPane.setText(key);
-                            titledPane.getStyleClass().add("noContentTitlePane");
-                            titledPane.setPrefWidth(200);
-                            titledPane.setOnMouseClicked(even->redirect(key));
-                            Platform.runLater(() -> {
-                                accordionPane.getPanes().add(titledPane);
-                            });
-
-                            Text title = new Text(key);
-                            title.getStyleClass().add("titleText");
-
-                            double tabelWidth = detailedListView.getPrefWidth() - 80;
-
-                            ListView newListView = new ListView();
-                            newListView.getStyleClass().add("tableListView");
-                            ObservableList<Node> newContentObj = FXCollections.observableArrayList();
-                            newListView.setPrefWidth(tabelWidth);
-                            HBox hBox = new HBox();
-                            hBox.getStyleClass().add("tableTitle");
-                            Label label1 = new Label("交易哈希");
-                            label1.setAlignment(Pos.CENTER);
-                            label1.setPrefWidth(tabelWidth * 0.15);
-                            Label label2 = new Label("区块高度");
-                            label2.setAlignment(Pos.CENTER);
-                            label2.setPrefWidth(tabelWidth * 0.14);
-                            Label label3 = new Label("时间");
-                            label3.setAlignment(Pos.CENTER);
-                            label3.setPrefWidth(tabelWidth * 0.14);
-                            Label label4 = new Label("从");
-                            label4.setAlignment(Pos.CENTER);
-                            label4.setPrefWidth(tabelWidth * 0.15);
-                            Label label5 = new Label("到");
-                            label5.setAlignment(Pos.CENTER);
-                            label5.setPrefWidth(tabelWidth * 0.15);
-                            Label label6 = new Label("交易总额");
-                            label6.setAlignment(Pos.CENTER);
-                            label6.setPrefWidth(tabelWidth * 0.17);
-                            Label label66 = new Label("代币");
-                            label66.setAlignment(Pos.CENTER);
-                            label66.setPrefWidth(tabelWidth * 0.1);
-                            hBox.getChildren().addAll(label1, label2, label3, label4 , label5, label6, label66);
-                            newContentObj.add(hBox);
-
-                            for (Map.Entry<String, JsonElement> entry : tmpDataInfo.entrySet()) {
-                                String entryKey = entry.getKey();
-                                JsonArray entryValue = (JsonArray) entry.getValue();
-
-                                for (int i = 0 ; i < entryValue.size() ; i++){
-                                    JsonObject tmpJObj = (JsonObject) entryValue.get(i);
-                                    String block_no = tmpJObj.get("block_no").getAsString();
-                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                                    String time = Instant.ofEpochSecond(tmpJObj.get("time").getAsLong()).atZone(ZoneId.systemDefault()).format(formatter);
-                                    String from = tmpJObj.get("from").getAsString();
-                                    String to = tmpJObj.get("to").getAsString();
-                                    String value = tmpJObj.get("value").getAsString();
-                                    String icon = tmpJObj.get("tokenSymbol").getAsString();
-
-
-                                    HBox tmpHBox = new HBox();
-                                    tmpHBox.getStyleClass().add("tableContent");
-                                    Label label7 = new Label(entryKey);
-                                    label7.setAlignment(Pos.CENTER);
-                                    label7.setPrefWidth(tabelWidth * 0.15);
-                                    Label label8 = new Label(block_no);
-                                    label8.setAlignment(Pos.CENTER);
-                                    label8.setPrefWidth(tabelWidth * 0.14);
-                                    Label label9 = new Label(time);
-                                    label9.setAlignment(Pos.CENTER);
-                                    label9.setPrefWidth(tabelWidth * 0.14);
-                                    Label label10 = new Label(from);
-                                    label10.setAlignment(Pos.CENTER);
-                                    label10.setPrefWidth(tabelWidth * 0.15);
-                                    Label label11 = new Label(to);
-                                    label11.setAlignment(Pos.CENTER);
-                                    label11.setPrefWidth(tabelWidth * 0.15);
-                                    Label label12 = new Label(value);
-                                    label12.setAlignment(Pos.CENTER);
-                                    label12.setPrefWidth(tabelWidth * 0.17);
-
-                                    Label label1212 = new Label(icon);
-                                    label1212.setStyle("-fx-padding: 0;-fx-border-width: 0;");
-
-                                    Image image = new Image(blockUrl + "/icon/" + icon + ".png", true);
-                                    ImageView imageView = new ImageView(image);
-                                    imageView.setFitHeight(20.0);
-                                    imageView.setFitWidth(20.0);
-                                    SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(35.0);
-                                    Rectangle clip = clipRect(
-                                            imageView, arcProperty
-                                    );
-                                    imageView.setClip(clip);
-                                    imageView.setPreserveRatio(true);
-                                    imageView.setPickOnBounds(true);
-                                    label1212.setAlignment(Pos.CENTER);
-                                    HBox hBox1 = new HBox(imageView, label1212);
-                                    hBox1.setAlignment(Pos.CENTER);
-                                    label1212.setPrefWidth(tabelWidth * 0.1);
-                                    tmpHBox.getChildren().addAll(label7, label8, label9, label10, label11, label12, hBox1);
-                                    newContentObj.add(tmpHBox);
-
-                                }
-                            }
-
-                            Platform.runLater(() -> {
-                                newListView.setItems(newContentObj);
-                                detailedContentObj.addAll(title,newListView);
-                                detailedListView.setItems(detailedContentObj);
-                            });
-
-                        }
-
-                    }catch (Exception e){if(debugMode)e.printStackTrace();}
-
-
-                    try {
-
-                        //  获取合约调用转帐
-                        int num3;
-                        try {
-                            String numStr = ((JsonObject)((JsonObject)blockInfo.get("data")).get("count")).get("合约调用转帐").getAsString();
-                            num3 = Integer.parseInt(numStr);
-                        } catch (Exception e) {
-                            num3 = 0;
-                        }
-                        if(
-                                ((JsonObject)blockInfo.get("data")).has("count")
-                             && ((JsonObject)((JsonObject)blockInfo.get("data")).get("count")).has("合约调用转帐")
-                             && num3 != 0
-                        ){
-                            JsonObject getInternalData = getInternalData(network, block, "1", "20");
-
-                            String key = "合约调用转帐("+num3+")";
-                            JsonObject tmpDataInfo = (JsonObject)getInternalData.get("data");
-
-                            TitledPane titledPane = new TitledPane();
-                            titledPane.setText(key);
-                            titledPane.getStyleClass().add("noContentTitlePane");
-                            titledPane.setPrefWidth(200);
-                            titledPane.setOnMouseClicked(even->redirect(key));
-                            Platform.runLater(() -> {
-                                accordionPane.getPanes().add(titledPane);
-                            });
-
-                            Text title = new Text(key);
-                            title.getStyleClass().add("titleText");
-
-                            double tabelWidth = detailedListView.getPrefWidth() - 80;
-
-                            ListView newListView = new ListView();
-                            newListView.getStyleClass().add("tableListView");
-                            ObservableList<Node> newContentObj = FXCollections.observableArrayList();
-                            newListView.setPrefWidth(tabelWidth);
-                            HBox hBox = new HBox();
-                            hBox.getStyleClass().add("tableTitle");
-                            Label label1 = new Label("交易哈希");
-                            label1.setAlignment(Pos.CENTER);
-                            label1.setPrefWidth(tabelWidth * 0.16);
-                            Label label2 = new Label("区块高度");
-                            label2.setAlignment(Pos.CENTER);
-                            label2.setPrefWidth(tabelWidth * 0.16);
-                            Label label3 = new Label("时间");
-                            label3.setAlignment(Pos.CENTER);
-                            label3.setPrefWidth(tabelWidth * 0.16);
-                            Label label4 = new Label("从");
-                            label4.setAlignment(Pos.CENTER);
-                            label4.setPrefWidth(tabelWidth * 0.16);
-                            Label label5 = new Label("到");
-                            label5.setAlignment(Pos.CENTER);
-                            label5.setPrefWidth(tabelWidth * 0.16);
-                            Label label6 = new Label("交易总额");
-                            label6.setAlignment(Pos.CENTER);
-                            label6.setPrefWidth(tabelWidth * 0.2);
-                            hBox.getChildren().addAll(label1, label2, label3, label4 , label5, label6);
-                            newContentObj.add(hBox);
-
-                            for (Map.Entry<String, JsonElement> entry : tmpDataInfo.entrySet()) {
-                                String entryKey = entry.getKey();
-                                JsonArray entryValue = (JsonArray) entry.getValue();
-
-                                for (int i = 0 ; i < entryValue.size() ; i++){
-                                    JsonObject tmpJObj = (JsonObject) entryValue.get(i);
-                                    String block_no = tmpJObj.get("block_no").getAsString();
-                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                                    String time = Instant.ofEpochSecond(tmpJObj.get("time").getAsLong()).atZone(ZoneId.systemDefault()).format(formatter);
-                                    String from = tmpJObj.get("from").getAsString();
-                                    String to = tmpJObj.get("to").getAsString();
-                                    String value = tmpJObj.get("value").getAsString();
-
-
-                                    HBox tmpHBox = new HBox();
-                                    tmpHBox.getStyleClass().add("tableContent");
-                                    Label label7 = new Label(entryKey);
-                                    label7.setAlignment(Pos.CENTER);
-                                    label7.setPrefWidth(tabelWidth * 0.16);
-                                    Label label8 = new Label(block_no);
-                                    label8.setAlignment(Pos.CENTER);
-                                    label8.setPrefWidth(tabelWidth * 0.16);
-                                    Label label9 = new Label(time);
-                                    label9.setAlignment(Pos.CENTER);
-                                    label9.setPrefWidth(tabelWidth * 0.16);
-                                    Label label10 = new Label(from);
-                                    label10.setAlignment(Pos.CENTER);
-                                    label10.setPrefWidth(tabelWidth * 0.16);
-                                    Label label11 = new Label(to);
-                                    label11.setAlignment(Pos.CENTER);
-                                    label11.setPrefWidth(tabelWidth * 0.16);
-                                    Label label12 = new Label(value + " " + network);
-                                    label12.setAlignment(Pos.CENTER);
-                                    label12.setPrefWidth(tabelWidth * 0.2);
-                                    tmpHBox.getChildren().addAll(label7, label8, label9, label10, label11, label12);
-                                    newContentObj.add(tmpHBox);
-
-                                }
-                            }
-
-                            Platform.runLater(() -> {
-                                newListView.setItems(newContentObj);
-                                detailedContentObj.addAll(title,newListView);
-                                detailedListView.setItems(detailedContentObj);
-                            });
-
-                        }
-                    }catch (Exception e){if(debugMode)e.printStackTrace();}
-
+                }catch (Exception e){} finally {
+                    tips.setManaged(false);
+                    tips.setVisible(false);
                 }
-
-                Platform.runLater(() -> {
-                    detailedListView.setItems(detailedContentObj);
-
-                    if(detailedContentObj.isEmpty()) {
-                        detailedContentObj.clear();
-                        detailedListView.getItems().clear();
-
-                        Label tips = new Label("查询失败，请检查网络是否存在问题，并查看日志……");
-                        tips.setAlignment(Pos.CENTER);
-                        tips.setId("tipTitle");
-                        tips.setPrefWidth(sPane.getWidth() - 280);
-                        Platform.runLater(() -> {
-                            detailedContentObj.add(tips);
-                            detailedListView.setItems(detailedContentObj);
-                        });
-                    }
-                });
-
 
                 return null;
             }
@@ -1117,7 +1139,6 @@ public class PaneBlockchain {
         });
         // 启动任务
         new Thread(task).start();
-
 
     }
 
@@ -1143,17 +1164,22 @@ public class PaneBlockchain {
     @FXML
     void goBack(){
         Timeline animation = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(detailedListView.prefWidthProperty(), listView.getWidth())),
+                new KeyFrame(Duration.ZERO, new KeyValue(detailedListView.prefWidthProperty(), listViewCell.getWidth())),
                 new KeyFrame(Duration.seconds(0.2), new KeyValue(detailedListView.prefWidthProperty(), 0))
         );
         animation.setOnFinished(event -> {
             accordionPane.getPanes().clear();
+            accordionPane.setVisible(false);
             detailedPane.setVisible(false);
             detailedListView.getItems().clear();
         });
         animation.play();
 
-
     }
 
+    @FXML
+    public void goBackAndClear(MouseEvent event) {
+        question.setText("");
+        searchInput();
+    }
 }

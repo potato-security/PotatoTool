@@ -5,6 +5,9 @@ import com.leewyatt.rxcontrols.controls.RXCarousel;
 import com.leewyatt.rxcontrols.pane.RXCarouselPane;
 import com.potato.potatotool.utils.ExecutorServiceManager;
 import com.potato.potatotool.utils.Util;
+import javafx.animation.KeyFrame;
+import javafx.animation.ParallelTransition;
+import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -29,6 +32,8 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
+
+import static com.potato.potatotool.ToStart.isBlueMode;
 
 
 /**
@@ -64,6 +69,8 @@ public class MainController {
     @FXML
     private RXCarousel mainCarousel;
 
+    @FXML
+    private BorderPane changeBtn;
     @FXML
     private Rectangle blueModePane;
     @FXML
@@ -158,51 +165,61 @@ public class MainController {
 
         Pane p11 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoSearch.fxml"));
         RXCarouselPane infoSearchPane = new RXCarouselPane(p11);
+        infoSearchPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p11.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p11.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p12 = FXMLLoader.load(getClass().getResource("/fxml/pane_vulScan.fxml"));
         RXCarouselPane vulScanPane = new RXCarouselPane(p12);
+        vulScanPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p12.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p12.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p13 = FXMLLoader.load(getClass().getResource("/fxml/pane_freeKill.fxml"));
         RXCarouselPane freeKillPane = new RXCarouselPane(p13);
+        freeKillPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p13.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p13.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p14 = FXMLLoader.load(getClass().getResource("/fxml/pane_customMemoryCode.fxml"));
         RXCarouselPane customMemoryCodePane = new RXCarouselPane(p14);
+        customMemoryCodePane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p14.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p14.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p15 = FXMLLoader.load(getClass().getResource("/fxml/pane_customCommandGeneration.fxml"));
         RXCarouselPane customCommandGenerationPane = new RXCarouselPane(p15);
+        customCommandGenerationPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p15.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p15.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p16 = FXMLLoader.load(getClass().getResource("/fxml/pane_commandQuery.fxml"));
         RXCarouselPane commandQueryPane = new RXCarouselPane(p16);
+        commandQueryPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p16.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p16.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p17 = FXMLLoader.load(getClass().getResource("/fxml/pane_kbRootQuery.fxml"));
         RXCarouselPane kbRootQueryPane = new RXCarouselPane(p17);
+        kbRootQueryPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p17.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p17.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p18 = FXMLLoader.load(getClass().getResource("/fxml/pane_processQuery.fxml"));
         RXCarouselPane processQueryPane = new RXCarouselPane(p18);
+        processQueryPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p18.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p18.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p19 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoGeneration.fxml"));
         RXCarouselPane infoGenerationPane = new RXCarouselPane(p19);
+        infoGenerationPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p19.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p19.prefHeightProperty().bind(mainCarousel.heightProperty());
 
         Pane p20 = FXMLLoader.load(getClass().getResource("/fxml/pane_extension.fxml"));
         RXCarouselPane extensionPane_1 = new RXCarouselPane(p20);
+        extensionPane_1.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p20.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p20.prefHeightProperty().bind(mainCarousel.heightProperty());
 
@@ -210,6 +227,7 @@ public class MainController {
         Pane p_pane_about_1 = loader_pane_about_1.load();
         PaneAbout PaneAbout_1 = loader_pane_about_1.getController();
         RXCarouselPane aboutPane_1 = new RXCarouselPane(p_pane_about_1);
+        aboutPane_1.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
         p_pane_about_1.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p_pane_about_1.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
 
@@ -257,14 +275,13 @@ public class MainController {
 
     private boolean isChangeModePaneRight = false;  // 是否向右移动
     private boolean isChangeModePaneMoving = false; // 是否开始移动动画
-    private boolean isBlueMode = true;
     @FXML
     void changeMode() {
         if(isChangeModePaneMoving) return;  // 如果动画正在播放，不响应按钮点击事件
 
         isChangeModePaneMoving = true;
-
         double barWidthDistance = topBar.getWidth() - 320;
+        Scene scene = root.getScene();
 
         TranslateTransition blueTransition = new TranslateTransition(Duration.seconds(0.2), blueModePane);
         TranslateTransition redTransition = new TranslateTransition(Duration.seconds(0.2), redModePane);
@@ -272,10 +289,11 @@ public class MainController {
         TranslateTransition redBarTransition = new TranslateTransition(Duration.seconds(0.2), redBar);
         TranslateTransition topBarLeftTransition = new TranslateTransition(Duration.seconds(0.2), topBarLeft);
 
-        Scene scene = root.getScene();
+        // 创建并行动画组
+        ParallelTransition parallelTransition = new ParallelTransition();
 
         if (isChangeModePaneRight) {
-            //  此时切换为蓝队
+            // 切换为蓝队
             isBlueMode = true;
             blueTransition.setByX(-55);
             redTransition.setByX(-55);
@@ -283,12 +301,14 @@ public class MainController {
             blueBarTransition.setByX(barWidthDistance);
             topBarLeftTransition.setByX(200);
 
-            scene.getRoot().getStyleClass().remove("redStyle");
-            scene.getRoot().getStyleClass().add("blueStyle");
-            navGroup.getToggles().get(selectedBlueIndex).setSelected(true);
+            topBar.getStyleClass().remove("redStyle");
+            topBar.getStyleClass().add("blueStyle");
+            changeBtn.getStyleClass().remove("redStyle");
+            changeBtn.getStyleClass().add("blueStyle");
 
-        }else {
-            //  此时切换为红队
+            navGroup.getToggles().get(selectedBlueIndex).setSelected(true);
+        } else {
+            // 切换为红队
             isBlueMode = false;
             blueTransition.setByX(55);
             redTransition.setByX(55);
@@ -296,21 +316,30 @@ public class MainController {
             blueBarTransition.setByX(-barWidthDistance);
             topBarLeftTransition.setByX(-200);
 
-            scene.getRoot().getStyleClass().remove("blueStyle");
-            scene.getRoot().getStyleClass().add("redStyle");
-            navGroup.getToggles().get(selectedRedIndex).setSelected(true);
+            topBar.getStyleClass().remove("blueStyle");
+            topBar.getStyleClass().add("redStyle");
+            changeBtn.getStyleClass().remove("blueStyle");
+            changeBtn.getStyleClass().add("redStyle");
 
+            navGroup.getToggles().get(selectedRedIndex).setSelected(true);
         }
 
-        blueTransition.setOnFinished(e -> {
-            isChangeModePaneMoving = false;
+        // 将所有动画添加到并行动画组
+        parallelTransition.getChildren().addAll(
+                blueTransition,
+                redTransition,
+                redBarTransition,
+                blueBarTransition,
+                topBarLeftTransition
+        );
 
+        // 设置动画完成后的操作
+        parallelTransition.setOnFinished(e -> {
+            isChangeModePaneMoving = false;
         });
-        blueTransition.play();
-        redTransition.play();
-        redBarTransition.play();
-        blueBarTransition.play();
-        topBarLeftTransition.play();
+
+        // 播放并行动画组
+        parallelTransition.play();
 
         isChangeModePaneRight = !isChangeModePaneRight;
 
@@ -341,7 +370,7 @@ public class MainController {
 
     @FXML
     void exitAction(ActionEvent event) {
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownAll();
         Platform.exit();
         System.exit(0);
     }

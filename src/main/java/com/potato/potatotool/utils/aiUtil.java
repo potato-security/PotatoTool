@@ -139,8 +139,9 @@ public class aiUtil {
                                     res = "【您提交的消息太长/内部免费AI服务器可能已关停/您当前处于国外IP环境，请在设置中自行配置AI模型及对应Key】";
                                 }else if (line.startsWith("data: ")){
                                     JsonObject responseJson = JsonParser.parseString(line.replaceAll("^data: ", "")).getAsJsonObject();
-
-                                    if (responseJson.get("finished").getAsBoolean()) {
+                                    if(responseJson==null) {
+                                        res = "【内部免费AI服务器可能已关停/您当前处于国外IP环境，请在设置中自行配置AI模型及对应Key】";
+                                    }else if (responseJson.get("finished").getAsBoolean()) {
                                         addHistory("user", question);
                                         addHistory("assistant", responseJson.get("delta").getAsString());
                                         res = "";

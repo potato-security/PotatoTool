@@ -493,6 +493,9 @@ public class PaneFreeKill {
     @FXML
     public void getExePath(ActionEvent event) {
         FileChooser chooser = new FileChooser();
+        FileChooser.ExtensionFilter filter =
+                new FileChooser.ExtensionFilter("exe文件", "*.exe");
+        chooser.getExtensionFilters().add(filter);
 
         Stage stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
         String path = null;
@@ -515,6 +518,9 @@ public class PaneFreeKill {
     @FXML
     public void getSigFilePath(ActionEvent event) {
         FileChooser chooser = new FileChooser();
+        FileChooser.ExtensionFilter filter =
+                new FileChooser.ExtensionFilter("exe文件", "*.exe");
+        chooser.getExtensionFilters().add(filter);
 
         Stage stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
         String path = null;

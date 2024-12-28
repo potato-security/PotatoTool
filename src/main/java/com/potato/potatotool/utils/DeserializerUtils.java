@@ -90,7 +90,7 @@ public class DeserializerUtils{
             if(resultByte!=null){
                 strUtils.createFile(resultByte,strUtils.getCurrentJarDir() + File.separator + "Decompile" + File.separator + "serialize_" + uuid +".class");
                 // 导出java
-                String tips = "// 部分反序列化构造链暂不支持解析抽取还原class及java文件，如文件内容存在缺失，请查看原始serialize.ser文件，工具会逐步兼容所有构造链\n";
+                String tips = "\n";
                 //  初始化默认反编译模式配置
                 JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Decompile");
                 String decompileMode = tmpJsonObj.getAsJsonPrimitive("decompileMode").getAsString();

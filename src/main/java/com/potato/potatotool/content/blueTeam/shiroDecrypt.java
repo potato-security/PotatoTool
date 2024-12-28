@@ -73,12 +73,14 @@ public class shiroDecrypt {
 
         String[] modeArray = {"CBC", "GCM"};
 
-        ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
-        List<Future<?>> futures = ExecutorServiceManager.futures;
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.SHIRO_DECRYPT;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<byte[]>> futures = new ArrayList<>();
+
         for (String keyStr : keyArray) {
             for (String mode : modeArray) {
                 String finalCode = code;
-                Callable<byte[]> task = () -> {
+                CompletableFuture<byte[]> future = CompletableFuture.supplyAsync(() -> {
                     try {
                         byte[] key = keyStr.getBytes(StandardCharsets.UTF_8);
                         byte[] iv = aes.generateRandomBytes(16);
@@ -87,17 +89,23 @@ public class shiroDecrypt {
                         key = str.base64Decode(key);
                         byte[] cipherText = str.base64Decode(finalCode.getBytes(StandardCharsets.UTF_8));
                         byte[] decryptedTextBytes = aes.decrypt(cipherText, key, iv, mode, padding);
-                        aes.mode_AES.set(mode);
-                        aes.padding_AES.set(padding);
-                        aes.key_AES.set(keyStr);
-                        aes.iv_AES.set(mode.equals("GCM") ? "Null" : "Random");
+                        if(decryptedTextBytes != null && !decryptedTextBytes.equals("")) {
+                            aes.mode_AES.set(mode);
+                            aes.padding_AES.set(padding);
+                            aes.key_AES.set(keyStr);
+                            aes.iv_AES.set(mode.equals("GCM") ? "Null" : "Random");
+
+                            // 停止所有线程
+                            ExecutorServiceManager.shutdownExecutor(poolName);
+                        }
                         return decryptedTextBytes;
                     } catch (Exception e) {
                         if(debugMode)e.printStackTrace();
                         return null;
                     }
-                };
-                futures.add(executor.submit(task));
+                }, executor);
+
+                futures.add(future);
             }
         }
 
@@ -114,7 +122,7 @@ public class shiroDecrypt {
         }
 
         // 停止所有线程
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(poolName);
 
         return res;
     }

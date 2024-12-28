@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
@@ -74,9 +76,6 @@ public class kbCheck {
     public static String version = null;
     public static String arch;
     public static List<String> hotfixes = new ArrayList<>();
-
-    public static ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
-    public static List<Future<?>> futures = ExecutorServiceManager.futures;
 
 
     /**
@@ -447,15 +446,16 @@ public class kbCheck {
             kbsInstalled = Collections.emptyList();
         }
 
-        Map<String, Set<String>> supersededBy = new HashMap<>();
-        List<Future<?>> futures = found.stream()
-                .map(cve -> executor.submit(() -> {
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.KB_CHECK;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+
+        Map<String, Set<String>> supersededBy = new ConcurrentHashMap<>();
+        List<CompletableFuture<?>> futures = found.stream()
+                .map(cve -> CompletableFuture.supplyAsync(() -> {
                     String kb = cve.get("KB编号");
-                    if (!supersededBy.containsKey(kb)) {
-                        supersededBy.put(kb, lookupSupersedence(kb));
-                    }
+                    supersededBy.computeIfAbsent(kb, k -> lookupSupersedence(k));
                     return null;
-                }))
+                }, executor))
                 .collect(Collectors.toList());
 
         for (Future<?> future : futures) {
@@ -466,6 +466,10 @@ public class kbCheck {
             }
         }
 
+        // 停止所有线程
+        List<String> poolList = ExecutorServiceManager.ExecutorPoolNames.KB_ARRAY;
+        ExecutorServiceManager.shutdownExecutor(poolList);
+
         Set<String> finalKbsInstalled = new LinkedHashSet<>(kbsInstalled);
         return found.stream()
                 .filter(cve -> !supersededBy.getOrDefault(cve.get("KB编号"), Collections.emptySet()).stream().anyMatch(finalKbsInstalled::contains))
@@ -474,6 +478,9 @@ public class kbCheck {
 
 
     private static Set<String> lookupSupersedence(String kb) {
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.KB_UID_CHECK;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+
         Set<String> kbids = new LinkedHashSet<>();
         try {
             Document doc = Jsoup.connect("https://www.catalog.update.microsoft.com/Search.aspx?q=" + kb).headers(DEFAULT_HEADERS).get();
@@ -482,8 +489,8 @@ public class kbCheck {
                 // 查找替代编号
 
                 Elements updates = rows.select("a[onclick*=goToDetails]");
-                List<Future<Set<String>>> futures = updates.stream()
-                        .map(a -> executor.submit(() -> lookupSupersedenceByUid(a.attr("id").split("_")[0])))
+                List<CompletableFuture<Set<String>>> futures = updates.stream()
+                        .map(a -> CompletableFuture.supplyAsync(() -> lookupSupersedenceByUid(a.attr("id").split("_")[0]), executor))
                         .collect(Collectors.toList());
 
                 for (Future<Set<String>> future : futures) {
@@ -493,6 +500,10 @@ public class kbCheck {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // 上层多线程会干扰，这里不能关闭
+        //  ExecutorServiceManager.shutdownExecutor(poolName);
+
         return kbids;
     }
 
@@ -568,6 +579,14 @@ public class kbCheck {
 
     public static List<Map<String, String>> filterKB(String inputText,boolean isMucFilter){
         determineProduct(inputText);
+
+        System.out.println("Systeminfo信息：");
+        System.out.println("- Name：" + productfilter);
+        System.out.println("- Generation：" + win);
+        System.out.println("- Build：" + mybuild);
+        System.out.println("- Version：" + version);
+        System.out.println("- Architecture：" + arch);
+        System.out.println("- Hotfixes：" + hotfixes);
 
         Map<String, List<Map<String, String>>> determineMissingPatches = determineMissingPatches();
         List<Map<String, String>> filtered = determineMissingPatches.get("filtered");
@@ -686,7 +705,7 @@ public class kbCheck {
 
 
         // 在Microsoft Update目录中查找被取代的KB
-        filtered = applyMucFilter(filtered, hotfixes);
+//        filtered = applyMucFilter(filtered, hotfixes);
 
         // 拆分KB列表和可用的潜在服务包/累积更新
         Map<String, Object> patchesServicepacks = getPatchesServicepacks(filtered);

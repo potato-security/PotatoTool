@@ -128,7 +128,7 @@ public class MainApplication extends Application {
             }
         };
         task.setOnFailed(e -> {
-            ExecutorServiceManager.getInstance().forceShutdown();
+            ExecutorServiceManager.shutdownAll();
             Throwable error = task.getException();
             error.printStackTrace();
             System.exit(0);
@@ -186,7 +186,12 @@ public class MainApplication extends Application {
                 Files.write(configFile, tmpDataJsonStr.getBytes(StandardCharsets.UTF_8));
                 Constants.cachedConfig = null;
                 System.out.println("本地配置文件初始化完成");
-            }else if(tmpJsonObj == null || !tmpJsonObj.getAsString().equals("2.x")){    // 本地配置文件版本不对应
+            }else if(tmpJsonObj == null){
+                System.out.println("检测到本地配置为Bug版本，开始覆盖");   //修复Version2.1版本之前的乱码版本
+                Files.write(configFile, tmpDataJsonStr.getBytes(StandardCharsets.UTF_8));
+                Constants.cachedConfig = null;
+                System.out.println("本地配置文件初始化完成");
+            }else if(!tmpJsonObj.getAsString().equals("2.x")){    // 本地配置文件版本不对应
                 System.out.println("检测到本地配置文件版本较低");
                 JsonElement merged = mergeJsonElements((JsonElement) Constants.getOutsideConfig(null),  (JsonElement) (new Gson()).fromJson(tmpDataJsonStr, JsonObject.class));
                 saveConfig(merged);

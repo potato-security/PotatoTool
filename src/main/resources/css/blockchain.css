@@ -10,7 +10,10 @@
 .vBox > .label:hover {
     -fx-background-color: -main-menuBg-color;
 }
-#listView .list-cell {
+#listViewCell{
+    -fx-padding: 35 0 0 0;
+}
+#listViewCell .list-cell {
     -fx-padding: 10 20 10 20;
 }
 .regionVBox{

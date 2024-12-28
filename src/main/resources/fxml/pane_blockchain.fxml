@@ -40,7 +40,20 @@
             </Pane>
         </StackPane>
         <StackPane>
-            <ListView fx:id="listView" prefWidth="${sPane.width}" prefHeight="${sPane.height - 85}"/>
+            <StackPane>
+                <ListView fx:id="listViewCell" prefWidth="${sPane.width}" prefHeight="${sPane.height - 85}"/>
+                <Label StackPane.alignment="TOP_LEFT" translateX="10" translateY="10" onMouseClicked="#goBackAndClear">
+                    <graphic>
+                        <Region styleClass="back"/>
+                    </graphic>
+                    <cursor>
+                        <Cursor fx:constant="HAND" />
+                    </cursor>
+                    <tooltip>
+                        <Tooltip text="返回" />
+                    </tooltip>
+                </Label>
+            </StackPane>
             <Pane fx:id="detailedPane" visible="false" maxWidth="0"  StackPane.alignment="CENTER_RIGHT">
                 <ListView fx:id="detailedListView" layoutX="${- detailedListView.width}" minWidth="0" minHeight="0" prefWidth="0" prefHeight="${sPane.height - 85}" StackPane.alignment="CENTER_RIGHT" />
                 <Label layoutX="${ 10 - detailedListView.width}" layoutY="10" onMouseClicked="#goBack">

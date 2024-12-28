@@ -3,16 +3,12 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.opencsv.CSVWriter;
 import com.potato.potatotool.MainApplication;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
 import com.potato.potatotool.controller.PaneInfoSearch;
 import com.potato.potatotool.utils.*;
 import javafx.application.HostServices;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -31,10 +26,6 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  * @date 2024/10/16 18:35
  */
 public class AiqichaSearch {
-
-    private static ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
-    private static List<Future<?>> futures = ExecutorServiceManager.futures;
-
     private Map<String, String> headers = new HashMap<>();
 
     private List<Integer> weightThresholdList = new ArrayList<>();
@@ -100,15 +91,20 @@ public class AiqichaSearch {
 
         if (companyId==null||companyId.isEmpty()) return result;
 
-        Future<JsonArray> appFuture = executor.submit(() -> getApp(companyId));
-        Future<JsonArray> wxFuture = executor.submit(() -> getWx(companyId));
-        Future<JsonArray> domainAndIcpFuture = executor.submit(() -> getDomainAndIcp(companyId));
-        Future<JsonArray> weightCompanyFuture = null;
+
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.AIQICHA_ASSET;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<JsonArray>> futures = new ArrayList<>();
+
+        CompletableFuture<JsonArray> appFuture = CompletableFuture.supplyAsync(() -> getApp(companyId), executor);
+        CompletableFuture<JsonArray> wxFuture = CompletableFuture.supplyAsync(() -> getWx(companyId), executor);
+        CompletableFuture<JsonArray> domainAndIcpFuture = CompletableFuture.supplyAsync(() -> getDomainAndIcp(companyId), executor);
+        CompletableFuture<JsonArray> weightCompanyFuture = null;
         futures.add(appFuture);
         futures.add(wxFuture);
         futures.add(domainAndIcpFuture);
         if (subPid == null) {
-            weightCompanyFuture = executor.submit(() -> getWeightCompany(companyId));
+            weightCompanyFuture = CompletableFuture.supplyAsync(() -> getWeightCompany(companyId), executor);
             futures.add(weightCompanyFuture);
         }
 
@@ -131,7 +127,7 @@ public class AiqichaSearch {
             }
         }
 
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(poolName);
 
         return result;
     }

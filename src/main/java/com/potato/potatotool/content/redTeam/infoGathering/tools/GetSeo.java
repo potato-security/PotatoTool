@@ -9,6 +9,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +29,14 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class GetSeo {
 
-    private static ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
-    private static List<Future<?>> futures = ExecutorServiceManager.futures;
-
     public static JsonObject getSeo(String domain) {
-        Future<JsonObject> futureChinaz = executor.submit(() -> getSeo_chinaz(domain));
-        Future<JsonObject> futureAizhan = executor.submit(() -> getSeo_aizhan(domain));
+
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.GETSEO_ASSET;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<JsonObject>> futures = new ArrayList<>();
+
+        CompletableFuture<JsonObject> futureChinaz = CompletableFuture.supplyAsync(() -> getSeo_chinaz(domain), executor);
+        CompletableFuture<JsonObject> futureAizhan = CompletableFuture.supplyAsync(() -> getSeo_aizhan(domain), executor);
         futures.add(futureChinaz);
         futures.add(futureAizhan);
 
@@ -53,7 +56,7 @@ public class GetSeo {
         }
 
         // 停止所有线程
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(poolName);
 
         return mergeJsonObjects(result1, result2);
 

@@ -8,7 +8,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -20,7 +22,6 @@ import static com.potato.potatotool.utils.Constants.getResourceStream;
  * @date 2024/10/12 17:59
  */
 public class SubdomainBruteForcer {
-    private static final int THREAD_POOL_SIZE = ExecutorServiceManager.getOptimalThreadPoolSize() * 140; // 线程池大小，调整以适应资源
     private static final String[] DNS_SERVERS = {
             "8.8.8.8",
             "1.1.1.1",
@@ -34,7 +35,12 @@ public class SubdomainBruteForcer {
 
     public static Set<String> getSubDomain(String domain){
         try {
-            ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+            String poolName = ExecutorServiceManager.ExecutorPoolNames.SUBDOMAINBURTEFORCER_ASSET;
+            ExecutorServiceManager.ExecutorConfig config = new ExecutorServiceManager.ExecutorConfig();
+            config.setMaxPoolSize(config.getMaxPoolSize() * 140);
+            ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName, config);
+            List<CompletableFuture<?>> futures = new ArrayList<>();
+
             long startTime = System.nanoTime();
             // 使用CompletableFuture异步处理子域名查询
             try (InputStream aesKeyInputStream = getResourceStream("subDomains");
@@ -42,15 +48,25 @@ public class SubdomainBruteForcer {
                 String subdomain;
                 while ((subdomain = reader.readLine()) != null) {
                     String fullSubdomain = subdomain.trim() + "." + domain; // 组合完整的子域名
-                    CompletableFuture.runAsync(() -> resolveSubdomain(fullSubdomain), executor);
+                    CompletableFuture<?> future = CompletableFuture.runAsync(() -> resolveSubdomain(fullSubdomain), executor);
+                    futures.add(future);
                 }
             } catch (Exception e) {
                 if(debugMode)e.printStackTrace();
             }
 
-            // 关闭线程池，等待所有任务完成
-            executor.shutdown();
-            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // 阻塞当前线程，等待所有任务完成
+            // 等待所有任务完成
+            for (Future<?> future : futures) {
+                try {
+                    future.get(); // 阻塞直到任务完成
+                } catch (CancellationException ce) {
+                } catch (Exception e) {
+                    if (debugMode) e.printStackTrace();
+                }
+            }
+            // 停止所有线程
+            ExecutorServiceManager.shutdownExecutor(poolName);
+
             long endTime = System.nanoTime();
             long duration = endTime - startTime;
 
@@ -80,6 +96,7 @@ public class SubdomainBruteForcer {
                     lookup.run();
 
                     if (lookup.getResult() == Lookup.SUCCESSFUL) {
+                        System.out.println(subdomain);
                         cache.add(subdomain);
                         break; // 成功后跳出DNS服务器循环
                     }

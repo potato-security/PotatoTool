@@ -7,6 +7,7 @@ package com.potato.potatotool;
 public class ToStart {
 
     public static boolean debugMode = false;
+    public static boolean isBlueMode = true;
 
     public static void main(String[] args) {
 
@@ -17,7 +18,7 @@ public class ToStart {
 
         // 检查命令行参数是否包含 "debug" 参数
         for (String arg : args) {
-            if (arg.equals("debug")) {
+            if (arg.equals("debug") || arg.equals("-debug") || arg.equals("--debug")) {
                 debugMode = true;
                 System.out.println("------------已开启DEBUG模式，请注意报错信息，用于提取提交bug------------");
                 break;

@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -45,8 +46,18 @@ public class CustomHttpResponse{
     }
 
     public String getTextStr() { // 存在getText方法
+        List<String> charsetList = getHeaderField("Content-Type");
+        String charsetStr = "UTF-8";
+        for(String data : charsetList){
+            data = data.trim();
+            if(data.toLowerCase().contains("charset=")){
+                charsetStr = data.substring(data.toLowerCase().indexOf("charset=") + 8);
+            }
+        }
+        Charset charset = null;
+        if(!charsetStr.isEmpty()) charset = Charset.forName(charsetStr);
 
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), charset))) {
             StringBuilder responseString = new StringBuilder();
             String inputLine;
             while ((inputLine = in.readLine()) != null) {

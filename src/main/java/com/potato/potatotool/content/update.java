@@ -99,7 +99,7 @@ public class update {
             }
 
         } catch (Exception e) {
-            System.out.println("github访问失败，请检查尝试使用代理");
+            System.out.println("github访问失败，请检查尝试更换/关闭代理");
             e.printStackTrace();
         }
     }
@@ -162,8 +162,8 @@ public class update {
             }
 
         } catch (Exception e) {
-            System.out.println("github访问失败，请检查尝试使用代理");
-            downUrl = "[Error]github访问失败，请检查尝试使用代理";
+            System.out.println("github访问失败，请检查尝试更换/关闭代理");
+            downUrl = "[Error]github访问失败，请检查尝试更换/关闭代理";
             e.printStackTrace();
         }
 

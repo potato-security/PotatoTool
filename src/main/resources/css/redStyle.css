@@ -1,0 +1,21 @@
+.root{
+    -main-border-color: #D85550 !important;
+    -main-borderHover-color: #b04540 !important;
+    -main-smallbtnBg-color: #ec8581 !important;
+    -main-btnTransition-color: linear-gradient(to bottom, #FF9999, #FF6666) !important;
+    -main-btnTransitionPressed-color: linear-gradient(to bottom, #FF4D4D, #FF1A1A) !important;
+}
+#root{
+    -main-border-color: #D85550 !important;
+    -main-borderHover-color: #b04540 !important;
+    -main-smallbtnBg-color: #ec8581 !important;
+    -main-btnTransition-color: linear-gradient(to bottom, #FF9999, #FF6666) !important;
+    -main-btnTransitionPressed-color: linear-gradient(to bottom, #FF4D4D, #FF1A1A) !important;
+}
+#sPane{
+    -main-border-color: #D85550 !important;
+    -main-borderHover-color: #b04540 !important;
+    -main-smallbtnBg-color: #ec8581 !important;
+    -main-btnTransition-color: linear-gradient(to bottom, #FF9999, #FF6666) !important;
+    -main-btnTransitionPressed-color: linear-gradient(to bottom, #FF4D4D, #FF1A1A) !important;
+}

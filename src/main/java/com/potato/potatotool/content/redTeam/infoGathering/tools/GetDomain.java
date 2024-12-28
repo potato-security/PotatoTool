@@ -22,12 +22,14 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class GetDomain {
 
-    private static ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
-    private static List<Future<?>> futures = ExecutorServiceManager.futures;
-
     public static JsonArray getDomainByIp(String ip, int MaxSize) {
-        Future<JsonArray> futureIp138 = executor.submit(() -> getDomainByIp_ip138(ip, MaxSize));
-        Future<JsonArray> futureIpchaxun = executor.submit(() -> getDomainByIp_ipchaxun(ip, MaxSize));
+
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.GETDOMAIN_ASSET;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<JsonArray>> futures = new ArrayList<>();
+
+        CompletableFuture<JsonArray> futureIp138 = CompletableFuture.supplyAsync(() -> getDomainByIp_ip138(ip, MaxSize), executor);
+        CompletableFuture<JsonArray> futureIpchaxun = CompletableFuture.supplyAsync(() -> getDomainByIp_ipchaxun(ip, MaxSize), executor);
         futures.add(futureIp138);
         futures.add(futureIpchaxun);
 
@@ -47,7 +49,7 @@ public class GetDomain {
         }
 
         // 停止所有线程
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(poolName);
 
         return domainDataDeduplication(result1, result2, MaxSize);
 

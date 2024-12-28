@@ -3,6 +3,7 @@ package com.potato.potatotool.controller;
 import com.dlsc.gemsfx.CFCheckBox;
 import com.dlsc.gemsfx.FilterView;
 import com.potato.potatotool.classObj.KbInfo;
+import com.potato.potatotool.utils.ExecutorServiceManager;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
@@ -129,13 +130,16 @@ public class PaneKbRootQuery {
         boolean isMucFilter = mucFilter.isSelected();
 
         if(!input.toLowerCase().contains("kb") && !input.toLowerCase().contains("]: q")){
-            inputText.setText("输入信息有误，请粘贴完整的systeminfo信息");
+            inputText.setText("输入信息有误，请粘贴完整的systeminfo信息（含系统信息）");
             return;
         }
 
         if (currentThread != null && currentThread.isAlive()) {
             currentThread.stop();   // 强行中断当前线程
         }
+
+        List<String> poolList = ExecutorServiceManager.ExecutorPoolNames.KB_ARRAY;
+        ExecutorServiceManager.shutdownExecutor(poolList);
 
         currentThread = new Thread(() -> {
             try {
@@ -312,7 +316,7 @@ public class PaneKbRootQuery {
                 "                      状态:        媒体连接已中断\n" +
                 "Hyper-V 要求:     已检测到虚拟机监控程序。将不显示 Hyper-V 所需的功能。";
 
-        List<Map<String, String>> filteredKB = filterKB(systeminfo, false);
+        List<Map<String, String>> filteredKB = filterKB(systeminfo, true);
         System.out.println(filteredKB);
     }
 

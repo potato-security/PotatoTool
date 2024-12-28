@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 
 import java.util.*;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
@@ -28,18 +29,21 @@ import static com.potato.potatotool.utils.requestUtils.requests;
  */
 public class GetSubDomain {
 
-    private static ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
-    private static List<Future<?>> futures = ExecutorServiceManager.futures;
     public static Set<String> getSubByDomainOrDomainCert(String domain, boolean isSslProxy) {
+
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.GETSUBDOMAIN_ASSET;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<Set<String>>> futures = new ArrayList<>();
+
         if(domain==null || domain.isEmpty() || domain.startsWith("http")) return new LinkedHashSet<>();
         Set<String> subDomainSet = new HashSet<>();
 
-        Future<Set<String>> future_crt = executor.submit(() -> getSubByDomainCert_crt(domain, isSslProxy));
-        Future<Set<String>> future_certspotter = executor.submit(() -> getSubByDomainCert_certspotter(domain, isSslProxy));
-        Future<Set<String>> future_chaziyu = executor.submit(() -> getSubByDomain_chaziyu(domain, isSslProxy));
-        Future<Set<String>> future_rapiddns = executor.submit(() -> getSubByDomain_rapiddns(domain, isSslProxy));
-        Future<Set<String>> future_lienvault = executor.submit(() -> getSubByDomain_alienvault(domain, isSslProxy));
-        Future<Set<String>> future_ip138 = executor.submit(() -> getSubByDomain_ip138(domain, isSslProxy));
+        CompletableFuture<Set<String>> future_crt = CompletableFuture.supplyAsync(() -> getSubByDomainCert_crt(domain, isSslProxy), executor);
+        CompletableFuture<Set<String>> future_certspotter = CompletableFuture.supplyAsync(() -> getSubByDomainCert_certspotter(domain, isSslProxy), executor);
+        CompletableFuture<Set<String>> future_chaziyu = CompletableFuture.supplyAsync(() -> getSubByDomain_chaziyu(domain, isSslProxy), executor);
+        CompletableFuture<Set<String>> future_rapiddns = CompletableFuture.supplyAsync(() -> getSubByDomain_rapiddns(domain, isSslProxy), executor);
+        CompletableFuture<Set<String>> future_lienvault = CompletableFuture.supplyAsync(() -> getSubByDomain_alienvault(domain, isSslProxy), executor);
+        CompletableFuture<Set<String>> future_ip138 = CompletableFuture.supplyAsync(() -> getSubByDomain_ip138(domain, isSslProxy), executor);
         futures.add(future_crt);
         futures.add(future_certspotter);
         futures.add(future_chaziyu);
@@ -56,7 +60,7 @@ public class GetSubDomain {
         }
 
         // 停止所有线程
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(poolName);
 
         return subDomainSet;
     }

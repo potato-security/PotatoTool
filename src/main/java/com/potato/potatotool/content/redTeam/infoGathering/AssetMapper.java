@@ -255,8 +255,6 @@ public class AssetMapper {
         if (hasSeoMap==null) paneInfoSearch.updateEchoVBox("查询结束", true, null);
     }
 
-    private ExecutorService executor = ExecutorServiceManager.getInstance().getExecutor();
-    private List<Future<?>> futures = ExecutorServiceManager.futures;
     /**
      *
      * @param assetObj          AssetObj对象
@@ -290,6 +288,10 @@ public class AssetMapper {
         int localFullDetectionThreshold = assetObj.getLocalFullDetectionThreshold();
         int shadowAssetsThreshold = assetObj.getShadowAssetsThreshold();
         int cipThreshold = assetObj.getCipThreshold();
+
+        String poolName = ExecutorServiceManager.ExecutorPoolNames.ASSET;
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<?>> futures = new ArrayList<>();
 
         // 根据主域名获取子域
         int currentIndex = 0;
@@ -326,9 +328,11 @@ public class AssetMapper {
             int totalTasks = tmpDomainSet.size();
             AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
 
+            executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+            futures = new ArrayList<>();
             for (String domainStr : tmpDomainSet) {
                 // 将每个任务提交到线程池
-                Future<List<DomainInfo>> future = executor.submit(() -> {
+                CompletableFuture<List<DomainInfo>> future = CompletableFuture.supplyAsync(() -> {
                     JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa(domainStr);
 
                     int progress = completedTasks.incrementAndGet();
@@ -337,7 +341,7 @@ public class AssetMapper {
                             progress, totalTasks , domainStr, percentage);
                     paneInfoSearch.updateEchoVBox(showText, false, null);
                     return DomainInfoMerger.mergeDomainInfos("Amap检索：" + domainStr, briefExtendedInfo);
-                });
+                }, executor);
                 futures.add(future);
             }
 
@@ -352,7 +356,7 @@ public class AssetMapper {
                 }
             }
             // 停止所有线程
-            ExecutorServiceManager.getInstance().forceShutdown();
+            ExecutorServiceManager.shutdownExecutor(poolName);
 
             paneInfoSearch.updateEchoVBox("Amap检索域名信息", true, null);
 
@@ -478,11 +482,13 @@ public class AssetMapper {
             int totalTasks = domainInfoList.size();
             AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
             int tmpIndex = 0;
+            executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+            futures = new ArrayList<>();
             for (DomainInfo domainInfo : domainInfoList) {
                 tmpIndex ++;
                 if(!isHasLocalFullDetection && tmpIndex > localFullDetectionThreshold) break;
                 // 提交每个 DomainInfo 的 Web 信息获取任务
-                Future<Void> future = executor.submit(() -> {
+                CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
                     String domainStr = domainInfo.getDomain();
                     if(domainStr==null||domainStr.isEmpty()) domainStr = domainInfo.getIp();
 
@@ -498,7 +504,7 @@ public class AssetMapper {
                             progress, totalTasks , domainStr, percentage);
                     paneInfoSearch.updateEchoVBox(showText, false, null);
                     return null;
-                });
+                }, executor);
                 futures.add(future);
             }
             // 等待所有任务完成
@@ -510,7 +516,7 @@ public class AssetMapper {
                 }
             }
             // 停止所有线程
-            ExecutorServiceManager.getInstance().forceShutdown();
+            ExecutorServiceManager.shutdownExecutor(poolName);
 
             paneInfoSearch.updateEchoVBox("第一波全量深度信息探测", true, null);
             List<DomainInfo> chooseWebInfoMapList = new ArrayList<>();
@@ -709,9 +715,10 @@ public class AssetMapper {
 
             int totalTasks = domainInfoList.size();
             AtomicInteger completedTasks = new AtomicInteger(0);
-
+            executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+            futures = new ArrayList<>();
             for (DomainInfo domainInfo : domainInfoList) {
-                Future<?> future = executor.submit(() -> {
+                CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
                     String domainStr = domainInfo.getDomain();
                     if (domainStr != null && !domainStr.isEmpty()) {
                         // 使用 computeIfAbsent 避免重复查询
@@ -733,7 +740,8 @@ public class AssetMapper {
                     String showText = String.format("正在检索Google信息泄露 [%d/%d]：%s | 进度：%.2f%%",
                             progress, totalTasks , domainStr, percentage);
                     paneInfoSearch.updateEchoVBox(showText, false, null);
-                });
+                    return null;
+                }, executor);
 
                 // 添加到 futures 列表，稍后等待所有任务完成
                 futures.add(future);
@@ -748,7 +756,7 @@ public class AssetMapper {
                 }
             }
             // 停止所有线程
-            ExecutorServiceManager.getInstance().forceShutdown();
+            ExecutorServiceManager.shutdownExecutor(poolName);
 
             paneInfoSearch.updateEchoVBox("检索Google信息泄露", true, null);
         }
@@ -760,9 +768,10 @@ public class AssetMapper {
 
             int totalTasks = domainInfoList.size();
             AtomicInteger completedTasks = new AtomicInteger(0);
-
+            executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+            futures = new ArrayList<>();
             for (DomainInfo domainInfo : domainInfoList) {
-                Future<?> future = executor.submit(() -> {
+                CompletableFuture<?> future = CompletableFuture.supplyAsync(() -> {
                     String domainStr = domainInfo.getDomain();
                     if (domainStr != null && !domainStr.isEmpty()) {
                         // 使用 computeIfAbsent 避免重复查询
@@ -784,7 +793,8 @@ public class AssetMapper {
                     String showText = String.format("正在检索Github信息泄露 [%d/%d]：%s | 进度：%.2f%%",
                             progress, totalTasks , domainStr, percentage);
                     paneInfoSearch.updateEchoVBox(showText, false, null);
-                });
+                    return null;
+                }, executor);
 
                 // 添加到 futures 列表，稍后等待所有任务完成
                 futures.add(future);
@@ -799,7 +809,7 @@ public class AssetMapper {
                 }
             }
             // 停止所有线程
-            ExecutorServiceManager.getInstance().forceShutdown();
+            ExecutorServiceManager.shutdownExecutor(poolName);
 
             paneInfoSearch.updateEchoVBox("检索Github信息泄露", true, null);
         }
@@ -808,8 +818,10 @@ public class AssetMapper {
             paneInfoSearch.updateEchoVBox("第二波全量深度信息探测", false, null);
             int totalTasks = domainInfoList.size();
             AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
+            executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+            futures = new ArrayList<>();
             for (DomainInfo domainInfo : domainInfoList) {
-                Future<?> future = executor.submit(() -> {
+                CompletableFuture<?> future = CompletableFuture.supplyAsync(() -> {
                     String domainStr = domainInfo.getDomain();
                     if (domainStr == null || domainStr.isEmpty()) domainStr = domainInfo.getIp();
                     int progress = completedTasks.incrementAndGet();
@@ -827,7 +839,8 @@ public class AssetMapper {
                     }
 
                     paneInfoSearch.updateEchoVBox(showText, false, null);
-                });
+                    return null;
+                }, executor);
 
                 // 添加到 futures 列表，稍后等待所有任务完成
                 futures.add(future);
@@ -842,7 +855,7 @@ public class AssetMapper {
                 }
             }
             // 停止所有线程
-            ExecutorServiceManager.getInstance().forceShutdown();
+            ExecutorServiceManager.shutdownExecutor(poolName);
 
             paneInfoSearch.updateEchoVBox("第二波全量深度信息探测", true, null);
         }

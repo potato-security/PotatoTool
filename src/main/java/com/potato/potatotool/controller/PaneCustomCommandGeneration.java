@@ -69,6 +69,7 @@ public class PaneCustomCommandGeneration {
 
     public void initData() {
         String tmpJsonStr = getResourceString("commandGeneration");
+        tmpJsonStr = strUtils.ROT13Decode(tmpJsonStr);
         JsonObject jsonObject = (new Gson()).fromJson(tmpJsonStr, JsonObject.class);
 
         reverseShellCommands = jsonObject.getAsJsonObject("reverseShellCommands");

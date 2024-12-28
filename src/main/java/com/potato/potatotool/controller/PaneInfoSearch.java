@@ -260,7 +260,7 @@ public class PaneInfoSearch {
         if (currentTask != null && !currentTask.isDone()) {
             currentThread.stop();
         }
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.ASSET_ARRAY);
 
         boolean isSmart = searchModeBox.getSelectionModel().getSelectedIndex() == 0;
         currentTask = new Task<Void>() {
@@ -318,7 +318,7 @@ public class PaneInfoSearch {
         if (currentTask != null && !currentTask.isDone()) {
             currentThread.stop();
         }
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.ASSET_ARRAY);
 
         String finalPath = path;
         boolean isSmart = searchModeBox.getSelectionModel().getSelectedIndex() == 0;
@@ -1525,7 +1525,7 @@ public class PaneInfoSearch {
         if (currentTask != null && !currentTask.isDone()) {
             currentThread.stop();
         }
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.ASSET_ARRAY);
 
         currentTask = new Task<Void>() {
             @Override

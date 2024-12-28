@@ -8,6 +8,7 @@ import com.potato.potatotool.utils.strUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.w3c.dom.NodeList;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -83,6 +83,8 @@ public class PaneWebshellDecode {
     private Pane aiPane;
     @FXML
     private Button showAI;
+    @FXML
+    private Button refreshAI;
 
     @FXML
     private Pane promptPane;
@@ -165,6 +167,7 @@ public class PaneWebshellDecode {
     private void initTextData() {
 
         String testDataJsonStr = getResourceString("testData");
+        testDataJsonStr = strUtils.ROT13Decode(testDataJsonStr);
         JsonArray jsonObject = (JsonArray) (new Gson()).fromJson(testDataJsonStr, JsonObject.class).get("webshellDecode");
 
         for (int i = 0; i < jsonObject.size(); i++) {
@@ -248,6 +251,7 @@ public class PaneWebshellDecode {
 
             oldData = resultStr;
             isAiCD = true;
+            refreshAI.setDisable(true);
 
             aiTextArea.clear();
             aiTextArea.appendText("AI分析中，请稍等……");
@@ -266,6 +270,7 @@ public class PaneWebshellDecode {
             });
             task.setOnSucceeded(event -> {
                 isAiCD = false;
+                refreshAI.setDisable(false);
             });
             new Thread(task).start();
 
@@ -293,6 +298,7 @@ public class PaneWebshellDecode {
 
             oldData = resultStr;
             isAiCD = true;
+            refreshAI.setDisable(true);
 
             aiTextArea.clear();
             aiTextArea.appendText("AI分析中，请稍等……");
@@ -311,6 +317,7 @@ public class PaneWebshellDecode {
             });
             task.setOnSucceeded(event -> {
                 isAiCD = false;
+                refreshAI.setDisable(false);
             });
             new Thread(task).start();
 
@@ -377,7 +384,7 @@ public class PaneWebshellDecode {
     void toDecode(ActionEvent event) throws Exception {
         if(!checkContent()) return;
 
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.DECRYPT_ARRAY);
 
         if (currentTask != null && !currentTask.isDone()) {
             currentThread.stop();
@@ -452,7 +459,7 @@ public class PaneWebshellDecode {
                     }
 
                 });
-                ExecutorServiceManager.getInstance().forceShutdown();
+                ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.DECRYPT_ARRAY);
                 return null;
             }
         };
@@ -574,7 +581,7 @@ public class PaneWebshellDecode {
             return;
         }
 
-        ExecutorServiceManager.getInstance().forceShutdown();
+        ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.DECRYPT_ARRAY);
 
         if (currentTask != null && !currentTask.isDone()) {
             currentThread.stop();
@@ -631,7 +638,7 @@ public class PaneWebshellDecode {
                 Platform.runLater(() -> {
                     result.replaceText("流量包解密完成，已输出至：" + outputFilePath);
                 });
-                ExecutorServiceManager.getInstance().forceShutdown();
+                ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.DECRYPT_ARRAY);
                 return null;
             }
         };

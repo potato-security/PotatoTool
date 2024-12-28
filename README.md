@@ -1,3 +1,4 @@
+0、备份本地测试config.json文件，替换config.json文件为发版原始文件
 1、打包时，先确保当前命令行java版本（jdk8\jdk11+）
 2、将对应版本的jdk.xml复制到pom.xml中（jdk8.xml、jdk11+.xml）
 3、重新加载mvn配置(pom.xml)

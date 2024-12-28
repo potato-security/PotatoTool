@@ -22,6 +22,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 
 import static com.potato.potatotool.ToStart.debugMode;
+import static com.potato.potatotool.ToStart.isBlueMode;
 import static com.potato.potatotool.utils.Constants.getResourceString;
 
 /**
@@ -61,13 +62,22 @@ public class PaneAddBarDialog {
     private JsonObject tmpJsonObj;
     private JsonElement targetValue;
     private boolean isAdd = true;// 模式：保存/修改
+    private ChangeListener<String> modeListener;
 
     public void initialize() {
+        if(isBlueMode){
+            an.getStyleClass().remove("redStyle");
+            an.getStyleClass().add("blueStyle");
+        }else {
+            an.getStyleClass().remove("blueStyle");
+            an.getStyleClass().add("redStyle");
+        }
+
         //  设置默认第一个选项
         type.getSelectionModel().selectFirst();
 
         //  监听是否模式发生改变（是否切换到修改模式）
-        ChangeListener<String> modeListener = new ChangeListener<String>() {
+        modeListener = new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldText, String newText) {
                 KeyData = ((Label) an.lookup("#labelKey")).getText();
@@ -176,8 +186,12 @@ public class PaneAddBarDialog {
         }
         Constants.saveConfig("Extension", tmpJsonObj);
 
-        Stage stage = (Stage) an.getScene().getWindow();
-        stage.close(); // 关闭对话框
+
+        if (modeListener != null) {
+            addBtn.textProperty().removeListener(modeListener);
+        }
+
+        ((Stage) an.getScene().getWindow()).close();
     }
 
     @FXML
@@ -195,8 +209,10 @@ public class PaneAddBarDialog {
 
     @FXML
     public void exitAction(){
-        Stage stage = (Stage) an.getScene().getWindow();
-        stage.close();
+        if (modeListener != null) {
+            addBtn.textProperty().removeListener(modeListener);
+        }
+        ((Stage) an.getScene().getWindow()).close();
     }
 
 }

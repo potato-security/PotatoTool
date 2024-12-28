@@ -48,6 +48,8 @@ public class PaneLocationQuery {
     private TextField bankCardTF_type;
     @FXML
     private TextField bankCardTF_bank;
+    @FXML
+    private TextField bankCardTF_position;
 
     @FXML
     private TextField phoneInput;
@@ -76,6 +78,7 @@ public class PaneLocationQuery {
             idCardTF_att.setText("");
             return;
         }
+        idCardTF_born.setText("查询中……");
 
         Task<Void> task = new Task<Void>() {
             @Override
@@ -206,6 +209,9 @@ public class PaneLocationQuery {
 
     @FXML
     public void getBankCardInfoFx(ActionEvent event) {
+        bankCardTF_type.setText("");
+        bankCardTF_bank.setText("");
+        bankCardTF_position.setText("");
 
         String input = bankCardInput.getText();
         if (input.isEmpty()) {
@@ -213,18 +219,21 @@ public class PaneLocationQuery {
             bankCardTF_bank.setText("");
             return;
         }
+        bankCardTF_bank.setText("查询中……");
 
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
                 JsonObject str = getBankCardInfo(input);
 
-                if (str!=null && str.has("cardType") && str.has("bank")) {
-                    bankCardTF_type.setText(str.get("cardType").getAsString());
-                    bankCardTF_bank.setText(str.get("bank").getAsString());
+                if (str!=null && (str.has("cardType") || str.has("bank") || str.has("position"))) {
+                    if(str.has("cardType")) bankCardTF_type.setText(str.get("cardType").getAsString());
+                    if(str.has("bank")) bankCardTF_bank.setText(str.get("bank").getAsString());
+                    if(str.has("position")) bankCardTF_position.setText(str.get("position").getAsString());
                 } else {
-                    bankCardTF_type.setText("银行卡号/网络存在问题，请查看命令窗口debug日志");
-                    bankCardTF_bank.setText("");
+                    bankCardTF_bank.setText("银行卡号/网络存在问题，请查看命令窗口debug日志");
+                    bankCardTF_type.setText("");
+                    bankCardTF_position.setText("");
                 }
                 return null;
             }
@@ -276,7 +285,7 @@ public class PaneLocationQuery {
             }
         }
 
-        String[] header = {"bankCard", "cardType", "bank"};
+        String[] header = {"bankCard", "cardType", "bank", "position"};
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -298,9 +307,10 @@ public class PaneLocationQuery {
                                 long finalLineNumber = lineNumber;
 
                                 String[] data = {line,"",""};
-                                if(str!=null && str.has("cardType") && str.has("bank")) {
-                                    data[1] = str.get("cardType").getAsString();
-                                    data[2] = str.get("bank").getAsString();
+                                if(str!=null && (str.has("cardType") || str.has("bank") || str.has("position"))) {
+                                    data[1] =(str.has("cardType"))? str.get("cardType").getAsString():"-";
+                                    data[2] =(str.has("bank"))? str.get("bank").getAsString():"-";
+                                    data[2] =(str.has("position"))? str.get("position").getAsString() : "-";
                                 }
 
                                 writer.writeNext(data);

@@ -6,6 +6,7 @@ package com.potato.potatotool.utils;
  */
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.zip.*;
 
@@ -42,25 +43,61 @@ public class GzipUtils {
      *  对目标文件进行GZIP解压
      */
     public static void unGzipFile(String gzipFilePath, String destFilePath, boolean deleteGzipFile) {
-        try (
-                FileInputStream fis = new FileInputStream(gzipFilePath);
-                BufferedInputStream bis = new BufferedInputStream(fis);
-                GZIPInputStream gzipIS = new GZIPInputStream(bis);
-                FileOutputStream fos = new FileOutputStream(destFilePath);
-                BufferedOutputStream bos = new BufferedOutputStream(fos)
-        ) {
-            byte[] buffer = new byte[16 * 1024];
-            int length;
-            while ((length = gzipIS.read(buffer)) > 0) {
-                bos.write(buffer, 0, length);
-            }
-            if(deleteGzipFile){
-                Files.delete(Paths.get(gzipFilePath));
-            }
-            System.out.println("File decompressed to: " + destFilePath);
+        // 参数校验
+        if (gzipFilePath == null || destFilePath == null) {
+            if(debugMode) throw new IllegalArgumentException("File paths cannot be null");
+        }
+
+        Path sourcePath = Paths.get(gzipFilePath);
+        Path targetPath = Paths.get(destFilePath);
+
+        // 检查源文件
+        if (!Files.exists(sourcePath)) {
+            if(debugMode) throw new IllegalArgumentException("Source file not found: " + gzipFilePath);
+        }
+
+        // 确保目标目录存在
+        try {
+            Files.createDirectories(targetPath.getParent());
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("【Error】" + gzipFilePath +"解压失败!");
+            if(debugMode) e.printStackTrace();
+        }
+
+        // 使用嵌套的 try-with-resources 确保正确的关闭顺序
+        try (FileInputStream fis = new FileInputStream(gzipFilePath);
+             BufferedInputStream bis = new BufferedInputStream(fis)) {
+            try (GZIPInputStream gzipIS = new GZIPInputStream(bis);
+                 FileOutputStream fos = new FileOutputStream(destFilePath);
+                 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+
+                byte[] buffer = new byte[16 * 1024];
+                int length;
+                while ((length = gzipIS.read(buffer)) > 0) {
+                    bos.write(buffer, 0, length);
+                }
+
+                // 确保所有数据都写入磁盘
+                bos.flush();
+
+                System.out.println("File decompressed successfully to: " + destFilePath);
+            }
+        } catch (IOException e) {
+            // 删除可能部分写入的目标文件
+            try {
+                Files.deleteIfExists(targetPath);
+            } catch (IOException deleteEx) {
+                e.addSuppressed(deleteEx);
+            }
+            if(debugMode) throw new IllegalArgumentException("Failed to decompress file: " + gzipFilePath, e);
+        }
+
+        // 如果需要删除源文件
+        if (deleteGzipFile) {
+            try {
+                Files.delete(sourcePath);
+            } catch (IOException e) {
+                if(debugMode) throw new IllegalArgumentException("Failed to delete source file: " + gzipFilePath, e);
+            }
         }
     }
 
