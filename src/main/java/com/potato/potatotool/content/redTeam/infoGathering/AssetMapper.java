@@ -91,7 +91,7 @@ public class AssetMapper {
         paneInfoSearch.updateEchoVBox("导出报告中……", false, null);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String timeStr = sdf.format(new Date(System.currentTimeMillis()));
-        String outXlsxFile = strUtils.getCurrentJarDir() + File.separator + "AssetResult" + File.separator + input + "_" + timeStr +".xlsx";
+        String outXlsxFile = strUtils.getCurrentJarDir() + File.separator + "AssetResult" + File.separator + input.replaceAll("[/\\\\:*?\"<>|]", "_") + "_" + timeStr +".xlsx";
         String error = new AssetExcelExporter().exportToExcel(assetObj, outXlsxFile);
         paneInfoSearch.updateEchoVBox(error==null ? "报告导出至:" + outXlsxFile : "导出失败_[Error]：" + error, true, null);
     }
@@ -143,7 +143,7 @@ public class AssetMapper {
         paneInfoSearch.updateEchoVBox("导出报告中……", false, null);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String timeStr = sdf.format(new Date(System.currentTimeMillis()));
-        String outXlsxFile = strUtils.getCurrentJarDir() + File.separator + "AssetResult" + File.separator + input + "_" + timeStr +".xlsx";
+        String outXlsxFile = strUtils.getCurrentJarDir() + File.separator + "AssetResult" + File.separator + input.replaceAll("[/\\\\:*?\"<>|]", "_") + "_" + timeStr +".xlsx";
         String error = new AssetExcelExporter().exportToExcel(assetObj, outXlsxFile);
         paneInfoSearch.updateEchoVBox(error==null ? "报告导出至:" + outXlsxFile : "导出失败_[Error]：" + error, true, null);
     }

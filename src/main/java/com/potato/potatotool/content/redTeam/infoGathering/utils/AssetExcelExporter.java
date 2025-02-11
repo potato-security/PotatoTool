@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetObj;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.NetAssets;
+import com.potato.potatotool.controller.PaneInfoSearch;
 import com.potato.potatotool.utils.jsonUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -26,7 +27,10 @@ public class AssetExcelExporter {
     private XSSFWorkbook workbook;
     private Map<String, CellStyle> styles;
 
+    public static boolean generateRepIng = false;
+
     public AssetExcelExporter() {
+        generateRepIng = true;
         try {
             if(workbook == null) this.workbook = new XSSFWorkbook();
             this.styles = createStyles(workbook);
@@ -68,7 +72,10 @@ public class AssetExcelExporter {
         } catch (Exception e) {
             if(debugMode) e.printStackTrace();
             return e.toString();
+        }finally {
+            generateRepIng = false;
         }
+
         return null;
     }
 

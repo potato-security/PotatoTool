@@ -104,8 +104,8 @@ public class log4jDecrypt {
 
 
 
-        //  针对于lower、upper
-        //  针对于用户变量/环境变量设值 变量名:-值  返回值
+        //  针对于lower、upper ${lower:J}
+        //  针对于用户变量/环境变量设值 变量名:-值  返回值   ${ddd:-j}
         //  针对于使用date ${data:'值'}
         //  针对获取环境变量-java\env\sys
         Pattern pattern = Pattern.compile("\\$\\{(lower:|upper:|(?:(?!\\$\\{).)*?:-)((?:(?!\\$\\{).)*?)\\}|\\$\\{date:('|\")((?:(?!\\$\\{).)*?)('|\")\\}");

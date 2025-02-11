@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
+import com.potato.potatotool.content.update;
 import com.potato.potatotool.controller.MainController;
 import com.potato.potatotool.controller.PaneLoad;
 import com.potato.potatotool.controller.PanePasswd;
@@ -224,6 +225,7 @@ public class MainApplication extends Application {
             String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
             if(!hasFileWithPrefix(configFolder, propertyName)) {
                 copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (70.5 * 1024 * 1024));
+                update.updateLocalResourceConfig(propertyName, configFolder.resolve(fileNmae).toString());
             }
         } catch (IOException e) {
             e.printStackTrace();

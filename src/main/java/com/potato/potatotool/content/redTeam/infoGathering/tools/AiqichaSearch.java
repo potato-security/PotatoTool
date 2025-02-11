@@ -43,16 +43,16 @@ public class AiqichaSearch {
     private PaneInfoSearch paneInfoSearch;
 
     public AiqichaSearch(List<Integer> weightThresholdList, PaneInfoSearch paneInfoSearch){
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.AIQICHA_COOKIE).getAsString();
+        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.AIQICHA_COOKIE);
+
         this.weightThresholdList = weightThresholdList;
         this.headers.put("Cookie", Aiqicha_Cookie);
         this.headers.put("Referer", "https://aiqicha.baidu.com");
         this.headers.put("Connection", "close");
 
         this.paneInfoSearch = paneInfoSearch;
-
-        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
-        Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.AIQICHA_COOKIE).getAsString();
-        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.AIQICHA_COOKIE);
     }
 
     public JsonArray getCompanyInfoIteration(String companyName){
@@ -256,14 +256,16 @@ public class AiqichaSearch {
                         paneInfoSearch.showTip("启动软件时关闭代理，使用中国IP", false);
                         Thread.sleep(5000);
                         return getCompanyId(companyName);
-                    }else {
-                        if (paneInfoSearch != null) paneInfoSearch.showTip("请尽快验证个人账号，10秒后重试……", false);
+                    }else if(location.startsWith("https://wappass.baidu.com")) {
+                        if (paneInfoSearch != null) paneInfoSearch.showTip("请尽快验证个人账号(他人账户无法校验)，10秒后重试……", false);
                         Thread.sleep(2000);
                         if (!openedWeb)
-                            services.showDocument("https://aiqicha.baidu.com/s?q=%E6%B8%85%E5%8D%8E%E5%A4%A7%E5%AD%A6");
+                            services.showDocument(location);
                         openedWeb = true;
                         Thread.sleep(10000);
                         return getCompanyId(companyName);
+                    }else if(location.startsWith("/login?u=") || location.startsWith("https://aiqicha.baidu.com/cbae/tr?headto=")){
+                        paneInfoSearch.showTip("请确认[爱企查]Cookie是否有效，跳过部分流程……", false);
                     }
                 }
                 return null;

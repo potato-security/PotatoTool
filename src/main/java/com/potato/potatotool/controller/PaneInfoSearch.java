@@ -51,6 +51,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,6 +66,7 @@ import static com.potato.potatotool.content.redTeam.infoGathering.tools.HunterSe
 import static com.potato.potatotool.content.redTeam.infoGathering.tools.QuakeSearch.getError_Quake;
 import static com.potato.potatotool.content.redTeam.infoGathering.tools.ShodanSearch.getError_Shodan;
 import static com.potato.potatotool.content.redTeam.infoGathering.tools.ZoomeyeSearch.getError_Zoomeye;
+import static com.potato.potatotool.content.redTeam.infoGathering.utils.AssetExcelExporter.generateRepIng;
 
 /**
  * @author Potato
@@ -326,7 +329,7 @@ public class PaneInfoSearch {
             @Override
             protected Void call() throws Exception {
 
-                try (BufferedReader reader = new BufferedReader(new FileReader(finalPath))) {
+                try (BufferedReader reader = Files.newBufferedReader(Paths.get(finalPath), StandardCharsets.UTF_8)) {
                     String line;
                     while ((line = reader.readLine())!= null) {
                         line = line.trim();
@@ -1510,45 +1513,47 @@ public class PaneInfoSearch {
     }
 
     private String currentInput = "";
+
     @FXML
     public void stopSearch(MouseEvent event) {
+        updateEchoVBox("主动结束查询", !generateRepIng, null);
         stopLabel.setDisable(true);
 
-        if (currentTask != null && !currentTask.isDone()) {
-            currentThread.stop();
-        }
-        ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.ASSET_ARRAY);
-
-        currentTask = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                if(assetMapper!=null) {
-                    updateEchoVBox("主动结束查询", true, null);
-
-                    updateEchoVBox("导出报告中……", false, null);
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-                    String timeStr = sdf.format(new Date(System.currentTimeMillis()));
-                    String outXlsxFile = strUtils.getCurrentJarDir() + File.separator + "AssetResult" + File.separator + currentInput + "_" + timeStr +".xlsx";
-                    String error = new AssetExcelExporter().exportToExcel(assetObj, outXlsxFile);
-                    updateEchoVBox(error==null ? "报告导出至:" + outXlsxFile : "导出失败_[Error]：" + error, true, null);
-                }
-
-                Platform.runLater(() -> {
-                    uploadLabel.setVisible(true);
-                    sendLabel.setVisible(true);
-                    sendLabel.setManaged(true);
-                    stopLabel.setVisible(false);
-                    stopLabel.setManaged(false);
-                    stopLabel.setDisable(false);
-                });
-                return null;
+        if(!generateRepIng) {
+            if (currentTask != null && !currentTask.isDone()) {
+                currentThread.stop();
             }
-        };
-        currentTask.setOnFailed(e -> {
-            Throwable exception = currentTask.getException();
-            if (exception != null) exception.printStackTrace();
-        });
-        currentThread = new Thread(currentTask);
-        currentThread.start();
+            ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.ASSET_ARRAY);
+
+            currentTask = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    if(assetMapper!=null) {
+                        updateEchoVBox("导出报告中……", false, null);
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+                        String timeStr = sdf.format(new Date(System.currentTimeMillis()));
+                        String outXlsxFile = strUtils.getCurrentJarDir() + File.separator + "AssetResult" + File.separator + currentInput.replaceAll("[/\\\\:*?\"<>|]", "_") + "_" + timeStr + ".xlsx";
+                        String error = new AssetExcelExporter().exportToExcel(assetObj, outXlsxFile);
+                        updateEchoVBox(error == null ? "报告导出至:" + outXlsxFile : "导出失败_[Error]：" + error, true, null);
+                    }
+
+                    Platform.runLater(() -> {
+                        uploadLabel.setVisible(true);
+                        sendLabel.setVisible(true);
+                        sendLabel.setManaged(true);
+                        stopLabel.setVisible(false);
+                        stopLabel.setManaged(false);
+                        stopLabel.setDisable(false);
+                    });
+                    return null;
+                }
+            };
+            currentTask.setOnFailed(e -> {
+                Throwable exception = currentTask.getException();
+                if (exception != null) exception.printStackTrace();
+            });
+            currentThread = new Thread(currentTask);
+            currentThread.start();
+        }
     }
 }

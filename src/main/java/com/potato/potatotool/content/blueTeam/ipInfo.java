@@ -208,7 +208,7 @@ public class ipInfo {
         for (String ipData : ipList) {
             String posData = "暂未收录";
             try {
-                formatSearchPos(searcher.search(ipData));
+                posData = formatSearchPos(searcher.search(ipData));
             }catch (Exception e){}
             ipPosDict.put(ipData, posData);
         }
@@ -229,10 +229,10 @@ public class ipInfo {
         String newInputStr = inputStr;
 
         for (String tmpIpData : ipList) {
-
-            String newData = tmpIpData + "[" + formatSearchPos(searcher.search(tmpIpData)) + "]";
-            newInputStr = newInputStr.replace(tmpIpData, newData);
-
+            try {
+                String newData = tmpIpData + "[" + formatSearchPos(searcher.search(tmpIpData)) + "]";
+                newInputStr = newInputStr.replace(tmpIpData, newData);
+            }catch (Exception e){}
         }
 
         return newInputStr;

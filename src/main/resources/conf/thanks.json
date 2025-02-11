@@ -1,5 +1,23 @@
 [
   {
+    "version": "2.3",
+    "name": ["m1_0vU"],
+    "content": "标准资产导出时，Windows文件命名不允许存在特殊符号",
+    "type": "反馈"
+  },
+  {
+    "version": "2.3",
+    "name": ["m1_0vU"],
+    "content": "资产导出表中，拼接协议、ip、端口",
+    "type": "建议"
+  },
+  {
+    "version": "2.3",
+    "name": ["H7lan"],
+    "content": "电话号区号问题、爱企查内置Cookie不可用",
+    "type": "反馈"
+  },
+  {
     "version": "1.4",
     "name": ["enomothem"],
     "content": "调试并复现出导航模块乱码问题",

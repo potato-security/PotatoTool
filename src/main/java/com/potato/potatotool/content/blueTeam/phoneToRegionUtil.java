@@ -28,7 +28,8 @@ public class phoneToRegionUtil {
 
 
         for (String phone : phoneList) {
-            phone = phone.replace(" ","");
+            phone = phone.replaceAll("[^0-9]", "")  //去掉所有非数字字符
+                    .replaceFirst("^86", "");   // 如果前面有 +86，移除
 
             PhoneNumberInfo nullData = new PhoneNumberInfo(phone, new Attribution("", "", "", ""), ISP.UNKNOWN);
 
@@ -61,7 +62,7 @@ public class phoneToRegionUtil {
 
 
     public static void main(String []args) {
-        String[] phoneList = {"18666677777", "17391911111", "sds"};
+        String[] phoneList = {"18666677777", "17391911111", "+86 17391911111", "+8617391911111", "sds"};
         JsonArray result = getPhoneInfo(phoneList);
         for (JsonElement item : result) {
             System.out.println(item);

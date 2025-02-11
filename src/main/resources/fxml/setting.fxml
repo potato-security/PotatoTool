@@ -133,12 +133,12 @@
                             <HBox alignment="CENTER" spacing="10">
                                 <Label fx:id="newMaxWidthlabel" textAlignment="RIGHT" text="Aiqicha_Cookie：">
                                     <tooltip>
-                                        <Tooltip text="浏览器访问view-source:https://aiqicha.baidu.com获取Cookie，或直接抓包获取" />
+                                        <Tooltip text="使用BP直接抓包获取，或浏览器访问view-source:https://aiqicha.baidu.com获取Cookie" />
                                     </tooltip>
                                 </Label>
                                 <TextField fx:id="aiqichaCookie" prefWidth="250">
                                     <tooltip>
-                                        <Tooltip text="浏览器访问view-source:https://aiqicha.baidu.com获取Cookie，或直接抓包获取" />
+                                        <Tooltip text="使用BP直接抓包获取，或浏览器访问view-source:https://aiqicha.baidu.com获取Cookie" />
                                     </tooltip>
                                 </TextField>
                                 <Label minWidth="20"/>
