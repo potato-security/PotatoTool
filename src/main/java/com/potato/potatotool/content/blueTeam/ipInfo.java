@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.potato.potatotool.utils.Constants.getResourceFileTmpPath;
 import static com.potato.potatotool.utils.strUtils.joinList_r;
@@ -215,6 +216,23 @@ public class ipInfo {
 
         return ipPosDict;
 
+    }
+
+    // 根据pos出现的次数排序，剔除pos为"内网IP"
+    public static Set<String> getSortedPosList(LinkedHashMap<String, String> ipPosDict) {
+        // 统计次数并排序，同时过滤掉为"内网"的值
+        Map<String, Long> countMap = ipPosDict.values().stream()
+                .filter(pos -> !pos.equals("内网IP"))  // 过滤掉内网
+                .collect(Collectors.groupingBy(
+                        String::toString,
+                        HashMap::new,
+                        Collectors.counting()
+                ));
+
+        return countMap.entrySet().stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
 

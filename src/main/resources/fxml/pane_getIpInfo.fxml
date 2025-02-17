@@ -44,7 +44,7 @@
                                    <CodeArea fx:id="result1" editable="false" styleClass="codeArea"/>
                                </content>
                            </VirtualizedScrollPane>
-                           <Label styleClass="titleText" translateY="-21" text="IP提取" StackPane.alignment="TOP_CENTER"/>
+                           <Label fx:id="ipLabel" styleClass="titleText" translateY="-21" text="IP提取" StackPane.alignment="TOP_CENTER"/>
                        </StackPane>
                        <StackPane styleClass="codeAreaPane">
                            <VirtualizedScrollPane fx:id="virScrollPane2" styleClass="virtualizedScrollPane">
@@ -80,7 +80,7 @@
                                    <CodeArea fx:id="result5" editable="false" styleClass="codeArea"/>
                                </content>
                            </VirtualizedScrollPane>
-                           <Label styleClass="titleText" translateY="-21" text="筛选-IP提取" StackPane.alignment="TOP_CENTER"/>
+                           <Label fx:id="ipLabelSelect" styleClass="titleText" translateY="-21" text="筛选-IP提取" StackPane.alignment="TOP_CENTER"/>
                        </StackPane>
                        <StackPane styleClass="codeAreaPane">
                            <VirtualizedScrollPane fx:id="virScrollPane6" styleClass="virtualizedScrollPane">

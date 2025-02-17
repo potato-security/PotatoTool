@@ -67,6 +67,10 @@ public class PaneGetIpInfo {
     @FXML
     private CodeArea result8;
     @FXML
+    private Label ipLabel;
+    @FXML
+    private Label ipLabelSelect;
+    @FXML
     private List<CodeArea> codeAreas = new ArrayList<>();
     @FXML
     private List<VirtualizedScrollPane> virScrollPanes = new ArrayList<>();
@@ -127,12 +131,15 @@ public class PaneGetIpInfo {
 
         Set<String> ipList = (LinkedHashSet) ipInfo.getIpListFromReg(inputStr);
         ipPosDict = ipInfo.getIpPosDict(searcher, ipList);
-        Set<String> posList = new LinkedHashSet<>(ipPosDict.values());
+        Set<String> posList = ipInfo.getSortedPosList(ipPosDict);
 
         result3.replaceText(inputStr);
         result4.replaceText(inputStr);
         result7.replaceText(inputStr);
         result8.replaceText(inputStr);
+
+        ipLabel.setText("IP提取");
+        ipLabelSelect.setText("筛选-IP提取");
 
         if(ipList.size() < 1){
             result1.clear();
@@ -155,6 +162,8 @@ public class PaneGetIpInfo {
 
         // result1 IP抽取
         result1.replaceText(joinList_r(ipList));
+        ipLabel.setText("IP提取(" + ipList.size() + ")");
+        ipLabelSelect.setText("筛选-IP提取(" + ipList.size() + ")");
 
         // result2 IP抽取+pos标记
         result2.clear();    //因为result2是append累加而非replaceText替换
@@ -213,6 +222,7 @@ public class PaneGetIpInfo {
         }else{
             newTmpipPosDict = ipInfo.filterIpPos(ipPosDict, selectedValue);
         }
+        ipLabelSelect.setText("筛选-IP提取(" + newTmpipPosDict.size() + ")");
 
         result7.replaceText(inputStr);
         result8.replaceText(inputStr);

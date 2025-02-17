@@ -1,5 +1,11 @@
 [
   {
+    "version": "2.5",
+    "name": ["Crag512"],
+    "content": "2.4版本IP归属地查询异常，建议添加ip数量展示、地理位置计数排序",
+    "type": "反馈"
+  },
+  {
     "version": "2.3",
     "name": ["m1_0vU"],
     "content": "标准资产导出时，Windows文件命名不允许存在特殊符号",
