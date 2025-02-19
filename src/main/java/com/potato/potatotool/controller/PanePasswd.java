@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXPasswordField;
 import com.potato.potatotool.utils.Constants;
+import com.potato.potatotool.utils.ExecutorServiceManager;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -66,8 +67,9 @@ public class PanePasswd {
 
     @FXML
     public void exitAction(){
-        Stage stage = (Stage) an.getScene().getWindow();
-        stage.close();
+        ExecutorServiceManager.shutdownAll();
+        Platform.exit();
+        System.exit(0);
     }
 
     String initPassword = "";

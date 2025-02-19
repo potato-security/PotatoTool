@@ -7,7 +7,9 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.MainApplication;
 import com.potato.potatotool.utils.Constants;
 import com.potato.potatotool.utils.Util;
+import javafx.animation.FadeTransition;
 import javafx.application.HostServices;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,10 +27,15 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.potato.potatotool.controller.MainController.clipRect;
 import static com.potato.potatotool.utils.Constants.getResourceString;
@@ -52,6 +59,11 @@ public class PaneExtension {
 
     @FXML
     private Accordion accordionPane;
+
+    @FXML
+    private StackPane promptPane;
+    @FXML
+    private Label prompt;
 
     public void initialize() {
 
@@ -315,17 +327,40 @@ public class PaneExtension {
         if(content.isEmpty()) return;
 
         if(type.equals("cmd")){
-            String[] command = content.split("\\s+");
+            String[] command = parseCommand(content);
             try {
                 new ProcessBuilder(command).start();
             } catch (Exception e) {
-                System.out.println(command);
+                System.out.println("执行的命令："+content);
+                showTip(e.toString());
                 e.printStackTrace();
             }
         }else if(type.equals("web")){
             HostServices services = MainApplication.letGetHostServices();
             services.showDocument(content);
         }
+    }
+
+    /**
+     * 解析命令行
+     */
+    private String[] parseCommand(String command) {
+        List<String> commands = new ArrayList<>();
+        Matcher matcher = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'")
+                .matcher(command);
+        while (matcher.find()) {
+            if (matcher.group(1) != null) {
+                // 双引号内的内容
+                commands.add(matcher.group(1));
+            } else if (matcher.group(2) != null) {
+                // 单引号内的内容
+                commands.add(matcher.group(2));
+            } else {
+                // 无引号的内容
+                commands.add(matcher.group());
+            }
+        }
+        return commands.toArray(new String[0]);
     }
 
 
@@ -475,4 +510,36 @@ public class PaneExtension {
         }
     }
 
+    public void showTip(String tip){
+        Platform.runLater(() -> {
+            prompt.setText(tip);
+            copyAnimation();
+        });
+    }
+
+    public void copyAnimation() {
+        // 显示提示组件
+        promptPane.setVisible(true);
+        promptPane.setManaged(true);
+
+        // 创建渐入动画
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+
+        // 创建渐出动画
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        fadeOut.setDelay(Duration.seconds(1)); // 延迟1秒执行渐出动画
+
+        // 播放渐入动画，完成后播放渐出动画
+        fadeIn.setOnFinished(event -> fadeOut.play());
+        fadeIn.play();
+
+        fadeOut.setOnFinished(event -> {
+            promptPane.setVisible(false);
+            promptPane.setManaged(false);
+        });
+    }
 }

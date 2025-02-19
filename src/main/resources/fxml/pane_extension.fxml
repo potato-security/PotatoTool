@@ -5,6 +5,8 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.effect.DropShadow?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../css/extension.css"
@@ -27,5 +29,11 @@
         </right>
     </BorderPane>
 
+    <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" alignment="CENTER" StackPane.alignment="CENTER">
+        <effect>
+            <DropShadow/>
+        </effect>
+        <Label fx:id="prompt"/>
+    </StackPane>
 
 </StackPane>

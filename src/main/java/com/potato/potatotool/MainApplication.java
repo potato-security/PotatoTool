@@ -3,9 +3,7 @@ package com.potato.potatotool;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
 import com.potato.potatotool.content.update;
-import com.potato.potatotool.controller.MainController;
 import com.potato.potatotool.controller.PaneLoad;
 import com.potato.potatotool.controller.PanePasswd;
 import com.potato.potatotool.utils.*;
@@ -13,21 +11,17 @@ import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
-import javafx.stage.Screen;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -36,7 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -75,8 +68,21 @@ public class MainApplication extends Application {
         passwdScene.setCamera(new PerspectiveCamera());
         passwdScene.setFill(null);
         passwdStage.setScene(passwdScene);
+        String iconPath = "/img/logo.png";
+        try {
+            // 为 JavaFX 窗口设置图标（这会影响 Windows 任务栏和 Linux 的dock）
+            InputStream iconStream = getClass().getResourceAsStream(iconPath);
+            if (iconStream != null) {
+                Image image = new Image(iconStream);
+                passwdStage.getIcons().add(image);
+                passwdStage.setTitle("PotatoTool");
+                stage.getIcons().add(image);
+                stage.setTitle("PotatoTool");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         passwdStage.show();
-
 
         BooleanProperty preload = new SimpleBooleanProperty(false);
         AtomicReference<FadeTransition> fadeTransition1 = new AtomicReference<FadeTransition>();
@@ -149,6 +155,18 @@ public class MainApplication extends Application {
             loadScene.setCamera(new PerspectiveCamera());
             loadScene.setFill(null);
             loadStage.setScene(loadScene);
+            String iconPath = "/img/logo.png";
+            try {
+                // 为 JavaFX 窗口设置图标（这会影响 Windows 任务栏和 Linux 的dock）
+                InputStream iconStream = getClass().getResourceAsStream(iconPath);
+                if (iconStream != null) {
+                    Image image = new Image(iconStream);
+                    loadStage.getIcons().add(image);
+                    loadStage.setTitle("PotatoTool");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             passwdStage.close();
             loadStage.show();
 
