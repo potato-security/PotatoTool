@@ -64,12 +64,6 @@
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
-            <version>17.0.10</version>
-            <classifier>win</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
             <artifactId>javafx-base</artifactId>
             <version>17.0.10</version>
             <classifier>linux</classifier>
@@ -83,12 +77,6 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>17.0.10</version>
-            <classifier>linux</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
             <version>17.0.10</version>
             <classifier>linux</classifier>
         </dependency>
@@ -112,12 +100,6 @@
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
-            <version>17.0.10</version>
-            <classifier>mac</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
             <artifactId>javafx-base</artifactId>
             <version>17.0.10</version>
             <classifier>mac-aarch64</classifier>
@@ -131,12 +113,6 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>17.0.10</version>
-            <classifier>mac-aarch64</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
             <version>17.0.10</version>
             <classifier>mac-aarch64</classifier>
         </dependency>
