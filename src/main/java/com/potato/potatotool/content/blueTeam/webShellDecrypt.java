@@ -338,8 +338,9 @@ public class webShellDecrypt {
             try {
 
                 byte[] tmp_conText2 = str.base64Decode(conText1.getBytes(StandardCharsets.UTF_8));
-
-                tmp_conText3 = str.xorEncode(tmp_conText2, inputKey, traverse, customPath);
+                if(!ReadabilityChecker.assessReadability(tmp_conText2,1,0)) {   //  无乱码则继续进行xor解密尝试
+                    tmp_conText3 = str.xorEncode(tmp_conText2, inputKey, traverse, customPath);
+                }
             }catch (Exception e){
                 if(debugMode)e.printStackTrace();
             }
