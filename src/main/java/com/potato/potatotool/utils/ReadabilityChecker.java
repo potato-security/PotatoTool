@@ -19,7 +19,7 @@ public class ReadabilityChecker {
         for (int i = 0; i < totalCharacters; i++) {
             char currentChar = decryptedString.charAt(i);
             // Character.isLetterOrDigit(currentChar) 该函数存在bug:一些可打印的特殊符号会被识别通过，比如Ԅ
-            if (isLetterOrDigit(currentChar) || Character.isWhitespace(currentChar) || isCommonSymbol(currentChar)) {
+            if (isLetterOrDigit(currentChar) || Character.isWhitespace(currentChar) || isCommonSymbol(currentChar)) { // 字母、数字||空白字符||中英文符号
                 printableCharacters++;
             }
         }
@@ -28,9 +28,18 @@ public class ReadabilityChecker {
     }
 
     private static boolean isCommonSymbol(char c) {
-        // 自定义常见符号集合
+        // 自定义常见英文符号
         String commonSymbols = "!@#$%^&*()-_=+[]{}\\|;:'\",.<>/?`~";
-        return commonSymbols.indexOf(c) != -1;
+        if (commonSymbols.indexOf(c) != -1) {
+            return true;
+        }
+
+        // 检查中文标点符号的Unicode范围
+        Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
+        return block == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION ||   // CJK 符号和标点 的 Unicode 块
+                block == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS ||    // 半角和全角形式 的 Unicode 块
+                (c >= '\u3000' && c <= '\u303F') ||  // CJK标点符号范围
+                (c >= '\uFF00' && c <= '\uFFEF');   // 全角符号范围
     }
 
     private static boolean isLetterOrDigit(char c) {
@@ -40,7 +49,12 @@ public class ReadabilityChecker {
 
 
     public static int detectGibberishPattern(String decryptedString) {
-        Pattern gibberishPattern = Pattern.compile("[^\\x00-\\x7F\\u4E00-\\u9FFF]");  // "[^\\x00-\\x7F]"
+        Pattern gibberishPattern = Pattern.compile(
+                "[^\\x00-\\x7F" +       // ASCII
+                "\\u4E00-\\u9FFF" +     // 中文字符
+                "\\u3000-\\u303F" +     // 中文标点符号
+                "\\uFF00-\\uFFEF]"      // 全角符号
+        );
         Matcher matcher = gibberishPattern.matcher(decryptedString);
         int gibberishCount = 0;
 
