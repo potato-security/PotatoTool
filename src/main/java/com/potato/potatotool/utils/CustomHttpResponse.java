@@ -14,8 +14,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -27,25 +25,59 @@ import java.util.zip.GZIPInputStream;
  * @date 2023/4/13 14:32
  */
 
-
 /**
  * README：
- *          con.getTextStr() \ getDocument() \ con.getJson() \ con.saveToFile(savePath)
- * 【为保证最高运行效率】，以上四种结果输出不能同时出现，否则会报错java.io.IOException: stream is closed
+ *          [con.getTextStr() \ getDocument() \ con.getJson()] \ con.saveToFile(savePath) \ con.saveToFileByGzip(savePath)
+ * 【为保证最高运行效率】，前三种可多次调用，前三任意一种以及后两种不可同时出现，否则会报错java.io.IOException: stream is closed
  *
  * Tips:
- *              若强行支持，请读取响应结果存储 private byte[] textBuffer复用;
+ *              若强行支持，需File也读取dataBuffer进行复用;（后续优化建议：POC扫描以及资产测绘扫描，设置MaxReadSize）
  *
  */
 public class CustomHttpResponse{
 
     private HttpURLConnection con;
+    private long responseTime;
+    private byte[] dataBuffer; // 添加数据缓冲区
 
     public CustomHttpResponse(HttpURLConnection con) {
         this.con = con;
     }
 
-    public String getTextStr() { // 存在getText方法
+    public long getResponseTime() {
+        return responseTime;
+    }
+
+    public void setResponseTime(long responseTime) {
+        this.responseTime = responseTime;
+    }
+
+    // 获取或初始化数据缓冲区
+    private byte[] getDataBuffer() {
+        if (dataBuffer == null) {
+            try {
+                try (InputStream inputStream = con.getInputStream();
+                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                    byte[] buffer = new byte[16 * 1024];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    dataBuffer = outputStream.toByteArray();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new byte[0];
+            }
+        }
+        return dataBuffer;
+    }
+
+    public void clearBuffer() {
+        dataBuffer = null;
+    }
+
+    public String getTextStr() {
         List<String> charsetList = getHeaderField("Content-Type");
         String charsetStr = "UTF-8";
         if(charsetList!=null) {
@@ -60,18 +92,13 @@ public class CustomHttpResponse{
         Charset charset = null;
         if(!charsetStr.isEmpty()) charset = Charset.forName(charsetStr);
 
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), charset))) {
-            StringBuilder responseString = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                responseString.append(inputLine);
-            }
-            return responseString.toString();
+        try {
+            byte[] buffer = getDataBuffer();
+            return new String(buffer, charset);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-
     }
 
     public Document getDocument() { // 转换Jsoup 的 Document 对象，用于解析标签，获取标签内容
@@ -435,19 +462,8 @@ public class CustomHttpResponse{
         return con.getInputStream();
     }
 
-    public byte[] getByteArray() throws Exception {
-        try (InputStream inputStream = con.getInputStream();
-             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-
-            byte[] buffer = new byte[16 * 1024];
-            int bytesRead;
-
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-
-            return outputStream.toByteArray();
-        }
+    public byte[] getByteArray() {
+        return getDataBuffer();
     }
 
     public String getContentEncoding() {

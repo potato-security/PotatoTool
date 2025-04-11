@@ -238,12 +238,19 @@ public class requestUtils {
                     }
                 }
 
+                // 开始计时 - 在获取响应码前开始计时以准确测量服务器响应时间
+                long startTime = System.currentTimeMillis();
+                
                 int responseCode = con.getResponseCode();
                 if (responseCode >= 500) { // 服务器错误，需主动抛出
                     throw new IOException("Server error: " + responseCode);
                 }
-
-                return new CustomHttpResponse(con);
+                
+                // 创建响应对象
+                CustomHttpResponse response = new CustomHttpResponse(con);
+                long endTime = System.currentTimeMillis();
+                response.setResponseTime(endTime - startTime);
+                return response;
 
             } catch (IOException e) {
                 if (con != null) {

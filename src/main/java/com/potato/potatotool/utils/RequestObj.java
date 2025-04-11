@@ -70,7 +70,7 @@ public class RequestObj {
 
     public RequestObj setMethod(String method) {
         validateMethod(method);
-        this.method = method;
+        this.method = method.toUpperCase();
         return this;
     }
 

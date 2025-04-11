@@ -29,18 +29,14 @@ public class PocObj {
         private String createTime;          // 创建时间
         private String updateTime;          // 更新时间
         private String protocol;            // 协议类型(http, tcp, udp等)
-        private String category;            // 分类
         private String appPowerLink;        // 应用官网链接
-        private String repairDesc;          // 修复建议
         private String pocDesc;             // POC描述
-        private String vulDesc;             // 漏洞描述
         private boolean selfContained;      // 是否自包含(Nuclei特性)
-        private String flow;                // 流程表达式(Nuclei特性)
+        private String flow;                // 流程表达式
         private String impact;              // 漏洞影响
         private String recommendation;      // 修复建议
         private String homepage;            // 主页
-        private String vulScope;            // 漏洞影响范围
-        
+
         // 搜索相关
         private Map<String, String> searchQueries = new HashMap<>();  // 搜索语句，如fofa、zoomeye等
         
@@ -57,7 +53,6 @@ public class PocObj {
         
         // 执行步骤
         private List<PocStep> verifySteps = new ArrayList<>();  // 验证步骤
-        private List<PocStep> attackSteps = new ArrayList<>();  // 攻击步骤
         private List<PocStep> exploitSteps = new ArrayList<>(); // 利用步骤
         
         // 全局配置
@@ -94,7 +89,6 @@ public class PocObj {
         private String proxy;               // 代理设置
         private int timeout;                // 超时时间
         private String delay;               // 延迟时间
-        private String necessary;           // 是否必要步骤
         private String connectionId;        // 连接ID(用于TCP/UDP)
         private int readSize;               // 读取大小(用于TCP/UDP)
         private List<String> raw;           // 原始请求
@@ -118,7 +112,7 @@ public class PocObj {
         private MatchersCondition matchersCondition = MatchersCondition.AND; // 匹配条件
         
         // 结果提取
-        private Map<String, String> extractors = new HashMap<>();  // 提取器
+        private List<Matcher> extractors = new ArrayList<>();  // 提取器
         private Map<String, Object> output = new HashMap<>();  // 结果数据
         
         // 重试配置
