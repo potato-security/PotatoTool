@@ -1,0 +1,33 @@
+id: photoprism-panel
+
+info:
+  name: PhotoPrism Panel - Detect
+  author: rxerium
+  severity: info
+  description: |
+    PhotoPrism Panel was Detected
+  reference:
+    - https://photoprism.app/
+  metadata:
+    verified: true
+    max-request: 1
+    shodan-query: http.title:PhotoPrism
+  tags: photoprism,panel
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    host-redirects: true
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "<title>PhotoPrism</title>"
+
+      - type: status
+        status:
+          - 200
+# digest: 490a00463044022057a3e1c0cc8f5e99e6d1f0ace1c201fb8d8b2eb052fce100577581180a903e0802201289175ac2b83fb301f3b66d8006053538bb87b81b73fdc1224abb76bbb0f754:922c64590222798bb761d5b6d8e72950

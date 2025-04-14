@@ -394,7 +394,7 @@ public class AssetMapper {
                 for (DomainInfo domainInfo : mergedList) {
                     String icp = domainInfo.getIcp();
                     String tmpDomainStr = domainInfo.getDomain();
-                    if (icp != null && !icp.equals("-") && !icp.isEmpty()) {
+                    if (icp != null && !icp.equals("-") && !icp.isEmpty() && icp.length() > 10) {
                         tmpIcpNoSet.add(icp.replaceAll("\\s*-\\s*\\d+$", ""));
                     }
                     if (tmpDomainStr != null && !tmpDomainStr.isEmpty()) {

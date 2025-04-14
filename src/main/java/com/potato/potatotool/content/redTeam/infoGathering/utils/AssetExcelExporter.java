@@ -309,7 +309,7 @@ public class AssetExcelExporter {
                 Cell cell = dataRow.createCell(colCount++);
 
                 // 处理不同类型的值
-                if (value.isJsonNull()) {
+                if (value == null || value.isJsonNull()) {
                     cell.setCellValue("/");
                 } else if (value.isJsonPrimitive()) {
                     cell.setCellValue(value.getAsString());
@@ -355,7 +355,7 @@ public class AssetExcelExporter {
                     if(!dataObject.has(key)) cell.setCellValue("/");
                     JsonElement value = dataObject.get(key);
                     // 处理不同类型的值
-                    if (value.isJsonNull()) {
+                    if (value == null || value.isJsonNull()) {
                         cell.setCellValue("/");
                     } else if (value.isJsonPrimitive()) {
                         cell.setCellValue(value.getAsString());

@@ -1,0 +1,178 @@
+{
+  "id": "apache-nifi-rce",
+  "name": "Apache NiFi  - Remote Code Execution",
+  "author": "arliya",
+  "severity": "CRITICAL",
+  "description": "Apache NiFi is designed for data streaming. It supports highly configurable data routing, transformation, and system mediation logic that indicate graphs. The system has unauthorized remote command execution vulnerability.\n",
+  "references": [
+    "https://github.com/imjdl/Apache-NiFi-Api-RCE",
+    "https://labs.withsecure.com/tools/metasploit-modules-for-rce-in-apache-nifi-and-kong-api-gateway",
+    "https://packetstormsecurity.com/files/160260/apache_nifi_processor_rce.rb.txt"
+  ],
+  "tags": [
+    "packetstorm",
+    "apache",
+    "nifi",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"NiFi\""
+  },
+  "payloads": {},
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/nifi-api/process-groups/root",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "revision",
+            "canRead",
+            "permissions"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "application/json"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "apache-nifi-rce",
+    "info": {
+      "name": "Apache NiFi  - Remote Code Execution",
+      "author": "arliya",
+      "severity": "critical",
+      "description": "Apache NiFi is designed for data streaming. It supports highly configurable data routing, transformation, and system mediation logic that indicate graphs. The system has unauthorized remote command execution vulnerability.\n",
+      "reference": [
+        "https://github.com/imjdl/Apache-NiFi-Api-RCE",
+        "https://labs.withsecure.com/tools/metasploit-modules-for-rce-in-apache-nifi-and-kong-api-gateway",
+        "https://packetstormsecurity.com/files/160260/apache_nifi_processor_rce.rb.txt"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"NiFi\""
+      },
+      "tags": "packetstorm,apache,nifi,rce"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/nifi-api/process-groups/root"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "revision",
+              "canRead",
+              "permissions"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "application/json"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "json",
+            "json": [
+              ".id"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

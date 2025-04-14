@@ -1,0 +1,37 @@
+id: domibus-detect
+
+info:
+  name: Domibus - Detect
+  author: righettod
+  severity: info
+  description: |
+    Domibus was detected.
+  reference:
+    - https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Domibus
+  metadata:
+    verified: true
+    max-request: 1
+    shodan-query: http.title:"Domibus"
+  tags: tech,domibus,detect
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/domibus/rest/application/info"
+      - "{{BaseURL}}/domibus/"
+
+    stop-at-first-match: true
+    matchers:
+      - type: dsl
+        dsl:
+          - 'status_code == 200'
+          - 'contains_any(to_lower(body), "<title>domibus", "domibus-msh")'
+        condition: and
+
+    extractors:
+      - type: regex
+        part: body
+        group: 1
+        regex:
+          - '"versionNumber":\s*"([0-9.]+)"'
+# digest: 490a0046304402204a8bf3dce9c689965014bb4d95a718a676017d2e948ada53dd1590d4db76c253022048d7ae458b414ca7434d776e2936715437d1931f004a9b2e8913cc45299113ed:922c64590222798bb761d5b6d8e72950

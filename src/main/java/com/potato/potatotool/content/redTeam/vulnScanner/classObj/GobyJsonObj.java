@@ -39,6 +39,29 @@ public class GobyJsonObj {
         private String Type;
         private String Value;
         private String Show;
+        
+        // 小写字段，用于兼容不同格式的JSON
+        private String name;
+        private String type;
+        private String value;
+        private String show;
+        
+        // 重写getter方法以处理大小写混用情况
+        public String getName() {
+            return name != null ? name : Name;
+        }
+        
+        public String getType() {
+            return type != null ? type : Type;
+        }
+        
+        public String getValue() {
+            return value != null ? value : Value;
+        }
+        
+        public String getShow() {
+            return show != null ? show : Show;
+        }
     }
 
     @Data

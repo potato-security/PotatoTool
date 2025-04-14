@@ -211,7 +211,7 @@ public class AiqichaSearch {
 
             JsonObject tmpJsonObject = con.getJson().getAsJsonObject();
 
-            if (!tmpJsonObject.getAsJsonObject("data").isJsonNull()) {
+            if (tmpJsonObject.getAsJsonObject("data") != null && !tmpJsonObject.getAsJsonObject("data").isJsonNull()) {
                 JsonObject dataObject = tmpJsonObject.getAsJsonObject("data");
                 if (url.contains("stockchart/stockchartAjax")) {
                     JsonObject investRecordDataObject = dataObject.getAsJsonObject("investRecordData");

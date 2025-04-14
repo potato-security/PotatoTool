@@ -205,7 +205,7 @@ public class GetSeo {
         } else if (elem1.isJsonArray() && elem2.isJsonArray()) {
             return mergeJsonArrays(elem1.getAsJsonArray(), elem2.getAsJsonArray());
         } else {
-            if(elem1.equals("-") || elem1.isJsonNull() || elem1.getAsString().isEmpty()) return elem2;
+            if(elem1.equals("-") || elem1==null || elem1.isJsonNull() || elem1.getAsString().isEmpty()) return elem2;
             return elem1;
         }
     }

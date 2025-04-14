@@ -81,7 +81,7 @@ public class GitHubLeakage {
                     for (JsonElement item : items) {
                         JsonObject repoObj = new JsonObject();
                         String repoName = item.getAsJsonObject().get("full_name").getAsString();
-                        String repoDes =item.getAsJsonObject().get("description").isJsonNull() ? "" : item.getAsJsonObject().get("description").getAsString() ;
+                        String repoDes = (item.getAsJsonObject().get("description")==null || item.getAsJsonObject().get("description").isJsonNull()) ? "" : item.getAsJsonObject().get("description").getAsString() ;
 
                         if ((domain!=null && domain.equals("HotBoy-java/PotatoTool")) || AiUtils.getGitRepoRelevance_Ai(repoName, repoDes, question)) {
                             repoObj.addProperty("repoName", repoName);

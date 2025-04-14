@@ -132,6 +132,7 @@ public class CustomHttpResponse{
 
     public void disconnect() {
         if (con!= null) {
+            clearBuffer();
             con.disconnect();
         }
     }

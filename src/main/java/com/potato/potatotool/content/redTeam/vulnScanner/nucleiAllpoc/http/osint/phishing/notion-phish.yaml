@@ -1,0 +1,35 @@
+id: notion-phish
+
+info:
+  name: notion phishing Detection
+  author: rxerium
+  severity: info
+  description: |
+    A notion phishing website was detected
+  reference:
+    - https://notion.so
+  metadata:
+    max-request: 1
+  tags: phishing,notion,osint
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    host-redirects: true
+    max-redirects: 2
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - 'Your connected workspace for wiki, docs &amp; projects | Notion'
+
+      - type: status
+        status:
+          - 200
+
+      - type: dsl
+        dsl:
+          - '!contains(host,"notion.so")'
+# digest: 4a0a0047304502205ba60acca7bd00cdf2a362868aa91cfb5ffda714720dfd5455464078a433dcfa022100e7dafe0d4f328daa98c251bed13769bffa011d33e00ab9933fb993f563d53e20:922c64590222798bb761d5b6d8e72950
