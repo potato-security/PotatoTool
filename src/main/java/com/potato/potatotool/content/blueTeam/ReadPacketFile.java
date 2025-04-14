@@ -12,7 +12,6 @@ import com.opencsv.CSVWriter;
 import com.potato.potatotool.utils.ReadabilityChecker;
 import com.potato.potatotool.utils.SecurityInitializer;
 import com.potato.potatotool.utils.strUtils;
-import lombok.SneakyThrows;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.*;
 import org.pcap4j.packet.namednumber.DnsResourceRecordType;
@@ -91,6 +90,10 @@ public class ReadPacketFile {
                         IpV6Packet ipPacket = packet.get(IpV6Packet.class);
                         srcIp = ipPacket.getHeader().getSrcAddr().toString().replace("/","");
                         dstIp = ipPacket.getHeader().getDstAddr().toString().replace("/","");
+                    } else if (packet.contains(ArpPacket.class)) {
+                        ArpPacket arpPacket = packet.get(ArpPacket.class);
+                        srcIp = arpPacket.getHeader().getSrcProtocolAddr().getHostAddress();
+                        dstIp = arpPacket.getHeader().getDstProtocolAddr().getHostAddress();
                     }
                     packetInfo.put("源IP", srcIp);
                     packetInfo.put("目的IP", dstIp);
@@ -99,13 +102,13 @@ public class ReadPacketFile {
                     if (packet.contains(TcpPacket.class)) {
                         handleTcpPacket(packet, packetInfo, packetCounter, srcIp, dstIp, handle.getTimestamp().toString());
                     }
-                    // 处理UDP协议
-                    else if (packet.contains(UdpPacket.class)) {
-                        handleUdpPacket(packet, packetInfo);
-                    }
                     // 处理DNS协议
                     else if (packet.contains(DnsPacket.class)) {
                         handleDnsPacket(packet, packetInfo);
+                    }
+                    // 处理UDP协议
+                    else if (packet.contains(UdpPacket.class)) {
+                        handleUdpPacket(packet, packetInfo);
                     }
                     // 处理ICMP协议
                     else if (packet.contains(IcmpV4CommonPacket.class)||packet.contains(IcmpV6CommonPacket.class)) {
