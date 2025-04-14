@@ -17,11 +17,12 @@
   "searchQueries": {
     "fofa": "app\u003d\"骑士-74CMS\""
   },
-  "payloads": {
+  "variables": {
     "num": [
       "999999999"
     ]
   },
+  "variablesType": "sniper",
   "verifySteps": [
     {
       "stepId": "http_0",

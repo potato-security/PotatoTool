@@ -10,7 +10,8 @@
   "selfContained": false,
   "flow": "config() || windows()",
   "searchQueries": {},
-  "payloads": {},
+  "variables": {},
+  "variablesType": "sniper",
   "verifySteps": [
     {
       "stepId": "config",

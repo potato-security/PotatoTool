@@ -21,12 +21,13 @@
   "searchQueries": {
     "goby": "app\u003d\"Solr\""
   },
-  "payloads": {
+  "variables": {
     "file": [
       "/etc/passwd",
       "\\\\127.0.0.1\\c$\\Windows\\win.ini"
     ]
   },
+  "variablesType": "sniper",
   "verifySteps": [
     {
       "stepId": "scan_1",

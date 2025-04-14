@@ -20,7 +20,8 @@
   "searchQueries": {
     "shodan": "title:\"NiFi\""
   },
-  "payloads": {},
+  "variables": {},
+  "variablesType": "sniper",
   "verifySteps": [
     {
       "stepId": "http_0",

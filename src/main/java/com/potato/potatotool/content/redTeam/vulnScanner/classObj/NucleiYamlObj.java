@@ -35,13 +35,6 @@ public class NucleiYamlObj {
 
         public enum Severity {
             info, low, medium, high, critical, unknown;
-
-//            public static Severity of(String value) {
-//                return Arrays.stream(values())
-//                        .filter(severity -> severity.toString().equals(value.toLowerCase()))
-//                        .findAny()
-//                        .orElse(unknown);
-//            }
         }
 
     }
@@ -67,7 +60,6 @@ public class NucleiYamlObj {
     public enum Part {
         header, body, all, raw, data, interactsh_protocol, interactsh_request, ehlo
     }
-    // 可能来自于poc中其他name字段
 
     public enum Condition {
         and, or
@@ -77,15 +69,11 @@ public class NucleiYamlObj {
         and, or
     }
 
-    public enum AttackType {
-        sniper, batteringram, pitchfork, clusterbomb
-    }
-
     @Data
     public static class Http {
         private boolean global_matchers;
         private Map<String, Object> payloads;   // Map<String, List<String>> Or Map<String, String>
-        private AttackType attack;
+        private PocObj.VariablesType attack;
         private boolean cookie_reuse;
         private boolean disable_cookie;
         private boolean disable_path_automerge;
@@ -111,7 +99,7 @@ public class NucleiYamlObj {
     public static class Request {
         private boolean global_matchers;
         private Map<String, Object> payloads;   // Map<String, List<String>> Or Map<String, String>
-        private AttackType attack;
+        private PocObj.VariablesType attack;
         private boolean cookie_reuse;
         private boolean disable_cookie;
         private boolean disable_path_automerge;
@@ -140,7 +128,8 @@ public class NucleiYamlObj {
         private List<Input> inputs;
         private String port; // 6379,6380
         private Map<String, Object> payloads;   // Map<String, List<String>> Or Map<String, String>
-        private AttackType attack;
+        private PocObj.VariablesType attack;
+        private boolean stop_at_first_match;
         private int read_size;
         private MatchersCondition matchers_condition;
         private List<TemplateMatcher> matchers;

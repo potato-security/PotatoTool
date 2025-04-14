@@ -16,7 +16,8 @@
   "pocDesc": "phpcms 2008 中广告模块存在参数过滤不严导致 SQL 注入漏洞，利用该漏洞可进行信息泄露或管理员操作。根据服务器是否开启错误显示可直接利用或采用基于时间和错误的盲注方式。",
   "selfContained": false,
   "searchQueries": {},
-  "payloads": {},
+  "variables": {},
+  "variablesType": "sniper",
   "vulType": "SQL Injection",
   "verifySteps": [
     {

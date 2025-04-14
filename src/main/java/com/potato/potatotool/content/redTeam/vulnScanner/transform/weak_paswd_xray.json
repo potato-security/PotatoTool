@@ -10,11 +10,12 @@
   "selfContained": false,
   "flow": "check() \u0026\u0026 auth()",
   "searchQueries": {},
-  "payloads": {
+  "variables": {
     "p1": [
       "{username\u003dr\"guest\", password\u003dr\"guest*PWD\"}"
     ]
   },
+  "variablesType": "sniper",
   "verifySteps": [
     {
       "stepId": "check",

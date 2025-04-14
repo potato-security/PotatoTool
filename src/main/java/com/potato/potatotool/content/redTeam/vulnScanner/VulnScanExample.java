@@ -20,7 +20,8 @@ public class VulnScanExample {
         VulnScanService scanService = VulnScanService.getInstance();
         
         // 加载POC
-        String pocDirPath = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/poc";
+//        String pocDirPath = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/poc";
+        String pocDirPath = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\poc";
         int pocCount = scanService.loadPocs(pocDirPath);
         System.out.println("加载了 " + pocCount + " 个POC");
         

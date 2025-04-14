@@ -1,5 +1,6 @@
 */.DS_Store
 .idea
+.vscode
 target
 PotatoTool.iml
 dependency-reduced-pom.xml

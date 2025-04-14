@@ -21,7 +21,7 @@
   "searchQueries": {
     "goby": "title\u003d\"和信下一代云桌面VENGD\""
   },
-  "payloads": {
+  "variables": {
     "output": [
       "/Upload/test/{{{r1}}}.php"
     ],
@@ -35,6 +35,7 @@
       "@@random(8)"
     ]
   },
+  "variablesType": "sniper",
   "verifySteps": [
     {
       "stepId": "scan_1",

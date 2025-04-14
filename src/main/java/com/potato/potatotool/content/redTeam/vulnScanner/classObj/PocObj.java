@@ -40,9 +40,12 @@ public class PocObj {
         // 搜索相关
         private Map<String, String> searchQueries = new HashMap<>();  // 搜索语句，如fofa、zoomeye等
         
-        // 变量和载荷
+        // 变量和类型
         private Map<String, List<String>> variables = new HashMap<>(); // 变量
-        
+        private VariablesType variablesType = VariablesType.sniper;
+
+        private boolean stopAtFirstMatch;   // 首次匹配后停止
+
         // 漏洞信息
         private String cveId;               // CVE编号
         private String cweId;               // CWE编号
@@ -61,6 +64,10 @@ public class PocObj {
         private Object originalPoc;         // 原始POC对象
         private String originalFormat;      // 原始POC格式
     }
+
+    public enum VariablesType {
+        sniper, batteringram, pitchfork, clusterbomb
+    }
     
     @Data
     public static class GlobalConfig {
@@ -68,7 +75,6 @@ public class PocObj {
         private int retryInterval;          // 重试间隔(毫秒)
         private String proxy;               // 全局代理
         private Map<String, String> globalHeaders = new HashMap<>(); // 全局请求头
-        private boolean stopAtFirstMatch;   // 首次匹配后停止
         private int threads;                // 线程数
         private boolean cookieReuse;        // 是否复用Cookie
         private Map<String, Object> dnsConfig = new HashMap<>(); // DNS配置

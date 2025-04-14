@@ -801,6 +801,9 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
                 if (http.getPayloads() != null && !http.getPayloads().isEmpty()) {
                     processPayloadMap(http.getPayloads(), payloads);
                 }
+                if (http.getAttack() != null) {
+                    poc.setVariablesType(http.getAttack());
+                }
             }
         }
         
@@ -809,6 +812,9 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
             for (NucleiYamlObj.Request request : nucleiPoc.getRequests()) {
                 if (request.getPayloads() != null && !request.getPayloads().isEmpty()) {
                     processPayloadMap(request.getPayloads(), payloads);
+                }
+                if (request.getAttack() != null) {
+                    poc.setVariablesType(request.getAttack());
                 }
             }
         }
@@ -819,11 +825,20 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
                 if (tcp.getPayloads() != null && !tcp.getPayloads().isEmpty()) {
                     processPayloadMap(tcp.getPayloads(), payloads);
                 }
+                if (tcp.getAttack() != null) {
+                    poc.setVariablesType(tcp.getAttack());
+                }
             }
         }
         
         if (!payloads.isEmpty()) {
-            poc.setVariables(payloads);
+            // 获取现有的变量并合并新的payloads
+            Map<String, List<String>> existingVariables = poc.getVariables();
+            if (existingVariables != null) {
+                existingVariables.putAll(payloads);
+            } else {
+                poc.setVariables(payloads);
+            }
         }
     }
     
