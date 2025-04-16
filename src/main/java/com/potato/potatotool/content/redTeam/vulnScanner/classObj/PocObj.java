@@ -44,8 +44,6 @@ public class PocObj {
         private Map<String, List<String>> variables = new HashMap<>(); // 变量
         private VariablesType variablesType = VariablesType.sniper;
 
-        private boolean stopAtFirstMatch;   // 首次匹配后停止
-
         // 漏洞信息
         private String cveId;               // CVE编号
         private String cweId;               // CWE编号
@@ -75,6 +73,7 @@ public class PocObj {
         private int retryInterval;          // 重试间隔(毫秒)
         private String proxy;               // 全局代理
         private Map<String, String> globalHeaders = new HashMap<>(); // 全局请求头
+        private boolean stopAtFirstMatch;   // 首次匹配后停止
         private int threads;                // 线程数
         private boolean cookieReuse;        // 是否复用Cookie
         private Map<String, Object> dnsConfig = new HashMap<>(); // DNS配置

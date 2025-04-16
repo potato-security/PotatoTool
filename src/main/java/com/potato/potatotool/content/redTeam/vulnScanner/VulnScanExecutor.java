@@ -951,6 +951,10 @@ public class VulnScanExecutor {
                     System.out.println("TIME: " + response.getResponseTime());
                     System.out.println("matcher.getValues(): " + matcher.getValues());
                     return matchTime(response.getResponseTime(), matcher.getValues(), matcher.getOperation());
+                case DSL:
+                    System.out.println("DSL: " + content);
+                    System.out.println("matcher.getValues(): " + matcher.getValues());
+                    return matchDsl(response, matcher.getValues());
                 default:
                     return false;
             }
@@ -1268,7 +1272,6 @@ public class VulnScanExecutor {
         return false;
     }
 
-
     /**
      * 将十六进制字符串转换为字节数组
      * @param hexString 十六进制字符串
@@ -1327,6 +1330,727 @@ public class VulnScanExecutor {
         }
     }
     
+    /**
+     * 匹配DSL表达式
+     * @param response HTTP响应
+     * @param values DSL表达式列表
+     * @return 是否匹配成功
+     */
+    private boolean matchDsl(CustomHttpResponse response, List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return false;
+        }
+        
+        try {
+            // 创建统一的DSL上下文环境
+            Map<String, Object> context = createDslContext(response);
+            
+            // 遍历所有DSL表达式，任一匹配则返回true
+            for (String expr : values) {
+                try {
+                    if (evaluateUnifiedDsl(context, expr)) {
+                        return true;
+                    }
+                } catch (Exception e) {
+                    if (scanConfig.isDebug()) {
+                        System.err.println("DSL表达式解析失败: " + expr + ", 错误: " + e.getMessage());
+                    }
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            if (scanConfig.isDebug()) {
+                System.err.println("DSL匹配失败: " + e.getMessage());
+            }
+            return false;
+        }
+    }
+    
+    /**
+     * 评估统一的DSL表达式
+     * @param context DSL上下文
+     * @param expression DSL表达式
+     * @return 表达式评估结果
+     */
+    private boolean evaluateUnifiedDsl(Map<String, Object> context, String expression) {
+        // 预处理表达式，标准化语法差异
+        String normalizedExpr = normalizeExpression(expression);
+        
+        // 解析并评估表达式
+        return evaluateDslExpression(context, normalizedExpr);
+    }
+    
+    /**
+     * 标准化DSL表达式
+     * @param expression 原始表达式
+     * @return 标准化后的表达式
+     */
+    private String normalizeExpression(String expression) {
+        String originalExpression = expression.trim();
+        String normalized = originalExpression;
+        
+        // 替换Xray特有的语法为统一格式
+        // 替换bcontains为contains
+        normalized = normalized.replaceAll("bcontains\\s*\\(", "contains(");
+        
+        // 替换b"字符串"或b'字符串'为普通字符串
+        normalized = normalized.replaceAll("b([\"'])", "$1");
+        
+        // 替换icontains为ignoreCase(contains( 形式
+        normalized = normalized.replaceAll("icontains\\s*\\(", "ignoreCase(contains(");
+        
+        // 替换ibcontains为ignoreCase(contains( 形式 - Xray特有
+        normalized = normalized.replaceAll("ibcontains\\s*\\(", "ignoreCase(contains(");
+        
+        // 替换bmatches为matches - Xray特有
+        normalized = normalized.replaceAll("bmatches\\s*\\(", "matches(");
+        
+        // 替换Nuclei特有的语法
+        // to_lower()替换为toLowerCase()
+        normalized = normalized.replaceAll("to_lower\\s*\\(", "toLowerCase(");
+        
+        // to_upper()替换为toUpperCase()
+        normalized = normalized.replaceAll("to_upper\\s*\\(", "toUpperCase(");
+        
+        // 检查处理前后表达式是否有变化，如果没有变化但包含特殊函数，可能是无法识别的表达式
+        if (originalExpression.equals(normalized)) {
+            // 检查是否包含可能未被处理的特殊函数
+            if (containsUnrecognizedFunctions(originalExpression)) {
+                logUnrecognizedExpression(originalExpression);
+            }
+        }
+        
+        return normalized;
+    }
+    
+    /**
+     * 检查表达式中是否包含未被识别的特殊函数
+     * @param expression DSL表达式
+     * @return 是否包含未识别的函数
+     */
+    private boolean containsUnrecognizedFunctions(String expression) {
+        // 已知可以处理的函数列表
+        String[] knownFunctions = {
+            "contains", "bcontains", "icontains", "ibcontains", "matches", "bmatches",
+            "to_lower", "toLowerCase", "to_upper", "toUpperCase", "ignoreCase", 
+            "base64", "md5", "sha1", "sha256", "substr", "len", "substr", "regex", "rand",
+            "string", "bytes", "reverse", "wait", "sleep", "submatch", "all_headers",
+            "body_string", "status_code", "content_length", "content_type", "latency"
+        };
+        
+        // 查找可能的函数调用
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\b(\\w+)\\s*\\(");
+        java.util.regex.Matcher matcher = pattern.matcher(expression);
+        
+        while (matcher.find()) {
+            String foundFunction = matcher.group(1);
+            boolean isKnown = false;
+            
+            for (String knownFunction : knownFunctions) {
+                if (foundFunction.equals(knownFunction)) {
+                    isKnown = true;
+                    break;
+                }
+            }
+            
+            if (!isKnown) {
+                return true; // 发现未知函数
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * 记录未能识别的DSL表达式到文件
+     * @param expression 未识别的DSL表达式
+     */
+    private void logUnrecognizedExpression(String expression) {
+        try {
+            java.io.File logFile = new java.io.File("1.txt");
+            boolean fileExists = logFile.exists();
+            
+            java.io.FileWriter writer = new java.io.FileWriter(logFile, true); // 追加模式
+            java.io.BufferedWriter bufferedWriter = new java.io.BufferedWriter(writer);
+            
+            // 如果是新文件，添加标题
+            if (!fileExists) {
+                bufferedWriter.write("未识别的DSL表达式记录:\n");
+                bufferedWriter.write("===================\n\n");
+            }
+            
+            // 记录时间戳和表达式
+            java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String timestamp = dateFormat.format(new java.util.Date());
+            
+            bufferedWriter.write("[" + timestamp + "] " + expression + "\n");
+            bufferedWriter.close();
+            
+            if (scanConfig.isDebug()) {
+                System.out.println("[!] 发现未识别的DSL表达式: " + expression);
+            }
+        } catch (java.io.IOException e) {
+            if (scanConfig.isDebug()) {
+                System.err.println("[×] 记录未识别的DSL表达式时出错: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * 评估标准化后的DSL表达式
+     * @param context DSL上下文
+     * @param expression DSL表达式
+     * @return 表达式评估结果
+     */
+    private boolean evaluateDslExpression(Map<String, Object> context, String expression) {
+        // 处理复合表达式
+        if (expression.contains(" && ")) {
+            return evaluateLogicalAnd(context, expression);
+        } else if (expression.contains(" || ")) {
+            return evaluateLogicalOr(context, expression);
+        }
+        
+        // 处理各种函数和操作符
+        if (expression.contains("contains(")) {
+            return evaluateContainsFunction(context, expression);
+        } else if (expression.contains("matches(") || expression.contains("regex(")) {
+            return evaluateRegexFunction(context, expression);
+        } else if (expression.contains("ignoreCase(")) {
+            return evaluateIgnoreCaseFunction(context, expression);
+        } else if (expression.contains("toLowerCase(")) {
+            return evaluateLowerCaseFunction(context, expression);
+        } else if (expression.contains("toUpperCase(")) {
+            return evaluateUpperCaseFunction(context, expression);
+        } else if (expression.contains("len(")) {
+            return evaluateLengthFunction(context, expression);
+        } else if (evaluateComparisonExpression(context, expression)) {
+            // 比较表达式单独处理，涵盖各种比较操作符
+            return true;
+        }
+        
+        // 无法识别的表达式
+        if (scanConfig.isDebug()) {
+            System.err.println("无法识别的DSL表达式: " + expression);
+        }
+        return false;
+    }
+    
+    /**
+     * 评估逻辑与表达式
+     * @param context DSL上下文
+     * @param expression 表达式
+     * @return 评估结果
+     */
+    private boolean evaluateLogicalAnd(Map<String, Object> context, String expression) {
+        String[] parts = expression.split(" && ");
+        for (String part : parts) {
+            if (!evaluateDslExpression(context, part.trim())) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * 评估逻辑或表达式
+     * @param context DSL上下文
+     * @param expression 表达式
+     * @return 评估结果
+     */
+    private boolean evaluateLogicalOr(Map<String, Object> context, String expression) {
+        String[] parts = expression.split(" \\|\\| ");
+        for (String part : parts) {
+            if (evaluateDslExpression(context, part.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * 评估contains函数
+     * @param context DSL上下文
+     * @param expression 表达式
+     * @return 评估结果
+     */
+    private boolean evaluateContainsFunction(Map<String, Object> context, String expression) {
+        // 处理形如 field.contains("value") 的表达式
+        int containsIndex = expression.indexOf("contains(");
+        if (containsIndex <= 0) {
+            return false;
+        }
+        
+        String fieldPath = expression.substring(0, containsIndex).trim();
+        if (fieldPath.endsWith(".")) {
+            fieldPath = fieldPath.substring(0, fieldPath.length() - 1);
+        }
+        
+        // 提取括号中的内容
+        int openBracket = expression.indexOf('(', containsIndex);
+        int closeBracket = findClosingBracket(expression, openBracket);
+        if (openBracket < 0 || closeBracket < 0) {
+            return false;
+        }
+        
+        String valueStr = expression.substring(openBracket + 1, closeBracket).trim();
+        // 解析值，可能是字符串字面量或其他表达式
+        Object searchValue = resolveValue(context, valueStr);
+        if (searchValue == null) {
+            return false;
+        }
+        
+        // 获取字段值并检查是否包含指定值
+        Object fieldValue = resolveValue(context, fieldPath);
+        if (fieldValue == null) {
+            return false;
+        }
+        
+        return fieldValue.toString().contains(searchValue.toString());
+    }
+    
+    /**
+     * 评估正则表达式匹配函数
+     * @param context DSL上下文
+     * @param expression 表达式
+     * @return 评估结果
+     */
+    private boolean evaluateRegexFunction(Map<String, Object> context, String expression) {
+        // 获取函数名（matches或regex）
+        String funcName = expression.contains("matches(") ? "matches" : "regex";
+        int funcIndex = expression.indexOf(funcName + "(");
+        if (funcIndex <= 0) {
+            return false;
+        }
+        
+        String fieldPath = expression.substring(0, funcIndex).trim();
+        if (fieldPath.endsWith(".")) {
+            fieldPath = fieldPath.substring(0, fieldPath.length() - 1);
+        }
+        
+        // 提取括号中的内容
+        int openBracket = expression.indexOf('(', funcIndex);
+        int closeBracket = findClosingBracket(expression, openBracket);
+        if (openBracket < 0 || closeBracket < 0) {
+            return false;
+        }
+        
+        String patternStr = expression.substring(openBracket + 1, closeBracket).trim();
+        // 移除引号
+        patternStr = stripQuotes(patternStr);
+        
+        // 获取字段值并使用正则匹配
+        Object fieldValue = resolveValue(context, fieldPath);
+        if (fieldValue == null) {
+            return false;
+        }
+        
+        try {
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(patternStr);
+            java.util.regex.Matcher matcher = pattern.matcher(fieldValue.toString());
+            return matcher.find();
+        } catch (Exception e) {
+            if (scanConfig.isDebug()) {
+                System.err.println("正则表达式错误: " + patternStr + ", " + e.getMessage());
+            }
+            return false;
+        }
+    }
+    
+    /**
+     * 评估忽略大小写函数
+     * @param context DSL上下文
+     * @param expression 表达式
+     * @return 评估结果
+     */
+    private boolean evaluateIgnoreCaseFunction(Map<String, Object> context, String expression) {
+        int funcIndex = expression.indexOf("ignoreCase(");
+        if (funcIndex < 0) {
+            return false;
+        }
+        
+        // 提取括号中的内容
+        int openBracket = expression.indexOf('(', funcIndex);
+        int closeBracket = findClosingBracket(expression, openBracket);
+        if (openBracket < 0 || closeBracket < 0) {
+            return false;
+        }
+        
+        String innerExpr = expression.substring(openBracket + 1, closeBracket).trim();
+        
+        // 创建一个带有大小写不敏感标志的上下文副本
+        Map<String, Object> caseInsensitiveContext = new HashMap<>(context);
+        caseInsensitiveContext.put("__case_insensitive", true);
+        
+        // 评估内部表达式
+        return evaluateDslExpression(caseInsensitiveContext, innerExpr);
+    }
+    
+    /**
+     * 评估转小写函数
+     * @param context DSL上下文
+     * @param expression 表达式
+     * @return 评估结果
+     */
+    private boolean evaluateLowerCaseFunction(Map<String, Object> context, String expression) {
+        int funcIndex = expression.indexOf("toLowerCase(");
+        if (funcIndex < 0) {
+            return false;
+        }
+        
+        // 提取括号中的内容
+        int openBracket = expression.indexOf('(', funcIndex);
+        int closeBracket = findClosingBracket(expression, openBracket);
+        if (openBracket < 0 || closeBracket < 0) {
+            return false;
+        }
+        
+        String innerExpr = expression.substring(openBracket + 1, closeBracket).trim();
+        
+        // 解析内部表达式的值
+        Object innerValue = resolveValue(context, innerExpr);
+        if (innerValue == null) {
+            return false;
+        }
+        
+        // 转换为小写并存入新上下文
+        Map<String, Object> lowerCaseContext = new HashMap<>(context);
+        lowerCaseContext.put("__lower_case_result", innerValue.toString().toLowerCase());
+        
+        // 处理转换后的比较
+        String remainingExpr = expression.substring(closeBracket + 1).trim();
+        if (remainingExpr.startsWith(".")) {
+            return evaluateDslExpression(lowerCaseContext, "__lower_case_result" + remainingExpr);
+        } else if (!remainingExpr.isEmpty()) {
+            // 如果有剩余表达式，那么它应该是一个比较操作
+            return evaluateComparisonExpression(lowerCaseContext, "__lower_case_result " + remainingExpr);
+        }
+        
+        // 如果没有后续操作，返回转换后的值
+        return !lowerCaseContext.get("__lower_case_result").toString().isEmpty();
+    }
+    
+    /**
+     * 评估转大写函数
+     * @param context DSL上下文
+     * @param expression 表达式
+     * @return 评估结果
+     */
+    private boolean evaluateUpperCaseFunction(Map<String, Object> context, String expression) {
+        int funcIndex = expression.indexOf("toUpperCase(");
+        if (funcIndex < 0) {
+            return false;
+        }
+        
+        // 提取括号中的内容
+        int openBracket = expression.indexOf('(', funcIndex);
+        int closeBracket = findClosingBracket(expression, openBracket);
+        if (openBracket < 0 || closeBracket < 0) {
+            return false;
+        }
+        
+        String innerExpr = expression.substring(openBracket + 1, closeBracket).trim();
+        
+        // 解析内部表达式的值
+        Object innerValue = resolveValue(context, innerExpr);
+        if (innerValue == null) {
+            return false;
+        }
+        
+        // 转换为大写并存入新上下文
+        Map<String, Object> upperCaseContext = new HashMap<>(context);
+        upperCaseContext.put("__upper_case_result", innerValue.toString().toUpperCase());
+        
+        // 处理转换后的比较
+        String remainingExpr = expression.substring(closeBracket + 1).trim();
+        if (remainingExpr.startsWith(".")) {
+            return evaluateDslExpression(upperCaseContext, "__upper_case_result" + remainingExpr);
+        } else if (!remainingExpr.isEmpty()) {
+            // 如果有剩余表达式，那么它应该是一个比较操作
+            return evaluateComparisonExpression(upperCaseContext, "__upper_case_result " + remainingExpr);
+        }
+        
+        // 如果没有后续操作，返回转换后的值
+        return !upperCaseContext.get("__upper_case_result").toString().isEmpty();
+    }
+    
+    /**
+     * 评估长度函数
+     * @param context DSL上下文
+     * @param expression 表达式
+     * @return 评估结果
+     */
+    private boolean evaluateLengthFunction(Map<String, Object> context, String expression) {
+        int funcIndex = expression.indexOf("len(");
+        if (funcIndex < 0) {
+            return false;
+        }
+        
+        // 提取括号中的内容
+        int openBracket = expression.indexOf('(', funcIndex);
+        int closeBracket = findClosingBracket(expression, openBracket);
+        if (openBracket < 0 || closeBracket < 0) {
+            return false;
+        }
+        
+        String innerExpr = expression.substring(openBracket + 1, closeBracket).trim();
+        
+        // 解析内部表达式的值
+        Object innerValue = resolveValue(context, innerExpr);
+        if (innerValue == null) {
+            return false;
+        }
+        
+        // 计算长度并存入新上下文
+        Map<String, Object> lengthContext = new HashMap<>(context);
+        lengthContext.put("__length_result", innerValue.toString().length());
+        
+        // 处理长度后的比较
+        String remainingExpr = expression.substring(closeBracket + 1).trim();
+        if (!remainingExpr.isEmpty()) {
+            // 如果有剩余表达式，那么它应该是一个比较操作
+            return evaluateComparisonExpression(lengthContext, "__length_result " + remainingExpr);
+        }
+        
+        // 如果没有后续操作，返回长度值（非零为真）
+        return Integer.parseInt(lengthContext.get("__length_result").toString()) > 0;
+    }
+    
+    /**
+     * 评估比较表达式
+     * @param context DSL上下文
+     * @param expression 表达式
+     * @return 评估结果
+     */
+    private boolean evaluateComparisonExpression(Map<String, Object> context, String expression) {
+        // 检查各种比较操作符
+        if (expression.contains("==")) {
+            return processComparisonOperator(context, expression, "==");
+        } else if (expression.contains("!=")) {
+            return processComparisonOperator(context, expression, "!=");
+        } else if (expression.contains(">=")) {
+            return processComparisonOperator(context, expression, ">=");
+        } else if (expression.contains("<=")) {
+            return processComparisonOperator(context, expression, "<=");
+        } else if (expression.contains(">")) {
+            return processComparisonOperator(context, expression, ">");
+        } else if (expression.contains("<")) {
+            return processComparisonOperator(context, expression, "<");
+        }
+        
+        return false;
+    }
+    
+    /**
+     * 处理比较操作符
+     * @param context DSL上下文
+     * @param expression 表达式
+     * @param operator 操作符
+     * @return 比较结果
+     */
+    private boolean processComparisonOperator(Map<String, Object> context, String expression, String operator) {
+        String[] parts = expression.split(operator, 2);
+        if (parts.length != 2) {
+            return false;
+        }
+        
+        String leftExpr = parts[0].trim();
+        String rightExpr = parts[1].trim();
+        
+        Object leftValue = resolveValue(context, leftExpr);
+        Object rightValue = resolveValue(context, rightExpr);
+        
+        if (leftValue == null || rightValue == null) {
+            return false;
+        }
+        
+        // 检查是否忽略大小写
+        boolean ignoreCase = context.containsKey("__case_insensitive") && 
+                            (Boolean)context.get("__case_insensitive");
+        
+        // 尝试数值比较
+        try {
+            double leftNum = Double.parseDouble(leftValue.toString());
+            double rightNum = Double.parseDouble(rightValue.toString());
+            
+            switch (operator) {
+                case "==": return leftNum == rightNum;
+                case "!=": return leftNum != rightNum;
+                case ">": return leftNum > rightNum;
+                case "<": return leftNum < rightNum;
+                case ">=": return leftNum >= rightNum;
+                case "<=": return leftNum <= rightNum;
+                default: return false;
+            }
+        } catch (NumberFormatException e) {
+            // 如果不是数字，按字符串比较
+            String leftStr = leftValue.toString();
+            String rightStr = rightValue.toString();
+            
+            if (ignoreCase) {
+                leftStr = leftStr.toLowerCase();
+                rightStr = rightStr.toLowerCase();
+            }
+            
+            int comparison = leftStr.compareTo(rightStr);
+            
+            switch (operator) {
+                case "==": return comparison == 0;
+                case "!=": return comparison != 0;
+                case ">": return comparison > 0;
+                case "<": return comparison < 0;
+                case ">=": return comparison >= 0;
+                case "<=": return comparison <= 0;
+                default: return false;
+            }
+        }
+    }
+    
+    /**
+     * 查找对应的右括号位置
+     * @param expression 表达式
+     * @param openBracketPos 左括号位置
+     * @return 右括号位置，未找到返回-1
+     */
+    private int findClosingBracket(String expression, int openBracketPos) {
+        if (openBracketPos < 0 || openBracketPos >= expression.length()) {
+            return -1;
+        }
+        
+        int count = 1;
+        for (int i = openBracketPos + 1; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+            if (c == '(') {
+                count++;
+            } else if (c == ')') {
+                count--;
+                if (count == 0) {
+                    return i;
+                }
+            }
+        }
+        
+        return -1;
+    }
+    
+    /**
+     * 去除字符串两端的引号
+     * @param str 原始字符串
+     * @return 去除引号后的字符串
+     */
+    private String stripQuotes(String str) {
+        if (str == null) {
+            return "";
+        }
+        
+        str = str.trim();
+        if ((str.startsWith("\"") && str.endsWith("\"")) || 
+            (str.startsWith("'") && str.endsWith("'"))) {
+            return str.substring(1, str.length() - 1);
+        }
+        
+        return str;
+    }
+    
+    /**
+     * 解析上下文中的值
+     * @param context 上下文
+     * @param reference 引用路径
+     * @return 解析后的值
+     */
+    private Object resolveValue(Map<String, Object> context, String reference) {
+        if (reference == null || reference.isEmpty()) {
+            return null;
+        }
+        
+        // 检查是否是字面量
+        if (reference.startsWith("\"") && reference.endsWith("\"")) {
+            return reference.substring(1, reference.length() - 1);
+        }
+        if (reference.startsWith("'") && reference.endsWith("'")) {
+            return reference.substring(1, reference.length() - 1);
+        }
+        
+        // 尝试解析数字
+        try {
+            return Double.parseDouble(reference);
+        } catch (NumberFormatException ignored) {
+            // 不是数字，继续
+        }
+        
+        // 解析字段引用
+        return getFieldValue(context, reference);
+    }
+
+    /**
+     * 创建DSL表达式的上下文
+     * @param response HTTP响应
+     * @return 上下文映射
+     */
+    private Map<String, Object> createDslContext(CustomHttpResponse response) {
+        // 创建顶级上下文对象
+        Map<String, Object> context = new HashMap<>();
+        Map<String, Object> responseMap = new HashMap<>();
+
+        int status = 0;
+        try {
+            status = response.getResponseCode();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        responseMap.put("body", response.getTextStr());
+        responseMap.put("status", status);
+        responseMap.put("content_type", getResponseHeader(response.getHeaderFields(), "Content-Type"));
+        responseMap.put("headers", response.getHeaderFields());
+        responseMap.put("raw", response.getTextStr()); // 原始响应内容
+        responseMap.put("time", response.getResponseTime());
+        responseMap.putAll(response.getHeaderFields());
+        
+        context.put("response", responseMap);
+        
+        // 添加请求相关的变量
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("url", response.getURL().toString());
+        
+        // 提取URL的各个部分
+        try {
+            URL url = response.getURL();
+            requestMap.put("path", url.getPath());
+            requestMap.put("host", url.getHost());
+            requestMap.put("scheme", url.getProtocol());
+            requestMap.put("port", url.getPort() == -1 ? url.getDefaultPort() : url.getPort());
+        } catch (Exception e) {
+            if (scanConfig.isDebug()) {
+                System.err.println("解析URL失败: " + e.getMessage());
+            }
+        }
+        
+        context.put("request", requestMap);
+        
+        return context;
+    }
+    
+    /**
+     * 从响应头集合中获取指定头的值
+     * @param headers 响应头集合
+     * @param headerName 头名称
+     * @return 头值或空字符串
+     */
+    private String getResponseHeader(Map<String, List<String>> headers, String headerName) {
+        if (headers != null) {
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                if (headerName.equalsIgnoreCase(entry.getKey())) {
+                    List<String> values = entry.getValue();
+                    if (values != null && !values.isEmpty()) {
+                        return String.join(", ", values);
+                    }
+                    break;
+                }
+            }
+        }
+        return "";
+    }
+
     /**
      * 扫描配置类
      */
@@ -1575,5 +2299,34 @@ public class VulnScanExecutor {
                     break;
             }
         }
+    }
+
+
+    /**
+     * 根据字段路径获取字段值
+     * @param context 上下文映射
+     * @param fieldPath 字段路径
+     * @return 字段值或null
+     */
+    private Object getFieldValue(Map<String, Object> context, String fieldPath) {
+        if (fieldPath == null || fieldPath.isEmpty()) {
+            return null;
+        }
+        
+        String[] parts = fieldPath.split("\\.");
+        Object current = context;
+        
+        for (String part : parts) {
+            if (current instanceof Map) {
+                current = ((Map<?, ?>) current).get(part);
+                if (current == null) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+        
+        return current;
     }
 }

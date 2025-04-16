@@ -9,7 +9,9 @@ import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.Severit
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocsuiteJsonObj;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Potato
@@ -240,7 +242,7 @@ public class PocsuitePocConverter implements IPocConverter<PocsuiteJsonObj.PocJs
         convertMatchers(step, pocStep);
         
         // 设置结果输出
-        pocStep.setOutput(step.getResult());
+        convertOutput(step.getResult(), pocStep);
         
         return pocStep;
     }
@@ -296,6 +298,131 @@ public class PocsuitePocConverter implements IPocConverter<PocsuiteJsonObj.PocJs
         if (!matchers.isEmpty()) {
             pocStep.setMatchers(matchers);
             pocStep.setMatchersCondition(MatchersCondition.AND); // Pocsuite默认使用AND条件
+        }
+    }
+    
+    /**
+     * 英文字段到中文的映射
+     */
+    private static final Map<String, String> FIELD_MAPPING = new HashMap<>();
+    static {
+        // 顶级字段映射
+        FIELD_MAPPING.put("DBInfo", "数据库内容");
+        FIELD_MAPPING.put("ShellInfo", "Webshell信息");
+        FIELD_MAPPING.put("FileInfo", "文件信息");
+        FIELD_MAPPING.put("XSSInfo", "跨站脚本信息");
+        FIELD_MAPPING.put("AdminInfo", "管理员信息");
+        FIELD_MAPPING.put("Database", "数据库信息");
+        FIELD_MAPPING.put("VerifyInfo", "验证信息");
+        FIELD_MAPPING.put("SiteAttr", "网站服务器信息");
+        FIELD_MAPPING.put("Process", "服务器进程");
+        
+        // 子字段映射
+        FIELD_MAPPING.put("Username", "管理员用户名");
+        FIELD_MAPPING.put("Password", "管理员密码");
+        FIELD_MAPPING.put("Salt", "加密盐值");
+        FIELD_MAPPING.put("Uid", "用户ID");
+        FIELD_MAPPING.put("Groupid", "用户组ID");
+        FIELD_MAPPING.put("URL", "验证URL");
+        FIELD_MAPPING.put("Content", "文件内容");
+        FIELD_MAPPING.put("Filename", "文件名称");
+        FIELD_MAPPING.put("Payload", "验证Payload");
+        FIELD_MAPPING.put("Hostname", "数据库主机名");
+        FIELD_MAPPING.put("DBname", "数据库名");
+        FIELD_MAPPING.put("Postdata", "验证POST数据");
+        FIELD_MAPPING.put("Path", "网站绝对路径");
+    }
+    
+    /**
+     * 转换输出结果，将英文字段转为中文，并提取正则表达式
+     * @param result 原始结果Map
+     * @param pocStep POC步骤对象
+     */
+    @SuppressWarnings("unchecked")
+    private void convertOutput(Map<String, Object> result, PocObj.PocStep pocStep) {
+        if (result == null || result.isEmpty()) {
+            return;
+        }
+        
+        Map<String, Object> chineseOutput = new HashMap<>();
+        List<Matcher> extractors = new ArrayList<>();
+        int extractorIndex = 1;
+        
+        for (Map.Entry<String, Object> entry : result.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            
+            // 转换顶级字段名称为中文
+            String chineseKey = FIELD_MAPPING.getOrDefault(key, key);
+            
+            if (value instanceof Map) {
+                // 处理嵌套Map
+                Map<String, Object> subMap = (Map<String, Object>) value;
+                Map<String, Object> chineseSubMap = new HashMap<>();
+                
+                for (Map.Entry<String, Object> subEntry : subMap.entrySet()) {
+                    String subKey = subEntry.getKey();
+                    Object subValue = subEntry.getValue();
+                    
+                    // 转换子字段名称为中文
+                    String chineseSubKey = FIELD_MAPPING.getOrDefault(subKey, subKey);
+                    
+                    // 处理正则表达式
+                    if (subValue instanceof String && ((String) subValue).startsWith("<regex>")) {
+                        String regex = ((String) subValue).substring(7); // 去除<regex>前缀
+                        String outputVar = "output_" + extractorIndex;
+                        
+                        // 创建提取器
+                        Matcher extractor = new Matcher();
+                        extractor.setType(MatcherType.REGEX);
+                        extractor.setPart("body"); // 默认从响应体提取
+                        extractor.setName(outputVar);
+                        List<String> values = new ArrayList<>();
+                        values.add(regex);
+                        extractor.setValues(values);
+                        extractor.setOperation(OperationType.REGEX_MATCH);
+                        extractors.add(extractor);
+                        
+                        // 替换为模板变量
+                        chineseSubMap.put(chineseSubKey, "{{" + outputVar + "}}");
+                        
+                        extractorIndex++;
+                    } else {
+                        chineseSubMap.put(chineseSubKey, subValue);
+                    }
+                }
+                
+                chineseOutput.put(chineseKey, chineseSubMap);
+            } else if (value instanceof String && ((String) value).startsWith("<regex>")) {
+                // 处理顶级字段的正则表达式
+                String regex = ((String) value).substring(7); // 去除<regex>前缀
+                String outputVar = "output_" + extractorIndex;
+                
+                // 创建提取器
+                Matcher extractor = new Matcher();
+                extractor.setType(MatcherType.REGEX);
+                extractor.setPart("body"); // 默认从响应体提取
+                extractor.setName(outputVar);
+                List<String> values = new ArrayList<>();
+                values.add(regex);
+                extractor.setValues(values);
+                extractor.setOperation(OperationType.REGEX_MATCH);
+                extractors.add(extractor);
+                
+                // 替换为模板变量
+                chineseOutput.put(chineseKey, "{{" + outputVar + "}}");
+                
+                extractorIndex++;
+            } else {
+                // 普通值直接放入
+                chineseOutput.put(chineseKey, value);
+            }
+        }
+        
+        // 设置转换后的输出和提取器
+        pocStep.setOutput(chineseOutput);
+        if (!extractors.isEmpty()) {
+            pocStep.setExtractors(extractors);
         }
     }
     

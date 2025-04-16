@@ -29,8 +29,8 @@ public class VulnScanService {
     private final List<Consumer<List<VulnScanExecutor.ScanResult>>> completeListeners = new CopyOnWriteArrayList<>();
     
     // 默认POC目录
-//    private static final String DEFAULT_POC_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/poc";
-    private static final String DEFAULT_POC_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\poc";
+    private static final String DEFAULT_POC_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/poc";
+//    private static final String DEFAULT_POC_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\poc";
     /**
      * 私有构造函数
      */
