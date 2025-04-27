@@ -1,0 +1,126 @@
+{
+  "id": "appwrite-panel",
+  "name": "Appwrite Login Panel - Detect",
+  "author": "ritikchaddha",
+  "severity": "INFO",
+  "description": "Appwrite login panel was detected.",
+  "tags": [
+    "panel",
+    "appwrite",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d-633108100 title\u003d\"sign in - appwrite\"",
+    "google": "intitle:\"sign in - appwrite\"",
+    "shodan": "http.favicon.hash:-633108100 http.title:\"sign in - appwrite\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/images/favicon.png",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code\u003d\u003d200 \u0026\u0026 (\"-633108100\" \u003d\u003d mmh3(base64_py(body)))"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "appwrite-panel",
+    "info": {
+      "name": "Appwrite Login Panel - Detect",
+      "author": "ritikchaddha",
+      "severity": "info",
+      "description": "Appwrite login panel was detected.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": [
+          "http.favicon.hash:-633108100",
+          "http.title:\"sign in - appwrite\""
+        ],
+        "fofa_query": [
+          "icon_hash\u003d-633108100",
+          "title\u003d\"sign in - appwrite\""
+        ],
+        "google_query": "intitle:\"sign in - appwrite\""
+      },
+      "tags": "panel,appwrite,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/images/favicon.png",
+          "{{BaseURL}}/favicon.png"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code\u003d\u003d200 \u0026\u0026 (\"-633108100\" \u003d\u003d mmh3(base64_py(body)))"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

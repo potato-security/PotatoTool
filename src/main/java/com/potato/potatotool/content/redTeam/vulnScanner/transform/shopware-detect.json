@@ -1,0 +1,151 @@
+{
+  "id": "shopware-detect",
+  "name": "Shopware CMS detect",
+  "author": "cyllective,pascalheidmann",
+  "severity": "INFO",
+  "description": "Detects Shopware CMS",
+  "references": [
+    "https://github.com/shopware/shopware",
+    "https://github.com/shopware/platform"
+  ],
+  "tags": [
+    "tech",
+    "shopware",
+    "cms"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"shopware AG\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/admin",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Realisiert mit Shopware",
+            "Realised with Shopware",
+            "Shopware Administration (c) shopware AG",
+            "\u003ctitle\u003eShopware 5 - Backend (c) shopware AG\u003c/title\u003e",
+            "Shopware.Application.start"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "shopware-detect",
+    "info": {
+      "name": "Shopware CMS detect",
+      "author": "cyllective,pascalheidmann",
+      "severity": "info",
+      "description": "Detects Shopware CMS",
+      "reference": [
+        "https://github.com/shopware/shopware",
+        "https://github.com/shopware/platform"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "title:\"shopware AG\""
+      },
+      "tags": "tech,shopware,cms"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/admin",
+          "{{BaseURL}}/backend"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Realisiert mit Shopware",
+              "Realised with Shopware",
+              "Shopware Administration (c) shopware AG",
+              "\u003ctitle\u003eShopware 5 - Backend (c) shopware AG\u003c/title\u003e",
+              "Shopware.Application.start"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

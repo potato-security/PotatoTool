@@ -1,0 +1,148 @@
+{
+  "id": "truenas-panel",
+  "name": "TrueNAS Panel - Detect",
+  "author": "rxerium",
+  "severity": "INFO",
+  "description": "TrueNAS scale is a free and open-source NAS solution\n",
+  "references": [
+    "https://www.truenas.com"
+  ],
+  "tags": [
+    "login",
+    "panel",
+    "truenas",
+    "ixsystems"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"truenas\"",
+    "shodan": "html:\"TrueNAS\" http.html:\"truenas\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/ui/sessions/signin",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u0027TrueNAS\u0027",
+            "assets/images/TrueNAS"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "truenas-panel",
+    "info": {
+      "name": "TrueNAS Panel - Detect",
+      "author": "rxerium",
+      "severity": "info",
+      "description": "TrueNAS scale is a free and open-source NAS solution\n",
+      "reference": [
+        "https://www.truenas.com"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "html:\"TrueNAS\"",
+          "http.html:\"truenas\""
+        ],
+        "fofa_query": "body\u003d\"truenas\""
+      },
+      "tags": "login,panel,truenas,ixsystems"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/ui/sessions/signin"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u0027TrueNAS\u0027",
+              "assets/images/TrueNAS"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

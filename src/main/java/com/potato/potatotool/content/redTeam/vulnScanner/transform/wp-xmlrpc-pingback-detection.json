@@ -1,0 +1,187 @@
+{
+  "id": "wp-xmlrpc-pingback-detection",
+  "name": "Wordpress XMLRPC - Pingback Detection",
+  "author": "pdteam",
+  "severity": "INFO",
+  "description": "WordPress XML-RPC Pingback Detection refers to the identification and monitoring of XML-RPC Pingback functionality in a WordPress website. This is vulnerable to pingback detection and bruteforce attacks.",
+  "references": [
+    "https://github.com/dorkerdevil/rpckiller",
+    "https://the-bilal-rizwan.medium.com/wordpress-xmlrpc-php-common-vulnerabilites-how-to-exploit-them-d8d3c8600b32"
+  ],
+  "tags": [
+    "wordpress",
+    "ssrf",
+    "oast",
+    "xmlrpc"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /xmlrpc.php HTTP/1.1\nHost: {{Hostname}}\nCookie: humans_21909\u003d1\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "XML-RPC server accepts POST requests only."
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /xmlrpc.php HTTP/1.1\nHost: {{Hostname}}\n\n\u003cmethodCall\u003e\n  \u003cmethodName\u003epingback.ping\u003c/methodName\u003e\n  \u003cparams\u003e\n    \u003cparam\u003e\n      \u003cvalue\u003e\n        \u003cstring\u003ehttp://{{interactsh-url}}\u003c/string\u003e\n      \u003c/value\u003e\n    \u003c/param\u003e\n    \u003cparam\u003e\n      \u003cvalue\u003e\n        \u003cstring\u003e{{BaseURL}}/?p\u003d1\u003c/string\u003e\n      \u003c/value\u003e\n    \u003c/param\u003e\n  \u003c/params\u003e\n\u003c/methodCall\u003e\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "http",
+            "dns"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wp-xmlrpc-pingback-detection",
+    "info": {
+      "name": "Wordpress XMLRPC - Pingback Detection",
+      "author": "pdteam",
+      "severity": "info",
+      "description": "WordPress XML-RPC Pingback Detection refers to the identification and monitoring of XML-RPC Pingback functionality in a WordPress website. This is vulnerable to pingback detection and bruteforce attacks.",
+      "reference": [
+        "https://github.com/dorkerdevil/rpckiller",
+        "https://the-bilal-rizwan.medium.com/wordpress-xmlrpc-php-common-vulnerabilites-how-to-exploit-them-d8d3c8600b32"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "wordpress,ssrf,oast,xmlrpc"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /xmlrpc.php HTTP/1.1\nHost: {{Hostname}}\nCookie: humans_21909\u003d1\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "XML-RPC server accepts POST requests only."
+            ],
+            "case_insensitive": false
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /xmlrpc.php HTTP/1.1\nHost: {{Hostname}}\n\n\u003cmethodCall\u003e\n  \u003cmethodName\u003epingback.ping\u003c/methodName\u003e\n  \u003cparams\u003e\n    \u003cparam\u003e\n      \u003cvalue\u003e\n        \u003cstring\u003ehttp://{{interactsh-url}}\u003c/string\u003e\n      \u003c/value\u003e\n    \u003c/param\u003e\n    \u003cparam\u003e\n      \u003cvalue\u003e\n        \u003cstring\u003e{{BaseURL}}/?p\u003d1\u003c/string\u003e\n      \u003c/value\u003e\n    \u003c/param\u003e\n  \u003c/params\u003e\n\u003c/methodCall\u003e\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "http",
+              "dns"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

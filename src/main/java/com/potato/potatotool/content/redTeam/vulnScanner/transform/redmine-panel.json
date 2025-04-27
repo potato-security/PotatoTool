@@ -1,0 +1,120 @@
+{
+  "id": "redmine-panel",
+  "name": "Redmine Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Redmine login panel was detected.",
+  "references": [
+    "https://www.redmine.org/"
+  ],
+  "tags": [
+    "panel",
+    "redmine",
+    "login",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\u0027content\u003d\"Redmine\u0027"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/login",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body, \"content\u003d\\\"Redmine\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "redmine-panel",
+    "info": {
+      "name": "Redmine Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Redmine login panel was detected.",
+      "reference": [
+        "https://www.redmine.org/"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html:\u0027content\u003d\"Redmine\u0027"
+      },
+      "tags": "panel,redmine,login,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body, \"content\u003d\\\"Redmine\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

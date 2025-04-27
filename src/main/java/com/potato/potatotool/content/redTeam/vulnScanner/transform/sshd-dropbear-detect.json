@@ -1,0 +1,130 @@
+{
+  "id": "sshd-dropbear-detect",
+  "name": "Dropbear sshd Detection",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "Dropbear is a software package written by Matt Johnston that provides a Secure Shell-compatible server and client. It is designed as a replacement for standard OpenSSH for environments with low memory and processor resources, such as embedded systems\n",
+  "tags": [
+    "network",
+    "ssh",
+    "dropbear",
+    "detect",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"Dropbear sshd\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "22",
+      "inputs": [
+        {
+          "data": "\n",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "dropbear"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "sshd-dropbear-detect",
+    "info": {
+      "name": "Dropbear sshd Detection",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "Dropbear is a software package written by Matt Johnston that provides a Secure Shell-compatible server and client. It is designed as a replacement for standard OpenSSH for environments with low memory and processor resources, such as embedded systems\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"Dropbear sshd\""
+      },
+      "tags": "network,ssh,dropbear,detect,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "\n",
+            "read": 0
+          }
+        ],
+        "port": "22",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "dropbear"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "SSH-([0-9.]+)-dropbear_([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

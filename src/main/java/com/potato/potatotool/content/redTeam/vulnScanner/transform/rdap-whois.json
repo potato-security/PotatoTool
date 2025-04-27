@@ -1,0 +1,196 @@
+{
+  "id": "rdap-whois",
+  "name": "RDAP WHOIS",
+  "author": "ricardomaia,sttlr",
+  "severity": "INFO",
+  "description": "RDAP (Registration Data Access Protocol) is a standard defined by the IETF to replace the whois protocol\nin queries for information about Internet resource records such as domain names, IP addresses, and ASNs.\n",
+  "references": [
+    "https://about.rdap.org/"
+  ],
+  "tags": [
+    "miscellaneous",
+    "whois",
+    "rdap",
+    "osint",
+    "misc"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssScore": "0",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://www.rdap.net/domain/{{Host}}",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "rdap-whois",
+    "info": {
+      "name": "RDAP WHOIS",
+      "author": "ricardomaia,sttlr",
+      "severity": "info",
+      "description": "RDAP (Registration Data Access Protocol) is a standard defined by the IETF to replace the whois protocol\nin queries for information about Internet resource records such as domain names, IP addresses, and ASNs.\n",
+      "reference": [
+        "https://about.rdap.org/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cvss_score": "0",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "miscellaneous,whois,rdap,osint,misc"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": true,
+        "path": [
+          "https://www.rdap.net/domain/{{Host}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "json",
+            "json": [
+              ".status[]"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".events[] | select(.eventAction \u003d\u003d \"registration\").eventDate"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".events[] | select(.eventAction \u003d\u003d \"last changed\").eventDate"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".events[] | select(.eventAction \u003d\u003d \"expiration\").eventDate"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".entities[] | select(.roles[] | contains(\"registrant\")) | .vcardArray[1].[] | select(.[0] \u003d\u003d \"fn\") | .[-1]"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".entities[] | select(.roles[] | contains(\"registrant\")) | .vcardArray[1].[] | select(.[0] \u003d\u003d \"org\") | .[-1]"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".entities[] | select(.roles[] | contains(\"registrant\")) | .vcardArray[1].[] | select(.[0] \u003d\u003d \"email\") | .[-1]"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".entities[] | select(.roles[] | contains(\"registrant\")) | .vcardArray[1].[] | select(.[0] \u003d\u003d \"tel\") | .[-1]"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".entities[] | select(.roles[] | contains(\"registrant\")) | .vcardArray[1].[] | select(.[0] \u003d\u003d \"adr\") | .[-1][] | select(. !\u003d \"\")"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".entities[] | select(.roles[] | contains(\"registrant\")) | .vcardArray[1].[] | select(.[0] \u003d\u003d \"adr\") | .[-1][-1]"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".nameservers[] | .ldhName"
+            ]
+          },
+          {
+            "type": "json",
+            "json": [
+              ".secureDNS.delegationSigned // false"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

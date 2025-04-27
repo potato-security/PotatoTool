@@ -1,0 +1,120 @@
+{
+  "id": "clickhouse-unauth",
+  "name": "ClickHouse - Unauthorized Access",
+  "author": "lu4nx",
+  "severity": "HIGH",
+  "description": "ClickHouse was able to be accessed with no required authentication in place.",
+  "tags": [
+    "network",
+    "clickhouse",
+    "unauth",
+    "misconfig",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "9000",
+      "inputs": [
+        {
+          "data": "0011436c69636b486f75736520636c69656e741508b1a903000764656661756c7400",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 100,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "ClickHouse",
+            "UTC"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "clickhouse-unauth",
+    "info": {
+      "name": "ClickHouse - Unauthorized Access",
+      "author": "lu4nx",
+      "severity": "high",
+      "description": "ClickHouse was able to be accessed with no required authentication in place.",
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "network,clickhouse,unauth,misconfig,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "0011436c69636b486f75736520636c69656e741508b1a903000764656661756c7400",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "port": "9000",
+        "stop_at_first_match": false,
+        "read_size": 100,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "ClickHouse",
+              "UTC"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

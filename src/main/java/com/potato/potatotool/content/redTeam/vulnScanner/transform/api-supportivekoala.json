@@ -1,0 +1,122 @@
+{
+  "id": "api-supportivekoala",
+  "name": "Supportivekoala API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Autogenerate images with template",
+  "references": [
+    "https://developers.supportivekoala.com/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/supportivekoala"
+  ],
+  "tags": [
+    "token-spray",
+    "supportivekoala"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET https://api.supportivekoala.com/v1/images HTTP/1.1\nHost: api.supportivekoala.com\nContent-Type: application/json\nAuthorization: Bearer {{token}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"_id\"",
+            "\"template\"",
+            "\"imageUrl\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-supportivekoala",
+    "info": {
+      "name": "Supportivekoala API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Autogenerate images with template",
+      "reference": [
+        "https://developers.supportivekoala.com/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/supportivekoala"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,supportivekoala"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET https://api.supportivekoala.com/v1/images HTTP/1.1\nHost: api.supportivekoala.com\nContent-Type: application/json\nAuthorization: Bearer {{token}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"_id\"",
+              "\"template\"",
+              "\"imageUrl\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

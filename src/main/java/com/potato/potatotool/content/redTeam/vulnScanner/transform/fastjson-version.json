@@ -1,0 +1,126 @@
+{
+  "id": "fastjson-version",
+  "name": "Fastjson Version Detection",
+  "author": "yuansec",
+  "severity": "INFO",
+  "description": "If the server returns an exception to the client,The fastjson version will be retrieved,Fastjson versions greater than 1.2.41,Contains the latest version(1.2.76).",
+  "references": [
+    "https://blog.csdn.net/caiqiiqi/article/details/107907489"
+  ],
+  "tags": [
+    "fastjson",
+    "tech"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST / HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\"@type\":\"java.lang.AutoCloseable\"\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "fastjson-version"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "fastjson-version",
+    "info": {
+      "name": "Fastjson Version Detection",
+      "author": "yuansec",
+      "severity": "info",
+      "description": "If the server returns an exception to the client,The fastjson version will be retrieved,Fastjson versions greater than 1.2.41,Contains the latest version(1.2.76).",
+      "reference": [
+        "https://blog.csdn.net/caiqiiqi/article/details/107907489"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "fastjson,tech"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST / HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\"@type\":\"java.lang.AutoCloseable\"\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "fastjson-version"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "fastjson-version.*([0-9]\\.[0-9]+\\.[0-9]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

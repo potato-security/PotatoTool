@@ -1,0 +1,135 @@
+{
+  "id": "axway-api-manager-panel",
+  "name": "Axway API Manager Panel - Detect",
+  "author": "johnk3r,righettod",
+  "severity": "INFO",
+  "description": "Axway API Manager panel was detected.",
+  "references": [
+    "https://docs.axway.com/bundle/axway-open-docs/page/docs/index.html",
+    "https://www.postman.com/api-evangelist/axway/api/06c40de2-3954-4c68-ae10-a7eded330b05",
+    "https://www.postman.com/api-evangelist/axway/api/ce2ac156-4353-46b9-b148-944ab7721ed6"
+  ],
+  "tags": [
+    "panel",
+    "axway",
+    "detect",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Axway API Manager Login\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/api/portal/v1.4/appinfo",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"axway api manager login\", \"vordel/apiportal/app-login\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "axway-api-manager-panel",
+    "info": {
+      "name": "Axway API Manager Panel - Detect",
+      "author": "johnk3r,righettod",
+      "severity": "info",
+      "description": "Axway API Manager panel was detected.",
+      "reference": [
+        "https://docs.axway.com/bundle/axway-open-docs/page/docs/index.html",
+        "https://www.postman.com/api-evangelist/axway/api/06c40de2-3954-4c68-ae10-a7eded330b05",
+        "https://www.postman.com/api-evangelist/axway/api/ce2ac156-4353-46b9-b148-944ab7721ed6"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Axway API Manager Login\""
+      },
+      "tags": "panel,axway,detect,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/api/portal/v1.4/appinfo",
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"axway api manager login\", \"vordel/apiportal/app-login\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\"productVersion\":\\s*\"([0-9.]+)\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

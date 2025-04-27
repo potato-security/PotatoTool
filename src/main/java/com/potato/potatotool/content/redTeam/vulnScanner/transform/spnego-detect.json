@@ -1,0 +1,127 @@
+{
+  "id": "spnego-detect",
+  "name": "SPNEGO - Detect",
+  "author": "lady_bug,ruppde",
+  "severity": "INFO",
+  "description": "SPNEGO stands for Simple and Protected GSSAPI Negotiation Mechanism. It is a protocol used for secure authentication and negotiation between client and server applications in a network environment. SPNEGO is based on the Generic Security Services Application Programming Interface (GSSAPI) framework.\n",
+  "references": [
+    "https://www.ibm.com/docs/en/was-liberty/core?topic\u003dauthentication-single-sign-http-requests-using-spnego-web",
+    "https://arstechnica.com/information-technology/2022/12/critical-windows-code-execution-vulnerability-went-undetected-until-now/"
+  ],
+  "tags": [
+    "miscellaneous",
+    "misc",
+    "windows",
+    "spnego"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "www-authenticate: negotiate"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(tolower(header), \u0027www-authenticate: negotiate\u0027)"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "spnego-detect",
+    "info": {
+      "name": "SPNEGO - Detect",
+      "author": "lady_bug,ruppde",
+      "severity": "info",
+      "description": "SPNEGO stands for Simple and Protected GSSAPI Negotiation Mechanism. It is a protocol used for secure authentication and negotiation between client and server applications in a network environment. SPNEGO is based on the Generic Security Services Application Programming Interface (GSSAPI) framework.\n",
+      "reference": [
+        "https://www.ibm.com/docs/en/was-liberty/core?topic\u003dauthentication-single-sign-http-requests-using-spnego-web",
+        "https://arstechnica.com/information-technology/2022/12/critical-windows-code-execution-vulnerability-went-undetected-until-now/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "www-authenticate: negotiate"
+      },
+      "tags": "miscellaneous,misc,windows,spnego"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(tolower(header), \u0027www-authenticate: negotiate\u0027)"
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "kval",
+            "kval": [
+              "www_authenticate"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

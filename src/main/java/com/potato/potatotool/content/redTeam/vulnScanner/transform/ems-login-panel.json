@@ -1,0 +1,135 @@
+{
+  "id": "ems-login-panel",
+  "name": "EMS Login Panel - Detect",
+  "author": "__Fazal",
+  "severity": "INFO",
+  "description": "EMS login panel was detected.",
+  "tags": [
+    "panel",
+    "ems",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/EMSWebClient/Login.aspx",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "EMS Web Client - Login"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ems-login-panel",
+    "info": {
+      "name": "EMS Login Panel - Detect",
+      "author": "__Fazal",
+      "severity": "info",
+      "description": "EMS login panel was detected.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "panel,ems,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/EMSWebClient/Login.aspx"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "EMS Web Client - Login"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

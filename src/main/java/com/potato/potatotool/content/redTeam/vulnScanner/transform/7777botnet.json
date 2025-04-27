@@ -1,0 +1,129 @@
+{
+  "id": "7777botnet-detect",
+  "name": "7777-Botnet - Detect",
+  "author": "johnk3r",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://gi7w0rm.medium.com/the-curious-case-of-the-7777-botnet-86e3464c3ffd"
+  ],
+  "tags": [
+    "network",
+    "c2",
+    "ir",
+    "osint",
+    "cti",
+    "darktrack",
+    "botnet",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "hash:1357418825"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "7777",
+      "inputs": [
+        {
+          "data": "fffc01fffb1ffffa1f00500018fff0fffd01fffd03",
+          "read": "2048"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "data",
+          "values": [
+            "xlog",
+            "in"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "7777botnet-detect",
+    "info": {
+      "name": "7777-Botnet - Detect",
+      "author": "johnk3r",
+      "severity": "info",
+      "reference": [
+        "https://gi7w0rm.medium.com/the-curious-case-of-the-7777-botnet-86e3464c3ffd"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "hash:1357418825"
+      },
+      "tags": "network,c2,ir,osint,cti,darktrack,botnet,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "fffc01fffb1ffffa1f00500018fff0fffd01fffd03",
+            "read": 2048
+          }
+        ],
+        "port": "7777",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "data",
+            "words": [
+              "xlog",
+              "in"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

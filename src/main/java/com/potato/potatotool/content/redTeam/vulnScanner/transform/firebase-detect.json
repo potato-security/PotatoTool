@@ -1,0 +1,114 @@
+{
+  "id": "firebase-detect",
+  "name": "firebase detect",
+  "author": "organiccrap",
+  "severity": "LOW",
+  "description": "",
+  "references": [
+    "http://ghostlulz.com/google-exposed-firebase-database/"
+  ],
+  "tags": [
+    "tech",
+    "firebase"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/.settings/rules.json?auth\u003dFIREBASE_SECRET",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Could not parse auth token"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "firebase-detect",
+    "info": {
+      "name": "firebase detect",
+      "author": "organiccrap",
+      "severity": "low",
+      "reference": [
+        "http://ghostlulz.com/google-exposed-firebase-database/"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "tech,firebase"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/.settings/rules.json?auth\u003dFIREBASE_SECRET"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Could not parse auth token"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

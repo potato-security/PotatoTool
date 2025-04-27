@@ -1,0 +1,144 @@
+{
+  "id": "dlink-unauth-cgi-script",
+  "name": "D-Link DNS Series  CGI Script - Unauthenticated",
+  "author": "pussycat0x",
+  "severity": "LOW",
+  "description": "A vulnerability has been identified in the D-Link DNS series network storage devices, allowing for the exposure of sensitive device information to unauthorized actors. This vulnerability is due to an unauthenticated access flaw in the info.cgi script, which can be exploited via a simple HTTP GET request, affecting over 920,000 devices on the Internet.\n",
+  "references": [
+    "https://github.com/netsecfish/info_cgi"
+  ],
+  "tags": [
+    "unauth",
+    "dlink",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"D_Link-DNS\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/cgi-bin/info.cgi",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Product\u003d",
+            "Version\u003d",
+            "Model\u003d"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "dlink-unauth-cgi-script",
+    "info": {
+      "name": "D-Link DNS Series  CGI Script - Unauthenticated",
+      "author": "pussycat0x",
+      "severity": "low",
+      "description": "A vulnerability has been identified in the D-Link DNS series network storage devices, allowing for the exposure of sensitive device information to unauthorized actors. This vulnerability is due to an unauthenticated access flaw in the info.cgi script, which can be exploited via a simple HTTP GET request, affecting over 920,000 devices on the Internet.\n",
+      "reference": [
+        "https://github.com/netsecfish/info_cgi"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"D_Link-DNS\""
+      },
+      "tags": "unauth,dlink,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/cgi-bin/info.cgi"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Product\u003d",
+              "Version\u003d",
+              "Model\u003d"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

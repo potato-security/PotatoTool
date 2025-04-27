@@ -1,0 +1,125 @@
+{
+  "id": "plone-cms-detect",
+  "name": "Plone CMS detect",
+  "author": "cyllective",
+  "severity": "INFO",
+  "description": "Detects Plone CMS",
+  "references": [
+    "https://github.com/plone/Products.CMFPlone"
+  ],
+  "tags": [
+    "tech",
+    "plone",
+    "cms"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003cmeta name\u003d\"generator\" content\u003d\"Plone - ",
+            "\u003cdiv xmlns:css\u003d\"http://namespaces.plone.org/diazo/css\"",
+            "/++plone++static/plone-compiled.css",
+            "/++plone++static/tinymce-styles.css",
+            "\u003ePowered by Plone \u0026amp; Python\u003c/a\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "plone-cms-detect",
+    "info": {
+      "name": "Plone CMS detect",
+      "author": "cyllective",
+      "severity": "info",
+      "description": "Detects Plone CMS",
+      "reference": [
+        "https://github.com/plone/Products.CMFPlone"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "tech,plone,cms"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003cmeta name\u003d\"generator\" content\u003d\"Plone - ",
+              "\u003cdiv xmlns:css\u003d\"http://namespaces.plone.org/diazo/css\"",
+              "/++plone++static/plone-compiled.css",
+              "/++plone++static/tinymce-styles.css",
+              "\u003ePowered by Plone \u0026amp; Python\u003c/a\u003e"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

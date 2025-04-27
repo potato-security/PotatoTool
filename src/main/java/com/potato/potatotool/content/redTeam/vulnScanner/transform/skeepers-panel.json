@@ -1,0 +1,131 @@
+{
+  "id": "skeepers-panel",
+  "name": "Skeepers Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Skeepers login panel was detected.\n",
+  "references": [
+    "https://skeepers.io"
+  ],
+  "tags": [
+    "panel",
+    "skeepers",
+    "login",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Skeepers\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/backend/login",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(to_lower(body), \"skeepers\") \u0026\u0026 contains(to_lower(body), \"login\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "skeepers-panel",
+    "info": {
+      "name": "Skeepers Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Skeepers login panel was detected.\n",
+      "reference": [
+        "https://skeepers.io"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.title:\"Skeepers\""
+      },
+      "tags": "panel,skeepers,login,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/backend/login",
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(to_lower(body), \"skeepers\") \u0026\u0026 contains(to_lower(body), \"login\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "Version\\s+([0-9\\.]+)\\s+-"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

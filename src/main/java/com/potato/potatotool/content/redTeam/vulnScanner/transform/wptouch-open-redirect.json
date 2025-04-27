@@ -1,0 +1,125 @@
+{
+  "id": "wptouch-open-redirect",
+  "name": "WordPress WPtouch 3.x - Open Redirect",
+  "author": "0x_Akoko",
+  "severity": "MEDIUM",
+  "description": "WordPress WPtouch plugin 3.x contains an open redirect vulnerability. The plugin fails to properly sanitize user-supplied input. An attacker can redirect a user to a malicious site and possibly obtain sensitive information, modify data, and/or execute unauthorized operations.\n",
+  "references": [
+    "https://cxsecurity.com/issue/WLB-2020030114"
+  ],
+  "tags": [
+    "wp-plugin",
+    "redirect",
+    "wordpress"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-601",
+  "cvssScore": "6.1",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/?wptouch_switch\u003ddesktop\u0026redirect\u003dhttps://interact.sh/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "(?m)^(?:Location\\s*?:\\s*?)(?:https?://|//)(?:[a-zA-Z0-9\\-_\\.@]*)interact\\.sh.*$"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wptouch-open-redirect",
+    "info": {
+      "name": "WordPress WPtouch 3.x - Open Redirect",
+      "author": "0x_Akoko",
+      "severity": "medium",
+      "description": "WordPress WPtouch plugin 3.x contains an open redirect vulnerability. The plugin fails to properly sanitize user-supplied input. An attacker can redirect a user to a malicious site and possibly obtain sensitive information, modify data, and/or execute unauthorized operations.\n",
+      "reference": [
+        "https://cxsecurity.com/issue/WLB-2020030114"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+        "cvss_score": "6.1",
+        "cwe_id": "CWE-601"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "wp-plugin,redirect,wordpress"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/?wptouch_switch\u003ddesktop\u0026redirect\u003dhttps://interact.sh/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "(?m)^(?:Location\\s*?:\\s*?)(?:https?://|//)(?:[a-zA-Z0-9\\-_\\.@]*)interact\\.sh.*$"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

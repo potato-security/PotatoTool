@@ -1,0 +1,147 @@
+{
+  "id": "apache-filename-enum",
+  "name": "Apache Filename Enumeration",
+  "author": "geeknik",
+  "severity": "LOW",
+  "description": "If the client provides an invalid Accept header, the server will respond with a 406 Not Acceptable error containing a pseudo directory listing.",
+  "references": [
+    "https://hackerone.com/reports/210238",
+    "https://www.acunetix.com/vulnerabilities/web/apache-mod_negotiation-filename-bruteforcing/"
+  ],
+  "tags": [
+    "apache",
+    "misconfig",
+    "hackerone"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/index",
+      "headers": {
+        "Accept": "fake/value"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "406"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Not Acceptable",
+            "Available variants:",
+            "\u003caddress\u003eApache Server at"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "apache-filename-enum",
+    "info": {
+      "name": "Apache Filename Enumeration",
+      "author": "geeknik",
+      "severity": "low",
+      "description": "If the client provides an invalid Accept header, the server will respond with a 406 Not Acceptable error containing a pseudo directory listing.",
+      "reference": [
+        "https://hackerone.com/reports/210238",
+        "https://www.acunetix.com/vulnerabilities/web/apache-mod_negotiation-filename-bruteforcing/"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "apache,misconfig,hackerone"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/index"
+        ],
+        "headers": {
+          "Accept": "fake/value"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              406
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Not Acceptable",
+              "Available variants:",
+              "\u003caddress\u003eApache Server at"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,158 @@
+{
+  "id": "juniper-panel",
+  "name": "Juniper J-Web Panel - Detect",
+  "author": "bhutch",
+  "severity": "INFO",
+  "description": "Juniper J-Web panel was detected.\n",
+  "references": [
+    "https://www.juniper.net/documentation/us/en/software/jweb-ex/jweb-ex-application-package/topics/concept/ex-series-j-web-interface-overview.html"
+  ],
+  "tags": [
+    "panel",
+    "juniper",
+    "vpn",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Juniper Web Device Manager\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "(i?)\u003ctitle\u003e(Log In - )?Juniper Web Device Manager\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "juniper-panel",
+    "info": {
+      "name": "Juniper J-Web Panel - Detect",
+      "author": "bhutch",
+      "severity": "info",
+      "description": "Juniper J-Web panel was detected.\n",
+      "reference": [
+        "https://www.juniper.net/documentation/us/en/software/jweb-ex/jweb-ex-application-package/topics/concept/ex-series-j-web-interface-overview.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Juniper Web Device Manager\""
+      },
+      "tags": "panel,juniper,vpn,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(i?)\u003ctitle\u003e(Log In - )?Juniper Web Device Manager\u003c/title\u003e"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "var modelphpStr \u003d \"(.*?)\";"
+            ],
+            "group": 1,
+            "name": "model",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -2,7 +2,6 @@ package com.potato.potatotool.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -484,4 +483,62 @@ public class CustomHttpResponse{
         return con.getHeaderFieldKey(n);
     }
 
+    public String getResponseMessage() {
+        try {
+            return con.getResponseMessage();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getHeaderFieldsText() {
+        StringBuilder sb = new StringBuilder();
+        // 添加响应头
+        Map<String, List<String>> headers = con.getHeaderFields();
+        if (headers != null) {
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                String headerName = entry.getKey();
+                List<String> headerValues = entry.getValue();
+                if (headerValues != null && !headerValues.isEmpty()) {
+                    for (String value : headerValues) {
+                        sb.append(headerName).append(": ").append(value).append("\n");
+                    }
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    public String getAllResponseText() {
+        StringBuilder sb = new StringBuilder();
+        int statusCode = 0;
+        String responseMessage = "";
+        try {
+            statusCode = con.getResponseCode();
+            responseMessage = con.getResponseMessage();
+        }catch (Exception e){};
+
+        // 添加状态行
+        sb.append("HTTP/1.1 ").append(statusCode).append(" ")
+                .append(responseMessage).append("\n");
+
+        // 添加响应头
+        Map<String, List<String>> headers = con.getHeaderFields();
+        if (headers != null) {
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                String headerName = entry.getKey();
+                List<String> headerValues = entry.getValue();
+                if (headerValues != null && !headerValues.isEmpty()) {
+                    for (String value : headerValues) {
+                        sb.append(headerName).append(": ").append(value).append("\n");
+                    }
+                }
+            }
+        }
+
+        // 添加空行和响应体
+        sb.append("\n").append(getTextStr());
+
+        return sb.toString();
+    }
 }

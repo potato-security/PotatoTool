@@ -1,0 +1,143 @@
+{
+  "id": "autobahn-python-detect",
+  "name": "Autobahn-Python Webserver Detect",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "",
+  "tags": [
+    "tech",
+    "webserver"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "AutobahnPython"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "\u003ch1\u003eAutobahnPython([ 0-9.]+)\u003c\\/h1\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "autobahn-python-detect",
+    "info": {
+      "name": "Autobahn-Python Webserver Detect",
+      "author": "pussycat0x",
+      "severity": "info",
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "AutobahnPython"
+      },
+      "tags": "tech,webserver"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003ch1\u003eAutobahnPython([ 0-9.]+)\u003c\\/h1\u003e"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "AutobahnPython([ 0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

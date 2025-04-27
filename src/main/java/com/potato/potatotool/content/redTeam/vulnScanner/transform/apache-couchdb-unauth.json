@@ -1,0 +1,125 @@
+{
+  "id": "apache-couchdb-unauth",
+  "name": "Apache CouchDB - Unauthenticated Access",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "Apache CouchDB is exposed to external users.",
+  "references": [
+    "https://github.com/ax1sX/SecurityList/blob/main/Database/CouchDB.md",
+    "https://github.com/taomujian/linbing/blob/master/python/app/plugins/http/CouchDB/Couchdb_Unauthorized.py",
+    "https://github.com/mubix/tools/blob/master/nmap/scripts/couchdb-stats.nse"
+  ],
+  "tags": [
+    "apache",
+    "couchdb",
+    "unauth",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"APACHE-CouchDB\"",
+    "shodan": "product:\"CouchDB\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/_config",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body,\"httpd_design_handlers\") \u0026\u0026 contains(body,\"external_manager\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "apache-couchdb-unauth",
+    "info": {
+      "name": "Apache CouchDB - Unauthenticated Access",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "Apache CouchDB is exposed to external users.",
+      "reference": [
+        "https://github.com/ax1sX/SecurityList/blob/main/Database/CouchDB.md",
+        "https://github.com/taomujian/linbing/blob/master/python/app/plugins/http/CouchDB/Couchdb_Unauthorized.py",
+        "https://github.com/mubix/tools/blob/master/nmap/scripts/couchdb-stats.nse"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"CouchDB\"",
+        "fofa_query": "app\u003d\"APACHE-CouchDB\""
+      },
+      "tags": "apache,couchdb,unauth,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/_config"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body,\"httpd_design_handlers\") \u0026\u0026 contains(body,\"external_manager\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

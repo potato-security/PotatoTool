@@ -1,0 +1,60 @@
+{
+  "name": "poc-yaml-test-unauth",
+  "author": "k3ppf0r",
+  "description": "",
+  "version": "",
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "r0()",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "r0",
+      "method": "GET",
+      "path": "/sessionlist.html",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": true,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "response.status \u003d\u003d 200 \n\u0026\u0026 response.body_string.contains(\"No.\") \n\u0026\u0026 response.body_string.contains(\"Last access\") \n\u0026\u0026 response.body_string.contains(\"Last login\") \n\u0026\u0026 response.body_string.contains(\"Cookie\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalFormat": "xray"
+}

@@ -1,0 +1,155 @@
+{
+  "id": "cvsweb-detect",
+  "name": "CVSweb - Detect",
+  "author": "lu4nx",
+  "severity": "INFO",
+  "description": "CVSweb is a WWW interface for CVS repositories with which you can browse a file hierarchy on your browser to view each file\u0027s revision history in a very handy manner.\n",
+  "references": [
+    "https://cvsweb.openbsd.org/"
+  ],
+  "tags": [
+    "tech",
+    "cvsweb",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"cvsweb\"",
+    "shodan": "title:\"cvsweb\"",
+    "zoomeye": "title:cvsweb"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "content\u003d\".*CVSweb.*\""
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cvsweb-detect",
+    "info": {
+      "name": "CVSweb - Detect",
+      "author": "lu4nx",
+      "severity": "info",
+      "description": "CVSweb is a WWW interface for CVS repositories with which you can browse a file hierarchy on your browser to view each file\u0027s revision history in a very handy manner.\n",
+      "reference": [
+        "https://cvsweb.openbsd.org/"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"cvsweb\"",
+        "fofa_query": "title\u003d\"cvsweb\"",
+        "zoomeye_query": "title:cvsweb"
+      },
+      "tags": "tech,cvsweb,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "content\u003d\".*CVSweb.*\""
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "content\u003d\".*CVSweb\\s*([0-9.]+)\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

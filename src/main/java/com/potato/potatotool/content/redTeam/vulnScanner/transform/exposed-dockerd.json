@@ -1,0 +1,117 @@
+{
+  "id": "exposed-dockerd",
+  "name": "Docker Daemon Exposed",
+  "author": "arafatansari",
+  "severity": "CRITICAL",
+  "description": "Docker Daemon exposed on the network map can help remote attacker to gain access to the Docker containers and potentially the host system.\n",
+  "tags": [
+    "network",
+    "docker",
+    "exposure",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "port:2375 product:\"docker\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "2375",
+      "inputs": [
+        {
+          "data": "Docker:\nVersion:\n",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Server: Docker"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "exposed-dockerd",
+    "info": {
+      "name": "Docker Daemon Exposed",
+      "author": "arafatansari",
+      "severity": "critical",
+      "description": "Docker Daemon exposed on the network map can help remote attacker to gain access to the Docker containers and potentially the host system.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "port:2375 product:\"docker\""
+      },
+      "tags": "network,docker,exposure,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "Docker:\nVersion:\n",
+            "read": 0
+          }
+        ],
+        "port": "2375",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Server: Docker"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

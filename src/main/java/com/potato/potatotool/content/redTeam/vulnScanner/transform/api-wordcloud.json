@@ -1,0 +1,117 @@
+{
+  "id": "api-wordcloud",
+  "name": "Word Cloud API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Easily create word clouds",
+  "references": [
+    "https://wordcloudapi.com/getting-started",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/word-cloud"
+  ],
+  "tags": [
+    "token-spray",
+    "wordcloud"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST https://textvis-word-cloud-v1.p.rapidapi.com/v1/textToCloud HTTP/1.1\nHost: textvis-word-cloud-v1.p.rapidapi.com\ncontent-type: application/json\nx-rapidapi-host: textvis-word-cloud-v1.p.rapidapi.com\nx-rapidapi-key: {{token}}\nContent-Length: 349\n\n{\n  \"text\": \"This is a test. I repeat, this is a test. We are only testing the functionality of this api, nothing else. End of test.\",\n  \"scale\": 0.5,\n  \"width\": 400,\n  \"height\": 400,\n  \"colors\": [\n    \"#375E97\",\n    \"#FB6542\",\n    \"#FFBB00\",\n    \"#3F681C\"\n  ],\n  \"font\": \"Tahoma\",\n  \"use_stopwords\": true,\n  \"language\": \"en\",\n  \"uppercase\": false\n}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "{\"message\":\"You are not subscribed to this API.\"}"
+          ],
+          "negative": true,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-wordcloud",
+    "info": {
+      "name": "Word Cloud API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Easily create word clouds",
+      "reference": [
+        "https://wordcloudapi.com/getting-started",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/word-cloud"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,wordcloud"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST https://textvis-word-cloud-v1.p.rapidapi.com/v1/textToCloud HTTP/1.1\nHost: textvis-word-cloud-v1.p.rapidapi.com\ncontent-type: application/json\nx-rapidapi-host: textvis-word-cloud-v1.p.rapidapi.com\nx-rapidapi-key: {{token}}\nContent-Length: 349\n\n{\n  \"text\": \"This is a test. I repeat, this is a test. We are only testing the functionality of this api, nothing else. End of test.\",\n  \"scale\": 0.5,\n  \"width\": 400,\n  \"height\": 400,\n  \"colors\": [\n    \"#375E97\",\n    \"#FB6542\",\n    \"#FFBB00\",\n    \"#3F681C\"\n  ],\n  \"font\": \"Tahoma\",\n  \"use_stopwords\": true,\n  \"language\": \"en\",\n  \"uppercase\": false\n}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": true,
+            "part": "body",
+            "words": [
+              "{\"message\":\"You are not subscribed to this API.\"}"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,171 @@
+{
+  "id": "servicenow-title-injection",
+  "name": "Service Now - Title Injection",
+  "author": "DhiyaneshDk",
+  "severity": "HIGH",
+  "description": "",
+  "references": [
+    "https://www.assetnote.io/resources/research/chaining-three-bugs-to-access-all-your-servicenow-data"
+  ],
+  "tags": [
+    "cve",
+    "cve2024",
+    "servicenow",
+    "injection"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d1701804003 title\u003d\"servicenow\"",
+    "google": "intitle:\"servicenow\"",
+    "shodan": "http.favicon.hash:1701804003 http.title:\"servicenow\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/login.do?jvar_page_title\u003d\u003cstyle\u003e\u003cfoo\u003eInjected Title\u003c/foo\u003e\u003c/style\u003e",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ctitle\u003e\u003cstyle\u003e\u003cfoo\u003eInjected Title\u003c/foo\u003e\u003c/style\u003e\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "servicenow-title-injection",
+    "info": {
+      "name": "Service Now - Title Injection",
+      "author": "DhiyaneshDk",
+      "severity": "high",
+      "reference": [
+        "https://www.assetnote.io/resources/research/chaining-three-bugs-to-access-all-your-servicenow-data"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "http.favicon.hash:1701804003",
+          "http.title:\"servicenow\""
+        ],
+        "fofa_query": [
+          "icon_hash\u003d1701804003",
+          "title\u003d\"servicenow\""
+        ],
+        "google_query": "intitle:\"servicenow\""
+      },
+      "tags": "cve,cve2024,servicenow,injection"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/login.do?jvar_page_title\u003d\u003cstyle\u003e\u003cfoo\u003eInjected Title\u003c/foo\u003e\u003c/style\u003e"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ctitle\u003e\u003cstyle\u003e\u003cfoo\u003eInjected Title\u003c/foo\u003e\u003c/style\u003e\u003c/title\u003e"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

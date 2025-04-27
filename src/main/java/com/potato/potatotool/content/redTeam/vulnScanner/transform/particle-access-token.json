@@ -1,0 +1,104 @@
+{
+  "id": "particle-access-token",
+  "name": "particle.io Access Token",
+  "author": "DhiyaneshDK",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://github.com/praetorian-inc/noseyparker/blob/main/crates/noseyparker/data/default/builtin/rules/particle.io.yml",
+    "https://docs.particle.io/reference/cloud-apis/api/"
+  ],
+  "tags": [
+    "particle",
+    "exposure",
+    "tokens"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "particle-access-token",
+    "info": {
+      "name": "particle.io Access Token",
+      "author": "DhiyaneshDK",
+      "severity": "info",
+      "reference": [
+        "https://github.com/praetorian-inc/noseyparker/blob/main/crates/noseyparker/data/default/builtin/rules/particle.io.yml",
+        "https://docs.particle.io/reference/cloud-apis/api/"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "particle,exposure,tokens"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "https://api\\.particle\\.io/v1/[a-zA-Z0-9_\\-\\s/\"\\\\?]*(?:access_token\u003d|Authorization:\\s*Bearer\\s*)\\b([a-zA-Z0-9]{40})\\b",
+              "(?:access_token\u003d|Authorization:\\s*Bearer\\s*)\\b([a-zA-Z0-9]{40})\\b[\\s\"\\\\]*https://api\\.particle\\.io/v1"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,120 @@
+{
+  "id": "chirpstack-login",
+  "name": "ChirpStack LoRaWAN Detection",
+  "author": "ProjectDiscoveryAI",
+  "severity": "INFO",
+  "description": "Detects the presence of ChirpStack LoRaWAN Network-Server by identifying unique page characteristics in the HTML response.\n",
+  "references": [
+    "https://www.chirpstack.io/docs/chirpstack/use/login.html"
+  ],
+  "tags": [
+    "panel",
+    "chirpstack"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"ChirpStack LoRaWAN\"",
+    "shodan": "http.title:\"ChirpStack LoRaWAN\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "ChirpStack LoRaWAN"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "chirpstack-login",
+    "info": {
+      "name": "ChirpStack LoRaWAN Detection",
+      "author": "ProjectDiscoveryAI",
+      "severity": "info",
+      "description": "Detects the presence of ChirpStack LoRaWAN Network-Server by identifying unique page characteristics in the HTML response.\n",
+      "reference": [
+        "https://www.chirpstack.io/docs/chirpstack/use/login.html"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"ChirpStack LoRaWAN\"",
+        "fofa_query": "title\u003d\"ChirpStack LoRaWAN\""
+      },
+      "tags": "panel,chirpstack"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "ChirpStack LoRaWAN"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

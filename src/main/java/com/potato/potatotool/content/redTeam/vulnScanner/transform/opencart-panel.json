@@ -1,0 +1,135 @@
+{
+  "id": "opencart-panel",
+  "name": "OpenCart Login Panel - Detect",
+  "author": "ricardomaia",
+  "severity": "INFO",
+  "description": "OpenCart login panel was detected.\n",
+  "references": [
+    "https://www.opencart.com"
+  ],
+  "tags": [
+    "panel",
+    "opencart"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"opencart\"",
+    "shodan": "html:\"OpenCart\" http.html:\"opencart\" cpe:\"cpe:2.3:a:opencart:opencart\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/admin",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "(?i)footer\\s.*OpenCart.*All.Rights.Reserved|img\\s.*logo.*\\salt\u003d.*OpenCart",
+            "(?i)Powered.By.*http.*OpenCart"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "opencart-panel",
+    "info": {
+      "name": "OpenCart Login Panel - Detect",
+      "author": "ricardomaia",
+      "severity": "info",
+      "description": "OpenCart login panel was detected.\n",
+      "reference": [
+        "https://www.opencart.com"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": [
+          "html:\"OpenCart\"",
+          "http.html:\"opencart\"",
+          "cpe:\"cpe:2.3:a:opencart:opencart\""
+        ],
+        "fofa_query": "body\u003d\"opencart\""
+      },
+      "tags": "panel,opencart"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/admin",
+          "{{BaseURL}}/index.php?route\u003daccount/login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)footer\\s.*OpenCart.*All.Rights.Reserved|img\\s.*logo.*\\salt\u003d.*OpenCart",
+              "(?i)Powered.By.*http.*OpenCart"
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

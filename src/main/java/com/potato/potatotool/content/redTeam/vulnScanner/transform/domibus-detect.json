@@ -1,0 +1,130 @@
+{
+  "id": "domibus-detect",
+  "name": "Domibus - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Domibus was detected.\n",
+  "references": [
+    "https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Domibus"
+  ],
+  "tags": [
+    "tech",
+    "domibus",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Domibus\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/domibus/rest/application/info",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"\u003ctitle\u003edomibus\", \"domibus-msh\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "domibus-detect",
+    "info": {
+      "name": "Domibus - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Domibus was detected.\n",
+      "reference": [
+        "https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Domibus"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Domibus\""
+      },
+      "tags": "tech,domibus,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/domibus/rest/application/info",
+          "{{BaseURL}}/domibus/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"\u003ctitle\u003edomibus\", \"domibus-msh\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\"versionNumber\":\\s*\"([0-9.]+)\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

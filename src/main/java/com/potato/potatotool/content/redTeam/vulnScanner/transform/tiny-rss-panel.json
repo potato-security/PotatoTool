@@ -1,0 +1,120 @@
+{
+  "id": "tiny-rss-panel",
+  "name": "Tiny RSS Panel - Detect",
+  "author": "userdehghani",
+  "severity": "INFO",
+  "description": "Tiny Tiny RSS is a free RSS feed reader\n",
+  "references": [
+    "https://tt-rss.org/"
+  ],
+  "tags": [
+    "panel",
+    "tiny-rss",
+    "login",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.favicon.hash:-418614327"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code\u003d\u003d200",
+            "contains_any(body, \"Tiny Tiny RSS\", \"ttrss_login\", \"ttrss_utility\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "tiny-rss-panel",
+    "info": {
+      "name": "Tiny RSS Panel - Detect",
+      "author": "userdehghani",
+      "severity": "info",
+      "description": "Tiny Tiny RSS is a free RSS feed reader\n",
+      "reference": [
+        "https://tt-rss.org/"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.favicon.hash:-418614327"
+      },
+      "tags": "panel,tiny-rss,login,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code\u003d\u003d200",
+              "contains_any(body, \"Tiny Tiny RSS\", \"ttrss_login\", \"ttrss_utility\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

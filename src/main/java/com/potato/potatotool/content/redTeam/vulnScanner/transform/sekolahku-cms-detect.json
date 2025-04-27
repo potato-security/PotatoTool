@@ -1,0 +1,122 @@
+{
+  "id": "sekolahku-cms-detect",
+  "name": "Sekolahku CMS - Detect",
+  "author": "nblirwn",
+  "severity": "INFO",
+  "description": "Sekolahku CMS is a free, open-source, and easy-to-use content management system (CMS) for schools and educational institutions. It is designed to help schools manage their websites, manage student information, and manage school activities.\n",
+  "references": [
+    "https://sekolahku.web.id/"
+  ],
+  "tags": [
+    "tech",
+    "sekolahku",
+    "cms"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"sekolahku.web\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "sekolahku.web.id",
+            "CMS Sekolahku"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "sekolahku-cms-detect",
+    "info": {
+      "name": "Sekolahku CMS - Detect",
+      "author": "nblirwn",
+      "severity": "info",
+      "description": "Sekolahku CMS is a free, open-source, and easy-to-use content management system (CMS) for schools and educational institutions. It is designed to help schools manage their websites, manage student information, and manage school activities.\n",
+      "reference": [
+        "https://sekolahku.web.id/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "html:\"sekolahku.web\""
+      },
+      "tags": "tech,sekolahku,cms"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "sekolahku.web.id",
+              "CMS Sekolahku"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

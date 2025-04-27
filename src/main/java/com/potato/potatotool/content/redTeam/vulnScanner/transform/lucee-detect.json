@@ -1,0 +1,144 @@
+{
+  "id": "lucee-detect",
+  "name": "Detect Lucee",
+  "author": "geeknik,DhiyaneshDK",
+  "severity": "INFO",
+  "description": "Lucee Server is a dynamic, Java based (JSR-223), tag and scripting language used for rapid web application development -- https://github.com/lucee/Lucee/",
+  "tags": [
+    "tech",
+    "lucee"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"Lucee-Engine\"",
+    "shodan": "html:\"Lucee\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/lucee/doc/functions.cfm",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "(?i)X-Lucee-Version",
+            "(?i)X-CB-Server: LUCEE",
+            "(?i)X-IDG-Appserver: Lucee"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Lucee Function Reference"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "lucee-detect",
+    "info": {
+      "name": "Detect Lucee",
+      "author": "geeknik,DhiyaneshDK",
+      "severity": "info",
+      "description": "Lucee Server is a dynamic, Java based (JSR-223), tag and scripting language used for rapid web application development -- https://github.com/lucee/Lucee/",
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "html:\"Lucee\"",
+        "fofa_query": "app\u003d\"Lucee-Engine\""
+      },
+      "tags": "tech,lucee"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/lucee/doc/functions.cfm",
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "(?i)X-Lucee-Version",
+              "(?i)X-CB-Server: LUCEE",
+              "(?i)X-IDG-Appserver: Lucee"
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Lucee Function Reference"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,117 @@
+{
+  "id": "actifio-panel",
+  "name": "Actifio Resource Center - Panel",
+  "author": "Splint3r7",
+  "severity": "INFO",
+  "description": "Actifio Resource Center was detected.\n",
+  "tags": [
+    "panel",
+    "actifio",
+    "login",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Actifio Resource Center\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \"\u003ctitle\u003eActifio Resource Center\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "actifio-panel",
+    "info": {
+      "name": "Actifio Resource Center - Panel",
+      "author": "Splint3r7",
+      "severity": "info",
+      "description": "Actifio Resource Center was detected.\n",
+      "classification": {
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Actifio Resource Center\""
+      },
+      "tags": "panel,actifio,login,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \"\u003ctitle\u003eActifio Resource Center\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

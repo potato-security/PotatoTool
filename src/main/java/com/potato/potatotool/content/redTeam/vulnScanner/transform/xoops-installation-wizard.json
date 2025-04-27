@@ -1,0 +1,115 @@
+{
+  "id": "xoops-installation-wizard",
+  "name": "XOOPS Installation Wizard Panel - Detect",
+  "author": "princechaddha",
+  "severity": "LOW",
+  "description": "XOOPS Installation Wizard panel was detected.",
+  "tags": [
+    "panel",
+    "xoops"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/install/page_start.php",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "(?i)(\u003ctitle\u003e(.*)XOOPS Installation Wizard(.*)\u003c/title\u003e)",
+            "(?i)(\u003ctitle\u003e(.*)XOOPS 安裝精靈(.*)\u003c/title\u003e)"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "xoops-installation-wizard",
+    "info": {
+      "name": "XOOPS Installation Wizard Panel - Detect",
+      "author": "princechaddha",
+      "severity": "low",
+      "description": "XOOPS Installation Wizard panel was detected.",
+      "classification": {},
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "panel,xoops"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/install/page_start.php"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)(\u003ctitle\u003e(.*)XOOPS Installation Wizard(.*)\u003c/title\u003e)",
+              "(?i)(\u003ctitle\u003e(.*)XOOPS 安裝精靈(.*)\u003c/title\u003e)"
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

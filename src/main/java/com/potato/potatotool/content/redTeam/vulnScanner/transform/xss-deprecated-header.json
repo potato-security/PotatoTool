@@ -1,0 +1,157 @@
+{
+  "id": "xss-deprecated-header",
+  "name": "XSS-Protection Header - Cross-Site Scripting",
+  "author": "joshlarsen",
+  "severity": "INFO",
+  "description": "Setting the XSS-Protection header is deprecated. Setting the header to anything other than `0` can actually introduce an XSS vulnerability.",
+  "references": [
+    "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection",
+    "https://owasp.org/www-project-secure-headers/#x-xss-protection"
+  ],
+  "tags": [
+    "xss",
+    "misconfig",
+    "generic"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cvssScore": "0",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "(?i)x-xss-protection: 0"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "(?i)x-xss-protection: 1+"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "xss-deprecated-header",
+    "info": {
+      "name": "XSS-Protection Header - Cross-Site Scripting",
+      "author": "joshlarsen",
+      "severity": "info",
+      "description": "Setting the XSS-Protection header is deprecated. Setting the header to anything other than `0` can actually introduce an XSS vulnerability.",
+      "reference": [
+        "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection",
+        "https://owasp.org/www-project-secure-headers/#x-xss-protection"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cvss_score": "0"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "xss,misconfig,generic"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "(?i)x-xss-protection: 0"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "(?i)x-xss-protection: 1+"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ],
+        "extractors": [
+          {
+            "type": "kval",
+            "kval": [
+              "x_xss_protection"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

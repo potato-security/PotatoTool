@@ -1,0 +1,167 @@
+{
+  "id": "simple-crm-sql-injection",
+  "name": "Simple CRM 3.0 SQL Injection and Authentication Bypass",
+  "author": "geeknik",
+  "severity": "CRITICAL",
+  "description": "Simple CRM 3.0 is susceptible to SQL injection and authentication bypass vulnerabilities.",
+  "references": [
+    "https://packetstormsecurity.com/files/163254/simplecrm30-sql.txt"
+  ],
+  "tags": [
+    "packetstorm",
+    "sqli",
+    "simplecrm",
+    "auth-bypass",
+    "injection"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-89",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "POST",
+      "path": "{{BaseURL}}/scrm/crm/admin",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003cscript\u003ewindow.location.href\u003d\u0027home.php\u0027\u003c/script\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "simple-crm-sql-injection",
+    "info": {
+      "name": "Simple CRM 3.0 SQL Injection and Authentication Bypass",
+      "author": "geeknik",
+      "severity": "critical",
+      "description": "Simple CRM 3.0 is susceptible to SQL injection and authentication bypass vulnerabilities.",
+      "reference": [
+        "https://packetstormsecurity.com/files/163254/simplecrm30-sql.txt"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-89"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "packetstorm,sqli,simplecrm,auth-bypass,injection"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "POST",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/scrm/crm/admin"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003cscript\u003ewindow.location.href\u003d\u0027home.php\u0027\u003c/script\u003e"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

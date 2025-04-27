@@ -1,0 +1,122 @@
+{
+  "id": "api-browshot",
+  "name": "Browshot API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Easily make screenshots of web pages in any screen size, as any device",
+  "references": [
+    "https://browshot.com/api/documentation",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/browshot"
+  ],
+  "tags": [
+    "token-spray",
+    "browshot"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.browshot.com/api/v1/simple?url\u003dhttp://mobilito.net/\u0026instance_id\u003d12\u0026width\u003d640\u0026height\u003d480\u0026key\u003d{{token}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"cost\"",
+            "\"priority\"",
+            "\"url\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-browshot",
+    "info": {
+      "name": "Browshot API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Easily make screenshots of web pages in any screen size, as any device",
+      "reference": [
+        "https://browshot.com/api/documentation",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/browshot"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,browshot"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.browshot.com/api/v1/simple?url\u003dhttp://mobilito.net/\u0026instance_id\u003d12\u0026width\u003d640\u0026height\u003d480\u0026key\u003d{{token}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"cost\"",
+              "\"priority\"",
+              "\"url\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

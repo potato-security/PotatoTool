@@ -1,0 +1,150 @@
+{
+  "id": "metatag-cms",
+  "name": "Metatag CMS Detection",
+  "author": "dadevel",
+  "severity": "INFO",
+  "description": "Generic CMS Detection using html meta generator tag",
+  "references": [
+    "https://www.w3schools.com/tags/att_meta_name.asp"
+  ],
+  "tags": [
+    "tech",
+    "cms"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "(?i)\u003cmeta\\s+?name\u003d\"?generator\"?\\s+?content\u003d\"[^\"]+?\""
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "metatag-cms",
+    "info": {
+      "name": "Metatag CMS Detection",
+      "author": "dadevel",
+      "severity": "info",
+      "description": "Generic CMS Detection using html meta generator tag",
+      "reference": [
+        "https://www.w3schools.com/tags/att_meta_name.asp"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "tech,cms"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)\u003cmeta\\s+?name\u003d\"?generator\"?\\s+?content\u003d\"[^\"]+?\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)\u003cmeta\\s+?name\u003d\"?generator\"?\\s+?content\u003d\"([^\"]+?)\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

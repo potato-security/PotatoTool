@@ -1,0 +1,103 @@
+{
+  "id": "confluent-accesstoken",
+  "name": "Confluent Access Token",
+  "author": "DhiyaneshDK",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://github.com/returntocorp/semgrep-rules/blob/develop/generic/secrets/gitleaks/confluent-access-token.yaml",
+    "https://github.com/returntocorp/semgrep-rules/blob/develop/generic/secrets/gitleaks/confluent-access-token.go"
+  ],
+  "tags": [
+    "confluent",
+    "exposure",
+    "tokens"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "confluent-accesstoken",
+    "info": {
+      "name": "Confluent Access Token",
+      "author": "DhiyaneshDK",
+      "severity": "info",
+      "reference": [
+        "https://github.com/returntocorp/semgrep-rules/blob/develop/generic/secrets/gitleaks/confluent-access-token.yaml",
+        "https://github.com/returntocorp/semgrep-rules/blob/develop/generic/secrets/gitleaks/confluent-access-token.go"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "confluent,exposure,tokens"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)(?:confluent)(?:[0-9a-z\\-_\\t .]{0,20})(?:[\\s|\u0027]|[\\s|\"]){0,3}(?:\u003d|\u003e|:\u003d|\\|\\|:|\u003c\u003d|\u003d\u003e|:)(?:\u0027|\\\"|\\s|\u003d|\\x60){0,5}([a-z0-9]{16})(?:[\u0027|\\\"|\\n|\\r|\\s|\\x60|;]|$)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

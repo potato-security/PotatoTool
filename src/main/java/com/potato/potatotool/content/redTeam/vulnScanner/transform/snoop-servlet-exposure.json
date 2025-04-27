@@ -1,0 +1,121 @@
+{
+  "id": "snoop-servlet",
+  "name": "Snoop Servlet - Information Disclosure",
+  "author": "omranisecurity",
+  "severity": "LOW",
+  "description": "The Snoop Servlet returns information about the HTTP request itself and sometimes. It could help an attacker to prepare more advanced attacks.\n",
+  "references": [
+    "https://www.acunetix.com/vulnerabilities/\\web/snoop-servlet-information-disclosure/"
+  ],
+  "tags": [
+    "config",
+    "exposure",
+    "snoop",
+    "snoop-servlet"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"Snoop Servlet\"",
+    "shodan": "title:\"Snoop Servlet\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/snoop",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body, \"Snoop Servlet - Request/Client Information\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "snoop-servlet",
+    "info": {
+      "name": "Snoop Servlet - Information Disclosure",
+      "author": "omranisecurity",
+      "severity": "low",
+      "description": "The Snoop Servlet returns information about the HTTP request itself and sometimes. It could help an attacker to prepare more advanced attacks.\n",
+      "reference": [
+        "https://www.acunetix.com/vulnerabilities/\\web/snoop-servlet-information-disclosure/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"Snoop Servlet\"",
+        "fofa_query": "title\u003d\"Snoop Servlet\""
+      },
+      "tags": "config,exposure,snoop,snoop-servlet"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/snoop"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body, \"Snoop Servlet - Request/Client Information\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

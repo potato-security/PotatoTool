@@ -1,0 +1,148 @@
+{
+  "id": "3cx-phone-webclient-management-panel",
+  "name": "3CX Phone System Web Client Management Console - Panel Detect",
+  "author": "idealphase",
+  "severity": "INFO",
+  "description": "3CX Phone System Web Client Management Console panel was detected.",
+  "references": [
+    "https://www.3cx.com/phone-system/",
+    "https://www.3cx.com/blog/unified-communications/client-apps/",
+    "https://medium.com/@frycos/pwning-3cx-phone-management-backends-from-the-internet-d0096339dd88"
+  ],
+  "tags": [
+    "panel",
+    "3cx"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d970132176 title\u003d\"3cx phone system management console\" title\u003d\"3cx webclient\"",
+    "google": "intitle:\"3CX Webclient\" intitle:\"3cx phone system management console\" intitle:\"3cx webclient\"",
+    "shodan": "http.title:\"3CX Webclient\" http.title:\"3cx webclient\" http.title:\"3cx phone system management console\" http.favicon.hash:970132176"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/webclient/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            " \u003ctitle\u003e3CX Webclient\u003c/title\u003e",
+            "\u003cmeta name\u003d\"description\" content\u003d\"3CX\"\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "3cx-phone-webclient-management-panel",
+    "info": {
+      "name": "3CX Phone System Web Client Management Console - Panel Detect",
+      "author": "idealphase",
+      "severity": "info",
+      "description": "3CX Phone System Web Client Management Console panel was detected.",
+      "reference": [
+        "https://www.3cx.com/phone-system/",
+        "https://www.3cx.com/blog/unified-communications/client-apps/",
+        "https://medium.com/@frycos/pwning-3cx-phone-management-backends-from-the-internet-d0096339dd88"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "http.title:\"3CX Webclient\"",
+          "http.title:\"3cx webclient\"",
+          "http.title:\"3cx phone system management console\"",
+          "http.favicon.hash:970132176"
+        ],
+        "fofa_query": [
+          "icon_hash\u003d970132176",
+          "title\u003d\"3cx phone system management console\"",
+          "title\u003d\"3cx webclient\""
+        ],
+        "google_query": [
+          "intitle:\"3CX Webclient\"",
+          "intitle:\"3cx phone system management console\"",
+          "intitle:\"3cx webclient\""
+        ]
+      },
+      "tags": "panel,3cx"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/webclient/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              " \u003ctitle\u003e3CX Webclient\u003c/title\u003e",
+              "\u003cmeta name\u003d\"description\" content\u003d\"3CX\"\u003e"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

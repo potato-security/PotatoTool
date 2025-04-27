@@ -1,0 +1,174 @@
+{
+  "id": "imm-default-login",
+  "name": "Integrated Management Module - Default Login",
+  "author": "jpg0mez",
+  "severity": "HIGH",
+  "description": "Integrated Management Module default login credentials were discovered.\n",
+  "references": [
+    "https://pubs.lenovo.com/x3650-m4/t_logging_web_interface",
+    "https://www.ibm.com/docs/en/tcs-service?topic\u003doip-logging-imm-web-interface"
+  ],
+  "tags": [
+    "imm",
+    "ibm",
+    "default-login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "integrated management module",
+    "shodan": "html:\"ibmdojo\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-798",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "POST",
+      "path": "{{BaseURL}}/data/login",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\u003cauthResult\u003e0\u003c/authResult\u003e",
+            "authResult\":\"0"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "index-console.php",
+            "home.php"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "imm-default-login",
+    "info": {
+      "name": "Integrated Management Module - Default Login",
+      "author": "jpg0mez",
+      "severity": "high",
+      "description": "Integrated Management Module default login credentials were discovered.\n",
+      "reference": [
+        "https://pubs.lenovo.com/x3650-m4/t_logging_web_interface",
+        "https://www.ibm.com/docs/en/tcs-service?topic\u003doip-logging-imm-web-interface"
+      ],
+      "classification": {
+        "cwe_id": "CWE-798"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "html:\"ibmdojo\"",
+        "fofa_query": "integrated management module"
+      },
+      "tags": "imm,ibm,default-login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "POST",
+        "redirects": true,
+        "path": [
+          "{{BaseURL}}/data/login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\u003cauthResult\u003e0\u003c/authResult\u003e",
+              "authResult\":\"0"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "index-console.php",
+              "home.php"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

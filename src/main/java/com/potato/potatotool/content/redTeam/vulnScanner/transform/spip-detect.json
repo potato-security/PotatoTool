@@ -1,0 +1,154 @@
+{
+  "id": "spip-detect",
+  "name": "SPIP - Detect",
+  "author": "s4e-io",
+  "severity": "INFO",
+  "description": "Detects a SPIP and SPIP version.\n",
+  "references": [
+    "https://www.spip.net/"
+  ],
+  "tags": [
+    "spip",
+    "tech",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"SPIP\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "Composed-By: SPIP",
+            "X-Spip-Cache:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "spip-detect",
+    "info": {
+      "name": "SPIP - Detect",
+      "author": "s4e-io",
+      "severity": "info",
+      "description": "Detects a SPIP and SPIP version.\n",
+      "reference": [
+        "https://www.spip.net/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"SPIP\""
+      },
+      "tags": "spip,tech,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "Composed-By: SPIP",
+              "X-Spip-Cache:"
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "Composed-By: SPIP ([0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}) @ www.spip.net"
+            ],
+            "group": 1,
+            "name": "spip_version",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

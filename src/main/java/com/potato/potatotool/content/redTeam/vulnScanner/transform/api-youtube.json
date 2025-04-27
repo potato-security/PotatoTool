@@ -1,0 +1,117 @@
+{
+  "id": "api-youtube",
+  "name": "YouTube API Test",
+  "author": "zzeitlin",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://developers.google.com/youtube/v3/docs"
+  ],
+  "tags": [
+    "token-spray",
+    "youtube"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://www.googleapis.com/youtube/v3/activities?part\u003dcontentDetails\u0026maxResults\u003d25\u0026channelId\u003dUC-lHJZR3Gqxm24_Vd_AJ5Yw\u0026key\u003d{{token}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"kind\":",
+            "\"pageInfo\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-youtube",
+    "info": {
+      "name": "YouTube API Test",
+      "author": "zzeitlin",
+      "severity": "info",
+      "reference": [
+        "https://developers.google.com/youtube/v3/docs"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,youtube"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://www.googleapis.com/youtube/v3/activities?part\u003dcontentDetails\u0026maxResults\u003d25\u0026channelId\u003dUC-lHJZR3Gqxm24_Vd_AJ5Yw\u0026key\u003d{{token}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"kind\":",
+              "\"pageInfo\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

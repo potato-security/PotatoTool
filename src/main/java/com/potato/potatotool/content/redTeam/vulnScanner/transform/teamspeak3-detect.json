@@ -1,0 +1,122 @@
+{
+  "id": "teamspeak3-detect",
+  "name": "TeamSpeak 3 ServerQuery Detection",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "ServerQuery is a commandline based administration tool/feature of TeamSpeak 3 server.\n",
+  "tags": [
+    "network",
+    "service",
+    "teamspeak3",
+    "detect",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"TeamSpeak 3 ServerQuery\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "2002",
+      "inputs": [
+        {
+          "data": "\r\n",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "TS3",
+            "TeamSpeak 3 ServerQuery interface"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "teamspeak3-detect",
+    "info": {
+      "name": "TeamSpeak 3 ServerQuery Detection",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "ServerQuery is a commandline based administration tool/feature of TeamSpeak 3 server.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"TeamSpeak 3 ServerQuery\""
+      },
+      "tags": "network,service,teamspeak3,detect,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "\r\n",
+            "read": 0
+          }
+        ],
+        "port": "2002",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "TS3",
+              "TeamSpeak 3 ServerQuery interface"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

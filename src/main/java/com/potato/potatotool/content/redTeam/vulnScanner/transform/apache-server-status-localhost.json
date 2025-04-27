@@ -1,0 +1,204 @@
+{
+  "id": "apache-server-status-localhost",
+  "name": "Server Status Disclosure",
+  "author": "pdteam,geeknik,NaN-kl",
+  "severity": "LOW",
+  "description": "Apache Server Status page is exposed, which may contain information about pages visited by the users, their IPs or sensitive information such as session tokens.\n",
+  "tags": [
+    "apache",
+    "debug",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/server-status",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "403",
+            "404",
+            "401"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "method": "GET",
+      "path": "{{BaseURL}}/server-status",
+      "headers": {
+        "Forwarded": "127.0.0.1",
+        "X-Client-IP": "127.0.0.1",
+        "X-Forwarded-By": "127.0.0.1",
+        "X-Forwarded-For": "127.0.0.1",
+        "X-Forwarded-For-IP": "127.0.0.1",
+        "X-Forwarded-Host": "127.0.0.1",
+        "X-Host": "127.0.0.1",
+        "X-Originating-IP": "127.0.0.1",
+        "X-Remote-Addr": "127.0.0.1",
+        "X-Remote-IP": "127.0.0.1",
+        "X-True-IP": "127.0.0.1"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Apache Server Status",
+            "Server Version"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "apache-server-status-localhost",
+    "info": {
+      "name": "Server Status Disclosure",
+      "author": "pdteam,geeknik,NaN-kl",
+      "severity": "low",
+      "description": "Apache Server Status page is exposed, which may contain information about pages visited by the users, their IPs or sensitive information such as session tokens.\n",
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "apache,debug,misconfig"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/server-status"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              403,
+              404,
+              401
+            ],
+            "condition": "or"
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/server-status"
+        ],
+        "headers": {
+          "Forwarded": "127.0.0.1",
+          "X-Client-IP": "127.0.0.1",
+          "X-Forwarded-By": "127.0.0.1",
+          "X-Forwarded-For": "127.0.0.1",
+          "X-Forwarded-For-IP": "127.0.0.1",
+          "X-Forwarded-Host": "127.0.0.1",
+          "X-Host": "127.0.0.1",
+          "X-Originating-IP": "127.0.0.1",
+          "X-Remote-Addr": "127.0.0.1",
+          "X-Remote-IP": "127.0.0.1",
+          "X-True-IP": "127.0.0.1"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Apache Server Status",
+              "Server Version"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

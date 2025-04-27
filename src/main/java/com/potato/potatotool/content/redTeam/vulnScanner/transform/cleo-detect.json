@@ -1,0 +1,137 @@
+{
+  "id": "cleo-detect",
+  "name": "Cleo Technology - Detect",
+  "author": "rxerium",
+  "severity": "INFO",
+  "description": "This template detects Cleo technologies, including VLTrader, Harmony, and LexiCom, by inspecting response headers.It also extracts version information for each identified technology.\n",
+  "references": [
+    "https://www.cleo.com"
+  ],
+  "tags": [
+    "tech",
+    "detect",
+    "cleo"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "Server: Cleo"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "server",
+          "values": [
+            "Cleo VLTrader",
+            "Cleo Harmony",
+            "Cleo LexiCom"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cleo-detect",
+    "info": {
+      "name": "Cleo Technology - Detect",
+      "author": "rxerium",
+      "severity": "info",
+      "description": "This template detects Cleo technologies, including VLTrader, Harmony, and LexiCom, by inspecting response headers.It also extracts version information for each identified technology.\n",
+      "reference": [
+        "https://www.cleo.com"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "Server: Cleo"
+      },
+      "tags": "tech,detect,cleo"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "server",
+            "words": [
+              "Cleo VLTrader",
+              "Cleo Harmony",
+              "Cleo LexiCom"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "server",
+            "regex": [
+              "Cleo VLTrader/([0-9.]+)",
+              "Cleo Harmony/([0-9.]+)",
+              "Cleo LexiCom/([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

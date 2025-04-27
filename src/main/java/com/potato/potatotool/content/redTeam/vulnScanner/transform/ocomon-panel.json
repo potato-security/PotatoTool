@@ -1,0 +1,167 @@
+{
+  "id": "ocomon-panel",
+  "name": "OcoMon Login Panel - Detect",
+  "author": "dogasantos",
+  "severity": "INFO",
+  "description": "a tiny helpdesk system written in php",
+  "references": [
+    "https://sourceforge.net/projects/ocomonphp/"
+  ],
+  "tags": [
+    "panel",
+    "ocomon",
+    "oss",
+    "ocomon_project"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"ocomon\"",
+    "shodan": "http.html:\"OcoMon\" http.html:\"ocomon\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "(?i)(OcoMon)"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "open_form/ticket_form_open.php"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ocomon-panel",
+    "info": {
+      "name": "OcoMon Login Panel - Detect",
+      "author": "dogasantos",
+      "severity": "info",
+      "description": "a tiny helpdesk system written in php",
+      "reference": [
+        "https://sourceforge.net/projects/ocomonphp/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "http.html:\"OcoMon\"",
+          "http.html:\"ocomon\""
+        ],
+        "fofa_query": "body\u003d\"ocomon\""
+      },
+      "tags": "panel,ocomon,oss,ocomon_project"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)(OcoMon)"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "open_form/ticket_form_open.php"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "Versão: ([0-9.]+)",
+              "Versão:\u0026nbsp;([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

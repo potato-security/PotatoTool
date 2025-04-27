@@ -1,0 +1,135 @@
+{
+  "id": "openethereum-server",
+  "name": "OpenEthereum JSON-RPC HTTP Server Detect",
+  "author": "Nullfuzz",
+  "severity": "INFO",
+  "description": "OpenEthereum is the fastest, lightest, and most \"secure\" Ethereum client. By default OpenEthereum runs a JSON-RPC HTTP server on port 8545/TCP\n",
+  "references": [
+    "https://github.com/openethereum/openethereum",
+    "https://openethereum.github.io/"
+  ],
+  "tags": [
+    "tech",
+    "openethereum",
+    "ethereum",
+    "web3",
+    "blockchain"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:OpenEthereum"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST / HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nContent-Length: 66\n\n{\"method\":\"web3_clientVersion\",\"params\":[],\"id\":1,\"jsonrpc\":\"2.0\"}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(header, \"application/json\")",
+            "contains(body, \"OpenEthereum\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "openethereum-server",
+    "info": {
+      "name": "OpenEthereum JSON-RPC HTTP Server Detect",
+      "author": "Nullfuzz",
+      "severity": "info",
+      "description": "OpenEthereum is the fastest, lightest, and most \"secure\" Ethereum client. By default OpenEthereum runs a JSON-RPC HTTP server on port 8545/TCP\n",
+      "reference": [
+        "https://github.com/openethereum/openethereum",
+        "https://openethereum.github.io/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:OpenEthereum"
+      },
+      "tags": "tech,openethereum,ethereum,web3,blockchain"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST / HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nContent-Length: 66\n\n{\"method\":\"web3_clientVersion\",\"params\":[],\"id\":1,\"jsonrpc\":\"2.0\"}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(header, \"application/json\")",
+              "contains(body, \"OpenEthereum\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(v[0-9a-z-_.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

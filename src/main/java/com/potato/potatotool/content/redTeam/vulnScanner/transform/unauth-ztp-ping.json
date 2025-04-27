@@ -1,0 +1,169 @@
+{
+  "id": "unauth-ztp-ping",
+  "name": "Unauthenticated ZyXEL USG ZTP - Detect",
+  "author": "dmartyn",
+  "severity": "HIGH",
+  "description": "Make a ZyXEL USG with ZTP support, pre CVE-2023-28771 patch, do a DNS lookup by asking it to make an ICMP request.\nThis template can be used to detect hosts potentially vulnerable to CVE-2023-28771, CVE-2022-30525, and other issues, without actually exploiting the vulnerability.\n",
+  "references": [
+    "https://www.fullspectrum.dev/the-hunt-for-cve-2023-28771-friends-part-2-fingerprinting-handler/",
+    "https://www.zyxel.com/global/en/support/security-advisories/zyxel-security-advisory-for-remote-command-injection-vulnerability-of-firewalls"
+  ],
+  "tags": [
+    "misconfig",
+    "unauth",
+    "zyxel",
+    "ztp",
+    "rce",
+    "oast"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"USG FLEX\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /ztp/cgi-bin/handler HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\"command\":\"ping\",\"dest\":\"{{interactsh-url}}\"}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "dns"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "message",
+            "result"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "unauth-ztp-ping",
+    "info": {
+      "name": "Unauthenticated ZyXEL USG ZTP - Detect",
+      "author": "dmartyn",
+      "severity": "high",
+      "description": "Make a ZyXEL USG with ZTP support, pre CVE-2023-28771 patch, do a DNS lookup by asking it to make an ICMP request.\nThis template can be used to detect hosts potentially vulnerable to CVE-2023-28771, CVE-2022-30525, and other issues, without actually exploiting the vulnerability.\n",
+      "reference": [
+        "https://www.fullspectrum.dev/the-hunt-for-cve-2023-28771-friends-part-2-fingerprinting-handler/",
+        "https://www.zyxel.com/global/en/support/security-advisories/zyxel-security-advisory-for-remote-command-injection-vulnerability-of-firewalls"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"USG FLEX\""
+      },
+      "tags": "misconfig,unauth,zyxel,ztp,rce,oast"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /ztp/cgi-bin/handler HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\"command\":\"ping\",\"dest\":\"{{interactsh-url}}\"}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "dns"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "message",
+              "result"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

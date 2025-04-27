@@ -1,0 +1,118 @@
+{
+  "id": "default-amazon-cognito",
+  "name": "Amazon Cognito Developer Authentication Sample - Detect",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://docs.aws.amazon.com/cognito/latest/developerguide/developer-authenticated-identities.html"
+  ],
+  "tags": [
+    "aws",
+    "cognito",
+    "default",
+    "tech"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Amazon Cognito Developer Authentication Sample\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \"Amazon Cognito Developer Authentication Sample\") \u0026\u0026 contains(body, \"Congratulations!\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "default-amazon-cognito",
+    "info": {
+      "name": "Amazon Cognito Developer Authentication Sample - Detect",
+      "author": "pussycat0x",
+      "severity": "info",
+      "reference": [
+        "https://docs.aws.amazon.com/cognito/latest/developerguide/developer-authenticated-identities.html"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Amazon Cognito Developer Authentication Sample\""
+      },
+      "tags": "aws,cognito,default,tech"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \"Amazon Cognito Developer Authentication Sample\") \u0026\u0026 contains(body, \"Congratulations!\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

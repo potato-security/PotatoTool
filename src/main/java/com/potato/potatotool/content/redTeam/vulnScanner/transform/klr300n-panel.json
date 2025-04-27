@@ -1,0 +1,144 @@
+{
+  "id": "klr300n-panel",
+  "name": "KLR 300N Router Panel - Detect",
+  "author": "andreluna",
+  "severity": "INFO",
+  "description": "Home router wireless KLR 300N login panel were Detected.\n",
+  "references": [
+    "http://www.keo.com.br/produtos/roteador-klr-300n",
+    "http://www.keo.com.br/wp-content/uploads/2017/09/Manual_KLR_300N_03-17_site.pdf"
+  ],
+  "tags": [
+    "keo",
+    "klr300n",
+    "panel",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "Roteador Wireless KLR 300N"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/login.asp",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ctitle\u003eRoteador Wireless KLR 300N\u003c/title\u003e",
+            "login"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "klr300n-panel",
+    "info": {
+      "name": "KLR 300N Router Panel - Detect",
+      "author": "andreluna",
+      "severity": "info",
+      "description": "Home router wireless KLR 300N login panel were Detected.\n",
+      "reference": [
+        "http://www.keo.com.br/produtos/roteador-klr-300n",
+        "http://www.keo.com.br/wp-content/uploads/2017/09/Manual_KLR_300N_03-17_site.pdf"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "Roteador Wireless KLR 300N"
+      },
+      "tags": "keo,klr300n,panel,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/login.asp"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ctitle\u003eRoteador Wireless KLR 300N\u003c/title\u003e",
+              "login"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

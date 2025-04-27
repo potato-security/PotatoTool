@@ -1,0 +1,148 @@
+{
+  "id": "acrolinx-dashboard",
+  "name": "Acrolinx Dashboard",
+  "author": "ffffffff0x",
+  "severity": "INFO",
+  "description": "An Acrolinx Analytics dashboard was detected.",
+  "references": [
+    "https://docs.acrolinx.com/coreplatform/latest/en/analytics/acrolinx-analytics-dashboards"
+  ],
+  "tags": [
+    "acrolinx",
+    "panel"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\u003d\"Acrolinx Dashboard\"",
+    "google": "inurl:\"Acrolinx Dashboard\"",
+    "shodan": "http.title:\"Acrolinx Dashboard\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/dashboard.html",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ctitle\u003eAcrolinx Dashboard\u003c/title\u003e",
+            "Acrolinx\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "acrolinx-dashboard",
+    "info": {
+      "name": "Acrolinx Dashboard",
+      "author": "ffffffff0x",
+      "severity": "info",
+      "description": "An Acrolinx Analytics dashboard was detected.",
+      "reference": [
+        "https://docs.acrolinx.com/coreplatform/latest/en/analytics/acrolinx-analytics-dashboards"
+      ],
+      "classification": {
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Acrolinx Dashboard\"",
+        "fofa_query": "title\u003d\u003d\"Acrolinx Dashboard\"",
+        "google_query": "inurl:\"Acrolinx Dashboard\""
+      },
+      "tags": "acrolinx,panel"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/dashboard.html"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ctitle\u003eAcrolinx Dashboard\u003c/title\u003e",
+              "Acrolinx\u003c/title\u003e"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

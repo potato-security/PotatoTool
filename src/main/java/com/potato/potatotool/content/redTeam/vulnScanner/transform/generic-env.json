@@ -1,0 +1,193 @@
+{
+  "id": "generic-env",
+  "name": "Generic Env File Disclosure",
+  "author": "kazet",
+  "severity": "HIGH",
+  "description": "A .env file was discovered containing sensitive information like database credentials and tokens. It should not be publicly accessible.\n",
+  "tags": [
+    "config",
+    "exposure",
+    "env"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "paths": [
+      "/.env",
+      "/.env.bak",
+      "/.env.dev",
+      "/.env.dev.local",
+      "/.env.development.local",
+      "/.env.prod",
+      "/.env.prod.local",
+      "/.env.production",
+      "/.env.production.local",
+      "/.env.local",
+      "/.env.example",
+      "/.env.stage",
+      "/.env.live",
+      "/.env.backup",
+      "/.env.save",
+      "/.env.old",
+      "/.env.www",
+      "/.env_1",
+      "/.env_sample",
+      "/.env.{{DN}}",
+      "/.env.{{SD}}",
+      "/api/.env"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}{{paths}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "(?mi)^[a-z_]*(KEY|TOKEN|PASS|SECRET|DB_URL|DATABASE_URL|MAILER_URL)[a-z_]*\u003d"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003chtml"
+          ],
+          "negative": true,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "generic-env",
+    "info": {
+      "name": "Generic Env File Disclosure",
+      "author": "kazet",
+      "severity": "high",
+      "description": "A .env file was discovered containing sensitive information like database credentials and tokens. It should not be publicly accessible.\n",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 22
+      },
+      "tags": "config,exposure,env"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "/.env",
+            "/.env.bak",
+            "/.env.dev",
+            "/.env.dev.local",
+            "/.env.development.local",
+            "/.env.prod",
+            "/.env.prod.local",
+            "/.env.production",
+            "/.env.production.local",
+            "/.env.local",
+            "/.env.example",
+            "/.env.stage",
+            "/.env.live",
+            "/.env.backup",
+            "/.env.save",
+            "/.env.old",
+            "/.env.www",
+            "/.env_1",
+            "/.env_sample",
+            "/.env.{{DN}}",
+            "/.env.{{SD}}",
+            "/api/.env"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}{{paths}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?mi)^[a-z_]*(KEY|TOKEN|PASS|SECRET|DB_URL|DATABASE_URL|MAILER_URL)[a-z_]*\u003d"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": true,
+            "part": "body",
+            "words": [
+              "\u003chtml"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

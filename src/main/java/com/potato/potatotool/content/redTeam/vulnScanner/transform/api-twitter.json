@@ -1,0 +1,122 @@
+{
+  "id": "api-twitter",
+  "name": "Twitter API Test",
+  "author": "zzeitlin",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://developer.twitter.com/en/docs/twitter-api/api-reference-index"
+  ],
+  "tags": [
+    "token-spray",
+    "twitter"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.twitter.com/1.1/account_activity/all/subscriptions/count.json",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"account_name\":",
+            "\"subscriptions_count_all\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-twitter",
+    "info": {
+      "name": "Twitter API Test",
+      "author": "zzeitlin",
+      "severity": "info",
+      "reference": [
+        "https://developer.twitter.com/en/docs/twitter-api/api-reference-index"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,twitter"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.twitter.com/1.1/account_activity/all/subscriptions/count.json"
+        ],
+        "headers": {
+          "Authorization": "Bearer {{token}}"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"account_name\":",
+              "\"subscriptions_count_all\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

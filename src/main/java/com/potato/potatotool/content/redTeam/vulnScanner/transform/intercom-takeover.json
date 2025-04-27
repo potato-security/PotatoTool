@@ -1,0 +1,145 @@
+{
+  "id": "intercom-takeover",
+  "name": "Intercom Takeover Detection",
+  "author": "pdteam",
+  "severity": "HIGH",
+  "description": "Intercom takeover was detected.",
+  "references": [
+    "https://github.com/EdOverflow/can-i-take-over-xyz/issues/69"
+  ],
+  "tags": [
+    "takeover",
+    "intercom"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "Host !\u003d ip"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\u003ch1 class\u003d\"headline\"\u003eUh oh. That page doesn\\’t exist.\u003c/h1\u003e",
+            "This page is reserved for artistic dogs."
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "intercom-takeover",
+    "info": {
+      "name": "Intercom Takeover Detection",
+      "author": "pdteam",
+      "severity": "high",
+      "description": "Intercom takeover was detected.",
+      "reference": [
+        "https://github.com/EdOverflow/can-i-take-over-xyz/issues/69"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "takeover,intercom"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "Host !\u003d ip"
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\u003ch1 class\u003d\"headline\"\u003eUh oh. That page doesn\\’t exist.\u003c/h1\u003e",
+              "This page is reserved for artistic dogs."
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "cname"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

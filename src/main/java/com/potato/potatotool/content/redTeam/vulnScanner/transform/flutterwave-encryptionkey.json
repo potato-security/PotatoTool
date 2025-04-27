@@ -1,0 +1,104 @@
+{
+  "id": "flutterwave-encryptionkey",
+  "name": "Flutterwave Encryption Key",
+  "author": "DhiyaneshDK",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://github.com/returntocorp/semgrep-rules/blob/develop/generic/secrets/gitleaks/flutterwave-encryption-key.yaml",
+    "https://github.com/returntocorp/semgrep-rules/blob/develop/generic/secrets/gitleaks/flutterwave-encryption-key.go"
+  ],
+  "tags": [
+    "flutterwave",
+    "exposure",
+    "tokens",
+    "encryption"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "flutterwave-encryptionkey",
+    "info": {
+      "name": "Flutterwave Encryption Key",
+      "author": "DhiyaneshDK",
+      "severity": "info",
+      "reference": [
+        "https://github.com/returntocorp/semgrep-rules/blob/develop/generic/secrets/gitleaks/flutterwave-encryption-key.yaml",
+        "https://github.com/returntocorp/semgrep-rules/blob/develop/generic/secrets/gitleaks/flutterwave-encryption-key.go"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "flutterwave,exposure,tokens,encryption"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "FLWSECK_TEST-(?i)[a-h0-9]{12}"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,144 @@
+{
+  "id": "unauth-temporal-web-ui",
+  "name": "Temporal Web UI - Unauthenticated Access",
+  "author": "ggranjus",
+  "severity": "HIGH",
+  "description": "Temporal Web UI was able to be accessed because no authentication was required\n",
+  "references": [
+    "https://docs.temporal.io/web-ui"
+  ],
+  "tags": [
+    "misconfig",
+    "temporal",
+    "unauth"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.favicon.hash:557327884"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/favicon.ico",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1 \u003d\u003d 200 \u0026\u0026 (\"44c856843ce2631b1d6968ac11fa9ec4\" \u003d\u003d md5(body_1))"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body_2, \u0027nextPageToken\u0027) \u0026\u0026 status_code_2 \u003d\u003d 200",
+            "contains(body_2, \u0027Namespace default is not found.\u0027) \u0026\u0026 status_code_2 \u003d\u003d 404"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "unauth-temporal-web-ui",
+    "info": {
+      "name": "Temporal Web UI - Unauthenticated Access",
+      "author": "ggranjus",
+      "severity": "high",
+      "description": "Temporal Web UI was able to be accessed because no authentication was required\n",
+      "reference": [
+        "https://docs.temporal.io/web-ui"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.favicon.hash:557327884"
+      },
+      "tags": "misconfig,temporal,unauth"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/favicon.ico",
+          "{{BaseURL}}/api/v1/namespaces/default/workflows?query\u003d"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1 \u003d\u003d 200 \u0026\u0026 (\"44c856843ce2631b1d6968ac11fa9ec4\" \u003d\u003d md5(body_1))"
+            ]
+          },
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body_2, \u0027nextPageToken\u0027) \u0026\u0026 status_code_2 \u003d\u003d 200",
+              "contains(body_2, \u0027Namespace default is not found.\u0027) \u0026\u0026 status_code_2 \u003d\u003d 404"
+            ],
+            "condition": "or"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

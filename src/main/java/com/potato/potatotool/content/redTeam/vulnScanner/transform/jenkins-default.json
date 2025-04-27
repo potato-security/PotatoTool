@@ -1,0 +1,120 @@
+{
+  "id": "jenkins-weak-password",
+  "name": "Jenkins Default Login",
+  "author": "Zandros0",
+  "severity": "HIGH",
+  "description": "Jenkins default admin login information was discovered.",
+  "tags": [
+    "jenkins",
+    "default-login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET / HTTP/1.1\nHost: {{Hostname}}\n",
+        "POST /j_spring_security_check HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nj_username\u003dadmin\u0026j_password\u003dadmin\u0026from\u003d%2F\u0026Submit\u003dSign+in\n",
+        "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body_3, \"/logout\")",
+            "contains(body_3, \"Dashboard [Jenkins]\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jenkins-weak-password",
+    "info": {
+      "name": "Jenkins Default Login",
+      "author": "Zandros0",
+      "severity": "high",
+      "description": "Jenkins default admin login information was discovered.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 3
+      },
+      "tags": "jenkins,default-login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET / HTTP/1.1\nHost: {{Hostname}}\n",
+          "POST /j_spring_security_check HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nj_username\u003dadmin\u0026j_password\u003dadmin\u0026from\u003d%2F\u0026Submit\u003dSign+in\n",
+          "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body_3, \"/logout\")",
+              "contains(body_3, \"Dashboard [Jenkins]\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

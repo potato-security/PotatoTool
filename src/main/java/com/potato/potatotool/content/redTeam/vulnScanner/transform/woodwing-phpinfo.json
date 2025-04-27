@@ -1,0 +1,125 @@
+{
+  "id": "woodwing-phpinfo",
+  "name": "Woodwing Studio Server - Phpinfo Config",
+  "author": "pdteam",
+  "severity": "MEDIUM",
+  "description": "Phpinfo Config file exposed in Woodwing Studio Server.",
+  "references": [
+    "https://twitter.com/ynsmroztas/status/1680961398011047936"
+  ],
+  "tags": [
+    "misconfig",
+    "woodwing",
+    "phpinfo"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\u003d\"WoodWing Studio Server\"",
+    "shodan": "http.title:\"WoodWing Studio Server\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/StudioServer/server/wwtest/phpinfo.php",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(tolower(body), \u0027woodwing\u0027)",
+            "contains(tolower(body), \u0027php extension\u0027)",
+            "contains(tolower(body), \u0027php version\u0027)",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "woodwing-phpinfo",
+    "info": {
+      "name": "Woodwing Studio Server - Phpinfo Config",
+      "author": "pdteam",
+      "severity": "medium",
+      "description": "Phpinfo Config file exposed in Woodwing Studio Server.",
+      "reference": [
+        "https://twitter.com/ynsmroztas/status/1680961398011047936"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.title:\"WoodWing Studio Server\"",
+        "fofa_query": "title\u003d\u003d\"WoodWing Studio Server\""
+      },
+      "tags": "misconfig,woodwing,phpinfo"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": true,
+        "path": [
+          "{{BaseURL}}/StudioServer/server/wwtest/phpinfo.php",
+          "{{BaseURL}}/server/wwtest/phpinfo.php"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(tolower(body), \u0027woodwing\u0027)",
+              "contains(tolower(body), \u0027php extension\u0027)",
+              "contains(tolower(body), \u0027php version\u0027)",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

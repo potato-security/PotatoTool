@@ -1,0 +1,233 @@
+{
+  "id": "directory-listing",
+  "name": "Directory Listing Enabled",
+  "author": "theMiddle",
+  "severity": "LOW",
+  "description": "Directory Indexing is a web server feature that allows the contents of a directory to be displayed when no index file is present. This can be a security risk as it can expose sensitive files, old backup or unreferenced files.",
+  "references": [
+    "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/04-Review_Old_Backup_and_Unreferenced_Files_for_Sensitive_Information",
+    "https://portswigger.net/kb/issues/00600100_directory-listing"
+  ],
+  "tags": [
+    "misc",
+    "generic",
+    "misconfig",
+    "fuzz",
+    "miscellaneous"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "function target_is_in_scope(url) {\n  if (url.startsWith(template.http_1_host) || url.startsWith(\"/\")) {\n    return true;\n  }\n  return false;\n}\n\nhttp(1);\n\nif(template.links) {\n  var path_checked \u003d [];\n  var paths \u003d [];\n\n  for(i\u003d0; i\u003ctemplate.links.length; i++) {\n    if (target_is_in_scope(template.links[i])) {\n\n      var path \u003d template.links[i].replace(template.http_1_host, \"\");\n      var path_split \u003d path.split(\"/\");\n      var path_to_check \u003d \"\";\n\n      for(p in path_split) {\n        if (path_split[p] !\u003d \"\") {\n          path_to_check +\u003d \"/\"+path_split[p];\n\n          if (!path_checked.includes(path_to_check)) {\n            path_checked.push(path_to_check);\n\n            set(\"path_to_check\", path_to_check);\n            http(2);\n          }\n        }\n      }\n\n    }\n  }\n}\n",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(header, \"text/html\")",
+            "status_code_1 \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "method": "GET",
+      "path": "{{BaseURL}}{{path_to_check}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ctitle\u003eIndex of"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": true,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "directory-listing",
+    "info": {
+      "name": "Directory Listing Enabled",
+      "author": "theMiddle",
+      "severity": "low",
+      "description": "Directory Indexing is a web server feature that allows the contents of a directory to be displayed when no index file is present. This can be a security risk as it can expose sensitive files, old backup or unreferenced files.",
+      "reference": [
+        "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/04-Review_Old_Backup_and_Unreferenced_Files_for_Sensitive_Information",
+        "https://portswigger.net/kb/issues/00600100_directory-listing"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "misc,generic,misconfig,fuzz,miscellaneous"
+    },
+    "flow": "function target_is_in_scope(url) {\n  if (url.startsWith(template.http_1_host) || url.startsWith(\"/\")) {\n    return true;\n  }\n  return false;\n}\n\nhttp(1);\n\nif(template.links) {\n  var path_checked \u003d [];\n  var paths \u003d [];\n\n  for(i\u003d0; i\u003ctemplate.links.length; i++) {\n    if (target_is_in_scope(template.links[i])) {\n\n      var path \u003d template.links[i].replace(template.http_1_host, \"\");\n      var path_split \u003d path.split(\"/\");\n      var path_to_check \u003d \"\";\n\n      for(p in path_split) {\n        if (path_split[p] !\u003d \"\") {\n          path_to_check +\u003d \"/\"+path_split[p];\n\n          if (!path_checked.includes(path_to_check)) {\n            path_checked.push(path_to_check);\n\n            set(\"path_to_check\", path_to_check);\n            http(2);\n          }\n        }\n      }\n\n    }\n  }\n}\n",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(header, \"text/html\")",
+              "status_code_1 \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "xpath",
+            "xpath": [
+              "//*/@href|//*/@src"
+            ]
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}{{path_to_check}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ctitle\u003eIndex of"
+            ],
+            "case_insensitive": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

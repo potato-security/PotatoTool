@@ -1,0 +1,120 @@
+{
+  "id": "omni-commerce-connect-detect",
+  "name": "Omni Commerce Connect (OCC) Rest APIs",
+  "author": "TechbrunchFR",
+  "severity": "INFO",
+  "description": "The Omni Commerce Connect (OCC) API exposes a broad set of commerce and data services. It enables you to integrate SAP Commerce functionality anywhere in your application landscape.",
+  "references": [
+    "https://help.sap.com/docs/SAP_COMMERCE/e5d7cec9064f453b84235dc582b886da/8c19ab00866910148f87bf32d4a60d38.html?locale\u003den-US"
+  ],
+  "tags": [
+    "tech",
+    "sap",
+    "hybris",
+    "omni"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"Hybris\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/occ/v2/d2OzBcy",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Base site d2OzBcy doesn\u0027t exist"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "omni-commerce-connect-detect",
+    "info": {
+      "name": "Omni Commerce Connect (OCC) Rest APIs",
+      "author": "TechbrunchFR",
+      "severity": "info",
+      "description": "The Omni Commerce Connect (OCC) API exposes a broad set of commerce and data services. It enables you to integrate SAP Commerce functionality anywhere in your application landscape.",
+      "reference": [
+        "https://help.sap.com/docs/SAP_COMMERCE/e5d7cec9064f453b84235dc582b886da/8c19ab00866910148f87bf32d4a60d38.html?locale\u003den-US"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"Hybris\""
+      },
+      "tags": "tech,sap,hybris,omni"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/occ/v2/d2OzBcy"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Base site d2OzBcy doesn\u0027t exist"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

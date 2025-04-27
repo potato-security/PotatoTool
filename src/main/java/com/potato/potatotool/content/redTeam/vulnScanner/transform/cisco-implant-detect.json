@@ -1,0 +1,171 @@
+{
+  "id": "cisco-implant-detect",
+  "name": "Cisco IOS XE - Impant Detection",
+  "author": "DhiyaneshDK,rxerium",
+  "severity": "CRITICAL",
+  "description": "Cisco is aware of active exploitation of a previously unknown vulnerability in the web UI feature of Cisco IOS XE Software when exposed to the internet or to untrusted networks. This vulnerability allows a remote, unauthenticated attacker to create an account on an affected system with privilege level 15 access. The attacker can then use that account to gain control of the affected system.\n",
+  "references": [
+    "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-iosxe-webui-privesc-j22SaA4z",
+    "https://www.bleepingcomputer.com/news/security/cisco-warns-of-new-ios-xe-zero-day-actively-exploited-in-attacks/",
+    "https://socradar.io/cisco-warns-of-exploitation-of-a-maximum-severity-zero-day-vulnerability-in-ios-xe-cve-2023-20198",
+    "https://github.com/vulncheck-oss/cisco-ios-xe-implant-scanner/blob/main/implant-scanner.go"
+  ],
+  "tags": [
+    "backdoor",
+    "cisco",
+    "ios",
+    "kev"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html_hash:1076109428"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /webui HTTP/1.1\nHost: {{Hostname}}\n",
+        "POST /webui/logoutconfirm.html?logon_hash\u003d1 HTTP/1.1\nHost: {{Hostname}}\nAuthorization: 0ff4fbf0ecffa77ce8d3852a29263e263838e9bb\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body_1",
+          "values": [
+            "webui-centerpanel-title"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "REGEX",
+          "part": "body_2",
+          "values": [
+            "^([a-f0-9]{18})\\s*$"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_2 \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cisco-implant-detect",
+    "info": {
+      "name": "Cisco IOS XE - Impant Detection",
+      "author": "DhiyaneshDK,rxerium",
+      "severity": "critical",
+      "description": "Cisco is aware of active exploitation of a previously unknown vulnerability in the web UI feature of Cisco IOS XE Software when exposed to the internet or to untrusted networks. This vulnerability allows a remote, unauthenticated attacker to create an account on an affected system with privilege level 15 access. The attacker can then use that account to gain control of the affected system.\n",
+      "reference": [
+        "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-iosxe-webui-privesc-j22SaA4z",
+        "https://www.bleepingcomputer.com/news/security/cisco-warns-of-new-ios-xe-zero-day-actively-exploited-in-attacks/",
+        "https://socradar.io/cisco-warns-of-exploitation-of-a-maximum-severity-zero-day-vulnerability-in-ios-xe-cve-2023-20198",
+        "https://github.com/vulncheck-oss/cisco-ios-xe-implant-scanner/blob/main/implant-scanner.go"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.html_hash:1076109428"
+      },
+      "tags": "backdoor,cisco,ios,kev"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": true,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /webui HTTP/1.1\nHost: {{Hostname}}\n",
+          "POST /webui/logoutconfirm.html?logon_hash\u003d1 HTTP/1.1\nHost: {{Hostname}}\nAuthorization: 0ff4fbf0ecffa77ce8d3852a29263e263838e9bb\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body_1",
+            "regex": [
+              "webui-centerpanel-title"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "body_2",
+            "regex": [
+              "^([a-f0-9]{18})\\s*$"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_2 \u003d\u003d 200"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

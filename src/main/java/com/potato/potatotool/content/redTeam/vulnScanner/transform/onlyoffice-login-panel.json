@@ -1,0 +1,146 @@
+{
+  "id": "onlyoffice-login-panel",
+  "name": "ONLYOFFICE Login Panel - Detect",
+  "author": "eremit4",
+  "severity": "INFO",
+  "description": "ONLYOFFICE Community Server is a free open-source collaborative system developed to manage documents, projects, customer relationship and email correspondence.\n",
+  "tags": [
+    "panel",
+    "onlyoffice",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"ONLYOFFICE\" \u0026\u0026 (icon_hash\u003d\"1928933157\" || icon_hash\u003d\"826083956\" || icon_hash\u003d\"-1380930248\" || icon_hash\u003d\"-285544629\" || icon_hash\u003d\"812741391\") app\u003d\"onlyoffice\" \u0026\u0026 (icon_hash\u003d\"1928933157\" || icon_hash\u003d\"826083956\" || icon_hash\u003d\"-1380930248\" || icon_hash\u003d\"-285544629\" || icon_hash\u003d\"812741391\")"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "ONLYOFFICE",
+            "title\u003d\"ONLYOFFICE",
+            "content\u003d\"ONLYOFFICE",
+            "/images/onlyoffice_logo/",
+            "alt\u003d\"ONLYOFFICE"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "onlyoffice-login-panel",
+    "info": {
+      "name": "ONLYOFFICE Login Panel - Detect",
+      "author": "eremit4",
+      "severity": "info",
+      "description": "ONLYOFFICE Community Server is a free open-source collaborative system developed to manage documents, projects, customer relationship and email correspondence.\n",
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": [
+          "app\u003d\"ONLYOFFICE\" \u0026\u0026 (icon_hash\u003d\"1928933157\" || icon_hash\u003d\"826083956\" || icon_hash\u003d\"-1380930248\" || icon_hash\u003d\"-285544629\" || icon_hash\u003d\"812741391\")",
+          "app\u003d\"onlyoffice\" \u0026\u0026 (icon_hash\u003d\"1928933157\" || icon_hash\u003d\"826083956\" || icon_hash\u003d\"-1380930248\" || icon_hash\u003d\"-285544629\" || icon_hash\u003d\"812741391\")"
+        ]
+      },
+      "tags": "panel,onlyoffice,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/auth.aspx"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "ONLYOFFICE",
+              "title\u003d\"ONLYOFFICE",
+              "content\u003d\"ONLYOFFICE",
+              "/images/onlyoffice_logo/",
+              "alt\u003d\"ONLYOFFICE"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

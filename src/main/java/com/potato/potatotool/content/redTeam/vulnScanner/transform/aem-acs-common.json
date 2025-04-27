@@ -1,0 +1,133 @@
+{
+  "id": "aem-acs-common",
+  "name": "Adobe AEM ACS Common Exposure",
+  "author": "dhiyaneshDk",
+  "severity": "MEDIUM",
+  "description": "Adobe AEM ACS Common pages exposed.",
+  "references": [
+    "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/aem2.txt"
+  ],
+  "tags": [
+    "misconfig",
+    "aem",
+    "adobe"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"AEM Sign In\" http.component:\"Adobe Experience Manager\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/etc/acs-commons/jcr-compare.html",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ctitle\u003eVersion Compare | ACS AEM Commons\u003c/title\u003e",
+            "\u003ctitle\u003eOak Index Manager | ACS AEM Commons\u003c/title\u003e",
+            "\u003ctitle\u003eJCR Compare | ACS AEM Commons\u003c/title\u003e",
+            "\u003ctitle\u003eWorkflow Remover | ACS AEM Commons\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "aem-acs-common",
+    "info": {
+      "name": "Adobe AEM ACS Common Exposure",
+      "author": "dhiyaneshDk",
+      "severity": "medium",
+      "description": "Adobe AEM ACS Common pages exposed.",
+      "reference": [
+        "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/aem2.txt"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 4,
+        "shodan_query": [
+          "http.title:\"AEM Sign In\"",
+          "http.component:\"Adobe Experience Manager\""
+        ]
+      },
+      "tags": "misconfig,aem,adobe"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/etc/acs-commons/jcr-compare.html",
+          "{{BaseURL}}/etc/acs-commons/workflow-remover.html",
+          "{{BaseURL}}/etc/acs-commons/version-compare.html",
+          "{{BaseURL}}/etc/acs-commons/oak-index-manager.html"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ctitle\u003eVersion Compare | ACS AEM Commons\u003c/title\u003e",
+              "\u003ctitle\u003eOak Index Manager | ACS AEM Commons\u003c/title\u003e",
+              "\u003ctitle\u003eJCR Compare | ACS AEM Commons\u003c/title\u003e",
+              "\u003ctitle\u003eWorkflow Remover | ACS AEM Commons\u003c/title\u003e"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

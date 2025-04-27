@@ -1,0 +1,174 @@
+{
+  "id": "api-intigriti-researcher",
+  "name": "Intigriti-Researcher API Test",
+  "author": "0xpugal",
+  "severity": "INFO",
+  "description": "The Intigriti researcher API can be used to query information about Programs you have access to via our platform and Program activities you have access to via our platform",
+  "references": [
+    "https://kb.intigriti.com/en/articles/8529303-intigriti-researcher-api"
+  ],
+  "tags": [
+    "token-spray",
+    "intigriti"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.intigriti.com/external/researcher/v1/programs",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Content-Type": "application/json"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"records\"",
+            "\"webLinks\"",
+            "\"detail\"",
+            "\"handle\"",
+            "\"value\"",
+            "\"status\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "application/json"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-intigriti-researcher",
+    "info": {
+      "name": "Intigriti-Researcher API Test",
+      "author": "0xpugal",
+      "severity": "info",
+      "description": "The Intigriti researcher API can be used to query information about Programs you have access to via our platform and Program activities you have access to via our platform",
+      "reference": [
+        "https://kb.intigriti.com/en/articles/8529303-intigriti-researcher-api"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,intigriti"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.intigriti.com/external/researcher/v1/programs"
+        ],
+        "headers": {
+          "Authorization": "Bearer {{token}}",
+          "Content-Type": "application/json"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"records\"",
+              "\"webLinks\"",
+              "\"detail\"",
+              "\"handle\"",
+              "\"value\"",
+              "\"status\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "application/json"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

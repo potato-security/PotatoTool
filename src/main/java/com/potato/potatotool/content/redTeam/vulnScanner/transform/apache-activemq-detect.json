@@ -1,0 +1,123 @@
+{
+  "id": "apache-activemq-detect",
+  "name": "Apache ActiveMQ Detection",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "Apache ActiveMQ is an open source message broker written in Java together with a full Java Message Service client. It provides \"Enterprise Features\" which in this case means fostering the communication from more than one client or server.\n",
+  "tags": [
+    "network",
+    "activemq",
+    "oss",
+    "detect",
+    "apache",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"Apache ActiveMQ\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "61613",
+      "inputs": [
+        {
+          "data": "HELP\n\n\u0000",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Unknown STOMP action",
+            "norg.apache.activemq.transport.stomp"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "apache-activemq-detect",
+    "info": {
+      "name": "Apache ActiveMQ Detection",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "Apache ActiveMQ is an open source message broker written in Java together with a full Java Message Service client. It provides \"Enterprise Features\" which in this case means fostering the communication from more than one client or server.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"Apache ActiveMQ\""
+      },
+      "tags": "network,activemq,oss,detect,apache,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "HELP\n\n\u0000",
+            "read": 0
+          }
+        ],
+        "port": "61613",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Unknown STOMP action",
+              "norg.apache.activemq.transport.stomp"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

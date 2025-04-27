@@ -1,0 +1,133 @@
+{
+  "id": "ibm-api-connect-detect",
+  "name": "IBM API Connect Developer Portal - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "IBM API Connect Developer Portal was detected.",
+  "references": [
+    "https://github.com/ibm-apiconnect/devportal",
+    "https://www.ibm.com/products/api-connect/developer-portal"
+  ],
+  "tags": [
+    "tech",
+    "ibm",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.favicon.hash:\"801517258\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_any(to_lower(body), \"ibm developer portal is ready\", \"package: ibm api developer\")",
+            "(\"801517258\" \u003d\u003d mmh3(base64_py(body)))"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ibm-api-connect-detect",
+    "info": {
+      "name": "IBM API Connect Developer Portal - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "IBM API Connect Developer Portal was detected.",
+      "reference": [
+        "https://github.com/ibm-apiconnect/devportal",
+        "https://www.ibm.com/products/api-connect/developer-portal"
+      ],
+      "metadata": {
+        "max_request": 3,
+        "shodan_query": "http.favicon.hash:\"801517258\""
+      },
+      "tags": "tech,ibm,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/favicon.ico",
+          "{{BaseURL}}/modules/ibm_apim/ibm_apim.info.yml"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_any(to_lower(body), \"ibm developer portal is ready\", \"package: ibm api developer\")",
+              "(\"801517258\" \u003d\u003d mmh3(base64_py(body)))"
+            ],
+            "condition": "or"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)version:\\s+([0-9a-z\\-_.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

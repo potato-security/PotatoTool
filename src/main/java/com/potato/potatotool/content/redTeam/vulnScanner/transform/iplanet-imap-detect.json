@@ -1,0 +1,136 @@
+{
+  "id": "iplanet-imap-detect",
+  "name": "iPlanet Messaging Server IMAP Protocol - Detection",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "iPlanet Messaging Server IMAP protocol was detected.\n",
+  "tags": [
+    "network",
+    "imap",
+    "detect",
+    "iplanet",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"iPlanet-Messaging-Server-5.2\" \u0026\u0026 protocol\u003d\"imap\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "110",
+      "inputs": [
+        {
+          "data": "\n",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "iPlanet Messaging Server"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "iplanet-imap-detect",
+    "info": {
+      "name": "iPlanet Messaging Server IMAP Protocol - Detection",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "iPlanet Messaging Server IMAP protocol was detected.\n",
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"iPlanet-Messaging-Server-5.2\" \u0026\u0026 protocol\u003d\"imap\""
+      },
+      "tags": "network,imap,detect,iplanet,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "\n",
+            "read": 0
+          }
+        ],
+        "port": "110",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "iPlanet Messaging Server"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "iPlanet Messaging Server ([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

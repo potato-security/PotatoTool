@@ -1,0 +1,122 @@
+{
+  "id": "api-currencyscoop",
+  "name": "CurrencyScoop API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Real-time and historical currency rates JSON API",
+  "references": [
+    "https://currencyscoop.com/api-documentation",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/currencyscoop"
+  ],
+  "tags": [
+    "token-spray",
+    "currencyscoop"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.currencyscoop.com/v1/historical?api_key\u003d{{token}}\u0026date\u003d2022-01-01",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"date\"",
+            "\"base\"",
+            "\"rates\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-currencyscoop",
+    "info": {
+      "name": "CurrencyScoop API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Real-time and historical currency rates JSON API",
+      "reference": [
+        "https://currencyscoop.com/api-documentation",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/currencyscoop"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,currencyscoop"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.currencyscoop.com/v1/historical?api_key\u003d{{token}}\u0026date\u003d2022-01-01"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"date\"",
+              "\"base\"",
+              "\"rates\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

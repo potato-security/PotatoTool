@@ -1,0 +1,131 @@
+{
+  "id": "frappe-helpdesk-panel",
+  "name": "Frappe Helpdesk Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Frappe Helpdesk products was detected.\n",
+  "references": [
+    "https://frappe.io/helpdesk",
+    "https://github.com/frappe/helpdesk"
+  ],
+  "tags": [
+    "panel",
+    "frappe",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"window.frappe_version\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/helpdesk/login",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_all(to_lower(body), \"/helpdesk/\", \"frappe\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "frappe-helpdesk-panel",
+    "info": {
+      "name": "Frappe Helpdesk Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Frappe Helpdesk products was detected.\n",
+      "reference": [
+        "https://frappe.io/helpdesk",
+        "https://github.com/frappe/helpdesk"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html:\"window.frappe_version\""
+      },
+      "tags": "panel,frappe,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/helpdesk/login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_all(to_lower(body), \"/helpdesk/\", \"frappe\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)helpdesk_version\\s*\u003d\\s*\"([0-9.]+)\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

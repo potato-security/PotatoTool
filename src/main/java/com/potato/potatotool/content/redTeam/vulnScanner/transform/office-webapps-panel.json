@@ -1,0 +1,161 @@
+{
+  "id": "office-webapps-panel",
+  "name": "Office Web Apps Server Panel - Detect",
+  "author": "DhiyaneshDK",
+  "severity": "INFO",
+  "description": "Microsoft Office Web App Login Panel was discovered.",
+  "references": [
+    "https://www.microsoft.com/en-in/microsoft-365/free-office-online-for-the-web"
+  ],
+  "tags": [
+    "panel",
+    "office-webapps",
+    "login",
+    "microsoft"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"provide a link that opens word\"",
+    "shodan": "html:\"Provide a link that opens Word\" http.html:\"provide a link that opens word\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-668",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/op/generate.aspx",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Provide a link that opens Word",
+            "PowerPoint files in a web browser"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "_OFUError",
+            "Wrong file type"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "office-webapps-panel",
+    "info": {
+      "name": "Office Web Apps Server Panel - Detect",
+      "author": "DhiyaneshDK",
+      "severity": "info",
+      "description": "Microsoft Office Web App Login Panel was discovered.",
+      "reference": [
+        "https://www.microsoft.com/en-in/microsoft-365/free-office-online-for-the-web"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-668"
+      },
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": [
+          "html:\"Provide a link that opens Word\"",
+          "http.html:\"provide a link that opens word\""
+        ],
+        "fofa_query": "body\u003d\"provide a link that opens word\""
+      },
+      "tags": "panel,office-webapps,login,microsoft"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/op/generate.aspx",
+          "{{BaseURL}}/op/wrongfiletype.htm"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Provide a link that opens Word",
+              "PowerPoint files in a web browser"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "_OFUError",
+              "Wrong file type"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

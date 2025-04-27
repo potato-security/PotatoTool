@@ -1,0 +1,122 @@
+{
+  "id": "api-currencyfreaks",
+  "name": "CurrencyFreaks API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Provides current and historical currency exchange rates with free plan 1K requests/month",
+  "references": [
+    "https://currencyfreaks.com/documentation.html",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/currencyfreaks"
+  ],
+  "tags": [
+    "token-spray",
+    "currencyfreaks"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.currencyfreaks.com/latest?apikey\u003d{{token}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"date\"",
+            "\"base\"",
+            "\"rates\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-currencyfreaks",
+    "info": {
+      "name": "CurrencyFreaks API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Provides current and historical currency exchange rates with free plan 1K requests/month",
+      "reference": [
+        "https://currencyfreaks.com/documentation.html",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/currencyfreaks"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,currencyfreaks"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.currencyfreaks.com/latest?apikey\u003d{{token}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"date\"",
+              "\"base\"",
+              "\"rates\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

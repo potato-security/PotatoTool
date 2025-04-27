@@ -1,0 +1,133 @@
+{
+  "id": "riak-detect",
+  "name": "Riak Detection",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "Riak is a distributed NoSQL key-value data store that offers high availability, fault tolerance, operational simplicity, and scalability.",
+  "tags": [
+    "network",
+    "oss",
+    "detect",
+    "riak",
+    "nosql",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"Riak\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "8087",
+      "inputs": [
+        {
+          "data": "0000000107",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 2048,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "riak"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "riak-detect",
+    "info": {
+      "name": "Riak Detection",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "Riak is a distributed NoSQL key-value data store that offers high availability, fault tolerance, operational simplicity, and scalability.",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"Riak\""
+      },
+      "tags": "network,oss,detect,riak,nosql,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "0000000107",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "port": "8087",
+        "stop_at_first_match": false,
+        "read_size": 2048,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "riak"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "riak@([0-9.]+)..([0-9.]+([a-z]+[0-9]))"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

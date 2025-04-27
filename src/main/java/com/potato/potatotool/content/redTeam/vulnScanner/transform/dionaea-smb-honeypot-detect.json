@@ -1,0 +1,120 @@
+{
+  "id": "dionaea-smb-honeypot-detect",
+  "name": "Dionaea SMB Honeypot - Detect",
+  "author": "UnaPibaGeek",
+  "severity": "INFO",
+  "description": "A Dionaea SMB honeypot has been identified.\nThe response to an SMB connection packet differs from real installations, signaling a possible deceptive setup.\n",
+  "tags": [
+    "dionaea",
+    "smb",
+    "honeypot",
+    "ir",
+    "cti",
+    "network",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "port:445"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "445",
+      "inputs": [
+        {
+          "data": "00000045ff534d4272000000000801c8000000000000000000000000ffff0100ffff0000002200024e54204c4d20302e31320002534d4220322e3030320002534d4220322e3f3f3f00",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 1024,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "BINARY",
+          "part": "body",
+          "values": [
+            "6538547e6c42"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "dionaea-smb-honeypot-detect",
+    "info": {
+      "name": "Dionaea SMB Honeypot - Detect",
+      "author": "UnaPibaGeek",
+      "severity": "info",
+      "description": "A Dionaea SMB honeypot has been identified.\nThe response to an SMB connection packet differs from real installations, signaling a possible deceptive setup.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "port:445"
+      },
+      "tags": "dionaea,smb,honeypot,ir,cti,network,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "00000045ff534d4272000000000801c8000000000000000000000000ffff0100ffff0000002200024e54204c4d20302e31320002534d4220322e3030320002534d4220322e3f3f3f00",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "port": "445",
+        "stop_at_first_match": false,
+        "read_size": 1024,
+        "matchers": [
+          {
+            "type": "binary",
+            "part": "body",
+            "binary": [
+              "6538547e6c42"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

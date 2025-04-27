@@ -1,0 +1,145 @@
+{
+  "id": "unauthenticated-mongo-express",
+  "name": "Mongo Express - Unauthenticated Access",
+  "author": "dhiyaneshDK,b0rn2r00t",
+  "severity": "HIGH",
+  "description": "Mongo Express was able to be access with no authentication requirements in place.",
+  "references": [
+    "https://www.exploit-db.com/ghdb/5684"
+  ],
+  "tags": [
+    "mongo",
+    "unauth",
+    "edb",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"Home - Mongo Express\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\u003ctitle\u003eHome - Mongo Express\u003c/title\u003e",
+            "\u003ctitle\u003esystem.users - Mongo Express\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "unauthenticated-mongo-express",
+    "info": {
+      "name": "Mongo Express - Unauthenticated Access",
+      "author": "dhiyaneshDK,b0rn2r00t",
+      "severity": "high",
+      "description": "Mongo Express was able to be access with no authentication requirements in place.",
+      "reference": [
+        "https://www.exploit-db.com/ghdb/5684"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 3,
+        "shodan_query": "title:\"Home - Mongo Express\""
+      },
+      "tags": "mongo,unauth,edb,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/mongo-express/",
+          "{{BaseURL}}/db/admin/system.users"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\u003ctitle\u003eHome - Mongo Express\u003c/title\u003e",
+              "\u003ctitle\u003esystem.users - Mongo Express\u003c/title\u003e"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

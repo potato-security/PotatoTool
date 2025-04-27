@@ -1,0 +1,117 @@
+{
+  "id": "api-apiflash",
+  "name": "ApiFlash API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Chrome based screenshot API for developers",
+  "references": [
+    "https://apiflash.com/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/apiflash"
+  ],
+  "tags": [
+    "token-spray",
+    "apiflash"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.apiflash.com/v1/urltoimage?access_key\u003d{{token}}\u0026url\u003dhttps://selfcontained.test",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "net::ERR_NAME_NOT_RESOLVED at https://selfcontained.test"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-apiflash",
+    "info": {
+      "name": "ApiFlash API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Chrome based screenshot API for developers",
+      "reference": [
+        "https://apiflash.com/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/apiflash"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,apiflash"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.apiflash.com/v1/urltoimage?access_key\u003d{{token}}\u0026url\u003dhttps://selfcontained.test"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "net::ERR_NAME_NOT_RESOLVED at https://selfcontained.test"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

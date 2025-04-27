@@ -1,0 +1,139 @@
+{
+  "id": "invicti-enterprise-installer",
+  "name": "Invicti Enterprise Installation Page - Exposure",
+  "author": "DhiyaneshDK",
+  "severity": "HIGH",
+  "description": "Detects exposed Invicti Enterprise Installation page.\n",
+  "references": [
+    "https://www.invicti.com/"
+  ],
+  "tags": [
+    "misconfig",
+    "install",
+    "exposure",
+    "invicti"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"Invicti Enterprise - Installation Wizard\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/wizard/database/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Invicti Enterprise - Installation Wizard"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "invicti-enterprise-installer",
+    "info": {
+      "name": "Invicti Enterprise Installation Page - Exposure",
+      "author": "DhiyaneshDK",
+      "severity": "high",
+      "description": "Detects exposed Invicti Enterprise Installation page.\n",
+      "reference": [
+        "https://www.invicti.com/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "html:\"Invicti Enterprise - Installation Wizard\""
+      },
+      "tags": "misconfig,install,exposure,invicti"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/wizard/database/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Invicti Enterprise - Installation Wizard"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,131 @@
+{
+  "id": "gradle-develocity-panel",
+  "name": "Gradle Develocity Build Cache Node Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Gradle Develocity Build Cache Node login panel was detected.",
+  "references": [
+    "https://gradle.com/gradle-enterprise-solutions/"
+  ],
+  "tags": [
+    "panel",
+    "gradle",
+    "detect",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"Develocity Build Cache Node\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200 || status_code \u003d\u003d 401",
+            "contains_any(to_lower(body), \"develocity build cache node\", \"develocity\", \"com.gradle.error.fallback\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "gradle-develocity-panel",
+    "info": {
+      "name": "Gradle Develocity Build Cache Node Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Gradle Develocity Build Cache Node login panel was detected.",
+      "reference": [
+        "https://gradle.com/gradle-enterprise-solutions/"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html:\"Develocity Build Cache Node\""
+      },
+      "tags": "panel,gradle,detect,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200 || status_code \u003d\u003d 401",
+              "contains_any(to_lower(body), \"develocity build cache node\", \"develocity\", \"com.gradle.error.fallback\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)\"applicationVersion\":\"([0-9.]+)\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

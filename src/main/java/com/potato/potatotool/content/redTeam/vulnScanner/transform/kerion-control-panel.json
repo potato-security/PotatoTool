@@ -1,0 +1,147 @@
+{
+  "id": "kerion-control-panel",
+  "name": "Kerio Controle Panel - Detect",
+  "author": "johnk3r",
+  "severity": "INFO",
+  "description": "Protect your network from viruses, malware and malicious activity with GFI KerioControl, the easy-to-administer yet powerful all-in-one security solution.\n",
+  "references": [
+    "https://gfi.ai/products-and-solutions/network-security-solutions/keriocontrol"
+  ],
+  "tags": [
+    "panel",
+    "kerio",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.favicon.hash:-631002664"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "Kerio Control Embedded Web Server"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "302"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "kerion-control-panel",
+    "info": {
+      "name": "Kerio Controle Panel - Detect",
+      "author": "johnk3r",
+      "severity": "info",
+      "description": "Protect your network from viruses, malware and malicious activity with GFI KerioControl, the easy-to-administer yet powerful all-in-one security solution.\n",
+      "reference": [
+        "https://gfi.ai/products-and-solutions/network-security-solutions/keriocontrol"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.favicon.hash:-631002664"
+      },
+      "tags": "panel,kerio,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "Kerio Control Embedded Web Server"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              302
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "kval",
+            "kval": [
+              "Server"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

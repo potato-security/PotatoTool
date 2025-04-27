@@ -1,0 +1,167 @@
+{
+  "id": "laravel-log-file",
+  "name": "Laravel log file publicly accessible",
+  "author": "sheikhrishad,geeknik",
+  "severity": "HIGH",
+  "description": "The log file of this Laravel web app might reveal details on the inner workings of the app, possibly even tokens, credentials or personal information.",
+  "references": [
+    "https://laravel.com/docs/master/logging"
+  ],
+  "tags": [
+    "laravel",
+    "logs",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/storage/logs/laravel.log",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "InvalidArgumentException",
+            "local.ERROR",
+            "ErrorException",
+            "syntax error"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/plain",
+            "text/x-log"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "laravel-log-file",
+    "info": {
+      "name": "Laravel log file publicly accessible",
+      "author": "sheikhrishad,geeknik",
+      "severity": "high",
+      "description": "The log file of this Laravel web app might reveal details on the inner workings of the app, possibly even tokens, credentials or personal information.",
+      "reference": [
+        "https://laravel.com/docs/master/logging"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "laravel,logs,exposure"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/storage/logs/laravel.log"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "InvalidArgumentException",
+              "local.ERROR",
+              "ErrorException",
+              "syntax error"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/plain",
+              "text/x-log"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

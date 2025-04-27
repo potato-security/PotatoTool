@@ -1,0 +1,137 @@
+{
+  "id": "microfocus-admin-server",
+  "name": "Micro Focus Enterprise Server Admin Panel - Detect",
+  "author": "theabhinavgaur,righettod",
+  "severity": "INFO",
+  "description": "Micro Focus Enterprise Server Admin panel was detected.",
+  "tags": [
+    "panel",
+    "microfocus",
+    "detect",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "Micro Focus DSD micro focus dsd"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200 \u0026\u0026 contains(to_lower(header), \"micro focus dsd\")",
+            "status_code \u003d\u003d 200 \u0026\u0026 contains_any(to_lower(body), \"micro focus imanager\", \"micro focus imonitor\", \"micro focus remote manager\", \"micro focus open enterprise server\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "microfocus-admin-server",
+    "info": {
+      "name": "Micro Focus Enterprise Server Admin Panel - Detect",
+      "author": "theabhinavgaur,righettod",
+      "severity": "info",
+      "description": "Micro Focus Enterprise Server Admin panel was detected.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 4,
+        "shodan_query": [
+          "Micro Focus DSD",
+          "micro focus dsd"
+        ]
+      },
+      "tags": "panel,microfocus,detect,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": true,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/nps/servlet/portalservice",
+          "{{BaseURL}}/nds",
+          "{{BaseURL}}/_LOGIN_SERVER_"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200 \u0026\u0026 contains(to_lower(header), \"micro focus dsd\")",
+              "status_code \u003d\u003d 200 \u0026\u0026 contains_any(to_lower(body), \"micro focus imanager\", \"micro focus imonitor\", \"micro focus remote manager\", \"micro focus open enterprise server\")"
+            ],
+            "condition": "or"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)Micro\\s+Focus\\s+Open\\s+Enterprise\\s+Server\\s+([A-Z0-9\\s]+)",
+              "(?i)Copyright\\s+([0-9]+)\\s+Micro\\s+Focus"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

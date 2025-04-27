@@ -1,0 +1,189 @@
+{
+  "id": "shell-history",
+  "name": "Shell History",
+  "author": "pentest_swissky,geeknik",
+  "severity": "LOW",
+  "description": "Discover history for bash, ksh, sh, and zsh",
+  "tags": [
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/.bash_history",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "mkdir ",
+            "chmod ",
+            "mv ",
+            "nano ",
+            "vim ",
+            "pico ",
+            "sudo ",
+            "cd ",
+            "cp ",
+            "ps aux",
+            "ls ",
+            "logout"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "response",
+          "values": [
+            "\u003c?xml",
+            "\u003cenv",
+            "application/javascript",
+            "application/json",
+            "application/xml",
+            "html\u003e",
+            "text/html",
+            "image/"
+          ],
+          "negative": true,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "shell-history",
+    "info": {
+      "name": "Shell History",
+      "author": "pentest_swissky,geeknik",
+      "severity": "low",
+      "description": "Discover history for bash, ksh, sh, and zsh",
+      "metadata": {
+        "max_request": 4
+      },
+      "tags": "misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/.bash_history",
+          "{{BaseURL}}/.ksh_history",
+          "{{BaseURL}}/.sh_history",
+          "{{BaseURL}}/.zsh_history"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "mkdir ",
+              "chmod ",
+              "mv ",
+              "nano ",
+              "vim ",
+              "pico ",
+              "sudo ",
+              "cd ",
+              "cp ",
+              "ps aux",
+              "ls ",
+              "logout"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": true,
+            "part": "response",
+            "words": [
+              "\u003c?xml",
+              "\u003cenv",
+              "application/javascript",
+              "application/json",
+              "application/xml",
+              "html\u003e",
+              "text/html",
+              "image/"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

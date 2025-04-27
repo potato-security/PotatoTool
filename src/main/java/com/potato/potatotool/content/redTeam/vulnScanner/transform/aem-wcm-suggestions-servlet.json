@@ -1,0 +1,143 @@
+{
+  "id": "aem-wcm-suggestions-servlet",
+  "name": "AEM WCM Suggestions Servlet",
+  "author": "DhiyaneshDk",
+  "severity": "LOW",
+  "description": "AEM WCM Suggestions Servlet is exposed.",
+  "references": [
+    "https://speakerdeck.com/0ang3el/hunting-for-security-bugs-in-aem-webapps?slide\u003d96"
+  ],
+  "tags": [
+    "aem",
+    "misconfig",
+    "intrusive"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.component:\"Adobe Experience Manager\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/bin/wcm/contentfinder/connector/suggestions.json;%0aOJh.css?query_term\u003dpath%3a/\u0026pre\u003d{{randstr}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "{{randstr}}",
+            "\"results\":",
+            "\"suggestions\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "aem-wcm-suggestions-servlet",
+    "info": {
+      "name": "AEM WCM Suggestions Servlet",
+      "author": "DhiyaneshDk",
+      "severity": "low",
+      "description": "AEM WCM Suggestions Servlet is exposed.",
+      "reference": [
+        "https://speakerdeck.com/0ang3el/hunting-for-security-bugs-in-aem-webapps?slide\u003d96"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.component:\"Adobe Experience Manager\""
+      },
+      "tags": "aem,misconfig,intrusive"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/bin/wcm/contentfinder/connector/suggestions.json;%0aOJh.css?query_term\u003dpath%3a/\u0026pre\u003d{{randstr}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "{{randstr}}",
+              "\"results\":",
+              "\"suggestions\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

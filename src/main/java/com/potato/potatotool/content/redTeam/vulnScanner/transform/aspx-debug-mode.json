@@ -1,0 +1,115 @@
+{
+  "id": "aspx-debug-mode",
+  "name": "ASP.NET Debugging Enabled",
+  "author": "dhiyaneshDk",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://portswigger.net/kb/issues/00100800_asp-net-debugging-enabled"
+  ],
+  "tags": [
+    "debug",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "DEBUG /Foobar-debug.aspx HTTP/1.1\nHost: {{Hostname}}\nCommand: stop-debug\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,*/*;q\u003d0.8\nContent-Length: 2\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "len(body) \u003d\u003d 2",
+            "regex(\"^OK$\", body)",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "aspx-debug-mode",
+    "info": {
+      "name": "ASP.NET Debugging Enabled",
+      "author": "dhiyaneshDk",
+      "severity": "info",
+      "reference": [
+        "https://portswigger.net/kb/issues/00100800_asp-net-debugging-enabled"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "debug,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "DEBUG /Foobar-debug.aspx HTTP/1.1\nHost: {{Hostname}}\nCommand: stop-debug\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,*/*;q\u003d0.8\nContent-Length: 2\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "len(body) \u003d\u003d 2",
+              "regex(\"^OK$\", body)",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

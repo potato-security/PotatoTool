@@ -1,0 +1,125 @@
+{
+  "id": "thanos-prometheus-exposure",
+  "name": "Thanos Prometheus Setup - Exposure",
+  "author": "DhiyaneshDk,righettod",
+  "severity": "HIGH",
+  "description": "Thanos graph endpoint was detected.\n",
+  "references": [
+    "https://thanos.io/",
+    "https://github.com/thanos-io/thanos"
+  ],
+  "tags": [
+    "thanos",
+    "prometheus",
+    "exposure",
+    "setup",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"29632872\"",
+    "shodan": "title:\"Thanos | Highly available Prometheus setup\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/graph",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_all(body, \"THANOS_COMPONENT\", \"THANOS_QUERY_URL\") || contains_all(body, \"\u003ctitle\u003eThanos\", \"href\u003d\\\"/classic/\\\"\u003eThanos\u003c/a\u003e\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "thanos-prometheus-exposure",
+    "info": {
+      "name": "Thanos Prometheus Setup - Exposure",
+      "author": "DhiyaneshDk,righettod",
+      "severity": "high",
+      "description": "Thanos graph endpoint was detected.\n",
+      "reference": [
+        "https://thanos.io/",
+        "https://github.com/thanos-io/thanos"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "title:\"Thanos | Highly available Prometheus setup\"",
+        "fofa_query": "icon_hash\u003d\"29632872\""
+      },
+      "tags": "thanos,prometheus,exposure,setup,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/graph",
+          "{{BaseURL}}/classic/graph"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_all(body, \"THANOS_COMPONENT\", \"THANOS_QUERY_URL\") || contains_all(body, \"\u003ctitle\u003eThanos\", \"href\u003d\\\"/classic/\\\"\u003eThanos\u003c/a\u003e\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

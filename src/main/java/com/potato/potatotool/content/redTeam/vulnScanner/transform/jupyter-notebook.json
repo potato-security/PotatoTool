@@ -1,0 +1,156 @@
+{
+  "id": "jupyter-notebook",
+  "name": "Jupyter Notebook Login Panel - Detect",
+  "author": "hakimkt,arafatansari",
+  "severity": "INFO",
+  "description": "Jupyter Notebook login panel was detected.\n",
+  "references": [
+    "https://www.exploit-db.com/ghdb/7970"
+  ],
+  "tags": [
+    "edb",
+    "panel",
+    "jupyter",
+    "notebook",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"JupyterHub\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/jupyter/login",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "/jupyter/static/base/images/logo.png",
+            "/jupyter/hub/logo",
+            "Select items to perform actions on them.",
+            "JupyterHub"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jupyter-notebook",
+    "info": {
+      "name": "Jupyter Notebook Login Panel - Detect",
+      "author": "hakimkt,arafatansari",
+      "severity": "info",
+      "description": "Jupyter Notebook login panel was detected.\n",
+      "reference": [
+        "https://www.exploit-db.com/ghdb/7970"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 4,
+        "shodan_query": "http.html:\"JupyterHub\""
+      },
+      "tags": "edb,panel,jupyter,notebook,exposure"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/jupyter/login",
+          "{{BaseURL}}/jupyter/lab",
+          "{{BaseURL}}/jupyter/hub/lti/launch",
+          "{{BaseURL}}/hub/login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "/jupyter/static/base/images/logo.png",
+              "/jupyter/hub/logo",
+              "Select items to perform actions on them.",
+              "JupyterHub"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

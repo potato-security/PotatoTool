@@ -1,0 +1,216 @@
+{
+  "id": "openam-panel",
+  "name": "OpenAM Login Panel - Detect",
+  "author": "philippedelteil",
+  "severity": "INFO",
+  "description": "OpenAM login panel was detected.",
+  "tags": [
+    "panel",
+    "openam",
+    "opensso",
+    "login",
+    "forgerock"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"openam\"",
+    "google": "intitle:\"openam\"",
+    "shodan": "http.title:\"OpenAM\" http.title:\"openam\""
+  },
+  "variables": {
+    "paths": [
+      "/openam/XUI",
+      "/XUI",
+      "/XUI/#login",
+      "/UI",
+      "/sso/XUI",
+      "/sso/UI",
+      "/sso/UI/#login",
+      "/opensso/UI/Login",
+      "/openam/UI/login",
+      "/openam/UI/#loginlogin",
+      "/openam/UI/Login",
+      "/openam/XUI/Login",
+      "/openam/XUI/login",
+      "/openam/XUI/#login",
+      "/am/UI/Login",
+      "/am/UI/#login",
+      "/am/XUI/",
+      "/am/XUI/Login",
+      "/am/json/serverinfo/*",
+      "/openam/json/serverinfo/*"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}{{paths}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "urlArgs: \"v\u003d",
+            "Sign in to OpenAM",
+            "ForgeRock",
+            "forgerock",
+            "FRForgotUsername",
+            "successfulUserRegistrationDestination"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "openam-panel",
+    "info": {
+      "name": "OpenAM Login Panel - Detect",
+      "author": "philippedelteil",
+      "severity": "info",
+      "description": "OpenAM login panel was detected.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 20,
+        "shodan_query": [
+          "http.title:\"OpenAM\"",
+          "http.title:\"openam\""
+        ],
+        "fofa_query": "title\u003d\"openam\"",
+        "google_query": "intitle:\"openam\""
+      },
+      "tags": "panel,openam,opensso,login,forgerock"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "/openam/XUI",
+            "/XUI",
+            "/XUI/#login",
+            "/UI",
+            "/sso/XUI",
+            "/sso/UI",
+            "/sso/UI/#login",
+            "/opensso/UI/Login",
+            "/openam/UI/login",
+            "/openam/UI/#loginlogin",
+            "/openam/UI/Login",
+            "/openam/XUI/Login",
+            "/openam/XUI/login",
+            "/openam/XUI/#login",
+            "/am/UI/Login",
+            "/am/UI/#login",
+            "/am/XUI/",
+            "/am/XUI/Login",
+            "/am/json/serverinfo/*",
+            "/openam/json/serverinfo/*"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}{{paths}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "urlArgs: \"v\u003d",
+              "Sign in to OpenAM",
+              "ForgeRock",
+              "forgerock",
+              "FRForgotUsername",
+              "successfulUserRegistrationDestination"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "urlArgs: \"v\u003d([0-9.abcd]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

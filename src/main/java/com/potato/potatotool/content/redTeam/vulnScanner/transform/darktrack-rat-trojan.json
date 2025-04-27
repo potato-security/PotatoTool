@@ -1,0 +1,130 @@
+{
+  "id": "darktrack-rat-trojan",
+  "name": "DarkTrack RAT Trojan - Detect",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "DarkTrack is a malicious program classified as a Remote Access Trojan (RAT). This type of malware enables remote access and control over an infected device. The level of control these programs have varies, however, some can allow user-level manipulation of the affected machine.\n",
+  "references": [
+    "https://github.com/montysecurity/C2-Tracker/blob/main/tracker.py"
+  ],
+  "tags": [
+    "network",
+    "c2",
+    "ir",
+    "osint",
+    "cti",
+    "darktrack",
+    "rat",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\u0027DarkTrack RAT Trojan\u0027"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "60129",
+      "inputs": [
+        {
+          "data": "2E",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 1024,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "0100000000000000034761"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "darktrack-rat-trojan",
+    "info": {
+      "name": "DarkTrack RAT Trojan - Detect",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "DarkTrack is a malicious program classified as a Remote Access Trojan (RAT). This type of malware enables remote access and control over an infected device. The level of control these programs have varies, however, some can allow user-level manipulation of the affected machine.\n",
+      "reference": [
+        "https://github.com/montysecurity/C2-Tracker/blob/main/tracker.py"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\u0027DarkTrack RAT Trojan\u0027"
+      },
+      "tags": "network,c2,ir,osint,cti,darktrack,rat,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "2E",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "port": "60129",
+        "stop_at_first_match": false,
+        "read_size": 1024,
+        "matchers": [
+          {
+            "type": "word",
+            "encoding": "hex",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "0100000000000000034761"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

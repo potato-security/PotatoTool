@@ -1,0 +1,125 @@
+{
+  "id": "api-aniapi",
+  "name": "AniAPI API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Anime discovery, streaming \u0026 syncing with trackers",
+  "references": [
+    "https://aniapi.com/docs/authentication",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/aniapi"
+  ],
+  "tags": [
+    "token-spray",
+    "aniapi"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.aniapi.com/v1/auth/me",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"username\":",
+            "\"data\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-aniapi",
+    "info": {
+      "name": "AniAPI API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Anime discovery, streaming \u0026 syncing with trackers",
+      "reference": [
+        "https://aniapi.com/docs/authentication",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/aniapi"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,aniapi"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.aniapi.com/v1/auth/me"
+        ],
+        "headers": {
+          "Authorization": "Bearer {{token}}"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"username\":",
+              "\"data\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

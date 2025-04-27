@@ -1,0 +1,124 @@
+{
+  "id": "cisco-finger-detect",
+  "name": "Cisco Finger Daemon Detection",
+  "author": "pussycat0x",
+  "severity": "LOW",
+  "description": "The finger daemon runs on TCP port 79. The client will (in the case of remote hosts) open a connection to port 79.\n",
+  "tags": [
+    "network",
+    "finger",
+    "detect",
+    "cisco",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"Cisco fingerd\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "79",
+      "inputs": [
+        {
+          "data": "\n",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Interface",
+            "Mode",
+            "User"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cisco-finger-detect",
+    "info": {
+      "name": "Cisco Finger Daemon Detection",
+      "author": "pussycat0x",
+      "severity": "low",
+      "description": "The finger daemon runs on TCP port 79. The client will (in the case of remote hosts) open a connection to port 79.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"Cisco fingerd\""
+      },
+      "tags": "network,finger,detect,cisco,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "\n",
+            "read": 0
+          }
+        ],
+        "port": "79",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Interface",
+              "Mode",
+              "User"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

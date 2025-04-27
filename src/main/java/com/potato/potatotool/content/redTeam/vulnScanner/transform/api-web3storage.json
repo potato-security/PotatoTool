@@ -1,0 +1,121 @@
+{
+  "id": "api-web3storage",
+  "name": "Web3 Storage API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "File Sharing and Storage for Free with 1TB Space",
+  "references": [
+    "https://docs.web3.storage/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/web3-storage"
+  ],
+  "tags": [
+    "token-spray",
+    "web3storage",
+    "intrusive"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET https://api.web3.storage/user/uploads HTTP/1.1\nHost: api.web3.storage\nAuthorization: Bearer {{token}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"created\"",
+            "\"cid\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-web3storage",
+    "info": {
+      "name": "Web3 Storage API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "File Sharing and Storage for Free with 1TB Space",
+      "reference": [
+        "https://docs.web3.storage/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/web3-storage"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,web3storage,intrusive"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET https://api.web3.storage/user/uploads HTTP/1.1\nHost: api.web3.storage\nAuthorization: Bearer {{token}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"created\"",
+              "\"cid\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

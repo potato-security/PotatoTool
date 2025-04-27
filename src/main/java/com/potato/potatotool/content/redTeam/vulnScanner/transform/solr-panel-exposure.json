@@ -1,0 +1,148 @@
+{
+  "id": "solr-panel-exposure",
+  "name": "Apache Solr Admin Panel - Detect",
+  "author": "pdteam",
+  "severity": "INFO",
+  "description": "Apache Solr admin panel was detected.",
+  "tags": [
+    "panel",
+    "solr",
+    "apache",
+    "admin"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"solr admin\" title\u003d\"apache solr\"",
+    "google": "intitle:\"apache solr\" intitle:\"solr admin\"",
+    "shodan": "http.title:\"Solr Admin\" http.title:\"apache solr\" cpe:\"cpe:2.3:a:apache:solr\" http.title:\"solr admin\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/solr/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ctitle\u003eSolr Admin\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "solr-panel-exposure",
+    "info": {
+      "name": "Apache Solr Admin Panel - Detect",
+      "author": "pdteam",
+      "severity": "info",
+      "description": "Apache Solr admin panel was detected.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": [
+          "http.title:\"Solr Admin\"",
+          "http.title:\"apache solr\"",
+          "cpe:\"cpe:2.3:a:apache:solr\"",
+          "http.title:\"solr admin\""
+        ],
+        "fofa_query": [
+          "title\u003d\"solr admin\"",
+          "title\u003d\"apache solr\""
+        ],
+        "google_query": [
+          "intitle:\"apache solr\"",
+          "intitle:\"solr admin\""
+        ]
+      },
+      "tags": "panel,solr,apache,admin"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/solr/",
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ctitle\u003eSolr Admin\u003c/title\u003e"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "favicon\\.ico\\?_\u003d([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

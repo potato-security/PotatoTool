@@ -1,0 +1,119 @@
+{
+  "id": "oipm-detect",
+  "name": "One Identity Password Manager Detection",
+  "author": "nodauf",
+  "severity": "INFO",
+  "description": "One Identity Password Manager is a secure password manager that gives enterprises control over password management, policies, and automated reset functions.",
+  "references": [
+    "https://www.oneidentity.com/techbrief/security-guide-for-password-manager821177/"
+  ],
+  "tags": [
+    "panel",
+    "oneidentity"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/PMUser/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "One Identity Password Manager"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "oipm-detect",
+    "info": {
+      "name": "One Identity Password Manager Detection",
+      "author": "nodauf",
+      "severity": "info",
+      "description": "One Identity Password Manager is a secure password manager that gives enterprises control over password management, policies, and automated reset functions.",
+      "reference": [
+        "https://www.oneidentity.com/techbrief/security-guide-for-password-manager821177/"
+      ],
+      "classification": {
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "panel,oneidentity"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/PMUser/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "One Identity Password Manager"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

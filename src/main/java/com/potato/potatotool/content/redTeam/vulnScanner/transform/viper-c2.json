@@ -1,0 +1,122 @@
+{
+  "id": "viper-c2",
+  "name": "Viper C2 - Detect",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "Viper is a graphical intranet penetration tool, which modularizes and weaponizes the tactics and technologies commonly used in the process of Intranet penetration.\n",
+  "references": [
+    "https://twitter.com/MichalKoczwara/status/1635724410274414596"
+  ],
+  "tags": [
+    "tech",
+    "viper",
+    "c2",
+    "malware",
+    "ir",
+    "panel"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html_hash:1015055567"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 404",
+            "(\"057f3b5488605b4d224d038e340866e2cdfed4a3\" \u003d\u003d sha1(body))"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "viper-c2",
+    "info": {
+      "name": "Viper C2 - Detect",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "Viper is a graphical intranet penetration tool, which modularizes and weaponizes the tactics and technologies commonly used in the process of Intranet penetration.\n",
+      "reference": [
+        "https://twitter.com/MichalKoczwara/status/1635724410274414596"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html_hash:1015055567"
+      },
+      "tags": "tech,viper,c2,malware,ir,panel"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 404",
+              "(\"057f3b5488605b4d224d038e340866e2cdfed4a3\" \u003d\u003d sha1(body))"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

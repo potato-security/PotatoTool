@@ -1,0 +1,187 @@
+{
+  "id": "exposed-pki-cert",
+  "name": "Exposed Internal PKI Infrastructure - Detect",
+  "author": "nullenc0de",
+  "severity": "HIGH",
+  "description": "Detects exposed internal PKI infrastructure including CRL distribution points and OCSP responders\n",
+  "tags": [
+    "pki",
+    "exposure",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "paths": [
+      "",
+      "certsrv/",
+      "pki/",
+      "PKI/",
+      "crl/",
+      "CRL/",
+      ".well-known/pki-validation/",
+      "ocsp/",
+      "CertEnroll/",
+      "CertSrv/"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/{{paths}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_any(body, \"Certificate Services\", \"CRL Distribution Point\", \"OCSP Responder\")",
+            "!regex(\"^This is an OCSP responder.$\", body)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "CN\u003d[A-Za-z0-9-]+-CA",
+            "(?i)\u003ca\\s+href\u003d\"([^\"]+\\.crl)\"[^\u003e]*\u003e[^\u003c]*\\.crl\u003c\\/a\u003e",
+            "(?i)\u003ca\\s+href\u003d\"([^\"]+\\.cer)\"[^\u003e]*\u003e[^\u003c]*\\.cer\u003c\\/a\u003e",
+            "(?i)\u003ca\\s+href\u003d\"([^\"]+\\.p7b)\"[^\u003e]*\u003e[^\u003c]*\\.p7b\u003c\\/a\u003e",
+            "(?i)href\u003d\"([^\"]+\\.crl)\"",
+            "(?i)href\u003d\"([^\"]+\\.cer)\"",
+            "(?i)href\u003d\"([^\"]+\\.p7b)\""
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "exposed-pki-cert",
+    "info": {
+      "name": "Exposed Internal PKI Infrastructure - Detect",
+      "author": "nullenc0de",
+      "severity": "high",
+      "description": "Detects exposed internal PKI infrastructure including CRL distribution points and OCSP responders\n",
+      "metadata": {
+        "max_request": 10
+      },
+      "tags": "pki,exposure,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "",
+            "certsrv/",
+            "pki/",
+            "PKI/",
+            "crl/",
+            "CRL/",
+            ".well-known/pki-validation/",
+            "ocsp/",
+            "CertEnroll/",
+            "CertSrv/"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/{{paths}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_any(body, \"Certificate Services\", \"CRL Distribution Point\", \"OCSP Responder\")",
+              "!regex(\"^This is an OCSP responder.$\", body)"
+            ],
+            "condition": "and"
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "CN\u003d[A-Za-z0-9-]+-CA",
+              "(?i)\u003ca\\s+href\u003d\"([^\"]+\\.crl)\"[^\u003e]*\u003e[^\u003c]*\\.crl\u003c\\/a\u003e",
+              "(?i)\u003ca\\s+href\u003d\"([^\"]+\\.cer)\"[^\u003e]*\u003e[^\u003c]*\\.cer\u003c\\/a\u003e",
+              "(?i)\u003ca\\s+href\u003d\"([^\"]+\\.p7b)\"[^\u003e]*\u003e[^\u003c]*\\.p7b\u003c\\/a\u003e",
+              "(?i)href\u003d\"([^\"]+\\.crl)\"",
+              "(?i)href\u003d\"([^\"]+\\.cer)\"",
+              "(?i)href\u003d\"([^\"]+\\.p7b)\""
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "CN\u003d[A-Za-z0-9-]+-CA",
+              "O\u003d[A-Za-z0-9 ]+",
+              "OU\u003d[A-Za-z0-9 ]+"
+            ],
+            "group": 1,
+            "name": "certificate_details",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

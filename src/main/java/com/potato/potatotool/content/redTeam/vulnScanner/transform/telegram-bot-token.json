@@ -1,0 +1,194 @@
+{
+  "id": "telegram-bot-token",
+  "name": "Telegram Bot Token",
+  "author": "DhiyaneshDK",
+  "severity": "HIGH",
+  "description": "",
+  "references": [
+    "https://github.com/praetorian-inc/noseyparker/blob/main/crates/noseyparker/data/default/builtin/rules/telegram.yml",
+    "https://core.telegram.org/bots/api",
+    "https://core.telegram.org/bots/features#botfather"
+  ],
+  "tags": [
+    "telegram",
+    "token",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "\\b(\\d+:AA[a-zA-Z0-9_-]{32,33})"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "token",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@Host: https://api.telegram.org:443\nGET /bot{{token}}/getMe HTTP/1.1\nHost: api.telegram.org\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": true,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body, \"is_bot\") \u0026\u0026 contains(body, \"can_join_groups\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "telegram-bot-token",
+    "info": {
+      "name": "Telegram Bot Token",
+      "author": "DhiyaneshDK",
+      "severity": "high",
+      "reference": [
+        "https://github.com/praetorian-inc/noseyparker/blob/main/crates/noseyparker/data/default/builtin/rules/telegram.yml",
+        "https://core.telegram.org/bots/api",
+        "https://core.telegram.org/bots/features#botfather"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "telegram,token,exposure"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\\b(\\d+:AA[a-zA-Z0-9_-]{32,33})"
+            ],
+            "group": 1,
+            "name": "token",
+            "internal": true
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": true,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@Host: https://api.telegram.org:443\nGET /bot{{token}}/getMe HTTP/1.1\nHost: api.telegram.org\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body, \"is_bot\") \u0026\u0026 contains(body, \"can_join_groups\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "token"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

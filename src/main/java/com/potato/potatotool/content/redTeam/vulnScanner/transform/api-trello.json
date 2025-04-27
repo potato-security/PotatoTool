@@ -1,0 +1,117 @@
+{
+  "id": "api-trello",
+  "name": "Trello API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Boards, lists and cards to help you organize and prioritize your projects",
+  "references": [
+    "https://developers.trello.com/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/trello"
+  ],
+  "tags": [
+    "token-spray",
+    "trello"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.trello.com/1/members/me?key\u003d{{key}}\u0026token\u003d{{token}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "invalid key"
+          ],
+          "negative": true,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-trello",
+    "info": {
+      "name": "Trello API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Boards, lists and cards to help you organize and prioritize your projects",
+      "reference": [
+        "https://developers.trello.com/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/trello"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,trello"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.trello.com/1/members/me?key\u003d{{key}}\u0026token\u003d{{token}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": true,
+            "part": "body",
+            "words": [
+              "invalid key"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

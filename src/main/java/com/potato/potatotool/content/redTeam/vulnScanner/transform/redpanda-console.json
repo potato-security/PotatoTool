@@ -1,0 +1,139 @@
+{
+  "id": "redpanda-console",
+  "name": "Redpanda Console - Exposure",
+  "author": "kh4sh3i",
+  "severity": "MEDIUM",
+  "description": "Unauthorized access to the Redpanda Console could allow attackers to view or manipulate streaming data, monitor clusters, or access configuration information, leading to potential data leaks or service disruption.\n",
+  "references": [
+    "https://github.com/redpanda-data/console"
+  ],
+  "tags": [
+    "misconfig",
+    "redpanda",
+    "console",
+    "streaming"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"Redpanda Console\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/overview",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Redpanda Console"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "redpanda-console",
+    "info": {
+      "name": "Redpanda Console - Exposure",
+      "author": "kh4sh3i",
+      "severity": "medium",
+      "description": "Unauthorized access to the Redpanda Console could allow attackers to view or manipulate streaming data, monitor clusters, or access configuration information, leading to potential data leaks or service disruption.\n",
+      "reference": [
+        "https://github.com/redpanda-data/console"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"Redpanda Console\""
+      },
+      "tags": "misconfig,redpanda,console,streaming"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/overview"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Redpanda Console"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

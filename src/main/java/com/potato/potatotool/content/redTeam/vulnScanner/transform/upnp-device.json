@@ -1,0 +1,152 @@
+{
+  "id": "upnp-device-detect",
+  "name": "Detect Basic uPNP Device",
+  "author": "geeknik",
+  "severity": "INFO",
+  "description": "uPNP Device was detected.",
+  "references": [
+    "https://www.upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf"
+  ],
+  "tags": [
+    "upnp",
+    "iot"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "urn:schemas-upnp-org:device-1-0",
+            "\u003cdeviceType\u003e",
+            "\u003cmodelName\u003e"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "upnp-device-detect",
+    "info": {
+      "name": "Detect Basic uPNP Device",
+      "author": "geeknik",
+      "severity": "info",
+      "description": "uPNP Device was detected.",
+      "reference": [
+        "https://www.upnp.org/specs/basic/UPnP-basic-Basic-v1-Device.pdf"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "upnp,iot"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "urn:schemas-upnp-org:device-1-0",
+              "\u003cdeviceType\u003e",
+              "\u003cmodelName\u003e"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003cmodelName\u003e.*\u003c/modelName\u003e",
+              "\u003cmodelNumber\u003e.*\u003c/modelNumber\u003e"
+            ],
+            "group": 1,
+            "name": "model",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

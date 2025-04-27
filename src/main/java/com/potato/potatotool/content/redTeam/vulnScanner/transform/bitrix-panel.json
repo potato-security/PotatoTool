@@ -1,0 +1,123 @@
+{
+  "id": "bitrix-login",
+  "name": "Bitrix Login Panel",
+  "author": "juicypotato1,malwarework",
+  "severity": "INFO",
+  "description": "Bitrix24 is a unified work space that places a complete set of business tools into a single, intuitive interface.\n",
+  "tags": [
+    "panel",
+    "bitrix",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"/bitrix/\"",
+    "shodan": "http.html:\"/bitrix/\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/bitrix/admin/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "USER_LOGIN",
+            "/bitrix/js/main/"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "bitrix-login",
+    "info": {
+      "name": "Bitrix Login Panel",
+      "author": "juicypotato1,malwarework",
+      "severity": "info",
+      "description": "Bitrix24 is a unified work space that places a complete set of business tools into a single, intuitive interface.\n",
+      "classification": {
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html:\"/bitrix/\"",
+        "fofa_query": "body\u003d\"/bitrix/\""
+      },
+      "tags": "panel,bitrix,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/bitrix/admin/",
+          "{{BaseURL}}/bitrix/components/bitrix/map.yandex.view/settings/settings.php"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "USER_LOGIN",
+              "/bitrix/js/main/"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

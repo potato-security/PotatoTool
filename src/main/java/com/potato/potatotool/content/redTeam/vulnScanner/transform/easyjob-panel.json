@@ -1,0 +1,129 @@
+{
+  "id": "easyjob-panel",
+  "name": "EasyJOB Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "EasyJOB login panel was detected.\n",
+  "references": [
+    "https://www.en.because-software.com/software/easyjob/"
+  ],
+  "tags": [
+    "panel",
+    "easyjob",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Log in - easyJOB\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/easy/app/Account/Login",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body, \"easyJOB\") \u0026\u0026 contains(body, \"/easy/app/\") \u0026\u0026 contains(body, \"because-software.com\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "easyjob-panel",
+    "info": {
+      "name": "EasyJOB Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "EasyJOB login panel was detected.\n",
+      "reference": [
+        "https://www.en.because-software.com/software/easyjob/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Log in - easyJOB\""
+      },
+      "tags": "panel,easyjob,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/easy/app/Account/Login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body, \"easyJOB\") \u0026\u0026 contains(body, \"/easy/app/\") \u0026\u0026 contains(body, \"because-software.com\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "easyJOB\\s+([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

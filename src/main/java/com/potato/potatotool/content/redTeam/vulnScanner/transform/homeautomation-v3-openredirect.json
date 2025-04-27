@@ -1,0 +1,128 @@
+{
+  "id": "homeautomation-v3-openredirect",
+  "name": "HomeAutomation 3.3.2 - Open Redirect",
+  "author": "0x_Akoko",
+  "severity": "MEDIUM",
+  "description": "HomeAutomation 3.3.2 contains an open redirect vulnerability. An attacker can inject a redirect URL via the api.php endpoint and the redirect parameter, making it possible to redirect a user to a malicious site and possibly obtain sensitive information, modify data, and/or execute unauthorized operations.",
+  "references": [
+    "https://www.zeroscience.mk/en/vulnerabilities/ZSL-2019-5559.php",
+    "https://packetstormsecurity.com/files/155795/HomeAutomation-3.3.2-Open-Redirect.html"
+  ],
+  "tags": [
+    "homeautomation",
+    "packetstorm",
+    "iot",
+    "redirect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-601",
+  "cvssScore": "6.1",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/homeautomation_v3_3_2/api.php?do\u003dgroups/toggle\u0026groupid\u003d1\u0026status\u003d1\u0026redirect\u003dhttps://interact.sh/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "(?m)^(?:Location\\s*?:\\s*?)(?:https?://|//)?(?:[a-zA-Z0-9\\-_\\.@]*)interact\\.sh.*$"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "homeautomation-v3-openredirect",
+    "info": {
+      "name": "HomeAutomation 3.3.2 - Open Redirect",
+      "author": "0x_Akoko",
+      "severity": "medium",
+      "description": "HomeAutomation 3.3.2 contains an open redirect vulnerability. An attacker can inject a redirect URL via the api.php endpoint and the redirect parameter, making it possible to redirect a user to a malicious site and possibly obtain sensitive information, modify data, and/or execute unauthorized operations.",
+      "reference": [
+        "https://www.zeroscience.mk/en/vulnerabilities/ZSL-2019-5559.php",
+        "https://packetstormsecurity.com/files/155795/HomeAutomation-3.3.2-Open-Redirect.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+        "cvss_score": "6.1",
+        "cwe_id": "CWE-601"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "homeautomation,packetstorm,iot,redirect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/homeautomation_v3_3_2/api.php?do\u003dgroups/toggle\u0026groupid\u003d1\u0026status\u003d1\u0026redirect\u003dhttps://interact.sh/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "(?m)^(?:Location\\s*?:\\s*?)(?:https?://|//)?(?:[a-zA-Z0-9\\-_\\.@]*)interact\\.sh.*$"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

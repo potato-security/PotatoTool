@@ -1,0 +1,159 @@
+{
+  "id": "elasticsearch-default-login",
+  "name": "ElasticSearch - Default Login",
+  "author": "Mohammad Reza Omrani | @omranisecurity",
+  "severity": "HIGH",
+  "description": "Elasticsearch default credentials were discovered.\n",
+  "references": [
+    "https://www.alibabacloud.com/blog/what-is-the-default-username-and-password-for-elasticsearch_599610",
+    "https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-users.html"
+  ],
+  "tags": [
+    "default-login",
+    "elasticsearch"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Elastic\" || http.favicon.hash:1328449667"
+  },
+  "variables": {
+    "password": [
+      "changeme"
+    ],
+    "username": [
+      "elastic"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /internal/security/login HTTP/1.1\nHost: {{Hostname}}\nUser-Agent: Mozilla/5.0 (Windows; Windows NT 10.1; Win64; x64; en-US) Gecko/20100101 Firefox/49.5\nReferer: {{RootURL}}/login\nContent-Type: application/json\nkbn-version: 8.8.2\nx-kbn-context: %7B%22name%22%3A%22security_login%22%2C%22url%22%3A%22%2Flogin%22%7D\nOrigin: {{RootURL}}\n\n{\"providerType\":\"basic\",\"providerName\":\"basic\",\"currentURL\":\"{{BaseURL}}/login\",\"params\":{\"username\":\"{{username}}\",\"password\":\"{{password}}\" }}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "Set-Cookie: sid\u003d",
+            "kbn-license-sig:"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": true,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "elasticsearch-default-login",
+    "info": {
+      "name": "ElasticSearch - Default Login",
+      "author": "Mohammad Reza Omrani | @omranisecurity",
+      "severity": "high",
+      "description": "Elasticsearch default credentials were discovered.\n",
+      "reference": [
+        "https://www.alibabacloud.com/blog/what-is-the-default-username-and-password-for-elasticsearch_599610",
+        "https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-users.html"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Elastic\" || http.favicon.hash:1328449667"
+      },
+      "tags": "default-login,elasticsearch"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "elastic"
+          ],
+          "password": [
+            "changeme"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /internal/security/login HTTP/1.1\nHost: {{Hostname}}\nUser-Agent: Mozilla/5.0 (Windows; Windows NT 10.1; Win64; x64; en-US) Gecko/20100101 Firefox/49.5\nReferer: {{RootURL}}/login\nContent-Type: application/json\nkbn-version: 8.8.2\nx-kbn-context: %7B%22name%22%3A%22security_login%22%2C%22url%22%3A%22%2Flogin%22%7D\nOrigin: {{RootURL}}\n\n{\"providerType\":\"basic\",\"providerName\":\"basic\",\"currentURL\":\"{{BaseURL}}/login\",\"params\":{\"username\":\"{{username}}\",\"password\":\"{{password}}\" }}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "Set-Cookie: sid\u003d",
+              "kbn-license-sig:"
+            ],
+            "condition": "and",
+            "case_insensitive": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

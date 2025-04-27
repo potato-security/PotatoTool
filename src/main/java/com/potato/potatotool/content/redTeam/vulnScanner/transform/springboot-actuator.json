@@ -1,0 +1,149 @@
+{
+  "id": "springboot-actuator",
+  "name": "Detect Springboot Actuators",
+  "author": "that_juan_,dwisiswant0,wdahlenb,dr0pd34d",
+  "severity": "INFO",
+  "description": "",
+  "tags": [
+    "tech",
+    "springboot",
+    "actuator"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.favicon.hash:116323821"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"_links\":",
+            "\"self\":",
+            "\"health\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "DSL",
+          "values": [
+            "status_code\u003d\u003d200 \u0026\u0026 (\"116323821\" \u003d\u003d mmh3(base64_py(body)))"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "favicon",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "springboot-actuator",
+    "info": {
+      "name": "Detect Springboot Actuators",
+      "author": "that_juan_,dwisiswant0,wdahlenb,dr0pd34d",
+      "severity": "info",
+      "metadata": {
+        "max_request": 4,
+        "shodan_query": "http.favicon.hash:116323821"
+      },
+      "tags": "tech,springboot,actuator"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/actuator",
+          "{{BaseURL}}/favicon.ico",
+          "{{BaseURL}}/actuator/favicon.ico"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"_links\":",
+              "\"self\":",
+              "\"health\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "dsl",
+            "name": "favicon",
+            "dsl": [
+              "status_code\u003d\u003d200 \u0026\u0026 (\"116323821\" \u003d\u003d mmh3(base64_py(body)))"
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "json",
+            "json": [
+              ".[] | to_entries | .[].key"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

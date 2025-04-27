@@ -1,0 +1,124 @@
+{
+  "id": "api-chaos",
+  "name": "Chaos API Test",
+  "author": "0ri2N",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://chaos.projectdiscovery.io/#/docs"
+  ],
+  "tags": [
+    "recon",
+    "chaos",
+    "token-spray",
+    "projectdiscovery"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://dns.projectdiscovery.io/dns/projectdiscovery.io",
+      "headers": {
+        "Authorization": "{{token}}"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"domain\":",
+            "\"subdomains\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-chaos",
+    "info": {
+      "name": "Chaos API Test",
+      "author": "0ri2N",
+      "severity": "info",
+      "reference": [
+        "https://chaos.projectdiscovery.io/#/docs"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "recon,chaos,token-spray,projectdiscovery"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://dns.projectdiscovery.io/dns/projectdiscovery.io"
+        ],
+        "headers": {
+          "Authorization": "{{token}}"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"domain\":",
+              "\"subdomains\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

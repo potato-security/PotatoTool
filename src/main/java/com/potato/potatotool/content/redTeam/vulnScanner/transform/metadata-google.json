@@ -1,0 +1,143 @@
+{
+  "id": "metadata-service-gcp",
+  "name": "Google GCP Metadata Service Check",
+  "author": "sullo",
+  "severity": "CRITICAL",
+  "description": "The Google cloud (GCP) host is configured as a proxy which allows access to the instance metadata service. This could allow significant access to the host/infrastructure.",
+  "references": [
+    "https://cloud.google.com/compute/docs/metadata/default-metadata-values",
+    "https://blog.projectdiscovery.io/abusing-reverse-proxies-metadata/",
+    "https://www.mcafee.com/blogs/enterprise/cloud-security/how-an-attacker-could-use-instance-metadata-to-breach-your-app-in-aws/"
+  ],
+  "tags": [
+    "exposure",
+    "config",
+    "google",
+    "gcp",
+    "proxy",
+    "misconfig",
+    "metadata"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "hostval": [
+      "aws.oast.online",
+      "169.254.169.254"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-441",
+  "cvssScore": "9.3",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET http://{{hostval}}/computeMetadata/v1/project/ HTTP/1.1\nHost: {{hostval}}\nMetadata-Flavor: Google\n\n"
+      ],
+      "unsafe": true,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "attributes/"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "metadata-service-gcp",
+    "info": {
+      "name": "Google GCP Metadata Service Check",
+      "author": "sullo",
+      "severity": "critical",
+      "description": "The Google cloud (GCP) host is configured as a proxy which allows access to the instance metadata service. This could allow significant access to the host/infrastructure.",
+      "reference": [
+        "https://cloud.google.com/compute/docs/metadata/default-metadata-values",
+        "https://blog.projectdiscovery.io/abusing-reverse-proxies-metadata/",
+        "https://www.mcafee.com/blogs/enterprise/cloud-security/how-an-attacker-could-use-instance-metadata-to-breach-your-app-in-aws/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:L/A:N",
+        "cvss_score": "9.3",
+        "cwe_id": "CWE-441"
+      },
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "exposure,config,google,gcp,proxy,misconfig,metadata"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "hostval": [
+            "aws.oast.online",
+            "169.254.169.254"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": true,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET http://{{hostval}}/computeMetadata/v1/project/ HTTP/1.1\nHost: {{hostval}}\nMetadata-Flavor: Google\n\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "attributes/"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

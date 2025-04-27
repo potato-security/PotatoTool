@@ -1,0 +1,163 @@
+{
+  "id": "symfony-fosjrouting-bundle",
+  "name": "Symfony FOSJsRoutingBundle",
+  "author": "DhiyaneshDk",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://packagist.org/packages/friendsofsymfony/jsrouting-bundle",
+    "https://github.com/FriendsOfSymfony/FOSJsRoutingBundle"
+  ],
+  "tags": [
+    "misconfig",
+    "symfony"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"symfony Profiler\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/js/routing?callback\u003dfos.Router.setDatafoobarfoo",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "/**/fos.Router.setDatafoobarfoo({",
+            "routes"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "application/javascript"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "symfony-fosjrouting-bundle",
+    "info": {
+      "name": "Symfony FOSJsRoutingBundle",
+      "author": "DhiyaneshDk",
+      "severity": "info",
+      "reference": [
+        "https://packagist.org/packages/friendsofsymfony/jsrouting-bundle",
+        "https://github.com/FriendsOfSymfony/FOSJsRoutingBundle"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html:\"symfony Profiler\""
+      },
+      "tags": "misconfig,symfony"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/js/routing?callback\u003dfos.Router.setDatafoobarfoo"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "/**/fos.Router.setDatafoobarfoo({",
+              "routes"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "application/javascript"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

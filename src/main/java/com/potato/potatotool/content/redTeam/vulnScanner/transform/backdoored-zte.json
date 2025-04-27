@@ -1,0 +1,153 @@
+{
+  "id": "backdoored-zte",
+  "name": "ZTE Router Panel - Detect",
+  "author": "its0x08",
+  "severity": "CRITICAL",
+  "description": "Multiple ZTE router panels were detected. These routers have a telnet-hardcoded backdoor account that spawns root shell.\n",
+  "references": [
+    "https://www.exploit-db.com/ghdb/7179"
+  ],
+  "tags": [
+    "edb",
+    "network",
+    "zte",
+    "telnet",
+    "backdoor",
+    "router",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"ZTE Corporation\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-912",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "23",
+      "inputs": [
+        {
+          "data": "root\r\n",
+          "read": "0"
+        },
+        {
+          "data": "Zte521\r\n\r\n",
+          "read": "1024"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "BusyBox"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "backdoored-zte",
+    "info": {
+      "name": "ZTE Router Panel - Detect",
+      "author": "its0x08",
+      "severity": "critical",
+      "description": "Multiple ZTE router panels were detected. These routers have a telnet-hardcoded backdoor account that spawns root shell.\n",
+      "reference": [
+        "https://www.exploit-db.com/ghdb/7179"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-912"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html:\"ZTE Corporation\""
+      },
+      "tags": "edb,network,zte,telnet,backdoor,router,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "root\r\n",
+            "read": 0
+          },
+          {
+            "data": "Zte521\r\n\r\n",
+            "read": 1024
+          }
+        ],
+        "port": "23",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "BusyBox"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "[A-Z]{1,}[0-9]{3,4}"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

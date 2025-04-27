@@ -1,0 +1,156 @@
+{
+  "id": "gitea-detect",
+  "name": "Gitea Detect",
+  "author": "pikpikcu,righettod",
+  "severity": "INFO",
+  "description": "Gitea was detected.",
+  "references": [
+    "https://about.gitea.com/",
+    "https://docs.gitea.com/api"
+  ],
+  "tags": [
+    "tech",
+    "gitea"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Gitea\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/user/login",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Powered by Gitea",
+            "content\u003d\"Gitea"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "gitea-detect",
+    "info": {
+      "name": "Gitea Detect",
+      "author": "pikpikcu,righettod",
+      "severity": "info",
+      "description": "Gitea was detected.",
+      "reference": [
+        "https://about.gitea.com/",
+        "https://docs.gitea.com/api"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Gitea\""
+      },
+      "tags": "tech,gitea"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/user/login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Powered by Gitea",
+              "content\u003d\"Gitea"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "Powered by Gitea(\\s*)Version:(\\s*)([\\d.]+)",
+              "Gitea Version: ([0-9a-z+-.~]+)",
+              "theme-gitea-auto.css\\?v\u003d([0-9a-z+-.~]+)",
+              "encodeURIComponent.{2}([0-9a-z+-.~]+).{2}"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

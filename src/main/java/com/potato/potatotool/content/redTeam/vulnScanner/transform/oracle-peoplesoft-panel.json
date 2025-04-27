@@ -1,0 +1,159 @@
+{
+  "id": "oracle-peoplesoft-panel",
+  "name": "Oracle PeopleSoft Login Panel - Detect",
+  "author": "idealphase,righettod",
+  "severity": "INFO",
+  "description": "Oracle PeopleSoft login panel was detected.",
+  "references": [
+    "https://www.oracle.com/applications/peoplesoft/"
+  ],
+  "tags": [
+    "oracle",
+    "peoplesoft",
+    "panel",
+    "login",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"Oracle PeopleSoft Sign-in\"",
+    "shodan": "http.title:\"Oracle PeopleSoft Sign-in\""
+  },
+  "variables": {
+    "path": [
+      "psp/csprd/?cmd\u003dlogin\u0026languageCd\u003dENG\u0026",
+      "psp/retess/?cmd\u003dlogin\u0026languageCd\u003dENG\u0026",
+      "psp/fscmprod/?cmd\u003dlogin\u0026languageCd\u003dENG\u0026",
+      "psp/CT920/?cmd\u003dlogin\u0026languageCd\u003dENG\u0026",
+      "psp/esshrprd/?cmd\u003dlogin\u0026languageCd\u003dENG\u0026",
+      "psp/ps/?\u0026cmd\u003dlogin\u0026languageCd\u003dENG\u0026"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"\u003ctitle\u003eoracle peoplesoft sign-in\u003c/title\u003e\", \"alt\u003d\\\"oracle peoplesoft sign-in\", \"title\u003d\\\"oracle peoplesoft sign-in\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "oracle-peoplesoft-panel",
+    "info": {
+      "name": "Oracle PeopleSoft Login Panel - Detect",
+      "author": "idealphase,righettod",
+      "severity": "info",
+      "description": "Oracle PeopleSoft login panel was detected.",
+      "reference": [
+        "https://www.oracle.com/applications/peoplesoft/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 12,
+        "shodan_query": "http.title:\"Oracle PeopleSoft Sign-in\"",
+        "fofa_query": "title\u003d\"Oracle PeopleSoft Sign-in\""
+      },
+      "tags": "oracle,peoplesoft,panel,login,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "path": [
+            "psp/csprd/?cmd\u003dlogin\u0026languageCd\u003dENG\u0026",
+            "psp/retess/?cmd\u003dlogin\u0026languageCd\u003dENG\u0026",
+            "psp/fscmprod/?cmd\u003dlogin\u0026languageCd\u003dENG\u0026",
+            "psp/CT920/?cmd\u003dlogin\u0026languageCd\u003dENG\u0026",
+            "psp/esshrprd/?cmd\u003dlogin\u0026languageCd\u003dENG\u0026",
+            "psp/ps/?\u0026cmd\u003dlogin\u0026languageCd\u003dENG\u0026"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": true,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/{{path}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"\u003ctitle\u003eoracle peoplesoft sign-in\u003c/title\u003e\", \"alt\u003d\\\"oracle peoplesoft sign-in\", \"title\u003d\\\"oracle peoplesoft sign-in\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)\\*\\s+Copyright\\s+\\(c\\)\\s+([0-9,\\s]+)\\s+Oracle\\s+and\\/or\\s+its\\s+affiliates."
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

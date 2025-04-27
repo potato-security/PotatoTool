@@ -20,8 +20,8 @@ import java.util.stream.Stream;
  */
 public class PocManager {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private static final String TRANSFORM_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/transform/";
-//    private static final String TRANSFORM_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\transform";
+//    private static final String TRANSFORM_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/transform/";
+    private static final String TRANSFORM_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\transform";
     /**
      * 解析指定目录下的所有POC文件
      * @param pocDirPath POC文件目录路径

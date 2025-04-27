@@ -1,0 +1,171 @@
+{
+  "id": "ispconfig-hcp-default-login",
+  "name": "ISPConfig Hosting Control Panel - Default Login",
+  "author": "ritikchaddha",
+  "severity": "HIGH",
+  "description": "ISPConfig Hosting Control Panel Default Password Vulnerability exposes systems to unauthorized access, compromising data integrity and security.\n",
+  "tags": [
+    "ispconfig",
+    "hsp",
+    "default-login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"ISPConfig\" http.favicon.hash:483383992"
+  },
+  "variables": {
+    "password": [
+      "admin"
+    ],
+    "username": [
+      "admin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /content.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nusername\u003d{{username}}\u0026passwort\u003d{{password}}\u0026s_mod\u003dlogin\u0026s_pg\u003dindex\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "LOGIN_REDIRECT:dashboard/dashboard.php"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "Set-Cookie"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ispconfig-hcp-default-login",
+    "info": {
+      "name": "ISPConfig Hosting Control Panel - Default Login",
+      "author": "ritikchaddha",
+      "severity": "high",
+      "description": "ISPConfig Hosting Control Panel Default Password Vulnerability exposes systems to unauthorized access, compromising data integrity and security.\n",
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"ISPConfig\" http.favicon.hash:483383992"
+      },
+      "tags": "ispconfig,hsp,default-login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "admin"
+          ],
+          "password": [
+            "admin"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /content.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nusername\u003d{{username}}\u0026passwort\u003d{{password}}\u0026s_mod\u003dlogin\u0026s_pg\u003dindex\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "LOGIN_REDIRECT:dashboard/dashboard.php"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "Set-Cookie"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

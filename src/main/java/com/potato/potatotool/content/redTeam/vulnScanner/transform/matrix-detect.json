@@ -1,0 +1,166 @@
+{
+  "id": "matrix-detect",
+  "name": "Matrix Server Detect",
+  "author": "erethon",
+  "severity": "INFO",
+  "description": "Detects Matrix servers based on .well-known entries. See https://en.wikipedia.org/wiki/Matrix_(protocol)",
+  "references": [
+    "https://spec.matrix.org/v1.3/server-server-api/#getwell-knownmatrixserver, https://spec.matrix.org/v1.3/client-server-api/#getwell-knownmatrixclient"
+  ],
+  "tags": [
+    "tech",
+    "matrix"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/.well-known/matrix/server",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "\"m\\.([a-z]+)\":"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": true,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "matrix-detect",
+    "info": {
+      "name": "Matrix Server Detect",
+      "author": "erethon",
+      "severity": "info",
+      "description": "Detects Matrix servers based on .well-known entries. See https://en.wikipedia.org/wiki/Matrix_(protocol)",
+      "reference": "https://spec.matrix.org/v1.3/server-server-api/#getwell-knownmatrixserver, https://spec.matrix.org/v1.3/client-server-api/#getwell-knownmatrixclient",
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "tech,matrix"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": true,
+        "path": [
+          "{{BaseURL}}/.well-known/matrix/server",
+          "{{BaseURL}}/.well-known/matrix/client"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\"m\\.([a-z]+)\":"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": true,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "json",
+            "json": [
+              ".\"m.server\" | select( . !\u003d null )",
+              ".\"m.homeserver\" | .base_url | select( . !\u003d null )",
+              ".\"m.identity_server\" | .base_url | select( . !\u003d null )"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

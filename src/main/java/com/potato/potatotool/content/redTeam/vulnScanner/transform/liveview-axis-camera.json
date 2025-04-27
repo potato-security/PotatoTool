@@ -1,0 +1,161 @@
+{
+  "id": "liveview-axis-camera",
+  "name": "AXIS Network Camera Live View - Detect",
+  "author": "dhiyaneshDK,f1she3",
+  "severity": "INFO",
+  "description": "AXIS Network Camera live view was detected.",
+  "references": [
+    "https://www.exploit-db.com/ghdb/6843"
+  ],
+  "tags": [
+    "axis",
+    "edb",
+    "iot"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssScore": "0",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/view/viewer_index.shtml",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(tolower(body), \"live view  - axis\")",
+            "contains(tolower(body), \"live view - axis\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "stream-view",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "\"1106649083\" \u003d\u003d mmh3(base64_py(body))"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "name": "logo",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "liveview-axis-camera",
+    "info": {
+      "name": "AXIS Network Camera Live View - Detect",
+      "author": "dhiyaneshDK,f1she3",
+      "severity": "info",
+      "description": "AXIS Network Camera live view was detected.",
+      "reference": [
+        "https://www.exploit-db.com/ghdb/6843"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cvss_score": "0",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "axis,edb,iot"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/view/viewer_index.shtml",
+          "{{BaseURL}}/pics/logo_70x29px.gif"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "dsl",
+            "name": "stream-view",
+            "dsl": [
+              "contains(tolower(body), \"live view  - axis\")",
+              "contains(tolower(body), \"live view - axis\")"
+            ],
+            "condition": "or"
+          },
+          {
+            "type": "dsl",
+            "name": "logo",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "\"1106649083\" \u003d\u003d mmh3(base64_py(body))"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "AXIS (.*) Network Camera\u003c/title\u003e"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

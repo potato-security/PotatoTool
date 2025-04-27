@@ -1,0 +1,131 @@
+{
+  "id": "safenet-authentication-panel",
+  "name": "SafeNet Authentication Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "SafeNet Authentication Service Self Enrollment login panel was detected.\n",
+  "references": [
+    "https://cpl.thalesgroup.com/access-management/safenet-trusted-access"
+  ],
+  "tags": [
+    "panel",
+    "safenet",
+    "thales",
+    "login",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Self Enrollment\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/selfenrollment/Enrollment.aspx",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(to_lower(body), \"self enrollment\") \u0026\u0026 contains_any(to_lower(body), \"safenet\", \"thales\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "safenet-authentication-panel",
+    "info": {
+      "name": "SafeNet Authentication Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "SafeNet Authentication Service Self Enrollment login panel was detected.\n",
+      "reference": [
+        "https://cpl.thalesgroup.com/access-management/safenet-trusted-access"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Self Enrollment\""
+      },
+      "tags": "panel,safenet,thales,login,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/selfenrollment/Enrollment.aspx"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(to_lower(body), \"self enrollment\") \u0026\u0026 contains_any(to_lower(body), \"safenet\", \"thales\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "V\u003d([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

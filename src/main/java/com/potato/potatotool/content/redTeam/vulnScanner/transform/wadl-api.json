@@ -1,0 +1,202 @@
+{
+  "id": "wadl-api",
+  "name": "WADL API - Detect",
+  "author": "0xrudra,manuelbua",
+  "severity": "INFO",
+  "description": "WADL API was detected.",
+  "references": [
+    "https://github.com/dwisiswant0/wadl-dumper",
+    "https://www.nopsec.com/leveraging-exposed-wadl-xml-in-burp-suite/"
+  ],
+  "tags": [
+    "exposure",
+    "api"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssScore": "0",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/application.wadl",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "This is simplified WADL with user and core resources only",
+            "http://jersey.java.net",
+            "http://wadl.dev.java.net/2009/02"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "method": "OPTIONS",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "This is simplified WADL with user and core resources only",
+            "http://jersey.java.net",
+            "http://wadl.dev.java.net/2009/02"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wadl-api",
+    "info": {
+      "name": "WADL API - Detect",
+      "author": "0xrudra,manuelbua",
+      "severity": "info",
+      "description": "WADL API was detected.",
+      "reference": [
+        "https://github.com/dwisiswant0/wadl-dumper",
+        "https://www.nopsec.com/leveraging-exposed-wadl-xml-in-burp-suite/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cvss_score": "0",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 8
+      },
+      "tags": "exposure,api"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/application.wadl",
+          "{{BaseURL}}/application.wadl?detail\u003dtrue",
+          "{{BaseURL}}/api/application.wadl",
+          "{{BaseURL}}/api/v1/application.wadl",
+          "{{BaseURL}}/api/v2/application.wadl"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "This is simplified WADL with user and core resources only",
+              "http://jersey.java.net",
+              "http://wadl.dev.java.net/2009/02"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "OPTIONS",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/api/v1",
+          "{{BaseURL}}/api/v2"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "This is simplified WADL with user and core resources only",
+              "http://jersey.java.net",
+              "http://wadl.dev.java.net/2009/02"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

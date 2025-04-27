@@ -1,0 +1,121 @@
+{
+  "id": "yunohost-admin-panel",
+  "name": "YunoHost Admin Panel - Detect",
+  "author": "s4e-io",
+  "severity": "INFO",
+  "description": "YunoHost Admin panel was discovered.\n",
+  "references": [
+    "https://yunohost.org/",
+    "https://github.com/YunoHost/yunohost"
+  ],
+  "tags": [
+    "panel",
+    "login",
+    "yunohost",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"YunoHost Admin\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/yunohost/admin",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_any(body, \"\u003ctitle\u003eYunoHost Admin\", \"href\u003d\\\"/yunohost/admin/favicon\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "yunohost-admin-panel",
+    "info": {
+      "name": "YunoHost Admin Panel - Detect",
+      "author": "s4e-io",
+      "severity": "info",
+      "description": "YunoHost Admin panel was discovered.\n",
+      "reference": [
+        "https://yunohost.org/",
+        "https://github.com/YunoHost/yunohost"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "title\u003d\"YunoHost Admin\""
+      },
+      "tags": "panel,login,yunohost,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/yunohost/admin"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_any(body, \"\u003ctitle\u003eYunoHost Admin\", \"href\u003d\\\"/yunohost/admin/favicon\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

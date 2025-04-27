@@ -1,0 +1,205 @@
+{
+  "id": "weblogic-t3-detect",
+  "name": "Weblogic T3 Protocol Detection",
+  "author": "F1tz,milo2012,wdahlenb",
+  "severity": "INFO",
+  "description": "T3 is the protocol used to transport information between WebLogic servers and other types of Java programs.\n",
+  "tags": [
+    "network",
+    "weblogic",
+    "detect",
+    "t3",
+    "oracle",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "7001",
+      "inputs": [
+        {
+          "data": "t3 12.2.1\nAS:255\nHL:19\nMS:10000000\nPU:t3://us-l-breens:7001\n\n",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 1024,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "HELO"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "host": "tls://{{Hostname}}",
+      "port": "7002",
+      "inputs": [
+        {
+          "data": "t3s 12.2.1\nAS:255\nHL:19\nMS:10000000\nPU:t3://us-l-breens:7001\n\n",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 1024,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "HELO"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "weblogic-t3-detect",
+    "info": {
+      "name": "Weblogic T3 Protocol Detection",
+      "author": "F1tz,milo2012,wdahlenb",
+      "severity": "info",
+      "description": "T3 is the protocol used to transport information between WebLogic servers and other types of Java programs.\n",
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "network,weblogic,detect,t3,oracle,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "t3 12.2.1\nAS:255\nHL:19\nMS:10000000\nPU:t3://us-l-breens:7001\n\n",
+            "read": 0
+          }
+        ],
+        "port": "7001",
+        "stop_at_first_match": false,
+        "read_size": 1024,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "HELO"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "HELO:(.*).false"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      },
+      {
+        "host": [
+          "tls://{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "t3s 12.2.1\nAS:255\nHL:19\nMS:10000000\nPU:t3://us-l-breens:7001\n\n",
+            "read": 0
+          }
+        ],
+        "port": "7002",
+        "stop_at_first_match": false,
+        "read_size": 1024,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "HELO"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "HELO:(.*).false"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

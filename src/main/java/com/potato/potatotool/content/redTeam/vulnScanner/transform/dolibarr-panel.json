@@ -1,0 +1,180 @@
+{
+  "id": "dolibarr-panel",
+  "name": "Dolibarr Login Panel - Detect",
+  "author": "pikpikcu,daffainfo,righettod",
+  "severity": "INFO",
+  "description": "Dolibarr login panel was detected.",
+  "tags": [
+    "panel",
+    "dolibarr"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Dolibarr\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "Set-Cookie: DOLSESSID_"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003cmeta name\u003d\"author\" content\u003d\"Dolibarr Development Team\"\u003e",
+            "authentication mode \u003d dolibarr",
+            "Includes JS of Dolibarr",
+            "\u003cdiv class\u003d\"login_table_title center\" title\u003d\"Dolibarr"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "dolibarr-panel",
+    "info": {
+      "name": "Dolibarr Login Panel - Detect",
+      "author": "pikpikcu,daffainfo,righettod",
+      "severity": "info",
+      "description": "Dolibarr login panel was detected.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Dolibarr\""
+      },
+      "tags": "panel,dolibarr"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "Set-Cookie: DOLSESSID_"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003cmeta name\u003d\"author\" content\u003d\"Dolibarr Development Team\"\u003e",
+              "authentication mode \u003d dolibarr",
+              "Includes JS of Dolibarr",
+              "\u003cdiv class\u003d\"login_table_title center\" title\u003d\"Dolibarr"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003ctd align\u003d\"center\"\u003eDolibarr ([0-9.]+)\u003c\\/td\u003e",
+              "\u003ctd class\u003d\"center\"\u003eDolibarr ([0-9.]+)\u003c\\/td\u003e",
+              "\u003cdiv id\u003d\"infoVersion\"\u003eDolibarr ([0-9.]+)\u003c\\/div\u003e",
+              "amp;version\u003d([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

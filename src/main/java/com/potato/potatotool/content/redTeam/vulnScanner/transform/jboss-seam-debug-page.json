@@ -1,0 +1,138 @@
+{
+  "id": "jboss-seam-debug-page",
+  "name": "Jboss Seam Debug Page Enabled",
+  "author": "dhiyaneshDK",
+  "severity": "MEDIUM",
+  "description": "Jboss Seam Debug Page was exposed.",
+  "references": [
+    "https://github.com/jaeles-project/jaeles-signatures/blob/master/common/jboss-seam-debug-page.yaml"
+  ],
+  "tags": [
+    "jboss",
+    "logs",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/debug.seam",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "SeamDebugPage",
+            "org.jboss.seam"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jboss-seam-debug-page",
+    "info": {
+      "name": "Jboss Seam Debug Page Enabled",
+      "author": "dhiyaneshDK",
+      "severity": "medium",
+      "description": "Jboss Seam Debug Page was exposed.",
+      "reference": [
+        "https://github.com/jaeles-project/jaeles-signatures/blob/master/common/jboss-seam-debug-page.yaml"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "jboss,logs,exposure"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/debug.seam"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "SeamDebugPage",
+              "org.jboss.seam"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

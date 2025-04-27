@@ -1,0 +1,115 @@
+{
+  "id": "elasticpot-honeypot-detect",
+  "name": "ElasticPot Honeypot - Detect",
+  "author": "UnaPibaGeek",
+  "severity": "INFO",
+  "description": "A ElasticPot (ElasticSearch) honeypot has been identified.\nThe response to a \u0027_cluster/settings\u0027 request differs from real installations, signaling a possible deceptive setup.\n",
+  "tags": [
+    "elasticpot",
+    "elasticsearch",
+    "honeypot",
+    "ir",
+    "cti"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "index_not_found_exception"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/_cluster/settings",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "index_not_found_exception"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "elasticpot-honeypot-detect",
+    "info": {
+      "name": "ElasticPot Honeypot - Detect",
+      "author": "UnaPibaGeek",
+      "severity": "info",
+      "description": "A ElasticPot (ElasticSearch) honeypot has been identified.\nThe response to a \u0027_cluster/settings\u0027 request differs from real installations, signaling a possible deceptive setup.\n",
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "index_not_found_exception"
+      },
+      "tags": "elasticpot,elasticsearch,honeypot,ir,cti"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/_cluster/settings"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "index_not_found_exception"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

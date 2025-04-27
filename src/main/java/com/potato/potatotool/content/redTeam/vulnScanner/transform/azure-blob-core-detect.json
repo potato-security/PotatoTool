@@ -1,0 +1,113 @@
+{
+  "id": "azure-blob-core-detect",
+  "name": "Azure Blob Core Service - Detect",
+  "author": "ProjectDiscoveryAI",
+  "severity": "INFO",
+  "description": "This template detects the presence of \u0027blob.core.windows.net\u0027 in the response body, indicating potential references to Azure Blob Storage.\n",
+  "tags": [
+    "azure",
+    "blob",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"blob.core.windows.net\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "response",
+          "values": [
+            "blob.core.windows.net"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "azure-blob-core-detect",
+    "info": {
+      "name": "Azure Blob Core Service - Detect",
+      "author": "ProjectDiscoveryAI",
+      "severity": "info",
+      "description": "This template detects the presence of \u0027blob.core.windows.net\u0027 in the response body, indicating potential references to Azure Blob Storage.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "html:\"blob.core.windows.net\""
+      },
+      "tags": "azure,blob,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "response",
+            "words": [
+              "blob.core.windows.net"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

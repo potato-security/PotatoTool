@@ -1,0 +1,122 @@
+{
+  "id": "api-bitrise",
+  "name": "Bitrise API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Build tool and processes integrations to create efficient development pipelines",
+  "references": [
+    "https://api-docs.bitrise.io/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/bitrise"
+  ],
+  "tags": [
+    "token-spray",
+    "bitrise"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET https://api.bitrise.io/v0.1/me HTTP/1.1\nHost: api.bitrise.io\nAuthorization: {{token}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"username\":",
+            "\"slug\":",
+            "\"email\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-bitrise",
+    "info": {
+      "name": "Bitrise API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Build tool and processes integrations to create efficient development pipelines",
+      "reference": [
+        "https://api-docs.bitrise.io/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/bitrise"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,bitrise"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET https://api.bitrise.io/v0.1/me HTTP/1.1\nHost: api.bitrise.io\nAuthorization: {{token}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"username\":",
+              "\"slug\":",
+              "\"email\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

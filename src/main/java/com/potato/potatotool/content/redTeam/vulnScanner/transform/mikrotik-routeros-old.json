@@ -1,0 +1,140 @@
+{
+  "id": "mikrotik-routeros-old",
+  "name": "MikroTik RouterOS Admin Login Panel - Detect",
+  "author": "its0x08,DhiyaneshDk",
+  "severity": "INFO",
+  "description": "MikroTik RouterOS admin login panel was detected.",
+  "tags": [
+    "panel",
+    "login",
+    "mikrotik"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"mikrotik routeros \u003e administration\"",
+    "google": "intitle:\"mikrotik routeros \u003e administration\"",
+    "shodan": "title:\"mikrotik routeros \u003e administration\" http.title:\"mikrotik routeros \u003e administration\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "mikrotik routeros \u003e administration",
+            "configuration page"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "mikrotik-routeros-old",
+    "info": {
+      "name": "MikroTik RouterOS Admin Login Panel - Detect",
+      "author": "its0x08,DhiyaneshDk",
+      "severity": "info",
+      "description": "MikroTik RouterOS admin login panel was detected.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "title:\"mikrotik routeros \u003e administration\"",
+          "http.title:\"mikrotik routeros \u003e administration\""
+        ],
+        "fofa_query": "title\u003d\"mikrotik routeros \u003e administration\"",
+        "google_query": "intitle:\"mikrotik routeros \u003e administration\""
+      },
+      "tags": "panel,login,mikrotik"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "mikrotik routeros \u003e administration",
+              "configuration page"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003cdiv class\u003d\"top\"\u003emikrotik routeros (.[0-9.]+) configuration page\u003c/div\u003e"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

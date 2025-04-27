@@ -1,0 +1,104 @@
+{
+  "name": "poc-yaml-activemq-weak-password",
+  "author": "k3ppf0r",
+  "description": "",
+  "references": [
+    "https://blog.csdn.net/ge00111/article/details/72765210"
+  ],
+  "version": "",
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "check() \u0026\u0026 auth()",
+  "searchQueries": {},
+  "variables": {
+    "p1": [
+      "{username\u003dr\"guest\", password\u003dr\"guest*PWD\"}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "check",
+      "method": "GET",
+      "path": "/index.php",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": true,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "response.status \u003d\u003d 200 \u0026\u0026 response.body.ibcontains(b\"Reporter\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "auth",
+      "method": "POST",
+      "path": "/action.php",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "body": "language\u003dzh_CN\u0026user_name\u003d{{username}}\u0026user_password\u003d{{password}}\u0026do\u003dlogin",
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "response.status \u003d\u003d 200 \u0026\u0026 response.body.bcontains(b\"window.location\") \u0026\u0026 response.body.bcontains(b\"main.html\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalFormat": "xray"
+}

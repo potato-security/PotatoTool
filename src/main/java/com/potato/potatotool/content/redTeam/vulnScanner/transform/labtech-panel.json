@@ -1,0 +1,146 @@
+{
+  "id": "labtech-panel",
+  "name": "LabTech Web Portal Login Panel - Detect",
+  "author": "deFr0ggy",
+  "severity": "INFO",
+  "description": "LabTech Web Portal login panel was detected.",
+  "tags": [
+    "panel",
+    "labtech",
+    "labtech_software"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/WCC2/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003cli\u003eLabTech\u003c/li\u003e",
+            "\u003cform action\u003d\"/WCC2/Search/search\" id\u003d\"searchForm method\u003d\"post\"\u003e",
+            "\u003ch1\u003e Welcome to the LabTech Web Portal\u003c/h1\u003e",
+            "Universal Agent Uninstaller",
+            "Technician Login",
+            "\u003cform action\u003d\"/WCC2/Home/Login\" autocomplete\u003d\"off\" method\u003d\"post\"\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "labtech-panel",
+    "info": {
+      "name": "LabTech Web Portal Login Panel - Detect",
+      "author": "deFr0ggy",
+      "severity": "info",
+      "description": "LabTech Web Portal login panel was detected.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "panel,labtech,labtech_software"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/WCC2/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003cli\u003eLabTech\u003c/li\u003e",
+              "\u003cform action\u003d\"/WCC2/Search/search\" id\u003d\"searchForm method\u003d\"post\"\u003e",
+              "\u003ch1\u003e Welcome to the LabTech Web Portal\u003c/h1\u003e",
+              "Universal Agent Uninstaller",
+              "Technician Login",
+              "\u003cform action\u003d\"/WCC2/Home/Login\" autocomplete\u003d\"off\" method\u003d\"post\"\u003e"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

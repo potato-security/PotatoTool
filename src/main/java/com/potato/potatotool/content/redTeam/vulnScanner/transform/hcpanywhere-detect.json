@@ -1,0 +1,117 @@
+{
+  "id": "hcpanywhere-detect",
+  "name": "HCP Anywhere - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "HCP Anywhere was detected.\n",
+  "references": [
+    "https://hcpanywhere.hds.com/portal/public/help-complete/en/cp_hcpaw_what_is.html"
+  ],
+  "tags": [
+    "tech",
+    "hcpanywhere"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "icon_hash\u003d\"915499123\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/userportal/documentation/mapping.json",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(body, \"brandedUrl\", \"helpId\", \"url\") \u0026\u0026 contains(body, \"hcpaw\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "hcpanywhere-detect",
+    "info": {
+      "name": "HCP Anywhere - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "HCP Anywhere was detected.\n",
+      "reference": [
+        "https://hcpanywhere.hds.com/portal/public/help-complete/en/cp_hcpaw_what_is.html"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "icon_hash\u003d\"915499123\""
+      },
+      "tags": "tech,hcpanywhere"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/userportal/documentation/mapping.json"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(body, \"brandedUrl\", \"helpId\", \"url\") \u0026\u0026 contains(body, \"hcpaw\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

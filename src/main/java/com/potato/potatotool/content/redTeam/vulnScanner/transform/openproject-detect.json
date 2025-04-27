@@ -1,0 +1,175 @@
+{
+  "id": "openproject-detect",
+  "name": "OpenProject - Detect",
+  "author": "ricardomaia",
+  "severity": "INFO",
+  "description": "OpenProject is an open source web-based project management software.",
+  "references": [
+    "https://www.openproject.org/"
+  ],
+  "tags": [
+    "tech",
+    "openproject",
+    "api",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"openproject\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            ".*OpenProject.Foundation.\\(OPF\\)",
+            "\u003cgenerator uri\u003d.*openproject.org.*\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "OpenProject",
+            "instanceName"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "_open_project_session"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "openproject-detect",
+    "info": {
+      "name": "OpenProject - Detect",
+      "author": "ricardomaia",
+      "severity": "info",
+      "description": "OpenProject is an open source web-based project management software.",
+      "reference": [
+        "https://www.openproject.org/"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 3,
+        "shodan_query": "title:\"openproject\""
+      },
+      "tags": "tech,openproject,api,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/api/v3",
+          "{{BaseURL}}/activity.atom"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              ".*OpenProject.Foundation.\\(OPF\\)",
+              "\u003cgenerator uri\u003d.*openproject.org.*\u003e"
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "OpenProject",
+              "instanceName"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "_open_project_session"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

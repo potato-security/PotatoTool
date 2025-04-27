@@ -1,0 +1,133 @@
+{
+  "id": "lantronix-xport-unauth",
+  "name": "Lantronix XPort 6.10.0.1 - Unauthenticated Access",
+  "author": "John Osborn (Summit Security Group,LLC)",
+  "severity": "HIGH",
+  "description": "The Lantronix XPort\u0027s telnet service is not configured to require authentication by default.An unauthenticated user can remotely administer the device by hitting \u0027Enter\u0027 when prompted by the telnet service.\n",
+  "references": [
+    "https://www.lantronix.com/wp-content/uploads/pdf/XPort_UG.pdf"
+  ],
+  "tags": [
+    "misconfig",
+    "tcp",
+    "default-login",
+    "network"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "9999",
+      "inputs": [
+        {
+          "data": "\r\n",
+          "read": "0"
+        },
+        {
+          "read": "2048"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Security",
+            "Expert",
+            "Channel",
+            "ARP cache"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "lantronix-xport-unauth",
+    "info": {
+      "name": "Lantronix XPort 6.10.0.1 - Unauthenticated Access",
+      "author": "John Osborn (Summit Security Group,LLC)",
+      "severity": "high",
+      "description": "The Lantronix XPort\u0027s telnet service is not configured to require authentication by default.An unauthenticated user can remotely administer the device by hitting \u0027Enter\u0027 when prompted by the telnet service.\n",
+      "reference": [
+        "https://www.lantronix.com/wp-content/uploads/pdf/XPort_UG.pdf"
+      ],
+      "metadata": {
+        "max_request": 0
+      },
+      "tags": "misconfig,tcp,default-login,network"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "\r\n",
+            "read": 0
+          },
+          {
+            "read": 2048
+          }
+        ],
+        "port": "9999",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Security",
+              "Expert",
+              "Channel",
+              "ARP cache"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

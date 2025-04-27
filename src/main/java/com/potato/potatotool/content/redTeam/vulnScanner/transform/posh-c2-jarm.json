@@ -1,0 +1,118 @@
+{
+  "id": "posh-c2-jarm",
+  "name": "Posh C2 JARM - Detect",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "PoshC2 is a proxy aware C2 framework used to aid penetration testers with red teaming, post-exploitation and lateral movement.\n",
+  "references": [
+    "- - https://github.com/cedowens/C2-JARM\n- https://twitter.com/MichalKoczwara/status/1551639708949692416\n- https://poshc2.readthedocs.io/en/latest/\n"
+  ],
+  "tags": [
+    "jarm",
+    "network",
+    "c2",
+    "ir",
+    "osint",
+    "cti",
+    "posh",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "inputs": [
+        {
+          "data": "2E",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "jarm(Hostname) \u003d\u003d \u00272ad2ad0002ad2ad22c42d42d000000faabb8fd156aa8b4d8a37853e1063261\u0027"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "posh-c2-jarm",
+    "info": {
+      "name": "Posh C2 JARM - Detect",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "PoshC2 is a proxy aware C2 framework used to aid penetration testers with red teaming, post-exploitation and lateral movement.\n",
+      "reference": "- - https://github.com/cedowens/C2-JARM\n- https://twitter.com/MichalKoczwara/status/1551639708949692416\n- https://poshc2.readthedocs.io/en/latest/\n",
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "jarm,network,c2,ir,osint,cti,posh,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "2E",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "jarm(Hostname) \u003d\u003d \u00272ad2ad0002ad2ad22c42d42d000000faabb8fd156aa8b4d8a37853e1063261\u0027"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

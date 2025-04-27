@@ -1,0 +1,244 @@
+{
+  "id": "ntlm-directories",
+  "name": "Discovering directories w/ NTLM",
+  "author": "puzzlepeaches,incogbyte,missing0x00,incogbyte",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://medium.com/swlh/internal-information-disclosure-using-hidden-ntlm-authentication-18de17675666"
+  ],
+  "tags": [
+    "miscellaneous",
+    "misc",
+    "fuzz",
+    "windows"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "path": [
+      "/",
+      "/abs/",
+      "/ecp/",
+      "/etc/",
+      "/ews/",
+      "/mcx/",
+      "/oab/",
+      "/owa/",
+      "/rgs/",
+      "/rpc/",
+      "/conf/",
+      "/meet/",
+      "/ocsp/",
+      "/ucwa/",
+      "/adfs/",
+      "/dialin/",
+      "/public/",
+      "/certsrv/",
+      "/exchweb/",
+      "/meeting/",
+      "/certprov/",
+      "/exchange/",
+      "/scheduler/",
+      "/webticket/",
+      "/autoupdate/",
+      "/certenroll/",
+      "/powershell/",
+      "/rgsclients/",
+      "/rpcwithcert/",
+      "/autodiscover/",
+      "/hybridconfig/",
+      "/reach/sip.svc",
+      "/aspnet_client/",
+      "/groupexpansion/",
+      "/persistentchat/",
+      "/requesthandler/",
+      "/unifiedmessaging/",
+      "/mcx/mcxservice.svc",
+      "/phoneconferencing/",
+      "/requesthandlerext/",
+      "/deviceupdatefiles_ext/",
+      "/deviceupdatefiles_int/",
+      "/microsoft-server-activesync/",
+      "/webticket/webticketservice.svc",
+      "/webticket/webticketservice.svcabs/",
+      "/adfs/services/trust/2005/windowstransport",
+      "/internal_windows_authentication/",
+      "/RDWeb/FeedLogin/WebFeedLogin.aspx",
+      "/adfs/ls/wia"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET {{path}} HTTP/1.1\nHost: {{Hostname}}\nAuthorization: NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA\u003d\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(tolower(header), \u0027www-authenticate: ntlm\u0027)"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "401"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 10,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ntlm-directories",
+    "info": {
+      "name": "Discovering directories w/ NTLM",
+      "author": "puzzlepeaches,incogbyte,missing0x00,incogbyte",
+      "severity": "info",
+      "reference": [
+        "https://medium.com/swlh/internal-information-disclosure-using-hidden-ntlm-authentication-18de17675666"
+      ],
+      "metadata": {
+        "max_request": 48
+      },
+      "tags": "miscellaneous,misc,fuzz,windows"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "path": [
+            "/",
+            "/abs/",
+            "/ecp/",
+            "/etc/",
+            "/ews/",
+            "/mcx/",
+            "/oab/",
+            "/owa/",
+            "/rgs/",
+            "/rpc/",
+            "/conf/",
+            "/meet/",
+            "/ocsp/",
+            "/ucwa/",
+            "/adfs/",
+            "/dialin/",
+            "/public/",
+            "/certsrv/",
+            "/exchweb/",
+            "/meeting/",
+            "/certprov/",
+            "/exchange/",
+            "/scheduler/",
+            "/webticket/",
+            "/autoupdate/",
+            "/certenroll/",
+            "/powershell/",
+            "/rgsclients/",
+            "/rpcwithcert/",
+            "/autodiscover/",
+            "/hybridconfig/",
+            "/reach/sip.svc",
+            "/aspnet_client/",
+            "/groupexpansion/",
+            "/persistentchat/",
+            "/requesthandler/",
+            "/unifiedmessaging/",
+            "/mcx/mcxservice.svc",
+            "/phoneconferencing/",
+            "/requesthandlerext/",
+            "/deviceupdatefiles_ext/",
+            "/deviceupdatefiles_int/",
+            "/microsoft-server-activesync/",
+            "/webticket/webticketservice.svc",
+            "/webticket/webticketservice.svcabs/",
+            "/adfs/services/trust/2005/windowstransport",
+            "/internal_windows_authentication/",
+            "/RDWeb/FeedLogin/WebFeedLogin.aspx",
+            "/adfs/ls/wia"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 10,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET {{path}} HTTP/1.1\nHost: {{Hostname}}\nAuthorization: NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA\u003d\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(tolower(header), \u0027www-authenticate: ntlm\u0027)"
+            ]
+          },
+          {
+            "type": "status",
+            "status": [
+              401
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "kval",
+            "kval": [
+              "www_authenticate"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

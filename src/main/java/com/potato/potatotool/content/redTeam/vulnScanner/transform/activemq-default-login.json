@@ -1,0 +1,139 @@
+{
+  "id": "activemq-default-login",
+  "name": "Apache ActiveMQ Default Login",
+  "author": "pdteam",
+  "severity": "HIGH",
+  "description": "Apache ActiveMQ default login information was discovered.",
+  "references": [
+    "https://knowledge.broadcom.com/external/article/142813/vulnerability-apache-activemq-admin-con.html"
+  ],
+  "tags": [
+    "apache",
+    "activemq",
+    "default-login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "password": [
+      "user",
+      "admin"
+    ],
+    "username": [
+      "user",
+      "admin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /admin/ HTTP/1.1\nHost: {{Hostname}}\nAuthorization: Basic {{base64(username + \u0027:\u0027 + password)}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Welcome to the Apache ActiveMQ Console of \u003cb\u003e",
+            "\u003ch2\u003eBroker\u003c/h2\u003e"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "activemq-default-login",
+    "info": {
+      "name": "Apache ActiveMQ Default Login",
+      "author": "pdteam",
+      "severity": "high",
+      "description": "Apache ActiveMQ default login information was discovered.",
+      "reference": [
+        "https://knowledge.broadcom.com/external/article/142813/vulnerability-apache-activemq-admin-con.html"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "apache,activemq,default-login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "user",
+            "admin"
+          ],
+          "password": [
+            "user",
+            "admin"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /admin/ HTTP/1.1\nHost: {{Hostname}}\nAuthorization: Basic {{base64(username + \u0027:\u0027 + password)}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Welcome to the Apache ActiveMQ Console of \u003cb\u003e",
+              "\u003ch2\u003eBroker\u003c/h2\u003e"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

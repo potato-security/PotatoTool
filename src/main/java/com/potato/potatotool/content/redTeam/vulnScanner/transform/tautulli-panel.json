@@ -1,0 +1,163 @@
+{
+  "id": "tautulli-panel",
+  "name": "Tautulli Panel - Detect",
+  "author": "rxerium",
+  "severity": "INFO",
+  "description": "A Python based monitoring and tracking tool for Plex Media Server.\n",
+  "references": [
+    "https://tautulli.com/",
+    "https://github.com/Tautulli/Tautulli"
+  ],
+  "tags": [
+    "panel",
+    "tautulli",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"tautulli - home\" title\u003d\"tautulli\"",
+    "google": "intitle:\"tautulli\" intitle:\"tautulli - home\"",
+    "shodan": "title:\"TAUTULLI\" http.title:\"tautulli\" http.title:\"tautulli - home\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\u003ctitle\u003eTautulli - Login",
+            "content\u003d\"Tautulli",
+            "alt\u003d\"Tautulli",
+            "Sign In with Tautulli"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "tautulli-panel",
+    "info": {
+      "name": "Tautulli Panel - Detect",
+      "author": "rxerium",
+      "severity": "info",
+      "description": "A Python based monitoring and tracking tool for Plex Media Server.\n",
+      "reference": [
+        "https://tautulli.com/",
+        "https://github.com/Tautulli/Tautulli"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": [
+          "title:\"TAUTULLI\"",
+          "http.title:\"tautulli\"",
+          "http.title:\"tautulli - home\""
+        ],
+        "fofa_query": [
+          "title\u003d\"tautulli - home\"",
+          "title\u003d\"tautulli\""
+        ],
+        "google_query": [
+          "intitle:\"tautulli\"",
+          "intitle:\"tautulli - home\""
+        ]
+      },
+      "tags": "panel,tautulli,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/auth/login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\u003ctitle\u003eTautulli - Login",
+              "content\u003d\"Tautulli",
+              "alt\u003d\"Tautulli",
+              "Sign In with Tautulli"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

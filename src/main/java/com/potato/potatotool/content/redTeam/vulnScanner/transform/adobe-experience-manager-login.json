@@ -1,0 +1,151 @@
+{
+  "id": "adobe-experience-manager-login",
+  "name": "Adobe Experience Manager Login Panel",
+  "author": "dhiyaneshDK",
+  "severity": "INFO",
+  "description": "An Adobe Experience Manager login panel was detected.",
+  "references": [
+    "https://business.adobe.com/products/experience-manager/adobe-experience-manager.html"
+  ],
+  "tags": [
+    "panel",
+    "aem",
+    "adobe"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"aem sign in\"",
+    "google": "intitle:\"aem sign in\"",
+    "shodan": "http.title:\"AEM Sign In\" http.component:\"adobe experience manager\" http.title:\"aem sign in\" cpe:\"cpe:2.3:a:adobe:experience_manager\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/libs/granite/core/content/login.html",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\u003ctitle\u003eAEM Sign In\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "adobe-experience-manager-login",
+    "info": {
+      "name": "Adobe Experience Manager Login Panel",
+      "author": "dhiyaneshDK",
+      "severity": "info",
+      "description": "An Adobe Experience Manager login panel was detected.",
+      "reference": [
+        "https://business.adobe.com/products/experience-manager/adobe-experience-manager.html"
+      ],
+      "classification": {
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "http.title:\"AEM Sign In\"",
+          "http.component:\"adobe experience manager\"",
+          "http.title:\"aem sign in\"",
+          "cpe:\"cpe:2.3:a:adobe:experience_manager\""
+        ],
+        "fofa_query": "title\u003d\"aem sign in\"",
+        "google_query": "intitle:\"aem sign in\""
+      },
+      "tags": "panel,aem,adobe"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/libs/granite/core/content/login.html"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\u003ctitle\u003eAEM Sign In\u003c/title\u003e"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

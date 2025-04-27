@@ -1,0 +1,122 @@
+{
+  "id": "api-europeana",
+  "name": "Europeana API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "European Museum and Galleries content",
+  "references": [
+    "https://pro.europeana.eu/page/search",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/europeana"
+  ],
+  "tags": [
+    "token-spray",
+    "europeana"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.europeana.eu/record/v2/search.json?wskey\u003d{{token}}\u0026query\u003d*\u0026rows\u003d0\u0026profile\u003dfacets",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "success",
+            "apikey",
+            "action"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-europeana",
+    "info": {
+      "name": "Europeana API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "European Museum and Galleries content",
+      "reference": [
+        "https://pro.europeana.eu/page/search",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/europeana"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,europeana"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.europeana.eu/record/v2/search.json?wskey\u003d{{token}}\u0026query\u003d*\u0026rows\u003d0\u0026profile\u003dfacets"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "success",
+              "apikey",
+              "action"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

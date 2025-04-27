@@ -1,0 +1,123 @@
+{
+  "id": "dionaea-mqtt-honeypot-detect",
+  "name": "Dionaea MQTT Honeypot - Detect",
+  "author": "UnaPibaGeek",
+  "severity": "INFO",
+  "description": "A Dionaea MQTT honeypot has been identified.\nThe response to a MQTTv5 packet differs from real installations, signaling a possible deceptive setup.\n",
+  "tags": [
+    "dionaea",
+    "mqtt",
+    "honeypot",
+    "ir",
+    "cti",
+    "network",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"MQTT\" product:\"mqtt\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "1883",
+      "inputs": [
+        {
+          "data": "101000044d5154540502003c032100140000",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 1024,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "BINARY",
+          "part": "body",
+          "values": [
+            "20020000"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "dionaea-mqtt-honeypot-detect",
+    "info": {
+      "name": "Dionaea MQTT Honeypot - Detect",
+      "author": "UnaPibaGeek",
+      "severity": "info",
+      "description": "A Dionaea MQTT honeypot has been identified.\nThe response to a MQTTv5 packet differs from real installations, signaling a possible deceptive setup.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "product:\"MQTT\"",
+          "product:\"mqtt\""
+        ]
+      },
+      "tags": "dionaea,mqtt,honeypot,ir,cti,network,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "101000044d5154540502003c032100140000",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "port": "1883",
+        "stop_at_first_match": false,
+        "read_size": 1024,
+        "matchers": [
+          {
+            "type": "binary",
+            "part": "body",
+            "binary": [
+              "20020000"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

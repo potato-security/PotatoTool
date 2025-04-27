@@ -1,0 +1,150 @@
+{
+  "id": "moinmoin-detect",
+  "name": "MoinMoin wiki detect",
+  "author": "cyllective",
+  "severity": "INFO",
+  "description": "Detects MoinMoin Wiki",
+  "references": [
+    "https://github.com/moinwiki/moin-1.9"
+  ],
+  "tags": [
+    "tech",
+    "moin",
+    "moinmoin",
+    "wiki"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ca href\u003d\"http://moinmo.in/\" title\u003d\"This site uses the MoinMoin Wiki software.\"\u003eMoinMoin Powered\u003c/a\u003e",
+            "\u003ca href\u003d\"http://moinmo.in/Python\" title\u003d\"MoinMoin is written in Python.\"\u003ePython Powered\u003c/a\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "moinmoin-detect",
+    "info": {
+      "name": "MoinMoin wiki detect",
+      "author": "cyllective",
+      "severity": "info",
+      "description": "Detects MoinMoin Wiki",
+      "reference": [
+        "https://github.com/moinwiki/moin-1.9"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "tech,moin,moinmoin,wiki"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ca href\u003d\"http://moinmo.in/\" title\u003d\"This site uses the MoinMoin Wiki software.\"\u003eMoinMoin Powered\u003c/a\u003e",
+              "\u003ca href\u003d\"http://moinmo.in/Python\" title\u003d\"MoinMoin is written in Python.\"\u003ePython Powered\u003c/a\u003e"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\\/moin_static(\\w+)\\/"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

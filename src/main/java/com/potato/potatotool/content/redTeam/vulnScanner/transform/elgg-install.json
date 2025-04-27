@@ -1,0 +1,120 @@
+{
+  "id": "elgg-installer",
+  "name": "Elgg - Installation",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "Elgg Installation was discovered.",
+  "references": [
+    "https://github.com/elgg/elgg"
+  ],
+  "tags": [
+    "install",
+    "elgg",
+    "exposure",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"Welcome to Elgg\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/install.php",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_any(body,\"Elgg Install : Welcome\", \"Installing Elgg\", \"Welcome to Elgg\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "elgg-installer",
+    "info": {
+      "name": "Elgg - Installation",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "Elgg Installation was discovered.",
+      "reference": [
+        "https://github.com/elgg/elgg"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "title\u003d\"Welcome to Elgg\""
+      },
+      "tags": "install,elgg,exposure,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/install.php"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_any(body,\"Elgg Install : Welcome\", \"Installing Elgg\", \"Welcome to Elgg\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

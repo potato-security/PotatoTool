@@ -1,0 +1,193 @@
+{
+  "id": "jellyfin-default-login",
+  "name": "Jellyfin Console - Default Login",
+  "author": "thefoggiest",
+  "severity": "HIGH",
+  "description": "Weak Jellyfin credentials were discovered.",
+  "tags": [
+    "default-login",
+    "jellyfin",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"Jellyfin\""
+  },
+  "variables": {
+    "password": [
+      "admin",
+      "test",
+      "password",
+      "jellyfin"
+    ],
+    "username": [
+      "admin",
+      "administrator",
+      "jellyfin"
+    ]
+  },
+  "variablesType": "clusterbomb",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /Users/authenticatebyname HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nX-Emby-Authorization: MediaBrowser Client\u003d\"Jellyfin Web\", Device\u003d\"Browser\", DeviceId\u003d\"DeviceID\", Version\u003d\"Version\"\n\n{\"Username\":\"{{username}}\",\"Pw\":\"{{password}}\"}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "User\":{\"Name",
+            "\"LastLoginDate\":",
+            "AccessToken\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "application/json"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jellyfin-default-login",
+    "info": {
+      "name": "Jellyfin Console - Default Login",
+      "author": "thefoggiest",
+      "severity": "high",
+      "description": "Weak Jellyfin credentials were discovered.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 0,
+        "fofa_query": "title\u003d\"Jellyfin\""
+      },
+      "tags": "default-login,jellyfin,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "admin",
+            "administrator",
+            "jellyfin"
+          ],
+          "password": [
+            "admin",
+            "test",
+            "password",
+            "jellyfin"
+          ]
+        },
+        "attack": "clusterbomb",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /Users/authenticatebyname HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nX-Emby-Authorization: MediaBrowser Client\u003d\"Jellyfin Web\", Device\u003d\"Browser\", DeviceId\u003d\"DeviceID\", Version\u003d\"Version\"\n\n{\"Username\":\"{{username}}\",\"Pw\":\"{{password}}\"}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "User\":{\"Name",
+              "\"LastLoginDate\":",
+              "AccessToken\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "application/json"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

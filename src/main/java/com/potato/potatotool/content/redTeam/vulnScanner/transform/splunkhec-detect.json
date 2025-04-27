@@ -1,0 +1,120 @@
+{
+  "id": "splunk-hec-detect",
+  "name": "Splunk HEC - Detect",
+  "author": "idealphase",
+  "severity": "INFO",
+  "description": "Splunk HCE (HTTP Event Collector (HEC)) was detected.\n",
+  "references": [
+    "https://dev.splunk.com/enterprise/docs/devtools/httpeventcollector/",
+    "https://community.splunk.com/t5/Getting-Data-In/How-to-check-if-an-HEC-is-up-or-not-before-posting-any-data-to/td-p/417404"
+  ],
+  "tags": [
+    "tech",
+    "splunk",
+    "hec",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/services/collector/health",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(body, \"text\\\":\\\"HEC is healthy\\\",\\\"code\")",
+            "contains(header, \"application/json\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "splunk-hec-detect",
+    "info": {
+      "name": "Splunk HEC - Detect",
+      "author": "idealphase",
+      "severity": "info",
+      "description": "Splunk HCE (HTTP Event Collector (HEC)) was detected.\n",
+      "reference": [
+        "https://dev.splunk.com/enterprise/docs/devtools/httpeventcollector/",
+        "https://community.splunk.com/t5/Getting-Data-In/How-to-check-if-an-HEC-is-up-or-not-before-posting-any-data-to/td-p/417404"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "tech,splunk,hec,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/services/collector/health"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(body, \"text\\\":\\\"HEC is healthy\\\",\\\"code\")",
+              "contains(header, \"application/json\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

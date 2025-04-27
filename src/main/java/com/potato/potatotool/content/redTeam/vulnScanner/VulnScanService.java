@@ -1,6 +1,8 @@
 package com.potato.potatotool.content.redTeam.vulnScanner;
 
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
+import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanConfig;
+import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanResult;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.PocManager;
 
 import java.io.File;
@@ -23,20 +25,20 @@ public class VulnScanService {
     private final VulnScanExecutor scanExecutor;
     
     // 扫描结果监听器列表
-    private final List<Consumer<VulnScanExecutor.ScanResult>> resultListeners = new CopyOnWriteArrayList<>();
+    private final List<Consumer<ScanResult>> resultListeners = new CopyOnWriteArrayList<>();
     
     // 扫描完成监听器列表
-    private final List<Consumer<List<VulnScanExecutor.ScanResult>>> completeListeners = new CopyOnWriteArrayList<>();
+    private final List<Consumer<List<ScanResult>>> completeListeners = new CopyOnWriteArrayList<>();
     
     // 默认POC目录
-    private static final String DEFAULT_POC_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/poc";
-//    private static final String DEFAULT_POC_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\poc";
+//    private static final String DEFAULT_POC_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/poc";
+    private static final String DEFAULT_POC_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\poc";
     /**
      * 私有构造函数
      */
     private VulnScanService() {
         // 创建扫描执行器
-        VulnScanExecutor.ScanConfig config = new VulnScanExecutor.ScanConfig();
+        ScanConfig config = new ScanConfig();
         config.setThreads(10); // 默认10个线程
         config.setDebug(false); // 默认不开启调试模式
         
@@ -103,7 +105,7 @@ public class VulnScanService {
      * 设置扫描配置
      * @param config 扫描配置
      */
-    public void setScanConfig(VulnScanExecutor.ScanConfig config) {
+    public void setScanConfig(ScanConfig config) {
         scanExecutor.setScanConfig(config);
     }
     
@@ -111,7 +113,7 @@ public class VulnScanService {
      * 获取扫描配置
      * @return 扫描配置
      */
-    public VulnScanExecutor.ScanConfig getScanConfig() {
+    public ScanConfig getScanConfig() {
         return scanExecutor.getScanConfig();
     }
     
@@ -120,7 +122,7 @@ public class VulnScanService {
      * @param threads 线程数
      */
     public void setThreads(int threads) {
-        VulnScanExecutor.ScanConfig config = scanExecutor.getScanConfig();
+        ScanConfig config = scanExecutor.getScanConfig();
         config.setThreads(threads);
         scanExecutor.setScanConfig(config);
     }
@@ -130,7 +132,7 @@ public class VulnScanService {
      * @param protocol 协议类型
      */
     public void setProtocolFilter(String protocol) {
-        VulnScanExecutor.ScanConfig config = scanExecutor.getScanConfig();
+        ScanConfig config = scanExecutor.getScanConfig();
         config.setProtocol(protocol);
         scanExecutor.setScanConfig(config);
     }
@@ -140,7 +142,7 @@ public class VulnScanService {
      * @param severity 严重程度
      */
     public void setSeverityFilter(PocObj.Severity severity) {
-        VulnScanExecutor.ScanConfig config = scanExecutor.getScanConfig();
+        ScanConfig config = scanExecutor.getScanConfig();
         config.setSeverity(severity);
         scanExecutor.setScanConfig(config);
     }
@@ -150,7 +152,7 @@ public class VulnScanService {
      * @param debug 是否开启调试模式
      */
     public void setDebugMode(boolean debug) {
-        VulnScanExecutor.ScanConfig config = scanExecutor.getScanConfig();
+        ScanConfig config = scanExecutor.getScanConfig();
         config.setDebug(debug);
         scanExecutor.setScanConfig(config);
     }
@@ -160,7 +162,7 @@ public class VulnScanService {
      * @param proxy 代理地址
      */
     public void setProxy(String proxy) {
-        VulnScanExecutor.ScanConfig config = scanExecutor.getScanConfig();
+        ScanConfig config = scanExecutor.getScanConfig();
         config.setProxy(proxy);
         scanExecutor.setScanConfig(config);
     }
@@ -169,7 +171,7 @@ public class VulnScanService {
      * 添加扫描结果监听器
      * @param listener 监听器
      */
-    public void addResultListener(Consumer<VulnScanExecutor.ScanResult> listener) {
+    public void addResultListener(Consumer<ScanResult> listener) {
         if (listener != null) {
             resultListeners.add(listener);
         }
@@ -179,7 +181,7 @@ public class VulnScanService {
      * 移除扫描结果监听器
      * @param listener 监听器
      */
-    public void removeResultListener(Consumer<VulnScanExecutor.ScanResult> listener) {
+    public void removeResultListener(Consumer<ScanResult> listener) {
         resultListeners.remove(listener);
     }
     
@@ -187,7 +189,7 @@ public class VulnScanService {
      * 添加扫描完成监听器
      * @param listener 监听器
      */
-    public void addCompleteListener(Consumer<List<VulnScanExecutor.ScanResult>> listener) {
+    public void addCompleteListener(Consumer<List<ScanResult>> listener) {
         if (listener != null) {
             completeListeners.add(listener);
         }
@@ -197,7 +199,7 @@ public class VulnScanService {
      * 移除扫描完成监听器
      * @param listener 监听器
      */
-    public void removeCompleteListener(Consumer<List<VulnScanExecutor.ScanResult>> listener) {
+    public void removeCompleteListener(Consumer<List<ScanResult>> listener) {
         completeListeners.remove(listener);
     }
     
@@ -222,11 +224,11 @@ public class VulnScanService {
         }
         
         // 创建回调
-        VulnScanExecutor.ScanCallback callback = new VulnScanExecutor.ScanCallback() {
+        ScanCallback callback = new ScanCallback() {
             @Override
-            public void onResult(VulnScanExecutor.ScanResult result) {
+            public void onResult(ScanResult result) {
                 // 通知所有结果监听器
-                for (Consumer<VulnScanExecutor.ScanResult> listener : resultListeners) {
+                for (Consumer<ScanResult> listener : resultListeners) {
                     try {
                         listener.accept(result);
                     } catch (Exception e) {
@@ -237,9 +239,9 @@ public class VulnScanService {
             }
             
             @Override
-            public void onComplete(List<VulnScanExecutor.ScanResult> results) {
+            public void onComplete(List<ScanResult> results) {
                 // 通知所有完成监听器
-                for (Consumer<List<VulnScanExecutor.ScanResult>> listener : completeListeners) {
+                for (Consumer<List<ScanResult>> listener : completeListeners) {
                     try {
                         listener.accept(results);
                     } catch (Exception e) {
@@ -274,7 +276,7 @@ public class VulnScanService {
      * 获取扫描结果
      * @return 扫描结果列表
      */
-    public List<VulnScanExecutor.ScanResult> getScanResults() {
+    public List<ScanResult> getScanResults() {
         return scanExecutor.getScanResults();
     }
     
@@ -284,7 +286,7 @@ public class VulnScanService {
      */
     public int getVulnerableCount() {
         int count = 0;
-        for (VulnScanExecutor.ScanResult result : scanExecutor.getScanResults()) {
+        for (ScanResult result : scanExecutor.getScanResults()) {
             if (result.isVulnerable()) {
                 count++;
             }

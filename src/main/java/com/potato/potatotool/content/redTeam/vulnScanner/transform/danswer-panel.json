@@ -1,0 +1,119 @@
+{
+  "id": "danswer-panel",
+  "name": "Danswer Panel - Detect",
+  "author": "s4e-io",
+  "severity": "INFO",
+  "description": "Danswer panel was discovered.\n",
+  "references": [
+    "https://github.com/danswer-ai/danswer"
+  ],
+  "tags": [
+    "panel",
+    "login",
+    "danswer",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"484766002\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/auth/login",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_any(body, \"\u003ctitle\u003eDanswer\u003c/title\u003e\", \"Log In to Danswer\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "danswer-panel",
+    "info": {
+      "name": "Danswer Panel - Detect",
+      "author": "s4e-io",
+      "severity": "info",
+      "description": "Danswer panel was discovered.\n",
+      "reference": [
+        "https://github.com/danswer-ai/danswer"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "icon_hash\u003d\"484766002\""
+      },
+      "tags": "panel,login,danswer,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/auth/login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_any(body, \"\u003ctitle\u003eDanswer\u003c/title\u003e\", \"Log In to Danswer\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

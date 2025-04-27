@@ -1,0 +1,132 @@
+{
+  "id": "maxforwards-headers-detect",
+  "name": "Max-Forwards Header - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Max-Forwards response header is specified.",
+  "references": [
+    "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Max-Forwards",
+    "https://http.dev/max-forwards",
+    "https://twitter.com/irsdl/status/1337299267652825088"
+  ],
+  "tags": [
+    "miscellaneous",
+    "misc",
+    "max-forwards"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "header\u003d\"max-forwards\"",
+    "shodan": "Max-Forwards:"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(to_lower(header), \"max-forwards:\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "maxforwards-headers-detect",
+    "info": {
+      "name": "Max-Forwards Header - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Max-Forwards response header is specified.",
+      "reference": [
+        "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Max-Forwards",
+        "https://http.dev/max-forwards",
+        "https://twitter.com/irsdl/status/1337299267652825088"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "Max-Forwards:",
+        "fofa_query": "header\u003d\"max-forwards\""
+      },
+      "tags": "miscellaneous,misc,max-forwards"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(to_lower(header), \"max-forwards:\")"
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "(?i)max-forwards:\\s+([0-9]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

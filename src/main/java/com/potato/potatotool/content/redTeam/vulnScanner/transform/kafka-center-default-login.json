@@ -1,0 +1,164 @@
+{
+  "id": "kafka-center-default-login",
+  "name": "Apache Kafka Center Default Login",
+  "author": "dhiyaneshDK",
+  "severity": "HIGH",
+  "description": "Apache Kafka Center default admin credentials were discovered.",
+  "references": [
+    "https://developer.ibm.com/tutorials/kafka-authn-authz/"
+  ],
+  "tags": [
+    "kafka",
+    "default-login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Kafka Center\""
+  },
+  "variables": {
+    "password": [
+      "admin"
+    ],
+    "username": [
+      "admin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /login/system HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\"name\":\"{{username}}\",\"password\":\"{{password}}\",\"checkbox\":false}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\"code\":200",
+            "\"name\":\"admin\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "kafka-center-default-login",
+    "info": {
+      "name": "Apache Kafka Center Default Login",
+      "author": "dhiyaneshDK",
+      "severity": "high",
+      "description": "Apache Kafka Center default admin credentials were discovered.",
+      "reference": [
+        "https://developer.ibm.com/tutorials/kafka-authn-authz/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Kafka Center\""
+      },
+      "tags": "kafka,default-login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "admin"
+          ],
+          "password": [
+            "admin"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /login/system HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\"name\":\"{{username}}\",\"password\":\"{{password}}\",\"checkbox\":false}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\"code\":200",
+              "\"name\":\"admin\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

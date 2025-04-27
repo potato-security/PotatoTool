@@ -1,0 +1,126 @@
+{
+  "id": "vistaweb-panel",
+  "name": "Vista Web Login Panel",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Vista Web login panel was detected.\n",
+  "references": [
+    "https://resa.aero/solutions-operations-facturation/vista-web/"
+  ],
+  "tags": [
+    "panel",
+    "vistaweb",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/account/login",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body, \"login\") \u0026\u0026 contains(body, \"/lib/@resa/identityserver/\") \u0026\u0026 contains(body, \"resa.aero\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "vistaweb-panel",
+    "info": {
+      "name": "Vista Web Login Panel",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Vista Web login panel was detected.\n",
+      "reference": [
+        "https://resa.aero/solutions-operations-facturation/vista-web/"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "panel,vistaweb,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/account/login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body, \"login\") \u0026\u0026 contains(body, \"/lib/@resa/identityserver/\") \u0026\u0026 contains(body, \"resa.aero\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "v\u003d([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

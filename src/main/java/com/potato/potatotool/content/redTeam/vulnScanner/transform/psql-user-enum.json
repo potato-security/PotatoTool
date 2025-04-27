@@ -1,0 +1,153 @@
+{
+  "id": "psql-user-enum",
+  "name": "PostgreSQL - User Enumeration",
+  "author": "pussycat0x",
+  "severity": "LOW",
+  "description": "PSQL user enumeration.\n",
+  "references": [
+    "https://medium.com/@netscylla/pentesters-guide-to-postgresql-hacking-59895f4f007"
+  ],
+  "tags": [
+    "network",
+    "postgresql",
+    "db",
+    "unauth",
+    "enum",
+    "psql",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "port:5432 product:\"PostgreSQL\""
+  },
+  "variables": {
+    "str": [
+      "J",
+      "T",
+      "R"
+    ],
+    "users": [
+      "postgres",
+      "tst"
+    ]
+  },
+  "variablesType": "clusterbomb",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "5432",
+      "inputs": [
+        {
+          "data": "{{hex_encode(\u0027\u0000\u0000\u0000{{str}}\u0000\u0003\u0000\u0000user\u0000{{users}}\u0000database\u0000{{users}}\u0000application_name\u0000psql\u0000client_encoding\u0000UTF8\u0000\u0000\u0027)}}",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "raw",
+          "values": [
+            "client_encoding",
+            "integer_datetimes"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "psql-user-enum",
+    "info": {
+      "name": "PostgreSQL - User Enumeration",
+      "author": "pussycat0x",
+      "severity": "low",
+      "description": "PSQL user enumeration.\n",
+      "reference": [
+        "https://medium.com/@netscylla/pentesters-guide-to-postgresql-hacking-59895f4f007"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "port:5432 product:\"PostgreSQL\""
+      },
+      "tags": "network,postgresql,db,unauth,enum,psql,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "{{hex_encode(\u0027\u0000\u0000\u0000{{str}}\u0000\u0003\u0000\u0000user\u0000{{users}}\u0000database\u0000{{users}}\u0000application_name\u0000psql\u0000client_encoding\u0000UTF8\u0000\u0000\u0027)}}",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "port": "5432",
+        "payloads": {
+          "users": [
+            "postgres",
+            "tst"
+          ],
+          "str": [
+            "J",
+            "T",
+            "R"
+          ]
+        },
+        "attack": "clusterbomb",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "raw",
+            "words": [
+              "client_encoding",
+              "integer_datetimes"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

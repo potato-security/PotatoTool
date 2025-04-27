@@ -1,0 +1,127 @@
+{
+  "id": "nagios-status-page",
+  "name": "Nagios Current Status Page - Detect",
+  "author": "dhiyaneshDk",
+  "severity": "MEDIUM",
+  "description": "Nagios current status page was detected.",
+  "references": [
+    "https://www.exploit-db.com/ghdb/6918"
+  ],
+  "tags": [
+    "exposure",
+    "nagios",
+    "status",
+    "edb"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssScore": "5.3",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/nagios/cgi-bin/status.cgi",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Current Network Status"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "nagios-status-page",
+    "info": {
+      "name": "Nagios Current Status Page - Detect",
+      "author": "dhiyaneshDk",
+      "severity": "medium",
+      "description": "Nagios current status page was detected.",
+      "reference": [
+        "https://www.exploit-db.com/ghdb/6918"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+        "cvss_score": "5.3",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 3
+      },
+      "tags": "exposure,nagios,status,edb"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/nagios/cgi-bin/status.cgi",
+          "{{BaseURL}}/cgi-bin/nagios4/status.cgi",
+          "{{BaseURL}}/cgi-bin/nagios3/status.cgi"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Current Network Status"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,133 @@
+{
+  "id": "maestro-listserv-panel",
+  "name": "Maestro LISTSERV - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Maestro LISTSERV panel was detected.\n",
+  "references": [
+    "https://www.lsoft.com/",
+    "https://www.lsoft.com/products/maestro_11.1.asp"
+  ],
+  "tags": [
+    "panel",
+    "maestro",
+    "detect",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"LISTSERV Maestro\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/lui/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_all(to_lower(body), \"listserv\", \"maestro\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "maestro-listserv-panel",
+    "info": {
+      "name": "Maestro LISTSERV - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Maestro LISTSERV panel was detected.\n",
+      "reference": [
+        "https://www.lsoft.com/",
+        "https://www.lsoft.com/products/maestro_11.1.asp"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"LISTSERV Maestro\""
+      },
+      "tags": "panel,maestro,detect,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/lui/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_all(to_lower(body), \"listserv\", \"maestro\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)\u003ctitle\u003e[\\n\\r\\t\\s]*LISTSERV\\s+Maestro[\\n\\r\\t\\s]*([0-9.-]+)[\\n\\r\\t\\s]*\u003c/title\u003e",
+              "(?i)uniqvp\u003d([0-9.-]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

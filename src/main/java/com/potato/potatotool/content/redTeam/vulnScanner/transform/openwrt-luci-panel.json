@@ -1,0 +1,133 @@
+{
+  "id": "openwrt-luci-panel",
+  "name": "Opentwrt luCI - Admin Login Page",
+  "author": "For3stCo1d",
+  "severity": "INFO",
+  "description": "An Opentwrt admin login page was discovered.",
+  "references": [
+    "https://forum.archive.openwrt.org/viewtopic.php?id\u003d16611"
+  ],
+  "tags": [
+    "panel",
+    "default-login",
+    "openwrt",
+    "x-wrt"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"openwrt - luci\"",
+    "google": "intitle:\"openwrt - luci\"",
+    "shodan": "http.title:\"OpenWrt - LuCI\" http.title:\"openwrt - luci\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/cgi-bin/luci",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "OpenWrt",
+            "LuCI",
+            "login"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "openwrt-luci-panel",
+    "info": {
+      "name": "Opentwrt luCI - Admin Login Page",
+      "author": "For3stCo1d",
+      "severity": "info",
+      "description": "An Opentwrt admin login page was discovered.",
+      "reference": [
+        "https://forum.archive.openwrt.org/viewtopic.php?id\u003d16611"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "http.title:\"OpenWrt - LuCI\"",
+          "http.title:\"openwrt - luci\""
+        ],
+        "fofa_query": "title\u003d\"openwrt - luci\"",
+        "google_query": "intitle:\"openwrt - luci\""
+      },
+      "tags": "panel,default-login,openwrt,x-wrt"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/cgi-bin/luci"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "OpenWrt",
+              "LuCI",
+              "login"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,165 @@
+{
+  "id": "liferay-jsonws",
+  "name": "Liferay /api/jsonws - API Exposed",
+  "author": "DhiyaneshDk",
+  "severity": "LOW",
+  "description": "Liferay /api/jsonws - API is Exposed.",
+  "references": [
+    "https://github.com/ilmila/J2EEScan/blob/master/src/main/java/burp/j2ee/issues/impl/LiferayAPI.java",
+    "https://liferay.dev/blogs/-/blogs/securing-the-api-jsonws-ui?_com_liferay_blogs_web_portlet_BlogsPortlet_showFlags\u003dtrue\u0026scroll\u003d_com_liferay_blogs_web_portlet_BlogsPortlet_discussionContainer"
+  ],
+  "tags": [
+    "liferay",
+    "exposure",
+    "api",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"Liferay\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/api/jsonws",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            ".*\u003ctitle\u003ejson-web-services-api\u003c\\/title\u003e.*"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "liferay-jsonws",
+    "info": {
+      "name": "Liferay /api/jsonws - API Exposed",
+      "author": "DhiyaneshDk",
+      "severity": "low",
+      "description": "Liferay /api/jsonws - API is Exposed.",
+      "reference": [
+        "https://github.com/ilmila/J2EEScan/blob/master/src/main/java/burp/j2ee/issues/impl/LiferayAPI.java",
+        "https://liferay.dev/blogs/-/blogs/securing-the-api-jsonws-ui?_com_liferay_blogs_web_portlet_BlogsPortlet_showFlags\u003dtrue\u0026scroll\u003d_com_liferay_blogs_web_portlet_BlogsPortlet_discussionContainer"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"Liferay\""
+      },
+      "tags": "liferay,exposure,api,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/api/jsonws"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              ".*\u003ctitle\u003ejson-web-services-api\u003c\\/title\u003e.*"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

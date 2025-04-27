@@ -1,0 +1,194 @@
+{
+  "id": "slack-bot-token",
+  "name": "Slack Bot token",
+  "author": "nadino",
+  "severity": "HIGH",
+  "description": "",
+  "references": [
+    "https://api.slack.com/authentication/token-types"
+  ],
+  "tags": [
+    "exposure",
+    "token",
+    "slack"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "xoxb-[0-9A-Za-z\\\\-]{52}",
+            "(xoxb-[0-9]{10,13}\\-[0-9]{10,13}[a-zA-Z0-9-]*)"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "token",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@Host: https://slack.com:443\nPOST /api/auth.test?pretty\u003d1 HTTP/1.1\nHost: slack.com\nOrigin: https://api.slack.com\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryDL3VHEC7cFaxeAhK\n\n------WebKitFormBoundaryDL3VHEC7cFaxeAhK\nContent-Disposition: form-data; name\u003d\"content\"\n\nnull\n------WebKitFormBoundaryDL3VHEC7cFaxeAhK\nContent-Disposition: form-data; name\u003d\"token\"\n\n{{token}}\n------WebKitFormBoundaryDL3VHEC7cFaxeAhK--\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": true,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_all(body, \"team_id\", \"user_id\", \"bot_id\")",
+            "contains(content_type, \"application/json\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "slack-bot-token",
+    "info": {
+      "name": "Slack Bot token",
+      "author": "nadino",
+      "severity": "high",
+      "reference": [
+        "https://api.slack.com/authentication/token-types"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "exposure,token,slack"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "xoxb-[0-9A-Za-z\\\\-]{52}",
+              "(xoxb-[0-9]{10,13}\\-[0-9]{10,13}[a-zA-Z0-9-]*)"
+            ],
+            "group": 1,
+            "name": "token",
+            "internal": true
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": true,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@Host: https://slack.com:443\nPOST /api/auth.test?pretty\u003d1 HTTP/1.1\nHost: slack.com\nOrigin: https://api.slack.com\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryDL3VHEC7cFaxeAhK\n\n------WebKitFormBoundaryDL3VHEC7cFaxeAhK\nContent-Disposition: form-data; name\u003d\"content\"\n\nnull\n------WebKitFormBoundaryDL3VHEC7cFaxeAhK\nContent-Disposition: form-data; name\u003d\"token\"\n\n{{token}}\n------WebKitFormBoundaryDL3VHEC7cFaxeAhK--\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_all(body, \"team_id\", \"user_id\", \"bot_id\")",
+              "contains(content_type, \"application/json\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "token"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

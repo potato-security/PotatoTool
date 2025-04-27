@@ -1,0 +1,148 @@
+{
+  "id": "iotawatt-app-exposure",
+  "name": "IoTaWatt Configuration App Exposure",
+  "author": "pussycat0x",
+  "severity": "HIGH",
+  "description": "An IoTaWatt configuration app was discovered. Unauthenticated access to an IoTaWatt energy monitor could give a malicious attacker the means to upload to any of several third-party energy websites/database.",
+  "references": [
+    "https://docs.iotawatt.com/en/master/passConfig.html"
+  ],
+  "tags": [
+    "iot",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"IoTaWatt-Configuration-app\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ch3\u003eConfigure IoTaWatt Device\u003c/h3\u003e",
+            "\u003ctitle\u003eIoTaWatt Configuration app\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "iotawatt-app-exposure",
+    "info": {
+      "name": "IoTaWatt Configuration App Exposure",
+      "author": "pussycat0x",
+      "severity": "high",
+      "description": "An IoTaWatt configuration app was discovered. Unauthenticated access to an IoTaWatt energy monitor could give a malicious attacker the means to upload to any of several third-party energy websites/database.",
+      "reference": [
+        "https://docs.iotawatt.com/en/master/passConfig.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"IoTaWatt-Configuration-app\""
+      },
+      "tags": "iot,exposure"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ch3\u003eConfigure IoTaWatt Device\u003c/h3\u003e",
+              "\u003ctitle\u003eIoTaWatt Configuration app\u003c/title\u003e"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

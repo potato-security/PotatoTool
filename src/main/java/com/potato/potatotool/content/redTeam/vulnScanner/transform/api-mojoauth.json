@@ -1,0 +1,122 @@
+{
+  "id": "api-mojoauth",
+  "name": "MojoAuth API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Secure and modern passwordless authentication platform",
+  "references": [
+    "https://mojoauth.com/docs/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/mojoauth"
+  ],
+  "tags": [
+    "token-spray",
+    "mojoauth"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST https://api.mojoauth.com/token/jwks HTTP/1.1\nHost: api.mojoauth.com\nX-API-Key: {{token}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"keys\"",
+            "\"kty\"",
+            "\"kid\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-mojoauth",
+    "info": {
+      "name": "MojoAuth API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Secure and modern passwordless authentication platform",
+      "reference": [
+        "https://mojoauth.com/docs/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/mojoauth"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,mojoauth"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST https://api.mojoauth.com/token/jwks HTTP/1.1\nHost: api.mojoauth.com\nX-API-Key: {{token}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"keys\"",
+              "\"kty\"",
+              "\"kid\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

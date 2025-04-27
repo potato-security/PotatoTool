@@ -1,0 +1,122 @@
+{
+  "id": "api-petfinder",
+  "name": "Petfinder API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Petfinder is dedicated to helping pets find homes, another resource to get pets adopted",
+  "references": [
+    "https://www.petfinder.com/developers/v2/docs/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/petfinder"
+  ],
+  "tags": [
+    "token-spray",
+    "petfinder"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST https://api.petfinder.com/v2/oauth2/token HTTP/1.1\nHost: api.petfinder.com\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 81\n\ngrant_type\u003dclient_credentials\u0026client_id\u003d{{id}}\u0026client_secret\u003d{{secret}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"token_type\"",
+            "\"expires_in\"",
+            "\"access_token\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-petfinder",
+    "info": {
+      "name": "Petfinder API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Petfinder is dedicated to helping pets find homes, another resource to get pets adopted",
+      "reference": [
+        "https://www.petfinder.com/developers/v2/docs/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/petfinder"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,petfinder"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST https://api.petfinder.com/v2/oauth2/token HTTP/1.1\nHost: api.petfinder.com\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 81\n\ngrant_type\u003dclient_credentials\u0026client_id\u003d{{id}}\u0026client_secret\u003d{{secret}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"token_type\"",
+              "\"expires_in\"",
+              "\"access_token\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

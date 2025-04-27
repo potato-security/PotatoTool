@@ -1,0 +1,127 @@
+{
+  "id": "php-debugbar-exposure",
+  "name": "Php Debug Bar - Exposure",
+  "author": "ritikchaddha,pdteam,DhiyaneshDk,geeknik",
+  "severity": "HIGH",
+  "description": "The DebugBar integrates easily into projects and can display profiling data from any part of your application.This template detects exposed PHP Debug Bars by looking for known response bodies and the `phpdebugbar-id` in headers.\n",
+  "references": [
+    "https://hackerone.com/reports/1883806",
+    "http://phpdebugbar.com/",
+    "https://github.com/maximebf/php-debugbar"
+  ],
+  "tags": [
+    "misconfig",
+    "php",
+    "phpdebug",
+    "exposure",
+    "debug"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"phpdebugbar\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(body, \"phpdebugbar\", \"widget\") \u0026\u0026 status_code \u003d\u003d 200",
+            "contains(header, \"phpdebugbar-id\")",
+            "contains_all(body, \"\\\"utime\\\"\",\"\\\"datetime\\\"\",\"{\\\"id\") \u0026\u0026 contains(content_type, \"application/json\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "php-debugbar-exposure",
+    "info": {
+      "name": "Php Debug Bar - Exposure",
+      "author": "ritikchaddha,pdteam,DhiyaneshDk,geeknik",
+      "severity": "high",
+      "description": "The DebugBar integrates easily into projects and can display profiling data from any part of your application.This template detects exposed PHP Debug Bars by looking for known response bodies and the `phpdebugbar-id` in headers.\n",
+      "reference": [
+        "https://hackerone.com/reports/1883806",
+        "http://phpdebugbar.com/",
+        "https://github.com/maximebf/php-debugbar"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "html:\"phpdebugbar\""
+      },
+      "tags": "misconfig,php,phpdebug,exposure,debug"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/_debugbar/open"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(body, \"phpdebugbar\", \"widget\") \u0026\u0026 status_code \u003d\u003d 200",
+              "contains(header, \"phpdebugbar-id\")",
+              "contains_all(body, \"\\\"utime\\\"\",\"\\\"datetime\\\"\",\"{\\\"id\") \u0026\u0026 contains(content_type, \"application/json\")"
+            ],
+            "condition": "or"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

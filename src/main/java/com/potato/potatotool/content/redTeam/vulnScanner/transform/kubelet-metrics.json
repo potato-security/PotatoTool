@@ -1,0 +1,121 @@
+{
+  "id": "kubelet-metrics",
+  "name": "Kubelet Metrics",
+  "author": "sharath,righettod",
+  "severity": "INFO",
+  "description": "Kube Metrics Server was detected.\n",
+  "references": [
+    "https://github.com/kubernetes-sigs/metrics-server"
+  ],
+  "tags": [
+    "tech",
+    "k8s",
+    "kubernetes",
+    "devops",
+    "kubelet"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Kube Metrics Server\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"\u003ctitle\u003ekube metrics server\u003c/title\u003e\", \"kube_configmap_\", \"kube_pod_\", \"kube_secret_\", \"kube_deployment_\", \"kube_namespace_\", \"kube_service_\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "kubelet-metrics",
+    "info": {
+      "name": "Kubelet Metrics",
+      "author": "sharath,righettod",
+      "severity": "info",
+      "description": "Kube Metrics Server was detected.\n",
+      "reference": [
+        "https://github.com/kubernetes-sigs/metrics-server"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Kube Metrics Server\""
+      },
+      "tags": "tech,k8s,kubernetes,devops,kubelet"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/",
+          "{{BaseURL}}/metrics"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"\u003ctitle\u003ekube metrics server\u003c/title\u003e\", \"kube_configmap_\", \"kube_pod_\", \"kube_secret_\", \"kube_deployment_\", \"kube_namespace_\", \"kube_service_\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

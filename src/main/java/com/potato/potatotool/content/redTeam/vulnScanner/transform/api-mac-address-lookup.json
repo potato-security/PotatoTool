@@ -1,0 +1,122 @@
+{
+  "id": "api-mac-address-lookup",
+  "name": "MAC Address Lookup API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Retrieve vendor details and other information regarding a given MAC address or an OUI",
+  "references": [
+    "https://macaddress.io/api",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/mac-address-lookup"
+  ],
+  "tags": [
+    "token-spray",
+    "macaddresslookup"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.macaddress.io/v1?apiKey\u003d{{token}}\u0026output\u003djson\u0026search\u003d44:38:39:ff:ef:57",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"vendorDetails\"",
+            "\"companyName\"",
+            "\"companyAddress\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-mac-address-lookup",
+    "info": {
+      "name": "MAC Address Lookup API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Retrieve vendor details and other information regarding a given MAC address or an OUI",
+      "reference": [
+        "https://macaddress.io/api",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/mac-address-lookup"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,macaddresslookup"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.macaddress.io/v1?apiKey\u003d{{token}}\u0026output\u003djson\u0026search\u003d44:38:39:ff:ef:57"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"vendorDetails\"",
+              "\"companyName\"",
+              "\"companyAddress\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,125 @@
+{
+  "id": "dionaea-ftp-honeypot-detect",
+  "name": "Dionaea FTP Honeypot - Detect",
+  "author": "UnaPibaGeek",
+  "severity": "INFO",
+  "description": "A Dionaea FTP honeypot has been identified.\nThe response to the \u0027PASS\u0027 command differs from real installations, signaling a possible deceptive setup.\n",
+  "tags": [
+    "dionaea",
+    "ftp",
+    "honeypot",
+    "ir",
+    "cti",
+    "network",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "21",
+      "inputs": [
+        {
+          "data": "USER root\r\n",
+          "read": "1024"
+        },
+        {
+          "data": "PASS \r\n",
+          "read": "1024"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 2048,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "500 Syntax error: PASS requires an argument"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "dionaea-ftp-honeypot-detect",
+    "info": {
+      "name": "Dionaea FTP Honeypot - Detect",
+      "author": "UnaPibaGeek",
+      "severity": "info",
+      "description": "A Dionaea FTP honeypot has been identified.\nThe response to the \u0027PASS\u0027 command differs from real installations, signaling a possible deceptive setup.\n",
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "dionaea,ftp,honeypot,ir,cti,network,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "USER root\r\n",
+            "read": 1024
+          },
+          {
+            "data": "PASS \r\n",
+            "read": 1024
+          }
+        ],
+        "port": "21",
+        "stop_at_first_match": false,
+        "read_size": 2048,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "500 Syntax error: PASS requires an argument"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,132 @@
+{
+  "id": "kong-detect",
+  "name": "Detect Kong",
+  "author": "geeknik,joshlarsen",
+  "severity": "INFO",
+  "description": "The Cloud-Native API Gateway",
+  "references": [
+    "https://github.com/Kong/kong"
+  ],
+  "tags": [
+    "tech",
+    "kong"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "server: kong",
+            "x-kong-response-latency",
+            "x-kong-upstream-latency",
+            "x-kong-proxy-latency",
+            "x-kong-admin-request-id"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": true,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "kong-detect",
+    "info": {
+      "name": "Detect Kong",
+      "author": "geeknik,joshlarsen",
+      "severity": "info",
+      "description": "The Cloud-Native API Gateway",
+      "reference": [
+        "https://github.com/Kong/kong"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "tech,kong"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "server: kong",
+              "x-kong-response-latency",
+              "x-kong-upstream-latency",
+              "x-kong-proxy-latency",
+              "x-kong-admin-request-id"
+            ],
+            "condition": "or",
+            "case_insensitive": true
+          }
+        ],
+        "extractors": [
+          {
+            "type": "kval",
+            "kval": [
+              "server"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

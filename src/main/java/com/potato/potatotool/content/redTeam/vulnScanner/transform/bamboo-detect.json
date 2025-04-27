@@ -1,0 +1,126 @@
+{
+  "id": "bamboo-detect",
+  "name": "Bamboo - Detection",
+  "author": "bhutch",
+  "severity": "INFO",
+  "description": "Detect the presence of Bamboo, a CI/CD tool.\n",
+  "tags": [
+    "tech",
+    "bamboo",
+    "atlassian",
+    "detect",
+    "cicd"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.favicon.hash:-1379982221"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(to_lower(body), \"\u003ctitle\u003elog into atlassian - atlassian bamboo\u003c/title\u003e\")",
+            "contains(to_lower(body), \"meta name\u003d\\\"application-name\\\" content\u003d\\\"bamboo\\\" /\u003e\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "bamboo-detect",
+    "info": {
+      "name": "Bamboo - Detection",
+      "author": "bhutch",
+      "severity": "info",
+      "description": "Detect the presence of Bamboo, a CI/CD tool.\n",
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.favicon.hash:-1379982221"
+      },
+      "tags": "tech,bamboo,atlassian,detect,cicd"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": true,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(to_lower(body), \"\u003ctitle\u003elog into atlassian - atlassian bamboo\u003c/title\u003e\")",
+              "contains(to_lower(body), \"meta name\u003d\\\"application-name\\\" content\u003d\\\"bamboo\\\" /\u003e\")"
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)atlassian bamboo\u003c/a\u003e version (.*) -"
+            ],
+            "group": 1,
+            "name": "version",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,195 @@
+{
+  "id": "linkerd-badrule-detect",
+  "name": "Linkerd detection via bad rule",
+  "author": "dudez",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://linkerd.io"
+  ],
+  "tags": [
+    "tech",
+    "linkerd"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {
+        "l5d-dtab": "/svc/*"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "(?mi)^Via\\s*?:.*?linkerd.*$"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "via-linkerd-present",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "(?mi)^l5d-err:.*$"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "l5d-err-present",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "(?mi)^l5d-success-class: 0.*$"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "l5d-success-class-present",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "expected but end of input found at"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "linkerd-badrule-detect",
+    "info": {
+      "name": "Linkerd detection via bad rule",
+      "author": "dudez",
+      "severity": "info",
+      "reference": [
+        "https://linkerd.io"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "tech,linkerd"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "headers": {
+          "l5d-dtab": "/svc/*"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "(?mi)^Via\\s*?:.*?linkerd.*$"
+            ],
+            "group": 1,
+            "name": "via-linkerd-present",
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "(?mi)^l5d-err:.*$"
+            ],
+            "group": 1,
+            "name": "l5d-err-present",
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "(?mi)^l5d-success-class: 0.*$"
+            ],
+            "group": 1,
+            "name": "l5d-success-class-present",
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "expected but end of input found at"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

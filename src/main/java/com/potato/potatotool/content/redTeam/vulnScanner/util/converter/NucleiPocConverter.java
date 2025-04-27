@@ -519,6 +519,12 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
                             values.add(statusCode.toString());
                         }
                         matcher.setValues(values);
+                        // 设置名称，优先使用matcher自带的name
+                        if (status.getName() != null && !status.getName().isEmpty()) {
+                            matcher.setName(status.getName());
+                        } else {
+                            matcher.setName("status_matcher");
+                        }
                     }
                     break;
                 case "word":
@@ -529,6 +535,12 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
                         matcher.setPart(word.getPart());
                         matcher.setNegative(word.isNegative());
                         matcher.setCaseInsensitive(word.isCase_insensitive());
+                        // 设置名称，优先使用matcher自带的name
+                        if (word.getName() != null && !word.getName().isEmpty()) {
+                            matcher.setName(word.getName());
+                        } else {
+                            matcher.setName("word_matcher");
+                        }
                     }
                     break;
                 case "regex":
@@ -538,8 +550,13 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
                         matcher.setValues(regex.getRegex());
                         matcher.setPart(regex.getPart());
                         matcher.setGroup(regex.getGroup());
-                        matcher.setName(regex.getName());
                         matcher.setInternal(String.valueOf(regex.isInternal()));
+                        // 设置名称，优先使用matcher自带的name
+                        if (regex.getName() != null && !regex.getName().isEmpty()) {
+                            matcher.setName(regex.getName());
+                        } else {
+                            matcher.setName("regex_matcher");
+                        }
                     }
                     break;
                 case "binary":
@@ -548,6 +565,12 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
                         NucleiYamlObj.Binary binary = (NucleiYamlObj.Binary) templateMatcher;
                         matcher.setValues(binary.getBinary());
                         matcher.setPart(binary.getPart());
+                        // 设置名称，优先使用matcher自带的name
+                        if (binary.getName() != null && !binary.getName().isEmpty()) {
+                            matcher.setName(binary.getName());
+                        } else {
+                            matcher.setName("binary_matcher");
+                        }
                     }
                     break;
                 case "dsl":
@@ -555,7 +578,12 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
                     if (templateMatcher instanceof NucleiYamlObj.Dsl) {
                         NucleiYamlObj.Dsl dsl = (NucleiYamlObj.Dsl) templateMatcher;
                         matcher.setValues(dsl.getDsl());
-                        matcher.setName(dsl.getName());
+                        // 设置名称，优先使用matcher自带的name
+                        if (dsl.getName() != null && !dsl.getName().isEmpty()) {
+                            matcher.setName(dsl.getName());
+                        } else {
+                            matcher.setName("dsl_matcher");
+                        }
                     }
                     break;
                 case "xpath":
@@ -564,6 +592,12 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
                         NucleiYamlObj.Xpath xpath = (NucleiYamlObj.Xpath) templateMatcher;
                         matcher.setValues(xpath.getXpath());
                         matcher.setAttribute(xpath.getAttribute());
+                        // 设置名称，优先使用matcher自带的name
+                        if (xpath.getName() != null && !xpath.getName().isEmpty()) {
+                            matcher.setName(xpath.getName());
+                        } else {
+                            matcher.setName("xpath_matcher");
+                        }
                     }
                     break;
                 case "json":
@@ -571,6 +605,12 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
                     if (templateMatcher instanceof NucleiYamlObj.Json) {
                         NucleiYamlObj.Json json = (NucleiYamlObj.Json) templateMatcher;
                         matcher.setValues(json.getJson());
+                        // 设置名称，优先使用matcher自带的name
+                        if (json.getName() != null && !json.getName().isEmpty()) {
+                            matcher.setName(json.getName());
+                        } else {
+                            matcher.setName("json_matcher");
+                        }
                     }
                     break;
                 case "kval":
@@ -578,10 +618,17 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
                     if (templateMatcher instanceof NucleiYamlObj.Kval) {
                         NucleiYamlObj.Kval kval = (NucleiYamlObj.Kval) templateMatcher;
                         matcher.setValues(kval.getKval());
+                        // 设置名称，优先使用matcher自带的name
+                        if (kval.getName() != null && !kval.getName().isEmpty()) {
+                            matcher.setName(kval.getName());
+                        } else {
+                            matcher.setName("kval_matcher");
+                        }
                     }
                     break;
                 default:
                     matcher.setType(MatcherType.UNKNOWN);
+                    matcher.setName("unknown_matcher");
             }
             
             // 设置条件
@@ -628,30 +675,97 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
             return;
         }
         
-        Map<String, String> extractorMap = new HashMap<>();
+        List<PocObj.Matcher> extractorList = new ArrayList<>();
         
         for (NucleiYamlObj.TemplateMatcher extractor : extractors) {
             try {
+                PocObj.Matcher matcher = new PocObj.Matcher();
+                
                 // 处理不同类型的提取器
                 if (extractor instanceof NucleiYamlObj.Regex) {
                     NucleiYamlObj.Regex regex = (NucleiYamlObj.Regex) extractor;
-                    if (regex.getName() != null && !regex.getName().isEmpty() && regex.getRegex() != null && !regex.getRegex().isEmpty()) {
-                        extractorMap.put(regex.getName(), "regex:" + String.join(",", regex.getRegex()));
+                    if (regex.getRegex() != null && !regex.getRegex().isEmpty()) {
+                        matcher.setType(PocObj.MatcherType.REGEX);
+                        matcher.setPart(regex.getPart());
+                        matcher.setValues(regex.getRegex());
+                        matcher.setOperation(PocObj.OperationType.REGEX_MATCH);
+                        matcher.setGroup(regex.getGroup());
+                        
+                        // 设置名称，优先使用extractor自带的name
+                        if (regex.getName() != null && !regex.getName().isEmpty()) {
+                            matcher.setName(regex.getName());
+                        } else {
+                            matcher.setName("regex_" + extractorList.size());
+                        }
+                        
+                        extractorList.add(matcher);
                     }
                 } else if (extractor instanceof NucleiYamlObj.Json) {
                     NucleiYamlObj.Json json = (NucleiYamlObj.Json) extractor;
                     if (json.getJson() != null && !json.getJson().isEmpty()) {
-                        extractorMap.put("json_" + extractorMap.size(), "json:" + String.join(",", json.getJson()));
+                        matcher.setType(PocObj.MatcherType.JSON);
+                        matcher.setPart("body");
+                        matcher.setValues(json.getJson());
+                        matcher.setOperation(PocObj.OperationType.DEFAULT);
+                        
+                        // 设置名称，优先使用extractor自带的name
+                        if (json.getName() != null && !json.getName().isEmpty()) {
+                            matcher.setName(json.getName());
+                        } else {
+                            matcher.setName("json_" + extractorList.size());
+                        }
+                        
+                        extractorList.add(matcher);
                     }
                 } else if (extractor instanceof NucleiYamlObj.Xpath) {
                     NucleiYamlObj.Xpath xpath = (NucleiYamlObj.Xpath) extractor;
                     if (xpath.getXpath() != null && !xpath.getXpath().isEmpty()) {
-                        extractorMap.put("xpath_" + extractorMap.size(), "xpath:" + String.join(",", xpath.getXpath()));
+                        matcher.setType(PocObj.MatcherType.XPATH);
+                        matcher.setPart("body");
+                        matcher.setValues(xpath.getXpath());
+                        matcher.setAttribute(xpath.getAttribute());
+                        matcher.setOperation(PocObj.OperationType.DEFAULT);
+                        
+                        // 设置名称，优先使用extractor自带的name
+                        if (xpath.getName() != null && !xpath.getName().isEmpty()) {
+                            matcher.setName(xpath.getName());
+                        } else {
+                            matcher.setName("xpath_" + extractorList.size());
+                        }
+                        
+                        extractorList.add(matcher);
                     }
                 } else if (extractor instanceof NucleiYamlObj.Dsl) {
                     NucleiYamlObj.Dsl dsl = (NucleiYamlObj.Dsl) extractor;
-                    if (dsl.getName() != null && !dsl.getName().isEmpty() && dsl.getDsl() != null && !dsl.getDsl().isEmpty()) {
-                        extractorMap.put(dsl.getName(), "dsl:" + String.join(",", dsl.getDsl()));
+                    if (dsl.getDsl() != null && !dsl.getDsl().isEmpty()) {
+                        matcher.setType(PocObj.MatcherType.DSL);
+                        matcher.setValues(dsl.getDsl());
+                        matcher.setOperation(PocObj.OperationType.DEFAULT);
+                        
+                        // 设置名称，优先使用extractor自带的name
+                        if (dsl.getName() != null && !dsl.getName().isEmpty()) {
+                            matcher.setName(dsl.getName());
+                        } else {
+                            matcher.setName("dsl_" + extractorList.size());
+                        }
+                        
+                        extractorList.add(matcher);
+                    }
+                } else if (extractor instanceof NucleiYamlObj.Kval) {
+                    NucleiYamlObj.Kval kval = (NucleiYamlObj.Kval) extractor;
+                    if (kval.getKval() != null && !kval.getKval().isEmpty()) {
+                        matcher.setType(PocObj.MatcherType.KVAL);
+                        matcher.setValues(kval.getKval());
+                        matcher.setOperation(PocObj.OperationType.DEFAULT);
+                        
+                        // 设置名称，优先使用extractor自带的name
+                        if (kval.getName() != null && !kval.getName().isEmpty()) {
+                            matcher.setName(kval.getName());
+                        } else {
+                            matcher.setName("kval_" + extractorList.size());
+                        }
+                        
+                        extractorList.add(matcher);
                     }
                 }
             } catch (Exception e) {
@@ -660,11 +774,10 @@ public class NucleiPocConverter implements IPocConverter<NucleiYamlObj.Poc> {
             }
         }
         
-        if (!extractorMap.isEmpty()) {
-//            step.setExtractors(extractorMap);
+        if (!extractorList.isEmpty()) {
+            step.setExtractors(extractorList);
         }
-    }
-    
+    }    
     /**
      * 处理requests字段
      * @param requests 请求列表

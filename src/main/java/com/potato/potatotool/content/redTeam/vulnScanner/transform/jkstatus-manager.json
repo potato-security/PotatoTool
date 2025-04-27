@@ -1,0 +1,133 @@
+{
+  "id": "jkstatus-manager",
+  "name": "JK Status Manager - Detect",
+  "author": "pdteam,DhiyaneshDk",
+  "severity": "LOW",
+  "description": "Exposed JKStatus manager which is a web-based tool that allows administrators to monitor and manage the connections between the Apache HTTP Server and the Tomcat application server.\n",
+  "references": [
+    "https://github.com/PortSwigger/j2ee-scan/blob/master/src/main/java/burp/j2ee/issues/impl/JKStatus.java"
+  ],
+  "tags": [
+    "config",
+    "jk",
+    "status",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"JK Status Manager\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {
+        "X-Forwarded-For": "127.0.0.1"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "JK Status Manager"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jkstatus-manager",
+    "info": {
+      "name": "JK Status Manager - Detect",
+      "author": "pdteam,DhiyaneshDk",
+      "severity": "low",
+      "description": "Exposed JKStatus manager which is a web-based tool that allows administrators to monitor and manage the connections between the Apache HTTP Server and the Tomcat application server.\n",
+      "reference": [
+        "https://github.com/PortSwigger/j2ee-scan/blob/master/src/main/java/burp/j2ee/issues/impl/JKStatus.java"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 8,
+        "shodan_query": "html:\"JK Status Manager\""
+      },
+      "tags": "config,jk,status,exposure"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/status",
+          "{{BaseURL}}/jkstatus",
+          "{{BaseURL}}/jkstatus-auth",
+          "{{BaseURL}}/jk-status",
+          "{{BaseURL}}/jkmanager",
+          "{{BaseURL}}/jkmanager-auth",
+          "{{BaseURL}}/jdkstatus"
+        ],
+        "headers": {
+          "X-Forwarded-For": "127.0.0.1"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "JK Status Manager"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

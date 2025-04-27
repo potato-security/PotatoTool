@@ -1,0 +1,200 @@
+{
+  "id": "laravel-env",
+  "name": "Laravel - Sensitive Information Disclosure",
+  "author": "pxmme1337,dwisiswant0,geeknik,emenalf,adrianmf",
+  "severity": "HIGH",
+  "description": "A Laravel .env file was discovered, which stores sensitive information like database credentials and tokens. It should not be publicly accessible.\n",
+  "references": [
+    "https://laravel.com/docs/master/configuration#environment-configuration",
+    "https://stackoverflow.com/questions/38331397/how-to-protect-env-file-in-laravel"
+  ],
+  "tags": [
+    "config",
+    "exposure",
+    "laravel"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "paths": [
+      "/.env",
+      "/.env.bak",
+      "/.env.dev",
+      "/.env.dev.local",
+      "/.env.development.local",
+      "/.env.prod",
+      "/.env.prod.local",
+      "/.env.production",
+      "/.env.production.local",
+      "/.env.local",
+      "/.env.example",
+      "/.env.stage",
+      "/.env.live",
+      "/.env.backup",
+      "/.env.save",
+      "/.env.old",
+      "/.env.www",
+      "/.env_1",
+      "/.env_sample",
+      "/.env.{{DN}}",
+      "/.env.{{SD}}",
+      "/api/.env"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}{{paths}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "(?mi)^APP_(NAME|ENV|KEY|DEBUG|URL|PASSWORD)\u003d",
+            "(?mi)^DB_(HOST|PASSWORD|DATABASE)\u003d"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "laravel-env",
+    "info": {
+      "name": "Laravel - Sensitive Information Disclosure",
+      "author": "pxmme1337,dwisiswant0,geeknik,emenalf,adrianmf",
+      "severity": "high",
+      "description": "A Laravel .env file was discovered, which stores sensitive information like database credentials and tokens. It should not be publicly accessible.\n",
+      "reference": [
+        "https://laravel.com/docs/master/configuration#environment-configuration",
+        "https://stackoverflow.com/questions/38331397/how-to-protect-env-file-in-laravel"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 22
+      },
+      "tags": "config,exposure,laravel"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "/.env",
+            "/.env.bak",
+            "/.env.dev",
+            "/.env.dev.local",
+            "/.env.development.local",
+            "/.env.prod",
+            "/.env.prod.local",
+            "/.env.production",
+            "/.env.production.local",
+            "/.env.local",
+            "/.env.example",
+            "/.env.stage",
+            "/.env.live",
+            "/.env.backup",
+            "/.env.save",
+            "/.env.old",
+            "/.env.www",
+            "/.env_1",
+            "/.env_sample",
+            "/.env.{{DN}}",
+            "/.env.{{SD}}",
+            "/api/.env"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}{{paths}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?mi)^APP_(NAME|ENV|KEY|DEBUG|URL|PASSWORD)\u003d",
+              "(?mi)^DB_(HOST|PASSWORD|DATABASE)\u003d"
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

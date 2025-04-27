@@ -1,0 +1,161 @@
+{
+  "id": "tomcat-detect",
+  "name": "Tomcat Detection",
+  "author": "philippedelteil,dhiyaneshDk,AdamCrosser",
+  "severity": "INFO",
+  "description": "If an Tomcat instance is deployed on the target URL, when we send a request for a non existent resource we receive a Tomcat error page with version.",
+  "tags": [
+    "tech",
+    "tomcat",
+    "apache",
+    "intrusive"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"apache tomcat\" title\u003d\"apache tomcat\"",
+    "google": "intitle:\"apache tomcat\"",
+    "shodan": "title:\"Apache Tomcat\" http.title:\"apache tomcat\" http.html:\"apache tomcat\" cpe:\"cpe:2.3:a:apache:tomcat\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(tolower(header), \"tomcat\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "DSL",
+          "values": [
+            "contains(tolower(body), \"apache tomcat\")",
+            "contains(tolower(body), \"/manager/html\")",
+            "contains(tolower(body), \"/manager/status\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "tomcat-detect",
+    "info": {
+      "name": "Tomcat Detection",
+      "author": "philippedelteil,dhiyaneshDk,AdamCrosser",
+      "severity": "info",
+      "description": "If an Tomcat instance is deployed on the target URL, when we send a request for a non existent resource we receive a Tomcat error page with version.",
+      "classification": {},
+      "metadata": {
+        "max_request": 3,
+        "shodan_query": [
+          "title:\"Apache Tomcat\"",
+          "http.title:\"apache tomcat\"",
+          "http.html:\"apache tomcat\"",
+          "cpe:\"cpe:2.3:a:apache:tomcat\""
+        ],
+        "fofa_query": [
+          "body\u003d\"apache tomcat\"",
+          "title\u003d\"apache tomcat\""
+        ],
+        "google_query": "intitle:\"apache tomcat\""
+      },
+      "tags": "tech,tomcat,apache,intrusive"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/{{randstr}}",
+          "{{BaseURL}}/docs/introduction.html"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(tolower(header), \"tomcat\")"
+            ]
+          },
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(tolower(body), \"apache tomcat\")",
+              "contains(tolower(body), \"/manager/html\")",
+              "contains(tolower(body), \"/manager/status\")"
+            ],
+            "condition": "or"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)Apache Tomcat.*\\D([1-9]*[0-9]\\.[0-9]+\\.[0-9]+)"
+            ],
+            "group": 1,
+            "name": "version",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

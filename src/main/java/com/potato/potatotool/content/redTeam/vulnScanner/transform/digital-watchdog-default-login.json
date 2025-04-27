@@ -1,0 +1,146 @@
+{
+  "id": "digital-watchdog-default-login",
+  "name": "Digital Watchdog - Default Login",
+  "author": "omranisecurity",
+  "severity": "HIGH",
+  "description": "Digital Watchdog default login credentials were discovered.\n",
+  "references": [
+    "https://digitalwatchdog.happyfox.com/kb/article/686-recorder-and-raid-default-login-list/"
+  ],
+  "tags": [
+    "digital-watchdog",
+    "default-login",
+    "dw-Spectrum"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"868509217\"",
+    "shodan": "http.favicon.hash:868509217"
+  },
+  "variables": {
+    "pass": [
+      "admin",
+      "admin1234",
+      "admin12345",
+      "Dw5pectrum"
+    ],
+    "user": [
+      "admin",
+      "dwuser"
+    ]
+  },
+  "variablesType": "clusterbomb",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /web/rest/v1/login/sessions HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\"username\":\"{{user}}\",\"password\":\"{{pass}}\",\"setCookie\":true}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(set_cookie, \"x-runtime-guid\u003d\")",
+            "contains(body, \"token\\\":\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "digital-watchdog-default-login",
+    "info": {
+      "name": "Digital Watchdog - Default Login",
+      "author": "omranisecurity",
+      "severity": "high",
+      "description": "Digital Watchdog default login credentials were discovered.\n",
+      "reference": [
+        "https://digitalwatchdog.happyfox.com/kb/article/686-recorder-and-raid-default-login-list/"
+      ],
+      "metadata": {
+        "max_request": 8,
+        "shodan_query": "http.favicon.hash:868509217",
+        "fofa_query": "icon_hash\u003d\"868509217\""
+      },
+      "tags": "digital-watchdog,default-login,dw-Spectrum"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "user": [
+            "admin",
+            "dwuser"
+          ],
+          "pass": [
+            "admin",
+            "admin1234",
+            "admin12345",
+            "Dw5pectrum"
+          ]
+        },
+        "attack": "clusterbomb",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /web/rest/v1/login/sessions HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\"username\":\"{{user}}\",\"password\":\"{{pass}}\",\"setCookie\":true}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(set_cookie, \"x-runtime-guid\u003d\")",
+              "contains(body, \"token\\\":\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

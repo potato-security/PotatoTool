@@ -1,0 +1,121 @@
+{
+  "id": "beyondtrust-priv-panel",
+  "name": "BeyondTrust Privileged Remote Access - Panel",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "BeyondTrust Privileged Remote Access login panel was detected.\n",
+  "references": [
+    "https://www.beyondtrust.com/products/privileged-remote-access"
+  ],
+  "tags": [
+    "panel",
+    "beyondtrust",
+    "login",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"BeyondTrust Privileged Remote Access Login\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/login/login",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"\u003ctitle\u003ebeyondtrust privileged remote access login\", \"privileged-remote-access\") \u0026\u0026 contains(to_lower(body), \"login\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "beyondtrust-priv-panel",
+    "info": {
+      "name": "BeyondTrust Privileged Remote Access - Panel",
+      "author": "righettod",
+      "severity": "info",
+      "description": "BeyondTrust Privileged Remote Access login panel was detected.\n",
+      "reference": [
+        "https://www.beyondtrust.com/products/privileged-remote-access"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.html:\"BeyondTrust Privileged Remote Access Login\""
+      },
+      "tags": "panel,beyondtrust,login,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/login/login",
+          "{{BaseURL}}/login/pre_login_agreement"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"\u003ctitle\u003ebeyondtrust privileged remote access login\", \"privileged-remote-access\") \u0026\u0026 contains(to_lower(body), \"login\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

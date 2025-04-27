@@ -1,0 +1,123 @@
+{
+  "id": "frappe-framework-detect",
+  "name": "Frappe Framework - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Frappe Framework products was detected.\n",
+  "references": [
+    "https://frappe.io/framework",
+    "https://docs.frappe.io/framework/user/en/introduction",
+    "https://github.com/frappe/frappe"
+  ],
+  "tags": [
+    "panel",
+    "frappe",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"window.frappe\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"frappe.csrf_token\", \"frappe.boot\", \"frappe-web.bundle\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "frappe-framework-detect",
+    "info": {
+      "name": "Frappe Framework - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Frappe Framework products was detected.\n",
+      "reference": [
+        "https://frappe.io/framework",
+        "https://docs.frappe.io/framework/user/en/introduction",
+        "https://github.com/frappe/frappe"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html:\"window.frappe\""
+      },
+      "tags": "panel,frappe,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/about"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"frappe.csrf_token\", \"frappe.boot\", \"frappe-web.bundle\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

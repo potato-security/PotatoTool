@@ -1,0 +1,164 @@
+{
+  "id": "solar-log-authbypass",
+  "name": "Solar-Log 500 2.8.2 - Incorrect Access Control",
+  "author": "geeknik",
+  "severity": "HIGH",
+  "description": "Solar-Log 500 2.8.2 is susceptible to incorrect access control because the web administration server for Solar-Log 500 all versions prior to 2.8.2 Build 52 does not require authentication, which allows arbitrary remote attackers gain administrative privileges by connecting to the server.",
+  "references": [
+    "https://www.exploit-db.com/exploits/49986"
+  ],
+  "tags": [
+    "solarlog",
+    "auth-bypass",
+    "edb"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-284",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/lan.html",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "IPC@CHIP"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            " Solare Datensysteme GmbH",
+            "mailto:info@solar-log.com"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "solar-log-authbypass",
+    "info": {
+      "name": "Solar-Log 500 2.8.2 - Incorrect Access Control",
+      "author": "geeknik",
+      "severity": "high",
+      "description": "Solar-Log 500 2.8.2 is susceptible to incorrect access control because the web administration server for Solar-Log 500 all versions prior to 2.8.2 Build 52 does not require authentication, which allows arbitrary remote attackers gain administrative privileges by connecting to the server.",
+      "reference": [
+        "https://www.exploit-db.com/exploits/49986"
+      ],
+      "classification": {
+        "cwe_id": "CWE-284"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "solarlog,auth-bypass,edb"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/lan.html"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "IPC@CHIP"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              " Solare Datensysteme GmbH",
+              "mailto:info@solar-log.com"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

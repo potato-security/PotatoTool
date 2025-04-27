@@ -1,0 +1,129 @@
+{
+  "id": "rabbitmq-detect",
+  "name": "RabbitMQ Detection",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "RabbitMQ is an open-source message-broker software that originally implemented the Advanced Message Queuing Protocol and has since been extended with a plug-in architecture to support Streaming Text Oriented Messaging Protocol, MQ Telemetry Transport, and other protocols.\n",
+  "references": [
+    "https://nmap.org/nsedoc/scripts/amqp-info.html"
+  ],
+  "tags": [
+    "network",
+    "rabbitmq",
+    "oss",
+    "detect",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"RabbitMQ\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "5672",
+      "inputs": [
+        {
+          "data": "AMQP\u0000\u0000\t\u0001",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "publisher_confirmst",
+            "RabbitMQ"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "rabbitmq-detect",
+    "info": {
+      "name": "RabbitMQ Detection",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "RabbitMQ is an open-source message-broker software that originally implemented the Advanced Message Queuing Protocol and has since been extended with a plug-in architecture to support Streaming Text Oriented Messaging Protocol, MQ Telemetry Transport, and other protocols.\n",
+      "reference": [
+        "https://nmap.org/nsedoc/scripts/amqp-info.html"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"RabbitMQ\""
+      },
+      "tags": "network,rabbitmq,oss,detect,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "AMQP\u0000\u0000\t\u0001",
+            "read": 0
+          }
+        ],
+        "port": "5672",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "publisher_confirmst",
+              "RabbitMQ"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

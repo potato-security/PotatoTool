@@ -1,0 +1,105 @@
+{
+  "id": "newrelic-api-service-key",
+  "name": "New Relic API Service Key",
+  "author": "DhiyaneshDK",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://github.com/praetorian-inc/noseyparker/blob/main/crates/noseyparker/data/default/builtin/rules/newrelic.yml",
+    "https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys",
+    "https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#user-key"
+  ],
+  "tags": [
+    "newrelic",
+    "exposure",
+    "tokens"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "newrelic-api-service-key",
+    "info": {
+      "name": "New Relic API Service Key",
+      "author": "DhiyaneshDK",
+      "severity": "info",
+      "reference": [
+        "https://github.com/praetorian-inc/noseyparker/blob/main/crates/noseyparker/data/default/builtin/rules/newrelic.yml",
+        "https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys",
+        "https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#user-key"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "newrelic,exposure,tokens"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)\\b(nrak-[a-z0-9]{27})\\b"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

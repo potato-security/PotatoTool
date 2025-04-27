@@ -1,0 +1,125 @@
+{
+  "id": "conpot-siemens-honeypot-detect",
+  "name": "Conpot (Siemens) Honeypot - Detect",
+  "author": "UnaPibaGeek",
+  "severity": "INFO",
+  "description": "A Conpot (Siemens) honeypot has been identified.\nThe response to a first packet of a connection attempt differs from real installations, signaling a possible deceptive setup.\n",
+  "tags": [
+    "conpot",
+    "siemens",
+    "honeypot",
+    "ir",
+    "cti",
+    "network",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"overview - siemens, simatic\"",
+    "shodan": "html:\"Overview - Siemens, SIMATIC\" http.html:\"overview - siemens, simatic\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "102",
+      "inputs": [
+        {
+          "data": "0300001611e00000000400c1020100c2020102c0010a",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 1024,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "BINARY",
+          "part": "body",
+          "values": [
+            "030000130ed00000000000c1020000c2020000"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "conpot-siemens-honeypot-detect",
+    "info": {
+      "name": "Conpot (Siemens) Honeypot - Detect",
+      "author": "UnaPibaGeek",
+      "severity": "info",
+      "description": "A Conpot (Siemens) honeypot has been identified.\nThe response to a first packet of a connection attempt differs from real installations, signaling a possible deceptive setup.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "html:\"Overview - Siemens, SIMATIC\"",
+          "http.html:\"overview - siemens, simatic\""
+        ],
+        "fofa_query": "body\u003d\"overview - siemens, simatic\""
+      },
+      "tags": "conpot,siemens,honeypot,ir,cti,network,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "0300001611e00000000400c1020100c2020102c0010a",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "port": "102",
+        "stop_at_first_match": false,
+        "read_size": 1024,
+        "matchers": [
+          {
+            "type": "binary",
+            "part": "body",
+            "binary": [
+              "030000130ed00000000000c1020000c2020000"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

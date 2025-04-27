@@ -1,0 +1,124 @@
+{
+  "id": "slack-webhook-url",
+  "name": "Slack Webhook URL",
+  "author": "Ice3man,DhiyaneshDK",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://github.com/semgrep/semgrep-rules/blob/develop/generic/secrets/gitleaks/slack-webhook-url.go",
+    "https://github.com/semgrep/semgrep-rules/blob/develop/generic/secrets/gitleaks/slack-webhook-url.yaml"
+  ],
+  "tags": [
+    "exposure",
+    "token",
+    "slack"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "https://hooks\\\\.slack\\\\.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}",
+            "(https?:\\/\\/)?hooks.slack.com\\/(services|workflows)\\/[A-Za-z0-9+\\/]{43,46}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "token",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "slack-webhook-url",
+    "info": {
+      "name": "Slack Webhook URL",
+      "author": "Ice3man,DhiyaneshDK",
+      "severity": "info",
+      "reference": [
+        "https://github.com/semgrep/semgrep-rules/blob/develop/generic/secrets/gitleaks/slack-webhook-url.go",
+        "https://github.com/semgrep/semgrep-rules/blob/develop/generic/secrets/gitleaks/slack-webhook-url.yaml"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "exposure,token,slack"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "https://hooks\\\\.slack\\\\.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}",
+              "(https?:\\/\\/)?hooks.slack.com\\/(services|workflows)\\/[A-Za-z0-9+\\/]{43,46}"
+            ],
+            "group": 1,
+            "name": "token",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

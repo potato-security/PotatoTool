@@ -1,0 +1,125 @@
+{
+  "id": "api-square",
+  "name": "Square API Test",
+  "author": "zzeitlin",
+  "severity": "INFO",
+  "description": "Easy way to take payments, manage refunds, and help customers checkout online",
+  "references": [
+    "https://developer.squareup.com/explorer/square/locations-api/list-locations",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/square"
+  ],
+  "tags": [
+    "token-spray",
+    "square"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://connect.squareup.com/v2/locations",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{token}}"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "errors"
+          ],
+          "negative": true,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-square",
+    "info": {
+      "name": "Square API Test",
+      "author": "zzeitlin",
+      "severity": "info",
+      "description": "Easy way to take payments, manage refunds, and help customers checkout online",
+      "reference": [
+        "https://developer.squareup.com/explorer/square/locations-api/list-locations",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/square"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "token-spray,square"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://connect.squareup.com/v2/locations",
+          "https://connect.squareupsandbox.com/v2/locations"
+        ],
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {{token}}"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": true,
+            "part": "body",
+            "words": [
+              "errors"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

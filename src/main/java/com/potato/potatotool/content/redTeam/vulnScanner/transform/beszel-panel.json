@@ -1,0 +1,120 @@
+{
+  "id": "beszel-panel",
+  "name": "Beszel Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Beszel products was detected.\n",
+  "references": [
+    "https://github.com/henrygd/beszel",
+    "https://beszel.dev/"
+  ],
+  "tags": [
+    "panel",
+    "beszel",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"beszel\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(to_lower(body), \"\u003ctitle\u003ebeszel\u003c/title\u003e\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "beszel-panel",
+    "info": {
+      "name": "Beszel Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Beszel products was detected.\n",
+      "reference": [
+        "https://github.com/henrygd/beszel",
+        "https://beszel.dev/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"beszel\""
+      },
+      "tags": "panel,beszel,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(to_lower(body), \"\u003ctitle\u003ebeszel\u003c/title\u003e\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,120 @@
+{
+  "id": "slims-cms-detect",
+  "name": "Slims CMS - Detect",
+  "author": "nblirwn",
+  "severity": "INFO",
+  "description": "Detects Senayan Library Management System (SLiMS) CMS",
+  "references": [
+    "https://github.com/slims"
+  ],
+  "tags": [
+    "tech",
+    "slims",
+    "cms",
+    "senayan"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\u0027content\u003d\"SLiMS\u0027"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "content\u003d\"SLiMS"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "slims-cms-detect",
+    "info": {
+      "name": "Slims CMS - Detect",
+      "author": "nblirwn",
+      "severity": "info",
+      "description": "Detects Senayan Library Management System (SLiMS) CMS",
+      "reference": [
+        "https://github.com/slims"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "html:\u0027content\u003d\"SLiMS\u0027"
+      },
+      "tags": "tech,slims,cms,senayan"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "content\u003d\"SLiMS"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

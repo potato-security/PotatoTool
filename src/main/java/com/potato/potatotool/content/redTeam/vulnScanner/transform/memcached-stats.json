@@ -1,0 +1,114 @@
+{
+  "id": "memcached-stats",
+  "name": "Memcached stats disclosure",
+  "author": "pdteam",
+  "severity": "LOW",
+  "description": "Memcached stats is used to return server statistics such as PID, version, connections, etc.\n",
+  "tags": [
+    "network",
+    "memcached",
+    "misconfig",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "11211",
+      "inputs": [
+        {
+          "data": "stats\r\n\r\nquit\r\n",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 2048,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "STAT "
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "memcached-stats",
+    "info": {
+      "name": "Memcached stats disclosure",
+      "author": "pdteam",
+      "severity": "low",
+      "description": "Memcached stats is used to return server statistics such as PID, version, connections, etc.\n",
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "network,memcached,misconfig,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "stats\r\n\r\nquit\r\n",
+            "read": 0
+          }
+        ],
+        "port": "11211",
+        "stop_at_first_match": false,
+        "read_size": 2048,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "STAT "
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

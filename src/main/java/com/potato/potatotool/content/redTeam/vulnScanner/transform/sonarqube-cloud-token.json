@@ -1,0 +1,194 @@
+{
+  "id": "sonarqube-cloud-token",
+  "name": "SonarQube Cloud Token Disclosure",
+  "author": "DhiyaneshDk",
+  "severity": "HIGH",
+  "description": "",
+  "references": [
+    "https://sonarcloud.io/web_api/api/authentication",
+    "https://docs.sonarsource.com/sonarqube/latest/user-guide/user-account/generating-and-using-tokens/#types-of-tokens"
+  ],
+  "tags": [
+    "exposure",
+    "token",
+    "sonarqube"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "\\b[a-fA-F\\d]{40}\\b"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "token",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@Host: https://sonarcloud.io:443\nGET /api/authentication/validate HTTP/1.1\nHost: sonarcloud.io\nAuthorization: Basic {{base64(token + \u0027:\u0027)}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": true,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body, \u0027valid\u0027) \u0026\u0026 contains(body, \u0027true\u0027)",
+            "contains(content_type, \"application/json\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "sonarqube-cloud-token",
+    "info": {
+      "name": "SonarQube Cloud Token Disclosure",
+      "author": "DhiyaneshDk",
+      "severity": "high",
+      "reference": [
+        "https://sonarcloud.io/web_api/api/authentication",
+        "https://docs.sonarsource.com/sonarqube/latest/user-guide/user-account/generating-and-using-tokens/#types-of-tokens"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "exposure,token,sonarqube"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\\b[a-fA-F\\d]{40}\\b"
+            ],
+            "group": 1,
+            "name": "token",
+            "internal": true
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": true,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@Host: https://sonarcloud.io:443\nGET /api/authentication/validate HTTP/1.1\nHost: sonarcloud.io\nAuthorization: Basic {{base64(token + \u0027:\u0027)}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body, \u0027valid\u0027) \u0026\u0026 contains(body, \u0027true\u0027)",
+              "contains(content_type, \"application/json\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "token"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

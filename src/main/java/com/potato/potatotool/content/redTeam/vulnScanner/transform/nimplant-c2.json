@@ -1,0 +1,119 @@
+{
+  "id": "nimplant-c2",
+  "name": "NimPlant C2 Server - Detect",
+  "author": "ja1sh",
+  "severity": "INFO",
+  "description": "NimPlant is an open source light first-stage C2 implant written in Nim and Python. It is designed to be used as a starting point for those who want to develop their own custom C2 implants. NimPlant is fully customizable and lightweight, making it easy to integrate into existing C2 frameworks.\n",
+  "references": [
+    "https://github.com/chvancooten/NimPlant"
+  ],
+  "tags": [
+    "tech",
+    "nimplant",
+    "c2"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "nimplant C2 server"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "NimPlant C2 Server"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "nimplant-c2",
+    "info": {
+      "name": "NimPlant C2 Server - Detect",
+      "author": "ja1sh",
+      "severity": "info",
+      "description": "NimPlant is an open source light first-stage C2 implant written in Nim and Python. It is designed to be used as a starting point for those who want to develop their own custom C2 implants. NimPlant is fully customizable and lightweight, making it easy to integrate into existing C2 frameworks.\n",
+      "reference": [
+        "https://github.com/chvancooten/NimPlant"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "nimplant C2 server"
+      },
+      "tags": "tech,nimplant,c2"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "NimPlant C2 Server"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

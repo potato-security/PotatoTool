@@ -1,0 +1,107 @@
+{
+  "id": "xff-403-bypass",
+  "name": "X-Forwarded-For 403-forbidden bypass",
+  "author": "vavkamil",
+  "severity": "INFO",
+  "description": "Template to detect 403 forbidden endpoint bypass behind Nginx/Apache proxy \u0026 load balancers, based on X-Forwarded-For header.",
+  "tags": [
+    "fuzzing",
+    "xff-403-bypass"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET / HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\n",
+        "GET / HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\nX-Forwarded-For: 127.0.0.1, 0.0.0.0, 192.168.0.1, 10.0.0.1, 172.16.0.1\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1 \u003d\u003d 403 \u0026\u0026 status_code_2 !\u003d 403"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "xff-403-bypass",
+    "info": {
+      "name": "X-Forwarded-For 403-forbidden bypass",
+      "author": "vavkamil",
+      "severity": "info",
+      "description": "Template to detect 403 forbidden endpoint bypass behind Nginx/Apache proxy \u0026 load balancers, based on X-Forwarded-For header.",
+      "metadata": {
+        "max_request": 3
+      },
+      "tags": "fuzzing,xff-403-bypass"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET / HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\n",
+          "GET / HTTP/1.1\nHost: {{Hostname}}\nAccept: */*\nX-Forwarded-For: 127.0.0.1, 0.0.0.0, 192.168.0.1, 10.0.0.1, 172.16.0.1\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1 \u003d\u003d 403 \u0026\u0026 status_code_2 !\u003d 403"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,137 @@
+{
+  "id": "sentry-panel",
+  "name": "Sentry Login Panel",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Sentry login panel was detected.\n",
+  "references": [
+    "https://sentry.io/"
+  ],
+  "tags": [
+    "panel",
+    "sentry",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"login | sentry\"",
+    "google": "intitle:\"login | sentry\"",
+    "shodan": "http.title:\"Login | Sentry\" http.title:\"login | sentry\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body, \"/sentry/\") \u0026\u0026 contains(body, \"Login\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "sentry-panel",
+    "info": {
+      "name": "Sentry Login Panel",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Sentry login panel was detected.\n",
+      "reference": [
+        "https://sentry.io/"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "http.title:\"Login | Sentry\"",
+          "http.title:\"login | sentry\""
+        ],
+        "fofa_query": "title\u003d\"login | sentry\"",
+        "google_query": "intitle:\"login | sentry\""
+      },
+      "tags": "panel,sentry,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": true,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body, \"/sentry/\") \u0026\u0026 contains(body, \"Login\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)\"current\":\\s*\"([0-9a-z.-]+)\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,149 @@
+{
+  "id": "exposed-file-upload-form",
+  "name": "Exposed File Upload Form",
+  "author": "geeknik",
+  "severity": "INFO",
+  "description": "",
+  "tags": [
+    "miscellaneous",
+    "exposure",
+    "upload",
+    "form",
+    "misc",
+    "generic"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"multipart/form-data\" html:\"file\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "\u003cform.*?method\u003d(\"|\u0027)?post(\"|\u0027)?.*?\u003e",
+            "\u003cform.*?(?i)(?-i)enctype\u003d(\"|\u0027)?multipart\\/form-data(\"|\u0027)?.*?\u003e",
+            "\u003cinput.*?type\u003d(\"|\u0027)?file(\"|\u0027)?.*?\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "type\u003d[\"\u0027](file)[\"\u0027]",
+            "id\u003d\"file\""
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "exposed-file-upload-form",
+    "info": {
+      "name": "Exposed File Upload Form",
+      "author": "geeknik",
+      "severity": "info",
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html:\"multipart/form-data\" html:\"file\""
+      },
+      "tags": "miscellaneous,exposure,upload,form,misc,generic"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003cform.*?method\u003d(\"|\u0027)?post(\"|\u0027)?.*?\u003e",
+              "\u003cform.*?(?i)(?-i)enctype\u003d(\"|\u0027)?multipart\\/form-data(\"|\u0027)?.*?\u003e",
+              "\u003cinput.*?type\u003d(\"|\u0027)?file(\"|\u0027)?.*?\u003e"
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "type\u003d[\"\u0027](file)[\"\u0027]",
+              "id\u003d\"file\""
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,138 @@
+{
+  "id": "pyramid-debug-toolbar",
+  "name": "Pyramid Debug Toolbar",
+  "author": "geeknik",
+  "severity": "MEDIUM",
+  "description": "Pyramid Debug Toolbar provides a debug toolbar useful while you are developing your Pyramid application.",
+  "references": [
+    "https://github.com/Pylons/pyramid_debugtoolbar"
+  ],
+  "tags": [
+    "pyramid",
+    "logs",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/_debug_toolbar/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\u003ctitle\u003ePyramid Debug Toolbar\u003c/title\u003e",
+            "Pyramid DebugToolbar\u003c/a\u003e"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "pyramid-debug-toolbar",
+    "info": {
+      "name": "Pyramid Debug Toolbar",
+      "author": "geeknik",
+      "severity": "medium",
+      "description": "Pyramid Debug Toolbar provides a debug toolbar useful while you are developing your Pyramid application.",
+      "reference": [
+        "https://github.com/Pylons/pyramid_debugtoolbar"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "pyramid,logs,exposure"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/_debug_toolbar/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\u003ctitle\u003ePyramid Debug Toolbar\u003c/title\u003e",
+              "Pyramid DebugToolbar\u003c/a\u003e"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

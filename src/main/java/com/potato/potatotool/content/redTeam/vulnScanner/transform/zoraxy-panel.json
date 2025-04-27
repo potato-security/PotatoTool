@@ -1,0 +1,120 @@
+{
+  "id": "zoraxy-panel",
+  "name": "Zoraxy Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Zoraxy products was detected.\n",
+  "references": [
+    "https://github.com/tobychui/zoraxy",
+    "https://zoraxy.aroz.org/"
+  ],
+  "tags": [
+    "panel",
+    "zoraxy",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"Login | Zoraxy\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/web/login.html",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"zoraxy\u003c/title\u003e\", \"zoraxy.csrf.token\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "zoraxy-panel",
+    "info": {
+      "name": "Zoraxy Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Zoraxy products was detected.\n",
+      "reference": [
+        "https://github.com/tobychui/zoraxy",
+        "https://zoraxy.aroz.org/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"Login | Zoraxy\""
+      },
+      "tags": "panel,zoraxy,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/web/login.html"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"zoraxy\u003c/title\u003e\", \"zoraxy.csrf.token\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

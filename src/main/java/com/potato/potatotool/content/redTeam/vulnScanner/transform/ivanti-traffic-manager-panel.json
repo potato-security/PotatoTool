@@ -1,0 +1,139 @@
+{
+  "id": "ivanti-traffic-manager-panel",
+  "name": "Ivanti Traffic Manager Panel - Detect",
+  "author": "rxerium",
+  "severity": "INFO",
+  "description": "An Ivanti Traffic Manager Login Panel was detected.\n",
+  "references": [
+    "https://www.ivanti.com/resources/v/doc/ivi/2528/2ef03e8ed03d"
+  ],
+  "tags": [
+    "detect",
+    "traffic-manager",
+    "panel",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"Login (Virtual Traffic Manager\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/apps/zxtm/login.cgi",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Login (Virtual Traffic Manager"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ivanti-traffic-manager-panel",
+    "info": {
+      "name": "Ivanti Traffic Manager Panel - Detect",
+      "author": "rxerium",
+      "severity": "info",
+      "description": "An Ivanti Traffic Manager Login Panel was detected.\n",
+      "reference": [
+        "https://www.ivanti.com/resources/v/doc/ivi/2528/2ef03e8ed03d"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html:\"Login (Virtual Traffic Manager\""
+      },
+      "tags": "detect,traffic-manager,panel,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/apps/zxtm/login.cgi"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Login (Virtual Traffic Manager"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

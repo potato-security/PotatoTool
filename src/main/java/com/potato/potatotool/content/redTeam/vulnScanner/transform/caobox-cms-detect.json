@@ -1,0 +1,168 @@
+{
+  "id": "caobox-cms-detect",
+  "name": "Caobox CMS - Detect",
+  "author": "Chirag Mistry",
+  "severity": "INFO",
+  "description": "Detects instances of Caobox CMS based on unique fingerprints and identifiers.\n",
+  "tags": [
+    "detect",
+    "caobox",
+    "cms",
+    "tech"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.component:\"Caobox\" http.component:\"caobox\" cpe:\"cpe:2.3:a:caobox:caobox\""
+  },
+  "variables": {
+    "paths": [
+      "/",
+      "/admin/",
+      "/index.php",
+      "/admin/login.php"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Caobox CMS",
+            "powered by Caobox",
+            "Welcome to Caobox",
+            "Caobox version"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "(?i)caobox",
+            "(?i)caobox\\s+(v[0-9.]+)",
+            "(?i)\u003ctitle\u003eCaobox CMS"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "caobox-cms-detect",
+    "info": {
+      "name": "Caobox CMS - Detect",
+      "author": "Chirag Mistry",
+      "severity": "info",
+      "description": "Detects instances of Caobox CMS based on unique fingerprints and identifiers.\n",
+      "metadata": {
+        "max_request": 0,
+        "shodan_query": [
+          "http.component:\"Caobox\"",
+          "http.component:\"caobox\"",
+          "cpe:\"cpe:2.3:a:caobox:caobox\""
+        ]
+      },
+      "tags": "detect,caobox,cms,tech"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "/",
+            "/admin/",
+            "/index.php",
+            "/admin/login.php"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Caobox CMS",
+              "powered by Caobox",
+              "Welcome to Caobox",
+              "Caobox version"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)caobox",
+              "(?i)caobox\\s+(v[0-9.]+)",
+              "(?i)\u003ctitle\u003eCaobox CMS"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

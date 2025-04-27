@@ -1,0 +1,130 @@
+{
+  "id": "iis-shortname",
+  "name": "IIS - Short Name Detect",
+  "author": "nodauf",
+  "severity": "INFO",
+  "description": "A website running via IIS on an old .net framework contains a get request vulnerability. Using the the tilde character \"~\" in the request, an attacker can locate short names of files and folders not normally visible.",
+  "references": [
+    "https://github.com/lijiejie/IIS_shortname_Scanner",
+    "https://www.exploit-db.com/exploits/19525",
+    "http://soroush.secproject.com/blog/2012/06/microsoft-iis-tilde-character-vulnerabilityfeature-short-filefolder-name-disclosure/"
+  ],
+  "tags": [
+    "iis",
+    "edb",
+    "fuzzing"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssScore": "0",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /N0t4xist*~1*/a.aspx HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,image/apng,*/*;q\u003d0.8\n",
+        "GET /*~1*/a.aspx HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,image/apng,*/*;q\u003d0.8\n",
+        "OPTIONS /N0t4xist*~1*/a.aspx HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,image/apng,*/*;q\u003d0.8\n",
+        "OPTIONS /*~1*/a.aspx HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,image/apng,*/*;q\u003d0.8\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1!\u003d404 \u0026\u0026 status_code_2 \u003d\u003d 404 || status_code_3 !\u003d 404 \u0026\u0026 status_code_4 \u003d\u003d 404"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "iis-shortname",
+    "info": {
+      "name": "IIS - Short Name Detect",
+      "author": "nodauf",
+      "severity": "info",
+      "description": "A website running via IIS on an old .net framework contains a get request vulnerability. Using the the tilde character \"~\" in the request, an attacker can locate short names of files and folders not normally visible.",
+      "reference": [
+        "https://github.com/lijiejie/IIS_shortname_Scanner",
+        "https://www.exploit-db.com/exploits/19525",
+        "http://soroush.secproject.com/blog/2012/06/microsoft-iis-tilde-character-vulnerabilityfeature-short-filefolder-name-disclosure/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cvss_score": "0",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 4
+      },
+      "tags": "iis,edb,fuzzing"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /N0t4xist*~1*/a.aspx HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,image/apng,*/*;q\u003d0.8\n",
+          "GET /*~1*/a.aspx HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,image/apng,*/*;q\u003d0.8\n",
+          "OPTIONS /N0t4xist*~1*/a.aspx HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,image/apng,*/*;q\u003d0.8\n",
+          "OPTIONS /*~1*/a.aspx HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{BaseURL}}\nAccept: text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,image/apng,*/*;q\u003d0.8\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1!\u003d404 \u0026\u0026 status_code_2 \u003d\u003d 404 || status_code_3 !\u003d 404 \u0026\u0026 status_code_4 \u003d\u003d 404"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

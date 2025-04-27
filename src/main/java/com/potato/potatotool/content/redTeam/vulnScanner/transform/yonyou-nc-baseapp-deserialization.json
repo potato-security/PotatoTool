@@ -1,0 +1,120 @@
+{
+  "id": "yonyou-nc-baseapp-deserialization",
+  "name": "Yonyou NC BaseApp UploadServlet - Deserialization Detect",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "Yonyou NC is an enterprise-level management software, widely used in large and medium-sized enterprises.Realize modeling, development, inheritance, operation, management integration of IT solution information platform.UFIDA NC for C/S architecture, the use of Java programming language development, the client can directly use UClient, the server interface for HTTP.A page of UFIDA NC6.5, there is arbitrary file upload vulnerability.The cause of vulnerability is that there is no type restriction at the uploading file, and an attacker without authentication can take advantage of this vulnerability by sending special data packets to the target system, and a remote attacker who successfully takes advantage of this vulnerability can upload any file to the target system to execute commands.\n",
+  "references": [
+    "https://github.com/cqr-cryeye-forks/goby-pocs/blob/main/Yonyou-NC-BaseApp-UploadServlet-Deserialization-RCE.json"
+  ],
+  "tags": [
+    "yonyou",
+    "nc",
+    "fileupload",
+    "baseapp",
+    "deserialization",
+    "intrusive"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"Yonyou-UFIDA-NC\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/service/~baseapp/UploadServlet",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1 \u003d\u003d 200 \u0026\u0026 contains_all(body_1,\"java.io\",\"EOFExceptionYI\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "yonyou-nc-baseapp-deserialization",
+    "info": {
+      "name": "Yonyou NC BaseApp UploadServlet - Deserialization Detect",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "Yonyou NC is an enterprise-level management software, widely used in large and medium-sized enterprises.Realize modeling, development, inheritance, operation, management integration of IT solution information platform.UFIDA NC for C/S architecture, the use of Java programming language development, the client can directly use UClient, the server interface for HTTP.A page of UFIDA NC6.5, there is arbitrary file upload vulnerability.The cause of vulnerability is that there is no type restriction at the uploading file, and an attacker without authentication can take advantage of this vulnerability by sending special data packets to the target system, and a remote attacker who successfully takes advantage of this vulnerability can upload any file to the target system to execute commands.\n",
+      "reference": [
+        "https://github.com/cqr-cryeye-forks/goby-pocs/blob/main/Yonyou-NC-BaseApp-UploadServlet-Deserialization-RCE.json"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"Yonyou-UFIDA-NC\""
+      },
+      "tags": "yonyou,nc,fileupload,baseapp,deserialization,intrusive"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/service/~baseapp/UploadServlet"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1 \u003d\u003d 200 \u0026\u0026 contains_all(body_1,\"java.io\",\"EOFExceptionYI\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

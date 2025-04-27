@@ -1,0 +1,143 @@
+{
+  "id": "tomcat-exposed",
+  "name": "Tomcat Exposed - Detect",
+  "author": "Podalirius,righettod",
+  "severity": "INFO",
+  "description": "An Apache Tomcat instance was detected.",
+  "tags": [
+    "tomcat",
+    "panel",
+    "apache",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"apache tomcat\" title\u003d\"apache tomcat\"",
+    "google": "intitle:\"apache tomcat\"",
+    "shodan": "title:\"Apache Tomcat\" http.title:\"apache tomcat\" http.html:\"apache tomcat\" cpe:\"cpe:2.3:a:apache:tomcat\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/host-manager/html",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200 || status_code \u003d\u003d 401",
+            "contains_any(to_lower(body), \"apache tomcat\", \"tomcat-users.xml\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "tomcat-exposed",
+    "info": {
+      "name": "Tomcat Exposed - Detect",
+      "author": "Podalirius,righettod",
+      "severity": "info",
+      "description": "An Apache Tomcat instance was detected.",
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "title:\"Apache Tomcat\"",
+          "http.title:\"apache tomcat\"",
+          "http.html:\"apache tomcat\"",
+          "cpe:\"cpe:2.3:a:apache:tomcat\""
+        ],
+        "fofa_query": [
+          "body\u003d\"apache tomcat\"",
+          "title\u003d\"apache tomcat\""
+        ],
+        "google_query": "intitle:\"apache tomcat\""
+      },
+      "tags": "tomcat,panel,apache,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/host-manager/html",
+          "{{BaseURL}}/manager/status",
+          "{{BaseURL}}/manager/html",
+          "{{BaseURL}}/docs/",
+          "{{BaseURL}}/examples/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200 || status_code \u003d\u003d 401",
+              "contains_any(to_lower(body), \"apache tomcat\", \"tomcat-users.xml\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "Version\\s+([0-9.]+),",
+              "(?i)/lib/([a-z0-9.]+)/webapps",
+              "(?i)\u003ch3\u003eApache\\s+Tomcat/([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

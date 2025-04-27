@@ -1,0 +1,120 @@
+{
+  "id": "api-amdoren",
+  "name": "Amdoren API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Free currency API with over 150 currencies",
+  "references": [
+    "https://www.amdoren.com/currency-api/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/amdoren"
+  ],
+  "tags": [
+    "token-spray",
+    "amdoren"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://www.amdoren.com/api/currency.php?api_key\u003d{{token}}\u0026from\u003dUSD\u0026to\u003dEUR",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"error\" : 0",
+            "\"error_message\" : \"-\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-amdoren",
+    "info": {
+      "name": "Amdoren API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Free currency API with over 150 currencies",
+      "reference": [
+        "https://www.amdoren.com/currency-api/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/amdoren"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,amdoren"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://www.amdoren.com/api/currency.php?api_key\u003d{{token}}\u0026from\u003dUSD\u0026to\u003dEUR"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"error\" : 0",
+              "\"error_message\" : \"-\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

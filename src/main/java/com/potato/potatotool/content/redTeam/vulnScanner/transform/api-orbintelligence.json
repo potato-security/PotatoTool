@@ -1,0 +1,122 @@
+{
+  "id": "api-orbintelligence",
+  "name": "ORB Intelligence API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "Company lookup",
+  "references": [
+    "https://api.orb-intelligence.com/docs/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/orb-intelligence"
+  ],
+  "tags": [
+    "token-spray",
+    "orbintelligence"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.orb-intelligence.com/3/fetch/1/?api_key\u003d{{token}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"entity_type\":",
+            "\"company_status\":",
+            "\"orb_num\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-orbintelligence",
+    "info": {
+      "name": "ORB Intelligence API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "Company lookup",
+      "reference": [
+        "https://api.orb-intelligence.com/docs/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/orb-intelligence"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,orbintelligence"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.orb-intelligence.com/3/fetch/1/?api_key\u003d{{token}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"entity_type\":",
+              "\"company_status\":",
+              "\"orb_num\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

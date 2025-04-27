@@ -1,0 +1,120 @@
+{
+  "id": "simplesamlphp-detect",
+  "name": "SimpleSAMLphp - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "SimpleSAMLphp was detected.\n",
+  "references": [
+    "https://simplesamlphp.org/"
+  ],
+  "tags": [
+    "tech",
+    "simplesamlphp",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"SimpleSAMLphp installation page\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/simplesaml/module.php/core/frontpage_welcome.php",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"you have successfully installed simplesamlphp\", \"simplesamlphp installation page\", \"/module.php/core/login-admin.php\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "simplesamlphp-detect",
+    "info": {
+      "name": "SimpleSAMLphp - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "SimpleSAMLphp was detected.\n",
+      "reference": [
+        "https://simplesamlphp.org/"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "http.title:\"SimpleSAMLphp installation page\""
+      },
+      "tags": "tech,simplesamlphp,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/simplesaml/module.php/core/frontpage_welcome.php",
+          "{{BaseURL}}/module.php/core/frontpage_welcome.php"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"you have successfully installed simplesamlphp\", \"simplesamlphp installation page\", \"/module.php/core/login-admin.php\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

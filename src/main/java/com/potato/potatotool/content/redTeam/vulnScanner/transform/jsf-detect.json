@@ -1,0 +1,156 @@
+{
+  "id": "jsf-detect",
+  "name": "JavaServer Faces Detection",
+  "author": "brenocss,Moritz Nentwig",
+  "severity": "INFO",
+  "description": "Searches for JavaServer Faces content on a URL.",
+  "tags": [
+    "jsf",
+    "tech",
+    "primefaces",
+    "richfaces"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "(contains(body, \u0027javax.faces.resource\u0027) || contains(body, \u0027javax.faces.ViewState\u0027))"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "javafaces",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \u0027primefaces\u0027)",
+            "contains(body, \u0027javax.faces.resource\u0027) || contains(body, \u0027javax.faces.ViewState\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "name": "primefaces",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \u0027richfaces\u0027)",
+            "contains(body, \u0027javax.faces.resource\u0027) || contains(body, \u0027javax.faces.ViewState\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "name": "richfaces",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jsf-detect",
+    "info": {
+      "name": "JavaServer Faces Detection",
+      "author": "brenocss,Moritz Nentwig",
+      "severity": "info",
+      "description": "Searches for JavaServer Faces content on a URL.",
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "jsf,tech,primefaces,richfaces"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "dsl",
+            "name": "javafaces",
+            "dsl": [
+              "(contains(body, \u0027javax.faces.resource\u0027) || contains(body, \u0027javax.faces.ViewState\u0027))"
+            ]
+          },
+          {
+            "type": "dsl",
+            "name": "primefaces",
+            "dsl": [
+              "contains(body, \u0027primefaces\u0027)",
+              "contains(body, \u0027javax.faces.resource\u0027) || contains(body, \u0027javax.faces.ViewState\u0027)"
+            ],
+            "condition": "and"
+          },
+          {
+            "type": "dsl",
+            "name": "richfaces",
+            "dsl": [
+              "contains(body, \u0027richfaces\u0027)",
+              "contains(body, \u0027javax.faces.resource\u0027) || contains(body, \u0027javax.faces.ViewState\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,157 @@
+{
+  "id": "fusionauth-admin-panel",
+  "name": "FusionAuth Admin Panel - Detect",
+  "author": "ritikchaddha",
+  "severity": "INFO",
+  "description": "",
+  "tags": [
+    "panel",
+    "fusionauth",
+    "detect",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"fusionauth\"",
+    "google": "intitle:\"fusionauth\"",
+    "shodan": "title:\"FusionAuth\" http.title:\"fusionauth\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\u003ctitle\u003eLogin | FusionAuth",
+            "FusionAuth.OAuth2",
+            "content\u003d\"FusionAuth"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "fusionauth-admin-panel",
+    "info": {
+      "name": "FusionAuth Admin Panel - Detect",
+      "author": "ritikchaddha",
+      "severity": "info",
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": [
+          "title:\"FusionAuth\"",
+          "http.title:\"fusionauth\""
+        ],
+        "fofa_query": "title\u003d\"fusionauth\"",
+        "google_query": "intitle:\"fusionauth\""
+      },
+      "tags": "panel,fusionauth,detect,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/oauth2/authorize"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\u003ctitle\u003eLogin | FusionAuth",
+              "FusionAuth.OAuth2",
+              "content\u003d\"FusionAuth"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "FusionAuth\\.Version \u003d \"([0-9.]+)\";"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

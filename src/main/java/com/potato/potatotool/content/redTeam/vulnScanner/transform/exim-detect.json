@@ -1,0 +1,144 @@
+{
+  "id": "exim-detect",
+  "name": "Exim - Detect",
+  "author": "ricardomaia,userdehghani",
+  "severity": "INFO",
+  "description": "Exim can accept messages from remote hosts using SMTP over TCP/IP, and as well as from local processes. It handles local deliveries to mailbox files or to pipes attached to commands, as well as remote SMTP deliveries to other hosts.\n",
+  "references": [
+    "https://www.exim.org/docs.html"
+  ],
+  "tags": [
+    "network",
+    "detect",
+    "smtp",
+    "mail",
+    "exim",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"Exim smtpd\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "465,587",
+      "inputs": [
+        {
+          "data": "\n",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "ESMTP Exim"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "exim-detect",
+    "info": {
+      "name": "Exim - Detect",
+      "author": "ricardomaia,userdehghani",
+      "severity": "info",
+      "description": "Exim can accept messages from remote hosts using SMTP over TCP/IP, and as well as from local processes. It handles local deliveries to mailbox files or to pipes attached to commands, as well as remote SMTP deliveries to other hosts.\n",
+      "reference": [
+        "https://www.exim.org/docs.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"Exim smtpd\""
+      },
+      "tags": "network,detect,smtp,mail,exim,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "\n",
+            "read": 0
+          }
+        ],
+        "port": "465,587",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "ESMTP Exim"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)SMTP.Exim\\s?([\\w.]+)"
+            ],
+            "group": 1,
+            "name": "version",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

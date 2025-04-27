@@ -1,0 +1,187 @@
+{
+  "id": "mixed-passive-content",
+  "name": "Mixed Passive Content",
+  "author": "Liwermor",
+  "severity": "INFO",
+  "description": "This check detects if there are any passive content being loaded over HTTP instead of HTTPS.\n",
+  "references": [
+    "https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content",
+    "https://portswigger.net/kb/issues/01000400_mixed-content",
+    "https://resources.infosecinstitute.com/topics/vulnerabilities/https-mixed-content-vulnerability/",
+    "https://docs.gitlab.com/ee/user/application_security/dast/checks/319.1.html"
+  ],
+  "tags": [
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "\u003cimg[^\u003e]*src\u003d[\u0027\"]http://[^\u0027\"\u003e]+[\u0027\"]"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "img",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "\u003caudio[^\u003e]*src\u003d[\u0027\"]http://[^\u0027\"\u003e]+[\u0027\"]"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "audio",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "\u003cvideo[^\u003e]*src\u003d[\u0027\"]http://[^\u0027\"\u003e]+[\u0027\"]"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "video",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "mixed-passive-content",
+    "info": {
+      "name": "Mixed Passive Content",
+      "author": "Liwermor",
+      "severity": "info",
+      "description": "This check detects if there are any passive content being loaded over HTTP instead of HTTPS.\n",
+      "reference": [
+        "https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content",
+        "https://portswigger.net/kb/issues/01000400_mixed-content",
+        "https://resources.infosecinstitute.com/topics/vulnerabilities/https-mixed-content-vulnerability/",
+        "https://docs.gitlab.com/ee/user/application_security/dast/checks/319.1.html"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "or",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003cimg[^\u003e]*src\u003d[\u0027\"]http://[^\u0027\"\u003e]+[\u0027\"]"
+            ],
+            "group": 1,
+            "name": "img",
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003caudio[^\u003e]*src\u003d[\u0027\"]http://[^\u0027\"\u003e]+[\u0027\"]"
+            ],
+            "group": 1,
+            "name": "audio",
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003cvideo[^\u003e]*src\u003d[\u0027\"]http://[^\u0027\"\u003e]+[\u0027\"]"
+            ],
+            "group": 1,
+            "name": "video",
+            "internal": true
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003cimg[^\u003e]*src\u003d[\u0027\"](http[^s\u0027\"\u003e][^\u0027\"\u003e]*)[\u0027\"]",
+              "\u003caudio[^\u003e]*src\u003d[\u0027\"](http[^s\u0027\"\u003e][^\u0027\"\u003e]*)[\u0027\"]",
+              "\u003cvideo[^\u003e]*src\u003d[\u0027\"](http[^s\u0027\"\u003e][^\u0027\"\u003e]*)[\u0027\"]"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

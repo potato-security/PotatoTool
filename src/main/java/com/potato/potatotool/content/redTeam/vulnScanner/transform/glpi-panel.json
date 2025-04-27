@@ -1,0 +1,159 @@
+{
+  "id": "glpi-project_glpi",
+  "name": "GLPI Panel - Detect",
+  "author": "dogasantos,daffainfo,ricardomaia,dhiyaneshDk",
+  "severity": "INFO",
+  "description": "GLPI panel was detected.",
+  "references": [
+    "https://glpi-project.org/",
+    "https://www.exploit-db.com/ghdb/7002"
+  ],
+  "tags": [
+    "glpi",
+    "edb",
+    "panel",
+    "glpi-project"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"glpi\" icon_hash\u003d\"-1474875778\"",
+    "google": "intitle:\"glpi\"",
+    "shodan": "http.title:\"GLPI\" http.title:\"glpi\" http.favicon.hash:\"-1474875778\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "GLPI",
+            "glpi-project.org"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": true,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "glpi-project_glpi",
+    "info": {
+      "name": "GLPI Panel - Detect",
+      "author": "dogasantos,daffainfo,ricardomaia,dhiyaneshDk",
+      "severity": "info",
+      "description": "GLPI panel was detected.",
+      "reference": [
+        "https://glpi-project.org/",
+        "https://www.exploit-db.com/ghdb/7002"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 3,
+        "shodan_query": [
+          "http.title:\"GLPI\"",
+          "http.title:\"glpi\"",
+          "http.favicon.hash:\"-1474875778\""
+        ],
+        "fofa_query": [
+          "title\u003d\"glpi\"",
+          "icon_hash\u003d\"-1474875778\""
+        ],
+        "google_query": "intitle:\"glpi\""
+      },
+      "tags": "glpi,edb,panel,glpi-project"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": true,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/CHANGELOG.md",
+          "{{BaseURL}}/glpi/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "GLPI",
+              "glpi-project.org"
+            ],
+            "condition": "and",
+            "case_insensitive": true
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)base\\.min\\.js\\?v\u003d([\\d.|\\d]+)\"\u003e",
+              "(?i)jquery\\.min\\.js\\?v\u003d([\\d.|\\d]+)\"\u003e",
+              "(?i)# GLPI changes\\n\\n.*\\n.*\\n.*\\n##\\s\\[(\\d+\\.\\d+|\\d+\\.\\d+\\.\\d+)\\]",
+              "(?i)GLPI.*?([\\d.|\\d]+).copyright"
+            ],
+            "group": 1,
+            "name": "version",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

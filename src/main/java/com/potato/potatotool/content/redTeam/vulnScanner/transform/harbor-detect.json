@@ -1,0 +1,153 @@
+{
+  "id": "harbor-detect",
+  "name": "Harbor Detect",
+  "author": "pikpikcu,daffainfo",
+  "severity": "INFO",
+  "description": "Harbor is an open source trusted cloud native registry project that stores, signs, and scans content.",
+  "references": [
+    "https://github.com/goharbor/harbor"
+  ],
+  "tags": [
+    "tech",
+    "harbor"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d657337228",
+    "shodan": "http.favicon.hash:657337228"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/api/v2.0/systeminfo",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"auth_mode\"",
+            "\"harbor_version\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "harbor-detect",
+    "info": {
+      "name": "Harbor Detect",
+      "author": "pikpikcu,daffainfo",
+      "severity": "info",
+      "description": "Harbor is an open source trusted cloud native registry project that stores, signs, and scans content.",
+      "reference": [
+        "https://github.com/goharbor/harbor"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.favicon.hash:657337228",
+        "fofa_query": "icon_hash\u003d657337228"
+      },
+      "tags": "tech,harbor"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/api/v2.0/systeminfo"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"auth_mode\"",
+              "\"harbor_version\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?m)\"harbor_version\":\"([0-9.]+)\","
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

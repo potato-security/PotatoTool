@@ -1,0 +1,116 @@
+{
+  "id": "api-bingmaps",
+  "name": "Bing Maps API Test",
+  "author": "zzeitlin",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/find-a-location-by-address"
+  ],
+  "tags": [
+    "token-spray",
+    "bing",
+    "maps",
+    "bingmaps"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://dev.virtualearth.net/REST/v1/Locations?CountryRegion\u003dUS\u0026adminDistrict\u003dWA\u0026locality\u003dSomewhere\u0026postalCode\u003d98001\u0026addressLine\u003d100%20Main%20St.\u0026key\u003d{{token}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "ValidCredentials"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-bingmaps",
+    "info": {
+      "name": "Bing Maps API Test",
+      "author": "zzeitlin",
+      "severity": "info",
+      "reference": [
+        "https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/find-a-location-by-address"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,bing,maps,bingmaps"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://dev.virtualearth.net/REST/v1/Locations?CountryRegion\u003dUS\u0026adminDistrict\u003dWA\u0026locality\u003dSomewhere\u0026postalCode\u003d98001\u0026addressLine\u003d100%20Main%20St.\u0026key\u003d{{token}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "ValidCredentials"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

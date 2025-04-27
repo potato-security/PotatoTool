@@ -1,0 +1,151 @@
+{
+  "id": "deployment-ini",
+  "name": "FTP Deployment Config File - Exposure",
+  "author": "Michal Mikolas (nanuqcz)",
+  "severity": "MEDIUM",
+  "description": "Config file for \"FTP deployment\" utility usually contains server\u0027s FTP credentials in plain text.\n",
+  "references": [
+    "https://github.com/dg/ftp-deployment"
+  ],
+  "tags": [
+    "config",
+    "exposure",
+    "dg"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "paths": [
+      "/deployment.ini",
+      "/deploy.ini",
+      "/production.ini",
+      "/prod.ini",
+      "/deployment.production.ini",
+      "/deployment.prod.ini",
+      "/deploy.production.ini",
+      "/deploy.prod.ini",
+      "/server.ini",
+      "/ftp.ini",
+      "/ftps.ini",
+      "/sftp.ini"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}{{paths}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "^remote\\s*\u003d\\s*",
+            "^\\[(.*?)\\]$"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "deployment-ini",
+    "info": {
+      "name": "FTP Deployment Config File - Exposure",
+      "author": "Michal Mikolas (nanuqcz)",
+      "severity": "medium",
+      "description": "Config file for \"FTP deployment\" utility usually contains server\u0027s FTP credentials in plain text.\n",
+      "reference": [
+        "https://github.com/dg/ftp-deployment"
+      ],
+      "metadata": {
+        "max_request": 12
+      },
+      "tags": "config,exposure,dg"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "/deployment.ini",
+            "/deploy.ini",
+            "/production.ini",
+            "/prod.ini",
+            "/deployment.production.ini",
+            "/deployment.prod.ini",
+            "/deploy.production.ini",
+            "/deploy.prod.ini",
+            "/server.ini",
+            "/ftp.ini",
+            "/ftps.ini",
+            "/sftp.ini"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}{{paths}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "^remote\\s*\u003d\\s*",
+              "^\\[(.*?)\\]$"
+            ],
+            "condition": "and",
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

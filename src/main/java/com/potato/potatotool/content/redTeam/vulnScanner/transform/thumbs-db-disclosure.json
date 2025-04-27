@@ -1,0 +1,131 @@
+{
+  "id": "thumbs-db-disclosure",
+  "name": "Thumbs DB Disclosure",
+  "author": "dhiyaneshDk",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://github.com/detectify/ugly-duckling/blob/master/modules/crowdsourced/thumbs-db-disclosure.json"
+  ],
+  "tags": [
+    "exposure",
+    "files"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/Thumbs.db",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "BINARY",
+          "part": "body",
+          "values": [
+            "D0CF11E0A1B11AE1"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "thumbs-db-disclosure",
+    "info": {
+      "name": "Thumbs DB Disclosure",
+      "author": "dhiyaneshDk",
+      "severity": "info",
+      "reference": [
+        "https://github.com/detectify/ugly-duckling/blob/master/modules/crowdsourced/thumbs-db-disclosure.json"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "exposure,files"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/Thumbs.db"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "binary",
+            "part": "body",
+            "binary": [
+              "D0CF11E0A1B11AE1"
+            ]
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

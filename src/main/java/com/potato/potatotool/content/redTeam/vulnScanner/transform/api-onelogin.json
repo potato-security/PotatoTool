@@ -1,0 +1,125 @@
+{
+  "id": "api-onelogin",
+  "name": "OneLogin API Test",
+  "author": "dwisiswant0",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://developers.onelogin.com/api-docs/2/getting-started/dev-overview"
+  ],
+  "tags": [
+    "token-spray",
+    "onelogin"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.us.onelogin.com/api/2/apps",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"id\":",
+            "\"connector_id\":",
+            "\"auth_method\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-onelogin",
+    "info": {
+      "name": "OneLogin API Test",
+      "author": "dwisiswant0",
+      "severity": "info",
+      "reference": [
+        "https://developers.onelogin.com/api-docs/2/getting-started/dev-overview"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "token-spray,onelogin"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.us.onelogin.com/api/2/apps",
+          "https://api.eu.onelogin.com/api/2/apps"
+        ],
+        "headers": {
+          "Authorization": "Bearer {{token}}"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"id\":",
+              "\"connector_id\":",
+              "\"auth_method\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

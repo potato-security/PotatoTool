@@ -1,0 +1,146 @@
+{
+  "id": "lotus-domino-version",
+  "name": "Lotus Domino Version Extractor",
+  "author": "CasperGN",
+  "severity": "INFO",
+  "description": "",
+  "tags": [
+    "tech",
+    "lotus"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/homepage.nsf",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "((Domino\\s[A-Za-z]+\\s[0-9\\.]{1,3})|(Forms[0-9\\.]{1,3}\\.nsf\\?OpenDatabase))"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "lotus-domino-version",
+    "info": {
+      "name": "Lotus Domino Version Extractor",
+      "author": "CasperGN",
+      "severity": "info",
+      "metadata": {
+        "max_request": 7
+      },
+      "tags": "tech,lotus"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/homepage.nsf",
+          "{{BaseURL}}/iNotes/Forms5.nsf",
+          "{{BaseURL}}/iNotes/Forms6.nsf",
+          "{{BaseURL}}/iNotes/Forms7.nsf",
+          "{{BaseURL}}/iNotes/Forms8.nsf",
+          "{{BaseURL}}/iNotes/Forms85.nsf",
+          "{{BaseURL}}/iNotes/Forms9.nsf"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "((Domino\\s[A-Za-z]+\\s[0-9\\.]{1,3})|(Forms[0-9\\.]{1,3}\\.nsf\\?OpenDatabase))"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "((Domino\\s[A-Za-z]+\\s[0-9\\.]{1,3})|(Forms[0-9\\.]{1,3}\\.nsf\\?OpenDatabase))"
+            ],
+            "group": 1,
+            "name": "version",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

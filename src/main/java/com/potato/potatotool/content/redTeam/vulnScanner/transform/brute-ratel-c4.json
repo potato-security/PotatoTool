@@ -1,0 +1,120 @@
+{
+  "id": "brute-ratel-c4",
+  "name": "Brute Ratel C4 - Detect",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "Brute Ratel C4 (BRc4) is a legit red-teaming tool designed from the ground up with evasion capabilities in mind, but in the wrong hands can cause significant damage. Learn how to protect your organization with our Brute Ratel C4 Spotlight.\n",
+  "references": [
+    "https://bruteratel.com/"
+  ],
+  "tags": [
+    "c2",
+    "bruteratel",
+    "c4",
+    "panel"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html_hash:-1957161625"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \u0027404 file not found\u0027)",
+            "(\"1a279f5df4103743b823ec2a6a08436fdf63fe30\" \u003d\u003d sha1(body))"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "brute-ratel-c4",
+    "info": {
+      "name": "Brute Ratel C4 - Detect",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "Brute Ratel C4 (BRc4) is a legit red-teaming tool designed from the ground up with evasion capabilities in mind, but in the wrong hands can cause significant damage. Learn how to protect your organization with our Brute Ratel C4 Spotlight.\n",
+      "reference": [
+        "https://bruteratel.com/"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html_hash:-1957161625"
+      },
+      "tags": "c2,bruteratel,c4,panel"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \u0027404 file not found\u0027)",
+              "(\"1a279f5df4103743b823ec2a6a08436fdf63fe30\" \u003d\u003d sha1(body))"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

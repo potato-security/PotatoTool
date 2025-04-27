@@ -1,0 +1,120 @@
+{
+  "id": "nagios-logserver-panel",
+  "name": "Nagios Log Server - Detect",
+  "author": "ritikchaddha",
+  "severity": "INFO",
+  "description": "Detects the presence of Nagios Log Server by identifying specific response patterns, HTTP headers, or unique page elements.\n",
+  "tags": [
+    "panel",
+    "nagios",
+    "nagios-logserver",
+    "login",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"1460499495\"",
+    "shodan": "http.favicon.hash:1460499495"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "response",
+          "values": [
+            "Nagios Log Server",
+            "/nagioslogserver/"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "nagios-logserver-panel",
+    "info": {
+      "name": "Nagios Log Server - Detect",
+      "author": "ritikchaddha",
+      "severity": "info",
+      "description": "Detects the presence of Nagios Log Server by identifying specific response patterns, HTTP headers, or unique page elements.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.favicon.hash:1460499495",
+        "fofa_query": "icon_hash\u003d\"1460499495\""
+      },
+      "tags": "panel,nagios,nagios-logserver,login,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "response",
+            "words": [
+              "Nagios Log Server",
+              "/nagioslogserver/"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

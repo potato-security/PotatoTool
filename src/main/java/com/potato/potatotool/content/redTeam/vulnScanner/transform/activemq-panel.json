@@ -1,0 +1,143 @@
+{
+  "id": "activemq-panel",
+  "name": "Apache ActiveMQ Exposure",
+  "author": "pdteam,righettod",
+  "severity": "INFO",
+  "description": "An Apache ActiveMQ implementation was discovered.",
+  "references": [
+    "https://activemq.apache.org/",
+    "https://activemq.apache.org/components/classic/documentation/rest"
+  ],
+  "tags": [
+    "panel",
+    "activemq",
+    "apache",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "cpe:\"cpe:2.3:a:apache:activemq\" product:\"activemq openwire transport\" http.title:\"Apache ActiveMQ\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/admin/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"\u003ctitle\u003eapache activemq\u003c/title\u003e\", \"\u003ch2\u003ewelcome to the apache activemq!\u003c/h2\u003e\", \"manage activemq broker\", \"activemq console\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "activemq-panel",
+    "info": {
+      "name": "Apache ActiveMQ Exposure",
+      "author": "pdteam,righettod",
+      "severity": "info",
+      "description": "An Apache ActiveMQ implementation was discovered.",
+      "reference": [
+        "https://activemq.apache.org/",
+        "https://activemq.apache.org/components/classic/documentation/rest"
+      ],
+      "classification": {
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "cpe:\"cpe:2.3:a:apache:activemq\"",
+          "product:\"activemq openwire transport\"",
+          "http.title:\"Apache ActiveMQ\""
+        ]
+      },
+      "tags": "panel,activemq,apache,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/admin/",
+          "{{BaseURL}}/demo/",
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"\u003ctitle\u003eapache activemq\u003c/title\u003e\", \"\u003ch2\u003ewelcome to the apache activemq!\u003c/h2\u003e\", \"manage activemq broker\", \"activemq console\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)Copyright\\s+([0-9\\-]+)",
+              "(?i)\u003ctd\u003eVersion\u003c\\/td\u003e[\\r\\n\\s]*\u003ctd\u003e[\\r\\n\\s]*\u003cb\u003e([0-9.]+)\u003c\\/b\u003e"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

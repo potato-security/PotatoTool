@@ -1,0 +1,149 @@
+{
+  "id": "concrete5-panel",
+  "name": "Concrete5 Login Panel - Detect",
+  "author": "dhiyaneshDk",
+  "severity": "INFO",
+  "description": "Concrete5 login panel was detected.",
+  "tags": [
+    "panel",
+    "concrete5",
+    "cms"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"install concrete5\" title\u003d\"concrete5\"",
+    "google": "intitle:\"concrete5\" intitle:\"install concrete5\"",
+    "shodan": "http.title:\"concrete5\" cpe:\"cpe:2.3:a:concrete5:concrete5\" http.title:\"install concrete5\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/index.php/login",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "(?mi)\u003ctitle\u003e(.*)concrete5(.*)\u003c\\/title\u003e",
+            "(?mi)content\u003d\"concrete5 - (.*)"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "concrete5-panel",
+    "info": {
+      "name": "Concrete5 Login Panel - Detect",
+      "author": "dhiyaneshDk",
+      "severity": "info",
+      "description": "Concrete5 login panel was detected.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "http.title:\"concrete5\"",
+          "cpe:\"cpe:2.3:a:concrete5:concrete5\"",
+          "http.title:\"install concrete5\""
+        ],
+        "fofa_query": [
+          "title\u003d\"install concrete5\"",
+          "title\u003d\"concrete5\""
+        ],
+        "google_query": [
+          "intitle:\"concrete5\"",
+          "intitle:\"install concrete5\""
+        ]
+      },
+      "tags": "panel,concrete5,cms"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/index.php/login"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?mi)\u003ctitle\u003e(.*)concrete5(.*)\u003c\\/title\u003e",
+              "(?mi)content\u003d\"concrete5 - (.*)"
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "content\u003d\"concrete5 \\- ([0-9.]+)\"\\/\u003e",
+              "Version ([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,138 @@
+{
+  "id": "checkmarx-panel-detect",
+  "name": "Checkmarx Login Panel - Detect",
+  "author": "joanbonon,righettod",
+  "severity": "INFO",
+  "description": "Checkmarx login panel was detected.\n",
+  "references": [
+    "https://docs.checkmarx.com/en/34965-44074-checkmarx-sast.html"
+  ],
+  "tags": [
+    "panel",
+    "checkmarx",
+    "detect",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"CxSASTManagerUri\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/cxrestapi/help/system/version",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_any(to_lower(body), \"cxsastmanageruri\", \"cxauthorityconfigurations\", \"/cxwebclient/webapp/\", \"sast_api\", \"sast_rest_api\" , \"sast-permissions\", \"hotfix\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "checkmarx-panel-detect",
+    "info": {
+      "name": "Checkmarx Login Panel - Detect",
+      "author": "joanbonon,righettod",
+      "severity": "info",
+      "description": "Checkmarx login panel was detected.\n",
+      "reference": [
+        "https://docs.checkmarx.com/en/34965-44074-checkmarx-sast.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 3,
+        "shodan_query": "http.html:\"CxSASTManagerUri\""
+      },
+      "tags": "panel,checkmarx,detect,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/cxrestapi/help/system/version",
+          "{{BaseURL}}/cxwebclient/Login.aspx",
+          "{{BaseURL}}/cxrestapi/auth/identity/.well-known/openid-configuration"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_any(to_lower(body), \"cxsastmanageruri\", \"cxauthorityconfigurations\", \"/cxwebclient/webapp/\", \"sast_api\", \"sast_rest_api\" , \"sast-permissions\", \"hotfix\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)\"version\":\\s*\"([0-9.]+)\""
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

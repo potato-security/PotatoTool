@@ -1,0 +1,122 @@
+{
+  "id": "deimos-c2-jarm",
+  "name": "Deimos C2 JARM - Detect",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "DeimosC2 is a post-exploitation Command \u0026 Control (C2) tool that leverages multiple communication methods in order to control machines that have been compromised. DeimosC2 server and agents works on, and has been tested on, Windows, Darwin, and Linux.It is entirely written in Golang with a front end written in Vue.js.\n",
+  "references": [
+    "https://github.com/cedowens/C2-JARM",
+    "https://twitter.com/MichalKoczwara/status/1551632627387473920"
+  ],
+  "tags": [
+    "jarm",
+    "c2",
+    "ir",
+    "osint",
+    "cti",
+    "deimos",
+    "network",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "inputs": [
+        {
+          "data": "2E",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "jarm(Hostname) \u003d\u003d \u002700000000000000000041d00000041d9535d5979f591ae8e547c5e5743e5b64\u0027"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "deimos-c2-jarm",
+    "info": {
+      "name": "Deimos C2 JARM - Detect",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "DeimosC2 is a post-exploitation Command \u0026 Control (C2) tool that leverages multiple communication methods in order to control machines that have been compromised. DeimosC2 server and agents works on, and has been tested on, Windows, Darwin, and Linux.It is entirely written in Golang with a front end written in Vue.js.\n",
+      "reference": [
+        "https://github.com/cedowens/C2-JARM",
+        "https://twitter.com/MichalKoczwara/status/1551632627387473920"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "jarm,c2,ir,osint,cti,deimos,network,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "2E",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "jarm(Hostname) \u003d\u003d \u002700000000000000000041d00000041d9535d5979f591ae8e547c5e5743e5b64\u0027"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

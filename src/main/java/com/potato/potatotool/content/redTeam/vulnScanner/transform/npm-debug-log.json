@@ -1,0 +1,143 @@
+{
+  "id": "npm-debug-log",
+  "name": "NPM Debug Log Disclosure",
+  "author": "Hardik-Solanki",
+  "severity": "LOW",
+  "description": "NPM Debug log file exposed.",
+  "references": [
+    "https://github.com/maurosoria/dirsearch/blob/master/db/dicc.txt",
+    "https://docs.npmjs.com/generating-and-locating-npm-debug.log-files"
+  ],
+  "tags": [
+    "exposure",
+    "npm",
+    "logs",
+    "debug"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/npm-debug.log",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "verbose cli",
+            "verbose stack"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "npm-debug-log",
+    "info": {
+      "name": "NPM Debug Log Disclosure",
+      "author": "Hardik-Solanki",
+      "severity": "low",
+      "description": "NPM Debug log file exposed.",
+      "reference": [
+        "https://github.com/maurosoria/dirsearch/blob/master/db/dicc.txt",
+        "https://docs.npmjs.com/generating-and-locating-npm-debug.log-files"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "exposure,npm,logs,debug"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/npm-debug.log",
+          "{{BaseURL}}/assets/npm-debug.log"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "verbose cli",
+              "verbose stack"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

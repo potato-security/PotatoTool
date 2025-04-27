@@ -1,0 +1,118 @@
+{
+  "id": "tenemos-t24-panel",
+  "name": "Tenemos T24 Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Tenemos T24 products was detected.\n",
+  "references": [
+    "https://www.temenos.com/products/core-banking"
+  ],
+  "tags": [
+    "panel",
+    "tenemos",
+    "login"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.title:\"T24 Sign in\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/servlet/BrowserServlet",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_all(to_lower(body), \"t24 sign in\", \"about temenos\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "tenemos-t24-panel",
+    "info": {
+      "name": "Tenemos T24 Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Tenemos T24 products was detected.\n",
+      "reference": [
+        "https://www.temenos.com/products/core-banking"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.title:\"T24 Sign in\""
+      },
+      "tags": "panel,tenemos,login"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/servlet/BrowserServlet"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_all(to_lower(body), \"t24 sign in\", \"about temenos\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

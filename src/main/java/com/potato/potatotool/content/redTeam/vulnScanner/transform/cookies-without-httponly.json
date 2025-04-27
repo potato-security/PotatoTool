@@ -1,0 +1,100 @@
+{
+  "id": "cookies-without-httponly",
+  "name": "Cookies without HttpOnly attribute - Detect",
+  "author": "RJ Coleman,Mr.Bobo HP",
+  "severity": "INFO",
+  "description": "Checks whether cookies in the HTTP response contain the HttpOnly attribute. If the HttpOnly flag is set, it means that the cookie is HTTP-only\n",
+  "references": [
+    "https://owasp.org/www-community/HttpOnly"
+  ],
+  "tags": [
+    "misconfig",
+    "http",
+    "cookie",
+    "generic"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http()\njavascript()\n",
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cvssScore": "0",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "cookies-without-httponly",
+    "info": {
+      "name": "Cookies without HttpOnly attribute - Detect",
+      "author": "RJ Coleman,Mr.Bobo HP",
+      "severity": "info",
+      "description": "Checks whether cookies in the HTTP response contain the HttpOnly attribute. If the HttpOnly flag is set, it means that the cookie is HTTP-only\n",
+      "reference": [
+        "https://owasp.org/www-community/HttpOnly"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cvss_score": "0"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "misconfig,http,cookie,generic"
+    },
+    "flow": "http()\njavascript()\n",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

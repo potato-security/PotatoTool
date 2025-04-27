@@ -1,0 +1,150 @@
+{
+  "id": "graphql-get-method",
+  "name": "GraphQL CSRF / GET method",
+  "author": "Dolev Farhi",
+  "severity": "INFO",
+  "description": "Cross Site Request Forgery happens when an external website gains ability to make API calls impersonating an user if he visits the website while being authenticated to your API.\nAllowing API calls through GET requests can lead to CSRF attacks, because cookies are added automatically to GET requests by the browser.\n",
+  "references": [
+    "https://graphql.org/learn/serving-over-http/#get-request",
+    "https://github.com/dolevf/Damn-Vulnerable-GraphQL-Application",
+    "https://cheatsheetseries.owasp.org/cheatsheets/GraphQL_Cheat_Sheet.html",
+    "https://graphql.security/"
+  ],
+  "tags": [
+    "graphql",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/graphql?query\u003d{__typename}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"query\"",
+            "\"data\"",
+            "\"__typename\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": true,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "application/json"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "graphql-get-method",
+    "info": {
+      "name": "GraphQL CSRF / GET method",
+      "author": "Dolev Farhi",
+      "severity": "info",
+      "description": "Cross Site Request Forgery happens when an external website gains ability to make API calls impersonating an user if he visits the website while being authenticated to your API.\nAllowing API calls through GET requests can lead to CSRF attacks, because cookies are added automatically to GET requests by the browser.\n",
+      "reference": [
+        "https://graphql.org/learn/serving-over-http/#get-request",
+        "https://github.com/dolevf/Damn-Vulnerable-GraphQL-Application",
+        "https://cheatsheetseries.owasp.org/cheatsheets/GraphQL_Cheat_Sheet.html",
+        "https://graphql.security/"
+      ],
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "graphql,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/graphql?query\u003d{__typename}",
+          "{{BaseURL}}/api/graphql?query\u003d{__typename}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"query\"",
+              "\"data\"",
+              "\"__typename\""
+            ],
+            "condition": "and",
+            "case_insensitive": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "application/json"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

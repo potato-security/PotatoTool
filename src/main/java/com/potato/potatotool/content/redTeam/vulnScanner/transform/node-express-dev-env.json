@@ -1,0 +1,186 @@
+{
+  "id": "node-express-dev-env",
+  "name": "Node.js Express NODE_ENV Development Mode",
+  "author": "FLX",
+  "severity": "MEDIUM",
+  "description": "The Node.js application runs in development mode, which can expose sensitive information, such as source code and secrets, depending on the application.\n",
+  "references": [
+    "https://www.invicti.com/web-vulnerability-scanner/vulnerabilities/express-development-mode-is-enabled/",
+    "https://www.synopsys.com/blogs/software-security/nodejs-mean-stack-vulnerabilities.html"
+  ],
+  "tags": [
+    "nodejs",
+    "express",
+    "misconfig",
+    "devops",
+    "cicd",
+    "trace"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {
+    "shodan": "X-Powered-By: Express"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(tolower(all_headers), \u0027x-powered-by: express\u0027)"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET / HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nConnection: close\n\nt\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code\u003d\u003d400",
+            "contains(body, \u0027SyntaxError: Unexpected token\u0027)",
+            "contains(tolower(all_headers), \u0027x-powered-by: express\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "node-express-dev-env",
+    "info": {
+      "name": "Node.js Express NODE_ENV Development Mode",
+      "author": "FLX",
+      "severity": "medium",
+      "description": "The Node.js application runs in development mode, which can expose sensitive information, such as source code and secrets, depending on the application.\n",
+      "reference": [
+        "https://www.invicti.com/web-vulnerability-scanner/vulnerabilities/express-development-mode-is-enabled/",
+        "https://www.synopsys.com/blogs/software-security/nodejs-mean-stack-vulnerabilities.html"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "X-Powered-By: Express"
+      },
+      "tags": "nodejs,express,misconfig,devops,cicd,trace"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(tolower(all_headers), \u0027x-powered-by: express\u0027)"
+            ]
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET / HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nConnection: close\n\nt\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code\u003d\u003d400",
+              "contains(body, \u0027SyntaxError: Unexpected token\u0027)",
+              "contains(tolower(all_headers), \u0027x-powered-by: express\u0027)"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

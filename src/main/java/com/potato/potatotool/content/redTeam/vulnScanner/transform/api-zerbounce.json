@@ -1,0 +1,119 @@
+{
+  "id": "api-zerobounce",
+  "name": "Zerobounce API Test",
+  "author": "0xpugal",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://www.zerobounce.net/docs/email-validation-api-quickstart"
+  ],
+  "tags": [
+    "token-spray",
+    "zerobounce"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.zerobounce.net/v2/getapiusage?api_key\u003d{{token}}\u0026start_date\u003d2018-01-01\u0026end_date\u003d2019-12-12",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"total\":",
+            "\"start_date\":",
+            "\"end_date\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-zerobounce",
+    "info": {
+      "name": "Zerobounce API Test",
+      "author": "0xpugal",
+      "severity": "info",
+      "reference": [
+        "https://www.zerobounce.net/docs/email-validation-api-quickstart"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,zerobounce"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.zerobounce.net/v2/getapiusage?api_key\u003d{{token}}\u0026start_date\u003d2018-01-01\u0026end_date\u003d2019-12-12"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"total\":",
+              "\"start_date\":",
+              "\"end_date\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

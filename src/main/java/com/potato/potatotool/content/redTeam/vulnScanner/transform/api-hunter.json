@@ -1,0 +1,122 @@
+{
+  "id": "api-hunter",
+  "name": "Hunter API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "API for domain search, professional email finder, author finder and email verifier",
+  "references": [
+    "https://hunter.io/api-documentation/v2",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/hunter"
+  ],
+  "tags": [
+    "token-spray",
+    "hunter"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.hunter.io/v2/domain-search?domain\u003dstripe.com\u0026api_key\u003d{{token}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"domain\"",
+            "\"disposable\"",
+            "\"webmail\""
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-hunter",
+    "info": {
+      "name": "Hunter API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "API for domain search, professional email finder, author finder and email verifier",
+      "reference": [
+        "https://hunter.io/api-documentation/v2",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/hunter"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,hunter"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.hunter.io/v2/domain-search?domain\u003dstripe.com\u0026api_key\u003d{{token}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"domain\"",
+              "\"disposable\"",
+              "\"webmail\""
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

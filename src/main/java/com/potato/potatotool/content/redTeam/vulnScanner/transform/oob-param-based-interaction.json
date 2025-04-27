@@ -1,0 +1,116 @@
+{
+  "id": "oob-param-based-interaction",
+  "name": "Parameter Based Generic OOB Interaction",
+  "author": "pdteam",
+  "severity": "INFO",
+  "description": "The remote server fetched a spoofed URL from the request parameters.",
+  "references": [
+    "https://github.com/PortSwigger/collaborator-everywhere"
+  ],
+  "tags": [
+    "oast",
+    "ssrf",
+    "generic"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/?u\u003dhttp://{{interactsh-url}}/\u0026href\u003dhttp://{{interactsh-url}}/\u0026action\u003dhttp://{{interactsh-url}}/\u0026host\u003d{{interactsh-url}}\u0026http_host\u003d{{interactsh-url}}\u0026email\u003droot@{{interactsh-url}}\u0026url\u003dhttp://{{interactsh-url}}/\u0026load\u003dhttp://{{interactsh-url}}/\u0026preview\u003dhttp://{{interactsh-url}}/\u0026target\u003dhttp://{{interactsh-url}}/\u0026proxy\u003dhttp://{{interactsh-url}}/\u0026from\u003dhttp://{{interactsh-url}}/\u0026src\u003dhttp://{{interactsh-url}}/\u0026ref\u003dhttp://{{interactsh-url}}/\u0026referrer\u003dhttp://{{interactsh-url}}/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "http"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "oob-param-based-interaction",
+    "info": {
+      "name": "Parameter Based Generic OOB Interaction",
+      "author": "pdteam",
+      "severity": "info",
+      "description": "The remote server fetched a spoofed URL from the request parameters.",
+      "reference": [
+        "https://github.com/PortSwigger/collaborator-everywhere"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "oast,ssrf,generic"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/?u\u003dhttp://{{interactsh-url}}/\u0026href\u003dhttp://{{interactsh-url}}/\u0026action\u003dhttp://{{interactsh-url}}/\u0026host\u003d{{interactsh-url}}\u0026http_host\u003d{{interactsh-url}}\u0026email\u003droot@{{interactsh-url}}\u0026url\u003dhttp://{{interactsh-url}}/\u0026load\u003dhttp://{{interactsh-url}}/\u0026preview\u003dhttp://{{interactsh-url}}/\u0026target\u003dhttp://{{interactsh-url}}/\u0026proxy\u003dhttp://{{interactsh-url}}/\u0026from\u003dhttp://{{interactsh-url}}/\u0026src\u003dhttp://{{interactsh-url}}/\u0026ref\u003dhttp://{{interactsh-url}}/\u0026referrer\u003dhttp://{{interactsh-url}}/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "http"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

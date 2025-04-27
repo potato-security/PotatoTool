@@ -1,0 +1,131 @@
+{
+  "id": "mikrotik-ftp-server-detect",
+  "name": "MikroTik FTP server Detect",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "The File Transfer Protocol (FTP) is a standard network protocol used to transfer computer files between a client and server on a computer network.\n",
+  "tags": [
+    "network",
+    "ftp",
+    "mikrotik",
+    "router",
+    "detect",
+    "detection",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"MikroTik router ftpd\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "21",
+      "inputs": [
+        {
+          "data": "\n",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "MikroTik FTP"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "mikrotik-ftp-server-detect",
+    "info": {
+      "name": "MikroTik FTP server Detect",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "The File Transfer Protocol (FTP) is a standard network protocol used to transfer computer files between a client and server on a computer network.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"MikroTik router ftpd\""
+      },
+      "tags": "network,ftp,mikrotik,router,detect,detection,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "\n",
+            "read": 0
+          }
+        ],
+        "port": "21",
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "MikroTik FTP"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "MikroTik ([0-9.]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,139 @@
+{
+  "id": "jalios-jcms-panel",
+  "name": "Jalios JCMS Login Panel - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Jalios JCMS login panel was detected.",
+  "references": [
+    "https://www.jalios.com/"
+  ],
+  "tags": [
+    "panel",
+    "jalios",
+    "jcms"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"jalios jcms\"",
+    "shodan": "html:\"Jalios JCMS\" http.html:\"jalios jcms\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "content\u003d\"Jalios JCMS",
+            "jalios-login",
+            "JCMS_login",
+            "/jcms/"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jalios-jcms-panel",
+    "info": {
+      "name": "Jalios JCMS Login Panel - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Jalios JCMS login panel was detected.",
+      "reference": [
+        "https://www.jalios.com/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": [
+          "html:\"Jalios JCMS\"",
+          "http.html:\"jalios jcms\""
+        ],
+        "fofa_query": "body\u003d\"jalios jcms\""
+      },
+      "tags": "panel,jalios,jcms"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}",
+          "{{BaseURL}}/front/privateLogin.jsp"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "content\u003d\"Jalios JCMS",
+              "jalios-login",
+              "JCMS_login",
+              "/jcms/"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

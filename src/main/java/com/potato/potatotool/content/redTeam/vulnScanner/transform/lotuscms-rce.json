@@ -1,0 +1,148 @@
+{
+  "id": "lotuscms-rce",
+  "name": "LotusCMS 3.0 - Remote Code Execution",
+  "author": "pikpikcu",
+  "severity": "CRITICAL",
+  "description": "LotusCMS 3.0 is susceptible to remote code execution via the Router () function. This is done by embedding PHP code in the \u0027page\u0027 parameter, which will be passed to a eval call and allow remote code execution.\n",
+  "references": [
+    "https://github.com/Hood3dRob1n/LotusCMS-Exploit"
+  ],
+  "tags": [
+    "lotuscms",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-77",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "POST",
+      "path": "{{BaseURL}}/index.php",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "38ee63071a04dc5e04ed22624c38e648"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "lotuscms-rce",
+    "info": {
+      "name": "LotusCMS 3.0 - Remote Code Execution",
+      "author": "pikpikcu",
+      "severity": "critical",
+      "description": "LotusCMS 3.0 is susceptible to remote code execution via the Router () function. This is done by embedding PHP code in the \u0027page\u0027 parameter, which will be passed to a eval call and allow remote code execution.\n",
+      "reference": [
+        "https://github.com/Hood3dRob1n/LotusCMS-Exploit"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-77"
+      },
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "lotuscms,rce"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "POST",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/index.php",
+          "{{BaseURL}}/lcms/index.php"
+        ],
+        "headers": {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "38ee63071a04dc5e04ed22624c38e648"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

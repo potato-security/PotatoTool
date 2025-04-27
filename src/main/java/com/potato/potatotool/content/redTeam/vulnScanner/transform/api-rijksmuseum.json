@@ -1,0 +1,122 @@
+{
+  "id": "api-rijksmuseum",
+  "name": "Rijksmuseum API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "The Rijksmuseum is a Dutch national museum dedicated to arts and history in Amsterdam",
+  "references": [
+    "https://data.rijksmuseum.nl/user-generated-content/api/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/rijksmuseum"
+  ],
+  "tags": [
+    "token-spray",
+    "rijksmuseum"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://www.rijksmuseum.nl/api/nl/usersets?key\u003d{{token}}\u0026format\u003djson\u0026page\u003d2",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"count\":",
+            "\"userSets\":",
+            "\"user\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-rijksmuseum",
+    "info": {
+      "name": "Rijksmuseum API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "The Rijksmuseum is a Dutch national museum dedicated to arts and history in Amsterdam",
+      "reference": [
+        "https://data.rijksmuseum.nl/user-generated-content/api/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/rijksmuseum"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,rijksmuseum"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://www.rijksmuseum.nl/api/nl/usersets?key\u003d{{token}}\u0026format\u003djson\u0026page\u003d2"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"count\":",
+              "\"userSets\":",
+              "\"user\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

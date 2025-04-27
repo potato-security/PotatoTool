@@ -1,0 +1,146 @@
+{
+  "id": "terraform-enterprise-panel",
+  "name": "Terraform Enterprise Panel - Detect",
+  "author": "Adam Crosser,idealphase",
+  "severity": "INFO",
+  "description": "Terraform Enterprise panel was detected.",
+  "references": [
+    "https://www.terraform.io/enterprise/releases"
+  ],
+  "tags": [
+    "panel",
+    "terraform",
+    "hashicorp"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"terraform enterprise\"",
+    "google": "intitle:\"Terraform Enterprise\" intitle:\"terraform enterprise\"",
+    "shodan": "title:\"Terraform Enterprise\" http.title:\"terraform enterprise\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/session",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Terraform Enterprise"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "terraform-enterprise-panel",
+    "info": {
+      "name": "Terraform Enterprise Panel - Detect",
+      "author": "Adam Crosser,idealphase",
+      "severity": "info",
+      "description": "Terraform Enterprise panel was detected.",
+      "reference": [
+        "https://www.terraform.io/enterprise/releases"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "title:\"Terraform Enterprise\"",
+          "http.title:\"terraform enterprise\""
+        ],
+        "fofa_query": "title\u003d\"terraform enterprise\"",
+        "google_query": [
+          "intitle:\"Terraform Enterprise\"",
+          "intitle:\"terraform enterprise\""
+        ]
+      },
+      "tags": "panel,terraform,hashicorp"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/session"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Terraform Enterprise"
+            ],
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003cspan class\u003d\"tag is-light is-lowercase\"\u003e(.+)\u003c\\/span\u003e"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

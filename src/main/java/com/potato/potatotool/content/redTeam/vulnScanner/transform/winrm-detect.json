@@ -1,0 +1,158 @@
+{
+  "id": "winrm-detect",
+  "name": "Windows Remote Management - Detection",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "Detects Windows Remote Management (WinRM) by checking HTTP response headers on ports 5985 (HTTP) and 5986 (HTTPS).\n",
+  "tags": [
+    "network",
+    "winrm",
+    "windows"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "product:\"WinRM\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "POST",
+      "path": "{{BaseURL}}/wsman",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "401"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "REGEX",
+          "part": "header",
+          "values": [
+            "Microsoft-HTTPAPI\\/[0-9\\.]+"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "header",
+          "values": [
+            "Www-Authenticate: NTLM",
+            "Www-Authenticate: Negotiate"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "winrm-detect",
+    "info": {
+      "name": "Windows Remote Management - Detection",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "Detects Windows Remote Management (WinRM) by checking HTTP response headers on ports 5985 (HTTP) and 5986 (HTTPS).\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "product:\"WinRM\""
+      },
+      "tags": "network,winrm,windows"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "POST",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/wsman"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              401
+            ]
+          },
+          {
+            "type": "regex",
+            "part": "header",
+            "regex": [
+              "Microsoft-HTTPAPI\\/[0-9\\.]+"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "header",
+            "words": [
+              "Www-Authenticate: NTLM",
+              "Www-Authenticate: Negotiate"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

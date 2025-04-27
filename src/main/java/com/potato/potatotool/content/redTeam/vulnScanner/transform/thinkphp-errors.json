@@ -1,0 +1,193 @@
+{
+  "id": "thinkphp-errors",
+  "name": "ThinkPHP Errors - Sensitive Information Exposure",
+  "author": "j4vaovo",
+  "severity": "MEDIUM",
+  "description": "ThinkPHP error is leaking sensitive info.",
+  "tags": [
+    "thinkphp",
+    "misconfig",
+    "exposure"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "app\u003d\"ThinkPHP\" \u0026\u0026 title\u003d\"System Error\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "_DATABASE\u003c/td\u003e",
+            "_USERNAME\u003c/td\u003e",
+            "_PASSWORD\u003c/td\u003e"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\u003ctitle\u003e系统发生错误\u003c/title\u003e",
+            "\u003ctitle\u003eSystem Error\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Exception",
+            "REQUEST_TIME"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200",
+            "500",
+            "404"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "thinkphp-errors",
+    "info": {
+      "name": "ThinkPHP Errors - Sensitive Information Exposure",
+      "author": "j4vaovo",
+      "severity": "medium",
+      "description": "ThinkPHP error is leaking sensitive info.",
+      "classification": {},
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "app\u003d\"ThinkPHP\" \u0026\u0026 title\u003d\"System Error\""
+      },
+      "tags": "thinkphp,misconfig,exposure"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "_DATABASE\u003c/td\u003e",
+              "_USERNAME\u003c/td\u003e",
+              "_PASSWORD\u003c/td\u003e"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\u003ctitle\u003e系统发生错误\u003c/title\u003e",
+              "\u003ctitle\u003eSystem Error\u003c/title\u003e"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Exception",
+              "REQUEST_TIME"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200,
+              500,
+              404
+            ],
+            "condition": "or"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

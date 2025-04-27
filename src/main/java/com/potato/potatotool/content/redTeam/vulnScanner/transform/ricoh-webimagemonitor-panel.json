@@ -1,0 +1,129 @@
+{
+  "id": "ricoh-webimagemonitor-panel",
+  "name": "Ricoh Web Image Monitor - Detect",
+  "author": "righettod",
+  "severity": "INFO",
+  "description": "Ricoh Web Image Monitor device was detected.\n",
+  "references": [
+    "https://support.ricoh.com/bb_v1oi/pub_e/oi_view/0001082/0001082137/view/intro/int/wim.htm"
+  ],
+  "tags": [
+    "panel",
+    "ricoh",
+    "detect"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.html:\"Web Image Monitor\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/web/guest/en/websys/webArch/header.cgi",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code \u003d\u003d 200",
+            "contains_all(to_lower(body), \"web image monitor\u003c/h3\", \"ricoh\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "ricoh-webimagemonitor-panel",
+    "info": {
+      "name": "Ricoh Web Image Monitor - Detect",
+      "author": "righettod",
+      "severity": "info",
+      "description": "Ricoh Web Image Monitor device was detected.\n",
+      "reference": [
+        "https://support.ricoh.com/bb_v1oi/pub_e/oi_view/0001082/0001082137/view/intro/int/wim.htm"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.html:\"Web Image Monitor\""
+      },
+      "tags": "panel,ricoh,detect"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/web/guest/en/websys/webArch/header.cgi"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code \u003d\u003d 200",
+              "contains_all(to_lower(body), \"web image monitor\u003c/h3\", \"ricoh\")"
+            ],
+            "condition": "and"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "(?i)\u003ch2 id\u003d\"modelName\" style\u003d\"z-index:1;\"\u003e([A-Z0-9\\s]+)\u003c/h2\u003e"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

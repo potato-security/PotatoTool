@@ -1,0 +1,122 @@
+{
+  "id": "covenant-c2-jarm",
+  "name": "Covenant C2 JARM - Detect",
+  "author": "pussycat0x",
+  "severity": "INFO",
+  "description": "Covenant is a .NET command and control framework that aims to highlight the attack surface of .NET, make the use of offensive .NET tradecraft easier,and serve as a collaborative command and control platform for red teamers.\n",
+  "references": [
+    "https://github.com/cedowens/C2-JARM",
+    "https://twitter.com/MichalKoczwara/status/1548685058403360770"
+  ],
+  "tags": [
+    "jarm",
+    "network",
+    "c2",
+    "ir",
+    "osint",
+    "cti",
+    "covenant",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "inputs": [
+        {
+          "data": "2E",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "jarm(Hostname) \u003d\u003d \u002721d14d00000000021c21d14d21d21d1ee8ae98bf3ef941e91529a93ac62b8b\u0027"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "covenant-c2-jarm",
+    "info": {
+      "name": "Covenant C2 JARM - Detect",
+      "author": "pussycat0x",
+      "severity": "info",
+      "description": "Covenant is a .NET command and control framework that aims to highlight the attack surface of .NET, make the use of offensive .NET tradecraft easier,and serve as a collaborative command and control platform for red teamers.\n",
+      "reference": [
+        "https://github.com/cedowens/C2-JARM",
+        "https://twitter.com/MichalKoczwara/status/1548685058403360770"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "jarm,network,c2,ir,osint,cti,covenant,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "data": "2E",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "stop_at_first_match": false,
+        "read_size": 0,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "jarm(Hostname) \u003d\u003d \u002721d14d00000000021c21d14d21d21d1ee8ae98bf3ef941e91529a93ac62b8b\u0027"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

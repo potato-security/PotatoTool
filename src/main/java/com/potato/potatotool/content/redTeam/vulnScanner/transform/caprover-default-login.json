@@ -1,0 +1,121 @@
+{
+  "id": "caprover-default-login",
+  "name": "Caprover - Default Login",
+  "author": "ritikchaddha",
+  "severity": "HIGH",
+  "description": "Caprover defaultl login has been detected.\n",
+  "tags": [
+    "caprover",
+    "default-login",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "http.favicon.hash:988422585"
+  },
+  "variables": {
+    "password": [
+      "captain42"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /api/v2/login HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nx-namespace: captain\n\n{\"password\":\"{{password}}\"}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains_all(body, \"status\\\":100\", \"Login succeeded\", \"token\\\":\")",
+            "contains(header, \"application/json\")",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "caprover-default-login",
+    "info": {
+      "name": "Caprover - Default Login",
+      "author": "ritikchaddha",
+      "severity": "high",
+      "description": "Caprover defaultl login has been detected.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "http.favicon.hash:988422585"
+      },
+      "tags": "caprover,default-login,misconfig"
+    },
+    "variables": {
+      "password": "captain42"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /api/v2/login HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\nx-namespace: captain\n\n{\"password\":\"{{password}}\"}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains_all(body, \"status\\\":100\", \"Login succeeded\", \"token\\\":\")",
+              "contains(header, \"application/json\")",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

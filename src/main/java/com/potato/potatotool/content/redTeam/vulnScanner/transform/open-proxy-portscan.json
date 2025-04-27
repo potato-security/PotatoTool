@@ -1,0 +1,147 @@
+{
+  "id": "open-proxy-portscan",
+  "name": "Open Proxy to Ports on the Proxy\u0027s localhost Interface",
+  "author": "sullo",
+  "severity": "HIGH",
+  "description": "The host is configured as a proxy which allows access to its internal interface",
+  "references": [
+    "https://blog.projectdiscovery.io/abusing-reverse-proxies-internal-access/",
+    "https://en.wikipedia.org/wiki/Open_proxy",
+    "https://www.acunetix.com/vulnerabilities/web/apache-configured-to-run-as-proxy/"
+  ],
+  "tags": [
+    "exposure",
+    "config",
+    "proxy",
+    "misconfig",
+    "fuzz"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-441",
+  "cvssScore": "8.6",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET / HTTP/1.1\nHost: {{Hostname}}\n\n",
+        "GET http://somethingelsethatdoesnotexist/ HTTP/1.1\nHost: somethingelsethatdoesnotexist\n\n",
+        "GET http://127.0.0.1:21 HTTP/1.1\nHost: 127.0.0.1\n\n",
+        "GET http://127.0.0.1:22 HTTP/1.1\nHost: 127.0.0.1\n\n",
+        "GET http://127.0.0.1:25 HTTP/1.1\nHost: 127.0.0.1\n\n",
+        "GET http://127.0.0.1:110 HTTP/1.1\nHost: 127.0.0.1\n\n",
+        "GET http://127.0.0.1:587 HTTP/1.1\nHost: 127.0.0.1\n\n",
+        "GET https://127.0.0.1:587 HTTP/1.1\nHost: 127.0.0.1\n\n"
+      ],
+      "unsafe": true,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "(!regex(\"(?i)FTP\",body_1)) \u0026\u0026 (!regex(\"(?i)FTP\",body_2)) \u0026\u0026 (regex(\"(?i)FTP\",body_3))",
+            "(!regex(\"(?i)SSH-[.]+-+\",body_1)) \u0026\u0026 (!regex(\"(?i)SSH-[.]+-+\",body_2)) \u0026\u0026 (regex(\"(?i)SSH-[.]+-+\",body_4))",
+            "(!regex(\"(?i)POP3\",body_1)) \u0026\u0026 (!regex(\"(?i)POP3\",body_2)) \u0026\u0026 (regex(\"(?i)POP3\",body_6))",
+            "(!regex(\"(?i)SMTP\",body_1)) \u0026\u0026 (!regex(\"(?i)SMTP\",body_2)) \u0026\u0026 ((regex(\"(?i)SMTP\",body_5)) || (regex(\"(?i)SMTP\",body_7)) || (regex(\"(?i)SMTP\",body_8)))"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "open-proxy-portscan",
+    "info": {
+      "name": "Open Proxy to Ports on the Proxy\u0027s localhost Interface",
+      "author": "sullo",
+      "severity": "high",
+      "description": "The host is configured as a proxy which allows access to its internal interface",
+      "reference": [
+        "https://blog.projectdiscovery.io/abusing-reverse-proxies-internal-access/",
+        "https://en.wikipedia.org/wiki/Open_proxy",
+        "https://www.acunetix.com/vulnerabilities/web/apache-configured-to-run-as-proxy/"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N",
+        "cvss_score": "8.6",
+        "cwe_id": "CWE-441"
+      },
+      "metadata": {
+        "max_request": 8
+      },
+      "tags": "exposure,config,proxy,misconfig,fuzz"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": true,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET / HTTP/1.1\nHost: {{Hostname}}\n\n",
+          "GET http://somethingelsethatdoesnotexist/ HTTP/1.1\nHost: somethingelsethatdoesnotexist\n\n",
+          "GET http://127.0.0.1:21 HTTP/1.1\nHost: 127.0.0.1\n\n",
+          "GET http://127.0.0.1:22 HTTP/1.1\nHost: 127.0.0.1\n\n",
+          "GET http://127.0.0.1:25 HTTP/1.1\nHost: 127.0.0.1\n\n",
+          "GET http://127.0.0.1:110 HTTP/1.1\nHost: 127.0.0.1\n\n",
+          "GET http://127.0.0.1:587 HTTP/1.1\nHost: 127.0.0.1\n\n",
+          "GET https://127.0.0.1:587 HTTP/1.1\nHost: 127.0.0.1\n\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "(!regex(\"(?i)FTP\",body_1)) \u0026\u0026 (!regex(\"(?i)FTP\",body_2)) \u0026\u0026 (regex(\"(?i)FTP\",body_3))",
+              "(!regex(\"(?i)SSH-[.]+-+\",body_1)) \u0026\u0026 (!regex(\"(?i)SSH-[.]+-+\",body_2)) \u0026\u0026 (regex(\"(?i)SSH-[.]+-+\",body_4))",
+              "(!regex(\"(?i)POP3\",body_1)) \u0026\u0026 (!regex(\"(?i)POP3\",body_2)) \u0026\u0026 (regex(\"(?i)POP3\",body_6))",
+              "(!regex(\"(?i)SMTP\",body_1)) \u0026\u0026 (!regex(\"(?i)SMTP\",body_2)) \u0026\u0026 ((regex(\"(?i)SMTP\",body_5)) || (regex(\"(?i)SMTP\",body_7)) || (regex(\"(?i)SMTP\",body_8)))"
+            ],
+            "condition": "or"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

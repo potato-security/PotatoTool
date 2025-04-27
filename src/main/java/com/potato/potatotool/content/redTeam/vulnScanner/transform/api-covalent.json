@@ -1,0 +1,122 @@
+{
+  "id": "api-covalent",
+  "name": "Covalent API Test",
+  "author": "daffainfo",
+  "severity": "INFO",
+  "description": "https://github.com/daffainfo/all-about-apikey/tree/main/covalent",
+  "references": [
+    "https://www.covalenthq.com/docs/api/",
+    "https://github.com/daffainfo/all-about-apikey/tree/main/covalent"
+  ],
+  "tags": [
+    "token-spray",
+    "covalent"
+  ],
+  "protocol": "http",
+  "selfContained": true,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "https://api.covalenthq.com/v1/3/address/balances_v2/?\u0026key\u003d{{token}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"address\":",
+            "\"updated_at\":",
+            "\"next_update_at\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "api-covalent",
+    "info": {
+      "name": "Covalent API Test",
+      "author": "daffainfo",
+      "severity": "info",
+      "description": "https://github.com/daffainfo/all-about-apikey/tree/main/covalent",
+      "reference": [
+        "https://www.covalenthq.com/docs/api/",
+        "https://github.com/daffainfo/all-about-apikey/tree/main/covalent"
+      ],
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "token-spray,covalent"
+    },
+    "self_contained": true,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "https://api.covalenthq.com/v1/3/address/balances_v2/?\u0026key\u003d{{token}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"address\":",
+              "\"updated_at\":",
+              "\"next_update_at\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,137 @@
+{
+  "id": "metasploit-setup-page",
+  "name": "Metasploit Setup and Configuration Page - Detect",
+  "author": "ritikchaddha",
+  "severity": "INFO",
+  "description": "Metasploit setup and configuration page was detected.",
+  "tags": [
+    "panel",
+    "metasploit",
+    "setup",
+    "rapid7"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"metasploit\" title\u003d\"metasploit - setup and configuration\"",
+    "google": "intitle:\"metasploit\" intitle:\"metasploit - setup and configuration\"",
+    "shodan": "title:\"Metasploit - Setup and Configuration\" http.title:\"metasploit\" http.title:\"metasploit - setup and configuration\"",
+    "zoomeye": "title:\u0027metasploit\u0027"
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-200",
+  "cvssMetrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/users/new",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "Metasploit - Setup and Configuration"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "metasploit-setup-page",
+    "info": {
+      "name": "Metasploit Setup and Configuration Page - Detect",
+      "author": "ritikchaddha",
+      "severity": "info",
+      "description": "Metasploit setup and configuration page was detected.",
+      "classification": {
+        "cvss_metrics": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+        "cwe_id": "CWE-200"
+      },
+      "metadata": {
+        "max_request": 1,
+        "shodan_query": [
+          "title:\"Metasploit - Setup and Configuration\"",
+          "http.title:\"metasploit\"",
+          "http.title:\"metasploit - setup and configuration\""
+        ],
+        "fofa_query": [
+          "title\u003d\"metasploit\"",
+          "title\u003d\"metasploit - setup and configuration\""
+        ],
+        "google_query": [
+          "intitle:\"metasploit\"",
+          "intitle:\"metasploit - setup and configuration\""
+        ],
+        "zoomeye_query": "title:\u0027metasploit\u0027"
+      },
+      "tags": "panel,metasploit,setup,rapid7"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/users/new"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "Metasploit - Setup and Configuration"
+            ],
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

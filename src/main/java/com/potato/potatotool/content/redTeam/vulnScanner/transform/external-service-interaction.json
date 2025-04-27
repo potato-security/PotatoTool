@@ -1,0 +1,133 @@
+{
+  "id": "external-service-interaction",
+  "name": "External Service Interaction",
+  "author": "andreluna",
+  "severity": "INFO",
+  "description": "External Service interaction via Host Header Injection.",
+  "references": [
+    "https://portswigger.net/kb/issues/00300210_external-service-interaction-http",
+    "https://success.qualys.com/support/s/article/000006843",
+    "https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/17-Testing_for_Host_Header_Injection"
+  ],
+  "tags": [
+    "miscellaneous",
+    "http",
+    "misc",
+    "oast"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-918,CWE-406",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}",
+      "headers": {
+        "Host": "{{interactsh-url}}"
+      },
+      "followRedirect": true,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "interactsh_protocol",
+          "values": [
+            "http",
+            "dns"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "external-service-interaction",
+    "info": {
+      "name": "External Service Interaction",
+      "author": "andreluna",
+      "severity": "info",
+      "description": "External Service interaction via Host Header Injection.",
+      "reference": [
+        "https://portswigger.net/kb/issues/00300210_external-service-interaction-http",
+        "https://success.qualys.com/support/s/article/000006843",
+        "https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/17-Testing_for_Host_Header_Injection"
+      ],
+      "classification": {
+        "cwe_id": "CWE-918,CWE-406"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "miscellaneous,http,misc,oast"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": true,
+        "path": [
+          "{{BaseURL}}"
+        ],
+        "headers": {
+          "Host": "{{interactsh-url}}"
+        },
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "interactsh_protocol",
+            "words": [
+              "http",
+              "dns"
+            ],
+            "condition": "or",
+            "case_insensitive": false
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

