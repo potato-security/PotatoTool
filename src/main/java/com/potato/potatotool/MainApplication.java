@@ -3,10 +3,13 @@ package com.potato.potatotool;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.update;
-import com.potato.potatotool.controller.PaneLoad;
-import com.potato.potatotool.controller.PanePasswd;
-import com.potato.potatotool.utils.*;
+import com.potato.potatotool.content.Update;
+import com.potato.potatotool.controller.publicPane.PaneLoad;
+import com.potato.potatotool.controller.publicPane.PanePasswd;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.crypto.SecurityInitializer;
+import com.potato.potatotool.utils.data.GzipUtils;
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.application.HostServices;
@@ -33,7 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.utils.Constants.*;
+import static com.potato.potatotool.utils.core.Constants.*;
 
 public class MainApplication extends Application {
     private static final ExecutorService executor = Executors.newCachedThreadPool();
@@ -63,7 +66,7 @@ public class MainApplication extends Application {
         Stage passwdStage = new Stage();
         passwdStage.setAlwaysOnTop(true);
         passwdStage.initStyle(StageStyle.TRANSPARENT);
-        FXMLLoader passwdLoader = new FXMLLoader(getClass().getResource("/fxml/passwd.fxml"));
+        FXMLLoader passwdLoader = new FXMLLoader(getClass().getResource("/fxml/publicPane/passwd.fxml"));
         Scene passwdScene = new Scene(passwdLoader.load());
         passwdScene.setCamera(new PerspectiveCamera());
         passwdScene.setFill(null);
@@ -116,7 +119,7 @@ public class MainApplication extends Application {
 
                         stage.setFullScreenExitHint("");
 
-                        scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
+                        scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
                         scene.setCamera(new PerspectiveCamera());   //  添加摄像机
                         stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
                         scene.setFill(null);    //  背景透明
@@ -150,7 +153,7 @@ public class MainApplication extends Application {
         try {
             Stage loadStage = new Stage();
             loadStage.initStyle(StageStyle.TRANSPARENT);
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/load.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/publicPane/load.fxml"));
             Scene loadScene = new Scene(loader.load());
             loadScene.setCamera(new PerspectiveCamera());
             loadScene.setFill(null);
@@ -243,7 +246,7 @@ public class MainApplication extends Application {
             String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
             if(!hasFileWithPrefix(configFolder, propertyName)) {
                 copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (70.5 * 1024 * 1024));
-                update.updateLocalResourceConfig(propertyName, configFolder.resolve(fileNmae).toString());
+                Update.updateLocalResourceConfig(propertyName, configFolder.resolve(fileNmae).toString());
             }
         } catch (IOException e) {
             e.printStackTrace();

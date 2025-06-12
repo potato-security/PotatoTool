@@ -1,16 +1,13 @@
 package com.potato.potatotool.content.redTeam.infoGathering.utils;
 
 import com.google.common.hash.Hashing;
-import com.google.gson.*;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.w3c.dom.NodeList;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -18,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -215,12 +212,12 @@ public class Utils {
             }
 
             byte[] iconBytes = con_icon.getByteArray();
-            String iconMd5 = strUtils.md5(iconBytes);
-            String tmpData = strUtils.base64Encode_codesc(iconBytes);
+            String iconMd5 = StrUtils.md5(iconBytes);
+            String tmpData = StrUtils.base64Encode_codesc(iconBytes);
             int iconSha1 = Hashing.murmur3_32().hashString(tmpData, StandardCharsets.UTF_8).asInt();
 
             iconInfo.put("iconUrl", iconUrl);
-            iconInfo.put("iconBase64", strUtils.base64Encode(iconBytes));
+            iconInfo.put("iconBase64", StrUtils.base64Encode(iconBytes));
             iconInfo.put("iconMd5", iconMd5);
             iconInfo.put("iconMmh3", String.valueOf(iconSha1));
         } catch (Exception e) {

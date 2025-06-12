@@ -1,6 +1,6 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors;
 
-import com.potato.potatotool.utils.CustomHttpResponse;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import net.sf.saxon.xpath.XPathFactoryImpl;
 import org.w3c.dom.Document;
@@ -12,7 +12,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import java.io.StringReader;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,9 +63,9 @@ public class VariableExtractor {
                 case XPATH:
                     extractedValue = extractXpath(content, values, attribute);
                     break;
-                case DSL:
-                    extractedValue = DslEvaluator.extractDsl(response, values);
-                    break;
+//                case DSL:
+//                    extractedValue = DslEvaluator.extractDsl(response, values);
+//                    break;
                 case KVAL:
                     extractedValue = extractKval(content, values);
                     break;

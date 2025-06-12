@@ -6,8 +6,7 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetObj;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.NetAssets;
-import com.potato.potatotool.controller.PaneInfoSearch;
-import com.potato.potatotool.utils.jsonUtils;
+import com.potato.potatotool.utils.data.JsonUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -640,7 +639,7 @@ public class AssetExcelExporter {
                         row.createCell(2).setCellValue(leakages.get(i).getAsJsonObject().get("title").getAsString());
                         row.createCell(3).setCellValue(leakages.get(i).getAsJsonObject().get("url").getAsString());
                         row.createCell(4).setCellValue(leakages.get(i).getAsJsonObject().get("des").getAsString());
-                        row.createCell(5).setCellValue(jsonUtils.jsonArrayToString(leakages.get(i).getAsJsonObject().getAsJsonArray("leakageArray"),"\n"));
+                        row.createCell(5).setCellValue(JsonUtils.jsonArrayToString(leakages.get(i).getAsJsonObject().getAsJsonArray("leakageArray"),"\n"));
 
                         for (int j = 0; j < googleHeaders.length; j++) {
                             Cell cell = row.getCell(j);

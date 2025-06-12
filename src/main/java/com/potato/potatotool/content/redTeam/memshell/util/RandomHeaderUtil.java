@@ -1,6 +1,6 @@
 package com.potato.potatotool.content.redTeam.memshell.util;
 
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.data.StrUtils;
 
 import java.util.AbstractMap;
 import java.util.Map;
@@ -31,7 +31,7 @@ public class RandomHeaderUtil {
         switch (key) {
             case "Referer":
             case "User-Agent":
-                return strUtils.generateRandomString(4,10);
+                return StrUtils.generateRandomString(4,10);
             default:
                 return "";
         }

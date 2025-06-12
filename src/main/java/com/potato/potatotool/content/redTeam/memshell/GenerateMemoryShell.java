@@ -3,7 +3,7 @@ package com.potato.potatotool.content.redTeam.memshell;
 import com.potato.potatotool.content.redTeam.memshell.config.MemoryObj;
 import com.potato.potatotool.content.redTeam.memshell.util.ClassNameUtil;
 import com.potato.potatotool.content.redTeam.memshell.util.RandomHeaderUtil;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.data.StrUtils;
 
 import java.util.Map;
 
@@ -52,8 +52,8 @@ public class GenerateMemoryShell {
             memoryObj.setExprEncoder(exprEncoder);
         }
 
-        if (memoryObj.getPass() == null || memoryObj.getPass().equals("")) memoryObj.setPass(strUtils.generateRandomString(6, 10));
-        if (memoryObj.getKey() == null || memoryObj.getKey().equals("")) memoryObj.setKey(strUtils.generateRandomString(6, 10));
+        if (memoryObj.getPass() == null || memoryObj.getPass().equals("")) memoryObj.setPass(StrUtils.generateRandomString(6, 10));
+        if (memoryObj.getKey() == null || memoryObj.getKey().equals("")) memoryObj.setKey(StrUtils.generateRandomString(6, 10));
         if (memoryObj.getToolType().equals(TOOL_NEOREGEORG)) memoryObj.setKey("key");
         if (memoryObj.getShellClassName() == null || memoryObj.getShellClassName().equals("")) memoryObj.setShellClassName(ClassNameUtil.getRandomShellClassName(memoryObj.getShellType()));
         if (memoryObj.getInjectorClassName() == null || memoryObj.getInjectorClassName().equals("")) memoryObj.setInjectorClassName(ClassNameUtil.getRandomInjectorClassName());
@@ -62,7 +62,7 @@ public class GenerateMemoryShell {
         if (memoryObj.getHeaderValue() == null || memoryObj.getHeaderValue().equals("")) memoryObj.setHeaderValue(header.getValue());
         if (memoryObj.getUrlPattern() == null || memoryObj.getUrlPattern().equals("") || memoryObj.getUrlPattern().equals("/*") || memoryObj.getUrlPattern().equals("/")) {
             if (memoryObj.getShellType().equals(SHELLTYPE_WFHANDLERMETHOD)) {
-                memoryObj.setUrlPattern("/" + strUtils.generateRandomString(6, 6).toLowerCase());
+                memoryObj.setUrlPattern("/" + StrUtils.generateRandomString(6, 6).toLowerCase());
             } else {
                 memoryObj.setUrlPattern("/*");
             }

@@ -486,26 +486,149 @@
     -fx-fill: mediumorchid;
     -fx-font-weight: bold;
 }
-.semicolon {
-    -fx-font-weight: bold;
-}
+
 .paren {
     -fx-fill: tomato;
     -fx-font-weight: bold;
 }
+
+.brace {
+    -fx-fill: #e0e0e0; /* 浅灰色 */
+    -fx-font-weight: bold;
+}
+
 .bracket {
     -fx-fill: limegreen;
     -fx-font-weight: bold;
 }
-.brace {
-    -fx-fill: mediumturquoise;
+
+.semicolon {
+    -fx-fill: #e0e0e0; /* 浅灰色 */
     -fx-font-weight: bold;
 }
+
 .string {
     -fx-fill: dodgerblue;
 }
+
 .comment {
-    -fx-fill: skyblue;
+    -fx-fill: #b0bec5; /* 浅蓝灰色 */
+    -fx-font-style: italic;
+}
+
+.decorator {
+    -fx-fill: #ffcc80; /* 浅橙色 */
+    -fx-font-weight: bold;
+}
+
+/* Markdown样式 */
+.md {
+}
+
+.md.h1 {
+    -fx-font-weight: bold;
+    -fx-font-size: 175%;
+    -fx-fill: #64b5f6; /* 浅蓝色 */
+}
+
+.md.h2 {
+    -fx-font-weight: bold;
+    -fx-font-size: 150%;
+    -fx-fill: #64b5f6; /* 浅蓝色 */
+}
+
+.md.h3 {
+    -fx-font-weight: bold;
+    -fx-font-size: 135%;
+    -fx-fill: #64b5f6; /* 浅蓝色 */
+}
+
+.md.h4 {
+    -fx-font-weight: bold;
+    -fx-font-size: 120%;
+    -fx-fill: #64b5f6; /* 浅蓝色 */
+}
+
+.md.h5 {
+    -fx-font-weight: bold;
+    -fx-font-size: 110%;
+    -fx-fill: #64b5f6; /* 浅蓝色 */
+}
+
+.md.h6 {
+    -fx-font-weight: bold;
+    -fx-fill: #64b5f6; /* 浅蓝色 */
+}
+
+.md.strong {
+    -fx-font-weight: bold;
+}
+
+.md.emph {
+    -fx-font-style: italic;
+}
+
+.md.list {
+    -fx-fill: #ffcc80; /* 浅橙色 */
+}
+
+.md.link {
+    -fx-fill: #80deea; /* 浅青色 */
+    -fx-underline: true;
+}
+
+.md.code {
+    -fx-background-color: #424242; /* 深灰色，适合代码块背景 */
+    -fx-fill: #ef9a9a; /* 浅红色 */
+}
+
+.md.quote {
+    -fx-fill: #b0bec5; /* 浅蓝灰色 */
+    -fx-font-style: italic;
+}
+
+.md.image {
+    -fx-fill: #ce93d8; /* 浅紫色 */
+}
+
+.md.hr {
+    -fx-fill: #b0bec5; /* 浅蓝灰色 */
+    -fx-stroke: #b0bec5; /* 浅蓝灰色 */
+    -fx-stroke-width: 1px;
+}
+
+/* JavaScript特有样式 */
+.builtin {
+    -fx-fill: #9fa8da; /* 浅靛蓝色 */
+    -fx-font-weight: bold;
+}
+
+.number {
+    -fx-fill: #f48fb1; /* 浅粉色 */
+}
+
+.function {
+    -fx-fill: #80cbc4; /* 浅青绿色 */
+    -fx-font-weight: bold;
+}
+
+.template {
+    -fx-fill: #c5e1a5; /* 浅绿色 */
+}
+
+/* XML特有样式 */
+.attribute {
+    -fx-fill: #ce93d8; /* 浅紫色 */
+}
+
+.cdata {
+    -fx-fill: #bcaaa4; /* 浅棕色 */
+    -fx-font-style: italic;
+}
+
+.processing {
+    -fx-fill: #b0bec5; /* 浅蓝灰色 */
+    -fx-font-weight: bold;
 }
 
 .paragraph-box:has-caret {  /*针对于选中的行样式*/

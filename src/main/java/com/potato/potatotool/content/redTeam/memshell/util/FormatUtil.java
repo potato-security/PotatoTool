@@ -1,6 +1,6 @@
 package com.potato.potatotool.content.redTeam.memshell.util;
 
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.data.StrUtils;
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -146,7 +146,7 @@ class JARAgentGenerator {
              JarOutputStream tempJar = new JarOutputStream(new FileOutputStream(tempJarFile), manifest)) {
 
             copyJarEntries(jar, tempJar);
-            addModifiedClassToJar(pool, className, simpleName, classFileName, tempJar, memoryObj.getPass(), strUtils.base64Encode(bytes));
+            addModifiedClassToJar(pool, className, simpleName, classFileName, tempJar, memoryObj.getPass(), StrUtils.base64Encode(bytes));
         }
 
         return Files.readAllBytes(Paths.get(tempJarFile.getAbsolutePath()));

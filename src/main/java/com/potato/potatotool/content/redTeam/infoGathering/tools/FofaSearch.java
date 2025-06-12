@@ -4,14 +4,18 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
-import com.potato.potatotool.utils.*;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.isDomainName;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -71,7 +75,7 @@ public class FofaSearch {
 
         try {
             RequestObj obj = new RequestObj()
-                    .setUrl("https://fofa.info/api/v1/search/all?&size=10000&fields=" + item + "&key=" + FOFA_KEY + "&qbase64=" + strUtils.urlEncode(strUtils.base64Encode(qInfo)))
+                    .setUrl("https://fofa.info/api/v1/search/all?&size=10000&fields=" + item + "&key=" + FOFA_KEY + "&qbase64=" + StrUtils.urlEncode(StrUtils.base64Encode(qInfo)))
                     .setMethod("GET")
                     .setTimeOut(20)
                     .setRetries(3);
@@ -108,7 +112,7 @@ public class FofaSearch {
     public static String getError_Fofa() {
         isEffectiveKey = true;
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.FOFA_KEY);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.FOFA_KEY);
         FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive(AssetKeyConstants.FOFA_KEY).getAsString(), Proxy);
         String qInfo = "ip=\"8.8.8.8\"";
         if (fofaSearch.search_Fofa(qInfo).isEmpty()){
@@ -153,7 +157,7 @@ public class FofaSearch {
 
     public static void main(String[] args) {
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.FOFA_KEY);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.FOFA_KEY);
         FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive(AssetKeyConstants.FOFA_KEY).getAsString(), Proxy);
 
         JsonArray domainInfo = fofaSearch.getInfoByCompanyOrDomain_Fofa("国家能源投资集团有限责任公司");

@@ -4,7 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
-import com.potato.potatotool.utils.*;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -19,7 +23,7 @@ import java.util.regex.Pattern;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.*;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -69,7 +73,7 @@ public class GetSeo {
     private static JsonObject getSeo_chinaz(String domain) {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         String Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.CHINAZ_COOKIE).getAsString();
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
 
         JsonObject seoMap = new JsonObject();
         Map<String, String> headers = new HashMap<>();

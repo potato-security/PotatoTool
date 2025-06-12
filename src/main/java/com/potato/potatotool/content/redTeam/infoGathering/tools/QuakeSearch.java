@@ -4,16 +4,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
-import com.potato.potatotool.utils.Constants;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.jsonUtils;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
+import com.potato.potatotool.utils.data.JsonUtils;
 
 import java.util.*;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.isDomainName;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -81,7 +81,7 @@ public class QuakeSearch {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.QUAKE_KEY)) {
             Quake_Key_Set.add(element.getAsString());
         }
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.QUAKE_KEY);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.QUAKE_KEY);
         QuakeSearch quakeSearch = new QuakeSearch(Quake_Key_Set, Proxy);
         String qInfo = "ip:\"8.8.8.8\"";
         if (quakeSearch.search_Quake(qInfo).isEmpty()){
@@ -130,7 +130,7 @@ public class QuakeSearch {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.QUAKE_KEY)) {
             Quake_Key_Set.add(element.getAsString());
         }
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.QUAKE_KEY);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.QUAKE_KEY);
         QuakeSearch quakeSearch = new QuakeSearch(Quake_Key_Set, Proxy);
         System.out.println(quakeSearch.getInfoByCompanyOrDomain_Quake("360.net"));
     }

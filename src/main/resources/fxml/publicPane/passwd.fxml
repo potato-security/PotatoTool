@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.effect.DropShadow?>
+<?import com.leewyatt.rxcontrols.controls.RXPasswordField?>
+<?import com.dlsc.gemsfx.CFCheckBox?>
+<AnchorPane fx:id="an"
+            onMouseDragged="#topBarDraggedAction"
+            onMousePressed="#topBarPressedAction"
+            maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="245"
+            prefWidth="510"
+            style="-fx-background-color: transparent"
+            xmlns="http://javafx.com/javafx/"
+            xmlns:fx="http://javafx.com/fxml/1"
+            stylesheets="@../../css/common.css, @../../css/passwd.css"
+            fx:controller="com.potato.potatotool.controller.publicPane.PanePasswd">
+    <children>
+        <Pane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0">
+            <effect>
+                <DropShadow/>
+            </effect>
+
+            <VBox>
+                <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="57" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
+                    <center>
+                        <HBox style="-fx-padding: 0 0 0 45;" alignment="CENTER">
+                            <ImageView fitHeight="30.0" fitWidth="300.0"  pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <Image url="@../../img/PotatoTool.png" />
+                                </image>
+                            </ImageView>
+                        </HBox>
+                    </center>
+                    <right>
+                        <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
+                            <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction" prefHeight="25.0" prefWidth="25.0">
+                                <graphic>
+                                    <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                        <image>
+                                            <Image url="@../../img/close.png" />
+                                        </image>
+                                    </ImageView>
+                                </graphic>
+                                <tooltip>
+                                    <Tooltip text="关闭" />
+                                </tooltip>
+                            </Button>
+                            <Pane minWidth="15"/>
+                        </HBox>
+                    </right>
+                </BorderPane>
+
+                <VBox alignment="CENTER" spacing="10" prefWidth="${an.width - 18}" style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
+
+                    <HBox alignment="CENTER" spacing="10">
+                        <Label text="启动密码："/>
+                        <RXPasswordField fx:id="passwd" buttonDisplayMode="AUTO" promptText="请输入密码……" prefWidth="200" />
+                    </HBox>
+
+                    <CFCheckBox fx:id="checkBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="记住密码" VBox.vgrow="ALWAYS" />
+
+                    <StackPane>
+                        <Button fx:id="startButton" minHeight="35.0" minWidth="100" text="启动" onAction="#start">
+                            <effect>
+                                <DropShadow />
+                            </effect>
+                        </Button>
+                        <Label fx:id="tipTitle" StackPane.alignment="CENTER_RIGHT"/>
+                    </StackPane>
+
+                </VBox>
+
+            </VBox>
+
+        </Pane>
+    </children>
+</AnchorPane>

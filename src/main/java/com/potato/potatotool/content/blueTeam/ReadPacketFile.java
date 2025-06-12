@@ -9,9 +9,12 @@ import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 import com.opencsv.CSVWriter;
-import com.potato.potatotool.utils.ReadabilityChecker;
-import com.potato.potatotool.utils.SecurityInitializer;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.content.blueTeam.webshell.WebShellDecryptService;
+import com.potato.potatotool.content.blueTeam.webshell.model.DecryptConfig;
+import com.potato.potatotool.content.blueTeam.webshell.model.DecryptResult;
+import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.misc.ReadabilityChecker;
+import com.potato.potatotool.utils.crypto.SecurityInitializer;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.*;
 import org.pcap4j.packet.namednumber.DnsResourceRecordType;
@@ -45,7 +48,7 @@ public class ReadPacketFile {
         String baseName = path.getFileName().toString();
         String nameWithoutExt = baseName.substring(0, baseName.lastIndexOf('.'));
         String uuid = UUID.randomUUID().toString();
-        String outputFilePath = strUtils.getCurrentJarDir() + File.separator + "PcapDecrypt" + File.separator + nameWithoutExt + "_" + uuid + ".csv";
+        String outputFilePath = StrUtils.getCurrentJarDir() + File.separator + "PcapDecrypt" + File.separator + nameWithoutExt + "_" + uuid + ".csv";
 
         Path outputDirPath = Paths.get(outputFilePath).getParent();
         if (!Files.exists(outputDirPath)) {
@@ -181,7 +184,7 @@ public class ReadPacketFile {
             String payload = new String(payloadBytes, StandardCharsets.UTF_8);
 
             packetInfo.put("Payload", payload);
-            packetInfo.put("Payload_HEX", strUtils.byteToHex(payloadBytes));
+            packetInfo.put("Payload_HEX", StrUtils.byteToHex(payloadBytes));
 
             String payloadData = parseTcpPayload(payloadBytes, packetInfo, tcpPacket.getHeader().getSrcPort());
 
@@ -226,7 +229,7 @@ public class ReadPacketFile {
             byte[] payloadBytes = udpPacket.getPayload().getRawData();
             String payload = new String(payloadBytes, StandardCharsets.UTF_8);
             packetInfo.put("Payload", payload);
-            packetInfo.put("Payload_HEX", strUtils.byteToHex(payloadBytes));
+            packetInfo.put("Payload_HEX", StrUtils.byteToHex(payloadBytes));
             decodeData(payload, packetInfo, false);
         }
     }
@@ -256,7 +259,7 @@ public class ReadPacketFile {
         }
 
         packetInfo.put("Payload", payloadStr);
-        packetInfo.put("Payload_HEX", strUtils.byteToHex(dnsPacket.getPayload().getRawData()));
+        packetInfo.put("Payload_HEX", StrUtils.byteToHex(dnsPacket.getPayload().getRawData()));
         // 不需要加解密，即使需要，单独进行
 
     }
@@ -270,7 +273,7 @@ public class ReadPacketFile {
                 byte[] payloadBytes = icmpPacket.getPayload().getRawData();
                 String payload = new String(payloadBytes, StandardCharsets.UTF_8);
                 packetInfo.put("Payload", payload);
-                packetInfo.put("Payload_HEX", strUtils.byteToHex(payloadBytes));
+                packetInfo.put("Payload_HEX", StrUtils.byteToHex(payloadBytes));
                 decodeData(payload, packetInfo, false);
             }
         } else if (packet.contains(IcmpV6CommonPacket.class)) {
@@ -280,7 +283,7 @@ public class ReadPacketFile {
                 byte[] payloadBytes = icmpv6Packet.getPayload().getRawData();
                 String payload = new String(payloadBytes, StandardCharsets.UTF_8);
                 packetInfo.put("Payload", payload);
-                packetInfo.put("Payload_HEX", strUtils.byteToHex(payloadBytes));
+                packetInfo.put("Payload_HEX", StrUtils.byteToHex(payloadBytes));
                 decodeData(payload, packetInfo, false);
             }
         }
@@ -293,7 +296,7 @@ public class ReadPacketFile {
             byte[] payloadBytes = packet.getPayload().getRawData();
             String payload = new String(payloadBytes, StandardCharsets.UTF_8);
             packetInfo.put("Payload", payload);
-            packetInfo.put("Payload_HEX", strUtils.byteToHex(payloadBytes));
+            packetInfo.put("Payload_HEX", StrUtils.byteToHex(payloadBytes));
             decodeData(payload, packetInfo, false);
         }
     }
@@ -301,13 +304,17 @@ public class ReadPacketFile {
 
     // 解密payload
     private void decodeData(String payloadData, Map<String, String> packetInfo, boolean isConcatenatedData){
-        webShellDecrypt wsd = new webShellDecrypt();
-        wsd.inputKey = inputKey;
-        wsd.inputIv = inputIv;
-        wsd.traverse = traverse;
-        wsd.customPath = customPath;
 
-        Map<String, Object> decodeDataMap = wsd.dealBody(payloadData);
+        DecryptConfig config = DecryptConfig.builder()
+                .inputKey(inputKey)
+                .inputIv(inputIv)
+                .traverseList(traverse)
+                .customPath(customPath)
+                .build();
+        WebShellDecryptService decryptContent = new WebShellDecryptService();
+        DecryptResult decryptResult = decryptContent.decryptContent(payloadData, config);
+        Map<String, Object> decodeDataMap = decryptResult.toMap();
+
         if(decodeDataMap!=null) {
             int error = (int) decodeDataMap.get("error");
             String data = (String) decodeDataMap.get("data");
@@ -385,7 +392,7 @@ public class ReadPacketFile {
             if(ReadabilityChecker.assessReadability(postDataBytes)){
                 postData = new String(postDataBytes, StandardCharsets.UTF_8);
             }else {
-                postData = strUtils.byteToHex(postDataBytes);
+                postData = StrUtils.byteToHex(postDataBytes);
                 packetInfo.put("Payload_HEX", postData);
             }
         }
@@ -404,7 +411,7 @@ public class ReadPacketFile {
             if(ReadabilityChecker.assessReadability(responseBodyBytes)){
                 responseBody = new String(responseBodyBytes, StandardCharsets.UTF_8);
             }else {
-                responseBody = strUtils.byteToHex(responseBodyBytes);
+                responseBody = StrUtils.byteToHex(responseBodyBytes);
                 packetInfo.put("Payload_HEX", responseBody);
             }
         }
@@ -418,7 +425,7 @@ public class ReadPacketFile {
         if(ReadabilityChecker.assessReadability(payload)){
             data = new String(payload, StandardCharsets.UTF_8);
         }else {
-            data = strUtils.byteToHex(payload);
+            data = StrUtils.byteToHex(payload);
             packetInfo.put("Payload_HEX", data);
         }
         return data;

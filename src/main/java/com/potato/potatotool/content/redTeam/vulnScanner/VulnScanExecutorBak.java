@@ -3,9 +3,9 @@ package com.potato.potatotool.content.redTeam.vulnScanner;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.JsonExtractor;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.PocManager;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.requestUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
+import com.potato.potatotool.utils.network.RequestUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -664,7 +664,7 @@ public class VulnScanExecutorBak {
                 }
 
                 // 发送请求
-                response = requestUtils.requests(requestObj);
+                response = RequestUtils.requests(requestObj);
 
                 // 检查响应是否为空
                 if (response == null) {

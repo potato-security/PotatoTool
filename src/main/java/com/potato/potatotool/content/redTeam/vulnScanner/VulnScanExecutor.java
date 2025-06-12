@@ -8,9 +8,9 @@ import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanConfig;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanResult;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanTask;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.PocManager;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
-import com.potato.potatotool.utils.requestUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
+import com.potato.potatotool.utils.network.RequestUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -648,7 +648,7 @@ public class VulnScanExecutor {
                 }
 
                 // 发送请求
-                response = requestUtils.requests(requestObj);
+                response = RequestUtils.requests(requestObj);
 
                 // 检查响应是否为空
                 if (response == null) {

@@ -1,9 +1,9 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.matchers;
 
-import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslEvaluator;
+import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslEvaluatorRefactored;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.JsonExtractor;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.VariableExtractor;
-import com.potato.potatotool.utils.CustomHttpResponse;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 
 import java.security.MessageDigest;
@@ -96,7 +96,7 @@ public class ResponseMatcher {
             case JSON:
                 return JsonExtractor.matchJson(content, values);
             case DSL:
-                return DslEvaluator.matchDslWithNestedMatchers(response, values);
+                return DslEvaluatorRefactored.matchDslWithNestedMatchers(values, response, response);
             case TIME:
                 return matchTime(response.getResponseTime(), values, operation);
             case GROUP:

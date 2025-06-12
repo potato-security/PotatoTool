@@ -3,10 +3,14 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
-import com.potato.potatotool.utils.*;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -28,7 +32,7 @@ public class ShodanSearch {
 
         try {
             RequestObj obj = new RequestObj()
-                    .setUrl("https://api.shodan.io/shodan/host/search?key=" + SHODAN_KEY + "&query=" + strUtils.urlEncode(qInfo))
+                    .setUrl("https://api.shodan.io/shodan/host/search?key=" + SHODAN_KEY + "&query=" + StrUtils.urlEncode(qInfo))
                     .setMethod("GET")
                     .setNoUserAgent(true)
                     .setTimeOut(20)
@@ -53,7 +57,7 @@ public class ShodanSearch {
     public static String getError_Shodan() {
         isEffectiveKey = true;
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.SHODAN_KEY);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.SHODAN_KEY);
         ShodanSearch shodanSearch = new ShodanSearch(tmpJsonObj.getAsJsonPrimitive(AssetKeyConstants.SHODAN_KEY).getAsString(), Proxy);
         String qInfo = "ip:8.8.8.8";
         if (shodanSearch.search_Shodan(qInfo).isEmpty()){
@@ -94,7 +98,7 @@ public class ShodanSearch {
 
     public static void main(String[] args) {
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.SHODAN_KEY);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.SHODAN_KEY);
         ShodanSearch shodanSearch = new ShodanSearch(tmpJsonObj.getAsJsonPrimitive(AssetKeyConstants.SHODAN_KEY).getAsString(), Proxy);
         System.out.println(shodanSearch.getInfoByDomain_Shodan("potato.gold"));
     }

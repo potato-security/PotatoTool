@@ -4,9 +4,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
-import com.potato.potatotool.content.redTeam.infoGathering.tools.FofaSearch;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
-import com.potato.potatotool.utils.*;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -50,7 +53,7 @@ public class GitHubLeakage {
 
             try {
                 RequestObj obj = new RequestObj()
-                        .setUrl("https://api.github.com/search/repositories?per_page=" + maxGithubSearchCount + "&q=" + strUtils.urlEncode(question))
+                        .setUrl("https://api.github.com/search/repositories?per_page=" + maxGithubSearchCount + "&q=" + StrUtils.urlEncode(question))
                         .setMethod("GET")
                         .setBearerToken(GitHub_Token.get(keyIndex))
                         .setRetries(3);
@@ -108,7 +111,7 @@ public class GitHubLeakage {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.GITHUB_TOKEN)) {
             GitHub_Token_Set.add(element.getAsString());
         }
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GITHUB_TOKEN);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GITHUB_TOKEN);
         GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set, Proxy);
         String domain = "HotBoy-java/PotatoTool";
         if (gitHubLeakage.getRepo(null, domain, 1).isEmpty()){
@@ -134,7 +137,7 @@ public class GitHubLeakage {
             for(String question : questions) {
                 try {
                     RequestObj obj = new RequestObj()
-                            .setUrl("https://api.github.com/search/code?per_page=100&q=" + strUtils.urlEncode(question))
+                            .setUrl("https://api.github.com/search/code?per_page=100&q=" + StrUtils.urlEncode(question))
                             .setMethod("GET")
                             .setBearerToken(GitHub_Token.get(keyIndex))
                             .setRetries(3);
@@ -174,7 +177,7 @@ public class GitHubLeakage {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.GITHUB_TOKEN)) {
             GitHub_Token_Set.add(element.getAsString());
         }
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GITHUB_TOKEN);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GITHUB_TOKEN);
         GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set, Proxy);
 
 //        JsonArray xxx= new JsonArray();

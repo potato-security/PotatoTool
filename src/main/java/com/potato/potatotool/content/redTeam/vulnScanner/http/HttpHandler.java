@@ -1,7 +1,6 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.http;
 
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.RequestObj;
+import com.potato.potatotool.utils.network.RequestObj;
 
 import java.util.HashMap;
 import java.util.List;

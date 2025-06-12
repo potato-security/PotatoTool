@@ -4,14 +4,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
-import com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.gitLeakage.GitHubLeakage;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
-import com.potato.potatotool.utils.*;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
 
 import java.util.*;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -72,7 +75,7 @@ public class GoogleSearch {
 
             try {
                 RequestObj obj = new RequestObj()
-                        .setUrl("https://customsearch.googleapis.com/customsearch/v1?key=" + Google_Key + "&q=" + strUtils.urlEncode(input) + "&cx=" + Google_Cx + "&start=" + currentIndex)
+                        .setUrl("https://customsearch.googleapis.com/customsearch/v1?key=" + Google_Key + "&q=" + StrUtils.urlEncode(input) + "&cx=" + Google_Cx + "&start=" + currentIndex)
                         .setMethod("GET");
                 if(!Proxy) obj.setProxies(null);
 
@@ -171,7 +174,7 @@ public class GoogleSearch {
             }
             google_API_List.add(map);
         }
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GOOGLE_API);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GOOGLE_API);
         GoogleSearch googleSearch = new GoogleSearch(google_API_List, Proxy);
         String domain = "【Check】";
         if (googleSearch.searchLeakageByDomain(domain, true, 1).isEmpty()){
@@ -195,7 +198,7 @@ public class GoogleSearch {
             }
             google_API_List.add(map);
         }
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GOOGLE_API);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GOOGLE_API);
         GoogleSearch googleSearch = new GoogleSearch(google_API_List, Proxy);
 
 

@@ -3,11 +3,10 @@ package com.potato.potatotool.controller;
 import com.leewyatt.rxcontrols.animation.carousel.*;
 import com.leewyatt.rxcontrols.controls.RXCarousel;
 import com.leewyatt.rxcontrols.pane.RXCarouselPane;
-import com.potato.potatotool.utils.ExecutorServiceManager;
-import com.potato.potatotool.utils.Util;
-import javafx.animation.KeyFrame;
+import com.potato.potatotool.controller.publicPane.PaneAbout;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import javafx.animation.ParallelTransition;
-import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -111,123 +110,123 @@ public class MainController {
         dropShadow.setOffsetY(5);
         borderPane.setEffect(dropShadow);
 
-        Pane p1 = FXMLLoader.load(getClass().getResource("/fxml/pane_webshellDecode.fxml"));
+        Pane p1 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_webshellDecode.fxml"));
         RXCarouselPane webshellDecodePane = new RXCarouselPane(p1);
         p1.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
         p1.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p2 = FXMLLoader.load(getClass().getResource("/fxml/pane_separateDecode.fxml"));
+        Pane p2 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_separateDecode.fxml"));
         RXCarouselPane separateDecodePane = new RXCarouselPane(p2);
         p2.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p2.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p3 = FXMLLoader.load(getClass().getResource("/fxml/pane_getIpInfo.fxml"));
+        Pane p3 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_getIpInfo.fxml"));
         RXCarouselPane ipInFoPane = new RXCarouselPane(p3);
         p3.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p3.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p4 = FXMLLoader.load(getClass().getResource("/fxml/pane_aiAnswer.fxml"));
+        Pane p4 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_aiAnswer.fxml"));
         RXCarouselPane aiAnswerPane = new RXCarouselPane(p4);
         p4.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p4.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p5 = FXMLLoader.load(getClass().getResource("/fxml/pane_decompile.fxml"));
+        Pane p5 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_decompile.fxml"));
         RXCarouselPane decompilePane = new RXCarouselPane(p5);
         p5.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p5.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p6 = FXMLLoader.load(getClass().getResource("/fxml/pane_blockchain.fxml"));
+        Pane p6 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_blockchain.fxml"));
         RXCarouselPane blockchainPane = new RXCarouselPane(p6);
         p6.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
         p6.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p7 = FXMLLoader.load(getClass().getResource("/fxml/pane_locationQuery.fxml"));
+        Pane p7 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_locationQuery.fxml"));
         RXCarouselPane locationQueryPane = new RXCarouselPane(p7);
         p7.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p7.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p8 = FXMLLoader.load(getClass().getResource("/fxml/pane_exif.fxml"));
+        Pane p8 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_exif.fxml"));
         RXCarouselPane exifPane = new RXCarouselPane(p8);
         p8.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p8.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p9 = FXMLLoader.load(getClass().getResource("/fxml/pane_extension.fxml"));
+        Pane p9 = FXMLLoader.load(getClass().getResource("/fxml/publicPane/pane_extension.fxml"));
         RXCarouselPane extensionPane = new RXCarouselPane(p9);
         p9.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p9.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        FXMLLoader loader_pane_about = new FXMLLoader(getClass().getResource("/fxml/pane_about.fxml"));
+        FXMLLoader loader_pane_about = new FXMLLoader(getClass().getResource("/fxml/publicPane/pane_about.fxml"));
         Pane p_pane_about = loader_pane_about.load();
         PaneAbout PaneAbout = loader_pane_about.getController();
         RXCarouselPane aboutPane = new RXCarouselPane(p_pane_about);
         p_pane_about.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p_pane_about.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
 
-        Pane p11 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoSearch.fxml"));
+        Pane p11 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_infoSearch.fxml"));
         RXCarouselPane infoSearchPane = new RXCarouselPane(p11);
-        infoSearchPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        infoSearchPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p11.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p11.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p12 = FXMLLoader.load(getClass().getResource("/fxml/pane_vulScan.fxml"));
+        Pane p12 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_vulScan.fxml"));
         RXCarouselPane vulScanPane = new RXCarouselPane(p12);
-        vulScanPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        vulScanPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p12.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p12.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p13 = FXMLLoader.load(getClass().getResource("/fxml/pane_freeKill.fxml"));
+        Pane p13 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_freeKill.fxml"));
         RXCarouselPane freeKillPane = new RXCarouselPane(p13);
-        freeKillPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        freeKillPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p13.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p13.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p14 = FXMLLoader.load(getClass().getResource("/fxml/pane_customMemoryCode.fxml"));
+        Pane p14 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_customMemoryCode.fxml"));
         RXCarouselPane customMemoryCodePane = new RXCarouselPane(p14);
-        customMemoryCodePane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        customMemoryCodePane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p14.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p14.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p15 = FXMLLoader.load(getClass().getResource("/fxml/pane_customCommandGeneration.fxml"));
+        Pane p15 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_customCommandGeneration.fxml"));
         RXCarouselPane customCommandGenerationPane = new RXCarouselPane(p15);
-        customCommandGenerationPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        customCommandGenerationPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p15.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p15.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p16 = FXMLLoader.load(getClass().getResource("/fxml/pane_commandQuery.fxml"));
+        Pane p16 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_commandQuery.fxml"));
         RXCarouselPane commandQueryPane = new RXCarouselPane(p16);
-        commandQueryPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        commandQueryPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p16.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p16.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p17 = FXMLLoader.load(getClass().getResource("/fxml/pane_kbRootQuery.fxml"));
+        Pane p17 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_kbRootQuery.fxml"));
         RXCarouselPane kbRootQueryPane = new RXCarouselPane(p17);
-        kbRootQueryPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        kbRootQueryPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p17.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p17.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p18 = FXMLLoader.load(getClass().getResource("/fxml/pane_processQuery.fxml"));
+        Pane p18 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_processQuery.fxml"));
         RXCarouselPane processQueryPane = new RXCarouselPane(p18);
-        processQueryPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        processQueryPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p18.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p18.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p19 = FXMLLoader.load(getClass().getResource("/fxml/pane_infoGeneration.fxml"));
+        Pane p19 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_infoGeneration.fxml"));
         RXCarouselPane infoGenerationPane = new RXCarouselPane(p19);
-        infoGenerationPane.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        infoGenerationPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p19.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p19.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p20 = FXMLLoader.load(getClass().getResource("/fxml/pane_extension.fxml"));
+        Pane p20 = FXMLLoader.load(getClass().getResource("/fxml/publicPane/pane_extension.fxml"));
         RXCarouselPane extensionPane_1 = new RXCarouselPane(p20);
-        extensionPane_1.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        extensionPane_1.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p20.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p20.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        FXMLLoader loader_pane_about_1 = new FXMLLoader(getClass().getResource("/fxml/pane_about.fxml"));
+        FXMLLoader loader_pane_about_1 = new FXMLLoader(getClass().getResource("/fxml/publicPane/pane_about.fxml"));
         Pane p_pane_about_1 = loader_pane_about_1.load();
         PaneAbout PaneAbout_1 = loader_pane_about_1.getController();
         RXCarouselPane aboutPane_1 = new RXCarouselPane(p_pane_about_1);
-        aboutPane_1.getStylesheets().add(Util.getResourceUrl("/css/redStyle.css"));
+        aboutPane_1.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p_pane_about_1.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p_pane_about_1.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
 
@@ -355,9 +354,9 @@ public class MainController {
                 stage.initStyle(StageStyle.TRANSPARENT);
                 stage.setAlwaysOnTop(true);
 
-                AnchorPane dialogRoot = new FXMLLoader(getClass().getResource("/fxml/setting.fxml")).load();
+                AnchorPane dialogRoot = new FXMLLoader(getClass().getResource("/fxml/publicPane/setting.fxml")).load();
                 Scene scene = new Scene(dialogRoot);
-                scene.getStylesheets().add(Util.getResourceUrl("/css/common.css"));
+                scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
                 scene.setFill(null);    //  背景透明
                 stage.setScene(scene);
                 stage.setTitle("修改配置信息");

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.effect.DropShadow?>
+<?import org.fxmisc.flowless.VirtualizedScrollPane?>
+<?import org.fxmisc.richtext.CodeArea?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<StackPane fx:id="sPane"
+           stylesheets="@../../css/webshellDecode.css"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+           xmlns="http://javafx.com/javafx/"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.potato.potatotool.controller.blueTeam.PaneWebshellDecode">
+   <ListView fx:id="testDataList" translateX="180" maxWidth="160" maxHeight="300" StackPane.alignment="TOP_RIGHT"/>
+
+   <VBox alignment="CENTER" >
+
+      <Pane style="-fx-background-radius: 10;-fx-background-color: null">
+         <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入存在加密的文本/流量包"  />
+      </Pane>
+
+      <Pane minHeight="15"/>
+      <HBox alignment="CENTER" spacing="20">
+         <StackPane  onMouseEntered="#handleMouseEntered" onMouseExited="#handleMouseExited">
+            <Label fx:id="tipTitle" visible="false" managed="false"/>
+            <Button styleClass="copyButton" fx:id="tipTitleCopy" text="复制" visible="false" managed="false" onAction="#copyTip" StackPane.alignment="CENTER_RIGHT"/>
+         </StackPane>
+         <ComboBox fx:id="rulesComboBox" prefHeight="30.0" minWidth="250" prefWidth="250" onAction="#rulesComboChoose">
+            <items>
+               <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="使用默认Key快速解密" />
+                  <String fx:value="指定Key快速解密" />
+                  <String fx:value="使用内置50万Key字典解密-Webshell专用" />
+                  <String fx:value="上传Key字典解密" />
+               </FXCollections>
+            </items>
+            <cursor>
+               <Cursor fx:constant="HAND" />
+            </cursor>
+         </ComboBox>
+         <ComboBox fx:id="modeComboBox" visible="false" managed="false" prefHeight="30.0" minWidth="90" prefWidth="90" >
+            <items>
+               <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="AES" />
+                  <String fx:value="DES" />
+                  <String fx:value="XOR" />
+                  <String fx:value="ALL" />
+               </FXCollections>
+            </items>
+            <cursor>
+               <Cursor fx:constant="HAND" />
+            </cursor>
+         </ComboBox>
+         <TextField fx:id="customKey" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Key"/>
+         <TextField fx:id="customIv" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Iv"/>
+         <TextField fx:id="customPath" visible="false" managed="false" editable="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="自定义字典路径"/>
+      </HBox>
+
+      <Pane minHeight="15"/>
+      <HBox alignment="CENTER">
+         <Button minHeight="48.0" minWidth="${sPane.width * 0.4}" text="上传流量包" onAction="#toDecodePcap">
+            <effect>
+               <DropShadow />
+            </effect>
+            <tooltip>
+               <Tooltip text="应对多种加密组合、数据混淆轻松推理还原（非CTF版）&#10;&#10;注：反序列化/class数据等中间产物会在程序根目录保存" >
+               </Tooltip>
+            </tooltip>
+         </Button>
+         <Label minWidth="${sPane.width * 0.1}"/>
+         <Button minHeight="48.0" minWidth="${sPane.width * 0.4}" text="一键解密" onAction="#toDecode">
+            <effect>
+               <DropShadow />
+            </effect>
+            <tooltip>
+               <Tooltip text="应对多种加密组合、数据混淆轻松推理还原（非CTF版）&#10;&#10;注：反序列化/class数据等中间产物会在程序根目录保存" >
+               </Tooltip>
+            </tooltip>
+         </Button>
+      </HBox>
+      <Pane minHeight="20"/>
+
+      <StackPane>
+         <VBox styleClass="codeAreaPane">
+            <VirtualizedScrollPane fx:id="virScrollPane" styleClass="virtualizedScrollPane">
+               <content>
+                  <CodeArea fx:id="result" editable="false" wrapText="true" styleClass="codeArea"/>
+               </content>
+            </VirtualizedScrollPane>
+         </VBox>
+         <Pane  maxWidth="0" StackPane.alignment="CENTER_RIGHT">
+            <Button fx:id="showAI" layoutX="-1" layoutY="20" mnemonicParsing="false" onAction="#showAI">
+               <graphic>
+                  <Region styleClass="AiImg"/>
+               </graphic>
+               <tooltip>
+                  <Tooltip text="AI分析" />
+               </tooltip>
+            </Button>
+            <Pane fx:id="aiPane" visible="false" maxWidth="0">
+               <TextArea fx:id="aiTextArea" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height * 0.43 + 12}" maxHeight="${sPane.height * 0.43 + 12}" minHeight="0" text="AI分析中，请稍等……" StackPane.alignment="CENTER_RIGHT"/>
+               <Button fx:id="refreshAI" layoutX="-60" layoutY="6"  mnemonicParsing="false" onAction="#refreshAI">
+                  <graphic>
+                     <ImageView fitHeight="17.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <Image url="@../../img/refresh.png" />
+                        </image>
+                     </ImageView>
+                  </graphic>
+                  <cursor>
+                     <Cursor fx:constant="HAND" />
+                  </cursor>
+                  <tooltip>
+                     <Tooltip text="重新进行AI分析" />
+                  </tooltip>
+               </Button>
+               <Button fx:id="closeAI" layoutX="-35" layoutY="6"  mnemonicParsing="false" onAction="#showAI">
+                  <graphic>
+                     <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <Image url="@../../img/close2.png" />
+                        </image>
+                     </ImageView>
+                  </graphic>
+                  <cursor>
+                     <Cursor fx:constant="HAND" />
+                  </cursor>
+                  <tooltip>
+                     <Tooltip text="关闭" />
+                  </tooltip>
+               </Button>
+            </Pane>
+         </Pane>
+      </StackPane>
+   </VBox>
+
+   <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="200" alignment="CENTER" StackPane.alignment="CENTER">
+      <effect>
+         <DropShadow/>
+      </effect>
+      <Label fx:id="prompt" text="复制成功"/>
+   </StackPane>
+</StackPane>

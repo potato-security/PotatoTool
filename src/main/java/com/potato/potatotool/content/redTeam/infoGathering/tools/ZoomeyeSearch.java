@@ -3,14 +3,18 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
-import com.potato.potatotool.utils.*;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.isDomainName;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -36,7 +40,7 @@ public class ZoomeyeSearch {
             Map<String, String> headers = new HashMap<>();
             headers.put("API-KEY", ZOOMEYE_KEY);
             RequestObj obj = new RequestObj()
-                    .setUrl("https://api.zoomeye.hk/host/search?query=" + strUtils.urlEncode(qInfo) + "&page=1&facets=app,os")
+                    .setUrl("https://api.zoomeye.hk/host/search?query=" + StrUtils.urlEncode(qInfo) + "&page=1&facets=app,os")
                     .setMethod("GET")
                     .setHeaders(headers)
                     .setTimeOut(20)
@@ -66,7 +70,7 @@ public class ZoomeyeSearch {
     public static String getError_Zoomeye() {
         isEffectiveKey = true;
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.ZOOMEYE_KEY);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.ZOOMEYE_KEY);
         ZoomeyeSearch zoomeyeSearch = new ZoomeyeSearch(tmpJsonObj.getAsJsonPrimitive(AssetKeyConstants.ZOOMEYE_KEY).getAsString(), Proxy);
         String qInfo = "ip:\"8.8.8.8\"";
         if (zoomeyeSearch.search_Zoomeye(qInfo).isEmpty()){
@@ -106,7 +110,7 @@ public class ZoomeyeSearch {
 
     public static void main(String[] args) {
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.ZOOMEYE_KEY);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.ZOOMEYE_KEY);
         ZoomeyeSearch zoomeyeSearch = new ZoomeyeSearch(tmpJsonObj.getAsJsonPrimitive(AssetKeyConstants.ZOOMEYE_KEY).getAsString(), Proxy);
         System.out.println(zoomeyeSearch.getInfoByCompanyOrDomain_Zoomeye("360.net"));
     }

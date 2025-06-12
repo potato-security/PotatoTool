@@ -3,7 +3,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.classObj;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.utils.Constants;
+import com.potato.potatotool.utils.core.Constants;
 
 import java.util.*;
 

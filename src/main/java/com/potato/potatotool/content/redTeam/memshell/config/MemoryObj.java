@@ -7,7 +7,7 @@ import com.potato.potatotool.content.redTeam.memshell.util.ShowResultsUtil;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.potato.potatotool.utils.strUtils.getCurrentJarDir;
+import static com.potato.potatotool.utils.data.StrUtils.getCurrentJarDir;
 
 public class MemoryObj {
 

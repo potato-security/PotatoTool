@@ -1,7 +1,7 @@
 package com.potato.potatotool.content.redTeam.memshell.factory;
 
-import com.potato.potatotool.utils.GzipUtils;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.data.GzipUtils;
+import com.potato.potatotool.utils.data.StrUtils;
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -44,7 +44,7 @@ public class InjectorFactory {
         ctClass.getClassFile().setVersionToJava5();
 
         // 将shell字节数组压缩并进行Base64编码
-        String base64EncodedShell = strUtils.base64Encode(GzipUtils.GzipGetCompressedData(memoryObj.getShellBytes())).replace(System.lineSeparator(), "");
+        String base64EncodedShell = StrUtils.base64Encode(GzipUtils.GzipGetCompressedData(memoryObj.getShellBytes())).replace(System.lineSeparator(), "");
 
         if (base64EncodedShell != null) {
             // 获取类中的getBase64String方法

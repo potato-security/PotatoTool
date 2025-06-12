@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.effect.DropShadow?>
+<StackPane xmlns="http://javafx.com/javafx/"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../../css/PaneProcessQuery.css"
+           fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.redTeam.PaneProcessQuery"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+
+    <VBox alignment="CENTER" spacing="15">
+
+        <Pane style="-fx-background-radius: 10;-fx-background-color: null">
+            <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入tasklist或者ps aux执行后的内容"  />
+        </Pane>
+
+        <Button minHeight="48.0" minWidth="${sPane.width}" text="开始提取" onAction="#getInfo">
+            <effect>
+                <DropShadow />
+            </effect>
+        </Button>
+
+        <HBox spacing="20" style="-fx-padding: 10 0 0 0">
+            <StackPane>
+                <TextArea fx:id="antivirus" prefWidth="${sPane.width * 0.5 - 10}" prefHeight="${sPane.height * 0.6 - 83}"/>
+                <Label styleClass="titleText" translateY="-15" text="杀软进程" StackPane.alignment="TOP_CENTER"/>
+            </StackPane>
+
+            <StackPane>
+                <TextArea fx:id="canRoot" prefWidth="${sPane.width * 0.5 - 10}" prefHeight="${sPane.height * 0.6 - 83}"/>
+                <Label styleClass="titleText" translateY="-15" text="其他进程" StackPane.alignment="TOP_CENTER"/>
+            </StackPane>
+        </HBox>
+
+
+    </VBox>
+
+</StackPane>

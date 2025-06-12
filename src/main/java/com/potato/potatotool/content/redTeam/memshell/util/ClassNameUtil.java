@@ -1,7 +1,7 @@
 package com.potato.potatotool.content.redTeam.memshell.util;
 
 import com.potato.potatotool.content.redTeam.memshell.config.MemoryShellConstants;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.data.StrUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +42,7 @@ public class ClassNameUtil {
 
     // 生成一个随机的注入类名
     public static String getRandomInjectorClassName(){
-        return getRandomPackageName() + "." + strUtils.generateRandomString(1, 3) + "." + getRandomName(injectorClassNames);
+        return getRandomPackageName() + "." + StrUtils.generateRandomString(1, 3) + "." + getRandomName(injectorClassNames);
     }
 
     // 从 prefixNames 数组中随机选择一个前缀名称
@@ -52,7 +52,7 @@ public class ClassNameUtil {
 
     // 根据给定的 shell 类型生成一个随机的 shell 类名
     public static String getRandomShellClassName(String shellType) {
-        String randomName = getRandomPrefixName() + strUtils.generateRandomString(2, 6);
+        String randomName = getRandomPrefixName() + StrUtils.generateRandomString(2, 6);
 
         if (shellType.contains(MemoryShellConstants.SHELLTYPE_LISTENER)){
             return getRandomPackageName() + "." + randomName  + "Listener";
@@ -67,7 +67,7 @@ public class ClassNameUtil {
 
     // 生成一个随机的加载器类名
     public static String getRandomLoaderClassName(){
-        return getRandomPackageName() + "." + strUtils.generateRandomString(1, 3) + "." + getRandomName(injectorClassNames);
+        return getRandomPackageName() + "." + StrUtils.generateRandomString(1, 3) + "." + getRandomName(injectorClassNames);
     }
 
     // 从 packageNames 数组中随机选择一个包名

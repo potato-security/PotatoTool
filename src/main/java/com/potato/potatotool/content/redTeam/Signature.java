@@ -1,6 +1,6 @@
 package com.potato.potatotool.content.redTeam;
 
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.data.StrUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,8 +10,6 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static com.potato.potatotool.ToStart.debugMode;
 
 /**
  * @author Potato
@@ -359,7 +357,7 @@ public class Signature {
         File file = new File(sigFilePath);
         String fileName = file.getName();
 
-        outputPath = strUtils.getCurrentJarDir() + File.separator + "Signature" + File.separator + "hasSignature_" + fileName;
+        outputPath = StrUtils.getCurrentJarDir() + File.separator + "Signature" + File.separator + "hasSignature_" + fileName;
 
         Path outputDirPath = Paths.get(outputPath).getParent();
         if (!Files.exists(outputDirPath)) {

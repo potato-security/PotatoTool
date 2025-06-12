@@ -3,7 +3,11 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
-import com.potato.potatotool.utils.*;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -13,7 +17,7 @@ import java.util.*;
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.*;
 import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.getElementText;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -26,13 +30,13 @@ public class GetCompany {
     static {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.CHINAZ_COOKIE).getAsString();
-        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
+        Proxy = JsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
     }
 
     public static JsonArray getCompany_chinaz(String company) {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.CHINAZ_COOKIE).getAsString();
-        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
+        Proxy = JsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
 
         JsonArray companyList = new JsonArray();
         if(company.isEmpty()) return companyList;
@@ -45,7 +49,7 @@ public class GetCompany {
             while (true) {
                 index += 1;
 
-                RequestObj obj = new RequestObj().setUrl("https://data.chinaz.com/company/t0-p0-c0-i0-d0-s-" + strUtils.urlEncode(company) + "/" + index)
+                RequestObj obj = new RequestObj().setUrl("https://data.chinaz.com/company/t0-p0-c0-i0-d0-s-" + StrUtils.urlEncode(company) + "/" + index)
                         .setMethod("GET").setRetries(3).setHeaders(headers);
                 if(!Proxy) obj.setProxies(null);
 
@@ -90,7 +94,7 @@ public class GetCompany {
     public static JsonObject getCompanyDetails_chinaz(String companyId, String companyName) {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.CHINAZ_COOKIE).getAsString();
-        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
+        Proxy = JsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.CHINAZ_COOKIE);
 
         JsonObject companyDetailsMap = new JsonObject();
 

@@ -1,6 +1,6 @@
 package com.potato.potatotool.content.redTeam.infoGathering.cdn;
 
-import com.potato.potatotool.utils.Constants;
+import com.potato.potatotool.utils.core.Constants;
 import org.apache.commons.net.util.SubnetUtils;
 import org.xbill.DNS.*;
 

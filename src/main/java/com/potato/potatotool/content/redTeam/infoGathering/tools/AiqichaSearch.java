@@ -5,8 +5,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.MainApplication;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
-import com.potato.potatotool.controller.PaneInfoSearch;
-import com.potato.potatotool.utils.*;
+import com.potato.potatotool.controller.redTeam.PaneInfoSearch;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
 import javafx.application.HostServices;
 
 import java.util.*;
@@ -19,7 +24,7 @@ import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -37,7 +42,7 @@ public class AiqichaSearch {
     static {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.AIQICHA_COOKIE).getAsString();
-        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.AIQICHA_COOKIE);
+        Proxy = JsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.AIQICHA_COOKIE);
     }
 
     private PaneInfoSearch paneInfoSearch;
@@ -45,7 +50,7 @@ public class AiqichaSearch {
     public AiqichaSearch(List<Integer> weightThresholdList, PaneInfoSearch paneInfoSearch){
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
         Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.AIQICHA_COOKIE).getAsString();
-        Proxy = jsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.AIQICHA_COOKIE);
+        Proxy = JsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.AIQICHA_COOKIE);
 
         this.weightThresholdList = weightThresholdList;
         this.headers.put("Cookie", Aiqicha_Cookie);
@@ -238,7 +243,7 @@ public class AiqichaSearch {
 
         try {
             RequestObj obj = new RequestObj()
-                    .setUrl("https://aiqicha.baidu.com/s?q=" + strUtils.urlEncode(companyName))
+                    .setUrl("https://aiqicha.baidu.com/s?q=" + StrUtils.urlEncode(companyName))
                     .setMethod("GET")
                     .setHeaders(headers)
                     .setRetryWaitTime(5)

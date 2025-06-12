@@ -6,9 +6,12 @@
     "address": "http://127.0.0.1:7890"
   },
   "AI": {
-    "Local_Ai_Url": "uhEfqpTkk7sSRs8YFPUSr42cWi8VrmEg15IcTk6G8r4dPZgvnAkYWwOz1qOsuI57",
-    "GPT_Model": "gpt-4",
-    "GPT_API_Key": ""
+    "Local_AI_API_Base": "uhEfqpTkk7sSRs8YFPUSr42cWi8VrmEg15IcTk6G8r4dPZgvnAkYWwOz1qOsuI57",
+    "Local_AI_Model": "==waoapG6D1tyIYPDb3WF9wD",
+    "Local_AI_API_Key": "==ALvey9ulWS0LjsPLSHcySm",
+    "AI_API_Base": "",
+    "AI_Model": "gpt-4",
+    "AI_API_Key": ""
   },
   "Decompile": {
     "decompileMode": "idea",

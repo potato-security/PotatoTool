@@ -3,9 +3,9 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.utils.CustomHttpResponse;
-import com.potato.potatotool.utils.ExecutorServiceManager;
-import com.potato.potatotool.utils.RequestObj;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.network.RequestObj;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.infoGathering.tools.GetSeo.getSeo;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato

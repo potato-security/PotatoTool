@@ -4,7 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
-import com.potato.potatotool.utils.*;
+import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,7 +17,7 @@ import java.util.Set;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.infoGathering.utils.Utils.isDomainName;
-import static com.potato.potatotool.utils.requestUtils.requests;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 /**
  * @author Potato
@@ -49,7 +53,7 @@ public class HunterSearch {
             int total = -1;
             try {
                 String HUNTER_KEY = HUNTER_KEY_LIST.size() > 0 ? HUNTER_KEY_LIST.get(keyIndex) : null;
-                RequestObj obj = new RequestObj().setUrl("https://hunter.qianxin.com/openApi/search?api-key=" + HUNTER_KEY + "&search=" + strUtils.base64UrlEncoder(qInfo) + "&page=" + i +"&page_size=100")//&is_web=1
+                RequestObj obj = new RequestObj().setUrl("https://hunter.qianxin.com/openApi/search?api-key=" + HUNTER_KEY + "&search=" + StrUtils.base64UrlEncoder(qInfo) + "&page=" + i +"&page_size=100")//&is_web=1
                         .setTimeOut(20)
                         .setMethod("GET").setRandomUserAgent(false).setRetries(3);
                 if(!Proxy) obj.setProxies(null);
@@ -82,7 +86,7 @@ public class HunterSearch {
                 if(!jsonData.has("arr")|| jsonData.get("arr").isJsonNull()) break;
                 domainInfo = jsonData.get("arr").getAsJsonArray();
                 total = jsonData.get("total").getAsInt();
-                rest_quota = strUtils.extractNumber(jsonData.get("rest_quota").getAsString());
+                rest_quota = StrUtils.extractNumber(jsonData.get("rest_quota").getAsString());
 
             }catch (Exception e){
                 if(debugMode) e.printStackTrace();
@@ -105,7 +109,7 @@ public class HunterSearch {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.HUNTER_KEY)) {
             Hunter_Key_Set.add(element.getAsString());
         }
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.HUNTER_KEY);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.HUNTER_KEY);
         HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set, Proxy);
         String qInfo = "ip=\"8.8.8.8\"";
         if (hunterSearch.search_Hunter(qInfo).isEmpty()){
@@ -165,7 +169,7 @@ public class HunterSearch {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.HUNTER_KEY)) {
             Hunter_Key_Set.add(element.getAsString());
         }
-        boolean Proxy = jsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.HUNTER_KEY);
+        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.HUNTER_KEY);
         HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set, Proxy);
         System.out.println(hunterSearch.getInfoByCompanyOrDomain_Hunter("深圳湾科技发展有限公司"));
     }

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.effect.DropShadow?>
+<?import com.dlsc.gemsfx.CFCheckBox?>
+<StackPane xmlns="http://javafx.com/javafx/"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../../css/PaneKbRootQuery.css"
+           fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.redTeam.PaneKbRootQuery"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+
+    <VBox fx:id="vBox" alignment="CENTER" prefWidth="${sPane.width}" prefHeight="${sPane.height}" spacing="15">
+
+        <Pane style="-fx-background-radius: 10;-fx-background-color: null" minHeight="${sPane.height * 0.4 - 75}">
+            <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请粘贴完整的systeminfo信息"  />
+        </Pane>
+
+        <HBox alignment="CENTER_LEFT">
+            <HBox alignment="CENTER" minWidth="${sPane.width / 4}">
+                <CFCheckBox fx:id="mucFilter" alignment="CENTER" mnemonicParsing="false" selected="false" text="检测平替KB编号" VBox.vgrow="ALWAYS">
+                    <tooltip>
+                        <Tooltip text="『较慢』通过Microsoft Update在线对比可替换的KB编号，减少误报，提升准确性" />
+                    </tooltip>
+                </CFCheckBox>
+            </HBox>
+
+            <Button minHeight="48.0" minWidth="${sPane.width / 2}" text="提取查询" onAction="#searchKb">
+                <effect>
+                    <DropShadow />
+                </effect>
+            </Button>
+        </HBox>
+
+    </VBox>
+
+</StackPane>

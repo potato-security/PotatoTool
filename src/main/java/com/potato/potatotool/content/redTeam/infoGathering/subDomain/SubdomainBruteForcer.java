@@ -1,6 +1,6 @@
 package com.potato.potatotool.content.redTeam.infoGathering.subDomain;
 
-import com.potato.potatotool.utils.ExecutorServiceManager;
+import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import org.xbill.DNS.*;
 
 import java.io.BufferedReader;
@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.concurrent.*;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.utils.Constants.getResourceStream;
+import static com.potato.potatotool.utils.core.Constants.getResourceStream;
 
 /**
  * @author Potato

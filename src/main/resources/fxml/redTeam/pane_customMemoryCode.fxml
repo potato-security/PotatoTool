@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import javafx.scene.effect.DropShadow?>
+<StackPane xmlns="http://javafx.com/javafx/"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../../css/PaneCustomMemoryCode.css"
+           fx:id="sPane"
+           fx:controller="com.potato.potatotool.controller.redTeam.PaneCustomMemoryCode"
+           maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
+    <ScrollPane maxWidth="${sPane.width}" maxHeight="${sPane.height}" hbarPolicy="NEVER" style="-fx-padding: 0">
+        <VBox fx:id="paneBox" spacing="20" alignment="TOP_CENTER">
+
+            <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
+                <Label styleClass="tipTitle_input_big" text="类型选项"/>
+            </HBox>
+    
+            <VBox styleClass="tipVBox" spacing="15" prefWidth="${sPane.width - 10}">
+                <HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label text="工具类型："/>
+                        <ComboBox fx:id="toolTypeBox" prefHeight="20.0" prefWidth="250"  />
+                    </HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label fx:id="leftLabel" text="中间件类型："/>
+                        <ComboBox fx:id="serverTypeBox" prefHeight="20.0" prefWidth="250"  />
+                    </HBox>
+                </HBox>
+                <HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label text="组件类型："/>
+                        <ComboBox fx:id="shellTypeBox" prefHeight="20.0" prefWidth="250"  />
+                    </HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label minWidth="${leftLabel.width}" text="输出格式："/>
+                        <ComboBox fx:id="outputFormatBox" prefHeight="20.0" prefWidth="250"  />
+                    </HBox>
+                </HBox>
+            </VBox>
+
+            <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
+                <Label styleClass="tipTitle_input_big" text="自定义选项"/>
+            </HBox>
+
+            <VBox styleClass="tipVBox" spacing="15" prefWidth="${sPane.width - 10}">
+                <HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label minWidth="${leftLabel.width}" text="密码："/>
+                        <TextField fx:id="passTextField" promptText="请输入密码，空则随机" text="potato" prefHeight="20.0" prefWidth="250"/>
+                    </HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label minWidth="${leftLabel.width}" text="密钥："/>
+                        <TextField fx:id="keyTextField" promptText="请输入密钥，空则随机" text="1433223" prefHeight="20.0" prefWidth="250"/>
+                    </HBox>
+                </HBox>
+                <HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label minWidth="${leftLabel.width}" text="请求头Key："/>
+                        <TextField fx:id="headerNameTextField" promptText="请输入请求头Key，空则随机" text="Referer" prefHeight="20.0" prefWidth="250"/>
+                    </HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label minWidth="${leftLabel.width}" text="请求头Value："/>
+                        <TextField fx:id="headerValueTextField" promptText="请输入请求头Value，空则随机" text="Qatx" prefHeight="20.0" prefWidth="250"/>
+                    </HBox>
+                </HBox>
+                <HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label minWidth="${leftLabel.width}" text="内存马类名："/>
+                        <TextField fx:id="shellClassNameTextField" promptText="请输入内存马类名，空则随机" text="org.apache.logging.ContextLoaderHrListener" prefHeight="20.0" prefWidth="250"/>
+                    </HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label minWidth="${leftLabel.width}" text="注入器类名："/>
+                        <TextField fx:id="injectorClassNameTextField" promptText="请输入注入器类名，空则随机" text="org.apache.commons.e.NetworkUtils" prefHeight="20.0" prefWidth="250"/>
+                    </HBox>
+                </HBox>
+                <HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label minWidth="${leftLabel.width}" text="请求路径："/>
+                        <TextField fx:id="urlPatternTextField" promptText="请输入请求路径，空则随机" text="/*" prefHeight="20.0" prefWidth="250"/>
+                    </HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Button minHeight="25.0" minWidth="100" text="清空" onAction="#clearInput">
+                            <effect>
+                                <DropShadow />
+                            </effect>
+                        </Button>
+                    </HBox>
+                </HBox>
+            </VBox>
+
+            <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
+                <Label styleClass="tipTitle_input_big" text="专项利用"/>
+            </HBox>
+
+            <VBox styleClass="tipVBox" spacing="15" prefWidth="${sPane.width - 10}">
+                <HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label text="漏洞选择："/>
+                        <ComboBox fx:id="gadgetTypeBox" prefHeight="20.0" prefWidth="250"  />
+                    </HBox>
+                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                        <Label minWidth="${leftLabel.width}" fx:id="" text="表达式选择："/>
+                        <ComboBox fx:id="exprEncoderBox" prefHeight="20.0" prefWidth="250"  />
+                    </HBox>
+                </HBox>
+            </VBox>
+
+            <Button minHeight="48.0" minWidth="${sPane.width - 10}" text="生成Payload" onAction="#toGenerateMemoryShell">
+                <effect>
+                    <DropShadow />
+                </effect>
+            </Button>
+
+            <TextArea fx:id="outTextArea" wrapText="true" prefHeight="${sPane.height * 0.4}" prefWidth="${sPane.width - 10}" />
+
+        </VBox>
+    </ScrollPane>
+</StackPane>

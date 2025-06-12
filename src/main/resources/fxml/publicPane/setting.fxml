@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import com.dlsc.gemsfx.CFSwitch?>
+<AnchorPane xmlns="http://javafx.com/javafx/"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.potato.potatotool.controller.publicPane.PaneSetting"
+            fx:id="an"
+            stylesheets="@../../css/setting.css"
+            style="-fx-background-color: transparent;"
+            onMouseDragged="#topBarDraggedAction"
+            onMousePressed="#topBarPressedAction"
+            prefWidth="750"
+            prefHeight="620"
+>
+    <children>
+        <StackPane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0">
+            <effect>
+                <DropShadow/>
+            </effect>
+            <VBox>
+                <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
+                    <center>
+                        <Label style="-fx-padding: 0 0 0 30;-fx-font-size: 23;-fx-font-weight: bold;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="修改配置" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                    </center>
+                    <right>
+                        <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
+                            <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction" prefHeight="25.0" prefWidth="25.0">
+                                <graphic>
+                                    <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                        <image>
+                                            <Image url="@../../img/close.png" />
+                                        </image>
+                                    </ImageView>
+                                </graphic>
+                                <tooltip>
+                                    <Tooltip text="关闭" />
+                                </tooltip>
+                            </Button>
+                            <Pane minWidth="10"/>
+                        </HBox>
+                    </right>
+                </BorderPane>
+                <ScrollPane prefHeight="550" styleClass="SPane" prefWidth="${an.width - 18}">
+                    <VBox styleClass="content" alignment="CENTER" spacing="20" prefWidth="${an.width - 28}">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Region styleClass="tipNextIcon"/>
+                            <Label alignment="CENTER_LEFT" styleClass="tipTitle_input_big" text="基础配置"/>
+                        </HBox>
+                        <VBox styleClass="contentCell" alignment="CENTER" spacing="20">
+                            <StackPane>
+                                <Label fx:id="maxWidthlabel" style="-fx-text-fill: -main-topBar-color;" textAlignment="RIGHT" text="长格式占位符："/>
+                                <HBox alignment="CENTER" spacing="10">
+                                    <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置代理："/>
+                                    <StackPane>
+                                        <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" StackPane.alignment="CENTER"/>
+                                        <CFSwitch fx:id="proxyButton" onMouseClicked="#proxyBtn" StackPane.alignment="CENTER_RIGHT"/>
+                                    </StackPane>
+                                </HBox>
+                            </StackPane>
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="默认反编译器："/>
+                                <ComboBox fx:id="decompileType" prefHeight="20.0" prefWidth="250">
+                                    <items>
+                                        <FXCollections fx:factory="observableArrayList">
+                                            <String fx:value="idea" />
+                                            <String fx:value="procyon" />
+                                        </FXCollections>
+                                    </items>
+                                </ComboBox>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_Model：">
+                                    <tooltip>
+                                        <Tooltip text="请输入模型版本，（请和Key对应）如：gpt-4o、gpt-4o-mini、gpt-4、gpt-4-0314、gpt-3.5-turbo-16k-0613" />
+                                    </tooltip>
+                                </Label>
+                                <TextField fx:id="aiModel" promptText="请输入模型版本" prefWidth="250">
+                                    <tooltip>
+                                        <Tooltip text="请输入模型版本。 如：gpt-4o1、gpt-4o-mini、gpt-4、gpt-4-0314、gpt-3.5-turbo-16k-0613" />
+                                    </tooltip>
+                                </TextField>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_API_Key：">
+                                    <tooltip>
+                                        <Tooltip text="请输入API密钥。 不输入则使用本工具默认免费接口" />
+                                    </tooltip>
+                                </Label>
+                                <TextField fx:id="aiApiKey" promptText="不输入则使用默认接口" prefWidth="250">
+                                    <tooltip>
+                                        <Tooltip text="请输入API密钥。 不输入则使用本工具默认免费接口" />
+                                    </tooltip>
+                                </TextField>
+                            </HBox>
+<!--                            <HBox alignment="CENTER" spacing="10">-->
+<!--                                <Button fx:id="viewProfileButton" minHeight="38.0" minWidth="150" text="查看配置文件" onAction="#viewProfile">-->
+<!--                                    <effect>-->
+<!--                                        <DropShadow />-->
+<!--                                    </effect>-->
+<!--                                </Button>-->
+<!--                            </HBox>-->
+
+                            <HBox alignment="CENTER">
+                                <Button minHeight="38.0" minWidth="150" text="保存" onAction="#save">
+                                    <effect>
+                                        <DropShadow />
+                                    </effect>
+                                </Button>
+                            </HBox>
+                        </VBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Region styleClass="tipNextIcon"/>
+                            <Label alignment="CENTER_LEFT" styleClass="tipTitle_input_big" text="资产测绘"/>
+                        </HBox>
+                        <VBox styleClass="contentCell" alignment="CENTER" spacing="20">
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label minWidth="${maxWidthlabel.width}" visible="false"/>
+                                <TextField visible="false" prefWidth="250"/>
+                                <Label minWidth="20"/>
+                                <Label text="  代理"/>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label fx:id="newMaxWidthlabel" textAlignment="RIGHT" text="Aiqicha_Cookie：">
+                                    <tooltip>
+                                        <Tooltip text="使用BP直接抓包获取，或浏览器访问view-source:https://aiqicha.baidu.com获取Cookie" />
+                                    </tooltip>
+                                </Label>
+                                <TextField fx:id="aiqichaCookie" prefWidth="250">
+                                    <tooltip>
+                                        <Tooltip text="使用BP直接抓包获取，或浏览器访问view-source:https://aiqicha.baidu.com获取Cookie" />
+                                    </tooltip>
+                                </TextField>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="aiqichaProxy">
+                                    <tooltip>
+                                        <Tooltip text="需要中国IP,建议关闭代理" />
+                                    </tooltip>
+                                </CFSwitch>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Chinaz_Cookie："/>
+                                <TextField fx:id="chinazCookie" prefWidth="250"/>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="chinazProxy"/>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Fofa_Key："/>
+                                <TextField fx:id="fofaKey" prefWidth="250"/>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="fofaProxy"/>
+                            </HBox>
+                            <HBox alignment="TOP_CENTER" spacing="10">
+                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Hunter_Key："/>
+                                <VBox fx:id="hunterVBox" alignment="CENTER_LEFT"  spacing="10">
+                                    <StackPane>
+                                        <TextField styleClass="paddingRightButton" prefWidth="250" StackPane.alignment="CENTER"/>
+                                        <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
+                                            <graphic>
+                                                <Region styleClass="addIcon"/>
+                                            </graphic>
+                                            <tooltip>
+                                                <Tooltip text="添加" />
+                                            </tooltip>
+                                        </Label>
+                                    </StackPane>
+                                </VBox>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="hunterProxy">
+                                    <tooltip>
+                                        <Tooltip text="需要中国IP,建议关闭代理" />
+                                    </tooltip>
+                                </CFSwitch>
+                            </HBox>
+                            <HBox alignment="TOP_CENTER" spacing="10">
+                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Quake_Key："/>
+                                <VBox fx:id="quakeVBox" alignment="CENTER_LEFT"  spacing="10">
+                                    <StackPane>
+                                        <TextField styleClass="paddingRightButton" prefWidth="250" StackPane.alignment="CENTER"/>
+                                        <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
+                                            <graphic>
+                                                <Region styleClass="addIcon"/>
+                                            </graphic>
+                                            <tooltip>
+                                                <Tooltip text="添加" />
+                                            </tooltip>
+                                        </Label>
+                                    </StackPane>
+                                </VBox>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="quakeProxy"/>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Shodan_Key："/>
+                                <TextField fx:id="shodanKey" prefWidth="250"/>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="shodanProxy"/>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Zoomeye_Key："/>
+                                <TextField fx:id="zoomeyeKey" prefWidth="250"/>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="zoomeyeProxy">
+                                    <tooltip>
+                                        <Tooltip text="需要国外IP,建议开启代理" />
+                                    </tooltip>
+                                </CFSwitch>
+                            </HBox>
+                            <HBox alignment="TOP_CENTER" spacing="10">
+                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Google_API："/>
+                                <VBox fx:id="googleVBox" alignment="CENTER_LEFT"  spacing="10">
+                                    <StackPane>
+                                        <TextField styleClass="paddingRightButton" promptText="格式为Google_Key:Google_Cx" prefWidth="250" StackPane.alignment="CENTER">
+                                            <tooltip>
+                                                <Tooltip text="格式为Google_Key:Google_Cx" />
+                                            </tooltip>
+                                        </TextField>
+                                        <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
+                                            <graphic>
+                                                <Region styleClass="addIcon"/>
+                                            </graphic>
+                                            <tooltip>
+                                                <Tooltip text="添加" />
+                                            </tooltip>
+                                        </Label>
+                                    </StackPane>
+                                </VBox>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="googleProxy">
+                                    <tooltip>
+                                        <Tooltip text="需要国外IP,建议开启代理" />
+                                    </tooltip>
+                                </CFSwitch>
+                            </HBox>
+                            <HBox alignment="TOP_CENTER" spacing="10">
+                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="GitHub_Token："/>
+                                <VBox fx:id="githubVBox" alignment="CENTER_LEFT"  spacing="10">
+                                    <StackPane>
+                                        <TextField styleClass="paddingRightButton" prefWidth="250" StackPane.alignment="CENTER"/>
+                                        <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
+                                            <graphic>
+                                                <Region styleClass="addIcon"/>
+                                            </graphic>
+                                            <tooltip>
+                                                <Tooltip text="添加" />
+                                            </tooltip>
+                                        </Label>
+                                    </StackPane>
+                                </VBox>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="githubProxy">
+                                    <tooltip>
+                                        <Tooltip text="国外IP更稳定，建议开启代理" />
+                                    </tooltip>
+                                </CFSwitch>
+                            </HBox>
+                            <HBox alignment="TOP_CENTER" spacing="10">
+                                <Label minWidth="${newMaxWidthlabel.width}"/>
+                                <Label minWidth="250" alignment="CENTER" text="通过SSL获取子域"/>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="sslProxy">
+                                    <tooltip>
+                                        <Tooltip text="存在国外平台,建议开启代理" />
+                                    </tooltip>
+                                </CFSwitch>
+                            </HBox>
+                            <HBox alignment="TOP_CENTER" spacing="10">
+                                <Label minWidth="${newMaxWidthlabel.width}"/>
+                                <Label minWidth="250" alignment="CENTER" text="对网站进行本地深度扫描"/>
+                                <Label minWidth="20"/>
+                                <CFSwitch fx:id="crawlProxy">
+                                    <tooltip>
+                                        <Tooltip text="多为中国资产,建议关闭代理" />
+                                    </tooltip>
+                                </CFSwitch>
+                            </HBox>
+
+                            <HBox alignment="CENTER">
+                                <Button minHeight="38.0" minWidth="150" text="保存" onAction="#saveAsset">
+                                    <effect>
+                                        <DropShadow />
+                                    </effect>
+                                </Button>
+                            </HBox>
+                        </VBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Region styleClass="tipNextIcon"/>
+                            <Label alignment="CENTER_LEFT" styleClass="tipTitle_input_big" text="在线更新"/>
+                        </HBox>
+                        <VBox styleClass="contentCell" alignment="CENTER" spacing="20">
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label fx:id="maxLabel" textAlignment="RIGHT" text="本地MD5库："/>
+                                <HBox alignment="CENTER" prefWidth="470" spacing="20">
+                                    <Label styleClass="tips" fx:id="md5Tips" visible="false" managed="false" text="已存在"/>
+                                    <Button fx:id="md5CheckButton" styleClass="checkButton" minHeight="25.0" minWidth="100" text="检测" onAction="#checkMd5">
+                                        <effect>
+                                            <DropShadow />
+                                        </effect>
+                                    </Button>
+
+                                    <Button fx:id="md5UpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="下载" onAction="#updateMd5">
+                                        <effect>
+                                            <DropShadow />
+                                        </effect>
+                                    </Button>
+
+                                    <VBox fx:id="md5ProgressVBox" visible="false" managed="false">
+                                        <Label styleClass="progressLabel" fx:id="md5ProgressLabel"/>
+                                        <ProgressBar fx:id="md5ProgressBar" progress="0" prefHeight="10" prefWidth="350" />
+                                    </VBox>
+
+                                    <Button fx:id="md5StopUpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="取消" onAction="#stopUpdateMd5">
+                                        <effect>
+                                            <DropShadow />
+                                        </effect>
+                                    </Button>
+                                </HBox>
+                            </HBox>
+
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label minWidth="${maxLabel.width}" textAlignment="RIGHT" text="微软kb库："/>
+                                <HBox alignment="CENTER" prefWidth="470" spacing="20">
+                                    <Label styleClass="tips" fx:id="kbTips" visible="false" managed="false" text="已为最新版"/>
+                                    <Button fx:id="kbCheckButton" styleClass="checkButton" minHeight="25.0" minWidth="100" text="检测" onAction="#checkKb">
+                                        <effect>
+                                            <DropShadow />
+                                        </effect>
+                                    </Button>
+
+                                    <Button fx:id="kbUpdateButton" visible="false" managed="false" styleClass="checkButton" minHeight="25.0" minWidth="100" text="下载" onAction="#updateKb">
+                                        <effect>
+                                            <DropShadow />
+                                        </effect>
+                                    </Button>
+
+                                    <VBox fx:id="kbProgressVBox" visible="false" managed="false">
+                                        <Label styleClass="progressLabel" fx:id="kbProgressLabel"/>
+                                        <ProgressBar fx:id="kbProgressBar" progress="0" prefHeight="10" prefWidth="350" />
+                                    </VBox>
+
+                                    <Button fx:id="kbStopUpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="取消" onAction="#stopUpdateKb">
+                                        <effect>
+                                            <DropShadow />
+                                        </effect>
+                                    </Button>
+                                </HBox>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+            <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="250" alignment="CENTER" StackPane.alignment="CENTER">
+                <effect>
+                    <DropShadow/>
+                </effect>
+                <Label fx:id="prompt"/>
+            </StackPane>
+        </StackPane>
+    </children>
+
+</AnchorPane>

@@ -31,6 +31,15 @@
             <url>http://repo1.maven.org/maven2</url>
         </repository>
 
+        <repository>
+            <id>scijava-releases</id>
+            <url>https://maven.scijava.org/content/repositories/releases</url>
+        </repository>
+        <repository>
+            <id>scijava-snapshots</id>
+            <url>https://maven.scijava.org/content/repositories/snapshots</url>
+        </repository>
+
         <!-- JitPack 仓库 -->
         <repository>
             <id>jitpack.io</id>
@@ -285,7 +294,11 @@
             <artifactId>jackson-jq</artifactId>
             <version>1.2.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.21.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -303,6 +316,20 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.5.2</version>
+                <configuration>
+                    <filters>
+                        <filter>
+                            <!-- 过滤所有依赖 -->
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <!-- 排除META-INF目录下的签名文件 -->
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
