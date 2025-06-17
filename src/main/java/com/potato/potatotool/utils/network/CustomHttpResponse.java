@@ -25,23 +25,21 @@ import java.util.zip.GZIPInputStream;
  * @date 2023/4/13 14:32
  */
 
-/**
- * README：
- *          [con.getTextStr() \ getDocument() \ con.getJson()] \ con.saveToFile(savePath) \ con.saveToFileByGzip(savePath)
- * 【为保证最高运行效率】，前三种可多次调用，前三任意一种以及后两种不可同时出现，否则会报错java.io.IOException: stream is closed
- *
- * Tips:
- *              若强行支持，需File也读取dataBuffer进行复用;（后续优化建议：POC扫描以及资产测绘扫描，设置MaxReadSize）
- *
- */
 public class CustomHttpResponse{
 
     private HttpURLConnection con;
     private long responseTime;
     private byte[] dataBuffer; // 添加数据缓冲区
+    private int maxResponseSize; // 最大响应大小限制
 
     public CustomHttpResponse(HttpURLConnection con) {
         this.con = con;
+        this.maxResponseSize = Integer.MAX_VALUE; // 默认无大小限制
+    }
+    
+    public CustomHttpResponse(HttpURLConnection con, int maxResponseSize) {
+        this.con = con;
+        this.maxResponseSize = maxResponseSize;
     }
 
     public long getResponseTime() {
@@ -54,20 +52,71 @@ public class CustomHttpResponse{
 
     // 获取或初始化数据缓冲区
     private byte[] getDataBuffer() {
+        return getDataBuffer(this.maxResponseSize);
+    }
+    
+    // 获取或初始化数据缓冲区（带大小限制）
+    private byte[] getDataBuffer(int maxSize) {
         if (dataBuffer == null) {
             try {
-                try (InputStream inputStream = con.getInputStream();
-                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                    byte[] buffer = new byte[16 * 1024];
-                    int bytesRead;
-                    while ((bytesRead = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
+                InputStream inputStream = null;
+                try {
+                    // 根据响应状态码选择合适的输入流
+                    int responseCode = con.getResponseCode();
+                    if (responseCode >= 400) {
+                        // 对于4xx和5xx错误，使用错误流
+                        inputStream = con.getErrorStream();
+                        if (inputStream == null) {
+                            // 如果错误流为空，尝试使用普通输入流
+                            inputStream = con.getInputStream();
+                        }
+                    } else {
+                        // 对于2xx和3xx响应，使用普通输入流
+                        inputStream = con.getInputStream();
                     }
-                    dataBuffer = outputStream.toByteArray();
+                    
+                    if (inputStream != null) {
+                        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                            byte[] buffer = new byte[16 * 1024];
+                            int bytesRead;
+                            int totalBytesRead = 0;
+                            
+                            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                // 检查大小限制
+                                if (totalBytesRead + bytesRead > maxSize) {
+                                    System.err.println("响应数据过大，已达到限制: " + maxSize + " 字节，截断读取");
+                                    int remainingBytes = maxSize - totalBytesRead;
+                                    if (remainingBytes > 0) {
+                                        outputStream.write(buffer, 0, remainingBytes);
+                                    }
+                                    break;
+                                }
+                                
+                                outputStream.write(buffer, 0, bytesRead);
+                                totalBytesRead += bytesRead;
+                                
+                            }
+                            dataBuffer = outputStream.toByteArray();
+                        }
+                    } else {
+                        dataBuffer = new byte[0];
+                    }
+                } finally {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                return new byte[0];
+                // 对于网络异常等情况，返回空数组而不是抛出异常
+                if (con != null) {
+                    try {
+                        System.err.println("读取响应数据失败，状态码: " + con.getResponseCode() + ", 错误: " + e.getMessage());
+                        e.printStackTrace();
+                    } catch (Exception ex) {
+                        System.err.println("读取响应数据失败: " + e.getMessage());
+                    }
+                }
+                dataBuffer = new byte[0];
             }
         }
         return dataBuffer;

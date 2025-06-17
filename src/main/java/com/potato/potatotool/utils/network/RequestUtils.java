@@ -72,12 +72,15 @@ public class RequestUtils {
      * @throws Exception
      */
     public static CustomHttpResponse requests(RequestObj requestObj) throws Exception {
+        int maxResponseSize = requestObj.getMaxResponseSize();
         int maxRetries = requestObj.getRetries();
         int retryWaitTime = requestObj.getRetryWaitTime();
         int retryCount = 0;
         boolean sslTrustDisabled = false;
 
-        while (retryCount < maxRetries) {
+        Exception lastException = null;
+        
+        while (retryCount <= maxRetries) {
 
             // 创建HttpURLConnection对象 防止重复创建
             HttpURLConnection con = null;
@@ -165,7 +168,7 @@ public class RequestUtils {
 
                 // 超时时间设置 秒转换毫秒
                 con.setConnectTimeout(timeOut * 1000);
-                con.setReadTimeout(timeOut * 1000);
+                con.setReadTimeout((timeOut + 10) * 1000);
 
                 if (method.equalsIgnoreCase("POST") || method.equalsIgnoreCase("DELETE") || method.equalsIgnoreCase("PUT")) {
                     // 启用输出流
@@ -230,10 +233,14 @@ public class RequestUtils {
                             os.write(boundaryBytes);
 
                         } else {
-                            if (postData.length == 0) {
-                                throw new Exception("[×] 未setPostData，请检查");
+                            if (postData==null || postData.length == 0) {
+                                if (debugMode) {
+                                    System.err.println("[警告] 未设置postData，将发送空请求体");
+                                }
+                                // 继续执行，不抛出异常
+                            } else {
+                                os.write(postData);
                             }
-                            os.write(postData);
                         }
 
                         os.flush();
@@ -244,42 +251,89 @@ public class RequestUtils {
                 long startTime = System.currentTimeMillis();
                 
                 int responseCode = con.getResponseCode();
-                if (responseCode >= 500) { // 服务器错误，需主动抛出
+                
+                // 创建响应对象（无论状态码如何都创建，让调用者决定如何处理）
+                CustomHttpResponse response = new CustomHttpResponse(con, maxResponseSize);
+                long endTime = System.currentTimeMillis();
+                response.setResponseTime(endTime - startTime);
+                
+                // 对于5xx服务器错误，可以考虑重试；对于4xx客户端错误，不应重试
+                if (responseCode >= 500) {
+                    if (debugMode) {
+                        System.err.println("服务器错误 (" + responseCode + "): " + requestObj.getUrl());
+                    }
                     throw new IOException("Server error: " + responseCode);
                 }
                 
-                // 创建响应对象
-                CustomHttpResponse response = new CustomHttpResponse(con);
-                long endTime = System.currentTimeMillis();
-                response.setResponseTime(endTime - startTime);
                 return response;
 
             } catch (IOException e) {
                 if (con != null) {
                     con.disconnect();
                 }
+                
+                // 处理SSL证书相关问题
                 if(e.toString().contains("No subject alternative names matching IP address")){
+                    if (debugMode) {
+                        System.err.println("SSL证书问题，尝试使用HTTP: " + requestObj.getUrl());
+                    }
                     requestObj.setUrl(requestObj.getUrl().replaceAll("https://","http://"));
                     continue;
                 }else if(e.toString().contains("No subject alternative names present") && !sslTrustDisabled){
+                    if (debugMode) {
+                        System.err.println("SSL证书验证问题，禁用SSL验证: " + requestObj.getUrl());
+                    }
                     TrustAllHost();
                     sslTrustDisabled = true;
                     continue;
-                }else {
-                    if (debugMode) e.printStackTrace();
                 }
-                // 处理IO异常（包括 5xx 响应、读取超时、网络连接问题、连接超时、其他 I/O 错误），根据情况重试
+                
+                // 检查是否是FileNotFoundException（通常是404错误）
+                if (e instanceof java.io.FileNotFoundException) {
+                    if (debugMode) {
+                        System.err.println("资源未找到 (404): " + requestObj.getUrl());
+                    }
+                    // 对于404错误，不重试，直接抛出异常让调用者处理
+                    throw new Exception("[×] 资源未找到: " + requestObj.getUrl(), e);
+                }
+                
+                // 记录详细的错误信息
+                if (debugMode) {
+                    System.err.println("网络请求异常 (重试 " + retryCount + "/" + maxRetries + "): " + 
+                        requestObj.getUrl() + " - " + e.getMessage());
+                    e.printStackTrace();
+                }
+                
+                // 记录最后一次异常
+                lastException = e;
+                
+                // 处理其他IO异常（包括 5xx 响应、读取超时、网络连接问题、连接超时等），根据情况重试
                 if (retryCount < maxRetries) {
                     retryCount++;
-                    requestObj.setTimeOut(requestObj.getTimeOut() * 2);
+                    // 适度增加超时时间，避免过度增长
+                    int newTimeout = Math.min(requestObj.getTimeOut() + 5, 20);
+                    requestObj.setTimeOut(newTimeout);
+                    
+                    if (debugMode) {
+                        System.err.println("重试请求 (" + retryCount + "/" + maxRetries + "): " + requestObj.getUrl() + ", 错误: " + e.getMessage());
+                    }
+                    
                     Thread.sleep(retryWaitTime * 1000); // 重试间隔时间
                     continue; // 继续重试
+                } else {
+                    // 已达到最大重试次数，跳出循环
+                    break;
                 }
-                throw new Exception("[×] 请求失败，超出重试次数", e);
             }
 
         }
-        throw new Exception("[×] 请求失败，超出重试次数");
+        
+        // 如果循环结束仍未成功，抛出最后一次的异常信息
+        String errorMsg = "请求失败，超出重试次数 (" + maxRetries + "): " + requestObj.getUrl();
+        if (lastException != null && lastException.getMessage() != null) {
+            errorMsg += ", 最后错误: " + lastException.getMessage();
+        }
+        throw new Exception("[×] " + errorMsg, lastException);
     }
 }
 

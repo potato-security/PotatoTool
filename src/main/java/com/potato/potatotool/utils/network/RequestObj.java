@@ -52,6 +52,7 @@ public class RequestObj {
     private int retryWaitTime = 1;
     private boolean noUserAgent = false;
     private boolean strictSslValidation = false;
+    private int maxResponseSize = Integer.MAX_VALUE;
 
     public RequestObj(){
         initializeProxySettings();
@@ -263,5 +264,14 @@ public class RequestObj {
 
     public boolean getStrictSslValidation(){
         return strictSslValidation;
+    }
+
+    public RequestObj setMaxResponseSize(int maxResponseSize) {
+        this.maxResponseSize = maxResponseSize;
+        return this;
+    }
+
+    public int getMaxResponseSize() {
+        return maxResponseSize;
     }
 }
