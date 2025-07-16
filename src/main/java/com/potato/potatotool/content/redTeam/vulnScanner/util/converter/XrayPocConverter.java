@@ -62,6 +62,7 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
      */
     private void convertBasicInfo(XrayYamlObj.Poc xrayPoc, PocObj.Poc poc) {
         // 基本信息
+        poc.setId(xrayPoc.getName() != null ? xrayPoc.getName() : "unknown_xray_poc");
         poc.setName(xrayPoc.getName() != null ? xrayPoc.getName() : "");
         poc.setProtocol(xrayPoc.getTransport() != null ? xrayPoc.getTransport() : "http");
         

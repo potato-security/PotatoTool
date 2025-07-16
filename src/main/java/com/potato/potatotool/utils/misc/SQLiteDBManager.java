@@ -4,7 +4,7 @@ package com.potato.potatotool.utils.misc;
  * @author Potato
  * @date 2024/6/29 16:45
  */
-import com.potato.potatotool.content.blueTeam.webshell.decoder.utils.MD5Decrypt;
+import com.potato.potatotool.content.blueTeam.webshellDecrypt.decoder.utils.MD5Decrypt;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

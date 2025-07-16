@@ -20,19 +20,19 @@ public class RequestUtils {
      * 信任所有SSL证书(默认开启) 非全局模式，存在线程隔离，支持多线程
      * @throws Exception
      */
-    public static SSLSocketFactory createTrustAllSSLSocketFactory(){
-        SSLContext sslContext = null;
+    private static SSLSocketFactory createTrustAllSSLSocketFactory() {
         try {
-            sslContext = SSLContext.getInstance("TLS");
+            SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{new X509TrustManager() {
                 public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
                 public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
                 public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
             }}, new SecureRandom());
+            return sslContext.getSocketFactory();
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return sslContext.getSocketFactory();
     }
 
     private static final SSLSocketFactory trustAllSSLSocketFactory = createTrustAllSSLSocketFactory();
@@ -41,8 +41,8 @@ public class RequestUtils {
         return trustAllSSLSocketFactory;
     }
 
-    // 禁用主机名验证   不要和TrustAllSSL默认同时使用，否则无法判断部分https何时需要转http
-    public static void TrustAllHost() {
+    static {
+        HttpsURLConnection.setDefaultSSLSocketFactory(getTrustAllSSLSocketFactory());
         HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
             @Override
             public boolean verify(String hostname, SSLSession session) {
@@ -72,11 +72,11 @@ public class RequestUtils {
      * @throws Exception
      */
     public static CustomHttpResponse requests(RequestObj requestObj) throws Exception {
+
         int maxResponseSize = requestObj.getMaxResponseSize();
         int maxRetries = requestObj.getRetries();
         int retryWaitTime = requestObj.getRetryWaitTime();
         int retryCount = 0;
-        boolean sslTrustDisabled = false;
 
         Exception lastException = null;
         
@@ -117,13 +117,6 @@ public class RequestUtils {
                     con = (HttpURLConnection) obj.openConnection(Proxy.NO_PROXY);
                 }
 
-                // 信任所有SSL证书 (未设定强SSL认证时 || 开代理时)
-                if (!requestObj.getStrictSslValidation() || (proxies != null && !proxies.isEmpty())) {
-                    if (con instanceof HttpsURLConnection) {
-                        ((HttpsURLConnection) con).setSSLSocketFactory(getTrustAllSSLSocketFactory());
-                    }
-                }
-
                 // 设置请求方法
                 con.setRequestMethod(method);
 
@@ -147,7 +140,7 @@ public class RequestUtils {
                 }
                 //根据post模式设置头部
                 File file = requestObj.getPostFile();
-                if (postMethod.equalsIgnoreCase("Raw") && file != null) {
+                if (postMethod.equalsIgnoreCase("Raw") || file != null) {
 
                     con.setRequestProperty("Content-Type", "application/octet-stream");
 
@@ -251,8 +244,8 @@ public class RequestUtils {
                 long startTime = System.currentTimeMillis();
                 
                 int responseCode = con.getResponseCode();
-                
-                // 创建响应对象（无论状态码如何都创建，让调用者决定如何处理）
+
+                // 创建响应对象
                 CustomHttpResponse response = new CustomHttpResponse(con, maxResponseSize);
                 long endTime = System.currentTimeMillis();
                 response.setResponseTime(endTime - startTime);
@@ -271,20 +264,14 @@ public class RequestUtils {
                 if (con != null) {
                     con.disconnect();
                 }
-                
+                String errorMsg = e.toString();
+
                 // 处理SSL证书相关问题
-                if(e.toString().contains("No subject alternative names matching IP address")){
+                if(errorMsg.contains("Unsupported or unrecognized SSL message")){
                     if (debugMode) {
-                        System.err.println("SSL证书问题，尝试使用HTTP: " + requestObj.getUrl());
+                        System.err.println("不支持SSL，尝试使用HTTP: " + requestObj.getUrl());
                     }
                     requestObj.setUrl(requestObj.getUrl().replaceAll("https://","http://"));
-                    continue;
-                }else if(e.toString().contains("No subject alternative names present") && !sslTrustDisabled){
-                    if (debugMode) {
-                        System.err.println("SSL证书验证问题，禁用SSL验证: " + requestObj.getUrl());
-                    }
-                    TrustAllHost();
-                    sslTrustDisabled = true;
                     continue;
                 }
                 

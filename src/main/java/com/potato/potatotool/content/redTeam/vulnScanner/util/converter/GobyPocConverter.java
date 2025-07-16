@@ -55,6 +55,7 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
      */
     private void convertBasicInfo(GobyJsonObj.PocJson gobyPoc, PocObj.Poc poc) {
         // 基本信息
+        poc.setId(gobyPoc.getName() != null ? gobyPoc.getName() : "unknown_goby_poc");
         poc.setName(gobyPoc.getName() != null ? gobyPoc.getName() : "");
         poc.setAuthor(gobyPoc.getAuthor() != null ? gobyPoc.getAuthor() : "");
         poc.setDescription(gobyPoc.getDescription() != null ? gobyPoc.getDescription() : "");
@@ -539,7 +540,7 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
         // 分割提取器定义字符串
         String[] parts = extractorDef.split("\\|");
         if (parts.length < 3) {
-            System.out.println("提取器定义格式不正确: " + extractorDef);
+            System.out.println("跳过不正确的提取器格式: " + extractorDef);
             return null;
         }
         

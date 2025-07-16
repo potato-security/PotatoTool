@@ -3,6 +3,7 @@ package com.potato.potatotool.content.redTeam.vulnScanner.util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.*;
+import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,8 +21,8 @@ import java.util.stream.Stream;
  */
 public class PocManager {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//    private static final String TRANSFORM_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/transform/";
-    private static final String TRANSFORM_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\transform";
+    private static final String TRANSFORM_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/transform/";
+    // private static final String TRANSFORM_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\transform";
     /**
      * 解析指定目录下的所有POC文件
      * @param pocDirPath POC文件目录路径
@@ -85,9 +86,9 @@ public class PocManager {
             }
         }
         
-        // 如果成功解析了POC，则保存到transform目录
+        // 如果成功解析了POC，则保存到transform目录 DEBUG方法
         if (pocObj != null) {
-            savePocToTransformDir(filePath, pocObj);
+//            savePocToTransformDir(filePath, pocObj);
         } else {
             System.err.println("无法识别的POC格式或解析失败: " + filePath);
         }

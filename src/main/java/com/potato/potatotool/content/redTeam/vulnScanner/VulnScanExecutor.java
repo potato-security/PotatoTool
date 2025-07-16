@@ -8,6 +8,10 @@ import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanConfig;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanResult;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanTask;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.PocManager;
+
+import com.potato.potatotool.content.redTeam.vulnScanner.util.PerformanceMonitor;
+import com.potato.potatotool.content.redTeam.vulnScanner.util.ConnectionPoolManager;
+import com.potato.potatotool.content.redTeam.vulnScanner.util.ConfigOptimizer;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
 import com.potato.potatotool.utils.network.RequestUtils;
@@ -27,11 +31,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class VulnScanExecutor {
 
     private ExecutorService scanExecutor;
+
     private final List<ScanResult> scanResults = Collections.synchronizedList(new ArrayList<>());
     private List<PocObj.Poc> pocList = new ArrayList<>();
     private final List<String> targetList = new ArrayList<>();
     private ScanConfig scanConfig;
     private boolean isScanning = false;
+
+    private final AtomicInteger completedTasks = new AtomicInteger(0);
+    private final AtomicInteger totalTasks = new AtomicInteger(0);
 
     /**
      * 创建扫描执行器
@@ -54,51 +62,90 @@ public class VulnScanExecutor {
      * 初始化线程池
      */
     private void initExecutor() {
-        // 如果已存在线程池且未关闭，则先关闭
-        if (this.scanExecutor != null && !this.scanExecutor.isShutdown()) {
+        // 关闭现有线程池
+        shutdownExecutors();
+
+        // 获取CPU核心数和配置的线程数
+        int cpuCores = Runtime.getRuntime().availableProcessors();
+        int configThreads = scanConfig != null ? scanConfig.getThreads() : Math.max(4, cpuCores);
+        
+        // 计算线程池参数
+        int coreThreads = Math.max(2, configThreads);
+        int maxThreads = Math.max(coreThreads, cpuCores * 2);
+        int queueSize = Math.max(1000, configThreads * 50);
+        
+        // 创建统一的扫描线程池
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                coreThreads, // 核心线程数
+                maxThreads, // 最大线程数
+                60L, TimeUnit.SECONDS, // 空闲线程存活时间
+                new LinkedBlockingQueue<>(queueSize), // 有界队列
+                new NamedThreadFactory("vuln-scan"),
+                new ThreadPoolExecutor.CallerRunsPolicy() // 拒绝策略：由调用者所在线程执行
+        );
+        executor.allowCoreThreadTimeOut(true); // 允许核心线程超时，节省资源
+        
+        this.scanExecutor = executor;
+        
+        // 输出线程池配置信息
+        logSafely(String.format("线程池配置 - 核心线程数=%d, 最大线程数=%d, 队列容量=%d", 
+                coreThreads, maxThreads, queueSize));
+    }
+    
+    /**
+     * 关闭线程池
+     */
+    private void shutdownExecutors() {
+        shutdownExecutor(this.scanExecutor, "vuln-scan");
+    }
+    
+    /**
+     * 关闭指定线程池
+     */
+    private void shutdownExecutor(ExecutorService executor, String name) {
+        if (executor != null && !executor.isShutdown()) {
             try {
-                this.scanExecutor.shutdown();
-                // 等待线程池终止，最多等待3秒
-                if (!this.scanExecutor.awaitTermination(3, TimeUnit.SECONDS)) {
-                    this.scanExecutor.shutdownNow();
+                logSafely("正在关闭线程池: " + name);
+                executor.shutdown();
+                // 增加等待时间，确保所有任务完成
+                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    logSafely("强制关闭线程池: " + name);
+                    executor.shutdownNow();
+                    // 再次等待强制关闭完成
+                    if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                        logErrorSafely("线程池 " + name + " 无法完全关闭");
+                    }
                 }
+                logSafely("线程池 " + name + " 已关闭");
             } catch (InterruptedException e) {
-                this.scanExecutor.shutdownNow();
+                logSafely("线程池关闭被中断，强制关闭: " + name);
+                executor.shutdownNow();
                 Thread.currentThread().interrupt();
             }
         }
-
-        // 获取线程数，确保至少有1个线程
-        int threadCount = Math.max(1, scanConfig != null ? scanConfig.getThreads() : 10);
-
-        // 创建新的线程池，使用有界队列防止内存溢出
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                threadCount, // 核心线程数
-                threadCount, // 最大线程数
-                60L, TimeUnit.SECONDS, // 空闲线程存活时间
-                new LinkedBlockingQueue<>(10000), // 有界队列
-                new ThreadFactory() {
-                    private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        Thread t = new Thread(r, "scan-thread-" + threadNumber.getAndIncrement());
-                        if (t.isDaemon()) {
-                            t.setDaemon(false); // 确保非守护线程
-                        }
-                        if (t.getPriority() != Thread.NORM_PRIORITY) {
-                            t.setPriority(Thread.NORM_PRIORITY);
-                        }
-                        return t;
-                    }
-                },
-                new ThreadPoolExecutor.CallerRunsPolicy() // 拒绝策略：由调用者所在线程执行
-        );
-
-        // 允许核心线程超时，提高资源利用率
-        executor.allowCoreThreadTimeOut(true);
-
-        this.scanExecutor = executor;
+    }
+    
+    /**
+     * 命名线程工厂
+     */
+    private static class NamedThreadFactory implements ThreadFactory {
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+        private final String namePrefix;
+        
+        public NamedThreadFactory(String namePrefix) {
+            this.namePrefix = namePrefix;
+        }
+        
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r, namePrefix + "-thread-" + threadNumber.getAndIncrement());
+            // 设置为守护线程，允许程序正常退出
+            t.setDaemon(true);
+            if (t.getPriority() != Thread.NORM_PRIORITY) {
+                t.setPriority(Thread.NORM_PRIORITY);
+            }
+            return t;
+        }
     }
 
     /**
@@ -111,7 +158,7 @@ public class VulnScanExecutor {
             this.pocList = PocManager.parseAllPocs(pocDirPath);
             return this.pocList.size();
         } catch (Exception e) {
-            System.err.println("加载POC失败: " + e.getMessage());
+            logErrorSafely("加载POC失败: " + e.getMessage());
             e.printStackTrace();
             return 0;
         }
@@ -155,7 +202,7 @@ public class VulnScanExecutor {
                     addTarget(line.trim());
                 }
             } catch (IOException e) {
-                System.err.println("读取目标文件失败: " + e.getMessage());
+                logErrorSafely("读取目标文件失败: " + e.getMessage());
                 e.printStackTrace();
             }
         } else {
@@ -235,19 +282,19 @@ public class VulnScanExecutor {
      * 开始扫描
      * @param callback 扫描回调
      */
-    public void startScan(ScanCallback callback) {
+    public void startScan(VulnScanCallback callback) {
         if (isScanning) {
-            System.err.println("扫描任务正在进行中，请等待当前扫描完成");
+            logErrorSafely("扫描任务正在进行中，请等待当前扫描完成");
             return;
         }
 
         if (pocList.isEmpty()) {
-            System.err.println("未加载任何POC，请先加载POC");
+            logErrorSafely("未加载任何POC，请先加载POC");
             return;
         }
 
         if (targetList.isEmpty()) {
-            System.err.println("未设置任何目标，请先设置目标");
+            logErrorSafely("未设置任何目标，请先设置目标");
             return;
         }
 
@@ -259,11 +306,16 @@ public class VulnScanExecutor {
         // 标记为正在扫描
         isScanning = true;
 
-        // 清空之前的扫描结果
+        // 清空之前的扫描结果和缓存
         scanResults.clear();
 
-        // 过滤POC列表
-        List<PocObj.Poc> filteredPocList = new ArrayList<>();
+        completedTasks.set(0);
+        
+        // 启动性能监控
+        PerformanceMonitor.getInstance().startMonitoring();
+
+        // 基础过滤POC列表
+        List<PocObj.Poc> basicFilteredPocs = new ArrayList<>();
         for (PocObj.Poc poc : pocList) {
             // 根据协议类型过滤POC
             if (scanConfig.getProtocol() != null && !scanConfig.getProtocol().isEmpty()
@@ -277,19 +329,43 @@ public class VulnScanExecutor {
                 continue;
             }
 
-            filteredPocList.add(poc);
+            basicFilteredPocs.add(poc);
+        }
+
+        // 为每个目标智能选择POC
+        Map<String, List<PocObj.Poc>> targetPocMap = new HashMap<>();
+        for (String target : targetList) {
+            targetPocMap.put(target, basicFilteredPocs);
         }
 
         // 计算总任务数
-        final int totalTasks = targetList.size() * filteredPocList.size();
-        final int batchSize = Math.min(1000, totalTasks); // 每批最多1000个任务
-        final AtomicInteger completedTasks = new AtomicInteger(0);
+        int calculatedTotalTasks = targetPocMap.values().stream()
+            .mapToInt(List::size)
+            .sum();
+        totalTasks.set(calculatedTotalTasks);
+        
+        // 使用配置优化器预估最优配置
+        ConfigOptimizer optimizer = ConfigOptimizer.getInstance();
+        ScanConfig optimizedConfig = optimizer.estimateOptimalConfig(targetList.size(), basicFilteredPocs.size(), scanConfig);
+        
+        if (scanConfig.isDebug()) {
+            logSafely("原始配置: 线程数=" + scanConfig.getThreads() + ", 超时=" + scanConfig.getTimeout() + "秒");
+        logSafely("优化配置: 线程数=" + optimizedConfig.getThreads() + ", 超时=" + optimizedConfig.getTimeout() + "秒");
+            
+            // 如果优化配置与原配置差异较大，给出建议
+            if (Math.abs(optimizedConfig.getThreads() - scanConfig.getThreads()) > 2) {
+                logSafely("建议调整线程数为: " + optimizedConfig.getThreads());
+            }
+        }
+        
+        final int batchSize = Math.min(1000, calculatedTotalTasks); // 每批最多1000个任务
 
         // 创建一个监控任务，管理批量执行和完成通知
         scanExecutor.submit(() -> {
             try {
-                // 分批创建和执行任务
-                List<List<ScanTask>> batches = createBatches(targetList, filteredPocList, batchSize);
+                // 创建优化的任务列表
+                List<ScanTask> allTasks = createOptimizedTasks(targetPocMap);
+                List<List<ScanTask>> batches = createBatches(allTasks, batchSize);
 
                 for (List<ScanTask> batch : batches) {
                     if (!isScanning) {
@@ -306,7 +382,11 @@ public class VulnScanExecutor {
                             break;
                         }
 
-                        Future<?> task = scanExecutor.submit(() -> {
+                        // 使用统一的线程池
+                        ExecutorService executor = scanExecutor;
+
+                        Future<?> task = executor.submit(() -> {
+                            long taskStartTime = System.currentTimeMillis();
                             try {
                                 ScanResult result = scanTarget(scanTask.getTarget(), scanTask.getPoc());
                                 if (result != null) {
@@ -315,7 +395,7 @@ public class VulnScanExecutor {
                                         try {
                                             callback.onResult(result);
                                         } catch (Exception e) {
-                                            System.err.println("回调执行异常: " + e.getMessage());
+                                            logErrorSafely("回调执行异常: " + e.getMessage());
                                             if (scanConfig.isDebug()) {
                                                 e.printStackTrace();
                                             }
@@ -323,11 +403,15 @@ public class VulnScanExecutor {
                                     }
                                 }
                             } catch (Exception e) {
-                                System.err.println("扫描任务执行异常: " + e.getMessage());
+                                logErrorSafely("扫描任务执行异常: " + e.getMessage());
                                 if (scanConfig.isDebug()) {
                                     e.printStackTrace();
                                 }
                             } finally {
+                                // 记录线程池性能
+                                long taskDuration = System.currentTimeMillis() - taskStartTime;
+                                PerformanceMonitor.getInstance().recordThreadPoolPerformance("vuln-scan", taskDuration);
+                                
                                 // 更新完成任务计数
                                 completedTasks.incrementAndGet();
                             }
@@ -339,46 +423,61 @@ public class VulnScanExecutor {
                     for (Future<?> task : batchTasks) {
                         try {
                             // 设置任务超时时间，防止任务卡住
-                            int timeoutSeconds = scanConfig.getTimeOut() > 0 ? scanConfig.getTimeOut() * 2 : 60;
+                            int timeoutSeconds = scanConfig.getTimeout() > 0 ? scanConfig.getTimeout() * 2 : 60;
                             task.get(timeoutSeconds, TimeUnit.SECONDS);
                         } catch (TimeoutException e) {
                             // 任务超时，取消任务
                             task.cancel(true);
-                            System.err.println("扫描任务超时已取消");
+                            logErrorSafely("扫描任务超时已取消");
                         } catch (InterruptedException e) {
                             // 线程被中断
                             Thread.currentThread().interrupt();
-                            System.err.println("扫描任务被中断");
+                            logErrorSafely("扫描任务被中断");
                             break;
                         } catch (ExecutionException e) {
-                            System.err.println("等待扫描任务完成时发生异常: " + e.getMessage());
+                            logErrorSafely("等待扫描任务完成时发生异常: " + e.getMessage());
                             if (scanConfig.isDebug()) {
                                 e.printStackTrace();
                             }
                         }
                     }
 
-                    // 在批次之间暂停一小段时间，避免资源过度消耗
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
                 }
 
                 // 标记为扫描完成
                 isScanning = false;
+
+                // 停止性能监控并输出报告
+                PerformanceMonitor monitor = PerformanceMonitor.getInstance();
+                monitor.stopMonitoring();
+                
+                logSafely("扫描完成，共完成 " + completedTasks.get() + "/" + totalTasks.get() + " 个任务");
+                
+                // 输出性能报告和优化建议
+                if (scanConfig.isDebug()) {
+                   logSafely(monitor.getPerformanceReport());
+
+                   // 生成配置优化建议
+                   // 使用已存在的optimizer实例
+                   PerformanceMonitor.PerformanceMetrics metrics = monitor.getCurrentMetrics();
+                   ConfigOptimizer.OptimizationSuggestion suggestion = optimizer.optimizeConfig(metrics, scanConfig);
+
+                   logSafely("\n=== 配置优化建议 ===");
+            logSafely(suggestion.toString());
+
+                   // 输出连接池状态
+                   ConnectionPoolManager.ConnectionPoolStatus poolStatus = ConnectionPoolManager.getInstance().getStatus();
+                   logSafely("\n=== 连接池状态 ===");
+            logSafely(poolStatus.toString());
+                }
 
                 // 通知扫描完成
                 if (callback != null) {
                     callback.onComplete(scanResults);
                 }
 
-                System.out.println("扫描完成，共完成 " + completedTasks.get() + "/" + totalTasks + " 个任务");
-
             } catch (Exception e) {
-                System.err.println("监控任务执行异常: " + e.getMessage());
+                logErrorSafely("监控任务执行异常: " + e.getMessage());
                 if (scanConfig.isDebug()) {
                     e.printStackTrace();
                 }
@@ -388,7 +487,41 @@ public class VulnScanExecutor {
     }
 
     /**
-     * 创建任务批次
+     * 创建任务列表
+     * @param targetPocMap 目标和POC的映射
+     * @return 任务列表
+     */
+    private List<ScanTask> createOptimizedTasks(Map<String, List<PocObj.Poc>> targetPocMap) {
+        List<ScanTask> allTasks = new ArrayList<>();
+
+        // 创建所有扫描任务
+        for (Map.Entry<String, List<PocObj.Poc>> entry : targetPocMap.entrySet()) {
+            String target = entry.getKey();
+            for (PocObj.Poc poc : entry.getValue()) {
+                ScanTask task = new ScanTask(target, poc);
+                allTasks.add(task);
+            }
+        }
+        
+        return allTasks;
+    }
+
+    /**
+     * 创建任务批次（重载方法）
+     * @param allTasks 所有任务列表
+     * @param batchSize 批次大小
+     * @return 任务批次列表
+     */
+    private List<List<ScanTask>> createBatches(List<ScanTask> allTasks, int batchSize) {
+        List<List<ScanTask>> batches = new ArrayList<>();
+        for (int i = 0; i < allTasks.size(); i += batchSize) {
+            batches.add(allTasks.subList(i, Math.min(i + batchSize, allTasks.size())));
+        }
+        return batches;
+    }
+
+    /**
+     * 创建任务批次（原方法保持兼容性）
      * @param targets 目标列表
      * @param pocs POC列表
      * @param batchSize 批次大小
@@ -404,13 +537,7 @@ public class VulnScanExecutor {
             }
         }
 
-        // 分批
-        List<List<ScanTask>> batches = new ArrayList<>();
-        for (int i = 0; i < allTasks.size(); i += batchSize) {
-            batches.add(allTasks.subList(i, Math.min(i + batchSize, allTasks.size())));
-        }
-
-        return batches;
+        return createBatches(allTasks, batchSize);
     }
 
     /**
@@ -423,36 +550,26 @@ public class VulnScanExecutor {
 
         // 先标记为非扫描状态，防止新任务提交
         isScanning = false;
-        System.out.println("正在停止扫描任务...");
+        logSafely("正在停止扫描任务...");
         
-        // 尝试优雅关闭线程池
-        if (scanExecutor != null && !scanExecutor.isShutdown()) {
-            List<Runnable> pendingTasks = scanExecutor.shutdownNow();
-            
-            if (scanConfig.isDebug()) {
-                System.out.println("停止扫描，取消 " + pendingTasks.size() + " 个待执行任务");
-            }
-            
-            try {
-                // 等待所有任务完成
-                if (!scanExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-                    // 如果超时，则强制关闭
-                    List<Runnable> droppedTasks = scanExecutor.shutdownNow();
-                    System.out.println("强制停止了 " + droppedTasks.size() + " 个未完成的任务");
-
-                    // 再次等待，确保所有任务都被终止
-                    if (!scanExecutor.awaitTermination(2, TimeUnit.SECONDS)) {
-                        System.err.println("线程池无法完全关闭");
-                    }
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } finally {
-                // 重新初始化线程池
-                initExecutor();
-            }
-        }
-        System.out.println("扫描任务已停止");
+        // 关闭所有线程池
+        shutdownExecutors();
+        
+        
+        // 关闭连接池管理器
+        ConnectionPoolManager.getInstance().shutdown();
+        
+        // 重置计数器
+        completedTasks.set(0);
+        totalTasks.set(0);
+        
+        // 停止性能监控
+        PerformanceMonitor.getInstance().stopMonitoring();
+        
+        // 重新初始化线程池
+        initExecutor();
+        
+        logSafely("扫描任务已停止");
     }
 
     /**
@@ -478,18 +595,34 @@ public class VulnScanExecutor {
      * @return 扫描结果
      */
     private ScanResult scanTarget(String target, PocObj.Poc poc) {
+        long startTime = System.currentTimeMillis();
+        PerformanceMonitor monitor = PerformanceMonitor.getInstance();
+        ConnectionPoolManager connectionPool = ConnectionPoolManager.getInstance();
+
+        
+        // 尝试获取连接
+        if (!connectionPool.acquireConnection(target)) {
+            if (scanConfig.isDebug()) {
+                logErrorSafely("无法获取到 " + target + " 的连接，跳过扫描");
+            }
+            return createErrorResult(target, poc, new Exception("连接池已满，无法获取连接"), startTime);
+        }
+        
         if (scanConfig.isDebug()) {
-            System.out.println("正在扫描目标: " + target + " 使用POC: " + poc.getName());
+            logSafely("正在扫描目标: " + target + " 使用POC: " + poc.getName());
         }
 
+        ScanResult result = null;
+        boolean successful = false;
         try {
             // 执行验证步骤
             if (poc.getVerifySteps() != null && !poc.getVerifySteps().isEmpty()) {
                 boolean isVulnerable = executeSteps(target, poc);
+                successful = true;
 
                 if (isVulnerable) {
                     // 创建扫描结果
-                    ScanResult result = new ScanResult();
+                    result = new ScanResult();
                     result.setTarget(target);
                     result.setPoc(poc);
                     result.setVulnerable(true);
@@ -498,21 +631,99 @@ public class VulnScanExecutor {
                     // 添加详细信息
                     result.addDetail("protocol", poc.getProtocol());
                     result.addDetail("severity", poc.getSeverity());
+                    result.addDetail("scan_duration", System.currentTimeMillis() - startTime);
                     result.addDetail("description", poc.getDescription());
                     result.addDetail("references", poc.getReferences());
 
-                    System.out.println("[发现漏洞] 目标: " + target + " POC: " + poc.getName());
+                    logSafely("[发现漏洞] 目标: " + target + " POC: " + poc.getName());
+                    
                     return result;
+                } else {
+                    // 创建未发现漏洞的结果
+                    result = createNegativeResult(target, poc, startTime);
                 }
             }
-        } catch (Exception e) {
-            System.err.println("扫描目标时发生异常: " + target + " POC: " + poc.getName() + " 错误: " + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             if (scanConfig.isDebug()) {
-                e.printStackTrace();
+                logErrorSafely("扫描被中断: " + target + " - " + poc.getName());
             }
+            result = createErrorResult(target, poc, e, startTime);
+        } catch (Exception e) {
+            // 增强异常处理，包含目标和POC信息
+            String errorMsg = "扫描异常 [目标: " + target + ", POC: " + poc.getName() + "]: " + e.getMessage();
+            
+            // 判断是否为网络相关异常
+            boolean isNetworkError = e.getMessage() != null && 
+                (e.getMessage().contains("请求失败，超出重试次数") ||
+                 e.getMessage().contains("Connection timed out") ||
+                 e.getMessage().contains("Read timed out") ||
+                 e.getMessage().contains("SocketTimeoutException") ||
+                 e.getMessage().contains("ConnectException") ||
+                 e.getMessage().contains("UnknownHostException"));
+            
+            if (isNetworkError) {
+                // 网络错误，简化日志输出
+                if (scanConfig.isDebug()) {
+                    logErrorSafely("网络请求失败: " + target + " - " + poc.getName() + ": " + e.getMessage());
+                }
+            } else {
+                // 其他异常，详细记录
+                if (scanConfig.isDebug()) {
+                    logErrorSafely(errorMsg);
+                    synchronized (System.err) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    logErrorSafely(errorMsg);
+                }
+            }
+            // 创建错误结果
+            result = createErrorResult(target, poc, e, startTime);
+        } finally {
+            // 释放连接
+            connectionPool.releaseConnection(target);
+            
+            // 记录性能指标
+            long duration = System.currentTimeMillis() - startTime;
+            monitor.recordScan(duration, successful);
+            monitor.recordPocUsage(poc.getId(), duration);
         }
+        
 
-        return null;
+        
+        return result != null ? result : createErrorResult(target, poc, 
+            new Exception("未知错误：扫描结果为null"), startTime);
+    }
+    
+
+    
+    /**
+     * 创建负面结果（未发现漏洞）
+     */
+    private ScanResult createNegativeResult(String target, PocObj.Poc poc, long startTime) {
+        ScanResult result = new ScanResult();
+        result.setTarget(target);
+        result.setPoc(poc);
+        result.setVulnerable(false);
+        result.setTimestamp(System.currentTimeMillis());
+        result.addDetail("scan_duration", System.currentTimeMillis() - startTime);
+        return result;
+    }
+    
+    /**
+     * 创建错误结果
+     */
+    private ScanResult createErrorResult(String target, PocObj.Poc poc, Exception e, long startTime) {
+        ScanResult result = new ScanResult();
+        result.setTarget(target);
+        result.setPoc(poc);
+        result.setVulnerable(false);
+        result.setTimestamp(System.currentTimeMillis());
+        result.addDetail("scan_duration", System.currentTimeMillis() - startTime);
+        result.addDetail("error", e.getMessage());
+        result.addDetail("error_type", e.getClass().getSimpleName());
+        return result;
     }
 
     /**
@@ -525,7 +736,7 @@ public class VulnScanExecutor {
     private boolean executeSteps(String target, PocObj.Poc poc) throws Exception {
         if (target == null || poc == null || poc.getVerifySteps() == null || poc.getVerifySteps().isEmpty()) {
             if (scanConfig.isDebug()) {
-                System.err.println("无效的POC或目标URL");
+                logErrorSafely("无效的POC或目标URL");
             }
             return false;
         }
@@ -622,9 +833,9 @@ public class VulnScanExecutor {
                     requestObj.setTimeOut(step.getTimeout());
                 } else if (globalConfig != null && globalConfig.getRetryInterval() > 0) {
                     requestObj.setTimeOut(globalConfig.getRetryInterval() / 1000);
-                } else if (scanConfig != null && scanConfig.getTimeOut() > 0) {
-                    // 使用全局扫描配置的超时时间
-                    requestObj.setTimeOut(scanConfig.getTimeOut());
+                } else if (scanConfig != null && scanConfig.getTimeout() > 0) {
+            // 使用全局扫描配置的超时时间
+            requestObj.setTimeOut(scanConfig.getTimeout());
                 }
 
                 // 设置重试次数
@@ -648,12 +859,15 @@ public class VulnScanExecutor {
                 }
 
                 // 发送请求
+                int maxResponseSize = (scanConfig != null && scanConfig.getMaxResponseSize() > 0) 
+                    ? scanConfig.getMaxResponseSize() : Integer.MAX_VALUE; // 默认无大小限制
+                requestObj.setMaxResponseSize(maxResponseSize);
                 response = RequestUtils.requests(requestObj);
 
                 // 检查响应是否为空
                 if (response == null) {
                     if (scanConfig.isDebug()) {
-                        System.err.println("请求返回空响应");
+                        logErrorSafely("请求返回空响应");
                     }
                     continue; // 跳过当前步骤，继续下一步
                 }
@@ -672,10 +886,32 @@ public class VulnScanExecutor {
                 }
             } catch (Exception e) {
                 if (scanConfig.isDebug()) {
-                    System.err.println("执行POC步骤时发生异常: " + e.getMessage());
+                    logErrorSafely("执行POC步骤时发生异常: " + e.getMessage());
                     e.printStackTrace();
                 }
-                throw e; // 重新抛出异常，让调用者处理
+                
+                // 区分不同类型的异常进行处理
+                if (e.getMessage() != null && 
+                    (e.getMessage().contains("资源未找到") ||
+                     e.getMessage().contains("请求失败，超出重试次数") ||
+                     e.getMessage().contains("Connection timed out") ||
+                     e.getMessage().contains("Read timed out") ||
+                     e.getMessage().contains("SocketTimeoutException") ||
+                     e.getMessage().contains("ConnectException") ||
+                     e.getMessage().contains("UnknownHostException"))) {
+                    // 对于网络相关的预期错误，记录日志但继续执行
+                    if (scanConfig.isDebug()) {
+                        logErrorSafely("网络请求失败，跳过当前步骤继续执行: " + e.getMessage());
+                    }
+                    return false; // 返回false表示匹配失败，但不中断扫描
+                } else {
+                    // 对于其他严重异常（如配置错误、代码错误等），重新抛出
+                    if (scanConfig.isDebug()) {
+                        logErrorSafely("严重异常，停止当前POC执行: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                    throw e;
+                }
             } finally {
                 // 释放资源
                 if (response != null) {
@@ -684,7 +920,7 @@ public class VulnScanExecutor {
                     } catch (Exception e) {
                         // 忽略关闭连接时的异常
                         if (scanConfig.isDebug()) {
-                            System.err.println("关闭连接时发生异常: " + e.getMessage());
+                            logErrorSafely("关闭连接时发生异常: " + e.getMessage());
                         }
                     }
                 }
@@ -693,5 +929,21 @@ public class VulnScanExecutor {
 
         // 所有步骤执行完毕，返回成功
         return true;
+    }
+
+    /**
+     * 线程安全的日志输出方法
+     * 防止多线程并发输出时出现字符串混乱
+     */
+    private synchronized void logSafely(String message) {
+        System.out.println(message);
+    }
+
+    /**
+     * 线程安全的错误日志输出方法
+     * 防止多线程并发输出时出现字符串混乱
+     */
+    private synchronized void logErrorSafely(String message) {
+        System.err.println(message);
     }
 }

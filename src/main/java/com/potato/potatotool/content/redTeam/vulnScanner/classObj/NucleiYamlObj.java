@@ -1,6 +1,7 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.classObj;
 
 import lombok.Data;
+import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 
 import java.util.*;
 

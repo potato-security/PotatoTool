@@ -438,18 +438,18 @@ public class Utils {
         String httpUrl = "http://" + host;
 
         // 先尝试 HTTPS
-        if (isReachable(httpsUrl, isCrawlProxy, true)) {
-            return httpsUrl;
+        String resUrl_https = isReachableUrl(httpsUrl, isCrawlProxy, true);
+        if (resUrl_https != null) {
+            return resUrl_https;
         }
-        // 如果 HTTPS 失败，尝试 HTTP
-        else if (isReachable(httpUrl, isCrawlProxy, false)) {
-            return httpUrl;
+        // 尝试 HTTP
+        String resUrl_http = isReachableUrl(httpUrl, isCrawlProxy, true);
+        if (resUrl_http != null) {
+            return resUrl_http;
         }
 
-        // 两种协议都不可达
-        else {
-            return null;
-        }
+        // 都不可达
+        return null;
     }
 
     // 判断是否是无效的 HTTP/HTTPS 端口
@@ -459,11 +459,10 @@ public class Utils {
         return port != 80 && port != 443 && (port < 1024 || port > 49151);
     }
 
-    private static boolean isReachable(String urlStr, boolean isCrawlProxy, boolean isHttps) {
+    private static String isReachableUrl(String urlStr, boolean isCrawlProxy, boolean isHttps) {
         try {
             RequestObj obj = new RequestObj().setUrl(urlStr)
                     .setFollowRedirects(true)
-                    .setStrictSslValidation(isHttps)
                     .setMethod("HEAD")
 //                    .setMethod("GET")   // 建议使用HEAD，但是部分网站单独设置不允许HEAD请求
 //                    .setTimeOut(20)
@@ -474,10 +473,13 @@ public class Utils {
             int statusCode = con.getResponseCode();
             String content = con.getTextStr();
             // 2xx 或 3xx 响应码 并且 不能是burp中间层代错  表示服务器正常响应
-            return (statusCode >= 200 && statusCode < 400) && !content.startsWith("<html><head><title>Burp Suite Professional</title>");
+            if((statusCode >= 200 && statusCode < 400) && !content.startsWith("<html><head><title>Burp Suite Professional</title>")) {
+                return obj.getUrl();    // 返回url，获取SSL降级/升级后的url-可能和传入的urlStr不一致
+            }
         } catch (Exception e) {
-            return false;  // 连接失败或不可达
+            return null;  // 连接失败或不可达
         }
+        return null;
     }
 
 
@@ -496,8 +498,15 @@ public class Utils {
 
     public static void main(String[] args) throws Exception {
         System.out.println(getWebInfo("potato.gold:3000",false,false,2,2, false));
+        System.out.println(getWebInfo("potato.gold",false,false,2,2, false));
         System.out.println(completeUrl("potato.gold:3000", true));
         System.out.println(completeUrl("potato.gold:3000", false));
+        System.out.println(completeUrl("potato.gold", true));
+        System.out.println(completeUrl("potato.gold", false));
+        System.out.println(completeUrl("self-signed.badssl.com", true));
+        System.out.println(completeUrl("self-signed.badssl.com", false));
+        System.out.println(completeUrl("wrong.host.badssl.com", true));
+        System.out.println(completeUrl("wrong.host.badssl.com", false));
 //        System.out.println(findSensitiveInformation("手机号测试：18666677777\n" +
 //                "身份证号：441400198203221497\n" +
 //                "`password='1433223'`\n" +

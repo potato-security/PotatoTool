@@ -220,10 +220,6 @@ public class HttpHandler {
                     requestObj.setNoUserAgent(Boolean.parseBoolean(value));
                     break;
 
-                case "strictsslvalidation":
-                    requestObj.setStrictSslValidation(Boolean.parseBoolean(value));
-                    break;
-
                 case "proxiestype":
                     try {
                         requestObj.setProxiesType(value.toUpperCase());

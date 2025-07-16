@@ -31,8 +31,8 @@ public class VulnScanService {
     private final List<Consumer<List<ScanResult>>> completeListeners = new CopyOnWriteArrayList<>();
     
     // 默认POC目录
-//    private static final String DEFAULT_POC_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/poc";
-    private static final String DEFAULT_POC_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\poc";
+    private static final String DEFAULT_POC_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/poc";
+    // private static final String DEFAULT_POC_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\poc";
     /**
      * 私有构造函数
      */
@@ -77,11 +77,19 @@ public class VulnScanService {
     }
     
     /**
-     * 获取已加载的POC列表
+     * 获取POC列表
      * @return POC列表
      */
     public List<PocObj.Poc> getPocList() {
         return scanExecutor.getPocList();
+    }
+    
+    /**
+     * 获取POC数量
+     * @return POC数量
+     */
+    public int getPocCount() {
+        return scanExecutor.getPocList().size();
     }
     
     /**
@@ -91,6 +99,18 @@ public class VulnScanService {
      */
     public int setTargets(String targets) {
         return scanExecutor.parseTargets(targets);
+    }
+    
+    /**
+     * 设置目标列表
+     * @param targets 目标列表
+     * @return 解析的目标数量
+     */
+    public int setTargets(List<String> targets) {
+        if (targets == null || targets.isEmpty()) {
+            return 0;
+        }
+        return scanExecutor.parseTargets(String.join(",", targets));
     }
     
     /**
@@ -168,6 +188,46 @@ public class VulnScanService {
     }
     
     /**
+     * 设置超时时间
+     * @param timeout 超时时间（秒）
+     */
+    public void setTimeout(int timeout) {
+        ScanConfig config = scanExecutor.getScanConfig();
+        config.setTimeout(timeout);
+        scanExecutor.setScanConfig(config);
+    }
+    
+    /**
+     * 设置重试次数
+     * @param retries 重试次数
+     */
+    public void setRetries(int retries) {
+        ScanConfig config = scanExecutor.getScanConfig();
+        config.setRetries(retries);
+        scanExecutor.setScanConfig(config);
+    }
+    
+    /**
+     * 设置用户代理
+     * @param userAgent 用户代理字符串
+     */
+    public void setUserAgent(String userAgent) {
+        ScanConfig config = scanExecutor.getScanConfig();
+        config.setUserAgent(userAgent);
+        scanExecutor.setScanConfig(config);
+    }
+    
+    /**
+     * 设置是否跟随重定向
+     * @param followRedirects 是否跟随重定向
+     */
+    public void setFollowRedirects(boolean followRedirects) {
+        ScanConfig config = scanExecutor.getScanConfig();
+        config.setFollowRedirects(followRedirects);
+        scanExecutor.setScanConfig(config);
+    }
+    
+    /**
      * 添加扫描结果监听器
      * @param listener 监听器
      */
@@ -204,6 +264,22 @@ public class VulnScanService {
     }
     
     /**
+     * 设置扫描结果回调
+     * @param callback 回调接口
+     */
+    public void setResultCallback(VulnScanCallback callback) {
+        if (callback != null) {
+            // 清空现有监听器
+            resultListeners.clear();
+            completeListeners.clear();
+            
+            // 添加新的监听器
+            addResultListener(callback::onResult);
+            addCompleteListener(callback::onComplete);
+        }
+    }
+    
+    /**
      * 开始扫描
      * @return 是否成功启动扫描
      */
@@ -223,38 +299,44 @@ public class VulnScanService {
             return false;
         }
         
-        // 创建回调
-        ScanCallback callback = new ScanCallback() {
-            @Override
-            public void onResult(ScanResult result) {
-                // 通知所有结果监听器
-                for (Consumer<ScanResult> listener : resultListeners) {
-                    try {
-                        listener.accept(result);
-                    } catch (Exception e) {
-                        System.err.println("通知结果监听器时发生异常: " + e.getMessage());
-                        e.printStackTrace();
+        try {
+            // 创建回调
+            VulnScanCallback callback = new VulnScanCallback() {
+                @Override
+                public void onResult(ScanResult result) {
+                    // 通知所有结果监听器
+                    for (Consumer<ScanResult> listener : resultListeners) {
+                        try {
+                            listener.accept(result);
+                        } catch (Exception e) {
+                            System.err.println("通知结果监听器时发生异常: " + e.getMessage());
+                            e.printStackTrace();
+                        }
                     }
                 }
-            }
+                
+                @Override
+                public void onComplete(List<ScanResult> results) {
+                    // 通知所有完成监听器
+                    for (Consumer<List<ScanResult>> listener : completeListeners) {
+                        try {
+                            listener.accept(results);
+                        } catch (Exception e) {
+                            System.err.println("通知完成监听器时发生异常: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
             
-            @Override
-            public void onComplete(List<ScanResult> results) {
-                // 通知所有完成监听器
-                for (Consumer<List<ScanResult>> listener : completeListeners) {
-                    try {
-                        listener.accept(results);
-                    } catch (Exception e) {
-                        System.err.println("通知完成监听器时发生异常: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        
-        // 启动扫描
-        scanExecutor.startScan(callback);
-        return true;
+            // 启动扫描
+            scanExecutor.startScan(callback);
+            return true;
+        } catch (Exception e) {
+            System.err.println("启动扫描失败: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
     
     /**
@@ -285,13 +367,21 @@ public class VulnScanService {
      * @return 漏洞数量
      */
     public int getVulnerableCount() {
-        int count = 0;
-        for (ScanResult result : scanExecutor.getScanResults()) {
-            if (result.isVulnerable()) {
-                count++;
+        try {
+            int count = 0;
+            List<ScanResult> results = scanExecutor.getScanResults();
+            if (results != null) {
+                for (ScanResult result : results) {
+                    if (result != null && result.isVulnerable()) {
+                        count++;
+                    }
+                }
             }
+            return count;
+        } catch (Exception e) {
+            System.err.println("获取漏洞数量失败: " + e.getMessage());
+            return 0;
         }
-        return count;
     }
     
     /**
@@ -299,18 +389,23 @@ public class VulnScanService {
      * @return 扫描进度（0-100）
      */
     public int getScanProgress() {
-        if (!scanExecutor.isScanning()) {
-            return 0; // 未开始扫描
-        }
-        
-        int totalTasks = scanExecutor.getTargetList().size() * scanExecutor.getPocList().size();
-        int completedTasks = scanExecutor.getScanResults().size();
-        
-        if (totalTasks == 0) {
+        try {
+            if (!scanExecutor.isScanning()) {
+                return 0; // 未开始扫描
+            }
+            
+            int totalTasks = scanExecutor.getTargetList().size() * scanExecutor.getPocList().size();
+            int completedTasks = scanExecutor.getScanResults().size();
+            
+            if (totalTasks == 0) {
+                return 0;
+            }
+            
+            return Math.min((int) ((completedTasks * 100.0) / totalTasks), 100);
+        } catch (Exception e) {
+            System.err.println("获取扫描进度失败: " + e.getMessage());
             return 0;
         }
-        
-        return (int) ((completedTasks * 100.0) / totalTasks);
     }
     
     /**

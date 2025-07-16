@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 
 import com.google.gson.Gson;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.*;
+import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.constructor.NucleiConstructor;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.constructor.XrayConstructor;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.converter.PocConverterFactory;

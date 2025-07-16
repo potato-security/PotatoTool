@@ -32,7 +32,6 @@ import java.util.Map;
  * postData          POST数据byte[]
  * formParameters    form表单Map格式
  * file              上传的文件File
- * strictSslValidation 严格的SSL校验（默：否） 一般校验协议是否适用SSL使用
  */
 public class RequestObj {
     private String method = "GET";
@@ -51,12 +50,10 @@ public class RequestObj {
     private int retries = 1;
     private int retryWaitTime = 1;
     private boolean noUserAgent = false;
-    private boolean strictSslValidation = false;
     private int maxResponseSize = Integer.MAX_VALUE;
 
     public RequestObj(){
         initializeProxySettings();
-
     }
 
     private void initializeProxySettings() {
@@ -76,9 +73,11 @@ public class RequestObj {
         return this;
     }
 
+    private static final String[] VALID_METHODS = {"GET", "POST", "OPTIONS", "PUT", "DELETE", "HEAD"};
+    
     private void validateMethod(String method) {
-        if (!Arrays.asList("GET", "POST", "OPTIONS", "PUT", "DELETE", "HEAD").contains(method.toUpperCase())) {
-            throw new IllegalArgumentException("[×] 请求方法不应为" + method);
+        if (!Arrays.asList(VALID_METHODS).contains(method.toUpperCase())) {
+            throw new IllegalArgumentException("[×] 不支持的请求方法: " + method);
         }
     }
 
@@ -255,15 +254,6 @@ public class RequestObj {
 
     public String getBearerToken() {
         return bearerToken;
-    }
-
-    public RequestObj setStrictSslValidation(boolean strictSslValidation) {
-        this.strictSslValidation = strictSslValidation;
-        return this;
-    }
-
-    public boolean getStrictSslValidation(){
-        return strictSslValidation;
     }
 
     public RequestObj setMaxResponseSize(int maxResponseSize) {

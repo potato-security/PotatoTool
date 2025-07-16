@@ -9,9 +9,9 @@ import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 import com.opencsv.CSVWriter;
-import com.potato.potatotool.content.blueTeam.webshell.WebShellDecryptService;
-import com.potato.potatotool.content.blueTeam.webshell.model.DecryptConfig;
-import com.potato.potatotool.content.blueTeam.webshell.model.DecryptResult;
+import com.potato.potatotool.content.blueTeam.webshellDecrypt.WebShellDecryptService;
+import com.potato.potatotool.content.blueTeam.webshellDecrypt.model.DecryptConfig;
+import com.potato.potatotool.content.blueTeam.webshellDecrypt.model.DecryptResult;
 import com.potato.potatotool.utils.data.StrUtils;
 import com.potato.potatotool.utils.misc.ReadabilityChecker;
 import com.potato.potatotool.utils.crypto.SecurityInitializer;
