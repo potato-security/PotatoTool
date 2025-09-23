@@ -203,11 +203,12 @@ public class OkHttpRequestUtils {
         }
         
         // 判断是否为 SSL/协议不匹配等导致的异常，可降级场景
-         private boolean isSslOrProtocolException(IOException e) {
-             return e instanceof SSLHandshakeException ||
-             e instanceof SSLProtocolException ||
-             e instanceof SSLPeerUnverifiedException;
-         }
+        private boolean isSslOrProtocolException(IOException e) {
+            return e instanceof SSLHandshakeException ||
+            e instanceof SSLProtocolException ||
+            e instanceof SSLPeerUnverifiedException ||
+            e instanceof SSLException; // 包含所有SSL相关异常的基类
+        }
     }
 
     /**

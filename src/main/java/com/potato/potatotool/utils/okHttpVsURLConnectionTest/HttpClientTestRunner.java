@@ -1,10 +1,10 @@
-package com.potato.potatotool.utils.network;
+package com.potato.potatotool.utils.okHttpVsURLConnectionTest;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Scanner;
-import java.util.List;
+
 import com.potato.potatotool.utils.okhttp.OkHttpRequestUtils;
 import com.potato.potatotool.utils.okhttp.OkHttpRequestObj;
 import com.potato.potatotool.utils.okhttp.OkHttpCustomResponse;
@@ -217,13 +217,16 @@ public class HttpClientTestRunner {
         System.out.println("\n开始运行所有性能测试...");
         
         try {
-            // 先运行基本测试
+            // 先运行基本测试 - 会自动输出到文件
+            System.out.println("\n========== 基本测试套件 ==========");
             HttpClientBenchmark.runAllBenchmarks();
             
-            // 再运行高并发测试（使用较小的数据集）
-            System.out.println("\n现在运行高并发测试（使用默认参数）...");
+            // 再运行高并发测试（使用较小的数据集）- 会自动输出到另一个文件
+            System.out.println("\n========== 高并发测试套件 ==========");
             java.util.List<String> testUrls = generateTestUrls(1000);
             HighConcurrencyBenchmark.runMassiveScanTest(testUrls, 50);
+            
+            System.out.println("\n所有测试完成，结果已保存到文件中");
         } catch (Exception e) {
             System.err.println("测试过程中出现错误: " + e.getMessage());
             e.printStackTrace();

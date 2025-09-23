@@ -51,6 +51,13 @@ public class RequestUtils {
         });
     }
 
+    // 判断是否为 SSL/协议不匹配等导致的异常，可降级场景
+    private static boolean isSslOrProtocolException(IOException e) {
+        return e instanceof SSLHandshakeException ||
+         e instanceof SSLProtocolException ||
+         e instanceof SSLPeerUnverifiedException ||
+         e instanceof SSLException; // 包含所有SSL相关异常的基类
+    }
 
     /**
      * @param requestObj-url               请求URL
@@ -77,6 +84,9 @@ public class RequestUtils {
         int maxRetries = requestObj.getRetries();
         int retryWaitTime = requestObj.getRetryWaitTime();
         int retryCount = 0;
+        
+        // 标记是否已经尝试过协议切换
+        boolean protocolSwitched = false;
 
         Exception lastException = null;
         
@@ -84,11 +94,14 @@ public class RequestUtils {
 
             // 创建HttpURLConnection对象 防止重复创建
             HttpURLConnection con = null;
-
+            URL currentUrl = null;
+            
             try {
+                String url = requestObj.getUrl();
+                currentUrl = new URL(url);
+                
                 // 初始化入参
                 String method = requestObj.getMethod();
-                String url = requestObj.getUrl();
                 Map<String, String> headers = requestObj.getHeaders();
                 String bearerToken = requestObj.getBearerToken();
                 Boolean randomUserAgent = requestObj.getRandomUserAgent();
@@ -99,8 +112,6 @@ public class RequestUtils {
                 int timeOut = requestObj.getTimeOut();
                 String boundary = null;
 
-                // 创建URL对象
-                URL obj = new URL(url);
                 if (proxies != null && !proxies.isEmpty()) {
 
                     String[] tmpProxyList = proxies.toLowerCase().replace("http://", "").replace("https://", "").replace("socks://", "").split(":");
@@ -111,10 +122,10 @@ public class RequestUtils {
                     }
 
                     Proxy proxy = new Proxy(proxyType, new InetSocketAddress(tmpProxyList[0], Integer.parseInt(tmpProxyList[1])));
-                    con = (HttpURLConnection) obj.openConnection(proxy);
+                    con = (HttpURLConnection) currentUrl.openConnection(proxy);
 
                 } else {
-                    con = (HttpURLConnection) obj.openConnection(Proxy.NO_PROXY);
+                    con = (HttpURLConnection) currentUrl.openConnection(Proxy.NO_PROXY);
                 }
 
                 // 设置请求方法
@@ -250,6 +261,89 @@ public class RequestUtils {
                 long endTime = System.currentTimeMillis();
                 response.setResponseTime(endTime - startTime);
                 
+                // 处理跨协议重定向（HttpURLConnection无法处理跨协议的重定向）
+                if (followRedirects && (responseCode == 301 || responseCode == 302 || responseCode == 303 || 
+                        responseCode == 307 || responseCode == 308)) {
+                    
+                    // 检查是否有重定向URL
+                    String location = con.getHeaderField("Location");
+                    if (location != null && !location.isEmpty()) {
+                        if (debugMode) {
+                            System.err.println("处理跨协议重定向: " + responseCode + " -> " + location);
+                        }
+                        
+                        // 关闭当前连接
+                        response.disconnect();
+                        
+                        // 如果是相对URL，转换为绝对URL
+                        URL locationURL;
+                        if (location.startsWith("http")) {
+                            locationURL = new URL(location);
+                        } else if (location.startsWith("/")) {
+                            locationURL = new URL(currentUrl.getProtocol() + "://" + currentUrl.getHost() + 
+                                    (currentUrl.getPort() > 0 && currentUrl.getPort() != 80 && currentUrl.getPort() != 443 ? ":" + currentUrl.getPort() : "") + 
+                                    location);
+                        } else {
+                            String path = currentUrl.getPath();
+                            if (path.endsWith("/")) {
+                                locationURL = new URL(currentUrl, path + location);
+                            } else {
+                                // 去掉文件名，保留目录
+                                int lastSlash = path.lastIndexOf('/');
+                                if (lastSlash >= 0) {
+                                    String dir = path.substring(0, lastSlash + 1);
+                                    locationURL = new URL(currentUrl, dir + location);
+                                } else {
+                                    locationURL = new URL(currentUrl, "/" + location);
+                                }
+                            }
+                        }
+                        
+                        // 更新URL并增加重定向计数
+                        requestObj.setUrl(locationURL.toString());
+                        
+                        // 如果协议改变（HTTP→HTTPS或HTTPS→HTTP），标记为已切换协议
+                        if (!currentUrl.getProtocol().equalsIgnoreCase(locationURL.getProtocol())) {
+                            protocolSwitched = true;
+                            if (debugMode) {
+                                System.err.println("重定向导致协议切换: " + currentUrl.getProtocol() + " -> " + locationURL.getProtocol());
+                            }
+                        }
+                        
+                        continue; // 继续处理重定向
+                    }
+                }
+                
+                // 检查是否需要协议升级（HTTP 426状态码）
+                if ("http".equalsIgnoreCase(currentUrl.getProtocol()) && responseCode == 426 && !protocolSwitched) {
+                    if (debugMode) {
+                        System.err.println("收到426状态码，尝试升级到HTTPS: " + url);
+                    }
+                    response.disconnect();
+                    protocolSwitched = true;
+                    
+                    // 修改URL为HTTPS并处理端口
+                    int port = currentUrl.getPort();
+                    // 如果是标准HTTP端口，切换到标准HTTPS端口
+                    if (port == 80) {
+                        port = 443;
+                    }
+                    // 构建新的URL
+                    URL newUrl;
+                    if (port == -1) {
+                        // 如果没有指定端口，不添加端口参数
+                        newUrl = new URL("https", currentUrl.getHost(), currentUrl.getPath() + 
+                            (currentUrl.getQuery() != null ? "?" + currentUrl.getQuery() : ""));
+                    } else {
+                        newUrl = new URL("https", currentUrl.getHost(), port, currentUrl.getPath() + 
+                            (currentUrl.getQuery() != null ? "?" + currentUrl.getQuery() : ""));
+                    }
+                    requestObj.setUrl(newUrl.toString());
+                    
+                    // 协议切换不计入重试次数
+                    continue;
+                }
+                
                 // 对于5xx服务器错误，可以考虑重试；对于4xx客户端错误，不应重试
                 if (responseCode >= 500) {
                     if (debugMode) {
@@ -264,14 +358,38 @@ public class RequestUtils {
                 if (con != null) {
                     con.disconnect();
                 }
-                String errorMsg = e.toString();
-
-                // 处理SSL证书相关问题
-                if(errorMsg.contains("Unsupported or unrecognized SSL message")){
+                
+                // 处理SSL证书相关问题 - 尝试协议降级
+                if ("https".equalsIgnoreCase(currentUrl.getProtocol()) && isSslOrProtocolException(e) && !protocolSwitched) {
                     if (debugMode) {
-                        System.err.println("不支持SSL，尝试使用HTTP: " + requestObj.getUrl());
+                        System.err.println("SSL异常，尝试降级到HTTP: " + requestObj.getUrl() + " - " + e.getMessage());
                     }
-                    requestObj.setUrl(requestObj.getUrl().replaceAll("https://","http://"));
+                    protocolSwitched = true;
+                    
+                    try {
+                        // 构建新的HTTP URL，处理端口转换
+                        int port = currentUrl.getPort();
+                        // 如果是标准HTTPS端口，切换到标准HTTP端口
+                        if (port == 443) {
+                            port = 80;
+                        }
+                        // 构建新的URL，确保路径和查询参数都正确保留
+                        URL newUrl;
+                        if (port == -1) {
+                            // 如果没有指定端口，不添加端口参数
+                            newUrl = new URL("http", currentUrl.getHost(), currentUrl.getPath() + 
+                                (currentUrl.getQuery() != null ? "?" + currentUrl.getQuery() : ""));
+                        } else {
+                            newUrl = new URL("http", currentUrl.getHost(), port, currentUrl.getPath() + 
+                                (currentUrl.getQuery() != null ? "?" + currentUrl.getQuery() : ""));
+                        }
+                        requestObj.setUrl(newUrl.toString());
+                    } catch (MalformedURLException ex) {
+                        // 如果URL构建失败，回退到简单的替换
+                        requestObj.setUrl(requestObj.getUrl().replaceFirst("https://","http://"));
+                    }
+                    
+                    // 协议切换不计入重试次数
                     continue;
                 }
                 
@@ -296,23 +414,23 @@ public class RequestUtils {
                 
                 // 处理其他IO异常（包括 5xx 响应、读取超时、网络连接问题、连接超时等），根据情况重试
                 if (retryCount < maxRetries) {
-                    retryCount++;
                     // 适度增加超时时间，避免过度增长
                     int newTimeout = Math.min(requestObj.getTimeOut() + 5, 20);
                     requestObj.setTimeOut(newTimeout);
                     
                     if (debugMode) {
-                        System.err.println("重试请求 (" + retryCount + "/" + maxRetries + "): " + requestObj.getUrl() + ", 错误: " + e.getMessage());
+                        System.err.println("重试请求 (" + (retryCount + 1) + "/" + maxRetries + "): " + requestObj.getUrl() + ", 错误: " + e.getMessage());
                     }
                     
-                    Thread.sleep(retryWaitTime * 1000); // 重试间隔时间
+                    // 使用递增的等待时间策略，避免连续快速重试
+                    int waitTime = retryWaitTime + retryCount;
+                    Thread.sleep(waitTime * 1000);
+                    retryCount++;
                     continue; // 继续重试
-                } else {
-                    // 已达到最大重试次数，跳出循环
-                    break;
                 }
-            }
 
+                break;
+            }
         }
         
         // 如果循环结束仍未成功，抛出最后一次的异常信息

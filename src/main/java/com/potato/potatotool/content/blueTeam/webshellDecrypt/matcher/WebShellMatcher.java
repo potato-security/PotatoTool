@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.potato.potatotool.utils.data.StrUtils.containsAllElements;
+import static com.potato.potatotool.utils.data.StrUtils.*;
 
 /**
  * WebShell特征匹配器
  * 用于识别各种WebShell管理工具的特征
- * 支持哥斯拉、冰蝎、蚁剑、菜刀等主流WebShell工具的特征识别
+ * 支持哥斯拉、冰蝎、蚁剑、菜刀、Cknife等主流WebShell工具的特征识别
+ * 支持phpspy、silic等主流WebShell大马的特征识别
  * 
  * @author Potato
  * @version 2.1
@@ -32,9 +33,9 @@ public class WebShellMatcher {
         "msg"
     };
     
-    private static final String[] BINGXIE3_FEATURES = {
-        "txcwr1nnexzad0zaawmipazjh1bfbfththcjsluxwed",
-        "dfaxqv1lorchrqtlrlwmahwftag/m"
+    private static final String[] BINGXIE3_OR_FEATURES = {
+        "txcwr1nnexzad0zaawmipazjh1bfbfththcjsluxwed",  // 响应
+        "dfaxqv1lorchrqtlrlwmahwftag/m" // 请求
     };
     
     private static final String[] BINGXIE4_FEATURES = {
@@ -70,20 +71,100 @@ public class WebShellMatcher {
         "response.write(",
         "response.end();"
     };
+
+    private static final String[] YIJIAN_RESPONSE_FEATURES = {
+        "server",   // header
+        "date",
+        "content-type",
+        "connection",
+        "vary",
+        "x-powered-by",
+        "content-length",
+        "transfer-encoding",
+        "->|",  // body
+        "|<-"
+    };
+
+    private static final String[] NO_YIJIAN_RESPONSE_FEATURES = {
+        "charset=utf-8"
+    };
+
+    private static final String[] YIJIAN_RESPONSE_OR_FEATURES = {
+        "antsword/v",   // request header
+        "antsuccess",   // response body
+        "antoutput",
+        "<b>notice</b>: use of undefined constant"
+    };
+
     
-    private static final String[] CAIDAO_FEATURES = {
-        "=@eval(base64_decode($_post["
+    private static final String[] CAIDAO_OR_FEATURES = {
+        "=@eval(base64_decode($_post[",
+        ";z0=",
+        ";z1="
+    };
+
+    private static final String[] CAIDAO_RESPONSE_FEATURES = {
+        "[s]",
+        "[e]",
+        "x@y"
+    };
+
+    private static final String[] CKNIFE_OR_FEATURES = {
+        "=@eval(bse64_decode($_post",
+        ";z1=",
+        ";z2=",
+        ";z3="
+    };
+
+    private static final String[] NO_CKNIFE_FEATURES = {
+        ";z0=",
+    };
+
+    private static final String[] CKNIFE_RESPONSE_FEATURES = {
+        "server",   // header
+        "date",
+        "content-type",
+        "connection",
+        "vary",
+        "x-powered-by",
+        "content-length",
+        "->|",  // body
+        "|<-"
+    };
+
+    private static final String[] NO_CKNIFE_RESPONSE_FEATURES = {
+        "charset=utf-8" // header
+    };
+
+    private static final String[] PHPSPY_FEATURES = {
+        "loginpass=phpspy", // cookie
+        "badlog="
+    };
+
+    private static final String[] PHPSPY_RESPONSE_FEATURES = {
+        "www.4ngel.net",
+        "phpspy 2014 final"
+    };
+
+    private static final String[] SILIC_FEATURES = {
+        "postpass", // cookie字段
+        "serveru",
+        "serverp"
+    };
+
+    private static final String[] SILIC_RESPONSE_FEATURES = {
+        "1212.ip138.com/ic.asp"
     };
     
     private static final String[] HEADER_BINGXIE2_FEATURES = {
-        "Accept: text/html, image/gif, image/jpeg, ; q=.2, /; q=.2",
+        "accept: text/html, image/gif, image/jpeg, ; q=.2, /; q=.2",
         "display_error",
-        "Cookie: PHPSESSID=; path=/"
+        "cookie: phpsessid=; path=/"
     };
     
     private static final String[] HEADER_BINGXIE3_FEATURES = {
-        "Accept: applicaation/json, text/javascript, */*; q=0.01",
-        "Connection: Keep-Alive"
+        "accept: applicaation/json, text/javascript, */*; q=0.01",
+        "connection: keep-alive"
     };
     
     // 冰蝎默认密钥
@@ -111,12 +192,18 @@ public class WebShellMatcher {
         // 按优先级进行特征匹配
         if (matchGesila(lowerDecrypted)) {
             matchedFeatures.add("哥斯拉");
-        } else if (matchBingxie(lowerDecrypted, aesKey)) {
+        } else if (matchBingxie(lowerOriginal, lowerDecrypted, aesKey)) {
             matchedFeatures.add("冰蝎");
         } else if (matchYijian(lowerOriginal, lowerDecrypted)) {
             matchedFeatures.add("蚁剑");
         } else if (matchCaidao(lowerDecrypted)) {
             matchedFeatures.add("菜刀");
+        } else if (matchCknife(lowerDecrypted)) {
+            matchedFeatures.add("Cknife");
+        } else if (matchPhpspy(lowerDecrypted)) {
+            matchedFeatures.add("phpspy大马");
+        } else if (matchSilic(lowerDecrypted)) {
+            matchedFeatures.add("silic大马");
         }
         
         // 弱特征匹配（仅在没有强特征时进行）
@@ -168,7 +255,7 @@ public class WebShellMatcher {
      * @param aesKey AES解密使用的密钥
      * @return 是否匹配冰蝎特征
      */
-    private boolean matchBingxie(String content, String aesKey) {
+    private boolean matchBingxie(String lowerOriginal, String content, String aesKey) {
         // 检查AES密钥是否为冰蝎默认密钥
         if (BINGXIE_DEFAULT_KEY.equals(aesKey)) {
             return true;
@@ -183,9 +270,14 @@ public class WebShellMatcher {
         if (containsAllElements(content, BINGXIE2_FEATURES)) {
             return true;
         }
-        
+
+        // 冰蝎3、4特征
+        if (lowerOriginal.contains("yc8MNtAHgYXhSjykK5u2E")) {
+            return true;
+        }
+
         // 冰蝎3特征
-        if (containsAllElements(content, BINGXIE3_FEATURES)) {
+        if (containsAnyElements(lowerOriginal, BINGXIE3_OR_FEATURES)) {
             return true;
         }
         
@@ -228,7 +320,15 @@ public class WebShellMatcher {
         }
         
         // 蚁剑url特征
-        return containsAllElements(decryptedContent, YIJIAN_URL_FEATURES);
+        if (containsAllElements(decryptedContent, YIJIAN_URL_FEATURES)) {
+            return true;
+        }
+
+        if (containsAllElements(decryptedContent, YIJIAN_RESPONSE_FEATURES) && !containsAllElements(decryptedContent, NO_YIJIAN_RESPONSE_FEATURES)){
+            return true;
+        }
+
+        return containsAnyElements(decryptedContent, YIJIAN_RESPONSE_OR_FEATURES);
     }
     
     /**
@@ -239,7 +339,54 @@ public class WebShellMatcher {
      * @return 是否匹配菜刀特征
      */
     private boolean matchCaidao(String content) {
-        return containsAllElements(content, CAIDAO_FEATURES);
+        if (containsAnyElements(content, CAIDAO_OR_FEATURES)) {
+            return true;
+        }
+
+        return containsAllElements(content, CAIDAO_RESPONSE_FEATURES);
+    }
+
+    /**
+     * 匹配Cknife特征
+     * 检测CknifeWebShell特征
+     *
+     * @param content 待检测内容（已转小写）
+     * @return 是否匹配Cknife特征
+     */
+    private boolean matchCknife(String content) {
+        if (containsAnyElements(content, CKNIFE_OR_FEATURES) && !containsAllElements(content, NO_CKNIFE_FEATURES)) {
+            return true;
+        }
+
+        return containsAllElements(content, CKNIFE_RESPONSE_FEATURES) && !containsAllElements(content, NO_CKNIFE_RESPONSE_FEATURES);
+    }
+
+    /**
+     * 匹配phpspy大马特征
+     *
+     * @param content 待检测内容（已转小写）
+     * @return 是否匹配phpspy大马特征
+     */
+    private boolean matchPhpspy(String content) {
+        if (containsAllElements(content, PHPSPY_FEATURES)) {
+            return true;
+        }
+
+        return containsAllElements(content, PHPSPY_RESPONSE_FEATURES);
+    }
+
+    /**
+     * 匹配silic大马特征
+     *
+     * @param content 待检测内容（已转小写）
+     * @return 是否匹配silic大马特征
+     */
+    private boolean matchSilic(String content) {
+        if (containsAllElements(content, SILIC_FEATURES)) {
+            return true;
+        }
+
+        return containsAllElements(content, SILIC_RESPONSE_FEATURES);
     }
     
     /**

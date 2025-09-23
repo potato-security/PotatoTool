@@ -738,6 +738,22 @@ public class StrUtils {
         return true;
     }
 
+    /**
+     *      A字符串 是否包含B数组中任意元素
+     * @param str       A字符串
+     * @param elements  B数组
+     * @return          如果包含任意一个元素返回true，否则返回false
+     */
+    public static boolean containsAnyElements(String str, String[] elements) {
+        for (String element : elements) {
+            if (str.contains(element)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 
     /**
      *      Abyte集合 是否只有Bbyte
