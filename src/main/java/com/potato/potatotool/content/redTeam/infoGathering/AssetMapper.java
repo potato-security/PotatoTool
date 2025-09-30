@@ -322,44 +322,47 @@ public class AssetMapper {
 
 
         if(!isHasAssetKey) {
-            // 无任何平台Key时，调用amap
-            paneInfoSearch.updateEchoVBox("Amap检索域名信息", false, null);
+            // amap官方接口已关闭，暂无免费接口可用
+            paneInfoSearch.updateEchoVBox("Amap检索域名信息(官方接口已关闭)", true, null);
+            if(false) {
+                // 无任何平台Key时，调用amap
+                paneInfoSearch.updateEchoVBox("Amap检索域名信息", false, null);
 
-            int totalTasks = tmpDomainSet.size();
-            AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
+                int totalTasks = tmpDomainSet.size();
+                AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
 
-            executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
-            futures = new ArrayList<>();
-            for (String domainStr : tmpDomainSet) {
-                // 将每个任务提交到线程池
-                CompletableFuture<List<DomainInfo>> future = CompletableFuture.supplyAsync(() -> {
-                    JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa(domainStr);
+                executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+                futures = new ArrayList<>();
+                for (String domainStr : tmpDomainSet) {
+                    // 将每个任务提交到线程池
+                    CompletableFuture<List<DomainInfo>> future = CompletableFuture.supplyAsync(() -> {
+                        JsonObject briefExtendedInfo = fofaSearch.getBriefExtendedInfo_Fofa(domainStr);
 
-                    int progress = completedTasks.incrementAndGet();
-                    double percentage = ((progress - 0.5) * 100.0) / totalTasks;
-                    String showText = String.format("正在检索域名信息 [%d/%d]：%s | 进度：%.2f%%",
-                            progress, totalTasks , domainStr, percentage);
-                    paneInfoSearch.updateEchoVBox(showText, false, null);
-                    return DomainInfoMerger.mergeDomainInfos("Amap检索：" + domainStr, briefExtendedInfo);
-                }, executor);
-                futures.add(future);
-            }
-
-            // 等待所有任务完成并收集结果
-            for (Future<?> future : futures) {
-                try {
-                    domainInfoList.addAll((List<DomainInfo>) future.get());
-                } catch (CancellationException ce) {
-                    continue;
-                } catch (Exception e) {
-                    if(debugMode) e.printStackTrace();
+                        int progress = completedTasks.incrementAndGet();
+                        double percentage = ((progress - 0.5) * 100.0) / totalTasks;
+                        String showText = String.format("正在检索域名信息 [%d/%d]：%s | 进度：%.2f%%",
+                                progress, totalTasks, domainStr, percentage);
+                        paneInfoSearch.updateEchoVBox(showText, false, null);
+                        return DomainInfoMerger.mergeDomainInfos("Amap检索：" + domainStr, briefExtendedInfo);
+                    }, executor);
+                    futures.add(future);
                 }
+
+                // 等待所有任务完成并收集结果
+                for (Future<?> future : futures) {
+                    try {
+                        domainInfoList.addAll((List<DomainInfo>) future.get());
+                    } catch (CancellationException ce) {
+                        continue;
+                    } catch (Exception e) {
+                        if (debugMode) e.printStackTrace();
+                    }
+                }
+                // 停止所有线程
+                ExecutorServiceManager.shutdownExecutor(poolName);
+
+                paneInfoSearch.updateEchoVBox("Amap检索域名信息", true, null);
             }
-            // 停止所有线程
-            ExecutorServiceManager.shutdownExecutor(poolName);
-
-            paneInfoSearch.updateEchoVBox("Amap检索域名信息", true, null);
-
         }else {
             // 平台查询原始域名  【平台api存在频率限制，不建议多线程调用】
             paneInfoSearch.updateEchoVBox("平台检索原始域名", false, null);

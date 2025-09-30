@@ -44,29 +44,29 @@ public class AssetExcelExporter {
             // 创建主要信息概览sheet
             createOverviewSheet(companyDomainInfoList);
 
-            // 创建公司详情信息sheet
-            createCompanyDetailSheet(assetObj);
+           // 创建公司详情信息sheet
+           createCompanyDetailSheet(assetObj);
 
-            // 创建公司资产详细信息sheet
-            for (NetAssets company : companyDomainInfoList) {
-                createCompanyAssetSheet(company);
-            }
+           // 创建公司资产详细信息sheet
+           for (NetAssets company : companyDomainInfoList) {
+               createCompanyAssetSheet(company);
+           }
 
-            // 创建敏感信息汇总sheet
-            createSensitiveInfoSheet(companyDomainInfoList);
+           // 创建敏感信息汇总sheet
+           createSensitiveInfoSheet(companyDomainInfoList);
 
-            // 创建信息泄露汇总sheet
-            createLeakageInfoSheet(companyDomainInfoList);
+           // 创建信息泄露汇总sheet
+           createLeakageInfoSheet(companyDomainInfoList);
 
-            // 保存文件
-            File file = new File(filePath);
-            File parentDir = file.getParentFile();
-            if (parentDir!= null &&!parentDir.exists()) {
-                parentDir.mkdirs();
-            }
-            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
-                workbook.write(fileOut);
-            }
+           // 保存文件
+           File file = new File(filePath);
+           File parentDir = file.getParentFile();
+           if (parentDir!= null &&!parentDir.exists()) {
+               parentDir.mkdirs();
+           }
+           try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+               workbook.write(fileOut);
+           }
             workbook.close();
         } catch (Exception e) {
             if(debugMode) e.printStackTrace();
@@ -87,7 +87,7 @@ public class AssetExcelExporter {
         String[] headers = {"公司/个人名称", "域名数量", "IP数量", "端口数量", "域名列表"};
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
-            cell.setCellValue(headers[i]);
+            safeSetCellValue(cell, headers[i]);
             cell.setCellStyle(styles.get("header"));
         }
 
@@ -95,8 +95,7 @@ public class AssetExcelExporter {
         int rowNum = 1;
         for (NetAssets company : companyDomainInfoList) {
             Row row = sheet.createRow(rowNum++);
-
-            row.createCell(0).setCellValue(company.getCompanyName());
+            safeSetCellValue(row.createCell(0), company.getCompanyName());
 
             Set<String> uniqueIps = new HashSet<>();
             Set<String> uniquePorts = new HashSet<>();
@@ -111,9 +110,9 @@ public class AssetExcelExporter {
                 if (domainStr != null && !domainStr.isEmpty()) domains.add(domainStr);
             }
 
-            row.createCell(1).setCellValue(domains.size());
-            row.createCell(2).setCellValue(uniqueIps.size());
-            row.createCell(3).setCellValue(uniquePorts.size());
+            safeSetCellValue(row.createCell(1), domains.size());
+            safeSetCellValue(row.createCell(2), uniqueIps.size());
+            safeSetCellValue(row.createCell(3), uniquePorts.size());
             // 如果文本超出最大限制（32767字符），则分割成多个单元格
             String combinedText = String.join("\n", domains);
             if (combinedText.length() > 32767) {
@@ -121,7 +120,7 @@ public class AssetExcelExporter {
                 int cellCount = (combinedText.length() / 32767) + 1;
                 for (int i = 0; i < cellCount; i++) {
                     String part = combinedText.substring(i * 32767, Math.min((i + 1) * 32767, combinedText.length()));
-                    row.createCell(4 + i).setCellValue(part);
+                    safeSetCellValue(row.createCell(4 + i), part);
                     Cell cell = row.getCell(4 + i);
                     if (cell == null) {
                         cell = row.createCell(i);
@@ -129,7 +128,7 @@ public class AssetExcelExporter {
                     cell.setCellStyle(styles.get("cell"));
                 }
             } else {
-                row.createCell(4).setCellValue(combinedText);
+                safeSetCellValue(row.createCell(4), combinedText);
             }
 
             // 应用样式
@@ -142,9 +141,8 @@ public class AssetExcelExporter {
             }
         }
 
-        // 自动调整列宽
         for (int i = 0; i < 5; i++) {
-            sheet.autoSizeColumn(i);
+            manualSetColumnWidth(sheet, i);
         }
     }
 
@@ -258,7 +256,7 @@ public class AssetExcelExporter {
     private int addSectionTitle(XSSFSheet sheet, int currentRow, String title, int colNum) {
         Row titleRow = sheet.createRow(currentRow++);
         Cell titleCell = titleRow.createCell(0);
-        titleCell.setCellValue(title);
+        safeSetCellValue(titleCell, title);
         sheet.addMergedRegion(new CellRangeAddress(currentRow - 1, currentRow - 1, 0, colNum - 1));
         for (int i = 0; i <= colNum - 1; i++) {
             Cell cell = titleRow.getCell(i);
@@ -273,7 +271,7 @@ public class AssetExcelExporter {
     private int addSubSectionTitle(XSSFSheet sheet, int currentRow, String title, int colNum) {
         Row titleRow = sheet.createRow(currentRow++);
         Cell titleCell = titleRow.createCell(0);
-        titleCell.setCellValue(title);
+        safeSetCellValue(titleCell, title);
         sheet.addMergedRegion(new CellRangeAddress(currentRow - 1, currentRow - 1, 0, colNum - 1));
         for (int i = 0; i <= colNum - 1; i++) {
             Cell cell = titleRow.getCell(i);
@@ -296,7 +294,7 @@ public class AssetExcelExporter {
             int colCount = 0;
             for (String key : keys) {
                 Cell cell = headerRow.createCell(colCount++);
-                cell.setCellValue(key);
+                safeSetCellValue(cell, key);
                 cell.setCellStyle(styles.get("header"));
             }
 
@@ -309,13 +307,13 @@ public class AssetExcelExporter {
 
                 // 处理不同类型的值
                 if (value == null || value.isJsonNull()) {
-                    cell.setCellValue("/");
+                    safeSetCellValue(cell, "/");
                 } else if (value.isJsonPrimitive()) {
-                    cell.setCellValue(value.getAsString());
+                    safeSetCellValue(cell, value.getAsString());
                 } else if (value.isJsonArray()) {
-                    cell.setCellValue(jsonArrayToString(value.getAsJsonArray()));
+                    safeSetCellValue(cell, jsonArrayToString(value.getAsJsonArray()));
                 } else if (value.isJsonObject()) {
-                    cell.setCellValue(value.toString());
+                    safeSetCellValue(cell, value.toString());
                 }
             }
             for (int i = 0; i < keys.size(); i++) {
@@ -339,7 +337,7 @@ public class AssetExcelExporter {
             int colCount = 0;
             for (String key : keys) {
                 Cell cell = headerRow.createCell(colCount++);
-                cell.setCellValue(key);
+                safeSetCellValue(cell, key);
                 cell.setCellStyle(styles.get("header"));
             }
 
@@ -351,17 +349,17 @@ public class AssetExcelExporter {
                 for (String key : keys) {
                     Cell cell = dataRow.createCell(colCount++);
 
-                    if(!dataObject.has(key)) cell.setCellValue("/");
+                    if(!dataObject.has(key)) safeSetCellValue(cell, "/");
                     JsonElement value = dataObject.get(key);
                     // 处理不同类型的值
                     if (value == null || value.isJsonNull()) {
-                        cell.setCellValue("/");
+                        safeSetCellValue(cell, "/");
                     } else if (value.isJsonPrimitive()) {
-                        cell.setCellValue(value.getAsString());
+                        safeSetCellValue(cell, value.getAsString());
                     } else if (value.isJsonArray()) {
-                        cell.setCellValue(jsonArrayToString(value.getAsJsonArray()));
+                        safeSetCellValue(cell, jsonArrayToString(value.getAsJsonArray()));
                     } else if (value.isJsonObject()) {
-                        cell.setCellValue(value.toString());
+                        safeSetCellValue(cell, value.toString());
                     }
                 }
                 for (int i = 0; i < keys.size(); i++) {
@@ -416,7 +414,7 @@ public class AssetExcelExporter {
 
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
-            cell.setCellValue(headers[i]);
+            safeSetCellValue(cell, headers[i]);
             cell.setCellStyle(styles.get("header"));
         }
 
@@ -425,44 +423,44 @@ public class AssetExcelExporter {
         for (DomainInfo domain : company.getDomainInfoList()) {
             Row row = sheet.createRow(rowNum++);
 
-            row.createCell(0).setCellValue(valueOrDefault(domain.getDomain()));
-            row.createCell(1).setCellValue(valueOrDefault(domain.getDataSource()));
+            safeSetCellValue(row.createCell(0), valueOrDefault(domain.getDomain()));
+            safeSetCellValue(row.createCell(1), valueOrDefault(domain.getDataSource()));
             String ip = valueOrDefault(domain.getIp());
-            row.createCell(2).setCellValue(ip);
+            safeSetCellValue(row.createCell(2), ip);
             String port = valueOrDefault(domain.getPort());
-            row.createCell(3).setCellValue(port);
+            safeSetCellValue(row.createCell(3), port);
             String protocol= valueOrDefault(domain.getProtocol());
-            row.createCell(4).setCellValue(protocol);
-            row.createCell(5).setCellValue(valueOrDefault(domain.getStatusCode()));
-            row.createCell(6).setCellValue(valueOrDefault(domain.isCND()));
-            row.createCell(7).setCellValue(valueOrDefault(domain.getTitle()));
-            row.createCell(8).setCellValue(valueOrDefault(domain.getIcp()));
-            row.createCell(9).setCellValue(valueOrDefault(domain.getCertsSubjectOrg()));
-            row.createCell(10).setCellValue(valueOrDefault(domain.getComponents()));
-            row.createCell(11).setCellValue(valueOrDefault(domain.getOs()));
-            row.createCell(12).setCellValue(valueOrDefault(domain.getCompany()));
-            row.createCell(13).setCellValue(valueOrDefault(domain.getCountry()));
-            row.createCell(14).setCellValue(valueOrDefault(domain.getCity()));
+            safeSetCellValue(row.createCell(4), protocol);
+            safeSetCellValue(row.createCell(5), valueOrDefault(domain.getStatusCode()));
+            safeSetCellValue(row.createCell(6), valueOrDefault(domain.isCND()));
+            safeSetCellValue(row.createCell(7), valueOrDefault(domain.getTitle()));
+            safeSetCellValue(row.createCell(8), valueOrDefault(domain.getIcp()));
+            safeSetCellValue(row.createCell(9), valueOrDefault(domain.getCertsSubjectOrg()));
+            safeSetCellValue(row.createCell(10), valueOrDefault(domain.getComponents()));
+            safeSetCellValue(row.createCell(11), valueOrDefault(domain.getOs()));
+            safeSetCellValue(row.createCell(12), valueOrDefault(domain.getCompany()));
+            safeSetCellValue(row.createCell(13), valueOrDefault(domain.getCountry()));
+            safeSetCellValue(row.createCell(14), valueOrDefault(domain.getCity()));
             String url = valueOrDefault(domain.getUrl());
             if(url.equals("\\") && protocol.toLowerCase().contains("http")){
                 url = protocol + "://" + ip + ":" + port;
             }
-            row.createCell(15).setCellValue(url);
-            row.createCell(16).setCellValue(valueOrDefault(domain.getResponse()));
+            safeSetCellValue(row.createCell(15), url);
+            safeSetCellValue(row.createCell(16), valueOrDefault(domain.getResponse()));
 
             if (domain.isDoWebInfoMap() && domain.getWebInfoMap() != null) {
                 Map<String, Object> webInfo = domain.getWebInfoMap();
-                row.createCell(17).setCellValue(getStringOrDefault(webInfo, "statusCode"));
-                row.createCell(18).setCellValue(getStringOrDefault(webInfo, "url"));
-                row.createCell(19).setCellValue(getStringOrDefault(webInfo, "title"));
-                row.createCell(20).setCellValue(getStringOrDefault(webInfo, "body"));
-                row.createCell(21).setCellValue(getStringOrDefault(webInfo, "iconUrl"));
-                row.createCell(22).setCellValue(getStringOrDefault(webInfo, "iconMd5"));
-                row.createCell(23).setCellValue(getStringOrDefault(webInfo, "iconMmh3"));
+                safeSetCellValue(row.createCell(17), getStringOrDefault(webInfo, "statusCode"));
+                safeSetCellValue(row.createCell(18), getStringOrDefault(webInfo, "url"));
+                safeSetCellValue(row.createCell(19), getStringOrDefault(webInfo, "title"));
+                safeSetCellValue(row.createCell(20), getStringOrDefault(webInfo, "body"));
+                safeSetCellValue(row.createCell(21), getStringOrDefault(webInfo, "iconUrl"));
+                safeSetCellValue(row.createCell(22), getStringOrDefault(webInfo, "iconMd5"));
+                safeSetCellValue(row.createCell(23), getStringOrDefault(webInfo, "iconMmh3"));
                 try {
-                    row.createCell(24).setCellValue(getStringOrDefault(webInfo, "iconBase64"));
+                    safeSetCellValue(row.createCell(24), getStringOrDefault(webInfo, "iconBase64"));
                 }catch (Exception e){
-                    row.createCell(24).setCellValue("内容过长省略");
+                    safeSetCellValue(row.createCell(24), "内容过长省略");
                 }
             }
 
@@ -476,9 +474,9 @@ public class AssetExcelExporter {
             }
         }
 
-        // 自动调整列宽
+        // 自动调整列宽 - 使用手动计算避免 AWT 依赖
         for (int i = 0; i < headers.length; i++) {
-            sheet.autoSizeColumn(i);
+            manualSetColumnWidth(sheet, i);
         }
     }
 
@@ -491,7 +489,7 @@ public class AssetExcelExporter {
         String[] headers = {"公司/个人名称", "URL", "电话号码", "身份证号", "密码", "IP", "内网IP", "邮箱", "Key泄露"};
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
-            cell.setCellValue(headers[i]);
+            safeSetCellValue(cell, headers[i]);
             cell.setCellStyle(styles.get("header"));
         }
 
@@ -504,15 +502,15 @@ public class AssetExcelExporter {
                         List<Map<String, Object>> sensitiveList = (List<Map<String, Object>>) webInfo.get("sensitive");
                         for (Map<String, Object> sensitive : sensitiveList) {
                             Row row = sheet.createRow(rowNum++);
-                            row.createCell(0).setCellValue(company.getCompanyName());
-                            row.createCell(1).setCellValue(String.valueOf(sensitive.get("Url")));
-                            row.createCell(2).setCellValue(getListOrDefault(sensitive, "PhoneNumber"));
-                            row.createCell(3).setCellValue(getListOrDefault(sensitive, "IdCard"));
-                            row.createCell(4).setCellValue(getListOrDefault(sensitive, "Password"));
-                            row.createCell(5).setCellValue(getListOrDefault(sensitive, "IP"));
-                            row.createCell(6).setCellValue(getListOrDefault(sensitive, "InternalIP"));
-                            row.createCell(7).setCellValue(getListOrDefault(sensitive, "Email"));
-                            row.createCell(8).setCellValue(getListOrDefault(sensitive, "Key"));
+                            safeSetCellValue(row.createCell(0), company.getCompanyName());
+                            safeSetCellValue(row.createCell(1), String.valueOf(sensitive.get("Url")));
+                            safeSetCellValue(row.createCell(2), getListOrDefault(sensitive, "PhoneNumber"));
+                            safeSetCellValue(row.createCell(3), getListOrDefault(sensitive, "IdCard"));
+                            safeSetCellValue(row.createCell(4), getListOrDefault(sensitive, "Password"));
+                            safeSetCellValue(row.createCell(5), getListOrDefault(sensitive, "IP"));
+                            safeSetCellValue(row.createCell(6), getListOrDefault(sensitive, "InternalIP"));
+                            safeSetCellValue(row.createCell(7), getListOrDefault(sensitive, "Email"));
+                            safeSetCellValue(row.createCell(8), getListOrDefault(sensitive, "Key"));
 
                             // 应用样式
                             for (int i = 0; i < headers.length; i++) {
@@ -527,15 +525,15 @@ public class AssetExcelExporter {
                         Set<String> internalLinks = (Set<String>) webInfo.get("internalLinks");
                         for (String internalLink : internalLinks){
                             Row row = sheet.createRow(rowNum++);
-                            row.createCell(0).setCellValue(internalLink);
-                            row.createCell(1).setCellValue("\\");
-                            row.createCell(2).setCellValue("\\");
-                            row.createCell(3).setCellValue("\\");
-                            row.createCell(4).setCellValue("\\");
-                            row.createCell(5).setCellValue("\\");
-                            row.createCell(6).setCellValue("\\");
-                            row.createCell(7).setCellValue("\\");
-                            row.createCell(8).setCellValue("\\");
+                            safeSetCellValue(row.createCell(0), internalLink);
+                            safeSetCellValue(row.createCell(1), "\\");
+                            safeSetCellValue(row.createCell(2), "\\");
+                            safeSetCellValue(row.createCell(3), "\\");
+                            safeSetCellValue(row.createCell(4), "\\");
+                            safeSetCellValue(row.createCell(5), "\\");
+                            safeSetCellValue(row.createCell(6), "\\");
+                            safeSetCellValue(row.createCell(7), "\\");
+                            safeSetCellValue(row.createCell(8), "\\");
 
                             // 应用样式
                             for (int i = 0; i < headers.length; i++) {
@@ -551,9 +549,9 @@ public class AssetExcelExporter {
             }
         }
 
-        // 自动调整列宽
+        // 自动调整列宽 - 使用手动计算避免 AWT 依赖
         for (int i = 0; i < headers.length; i++) {
-            sheet.autoSizeColumn(i);
+            manualSetColumnWidth(sheet, i);
         }
     }
 
@@ -604,6 +602,137 @@ public class AssetExcelExporter {
         return value.toString();
     }
 
+    /**
+     * 安全地设置单元格值，防止 null 导致的 NullPointerException
+     * @param cell 单元格对象
+     * @param value 要设置的值
+     */
+    private void safeSetCellValue(Cell cell, String value) {
+        cell.setCellValue(value == null ? "" : value);
+    }
+
+    /**
+     * 安全地设置单元格数值，防止 null 导致的 NullPointerException
+     * @param cell 单元格对象
+     * @param value 要设置的数值
+     */
+    private void safeSetCellValue(Cell cell, Integer value) {
+        if (value != null) {
+            cell.setCellValue(value);
+        } else {
+            cell.setCellValue("");
+        }
+    }
+
+
+    // 【功能】：自动调整列宽
+    // 【BUG】：单元格未创建或值为 null，autoSizeColumn 在遍历时调用 SheetUtil.getCellWidth 会抛出 NPE
+    // POI 在计算过程中会触发 AWT 字体加载（例如执行 sun.awt.FontConfiguration.getVersion），这也可能导致 NPE
+    // 由于 JavaFX 的 FXMLLoader 使用线程上下文类加载器，如果 autoSizeColumn 触发了 AWT 相关逻辑，可能间接影响了类加载器状态，导致后续加载 FXML 时找不到类
+    // 【解决方案】：使用 manualSetColumnWidth 手动计算列宽，完全避免 AWT 依赖，不会影响 JavaFX
+    /**
+     * 手动计算并设置列宽（更安全的替代方案，不依赖 AWT）
+     * 正确处理换行符、制表符等特殊字符
+     * 
+     * @param sheet 工作表
+     * @param columnIndex 列索引
+     */
+    private void manualSetColumnWidth(Sheet sheet, int columnIndex) {
+        int maxWidth = 0;
+        
+        // 遍历该列的所有行，找出最大宽度
+        for (Row row : sheet) {
+            Cell cell = row.getCell(columnIndex);
+            if (cell != null) {
+                String cellValue = getCellValueAsString(cell);
+                if (cellValue != null && !cellValue.isEmpty()) {
+                    int cellWidth = calculateTextWidth(cellValue);
+                    maxWidth = Math.max(maxWidth, cellWidth);
+                }
+            }
+        }
+        
+        // 设置列宽，限制最大宽度为 255 个字符
+        maxWidth = Math.min(maxWidth + 512, 255 * 256); // 额外留一些边距
+        maxWidth = Math.max(maxWidth, 10 * 256); // 最小宽度
+        sheet.setColumnWidth(columnIndex, maxWidth);
+    }
+    
+    /**
+     * 计算文本宽度，正确处理换行符、制表符等特殊字符
+     * 
+     * @param text 文本内容
+     * @return 宽度（POI 单位）
+     */
+    private int calculateTextWidth(String text) {
+        if (text == null || text.isEmpty()) {
+            return 0;
+        }
+        
+        // 如果包含换行符，按行分割，取最长行的宽度
+        String[] lines = text.split("\n");
+        int maxLineWidth = 0;
+        
+        for (String line : lines) {
+            int lineWidth = 0;
+            
+            for (char c : line.toCharArray()) {
+                if (c == '\t') {
+                    // 制表符按 4 个空格计算
+                    lineWidth += 256 * 4;
+                } else if (c == '\r') {
+                    // 回车符忽略
+                    continue;
+                } else if (Character.isISOControl(c)) {
+                    // 其他控制字符忽略
+                    continue;
+                } else if (c > 127) {
+                    // 中文字符、日文、韩文等宽字符
+                    lineWidth += 512;
+                } else if (c >= '0' && c <= '9') {
+                    // 数字稍微宽一点
+                    lineWidth += 280;
+                } else if (c >= 'A' && c <= 'Z') {
+                    // 大写字母稍微宽一点
+                    lineWidth += 300;
+                } else if (c >= 'a' && c <= 'z') {
+                    // 小写字母
+                    lineWidth += 256;
+                } else if (c == ' ') {
+                    // 空格
+                    lineWidth += 200;
+                } else {
+                    // 其他 ASCII 字符（标点符号等）
+                    lineWidth += 256;
+                }
+            }
+            
+            maxLineWidth = Math.max(maxLineWidth, lineWidth);
+        }
+        
+        return maxLineWidth;
+    }
+    
+    /**
+     * 获取单元格的字符串值
+     */
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) return "";
+        
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                return cell.getCellFormula();
+            default:
+                return "";
+        }
+    }
+
     private void createLeakageInfoSheet(List<NetAssets> companyDomainInfoList) {
         XSSFSheet sheet = workbook.createSheet("信息泄露汇总");
         sheet.setDefaultColumnWidth(40);
@@ -611,8 +740,8 @@ public class AssetExcelExporter {
         // 创建Google泄露信息部分
         int currentRow = 0;
         Row titleRow = sheet.createRow(currentRow++);
-        Cell titleCell = titleCell = titleRow.createCell(0);
-        titleCell.setCellValue("Google泄露信息");
+        Cell titleCell = titleRow.createCell(0);
+        safeSetCellValue(titleCell, "Google泄露信息");
         sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
         for (int i = 0; i <= 5; i++) {
             Cell cell = titleRow.getCell(i);
@@ -634,12 +763,12 @@ public class AssetExcelExporter {
                     JsonArray leakages = domain.getGoogldLeakage();
                     for (int i = 0; i < leakages.size(); i++) {
                         Row row = sheet.createRow(currentRow++);
-                        row.createCell(0).setCellValue(company.getCompanyName());
-                        row.createCell(1).setCellValue(leakages.get(i).getAsJsonObject().get("domain").getAsString());
-                        row.createCell(2).setCellValue(leakages.get(i).getAsJsonObject().get("title").getAsString());
-                        row.createCell(3).setCellValue(leakages.get(i).getAsJsonObject().get("url").getAsString());
-                        row.createCell(4).setCellValue(leakages.get(i).getAsJsonObject().get("des").getAsString());
-                        row.createCell(5).setCellValue(JsonUtils.jsonArrayToString(leakages.get(i).getAsJsonObject().getAsJsonArray("leakageArray"),"\n"));
+                        safeSetCellValue(row.createCell(0), company.getCompanyName());
+                        safeSetCellValue(row.createCell(1), leakages.get(i).getAsJsonObject().get("domain").getAsString());
+                        safeSetCellValue(row.createCell(2), leakages.get(i).getAsJsonObject().get("title").getAsString());
+                        safeSetCellValue(row.createCell(3), leakages.get(i).getAsJsonObject().get("url").getAsString());
+                        safeSetCellValue(row.createCell(4), leakages.get(i).getAsJsonObject().get("des").getAsString());
+                        safeSetCellValue(row.createCell(5), JsonUtils.jsonArrayToString(leakages.get(i).getAsJsonObject().getAsJsonArray("leakageArray"),"\n"));
 
                         for (int j = 0; j < googleHeaders.length; j++) {
                             Cell cell = row.getCell(j);
@@ -659,7 +788,7 @@ public class AssetExcelExporter {
         // 创建Git仓库泄露信息部分
         Row gitTitle = sheet.createRow(currentRow++);
         Cell gitTitleCell = gitTitle.createCell(0);
-        gitTitleCell.setCellValue("Git仓库泄露信息");
+        safeSetCellValue(gitTitleCell, "Git仓库泄露信息");
         sheet.addMergedRegion(new CellRangeAddress(currentRow-1, currentRow-1, 0, 3));
         for (int i = 0; i <= 3; i++) {
             Cell cell = gitTitle.getCell(i);
@@ -681,10 +810,10 @@ public class AssetExcelExporter {
                     JsonArray repos = domain.getGitRepoLeakage();
                     for (int i = 0; i < repos.size(); i++) {
                         Row row = sheet.createRow(currentRow++);
-                        row.createCell(0).setCellValue(company.getCompanyName());
-                        row.createCell(1).setCellValue(repos.get(i).getAsJsonObject().get("repoName").getAsString());
-                        row.createCell(2).setCellValue(repos.get(i).getAsJsonObject().get("repoUrl").getAsString());
-                        row.createCell(3).setCellValue(repos.get(i).getAsJsonObject().get("repoDes").getAsString());
+                        safeSetCellValue(row.createCell(0), company.getCompanyName());
+                        safeSetCellValue(row.createCell(1), repos.get(i).getAsJsonObject().get("repoName").getAsString());
+                        safeSetCellValue(row.createCell(2), repos.get(i).getAsJsonObject().get("repoUrl").getAsString());
+                        safeSetCellValue(row.createCell(3), repos.get(i).getAsJsonObject().get("repoDes").getAsString());
 
                         for (int j = 0; j < gitHeaders.length; j++) {
                             Cell cell = row.getCell(j);
@@ -698,16 +827,16 @@ public class AssetExcelExporter {
             }
         }
 
-        // 自动调整列宽
+        // 自动调整列宽 - 使用手动计算避免 AWT 依赖
         for (int i = 0; i < 6; i++) {
-            sheet.autoSizeColumn(i);
+            manualSetColumnWidth(sheet, i);
         }
     }
 
     private void createHeaderRow(Row headerRow, String[] headers) {
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
-            cell.setCellValue(headers[i]);
+            safeSetCellValue(cell, headers[i]);
             cell.setCellStyle(styles.get("header"));
         }
     }
