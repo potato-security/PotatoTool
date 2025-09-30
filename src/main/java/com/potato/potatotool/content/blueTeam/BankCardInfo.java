@@ -57,8 +57,7 @@ public class BankCardInfo {
         RequestObj obj = new RequestObj().setMethod("GET").setUrl("https://ccdcapi.alipay.com/validateAndCacheCardInfo.json?_input_charset=utf-8&cardNo=" + bankcardId + "&cardBinCheck=true");
         JsonObject res = new JsonObject();
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             res = con.getJson().getAsJsonObject();
 
             // 映射字段，存在则替换
@@ -86,12 +85,9 @@ public class BankCardInfo {
 
         JsonObject res = new JsonObject();
 
-        try {
-            CustomHttpResponse con = requests(obj);
-
+        try (CustomHttpResponse con = requests(obj)) {
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
-                con.disconnect();
                 return res;
             }
 

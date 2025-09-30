@@ -137,8 +137,7 @@ public class ExifUtils {
 
         RequestObj obj = new RequestObj().setMethod("GET").setHeaders(headers).setUrl(blockUrl + "/geocoder?lon=" + lon +"&lat=" + lat);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
             JsonObject res = con.getJson().getAsJsonObject();
             return res.get("name").getAsString();
         } catch (Exception e) {

@@ -2,20 +2,20 @@ package com.potato.potatotool.utils.network;
 
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.core.Constants;
+import okhttp3.ConnectionPool;
+import okhttp3.Dispatcher;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map;
 
 /**
+ * 更新为基于OkHttp3的请求对象
  * @author Potato
- * @date 2023/4/13 14:03
+ * @date 2024/12/19
  */
-
 /**
  * url               请求URL
  * method            请求方式（默：GET）
@@ -25,13 +25,21 @@ import java.util.Map;
  * noUserAgent       是否不设置UA头（默：否）
  * proxies           代理（如携带代理类型会自动提取）
  * proxiesType       代理类型（默：HTTP）
- * timeOut           请求和读取超时时间
+ * timeOut           连接超时时间
+ * readTimeout       读取超时时间
+ * writeTimeout      写入超时时间
+ * callTimeout       整体调用超时时间
  * maxRetries        服务器异常/无响应时重放次数
  * retryWaitTime     重放间隔（秒）
  * postMethod        POST请求传输模式（默：Raw）
  * postData          POST数据byte[]
  * formParameters    form表单Map格式
  * file              上传的文件File
+ * strictSslValidation 严格的SSL校验（默：否） 一般校验协议是否适用SSL使用
+ * bearerToken       Bearer令牌
+ * maxResponseSize   最大响应大小（字节）
+ * connectionPool    连接池-用于复用连接的池
+ * dispatcher        调度器-用于控制线程池
  */
 public class RequestObj {
     private String method = "GET";
@@ -44,13 +52,18 @@ public class RequestObj {
     private byte[] postData;
     private String proxiesType = "HTTP";
     private String proxies;
-    private int timeOut = 10;
+    private int timeOut = 10;   // connectTimeout
+    private int readTimeout = 30;
+    private int writeTimeout = 30;
+    private int callTimeout = 40;
     private File file;
     private Map<String, Object> formParameters;
     private int retries = 1;
     private int retryWaitTime = 1;
     private boolean noUserAgent = false;
     private int maxResponseSize = Integer.MAX_VALUE;
+    private ConnectionPool connectionPool;
+    private Dispatcher dispatcher;
 
     public RequestObj(){
         initializeProxySettings();
@@ -66,7 +79,6 @@ public class RequestObj {
         }
     }
 
-
     public RequestObj setMethod(String method) {
         validateMethod(method);
         this.method = method.toUpperCase();
@@ -76,6 +88,9 @@ public class RequestObj {
     private static final String[] VALID_METHODS = {"GET", "POST", "OPTIONS", "PUT", "DELETE", "HEAD"};
     
     private void validateMethod(String method) {
+        if (method == null || method.trim().isEmpty()) {
+            throw new IllegalArgumentException("[×] 请求方法不能为空");
+        }
         if (!Arrays.asList(VALID_METHODS).contains(method.toUpperCase())) {
             throw new IllegalArgumentException("[×] 不支持的请求方法: " + method);
         }
@@ -86,6 +101,9 @@ public class RequestObj {
     }
 
     public RequestObj setUrl(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            throw new IllegalArgumentException("[×] URL不能为空");
+        }
         this.url = url;
         return this;
     }
@@ -146,7 +164,6 @@ public class RequestObj {
         return this.proxiesType;
     }
 
-
     public RequestObj setPostMethod(String postMethod) {
         validatePostMethod(postMethod);
         this.postMethod = postMethod;
@@ -154,6 +171,9 @@ public class RequestObj {
     }
 
     private void validatePostMethod(String postMethod) {
+        if (postMethod == null || postMethod.trim().isEmpty()) {
+            throw new IllegalArgumentException("[×] POST方法不能为空");
+        }
         if (!Arrays.asList("FORM", "RAW", "CHUNKED", "JSON").contains(postMethod.toUpperCase())) {
             throw new IllegalArgumentException("[×] POST模式支持'Form'、'Raw'、'Chunked'、'Json'，不应为" + postMethod);
         }
@@ -163,22 +183,24 @@ public class RequestObj {
         return this.postMethod;
     }
 
-
     public RequestObj setPostData(byte[] data) {
         this.postData = data;
         return this;
     }
+    
     public RequestObj setPostData(String postData) {
-        this.postData = postData.getBytes(StandardCharsets.UTF_8);
+        if (postData != null) {
+            this.postData = postData.getBytes(StandardCharsets.UTF_8);
+        } else {
+            this.postData = null;
+        }
         return this;
     }
+    
     public RequestObj setPostData(File postDataFile) {
-        try {
-            this.file = postDataFile;
-            this.postData = Files.readAllBytes(postDataFile.toPath());
-        } catch (IOException e) {
-            System.err.println("无法读取文件：" + e.getMessage());
-        }
+        this.file = postDataFile;
+        // 不立即读取文件，只在需要时流式处理
+        this.postData = null; 
         return this;
     }
 
@@ -187,11 +209,13 @@ public class RequestObj {
         this.postData = postJsonData.toString().getBytes(StandardCharsets.UTF_8);
         return this;
     }
+    
     public RequestObj setPostData(JsonObject postJsonData) {
         this.postMethod = "Json";
         this.postData = postJsonData.toString().getBytes(StandardCharsets.UTF_8);
         return this;
     }
+    
     public byte[] getPostData() {
         return this.postData;
     }
@@ -220,6 +244,33 @@ public class RequestObj {
     }
 
 
+    public int getReadTimeout() {
+        return readTimeout;
+    }
+
+    public RequestObj setReadTimeout(int readTimeout) {
+        this.readTimeout = readTimeout;
+        return this;
+    }
+
+    public int getWriteTimeout() {
+        return writeTimeout;
+    }
+
+    public RequestObj setWriteTimeout(int writeTimeout) {
+        this.writeTimeout = writeTimeout;
+        return this;
+    }
+
+    public int getCallTimeout() {
+        return callTimeout;
+    }
+
+    public RequestObj setCallTimeout(int callTimeout) {
+        this.callTimeout = callTimeout;
+        return this;
+    }
+
     public int getRetries() {
         return retries;
     }
@@ -243,6 +294,7 @@ public class RequestObj {
         if(noUserAgent) this.randomUserAgent = false;
         return this;
     }
+    
     public boolean getNoUserAgent() {
         return noUserAgent;
     }
@@ -264,4 +316,41 @@ public class RequestObj {
     public int getMaxResponseSize() {
         return maxResponseSize;
     }
+
+    /**
+     * 设置自定义连接池
+     * @param connectionPool 连接池实例
+     * @return OkHttpRequestObj
+     */
+    public RequestObj setConnectionPool(ConnectionPool connectionPool) {
+        this.connectionPool = connectionPool;
+        return this;
+    }
+
+    /**
+     * 获取连接池配置
+     * @return ConnectionPool实例，如果未设置则返回null
+     */
+    public ConnectionPool getConnectionPool() {
+        return connectionPool;
+    }
+
+    /**
+     * 设置自定义调度器
+     * @param dispatcher 调度器实例
+     * @return OkHttpRequestObj
+     */
+    public RequestObj setDispatcher(Dispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+        return this;
+    }
+
+    /**
+     * 获取调度器配置
+     * @return Dispatcher实例，如果未设置则返回null
+     */
+    public Dispatcher getDispatcher() {
+        return dispatcher;
+    }
+
 }

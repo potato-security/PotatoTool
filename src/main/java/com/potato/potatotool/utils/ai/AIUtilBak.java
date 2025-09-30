@@ -92,8 +92,7 @@ public class AIUtilBak {
 
         }
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
             con.getSSEStreamingJson(new CustomHttpResponse.ResponseCallback() {//回调函数
                 @Override
                 public void onResponse(String line) {
@@ -287,9 +286,7 @@ public class AIUtilBak {
 
         }
 
-        try {
-
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
             con.getSSEStreamingJson(new CustomHttpResponse.ResponseCallback() {//回调函数
                 @Override
                 public void onResponse(String line) {

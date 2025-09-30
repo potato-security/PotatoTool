@@ -96,8 +96,7 @@ public class AIUtil {
 
         }
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
             boolean finalIsLocal = isLocal;
             con.getSSEStreamingJson(new CustomHttpResponse.ResponseCallback() {//回调函数
                 @Override
@@ -297,9 +296,7 @@ public class AIUtil {
 
         }
 
-        try {
-
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
             boolean finalIsLocal = isLocal;
             con.getSSEStreamingJson(new CustomHttpResponse.ResponseCallback() {//回调函数
                 @Override

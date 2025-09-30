@@ -33,8 +33,7 @@ public class BlockchainTraceability {
     public static JsonObject search(String arg){
         obj.setUrl(blockUrl + "/search?arg=" + StrUtils.urlEncode(arg));
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -49,8 +48,7 @@ public class BlockchainTraceability {
     public static JsonObject address(String network, String address){
         obj.setUrl(blockUrl + "/address?address=" + address + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -65,8 +63,7 @@ public class BlockchainTraceability {
     public static JsonObject tokenbalance(String network, String address){
         obj.setUrl(blockUrl + "/tokenbalance?address=" + address + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -81,8 +78,7 @@ public class BlockchainTraceability {
     public static JsonObject tokentrans(String network, String address, String to, String sumNum){ // 预知总数
         obj.setUrl(blockUrl + "/tokentrans?address=" + address + "&to=" + to + "&sumNum=" + sumNum + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -94,8 +90,7 @@ public class BlockchainTraceability {
     public static JsonObject tokentrans(String network, String address, String to, String index, String size){ // 指定页数及条数
         obj.setUrl(blockUrl + "/tokentrans?address=" + address + "&to=" + to + "&index=" + index + "&size=" + size + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -110,8 +105,7 @@ public class BlockchainTraceability {
     public static JsonObject balancetrend(String network, String address){
         obj.setUrl(blockUrl + "/balancetrend?address=" + address + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -126,8 +120,7 @@ public class BlockchainTraceability {
     public static JsonObject addressTransaction(String network, String address, String sumNum){ // 预知总数
         obj.setUrl(blockUrl + "/addressTransaction?address=" + address + "&sumNum=" + sumNum + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -139,8 +132,7 @@ public class BlockchainTraceability {
     public static JsonObject addressTransaction(String network, String address, String index, String size){ // 指定页数及条数
         obj.setUrl(blockUrl + "/addressTransaction?address=" + address + "&index=" + index + "&size=" + size + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -155,8 +147,7 @@ public class BlockchainTraceability {
     public static JsonObject tokenClassification(String network, String address, String type){
         obj.setUrl(blockUrl + "/tokenClassification?address=" + address + "&network=" + network + "&type=" + type );
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -171,8 +162,7 @@ public class BlockchainTraceability {
     public static JsonObject block(String network, String block){
         obj.setUrl(blockUrl + "/block?block=" + block + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -187,8 +177,7 @@ public class BlockchainTraceability {
     public static JsonObject getInternalData(String network, String block, String sumNum){ // 预知总数
         obj.setUrl(blockUrl + "/getInternalData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -200,8 +189,7 @@ public class BlockchainTraceability {
     public static JsonObject getInternalData(String network, String block, String index, String size){ // 指定页数及条数
         obj.setUrl(blockUrl + "/getInternalData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -216,8 +204,7 @@ public class BlockchainTraceability {
     public static JsonObject getTokentransferData(String network, String block, String sumNum){ // 预知总数
         obj.setUrl(blockUrl + "/getTokentransferData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -229,8 +216,7 @@ public class BlockchainTraceability {
     public static JsonObject getTokentransferData(String network, String block, String index, String size){ // 指定页数及条数
         obj.setUrl(blockUrl + "/getTokentransferData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -245,8 +231,7 @@ public class BlockchainTraceability {
     public static JsonObject getTxData(String network, String block, String sumNum){ // 预知总数
         obj.setUrl(blockUrl + "/getTxData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;
@@ -258,8 +243,7 @@ public class BlockchainTraceability {
     public static JsonObject getTxData(String network, String block, String index, String size){ // 指定页数及条数
         obj.setUrl(blockUrl + "/getTxData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
             if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
             return res;

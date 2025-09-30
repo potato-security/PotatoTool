@@ -51,20 +51,18 @@ public class GitHubLeakage {
         if(maxGithubSearchCount > 100) maxGithubSearchCount = 100;
         while (true) {
 
-            try {
-                RequestObj obj = new RequestObj()
-                        .setUrl("https://api.github.com/search/repositories?per_page=" + maxGithubSearchCount + "&q=" + StrUtils.urlEncode(question))
-                        .setMethod("GET")
-                        .setBearerToken(GitHub_Token.get(keyIndex))
-                        .setRetries(3);
-                if(!Proxy) obj.setProxies(null);
+            RequestObj obj = new RequestObj()
+                    .setUrl("https://api.github.com/search/repositories?per_page=" + maxGithubSearchCount + "&q=" + StrUtils.urlEncode(question))
+                    .setMethod("GET")
+                    .setBearerToken(GitHub_Token.get(keyIndex))
+                    .setRetries(3);
+            if(!Proxy) obj.setProxies(null);
 
-                CustomHttpResponse con = requests(obj);
+            try (CustomHttpResponse con = requests(obj)){
 
                 int statusCode = con.getResponseCode();
                 // 检查请求状态码
                 if (statusCode != 200) {
-                    con.disconnect();
                     if (statusCode == 403 || statusCode == 401) {
                         keyIndex += 1;
                         if(keyIndex + 1 > GitHub_Token.size()){
@@ -135,20 +133,18 @@ public class GitHubLeakage {
 
 
             for(String question : questions) {
-                try {
-                    RequestObj obj = new RequestObj()
-                            .setUrl("https://api.github.com/search/code?per_page=100&q=" + StrUtils.urlEncode(question))
-                            .setMethod("GET")
-                            .setBearerToken(GitHub_Token.get(keyIndex))
-                            .setRetries(3);
-                    if(!Proxy) obj.setProxies(null);
+                RequestObj obj = new RequestObj()
+                        .setUrl("https://api.github.com/search/code?per_page=100&q=" + StrUtils.urlEncode(question))
+                        .setMethod("GET")
+                        .setBearerToken(GitHub_Token.get(keyIndex))
+                        .setRetries(3);
+                if(!Proxy) obj.setProxies(null);
 
-                    CustomHttpResponse con = requests(obj);
+                try (CustomHttpResponse con = requests(obj)){
 
                     int statusCode = con.getResponseCode();
                     // 检查请求状态码
                     if (statusCode != 200) {
-                        con.disconnect();
                         continue;
                     }
 

@@ -40,19 +40,16 @@ public class FofaSearch {
         JsonObject briefExtendedInfo = new JsonObject();
         if(ipOrDomain==null || ipOrDomain.isEmpty()) return briefExtendedInfo;
 
-        try {
-            RequestObj obj = new RequestObj()
-                    .setUrl("https://amap.fofa.info/host/" + ipOrDomain)
-                    .setTimeOut(30)
-                    .setMethod("GET").setRetries(4);
-            if(!Proxy) obj.setProxies(null);
-
-            CustomHttpResponse con = requests(obj);
-
+        RequestObj obj = new RequestObj()
+        .setUrl("https://amap.fofa.info/host/" + ipOrDomain)
+        .setTimeOut(30)
+        .setMethod("GET").setRetries(4);
+        if(!Proxy) obj.setProxies(null);
+        
+        try (CustomHttpResponse con = requests(obj)) {
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode != 200) {
-                con.disconnect();
                 return briefExtendedInfo;
             }
 
@@ -73,19 +70,18 @@ public class FofaSearch {
         List<String> itemKeys = Arrays.asList("ip", "domain", "host", "icp", "port", "protocol", "title", "certs_subject_org");
         String item = String.join(",", itemKeys);
 
-        try {
-            RequestObj obj = new RequestObj()
-                    .setUrl("https://fofa.info/api/v1/search/all?&size=10000&fields=" + item + "&key=" + FOFA_KEY + "&qbase64=" + StrUtils.urlEncode(StrUtils.base64Encode(qInfo)))
-                    .setMethod("GET")
-                    .setTimeOut(20)
-                    .setRetries(3);
-            if(!Proxy) obj.setProxies(null);
 
-            CustomHttpResponse con = requests(obj);
+        RequestObj obj = new RequestObj()
+        .setUrl("https://fofa.info/api/v1/search/all?&size=10000&fields=" + item + "&key=" + FOFA_KEY + "&qbase64=" + StrUtils.urlEncode(StrUtils.base64Encode(qInfo)))
+        .setMethod("GET")
+        .setTimeOut(20)
+        .setRetries(3);
+        if(!Proxy) obj.setProxies(null);
+
+        try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode!= 200) {
-                con.disconnect();
                 return domainInfo;
             }
             JsonObject res = con.getJson().getAsJsonObject();

@@ -52,37 +52,35 @@ public class GetCompany {
                 RequestObj obj = new RequestObj().setUrl("https://data.chinaz.com/company/t0-p0-c0-i0-d0-s-" + StrUtils.urlEncode(company) + "/" + index)
                         .setMethod("GET").setRetries(3).setHeaders(headers);
                 if(!Proxy) obj.setProxies(null);
-
-                CustomHttpResponse con = requests(obj);
-
-                int statusCode = con.getResponseCode();
-                if (statusCode != 200) {
-                    con.disconnect();
-                    return companyList;
-                }
-
-                Document doc = con.getDocument();
-                Elements ulElements = getElements(doc, "body > div:nth-of-type(2) > div:nth-of-type(2) > div > ul ");
-
-                if (ulElements.size() > 1) {
-                    for (int i = 1; i < ulElements.size(); i++) { // 从第二个ul开始(第一个ul为头部标签)
-                        JsonObject companyInfo = new JsonObject();
-                        Element ul = ulElements.get(i);
-                        companyInfo.addProperty("企业名称", getElementText(ul, "li:nth-of-type(2) > a"));
-                        companyInfo.addProperty("企业ID", getElementAttr(ul, "li:nth-of-type(2) > a", "href") .replace("/company/", ""));
-                        companyInfo.addProperty("企业状态", getElementText(ul, "li:nth-of-type(3)"));
-                        companyInfo.addProperty("法定代表人", getElementText(ul, "li:nth-of-type(5)"));
-                        companyInfo.addProperty("注册资本", getElementText(ul, "li:nth-of-type(6)"));
-                        companyInfo.addProperty("注册时间", getElementText(ul, "li:nth-of-type(7)"));
-                        companyInfo.addProperty("deepGet", false);
-                        companyList.add(companyInfo);
+                try (CustomHttpResponse con = requests(obj)) {
+                    int statusCode = con.getResponseCode();
+                    if (statusCode != 200) {
+                        return companyList;
                     }
-                    if (ulElements.size() < 21) break;
-                }else {
-                    // 可能会出现：【服务器繁忙！ 请等待】  不必处理，没必要爬取太多数据
-                    break;
-                }
 
+                    Document doc = con.getDocument();
+
+                    Elements ulElements = getElements(doc, "body > div:nth-of-type(2) > div:nth-of-type(2) > div > ul ");
+
+                    if (ulElements.size() > 1) {
+                        for (int i = 1; i < ulElements.size(); i++) { // 从第二个ul开始(第一个ul为头部标签)
+                            JsonObject companyInfo = new JsonObject();
+                            Element ul = ulElements.get(i);
+                            companyInfo.addProperty("企业名称", getElementText(ul, "li:nth-of-type(2) > a"));
+                            companyInfo.addProperty("企业ID", getElementAttr(ul, "li:nth-of-type(2) > a", "href") .replace("/company/", ""));
+                            companyInfo.addProperty("企业状态", getElementText(ul, "li:nth-of-type(3)"));
+                            companyInfo.addProperty("法定代表人", getElementText(ul, "li:nth-of-type(5)"));
+                            companyInfo.addProperty("注册资本", getElementText(ul, "li:nth-of-type(6)"));
+                            companyInfo.addProperty("注册时间", getElementText(ul, "li:nth-of-type(7)"));
+                            companyInfo.addProperty("deepGet", false);
+                            companyList.add(companyInfo);
+                        }
+                        if (ulElements.size() < 21) break;
+                    }else {
+                        // 可能会出现：【服务器繁忙！ 请等待】  不必处理，没必要爬取太多数据
+                        break;
+                    }
+                }
             }
         } catch (Exception e) {
             if (debugMode) e.printStackTrace();
@@ -103,29 +101,26 @@ public class GetCompany {
             headers.put("Cookie", Chinaz_Cookie);
             RequestObj obj = new RequestObj().setUrl("https://data.chinaz.com/company/" + companyId)
                     .setMethod("GET").setRetries(3).setHeaders(headers);
+            try (CustomHttpResponse con = requests(obj)) {
+                int statusCode = con.getResponseCode();
+                if (statusCode != 200) {
+                    return companyDetailsMap;
+                }
 
-            CustomHttpResponse con = requests(obj);
+                Document doc = con.getDocument();
 
-            int statusCode = con.getResponseCode();
-            if (statusCode != 200) {
-                con.disconnect();
-                return companyDetailsMap;
+                // 提取信息
+                JsonObject businessInfoMap = extractBusinessInfo_chinaz(doc);
+                JsonArray wxInfoList = extractWxInfo_chinaz(doc);
+                JsonArray softwareInfoList = extractSoftwareInfo_chinaz(doc);
+                JsonArray icpInfoList = extractIcpInfo_chinaz(doc);
+
+                companyDetailsMap.addProperty("企业名称", companyName);
+                companyDetailsMap.add("工商信息", businessInfoMap);
+                companyDetailsMap.add("微信公众号", wxInfoList);
+                companyDetailsMap.add("软件著作", softwareInfoList);
+                companyDetailsMap.add("网站备案", icpInfoList);
             }
-
-            Document doc = con.getDocument();
-
-            // 提取信息
-            JsonObject businessInfoMap = extractBusinessInfo_chinaz(doc);
-            JsonArray wxInfoList = extractWxInfo_chinaz(doc);
-            JsonArray softwareInfoList = extractSoftwareInfo_chinaz(doc);
-            JsonArray icpInfoList = extractIcpInfo_chinaz(doc);
-
-            companyDetailsMap.addProperty("企业名称", companyName);
-            companyDetailsMap.add("工商信息", businessInfoMap);
-            companyDetailsMap.add("微信公众号", wxInfoList);
-            companyDetailsMap.add("软件著作", softwareInfoList);
-            companyDetailsMap.add("网站备案", icpInfoList);
-
         } catch (Exception e) {
             if(debugMode) e.printStackTrace();
         }

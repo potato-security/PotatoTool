@@ -36,22 +36,20 @@ public class ZoomeyeSearch {
         if( ZOOMEYE_KEY==null || ZOOMEYE_KEY.isEmpty() ) return domainInfo;
 
 
-        try {
-            Map<String, String> headers = new HashMap<>();
-            headers.put("API-KEY", ZOOMEYE_KEY);
-            RequestObj obj = new RequestObj()
-                    .setUrl("https://api.zoomeye.hk/host/search?query=" + StrUtils.urlEncode(qInfo) + "&page=1&facets=app,os")
-                    .setMethod("GET")
-                    .setHeaders(headers)
-                    .setTimeOut(20)
-                    .setRetries(3);
-            if(!Proxy) obj.setProxies(null);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("API-KEY", ZOOMEYE_KEY);
+        RequestObj obj = new RequestObj()
+                .setUrl("https://api.zoomeye.hk/host/search?query=" + StrUtils.urlEncode(qInfo) + "&page=1&facets=app,os")
+                .setMethod("GET")
+                .setHeaders(headers)
+                .setTimeOut(20)
+                .setRetries(3);
+        if(!Proxy) obj.setProxies(null);
 
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode!= 200) {
-                con.disconnect();
                 if(statusCode == 401){
                     System.out.println("请求未经身份验证，API 令牌缺失、无效或已过期");
                 }else if(statusCode == 402){

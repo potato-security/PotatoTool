@@ -30,8 +30,7 @@ public class IdCardInfo {
         idcard = idcard.replace(" ","");
         RequestObj obj = new RequestObj().setMethod("GET").setHeaders(headers).setUrl(blockUrl + "/getIdCardInfo?idcard=" + idcard);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
             JsonObject res = con.getJson().getAsJsonObject();
             if( res!=null && res.has("result")){
                 return res.getAsJsonObject("result");

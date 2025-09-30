@@ -79,17 +79,15 @@ public class Utils {
             if(url==null) return webBaseInfoMap;
         }
 
-        try {
-            RequestObj obj = new RequestObj().setUrl(url)
-                    .setMethod("GET").setRetries(2).setFollowRedirects(true)
-                    .setTimeOut(20);
-            if(!isCrawlProxy) obj.setProxies(null);
+        RequestObj obj = new RequestObj().setUrl(url)
+                .setMethod("GET").setRetries(2).setFollowRedirects(true)
+                .setTimeOut(20);
+        if(!isCrawlProxy) obj.setProxies(null);
 
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
-                con.disconnect();
                 return webBaseInfoMap;
             }
 
@@ -132,17 +130,15 @@ public class Utils {
             if(url==null) return webInfoMap;
         }
 
-        try {
-            RequestObj obj = new RequestObj().setUrl(url)
-                    .setMethod("GET").setRetries(2).setFollowRedirects(true)
-                    .setTimeOut(20);
-            if(!isCrawlProxy) obj.setProxies(null);
+        RequestObj obj = new RequestObj().setUrl(url)
+                .setMethod("GET").setRetries(2).setFollowRedirects(true)
+                .setTimeOut(20);
+        if(!isCrawlProxy) obj.setProxies(null);
 
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
-                con.disconnect();
                 return webInfoMap;
             }
 
@@ -198,13 +194,13 @@ public class Utils {
     // 获取网站图标信息
     private static Map<String, String> getIconInfo(String iconUrl, boolean isCrawlProxy) {
         Map<String, String> iconInfo = new HashMap<>();
-        try {
-            RequestObj obj_icon = new RequestObj().setUrl(iconUrl)
-                    .setMethod("GET").setRetries(2)
-                    .setTimeOut(20);
-            if(!isCrawlProxy) obj_icon.setProxies(null);
 
-            CustomHttpResponse con_icon = requests(obj_icon);
+        RequestObj obj_icon = new RequestObj().setUrl(iconUrl)
+                .setMethod("GET").setRetries(2)
+                .setTimeOut(20);
+        if(!isCrawlProxy) obj_icon.setProxies(null);
+
+        try (CustomHttpResponse con_icon = requests(obj_icon)) {
             int statusCode_icon = con_icon.getResponseCode();
             String contentType = con_icon.getContentType();
             if (statusCode_icon != 200 || !contentType.startsWith("image/")) {
@@ -329,18 +325,15 @@ public class Utils {
 
     // 递归爬取链接并提取信息
     private static void crawlAndExtract(String url, int depth, int maxSubPathCount, List<Map<String, Object>> allSensitiveInfo, Set<String> allInternalLinks, Set<String> visitedLinks, boolean hasFindSensitiveInfo, boolean isCrawlProxy) {
+        RequestObj obj = new RequestObj().setUrl(url)
+                .setMethod("GET").setRetries(2).setFollowRedirects(true)
+                .setTimeOut(20);
+        if(!isCrawlProxy) obj.setProxies(null);
 
-        try {
-            RequestObj obj = new RequestObj().setUrl(url)
-                    .setMethod("GET").setRetries(2).setFollowRedirects(true)
-                    .setTimeOut(20);
-            if(!isCrawlProxy) obj.setProxies(null);
-
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
-                con.disconnect();
                 return;
             }
 
@@ -460,16 +453,15 @@ public class Utils {
     }
 
     private static String isReachableUrl(String urlStr, boolean isCrawlProxy, boolean isHttps) {
-        try {
-            RequestObj obj = new RequestObj().setUrl(urlStr)
-                    .setFollowRedirects(true)
-                    .setMethod("HEAD")
+        RequestObj obj = new RequestObj().setUrl(urlStr)
+                .setFollowRedirects(true)
+                .setMethod("HEAD")
 //                    .setMethod("GET")   // 建议使用HEAD，但是部分网站单独设置不允许HEAD请求
 //                    .setTimeOut(20)
-                    .setRetries(2);
-            if(!isCrawlProxy) obj.setProxies(null);
+                .setRetries(2);
+        if(!isCrawlProxy) obj.setProxies(null);
 
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
             int statusCode = con.getResponseCode();
             String content = con.getTextStr();
             // 2xx 或 3xx 响应码 并且 不能是burp中间层代错  表示服务器正常响应

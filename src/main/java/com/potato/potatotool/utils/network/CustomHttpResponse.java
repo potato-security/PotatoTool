@@ -6,11 +6,12 @@ import com.potato.potatotool.utils.data.GzipUtils;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.*;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -19,26 +20,28 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+import java.util.HashMap;
 
 /**
+ * 基于OkHttp3的自定义HTTP响应类
+ * 提供与原CustomHttpResponse兼容的API
  * @author Potato
- * @date 2023/4/13 14:32
+ * @date 2024/12/19
  */
+public class CustomHttpResponse implements AutoCloseable {
 
-public class CustomHttpResponse{
-
-    private HttpURLConnection con;
+    private Response response;
     private long responseTime;
     private byte[] dataBuffer; // 添加数据缓冲区
     private int maxResponseSize; // 最大响应大小限制
 
-    public CustomHttpResponse(HttpURLConnection con) {
-        this.con = con;
+    public CustomHttpResponse(Response response) {
+        this.response = response;
         this.maxResponseSize = Integer.MAX_VALUE; // 默认无大小限制
     }
     
-    public CustomHttpResponse(HttpURLConnection con, int maxResponseSize) {
-        this.con = con;
+    public CustomHttpResponse(Response response, int maxResponseSize) {
+        this.response = response;
         this.maxResponseSize = maxResponseSize;
     }
 
@@ -59,63 +62,38 @@ public class CustomHttpResponse{
     private byte[] getDataBuffer(int maxSize) {
         if (dataBuffer == null) {
             try {
-                InputStream inputStream = null;
-                try {
-                    // 根据响应状态码选择合适的输入流
-                    int responseCode = con.getResponseCode();
-                    if (responseCode >= 400) {
-                        // 对于4xx和5xx错误，使用错误流
-                        inputStream = con.getErrorStream();
-                        if (inputStream == null) {
-                            // 如果错误流为空，尝试使用普通输入流
-                            inputStream = con.getInputStream();
-                        }
-                    } else {
-                        // 对于2xx和3xx响应，使用普通输入流
-                        inputStream = con.getInputStream();
-                    }
-                    
-                    if (inputStream != null) {
-                        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                            byte[] buffer = new byte[16 * 1024];
-                            int bytesRead;
-                            int totalBytesRead = 0;
-                            
-                            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                                // 检查大小限制
-                                if (totalBytesRead + bytesRead > maxSize) {
-                                    System.err.println("响应数据过大，已达到限制: " + maxSize + " 字节，截断读取");
-                                    int remainingBytes = maxSize - totalBytesRead;
-                                    if (remainingBytes > 0) {
-                                        outputStream.write(buffer, 0, remainingBytes);
-                                    }
-                                    break;
+                ResponseBody body = response.body();
+                if (body != null) {
+                    try (InputStream inputStream = body.byteStream();
+                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                        
+                        byte[] buffer = new byte[16 * 1024];
+                        int bytesRead;
+                        int totalBytesRead = 0;
+                        
+                        while ((bytesRead = inputStream.read(buffer)) != -1) {
+                            // 检查大小限制
+                            if (totalBytesRead + bytesRead > maxSize) {
+                                System.err.println("响应数据过大，已达到限制: " + maxSize + " 字节，截断读取");
+                                int remainingBytes = maxSize - totalBytesRead;
+                                if (remainingBytes > 0) {
+                                    outputStream.write(buffer, 0, remainingBytes);
                                 }
-                                
-                                outputStream.write(buffer, 0, bytesRead);
-                                totalBytesRead += bytesRead;
-                                
+                                break;
                             }
-                            dataBuffer = outputStream.toByteArray();
+                            
+                            outputStream.write(buffer, 0, bytesRead);
+                            totalBytesRead += bytesRead;
                         }
-                    } else {
-                        dataBuffer = new byte[0];
+                        dataBuffer = outputStream.toByteArray();
                     }
-                } finally {
-                    if (inputStream != null) {
-                        inputStream.close();
-                    }
+                } else {
+                    dataBuffer = new byte[0];
                 }
             } catch (Exception e) {
                 // 对于网络异常等情况，返回空数组而不是抛出异常
-                if (con != null) {
-                    try {
-                        System.err.println("读取响应数据失败，状态码: " + con.getResponseCode() + ", 错误: " + e.getMessage());
-                        e.printStackTrace();
-                    } catch (Exception ex) {
-                        System.err.println("读取响应数据失败: " + e.getMessage());
-                    }
-                }
+                System.err.println("读取响应数据失败，状态码: " + response.code() + ", 错误: " + e.getMessage());
+                e.printStackTrace();
                 dataBuffer = new byte[0];
             }
         }
@@ -127,19 +105,28 @@ public class CustomHttpResponse{
     }
 
     public String getTextStr() {
-        List<String> charsetList = getHeaderField("Content-Type");
         String charsetStr = "UTF-8";
-        if(charsetList!=null) {
-            for (String data : charsetList) {
-                data = data.trim();
-                if (data.toLowerCase().contains("charset=")) {
-                    charsetStr = data.substring(data.toLowerCase().indexOf("charset=") + 8);
-                }
+        String contentType = response.header("Content-Type");
+        
+        if (contentType != null && contentType.toLowerCase().contains("charset=")) {
+            charsetStr = contentType.substring(contentType.toLowerCase().indexOf("charset=") + 8);
+            // 移除可能的分号和空格
+            if (charsetStr.contains(";")) {
+                charsetStr = charsetStr.substring(0, charsetStr.indexOf(";"));
             }
+            charsetStr = charsetStr.trim();
         }
 
         Charset charset = null;
-        if(!charsetStr.isEmpty()) charset = Charset.forName(charsetStr);
+        if (!charsetStr.isEmpty()) {
+            try {
+                charset = Charset.forName(charsetStr);
+            } catch (Exception e) {
+                charset = StandardCharsets.UTF_8;
+            }
+        } else {
+            charset = StandardCharsets.UTF_8;
+        }
 
         try {
             byte[] buffer = getDataBuffer();
@@ -151,18 +138,15 @@ public class CustomHttpResponse{
     }
 
     public Document getDocument() { // 转换Jsoup 的 Document 对象，用于解析标签，获取标签内容
-
         String textStr = getTextStr();
         if (textStr != null && !textStr.isEmpty()) {
             return Jsoup.parse(textStr);
         }
         return null;
-
     }
 
     public void getSSEStreamingJson(ResponseCallback callback) { // 获取服务器发送事件(SSE)流式响应json
-
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.body().byteStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.trim().isEmpty()) {
@@ -170,25 +154,25 @@ public class CustomHttpResponse{
                 }
                 // 回调处理每次响应
             }
-            con.disconnect();
         } catch (Exception e) {
             handleException(e, callback);
         } finally {
-            con.disconnect();
+            disconnect();
         }
-
     }
 
     public void disconnect() {
-        if (con!= null) {
+        if (response != null) {
             clearBuffer();
-            con.disconnect();
+            response.close();
+            response = null;
         }
     }
 
     public interface ResponseCallback {
         void onResponse(String line);
     }
+    
     private void handleException(Exception e, ResponseCallback callback) {
         String message = e.getMessage();
         if (message.contains("Premature EOF")) {
@@ -201,7 +185,6 @@ public class CustomHttpResponse{
         e.printStackTrace();
     }
 
-
     public JsonElement getJson() {
         try {
             String textStr = getTextStr();
@@ -212,20 +195,98 @@ public class CustomHttpResponse{
         }
     }
 
-    public String saveToFile(String filePath,Boolean showSpeed){
-
-        try (InputStream inputStream = con.getInputStream();
-             FileOutputStream fos = new FileOutputStream(getSaveFile(filePath))) {
-
+    public String saveToFile(String filePath, Boolean showSpeed) {
+        try {
+            ResponseBody body = response.body();
+            if (body == null) {
+                return null;
+            }
+            
             File saveFile = getSaveFile(filePath);
+            
+            try (InputStream inputStream = body.byteStream();
+                 FileOutputStream fos = new FileOutputStream(saveFile)) {
 
-            byte[] buffer = new byte[16 * 1024];
-            int bytesRead = 0, len;
-            long startTime = System.currentTimeMillis(), lastBytesRead = 0;
-            int fileSize = con.getContentLength();
+                byte[] buffer = new byte[16 * 1024];
+                int bytesRead = 0, len;
+                long startTime = System.currentTimeMillis(), lastBytesRead = 0;
+                long fileSize = body.contentLength();
 
-            // 该判断不要写while内，影响运行速率
-            if (showSpeed) {
+                // 该判断不要写while内，影响运行速率
+                if (showSpeed && fileSize > 0) {
+                    while ((len = inputStream.read(buffer)) != -1) {
+                        fos.write(buffer, 0, len);
+                        bytesRead += len;
+
+                        long currentTime = System.currentTimeMillis();
+                        long elapsedTime = currentTime - startTime;
+                        if (elapsedTime >= 1000) {
+                            long currentBytesRead = bytesRead;
+                            long bytesPerSecond = (currentBytesRead - lastBytesRead) * 1000 / elapsedTime;
+                            long remainingTimeInSeconds = (fileSize - currentBytesRead) / bytesPerSecond;
+
+                            String timeUnit;
+                            long remainingTime;
+                            if (remainingTimeInSeconds >= 3600) {
+                                timeUnit = "小时";
+                                remainingTime = remainingTimeInSeconds / 3600;
+                            } else if (remainingTimeInSeconds >= 60) {
+                                timeUnit = "分钟";
+                                remainingTime = remainingTimeInSeconds / 60;
+                            } else {
+                                timeUnit = "秒";
+                                remainingTime = remainingTimeInSeconds;
+                            }
+
+                            String speedUnit;
+                            double speed;
+                            if (bytesPerSecond >= 1024 * 1024) {
+                                speedUnit = "MB/s";
+                                speed = bytesPerSecond / (1024.0 * 1024.0);
+                            } else {
+                                speedUnit = "KB/s";
+                                speed = bytesPerSecond / 1024.0;
+                            }
+
+                            double progress = (double) bytesRead / fileSize; // 基于压缩文件大小计算进度
+
+                            System.out.printf("下载进度: %.0f%%, 速度: %.2f %s, 预估时间: %d %s\n",
+                                    progress * 100, speed, speedUnit, remainingTime, timeUnit);
+
+                            lastBytesRead = currentBytesRead;
+                            startTime = currentTime;
+                        }
+                    }
+                } else {
+                    while ((len = inputStream.read(buffer)) != -1) {
+                        fos.write(buffer, 0, len);
+                    }
+                }
+
+                return saveFile.getAbsolutePath();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String saveToFileByGzip(String filePath, ProgressBar progressBar, Label progressLabel) {
+        try {
+            ResponseBody body = response.body();
+            if (body == null) {
+                return null;
+            }
+            
+            File saveFile = getSaveGzipFile(filePath);
+            
+            try (InputStream inputStream = body.byteStream();
+                 FileOutputStream fos = new FileOutputStream(saveFile)) {
+
+                byte[] buffer = new byte[16 * 1024];
+                int bytesRead = 0, len;
+                long startTime = System.currentTimeMillis(), lastBytesRead = 0;
+                long fileSize = body.contentLength();
 
                 while ((len = inputStream.read(buffer)) != -1) {
                     fos.write(buffer, 0, len);
@@ -233,7 +294,7 @@ public class CustomHttpResponse{
 
                     long currentTime = System.currentTimeMillis();
                     long elapsedTime = currentTime - startTime;
-                    if (elapsedTime >= 1000){
+                    if (elapsedTime >= 1000 && fileSize > 0) {
                         long currentBytesRead = bytesRead;
                         long bytesPerSecond = (currentBytesRead - lastBytesRead) * 1000 / elapsedTime;
                         long remainingTimeInSeconds = (fileSize - currentBytesRead) / bytesPerSecond;
@@ -263,183 +324,111 @@ public class CustomHttpResponse{
 
                         double progress = (double) bytesRead / fileSize; // 基于压缩文件大小计算进度
 
-                        System.out.printf("下载进度: %.0f%%, 速度: %.2f %s, 预估时间: %d %s\n",
-                                progress * 100, speed, speedUnit, remainingTime, timeUnit);
+                         Platform.runLater(() -> {
+                             progressBar.setProgress(progress); // 更新进度条
+                             progressLabel.setText(String.format("下载进度: %.0f%%, 速度: %.2f %s, 预估时间: %d %s",
+                                     progress * 100, speed, speedUnit, remainingTime, timeUnit));
+                         });
 
                         lastBytesRead = currentBytesRead;
                         startTime = currentTime;
                     }
                 }
+                
+                 Platform.runLater(() -> {
+                     progressBar.setProgress(1);
+                     progressLabel.setText("解压中，请稍等……");
+                 });
 
-            }else {
-                while ((len = inputStream.read(buffer)) != -1) {
-                    fos.write(buffer, 0, len);
-                }
+                String gzipAbsolutePath = saveFile.getAbsolutePath();
+                String absolutePath = gzipAbsolutePath.replace(".gzip", "");
+
+                GzipUtils.unGzipFile(gzipAbsolutePath, absolutePath, true);
+
+                return absolutePath;
             }
-
-            return saveFile.getAbsolutePath();
-
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
-
     }
 
-
-    public String saveToFileByGzip(String filePath, ProgressBar progressBar, Label progressLabel){
-
-        try (InputStream inputStream = con.getInputStream();
-             FileOutputStream fos = new FileOutputStream(getSaveGzipFile(filePath))) {
-
-            File saveFile = getSaveGzipFile(filePath);
-
-            byte[] buffer = new byte[16 * 1024];
-            int bytesRead = 0, len;
-            long startTime = System.currentTimeMillis(), lastBytesRead = 0;
-            int fileSize = con.getContentLength();
-
-            while ((len = inputStream.read(buffer)) != -1) {
-                fos.write(buffer, 0, len);
-                bytesRead += len;
-
-                long currentTime = System.currentTimeMillis();
-                long elapsedTime = currentTime - startTime;
-                if (elapsedTime >= 1000) {
-                    long currentBytesRead = bytesRead;
-                    long bytesPerSecond = (currentBytesRead - lastBytesRead) * 1000 / elapsedTime;
-                    long remainingTimeInSeconds = (fileSize - currentBytesRead) / bytesPerSecond;
-
-                    String timeUnit;
-                    long remainingTime;
-                    if (remainingTimeInSeconds >= 3600) {
-                        timeUnit = "小时";
-                        remainingTime = remainingTimeInSeconds / 3600;
-                    } else if (remainingTimeInSeconds >= 60) {
-                        timeUnit = "分钟";
-                        remainingTime = remainingTimeInSeconds / 60;
-                    } else {
-                        timeUnit = "秒";
-                        remainingTime = remainingTimeInSeconds;
-                    }
-
-                    String speedUnit;
-                    double speed;
-                    if (bytesPerSecond >= 1024 * 1024) {
-                        speedUnit = "MB/s";
-                        speed = bytesPerSecond / (1024.0 * 1024.0);
-                    } else {
-                        speedUnit = "KB/s";
-                        speed = bytesPerSecond / 1024.0;
-                    }
-
-                    double progress = (double) bytesRead / fileSize; // 基于压缩文件大小计算进度
-
-                    Platform.runLater(() -> {
-                        progressBar.setProgress(progress); // 更新进度条
-                        progressLabel.setText(String.format("下载进度: %.0f%%, 速度: %.2f %s, 预估时间: %d %s",
-                                progress * 100, speed, speedUnit, remainingTime, timeUnit));
-                    });
-
-                    lastBytesRead = currentBytesRead;
-                    startTime = currentTime;
-                }
+    public String saveToFileByGzip(String filePath, Boolean showSpeed) {
+        try {
+            ResponseBody body = response.body();
+            if (body == null) {
+                return null;
             }
-            Platform.runLater(() -> {
-                progressBar.setProgress(1);
-                progressLabel.setText("解压中，请稍等……");
-            });
-
-            String gzipAbsolutePath = saveFile.getAbsolutePath();
-            String absolutePath = gzipAbsolutePath.replace(".gzip","");
-
-            GzipUtils.unGzipFile(gzipAbsolutePath, absolutePath, true);
-
-            return absolutePath;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-    }
-
-
-    public String saveToFileByGzip(String filePath,Boolean showSpeed){
-
-        try (InputStream inputStream = con.getInputStream();
-             GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
-             FileOutputStream fos = new FileOutputStream(getSaveFile(filePath))) {
-
+            
             File saveFile = getSaveFile(filePath);
+            
+            try (InputStream inputStream = body.byteStream();
+                 GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+                 FileOutputStream fos = new FileOutputStream(saveFile)) {
 
-            byte[] buffer = new byte[16 * 1024];
-            int bytesRead = 0, len;
-            long startTime = System.currentTimeMillis(), lastBytesRead = 0;
-            int fileSize = con.getContentLength();
+                byte[] buffer = new byte[16 * 1024];
+                int bytesRead = 0, len;
+                long startTime = System.currentTimeMillis(), lastBytesRead = 0;
+                long fileSize = body.contentLength();
 
-            // 该判断不要写while内，影响运行速率
-            if (showSpeed) {
+                // 该判断不要写while内，影响运行速率
+                if (showSpeed && fileSize > 0) {
+                    while ((len = gzipInputStream.read(buffer)) != -1) {
+                        fos.write(buffer, 0, len);
+                        bytesRead += len;
 
-                while ((len = gzipInputStream.read(buffer)) != -1) {
-                    fos.write(buffer, 0, len);
-                    bytesRead += len;
+                        long currentTime = System.currentTimeMillis();
+                        long elapsedTime = currentTime - startTime;
+                        if (elapsedTime >= 1000) {
+                            long currentBytesRead = bytesRead;
+                            long bytesPerSecond = (currentBytesRead - lastBytesRead) * 1000 / elapsedTime;
+                            long remainingTimeInSeconds = (fileSize - currentBytesRead) / bytesPerSecond;
 
-                    long currentTime = System.currentTimeMillis();
-                    long elapsedTime = currentTime - startTime;
-                    if (elapsedTime >= 1000){
-                        long currentBytesRead = bytesRead;
-                        long bytesPerSecond = (currentBytesRead - lastBytesRead) * 1000 / elapsedTime;
-                        long remainingTimeInSeconds = (fileSize - currentBytesRead) / bytesPerSecond;
+                            String timeUnit;
+                            long remainingTime;
+                            if (remainingTimeInSeconds >= 3600) {
+                                timeUnit = "小时";
+                                remainingTime = remainingTimeInSeconds / 3600;
+                            } else if (remainingTimeInSeconds >= 60) {
+                                timeUnit = "分钟";
+                                remainingTime = remainingTimeInSeconds / 60;
+                            } else {
+                                timeUnit = "秒";
+                                remainingTime = remainingTimeInSeconds;
+                            }
 
-                        String timeUnit;
-                        long remainingTime;
-                        if (remainingTimeInSeconds >= 3600) {
-                            timeUnit = "小时";
-                            remainingTime = remainingTimeInSeconds / 3600;
-                        } else if (remainingTimeInSeconds >= 60) {
-                            timeUnit = "分钟";
-                            remainingTime = remainingTimeInSeconds / 60;
-                        } else {
-                            timeUnit = "秒";
-                            remainingTime = remainingTimeInSeconds;
+                            String speedUnit;
+                            double speed;
+                            if (bytesPerSecond >= 1024 * 1024) {
+                                speedUnit = "MB/s";
+                                speed = bytesPerSecond / (1024.0 * 1024.0);
+                            } else {
+                                speedUnit = "KB/s";
+                                speed = bytesPerSecond / 1024.0;
+                            }
+
+                            double progress = (double) bytesRead / fileSize;
+
+                            System.out.printf("下载进度: %.0f%%, 速度: %.2f %s, 预估时间: %d %s\n",
+                                    progress * 100, speed, speedUnit, remainingTime, timeUnit);
+
+                            lastBytesRead = currentBytesRead;
+                            startTime = currentTime;
                         }
-
-                        String speedUnit;
-                        double speed;
-                        if (bytesPerSecond >= 1024 * 1024) {
-                            speedUnit = "MB/s";
-                            speed = bytesPerSecond / (1024.0 * 1024.0);
-                        } else {
-                            speedUnit = "KB/s";
-                            speed = bytesPerSecond / 1024.0;
-                        }
-
-                        double progress = (double) bytesRead / fileSize;
-
-                        System.out.printf("下载进度: %.0f%%, 速度: %.2f %s, 预估时间: %d %s\n",
-                                progress * 100, speed, speedUnit, remainingTime, timeUnit);
-
-                        lastBytesRead = currentBytesRead;
-                        startTime = currentTime;
+                    }
+                } else {
+                    while ((len = gzipInputStream.read(buffer)) != -1) {
+                        fos.write(buffer, 0, len);
                     }
                 }
 
-            }else {
-                while ((len = gzipInputStream.read(buffer)) != -1) {
-                    fos.write(buffer, 0, len);
-                }
+                return saveFile.getAbsolutePath();
             }
-
-            return saveFile.getAbsolutePath();
-
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
-
     }
-
 
     private File getSaveFile(String filePath) throws IOException {
         File saveFile = new File(filePath);
@@ -447,7 +436,7 @@ public class CustomHttpResponse{
             if (!saveFile.exists()) {
                 saveFile.mkdirs();
             }
-            saveFile = new File(saveFile, getFileName(con));
+            saveFile = new File(saveFile, getFileName());
         }
         return saveFile;
     }
@@ -458,16 +447,18 @@ public class CustomHttpResponse{
             if (!saveFile.exists()) {
                 saveFile.mkdirs();
             }
-            String fileName = getFileName(con);
-            if (fileName!="" && !fileName.endsWith(".gzip")) fileName = fileName + ".gzip";
+            String fileName = getFileName();
+            if (!fileName.isEmpty() && !fileName.endsWith(".gzip")) {
+                fileName = fileName + ".gzip";
+            }
             saveFile = new File(saveFile, fileName);
         }
         return saveFile;
     }
 
     // 获取文件名
-    private String getFileName(HttpURLConnection connection) {
-        String disposition = connection.getHeaderField("Content-Disposition");
+    private String getFileName() {
+        String disposition = response.header("Content-Disposition");
         if (disposition != null) {
             // 从Content-Disposition中获取文件名
             Pattern pattern = Pattern.compile("filename\\s*=\\s*\"?([^\";]+)\"?");
@@ -477,39 +468,56 @@ public class CustomHttpResponse{
             }
         } else {
             // 从URL中获取文件名
-            String fileName = connection.getURL().toString();
-            return fileName.substring(fileName.lastIndexOf(File.separator) + 1, fileName.length());
+            String fileName = response.request().url().toString();
+            return fileName.substring(fileName.lastIndexOf(File.separator) + 1);
         }
         return "";
     }
 
-
     public URL getURL() {
-        return con.getURL();
+        try {
+            return response.request().url().url();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
-    public int getResponseCode() throws Exception {
-        return con.getResponseCode();
+    public int getResponseCode() {
+        return response.code();
     }
 
     public int getContentLength() {
-        return con.getContentLength();
-    }
-
-    public long getExpiration() {
-        return con.getExpiration();
+        ResponseBody body = response.body();
+        if (body != null) {
+            long length = body.contentLength();
+            return length > Integer.MAX_VALUE ? -1 : (int) length;
+        }
+        return -1;
     }
 
     public long getLastModified() {
-        return con.getLastModified();
+        String lastModified = response.header("Last-Modified");
+        if (lastModified != null) {
+            try {
+                return java.text.DateFormat.getDateInstance().parse(lastModified).getTime();
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    public Response getRequest() {
+        return response;
     }
 
     public String getContentType() {
-        return con.getContentType();
+        return response.header("Content-Type");
     }
 
     public InputStream getInputStream() throws Exception {
-        return con.getInputStream();
+        ResponseBody body = response.body();
+        return body != null ? body.byteStream() : null;
     }
 
     public byte[] getByteArray() {
@@ -517,43 +525,45 @@ public class CustomHttpResponse{
     }
 
     public String getContentEncoding() {
-        return con.getContentEncoding();
+        return response.header("Content-Encoding");
     }
 
     public Map<String, List<String>> getHeaderFields() {
-        return con.getHeaderFields();
+        Map<String, List<String>> headerMap = new HashMap<>();
+        for (String name : response.headers().names()) {
+            headerMap.put(name, response.headers().values(name));
+        }
+        return headerMap;
     }
+    
     public String getHeaderField(int n) {
-        return con.getHeaderField(n);
+        if (n < response.headers().size()) {
+            return response.headers().value(n);
+        }
+        return null;
     }
+    
     public List<String> getHeaderField(String str) {
-        return con.getHeaderFields().get(str);
+        return response.headers().values(str);
     }
+    
     public String getHeaderFields(int n) {
-        return con.getHeaderFieldKey(n);
+        if (n < response.headers().size()) {
+            return response.headers().name(n);
+        }
+        return null;
     }
 
     public String getResponseMessage() {
-        try {
-            return con.getResponseMessage();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return response.message();
     }
 
     public String getHeaderFieldsText() {
         StringBuilder sb = new StringBuilder();
         // 添加响应头
-        Map<String, List<String>> headers = con.getHeaderFields();
-        if (headers != null) {
-            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-                String headerName = entry.getKey();
-                List<String> headerValues = entry.getValue();
-                if (headerValues != null && !headerValues.isEmpty()) {
-                    for (String value : headerValues) {
-                        sb.append(headerName).append(": ").append(value).append("\n");
-                    }
-                }
+        for (String name : response.headers().names()) {
+            for (String value : response.headers().values(name)) {
+                sb.append(name).append(": ").append(value).append("\n");
             }
         }
         return sb.toString();
@@ -561,28 +571,16 @@ public class CustomHttpResponse{
 
     public String getAllResponseText() {
         StringBuilder sb = new StringBuilder();
-        int statusCode = 0;
-        String responseMessage = "";
-        try {
-            statusCode = con.getResponseCode();
-            responseMessage = con.getResponseMessage();
-        }catch (Exception e){};
-
-        // 添加状态行
-        sb.append("HTTP/1.1 ").append(statusCode).append(" ")
-                .append(responseMessage).append("\n");
+        
+        // 添加状态行 - 使用实际的协议版本
+        sb.append(response.protocol().toString().toUpperCase()).append(" ")
+                .append(response.code()).append(" ")
+                .append(response.message()).append("\n");
 
         // 添加响应头
-        Map<String, List<String>> headers = con.getHeaderFields();
-        if (headers != null) {
-            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-                String headerName = entry.getKey();
-                List<String> headerValues = entry.getValue();
-                if (headerValues != null && !headerValues.isEmpty()) {
-                    for (String value : headerValues) {
-                        sb.append(headerName).append(": ").append(value).append("\n");
-                    }
-                }
+        for (String name : response.headers().names()) {
+            for (String value : response.headers().values(name)) {
+                sb.append(name).append(": ").append(value).append("\n");
             }
         }
 
@@ -590,5 +588,10 @@ public class CustomHttpResponse{
         sb.append("\n").append(getTextStr());
 
         return sb.toString();
+    }
+
+    @Override
+    public void close() throws Exception {
+        disconnect();
     }
 }

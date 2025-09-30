@@ -34,27 +34,25 @@ public class QuakeSearch {
         if(QUAKE_KEY_LIST.size()==0|| QUAKE_KEY_LIST.get(0).isEmpty())  return domainInfo;
 
         for(String QUAKE_KEY : QUAKE_KEY_LIST) {
-            try {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("X-QuakeToken", QUAKE_KEY);
-                JsonObject jsonData = new JsonObject();
-                jsonData.addProperty("query", qInfo);
-                jsonData.addProperty("start", 0);
-                jsonData.addProperty("size", 500);
-                RequestObj obj = new RequestObj()
-                        .setUrl("https://quake.360.net/api/v3/search/quake_service")
-                        .setMethod("POST")
-                        .setHeaders(headers)
-                        .setPostData(jsonData)
-                        .setTimeOut(20)
-                        .setRetries(3);
-                if(!Proxy) obj.setProxies(null);
+            Map<String, String> headers = new HashMap<>();
+            headers.put("X-QuakeToken", QUAKE_KEY);
+            JsonObject jsonData = new JsonObject();
+            jsonData.addProperty("query", qInfo);
+            jsonData.addProperty("start", 0);
+            jsonData.addProperty("size", 500);
+            RequestObj obj = new RequestObj()
+                    .setUrl("https://quake.360.net/api/v3/search/quake_service")
+                    .setMethod("POST")
+                    .setHeaders(headers)
+                    .setPostData(jsonData)
+                    .setTimeOut(20)
+                    .setRetries(3);
+            if(!Proxy) obj.setProxies(null);
 
-                CustomHttpResponse con = requests(obj);
+            try (CustomHttpResponse con = requests(obj)) {
                 int statusCode = con.getResponseCode();
                 // 检查请求状态码
                 if (statusCode != 200) {
-                    con.disconnect();
                     return domainInfo;
                 }
                 JsonObject res = con.getJson().getAsJsonObject();

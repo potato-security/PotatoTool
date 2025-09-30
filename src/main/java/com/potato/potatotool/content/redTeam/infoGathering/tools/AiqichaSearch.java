@@ -198,19 +198,17 @@ public class AiqichaSearch {
     private JsonArray getDataByC(String url){
         JsonArray jsonArray = new JsonArray();
 
-        try {
-            RequestObj obj = new RequestObj()
-                    .setUrl(url)
-                    .setMethod("GET")
-                    .setHeaders(headers)
-                    .setRetries(3);
-            if(!Proxy) obj.setProxies(null);
+        RequestObj obj = new RequestObj()
+                .setUrl(url)
+                .setMethod("GET")
+                .setHeaders(headers)
+                .setRetries(3);
+        if(!Proxy) obj.setProxies(null);
 
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
-                con.disconnect();
                 return null;
             }
 
@@ -241,20 +239,18 @@ public class AiqichaSearch {
     private String getCompanyId(String companyName){
         String pidValue = null;
 
-        try {
-            RequestObj obj = new RequestObj()
-                    .setUrl("https://aiqicha.baidu.com/s?q=" + StrUtils.urlEncode(companyName))
-                    .setMethod("GET")
-                    .setHeaders(headers)
-                    .setRetryWaitTime(5)
-                    .setRetries(3);
-            if(!Proxy) obj.setProxies(null);
+        RequestObj obj = new RequestObj()
+                .setUrl("https://aiqicha.baidu.com/s?q=" + StrUtils.urlEncode(companyName))
+                .setMethod("GET")
+                .setHeaders(headers)
+                .setRetryWaitTime(5)
+                .setRetries(3);
+        if(!Proxy) obj.setProxies(null);
 
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
 
             int statusCode = con.getResponseCode();
             if (statusCode != 200) {
-                con.disconnect();
                 if(statusCode == 302) {
                     String location= con.getHeaderField("Location").get(0);
                     if(location.equals("https://aiqicha.baidu.com/acount/accessrestriction")) {

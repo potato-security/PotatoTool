@@ -73,18 +73,16 @@ public class GoogleSearch {
             String Google_Key = Google_API_List.get(keyIndex).get("Google_Key");
             String Google_Cx = Google_API_List.get(keyIndex).get("Google_Cx");
 
-            try {
-                RequestObj obj = new RequestObj()
-                        .setUrl("https://customsearch.googleapis.com/customsearch/v1?key=" + Google_Key + "&q=" + StrUtils.urlEncode(input) + "&cx=" + Google_Cx + "&start=" + currentIndex)
-                        .setMethod("GET");
-                if(!Proxy) obj.setProxies(null);
+            RequestObj obj = new RequestObj()
+                    .setUrl("https://customsearch.googleapis.com/customsearch/v1?key=" + Google_Key + "&q=" + StrUtils.urlEncode(input) + "&cx=" + Google_Cx + "&start=" + currentIndex)
+                    .setMethod("GET");
+            if(!Proxy) obj.setProxies(null);
 
-                CustomHttpResponse con = requests(obj);
+            try (CustomHttpResponse con = requests(obj)){
 
                 int statusCode = con.getResponseCode();
                 // 检查请求状态码
                 if (statusCode != 200) {
-                    con.disconnect();
                     if(statusCode == 429){
                         keyIndex += 1;
                         index -= 1;

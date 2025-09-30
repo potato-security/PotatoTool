@@ -14,7 +14,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.util.ConnectionPoolMana
 import com.potato.potatotool.content.redTeam.vulnScanner.util.ConfigOptimizer;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
-import com.potato.potatotool.utils.network.RequestUtils;
+import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 import java.io.File;
 import java.io.IOException;
@@ -763,7 +763,6 @@ public class VulnScanExecutor {
                 continue; // 跳过空步骤
             }
 
-            CustomHttpResponse response = null;
             try {
                 // 创建请求对象
                 RequestObj requestObj = new RequestObj();
@@ -862,27 +861,28 @@ public class VulnScanExecutor {
                 int maxResponseSize = (scanConfig != null && scanConfig.getMaxResponseSize() > 0) 
                     ? scanConfig.getMaxResponseSize() : Integer.MAX_VALUE; // 默认无大小限制
                 requestObj.setMaxResponseSize(maxResponseSize);
-                response = RequestUtils.requests(requestObj);
 
-                // 检查响应是否为空
-                if (response == null) {
-                    if (scanConfig.isDebug()) {
-                        logErrorSafely("请求返回空响应");
+                try (CustomHttpResponse response = requests(requestObj)){
+                    // 检查响应是否为空
+                    if (response == null) {
+                        if (scanConfig.isDebug()) {
+                            logErrorSafely("请求返回空响应");
+                        }
+                        continue; // 跳过当前步骤，继续下一步
                     }
-                    continue; // 跳过当前步骤，继续下一步
-                }
 
-                // 匹配结果
-                boolean matched = ResponseMatcher.matchResponse(response, step.getMatchers(), step.getMatchersCondition());
+                    // 匹配结果
+                    boolean matched = ResponseMatcher.matchResponse(response, step.getMatchers(), step.getMatchersCondition());
 
-                // 如果匹配失败且步骤是必要的，则返回失败
-                if (!matched) {
-                    return false;
-                }
+                    // 如果匹配失败且步骤是必要的，则返回失败
+                    if (!matched) {
+                        return false;
+                    }
 
-                // 提取变量
-                if (step.getExtractors() != null && !step.getExtractors().isEmpty()) {
-                    VariableExtractor.extractVariables(response, step.getExtractors(), extractedValues);
+                    // 提取变量
+                    if (step.getExtractors() != null && !step.getExtractors().isEmpty()) {
+                        VariableExtractor.extractVariables(response, step.getExtractors(), extractedValues);
+                    }
                 }
             } catch (Exception e) {
                 if (scanConfig.isDebug()) {
@@ -911,18 +911,6 @@ public class VulnScanExecutor {
                         e.printStackTrace();
                     }
                     throw e;
-                }
-            } finally {
-                // 释放资源
-                if (response != null) {
-                    try {
-                        response.disconnect();
-                    } catch (Exception e) {
-                        // 忽略关闭连接时的异常
-                        if (scanConfig.isDebug()) {
-                            logErrorSafely("关闭连接时发生异常: " + e.getMessage());
-                        }
-                    }
                 }
             }
         }

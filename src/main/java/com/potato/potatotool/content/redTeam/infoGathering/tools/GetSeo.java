@@ -79,17 +79,15 @@ public class GetSeo {
         Map<String, String> headers = new HashMap<>();
         headers.put("Cookie", Chinaz_Cookie);
 
-        try {
-            RequestObj obj = new RequestObj().setUrl("https://seo.chinaz.com/" + domain)
-                    .setMethod("GET").setRetries(3).setHeaders(headers);
-            if(!Proxy) obj.setProxies(null);
+        RequestObj obj = new RequestObj().setUrl("https://seo.chinaz.com/" + domain)
+        .setMethod("GET").setRetries(3).setHeaders(headers);
+        if(!Proxy) obj.setProxies(null);
 
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();
 
             // 检查请求状态码
             if (statusCode != 200) {
-                con.disconnect();
                 return seoMap;
             }
 
@@ -151,15 +149,14 @@ public class GetSeo {
     private static JsonObject getSeo_aizhan(String domain) {
         JsonObject seoMap = new JsonObject();
 
-        try {
-            RequestObj obj = new RequestObj().setUrl("https://www.aizhan.com/cha/" + domain + "/")
-                    .setMethod("GET").setRetries(3);
-            CustomHttpResponse con = requests(obj);
+        RequestObj obj = new RequestObj().setUrl("https://www.aizhan.com/cha/" + domain + "/")
+        .setMethod("GET").setRetries(3);
+        
+        try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();
 
             // 检查请求状态码
             if (statusCode != 200) {
-                con.disconnect();
                 return seoMap;
             }
 
@@ -280,15 +277,13 @@ public class GetSeo {
         String email = "";
         if (emailUrl.isEmpty()) return email;
 
-        try {
-            RequestObj obj = new RequestObj().setUrl(emailUrl)
-                    .setMethod("GET").setRetries(3);
-            CustomHttpResponse con = requests(obj);
+        RequestObj obj = new RequestObj().setUrl(emailUrl)
+        .setMethod("GET").setRetries(3);
+        try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();
 
             // 检查请求状态码
             if (statusCode != 200) {
-                con.disconnect();
                 return email;
             }
 

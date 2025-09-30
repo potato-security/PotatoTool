@@ -74,8 +74,7 @@ public class AIUtilNew {
 
         RequestObj obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData).setProxies(null);
 
-        try {
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
             con.getSSEStreamingJson(new CustomHttpResponse.ResponseCallback() {//回调函数
                 @Override
                 public void onResponse(String line) {
@@ -234,9 +233,7 @@ public class AIUtilNew {
         RequestObj obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData);
 
 
-        try {
-
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
             con.getSSEStreamingJson(new CustomHttpResponse.ResponseCallback() {//回调函数
                 @Override
                 public void onResponse(String line) {

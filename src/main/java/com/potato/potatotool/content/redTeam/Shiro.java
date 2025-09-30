@@ -33,18 +33,14 @@ public class Shiro {
         HashMap<String, String> headers = new HashMap();
         headers.put("Cookie", shiroKeyWord + StrUtils.generateRandomString(2, 6));
 
+        RequestObj obj = new RequestObj();
+        obj.setMethod(reqMethod);
+        obj.setUrl(iputUrl);
+        obj.setHeaders(headers);
+        obj.setPostData(postData);
+        obj.setTimeOut(timeOut);
 
-        try {
-            RequestObj obj = new RequestObj();
-            obj.setMethod(reqMethod);
-            obj.setUrl(iputUrl);
-            obj.setHeaders(headers);
-            obj.setPostData(postData);
-            obj.setTimeOut(timeOut);
-
-            CustomHttpResponse con = requests(obj);
-
-            System.out.println(con.getTextStr());
+        try (CustomHttpResponse con = requests(obj)){
 
             if (con.getHeaderField("Set-Cookie").toString().contains("=deleteMe")) {
                 System.out.println("[√] 存在shiro框架！");

@@ -66,51 +66,47 @@ public class GetDomain {
         try {
             RequestObj obj = new RequestObj().setUrl("https://site.ip138.com/" + ip + "/")
                     .setMethod("GET").setRandomUserAgent(false).setRetries(3);
+            try (CustomHttpResponse con = requests(obj)) {
+                String content = con.getTextStr();
+                int statusCode = con.getResponseCode();
 
-            CustomHttpResponse con = requests(obj);
-            String content = con.getTextStr();
-            int statusCode = con.getResponseCode();
+                // 检查请求状态码
+                if (statusCode != 200) {
+                    return domainDataArray;
+                }
 
-            // 检查请求状态码
-            if (statusCode != 200) {
-                con.disconnect();
-                return domainDataArray;
-            }
+                Matcher matcher = TOKEN_PATTERN_ip138_Or_ipchaxun.matcher(content);
+                if (matcher.find()) {
 
-            Matcher matcher = TOKEN_PATTERN_ip138_Or_ipchaxun.matcher(content);
-            if (matcher.find()) {
+                    String token = matcher.group(1);
+                    int index = 0;
 
-                String token = matcher.group(1);
-                int index = 0;
+                    while (true) {
+                        index += 1;
+                        RequestObj obj_sub = new RequestObj().setUrl("https://site.ip138.com/index/querybyip/?ip=" + ip + "&page=" + index+ "&token=" + token)
+                                .setMethod("GET").setRandomUserAgent(false).setRetries(4);
 
-                while (true) {
-                    index += 1;
-                    RequestObj obj_sub = new RequestObj().setUrl("https://site.ip138.com/index/querybyip/?ip=" + ip + "&page=" + index+ "&token=" + token)
-                            .setMethod("GET").setRandomUserAgent(false).setRetries(4);
+                        try (CustomHttpResponse con_sub = requests(obj_sub)) {
+                            int statusCode_sub = con_sub.getResponseCode();
+                            if (statusCode_sub != 200) {
+                                break;
+                            }
 
-                    CustomHttpResponse con_sub = requests(obj_sub);
-
-                    int statusCode_sub = con_sub.getResponseCode();
-                    if (statusCode_sub != 200) {
-                        con.disconnect();
-                        break;
-                    }
-
-                    JsonObject jsonObject = con_sub.getJson().getAsJsonObject();
-                    if (jsonObject.has("data") && jsonObject.get("data").isJsonArray()) {
-                        for (JsonElement element : jsonObject.getAsJsonArray("data")) {
-                            element.getAsJsonObject().addProperty("show", false);
-                            element.getAsJsonObject().addProperty("deepGet", false);
-                            domainDataArray.add(element);
-                            if(domainDataArray.size()==MaxSize) return domainDataArray;
+                            JsonObject jsonObject = con_sub.getJson().getAsJsonObject();
+                            if (jsonObject.has("data") && jsonObject.get("data").isJsonArray()) {
+                                for (JsonElement element : jsonObject.getAsJsonArray("data")) {
+                                    element.getAsJsonObject().addProperty("show", false);
+                                    element.getAsJsonObject().addProperty("deepGet", false);
+                                    domainDataArray.add(element);
+                                    if(domainDataArray.size()==MaxSize) return domainDataArray;
+                                }
+                            } else {
+                                break;
+                            }
                         }
-                    } else {
-                        break;
                     }
-
                 }
             }
-
         } catch (Exception e) {
             if(debugMode) e.printStackTrace();
         }
@@ -124,52 +120,48 @@ public class GetDomain {
         try {
             RequestObj obj = new RequestObj().setUrl("https://ipchaxun.com/" + ip + "/")
                     .setMethod("GET").setRandomUserAgent(false).setRetries(3);
+            try (CustomHttpResponse con = requests(obj)) {
+                String content = con.getTextStr();
+                int statusCode = con.getResponseCode();
 
-            CustomHttpResponse con = requests(obj);
-            String content = con.getTextStr();
-            int statusCode = con.getResponseCode();
+                // 检查请求状态码
+                if (statusCode != 200) {
+                    return domainDataArray;
+                }
 
-            // 检查请求状态码
-            if (statusCode != 200) {
-                con.disconnect();
-                return domainDataArray;
-            }
+                Matcher matcher = TOKEN_PATTERN_ip138_Or_ipchaxun.matcher(content);
+                if (matcher.find()) {
 
-            Matcher matcher = TOKEN_PATTERN_ip138_Or_ipchaxun.matcher(content);
-            if (matcher.find()) {
+                    String token = matcher.group(1);
+                    int index = 0;
 
-                String token = matcher.group(1);
-                int index = 0;
+                    while (true) {
+                        index += 1;
+                        RequestObj obj_sub = new RequestObj().setUrl("https://ipchaxun.com/index/index/querybyip/?ip=" + ip + "&page=" + index+ "&token=" + token)
+                                .setMethod("GET").setRandomUserAgent(false).setRetries(3);
 
-                while (true) {
-                    index += 1;
-                    RequestObj obj_sub = new RequestObj().setUrl("https://ipchaxun.com/index/index/querybyip/?ip=" + ip + "&page=" + index+ "&token=" + token)
-                            .setMethod("GET").setRandomUserAgent(false).setRetries(3);
+                        try (CustomHttpResponse con_sub = requests(obj_sub)) {
+                            int statusCode_sub = con_sub.getResponseCode();
+                            if (statusCode_sub != 200) {
+                                break;
+                            }
 
-                    CustomHttpResponse con_sub = requests(obj_sub);
-
-                    int statusCode_sub = con_sub.getResponseCode();
-                    if (statusCode_sub != 200) {
-                        con.disconnect();
-                        break;
-                    }
-
-                    JsonObject jsonObject = con_sub.getJson().getAsJsonObject();
-                    if (jsonObject.has("data") && jsonObject.get("data").isJsonArray() && jsonObject.get("data").getAsJsonArray().size()>0) {
-                        for (JsonElement element : jsonObject.getAsJsonArray("data")) {
-                            element.getAsJsonObject().remove("_id");
-                            element.getAsJsonObject().addProperty("show", false);
-                            element.getAsJsonObject().addProperty("deepGet", false);
-                            domainDataArray.add(element);
-                            if(domainDataArray.size()==MaxSize) return domainDataArray;
+                            JsonObject jsonObject = con_sub.getJson().getAsJsonObject();
+                            if (jsonObject.has("data") && jsonObject.get("data").isJsonArray() && jsonObject.get("data").getAsJsonArray().size()>0) {
+                                for (JsonElement element : jsonObject.getAsJsonArray("data")) {
+                                    element.getAsJsonObject().remove("_id");
+                                    element.getAsJsonObject().addProperty("show", false);
+                                    element.getAsJsonObject().addProperty("deepGet", false);
+                                    domainDataArray.add(element);
+                                    if(domainDataArray.size()==MaxSize) return domainDataArray;
+                                }
+                            } else {
+                                break;
+                            }
                         }
-                    } else {
-                        break;
                     }
-
                 }
             }
-
         } catch (Exception e) {
             if(debugMode) e.printStackTrace();
         }
@@ -184,31 +176,28 @@ public class GetDomain {
         try {
             RequestObj obj = new RequestObj().setUrl("https://api.webscan.cc/?action=query&ip=" + ip)
                     .setMethod("GET").setRetries(3);
+            try (CustomHttpResponse con = requests(obj)) {
+                int statusCode = con.getResponseCode();
+                if (statusCode != 200) {
+                    return domainDataArray;
+                }
 
-            CustomHttpResponse con = requests(obj);
+                JsonArray jsonArray = con.getJson().getAsJsonArray();
+                for (JsonElement element : jsonArray) {
+                    JsonObject oldObject = element.getAsJsonObject();
+                    String domain = oldObject.get("domain").getAsString();
 
-            int statusCode = con.getResponseCode();
-            if (statusCode != 200) {
-                con.disconnect();
-                return domainDataArray;
+                    if(domain.equals(ip)) break;
+
+                    JsonObject newObject = new JsonObject();
+                    newObject.addProperty("domain", domain);
+                    newObject.addProperty("addtime", "");
+                    newObject.addProperty("uptime", "");
+
+                    domainDataArray.add(newObject);
+                    if(domainDataArray.size()==MaxSize) break;
+                }
             }
-
-            JsonArray jsonArray = con.getJson().getAsJsonArray();
-            for (JsonElement element : jsonArray) {
-                JsonObject oldObject = element.getAsJsonObject();
-                String domain = oldObject.get("domain").getAsString();
-
-                if(domain.equals(ip)) break;
-
-                JsonObject newObject = new JsonObject();
-                newObject.addProperty("domain", domain);
-                newObject.addProperty("addtime", "");
-                newObject.addProperty("uptime", "");
-
-                domainDataArray.add(newObject);
-                if(domainDataArray.size()==MaxSize) break;
-            }
-
         } catch (Exception e) {
             if(debugMode) e.printStackTrace();
         }

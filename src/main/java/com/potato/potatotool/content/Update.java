@@ -52,17 +52,17 @@ public class Update {
 
                 RequestObj obj = new RequestObj();
                 obj.setUrl(resourceUrl);
+                try (CustomHttpResponse con = requests(obj)) {
+                    JsonArray resJson = con.getJson().getAsJsonArray();
 
-                CustomHttpResponse con = requests(obj);
-                JsonArray resJson = con.getJson().getAsJsonArray();
+                    for (JsonElement element : resJson) {
+                        JsonObject jsonObject = element.getAsJsonObject();
+                        fileName = jsonObject.get("name").getAsString();
 
-                for (JsonElement element : resJson) {
-                    JsonObject jsonObject = element.getAsJsonObject();
-                    fileName = jsonObject.get("name").getAsString();
-
-                    if (fileName.startsWith(argKey)) {
-                        downloadUrl = jsonObject.get("download_url").getAsString();
-                        break;
+                        if (fileName.startsWith(argKey)) {
+                            downloadUrl = jsonObject.get("download_url").getAsString();
+                            break;
+                        }
                     }
                 }
 
@@ -115,17 +115,17 @@ public class Update {
 
                 RequestObj obj = new RequestObj();
                 obj.setUrl(resourceUrl);
+                try (CustomHttpResponse con = requests(obj)) {
+                    JsonArray resJson = con.getJson().getAsJsonArray();
 
-                CustomHttpResponse con = requests(obj);
-                JsonArray resJson = con.getJson().getAsJsonArray();
+                    for (JsonElement element : resJson) {
+                        JsonObject jsonObject = element.getAsJsonObject();
+                        fileName = jsonObject.get("name").getAsString();
 
-                for (JsonElement element : resJson) {
-                    JsonObject jsonObject = element.getAsJsonObject();
-                    fileName = jsonObject.get("name").getAsString();
-
-                    if (fileName.startsWith(argKey)) {
-                        downloadUrl = jsonObject.get("download_url").getAsString();
-                        break;
+                        if (fileName.startsWith(argKey)) {
+                            downloadUrl = jsonObject.get("download_url").getAsString();
+                            break;
+                        }
                     }
                 }
 
@@ -189,11 +189,10 @@ public class Update {
             obj.setUrl(urlPath);
             obj.setHeaders(headers);
             obj.setFollowRedirects(true);
-
-            CustomHttpResponse con = requests(obj);
-
-            // 上传的md5也是gzip加工后的
-            savePathResult = con.saveToFileByGzip(configFolder.toString(), false);
+            try (CustomHttpResponse con = requests(obj)) {
+                // 上传的md5也是gzip加工后的
+                savePathResult = con.saveToFileByGzip(configFolder.toString(), false);
+            }
 
             if (savePathResult != null){
                 System.out.println("文件写入成功");
@@ -230,11 +229,10 @@ public class Update {
             obj.setUrl(urlPath);
             obj.setHeaders(headers);
             obj.setFollowRedirects(true);
-
-            CustomHttpResponse con = requests(obj);
-
-            // 上传的md5也是gzip加工后的
-            savePathResult = con.saveToFileByGzip(configFolder.toString(), progressBar, progressLabel);
+            try (CustomHttpResponse con = requests(obj)) {
+                // 上传的md5也是gzip加工后的
+                savePathResult = con.saveToFileByGzip(configFolder.toString(), progressBar, progressLabel);
+            }
 
             if (savePathResult != null){
                 System.out.println("文件写入成功");

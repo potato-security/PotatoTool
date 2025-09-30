@@ -30,20 +30,18 @@ public class ShodanSearch {
         if( qInfo==null || qInfo.isEmpty() || !isEffectiveKey) return domainInfo;
         if( SHODAN_KEY==null || SHODAN_KEY.isEmpty() ) return domainInfo;
 
-        try {
-            RequestObj obj = new RequestObj()
-                    .setUrl("https://api.shodan.io/shodan/host/search?key=" + SHODAN_KEY + "&query=" + StrUtils.urlEncode(qInfo))
-                    .setMethod("GET")
-                    .setNoUserAgent(true)
-                    .setTimeOut(20)
-                    .setRetries(3);
-            if(!Proxy) obj.setProxies(null);
+        RequestObj obj = new RequestObj()
+                .setUrl("https://api.shodan.io/shodan/host/search?key=" + SHODAN_KEY + "&query=" + StrUtils.urlEncode(qInfo))
+                .setMethod("GET")
+                .setNoUserAgent(true)
+                .setTimeOut(20)
+                .setRetries(3);
+        if(!Proxy) obj.setProxies(null);
 
-            CustomHttpResponse con = requests(obj);
+        try (CustomHttpResponse con = requests(obj)) {
             int statusCode = con.getResponseCode();
             // 检查请求状态码
             if (statusCode!= 200) {
-                con.disconnect();
                 return domainInfo;
             }
 

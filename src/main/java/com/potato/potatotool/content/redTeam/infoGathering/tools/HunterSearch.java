@@ -51,19 +51,18 @@ public class HunterSearch {
             }
 
             int total = -1;
-            try {
-                String HUNTER_KEY = HUNTER_KEY_LIST.size() > 0 ? HUNTER_KEY_LIST.get(keyIndex) : null;
-                RequestObj obj = new RequestObj().setUrl("https://hunter.qianxin.com/openApi/search?api-key=" + HUNTER_KEY + "&search=" + StrUtils.base64UrlEncoder(qInfo) + "&page=" + i +"&page_size=100")//&is_web=1
-                        .setTimeOut(20)
-                        .setMethod("GET").setRandomUserAgent(false).setRetries(3);
-                if(!Proxy) obj.setProxies(null);
 
-                CustomHttpResponse con = requests(obj);
+            String HUNTER_KEY = HUNTER_KEY_LIST.size() > 0 ? HUNTER_KEY_LIST.get(keyIndex) : null;
+            RequestObj obj = new RequestObj().setUrl("https://hunter.qianxin.com/openApi/search?api-key=" + HUNTER_KEY + "&search=" + StrUtils.base64UrlEncoder(qInfo) + "&page=" + i +"&page_size=100")//&is_web=1
+                    .setTimeOut(20)
+                    .setMethod("GET").setRandomUserAgent(false).setRetries(3);
+            if(!Proxy) obj.setProxies(null);
+
+            try (CustomHttpResponse con = requests(obj)) {
 
                 int statusCode = con.getResponseCode();
                 // 检查请求状态码
                 if (statusCode != 200) {
-                    con.disconnect();
                     return domainInfo;
                 }
 
