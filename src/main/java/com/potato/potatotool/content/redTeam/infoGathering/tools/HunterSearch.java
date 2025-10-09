@@ -3,7 +3,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.data.StrUtils;
 import com.potato.potatotool.utils.data.JsonUtils;
@@ -103,12 +103,12 @@ public class HunterSearch {
 
     public static String getError_Hunter() {
         isEffectiveKey = true;
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
         Set<String> Hunter_Key_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.HUNTER_KEY)) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray(ConfigConstants.HUNTER_KEY)) {
             Hunter_Key_Set.add(element.getAsString());
         }
-        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.HUNTER_KEY);
+        boolean Proxy = JsonUtils.isProxyEnabled(ConfigConstants.HUNTER_KEY);
         HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set, Proxy);
         String qInfo = "ip=\"8.8.8.8\"";
         if (hunterSearch.search_Hunter(qInfo).isEmpty()){
@@ -163,12 +163,12 @@ public class HunterSearch {
     }
 
     public static void main(String[] args) {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
         Set<String> Hunter_Key_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.HUNTER_KEY)) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray(ConfigConstants.HUNTER_KEY)) {
             Hunter_Key_Set.add(element.getAsString());
         }
-        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.HUNTER_KEY);
+        boolean Proxy = JsonUtils.isProxyEnabled(ConfigConstants.HUNTER_KEY);
         HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set, Proxy);
         System.out.println(hunterSearch.getInfoByCompanyOrDomain_Hunter("深圳湾科技发展有限公司"));
     }

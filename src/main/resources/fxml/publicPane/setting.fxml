@@ -60,10 +60,22 @@
                             <StackPane>
                                 <Label fx:id="maxWidthlabel" style="-fx-text-fill: -main-topBar-color;" textAlignment="RIGHT" text="长格式占位符："/>
                                 <HBox alignment="CENTER" spacing="10">
-                                    <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置代理："/>
+                                    <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置总代理：">
+                                        <tooltip>
+                                            <Tooltip text="优先级低于子代理开关" />
+                                        </tooltip>
+                                    </Label>
                                     <StackPane>
-                                        <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" StackPane.alignment="CENTER"/>
-                                        <CFSwitch fx:id="proxyButton" onMouseClicked="#proxyBtn" StackPane.alignment="CENTER_RIGHT"/>
+                                        <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" StackPane.alignment="CENTER">
+                                            <tooltip>
+                                                <Tooltip text="优先级低于子代理开关" />
+                                            </tooltip>
+                                        </TextField>
+                                        <CFSwitch fx:id="proxyButton" onMouseClicked="#proxyBtn" StackPane.alignment="CENTER_RIGHT">
+                                            <tooltip>
+                                                <Tooltip text="优先级低于子代理开关" />
+                                            </tooltip>
+                                        </CFSwitch>
                                     </StackPane>
                                 </HBox>
                             </StackPane>
@@ -78,18 +90,42 @@
                                     </items>
                                 </ComboBox>
                             </HBox>
+
+<!--                            <HBox alignment="CENTER" spacing="10">-->
+<!--                                <Button fx:id="viewProfileButton" minHeight="38.0" minWidth="150" text="查看配置文件" onAction="#viewProfile">-->
+<!--                                    <effect>-->
+<!--                                        <DropShadow />-->
+<!--                                    </effect>-->
+<!--                                </Button>-->
+<!--                            </HBox>-->
+
+                            <HBox alignment="CENTER">
+                                <Button minHeight="38.0" minWidth="150" text="保存" onAction="#save">
+                                    <effect>
+                                        <DropShadow />
+                                    </effect>
+                                </Button>
+                            </HBox>
+                        </VBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Region styleClass="tipNextIcon"/>
+                            <Label alignment="CENTER_LEFT" styleClass="tipTitle_input_big" text="AI"/>
+                        </HBox>
+                        <VBox styleClass="contentCell" alignment="CENTER" spacing="20">
                             <HBox alignment="CENTER" spacing="10">
-                                <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_Model：">
+                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_API_Base：">
                                     <tooltip>
-                                        <Tooltip text="请输入模型版本，（请和Key对应）如：gpt-4o、gpt-4o-mini、gpt-4、gpt-4-0314、gpt-3.5-turbo-16k-0613" />
+                                        <Tooltip text="请输入API接口。 不输入则使用本工具默认免费接口" />
                                     </tooltip>
                                 </Label>
-                                <TextField fx:id="aiModel" promptText="请输入模型版本" prefWidth="250">
+                                <TextField fx:id="aiApiBase" promptText="不输入则使用默认接口" prefWidth="250">
                                     <tooltip>
-                                        <Tooltip text="请输入模型版本。 如：gpt-4o1、gpt-4o-mini、gpt-4、gpt-4-0314、gpt-3.5-turbo-16k-0613" />
+                                        <Tooltip text="请输入API接口。 不输入则使用本工具默认免费接口" />
                                     </tooltip>
                                 </TextField>
                             </HBox>
+
                             <HBox alignment="CENTER" spacing="10">
                                 <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_API_Key：">
                                     <tooltip>
@@ -102,13 +138,30 @@
                                     </tooltip>
                                 </TextField>
                             </HBox>
-<!--                            <HBox alignment="CENTER" spacing="10">-->
-<!--                                <Button fx:id="viewProfileButton" minHeight="38.0" minWidth="150" text="查看配置文件" onAction="#viewProfile">-->
-<!--                                    <effect>-->
-<!--                                        <DropShadow />-->
-<!--                                    </effect>-->
-<!--                                </Button>-->
-<!--                            </HBox>-->
+
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_Model：">
+                                    <tooltip>
+                                        <Tooltip text="请输入模型版本，（请和Key对应）如：gpt-5、gpt-4o-mini、gpt-4o、gpt-4-0314、gpt-3.5-turbo-16k-0613" />
+                                    </tooltip>
+                                </Label>
+                                <TextField fx:id="aiModel" promptText="不输入则使用默认接口" prefWidth="250">
+                                    <tooltip>
+                                        <Tooltip text="请输入模型版本。 不输入则使用本工具默认免费接口" />
+                                    </tooltip>
+                                </TextField>
+                            </HBox>
+
+                            <HBox alignment="CENTER" spacing="10">
+                                <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="代理：">
+                                    <tooltip>
+                                        <Tooltip text="请输入模型版本，（请和Key对应）如：gpt-5、gpt-4o-mini、gpt-4o、gpt-4-0314、gpt-3.5-turbo-16k-0613" />
+                                    </tooltip>
+                                </Label>
+                                <HBox prefWidth="250">
+                                    <CFSwitch fx:id="aiProxy"/>
+                                </HBox>
+                            </HBox>
 
                             <HBox alignment="CENTER">
                                 <Button minHeight="38.0" minWidth="150" text="保存" onAction="#save">

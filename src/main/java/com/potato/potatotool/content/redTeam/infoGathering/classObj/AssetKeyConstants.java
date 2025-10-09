@@ -17,5 +17,9 @@ public interface AssetKeyConstants {
     String GITHUB_TOKEN = "GitHub_Token";
     String SSL = "SSL";
     String CRAWL = "Crawl";
-    String PROXY_KEY = "Proxy_Key";
+    
+    // 代理配置相关
+    String PROXY = "Proxy";
+    String PROXY_SERVICES = "services";  // 代理服务配置
+    String AI = "AI";  // AI 代理键
 }

@@ -6,6 +6,7 @@ import com.leewyatt.rxcontrols.pane.RXCarouselPane;
 import com.potato.potatotool.controller.publicPane.PaneAbout;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.ui.DialogUtils;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -346,25 +347,7 @@ public class MainController {
 
     @FXML
     void showSet(ActionEvent event) {
-        Platform.runLater(() -> {
-            try {
-                Stage stage = new Stage();
-                stage.initOwner(root.getScene().getWindow());
-                stage.initModality(Modality.WINDOW_MODAL);
-                stage.initStyle(StageStyle.TRANSPARENT);
-                stage.setAlwaysOnTop(true);
-
-                AnchorPane dialogRoot = new FXMLLoader(getClass().getResource("/fxml/publicPane/setting.fxml")).load();
-                Scene scene = new Scene(dialogRoot);
-                scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
-                scene.setFill(null);    //  背景透明
-                stage.setScene(scene);
-                stage.setTitle("修改配置信息");
-                stage.show();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        DialogUtils.showSet(root.getScene().getWindow());
     }
 
     @FXML

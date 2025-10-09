@@ -2,6 +2,10 @@ package com.potato.potatotool.utils.data;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
+import com.potato.potatotool.utils.core.Constants;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -299,6 +303,32 @@ public class JsonUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * 检查指定服务是否启用代理
+     * 从 Proxy.services.{serviceName} 读取配置
+     * 
+     * @param serviceName 服务名称（如 ConfigConstants.AI, ConfigConstants.FOFA_KEY 等）
+     * @return 是否启用代理
+     */
+    public static boolean isProxyEnabled(String serviceName) {
+        try {
+            JsonObject proxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
+            
+            if (proxyConfig.has(ConfigConstants.PROXY_SERVICES) && 
+                proxyConfig.get(ConfigConstants.PROXY_SERVICES).isJsonObject()) {
+                JsonObject services = proxyConfig.getAsJsonObject(ConfigConstants.PROXY_SERVICES);
+                if (services != null && services.has(serviceName)) {
+                    return services.get(serviceName).getAsBoolean();
+                }
+            }
+            // 默认不启用代理
+            return false;
+        } catch (Exception e) {
+            // 如果读取配置出错，默认不启用代理
+            return false;
+        }
     }
 
 }

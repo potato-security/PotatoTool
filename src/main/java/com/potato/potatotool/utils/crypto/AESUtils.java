@@ -396,24 +396,28 @@ public class AESUtils {
 
     public static String encryptLocalConfig(String data){
         String res3 = null;
+        if(data==null||data.equals("")) return "";
+
         try {
             String res1 = StrUtils.strRev(data);
             String res2 = StrUtils.base64Encode(new AESUtils().encrypt(res1.getBytes(StandardCharsets.UTF_8), ("PotatoTool"+"Is"+"Good").getBytes(StandardCharsets.UTF_8), ("ILikeYou"+"ILikeYou").getBytes(StandardCharsets.UTF_8), AES_MODE_CBC, PADDING_PKCS5_PADDING));
             res3 = StrUtils.strRev(res2);
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode) e.printStackTrace();
         }
         return res3;
     }
 
     public static String decryptLocalConfig(String data){
         String res3 = null;
+        if(data==null||data.equals("")) return "";
+
         try {
             String res1 = StrUtils.strRev(data);
             String res2 = new String((new AESUtils()).decrypt((new StrUtils()).base64Decode(res1.getBytes(StandardCharsets.UTF_8)), ("PotatoTool"+"Is"+"Good").getBytes(StandardCharsets.UTF_8), ("ILikeYou"+"ILikeYou").getBytes(StandardCharsets.UTF_8), AES_MODE_CBC, PADDING_PKCS5_PADDING), StandardCharsets.UTF_8);
             res3 = StrUtils.strRev(res2);
         } catch (Exception e) {
-            e.printStackTrace();
+            if(debugMode) e.printStackTrace();
         }
         return res3;
     }

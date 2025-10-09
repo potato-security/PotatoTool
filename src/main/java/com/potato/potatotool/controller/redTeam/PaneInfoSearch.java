@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.AssetMapper;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetObj;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DataTypeConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
@@ -13,6 +13,7 @@ import com.potato.potatotool.content.redTeam.infoGathering.utils.AssetExcelExpor
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.ui.DialogUtils;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -421,7 +422,7 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if (!hasSetKey(AssetKeyConstants.FOFA_KEY)) {
+                    if (!hasSetKey(ConfigConstants.FOFA_KEY)) {
                         Platform.runLater(() -> {
                             fofaBox.setSelected(false);
                             showTip("Fofa_Key未设置", true);
@@ -453,7 +454,7 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(AssetKeyConstants.HUNTER_KEY)){
+                    if(!hasSetKey(ConfigConstants.HUNTER_KEY)){
                         Platform.runLater(() -> {
                             hunterBox.setSelected(false);
                             showTip("Hunter_Key未设置", true);
@@ -481,7 +482,7 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(AssetKeyConstants.QUAKE_KEY)){
+                    if(!hasSetKey(ConfigConstants.QUAKE_KEY)){
                         Platform.runLater(() -> {
                             quakeBox.setSelected(false);
                             showTip("Quake_Key未设置", true);
@@ -509,7 +510,7 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(AssetKeyConstants.ZOOMEYE_KEY)){
+                    if(!hasSetKey(ConfigConstants.ZOOMEYE_KEY)){
                         Platform.runLater(() -> {
                             zoomeyeBox.setSelected(false);
                             showTip("Zoomeye_Key未设置", true);
@@ -537,7 +538,7 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(AssetKeyConstants.SHODAN_KEY)){
+                    if(!hasSetKey(ConfigConstants.SHODAN_KEY)){
                         Platform.runLater(() -> {
                             shodanBox.setSelected(false);
                             showTip("Shodan_Key未设置", true);
@@ -569,7 +570,7 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(AssetKeyConstants.GOOGLE_API)){
+                    if(!hasSetKey(ConfigConstants.GOOGLE_API)){
                         Platform.runLater(() -> {
                             googleBox.setSelected(false);
                             showTip("Google_Api未设置", true);
@@ -607,7 +608,7 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(AssetKeyConstants.GITHUB_TOKEN)){
+                    if(!hasSetKey(ConfigConstants.GITHUB_TOKEN)){
                         Platform.runLater(() -> {
                             githubBox.setSelected(false);
                             showTip("Github_Token未设置", true);
@@ -715,25 +716,7 @@ public class PaneInfoSearch {
 
     @FXML
     public void showSet() {
-        Platform.runLater(() -> {
-            try {
-                Stage stage = new Stage();
-                stage.initOwner(quakeBox.getScene().getWindow());
-                stage.initModality(Modality.WINDOW_MODAL);
-                stage.initStyle(StageStyle.TRANSPARENT);
-                stage.setAlwaysOnTop(true);
-
-                AnchorPane dialogRoot = new FXMLLoader(getClass().getResource("/fxml/publicPane/setting.fxml")).load();
-                Scene scene = new Scene(dialogRoot);
-                scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
-                scene.setFill(null);    //  背景透明
-                stage.setScene(scene);
-                stage.setTitle("修改配置信息");
-                stage.show();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        DialogUtils.showSet(sPane.getScene().getWindow());
     }
 
     private void createCompanyNameHBox(String companyName, int index) {

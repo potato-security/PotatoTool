@@ -3,7 +3,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.gitLeaka
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.data.StrUtils;
@@ -104,12 +104,12 @@ public class GitHubLeakage {
 
     public static String getError_Github() {
         isEffectiveKey = true;
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
         Set<String> GitHub_Token_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.GITHUB_TOKEN)) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray(ConfigConstants.GITHUB_TOKEN)) {
             GitHub_Token_Set.add(element.getAsString());
         }
-        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GITHUB_TOKEN);
+        boolean Proxy = JsonUtils.isProxyEnabled(ConfigConstants.GITHUB_TOKEN);
         GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set, Proxy);
         String domain = "HotBoy-java/PotatoTool";
         if (gitHubLeakage.getRepo(null, domain, 1).isEmpty()){
@@ -168,12 +168,12 @@ public class GitHubLeakage {
 
 
     public static void main(String[] args) {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
         Set<String> GitHub_Token_Set = new HashSet<>();
-        for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetKeyConstants.GITHUB_TOKEN)) {
+        for (JsonElement element : tmpJsonObj.getAsJsonArray(ConfigConstants.GITHUB_TOKEN)) {
             GitHub_Token_Set.add(element.getAsString());
         }
-        boolean Proxy = JsonUtils.containsString(tmpJsonObj.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.GITHUB_TOKEN);
+        boolean Proxy = JsonUtils.isProxyEnabled(ConfigConstants.GITHUB_TOKEN);
         GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set, Proxy);
 
 //        JsonArray xxx= new JsonArray();

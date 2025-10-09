@@ -4,9 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.crypto.SecurityInitializer;
 import com.potato.potatotool.utils.crypto.AESUtils;
+import com.potato.potatotool.utils.data.JsonUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
 import javafx.application.Platform;
@@ -34,13 +36,15 @@ public class AIUtil {
     private JsonArray historyList = new JsonArray();
     public boolean isFirstResponse = true;
 
+
     public void askAi(String question, Object node){
 
         //  初始化默认AI配置
         JsonObject tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig("AI");
         String AI_API_Base = tmpJsonObj_AI.getAsJsonPrimitive("AI_API_Base").getAsString();
-        String AI_Model = tmpJsonObj_AI.getAsJsonPrimitive("AI_Model").getAsString();
         String AI_API_Key = tmpJsonObj_AI.getAsJsonPrimitive("AI_API_Key").getAsString();
+        String AI_Model = tmpJsonObj_AI.getAsJsonPrimitive("AI_Model").getAsString();
+
         boolean isLocal = false;
         if(AI_API_Base.isEmpty() || AI_Model.isEmpty() || AI_API_Key.isEmpty()) {
             isLocal = true;
@@ -49,10 +53,11 @@ public class AIUtil {
             AI_API_Key = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive("Local_AI_API_Key").getAsString());
         }
 
+        // 读取 AI 代理配置
+        boolean useAIProxy = JsonUtils.isProxyEnabled(ConfigConstants.AI);
+
         RequestObj obj;
         if (!isLocal){
-            String aiUrl = "https://api.openai.com/v1/chat/completions";
-
             HashMap<String, String> headers = new HashMap();
             headers.put("Content-Type", "application/json");
             headers.put("Authorization", "Bearer " + AI_API_Key);
@@ -81,7 +86,12 @@ public class AIUtil {
 
             String jsonData = new Gson().toJson(data);
 
-            obj = new RequestObj().setMethod("POST").setUrl(aiUrl).setHeaders(headers).setPostData(jsonData);
+            // 根据配置决定是否使用代理
+            if (useAIProxy) {
+                obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData);
+            } else {
+                obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData).setProxies(null);
+            }
 
         }else {
 
@@ -92,7 +102,11 @@ public class AIUtil {
             jsonData.addProperty("query", question);
             jsonData.add("history", historyList);
 
-            obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData).setProxies(null);
+            if (useAIProxy) {
+                obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData);
+            } else {
+                obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData).setProxies(null);
+            }
 
         }
 
@@ -249,9 +263,11 @@ public class AIUtil {
             AI_API_Key = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive("Local_AI_API_Key").getAsString());
         }
 
+        // 读取 AI 代理配置
+        boolean useAIProxy = JsonUtils.isProxyEnabled(ConfigConstants.AI);
+
         RequestObj obj;
         if (!isLocal){
-            String aiUrl = "https://api.openai.com/v1/chat/completions";
 
             HashMap<String, String> headers = new HashMap();
             headers.put("Content-Type", "application/json");
@@ -281,7 +297,12 @@ public class AIUtil {
 
             String jsonData = new Gson().toJson(data);
 
-            obj = new RequestObj().setMethod("POST").setUrl(aiUrl).setHeaders(headers).setPostData(jsonData);
+            // 根据配置决定是否使用代理
+            if (useAIProxy) {
+                obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData);
+            } else {
+                obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData).setProxies(null);
+            }
 
         }else {
 
@@ -292,7 +313,11 @@ public class AIUtil {
             jsonData.addProperty("query", question);
             jsonData.add("history", historyList);
 
-            obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData).setProxies(null);
+            if (useAIProxy) {
+                obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData);
+            } else {
+                obj = new RequestObj().setMethod("POST").setUrl(AI_API_Base).setHeaders(headers).setPostData(jsonData).setProxies(null);
+            }
 
         }
 
@@ -410,7 +435,7 @@ public class AIUtil {
     public static void main(String[] args) {
         SecurityInitializer.initializeSecurityProvider();
         AIUtil aiObj = new AIUtil();
-        aiObj.askAi("你好，我叫磊磊", null);
+        aiObj.askAi("你好，我叫豆豆", null);
         aiObj.askAi("我叫什么？", null);
 
         AIUtil aiObj1 = new AIUtil();

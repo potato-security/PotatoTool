@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.MainApplication;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetKeyConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
 import com.potato.potatotool.controller.redTeam.PaneInfoSearch;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
@@ -40,17 +40,17 @@ public class AiqichaSearch {
     private static String Aiqicha_Cookie = "";
     private static Boolean Proxy = false;
     static {
-        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
-        Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.AIQICHA_COOKIE).getAsString();
-        Proxy = JsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.AIQICHA_COOKIE);
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
+        Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.AIQICHA_COOKIE).getAsString();
+        Proxy = JsonUtils.isProxyEnabled(ConfigConstants.AIQICHA_COOKIE);
     }
 
     private PaneInfoSearch paneInfoSearch;
 
     public AiqichaSearch(List<Integer> weightThresholdList, PaneInfoSearch paneInfoSearch){
-        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetKeyConstants.ASSET);
-        Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetKeyConstants.AIQICHA_COOKIE).getAsString();
-        Proxy = JsonUtils.containsString(tmpJsonObj_Asset.getAsJsonArray(AssetKeyConstants.PROXY_KEY), AssetKeyConstants.AIQICHA_COOKIE);
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
+        Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.AIQICHA_COOKIE).getAsString();
+        Proxy = JsonUtils.isProxyEnabled(ConfigConstants.AIQICHA_COOKIE);
 
         this.weightThresholdList = weightThresholdList;
         this.headers.put("Cookie", Aiqicha_Cookie);

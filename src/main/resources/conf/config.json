@@ -3,14 +3,28 @@
   "StartPassword": "",
   "Proxy": {
     "enable": false,
-    "address": "http://127.0.0.1:7890"
+    "address": "http://127.0.0.1:7890",
+    "services": {
+      "AI": false,
+      "Aiqicha_Cookie": false,
+      "Chinaz_Cookie": false,
+      "Fofa_Key": false,
+      "Hunter_Key": false,
+      "Quake_Key": false,
+      "Shodan_Key": false,
+      "Zoomeye_Key": true,
+      "Google_API": true,
+      "GitHub_Token": true,
+      "SSL": true,
+      "Crawl": false
+    }
   },
   "AI": {
     "Local_AI_API_Base": "uhEfqpTkk7sSRs8YFPUSr42cWi8VrmEg15IcTk6G8r4dPZgvnAkYWwOz1qOsuI57",
     "Local_AI_Model": "==waoapG6D1tyIYPDb3WF9wD",
     "Local_AI_API_Key": "==ALvey9ulWS0LjsPLSHcySm",
     "AI_API_Base": "",
-    "AI_Model": "gpt-4",
+    "AI_Model": "",
     "AI_API_Key": ""
   },
   "Decompile": {
@@ -26,13 +40,7 @@
     "Zoomeye_Key": "",
     "Shodan_Key": "",
     "GitHub_Token": [],
-    "Google_API": [],
-    "Proxy_Key": [
-      "Zoomeye_Key",
-      "GitHub_Token",
-      "Google_API",
-      "SSL"
-    ]
+    "Google_API": []
   },
   "UpDate": {
     "winKbInfo": {
