@@ -43,7 +43,7 @@ public class ZoomeyeSearch {
                 .setMethod("GET")
                 .setHeaders(headers)
                 .setTimeOut(20)
-                .setRetries(3);
+                .setRetries(2);
         if(!Proxy) obj.setProxies(null);
 
         try (CustomHttpResponse con = requests(obj)){

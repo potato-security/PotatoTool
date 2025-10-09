@@ -50,7 +50,7 @@ public class GetCompany {
                 index += 1;
 
                 RequestObj obj = new RequestObj().setUrl("https://data.chinaz.com/company/t0-p0-c0-i0-d0-s-" + StrUtils.urlEncode(company) + "/" + index)
-                        .setMethod("GET").setRetries(3).setHeaders(headers);
+                        .setMethod("GET").setRetries(2).setHeaders(headers);
                 if(!Proxy) obj.setProxies(null);
                 try (CustomHttpResponse con = requests(obj)) {
                     int statusCode = con.getResponseCode();
@@ -100,7 +100,7 @@ public class GetCompany {
             Map<String, String> headers = new HashMap<>();
             headers.put("Cookie", Chinaz_Cookie);
             RequestObj obj = new RequestObj().setUrl("https://data.chinaz.com/company/" + companyId)
-                    .setMethod("GET").setRetries(3).setHeaders(headers);
+                    .setMethod("GET").setRetries(2).setHeaders(headers);
             try (CustomHttpResponse con = requests(obj)) {
                 int statusCode = con.getResponseCode();
                 if (statusCode != 200) {

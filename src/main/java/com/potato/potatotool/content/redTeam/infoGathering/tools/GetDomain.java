@@ -65,7 +65,7 @@ public class GetDomain {
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://site.ip138.com/" + ip + "/")
-                    .setMethod("GET").setRandomUserAgent(false).setRetries(3);
+                    .setMethod("GET").setRandomUserAgent(false).setRetries(2);
             try (CustomHttpResponse con = requests(obj)) {
                 String content = con.getTextStr();
                 int statusCode = con.getResponseCode();
@@ -84,7 +84,7 @@ public class GetDomain {
                     while (true) {
                         index += 1;
                         RequestObj obj_sub = new RequestObj().setUrl("https://site.ip138.com/index/querybyip/?ip=" + ip + "&page=" + index+ "&token=" + token)
-                                .setMethod("GET").setRandomUserAgent(false).setRetries(4);
+                                .setMethod("GET").setRandomUserAgent(false).setRetries(2);
 
                         try (CustomHttpResponse con_sub = requests(obj_sub)) {
                             int statusCode_sub = con_sub.getResponseCode();
@@ -119,7 +119,7 @@ public class GetDomain {
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://ipchaxun.com/" + ip + "/")
-                    .setMethod("GET").setRandomUserAgent(false).setRetries(3);
+                    .setMethod("GET").setRandomUserAgent(false).setRetries(2);
             try (CustomHttpResponse con = requests(obj)) {
                 String content = con.getTextStr();
                 int statusCode = con.getResponseCode();
@@ -138,7 +138,7 @@ public class GetDomain {
                     while (true) {
                         index += 1;
                         RequestObj obj_sub = new RequestObj().setUrl("https://ipchaxun.com/index/index/querybyip/?ip=" + ip + "&page=" + index+ "&token=" + token)
-                                .setMethod("GET").setRandomUserAgent(false).setRetries(3);
+                                .setMethod("GET").setRandomUserAgent(false).setRetries(2);
 
                         try (CustomHttpResponse con_sub = requests(obj_sub)) {
                             int statusCode_sub = con_sub.getResponseCode();
@@ -175,7 +175,7 @@ public class GetDomain {
 
         try {
             RequestObj obj = new RequestObj().setUrl("https://api.webscan.cc/?action=query&ip=" + ip)
-                    .setMethod("GET").setRetries(3);
+                    .setMethod("GET").setRetries(2);
             try (CustomHttpResponse con = requests(obj)) {
                 int statusCode = con.getResponseCode();
                 if (statusCode != 200) {

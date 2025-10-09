@@ -80,7 +80,7 @@ public class GetSeo {
         headers.put("Cookie", Chinaz_Cookie);
 
         RequestObj obj = new RequestObj().setUrl("https://seo.chinaz.com/" + domain)
-        .setMethod("GET").setRetries(3).setHeaders(headers);
+        .setMethod("GET").setRetries(2).setHeaders(headers);
         if(!Proxy) obj.setProxies(null);
 
         try (CustomHttpResponse con = requests(obj)){
@@ -150,7 +150,7 @@ public class GetSeo {
         JsonObject seoMap = new JsonObject();
 
         RequestObj obj = new RequestObj().setUrl("https://www.aizhan.com/cha/" + domain + "/")
-        .setMethod("GET").setRetries(3);
+        .setMethod("GET").setRetries(2);
         
         try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();
@@ -278,7 +278,7 @@ public class GetSeo {
         if (emailUrl.isEmpty()) return email;
 
         RequestObj obj = new RequestObj().setUrl(emailUrl)
-        .setMethod("GET").setRetries(3);
+        .setMethod("GET").setRetries(2);
         try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();
 

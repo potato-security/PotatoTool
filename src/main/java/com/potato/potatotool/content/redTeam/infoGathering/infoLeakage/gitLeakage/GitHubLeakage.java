@@ -55,7 +55,7 @@ public class GitHubLeakage {
                     .setUrl("https://api.github.com/search/repositories?per_page=" + maxGithubSearchCount + "&q=" + StrUtils.urlEncode(question))
                     .setMethod("GET")
                     .setBearerToken(GitHub_Token.get(keyIndex))
-                    .setRetries(3);
+                    .setRetries(2);
             if(!Proxy) obj.setProxies(null);
 
             try (CustomHttpResponse con = requests(obj)){
@@ -137,7 +137,7 @@ public class GitHubLeakage {
                         .setUrl("https://api.github.com/search/code?per_page=100&q=" + StrUtils.urlEncode(question))
                         .setMethod("GET")
                         .setBearerToken(GitHub_Token.get(keyIndex))
-                        .setRetries(3);
+                        .setRetries(2);
                 if(!Proxy) obj.setProxies(null);
 
                 try (CustomHttpResponse con = requests(obj)){

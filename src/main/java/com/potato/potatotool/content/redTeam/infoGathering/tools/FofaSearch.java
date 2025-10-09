@@ -43,7 +43,7 @@ public class FofaSearch {
         RequestObj obj = new RequestObj()
         .setUrl("https://amap.fofa.info/host/" + ipOrDomain)
         .setTimeOut(30)
-        .setMethod("GET").setRetries(4);
+        .setMethod("GET").setRetries(2);
         if(!Proxy) obj.setProxies(null);
         
         try (CustomHttpResponse con = requests(obj)) {
@@ -75,7 +75,7 @@ public class FofaSearch {
         .setUrl("https://fofa.info/api/v1/search/all?&size=10000&fields=" + item + "&key=" + FOFA_KEY + "&qbase64=" + StrUtils.urlEncode(StrUtils.base64Encode(qInfo)))
         .setMethod("GET")
         .setTimeOut(20)
-        .setRetries(3);
+        .setRetries(2);
         if(!Proxy) obj.setProxies(null);
 
         try (CustomHttpResponse con = requests(obj)){
