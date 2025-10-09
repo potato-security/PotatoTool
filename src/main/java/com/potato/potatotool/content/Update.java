@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -286,8 +287,8 @@ public class Update {
         }
 
 
-        Map<String, Object> configMap = new HashMap<>();
-        Map<String, String> argMap = new HashMap<>();
+        Map<String, Object> configMap = new LinkedHashMap<>();
+        Map<String, String> argMap = new LinkedHashMap<>();
         argMap.put("Path", filePath);
         argMap.put("Date", extractDateFromFileName(filePath));
         configMap.put(argKey, argMap);

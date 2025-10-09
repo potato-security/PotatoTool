@@ -24,7 +24,7 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 
 import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static com.potato.potatotool.ToStart.isBlueMode;
@@ -139,7 +139,7 @@ public class PaneSetting {
     private JsonObject tmpJsonObj_AI = new JsonObject();
 
     // 初始化Map，建立checkbox和key的对应关系
-    Map<CFSwitch, String> proxyMap = new HashMap<>();
+    Map<CFSwitch, String> proxyMap = new LinkedHashMap<>();
 
     public void initialize() {
         if(isBlueMode){
@@ -301,20 +301,20 @@ public class PaneSetting {
 
     @FXML
     void save(){
-        Map<String, Object> configMap = new HashMap<>();
-        Map<String, Object> proxyConfigMap = new HashMap<>();
+        Map<String, Object> configMap = new LinkedHashMap<>();
+        Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
         proxyConfigMap.put("enable", proxyButton.isSelected());
         proxyConfigMap.put("address", proxy.getText());
         
         // 保存各服务的代理状态到 Proxy.services
-        Map<String, Object> servicesMap = new HashMap<>();
+        Map<String, Object> servicesMap = new LinkedHashMap<>();
         proxyMap.forEach((checkbox, key) -> {
             servicesMap.put(key, checkbox.isSelected());
         });
         proxyConfigMap.put(ConfigConstants.PROXY_SERVICES, servicesMap);
         configMap.put("Proxy", proxyConfigMap);
 
-        Map<String, Object> decompileMap = new HashMap<>();
+        Map<String, Object> decompileMap = new LinkedHashMap<>();
         decompileMap.put("decompileMode", (String)decompileType.getSelectionModel().getSelectedItem());
         decompileMap.put("AI_optimization", false);
         configMap.put("Decompile", decompileMap);
@@ -621,8 +621,8 @@ public class PaneSetting {
         JsonArray GitHub_Token = getContentTextFieldValue(githubVBox);
         JsonArray Google_API = transformGoogleApi(getContentTextFieldValue(googleVBox));
 
-        Map<String, Object> configMap = new HashMap<>();
-        Map<String, Object> assetMap = new HashMap<>();
+        Map<String, Object> configMap = new LinkedHashMap<>();
+        Map<String, Object> assetMap = new LinkedHashMap<>();
         assetMap.put(ConfigConstants.CHINAZ_COOKIE, Chinaz_Cookie);
         assetMap.put(ConfigConstants.AIQICHA_COOKIE, Aiqicha_Cookie);
         assetMap.put(ConfigConstants.FOFA_KEY, Fofa_Key);
@@ -635,12 +635,12 @@ public class PaneSetting {
         configMap.put(ConfigConstants.ASSET, assetMap);
         
         // 保存代理配置到 Proxy.services（与 save() 方法保持一致）
-        Map<String, Object> proxyConfigMap = new HashMap<>();
+        Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
         JsonObject currentProxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
         proxyConfigMap.put("enable", currentProxyConfig.get("enable").getAsBoolean());
         proxyConfigMap.put("address", currentProxyConfig.get("address").getAsString());
         
-        Map<String, Object> servicesMap = new HashMap<>();
+        Map<String, Object> servicesMap = new LinkedHashMap<>();
         proxyMap.forEach((checkbox, key) -> {
             servicesMap.put(key, checkbox.isSelected());
         });
