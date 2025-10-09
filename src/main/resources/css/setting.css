@@ -44,7 +44,13 @@
     -fx-padding: 20;
     -fx-border-color: -main-lineno-color;
     -fx-border-width: 1;
-    -fx-border-radius: 5;
+    -fx-border-radius: 0;
+}
+.contentCellLast{
+    -fx-padding: 20;
+    -fx-border-color: -main-lineno-color;
+    -fx-border-width: 1;
+    -fx-border-radius: 0 0 5 5;
 }
 .tipTitle_input_big .text{
     -fx-font-size: 20;

@@ -10,7 +10,6 @@ import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetObj;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DataTypeConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AssetExcelExporter;
-import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.data.StrUtils;
 import com.potato.potatotool.utils.ui.DialogUtils;
@@ -24,12 +23,10 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -40,9 +37,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Scale;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import javax.imageio.ImageIO;
@@ -425,14 +420,14 @@ public class PaneInfoSearch {
                     if (!hasSetKey(ConfigConstants.FOFA_KEY)) {
                         Platform.runLater(() -> {
                             fofaBox.setSelected(false);
-                            showTip("Fofa_Key未设置", true);
+                            showTip("Fofa_Key未设置", true, ConfigConstants.FOFA_KEY);
                         });
                     } else {
                         String error = getError_Fofa();
                         if (error != null) {
                             Platform.runLater(() -> {
                                 fofaBox.setSelected(!fofaBox.isSelected());
-                                showTip(error, true);
+                                showTip(error, true, ConfigConstants.FOFA_KEY);
                             });
                         }
                     }
@@ -457,14 +452,14 @@ public class PaneInfoSearch {
                     if(!hasSetKey(ConfigConstants.HUNTER_KEY)){
                         Platform.runLater(() -> {
                             hunterBox.setSelected(false);
-                            showTip("Hunter_Key未设置", true);
+                            showTip("Hunter_Key未设置", true, ConfigConstants.HUNTER_KEY);
                         });
                     } else {
                         String error = getError_Hunter();
                         if (error != null) {
                             Platform.runLater(() -> {
                                 hunterBox.setSelected(!hunterBox.isSelected());
-                                showTip(error, true);
+                                showTip(error, true, ConfigConstants.HUNTER_KEY);
                             });
                         }
                     }
@@ -485,14 +480,14 @@ public class PaneInfoSearch {
                     if(!hasSetKey(ConfigConstants.QUAKE_KEY)){
                         Platform.runLater(() -> {
                             quakeBox.setSelected(false);
-                            showTip("Quake_Key未设置", true);
+                            showTip("Quake_Key未设置", true, ConfigConstants.QUAKE_KEY);
                         });
                     } else {
                         String error = getError_Quake();
                         if (error != null) {
                             Platform.runLater(() -> {
                                 quakeBox.setSelected(!quakeBox.isSelected());
-                                showTip(error, true);
+                                showTip(error, true, ConfigConstants.QUAKE_KEY);
                             });
                         }
                     }
@@ -513,14 +508,14 @@ public class PaneInfoSearch {
                     if(!hasSetKey(ConfigConstants.ZOOMEYE_KEY)){
                         Platform.runLater(() -> {
                             zoomeyeBox.setSelected(false);
-                            showTip("Zoomeye_Key未设置", true);
+                            showTip("Zoomeye_Key未设置", true, ConfigConstants.ZOOMEYE_KEY);
                         });
                     } else {
                         String error = getError_Zoomeye();
                         if (error != null) {
                             Platform.runLater(() -> {
                                 zoomeyeBox.setSelected(!zoomeyeBox.isSelected());
-                                showTip(error, true);
+                                showTip(error, true, ConfigConstants.ZOOMEYE_KEY);
                             });
                         }
                     }
@@ -541,14 +536,14 @@ public class PaneInfoSearch {
                     if(!hasSetKey(ConfigConstants.SHODAN_KEY)){
                         Platform.runLater(() -> {
                             shodanBox.setSelected(false);
-                            showTip("Shodan_Key未设置", true);
+                            showTip("Shodan_Key未设置", true, ConfigConstants.SHODAN_KEY);
                         });
                     } else {
                         String error = getError_Shodan();
                         if (error != null) {
                             Platform.runLater(() -> {
                                 shodanBox.setSelected(!shodanBox.isSelected());
-                                showTip(error, true);
+                                showTip(error, true, ConfigConstants.SHODAN_KEY);
                             });
                         }
                     }
@@ -573,7 +568,7 @@ public class PaneInfoSearch {
                     if(!hasSetKey(ConfigConstants.GOOGLE_API)){
                         Platform.runLater(() -> {
                             googleBox.setSelected(false);
-                            showTip("Google_Api未设置", true);
+                            showTip("Google_Api未设置", true, ConfigConstants.GOOGLE_API);
                             maxGoogleSearchCountHBox.setVisible(false);
                             maxGoogleSearchCountHBox.setManaged(false);
                         });
@@ -582,7 +577,7 @@ public class PaneInfoSearch {
                         if (error != null) {
                             Platform.runLater(() -> {
                                 googleBox.setSelected(!googleBox.isSelected());
-                                showTip(error, true);
+                                showTip(error, true, ConfigConstants.GOOGLE_API);
                                 maxGoogleSearchCountHBox.setVisible(false);
                                 maxGoogleSearchCountHBox.setManaged(false);
                             });
@@ -611,7 +606,7 @@ public class PaneInfoSearch {
                     if(!hasSetKey(ConfigConstants.GITHUB_TOKEN)){
                         Platform.runLater(() -> {
                             githubBox.setSelected(false);
-                            showTip("Github_Token未设置", true);
+                            showTip("Github_Token未设置", true, ConfigConstants.GITHUB_TOKEN);
                             maxGithubSearchCountHBox.setVisible(false);
                             maxGithubSearchCountHBox.setManaged(false);
                         });
@@ -620,7 +615,7 @@ public class PaneInfoSearch {
                         if (error != null) {
                             Platform.runLater(() -> {
                                 githubBox.setSelected(!githubBox.isSelected());
-                                showTip(error, true);
+                                showTip(error, true, ConfigConstants.GITHUB_TOKEN);
                                 maxGithubSearchCountHBox.setVisible(false);
                                 maxGithubSearchCountHBox.setManaged(false);
                             });
@@ -681,13 +676,17 @@ public class PaneInfoSearch {
     }
 
     public void showTip(String tip, boolean showSet){
+        showTip(tip, showSet, null);
+    }
+
+    public void showTip(String tip, boolean showSet, String configKey){
         Platform.runLater(() -> {
             prompt.setText(tip);
-            copyAnimation(showSet);
+            copyAnimation(showSet, configKey);
         });
     }
 
-    public void copyAnimation(boolean showSet) {
+    public void copyAnimation(boolean showSet, String configKey) {
         // 显示提示组件
         promptPane.setVisible(true);
         promptPane.setManaged(true);
@@ -710,13 +709,17 @@ public class PaneInfoSearch {
         fadeOut.setOnFinished(event -> {
             promptPane.setVisible(false);
             promptPane.setManaged(false);
-            if(showSet) showSet();
+            if(showSet) showSet(configKey);
         });
     }
-
+    
     @FXML
     public void showSet() {
-        DialogUtils.showSet(sPane.getScene().getWindow());
+        showSet(null);
+    }
+
+    private void showSet(String configKey) {
+        DialogUtils.showSet(sPane.getScene().getWindow(), configKey);
     }
 
     private void createCompanyNameHBox(String companyName, int index) {
@@ -804,13 +807,6 @@ public class PaneInfoSearch {
         updateAddButtonVisibility();
     }
 
-    private Label findAddLabel(StackPane stackPane) {
-        // 遍历 StackPane 的子节点，找到具有 "rightAddButton" 样式类的 Label
-        return (Label) stackPane.getChildren().stream()
-                .filter(node -> node instanceof Label && node.getStyleClass().contains("rightAddButton"))
-                .findFirst()
-                .orElse(null);
-    }
 
     private void updateAddButtonVisibility() {
         if (companyNameVbox.getChildren().size() >= 5) {

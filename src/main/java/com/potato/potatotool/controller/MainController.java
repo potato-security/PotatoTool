@@ -4,6 +4,7 @@ import com.leewyatt.rxcontrols.animation.carousel.*;
 import com.leewyatt.rxcontrols.controls.RXCarousel;
 import com.leewyatt.rxcontrols.pane.RXCarouselPane;
 import com.potato.potatotool.controller.publicPane.PaneAbout;
+import com.potato.potatotool.utils.ui.PaneFactory;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.ui.DialogUtils;
@@ -151,17 +152,13 @@ public class MainController {
         p8.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p8.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p9 = FXMLLoader.load(getClass().getResource("/fxml/publicPane/pane_extension.fxml"));
-        RXCarouselPane extensionPane = new RXCarouselPane(p9);
-        p9.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
-        p9.prefHeightProperty().bind(mainCarousel.heightProperty());
+        // 使用工厂创建 Extension 面板（蓝色模式）
+        RXCarouselPane extensionPane = PaneFactory.createExtensionPane(null, 0.8, mainCarousel.heightProperty(), topBar.widthProperty());
 
-        FXMLLoader loader_pane_about = new FXMLLoader(getClass().getResource("/fxml/publicPane/pane_about.fxml"));
-        Pane p_pane_about = loader_pane_about.load();
-        PaneAbout PaneAbout = loader_pane_about.getController();
-        RXCarouselPane aboutPane = new RXCarouselPane(p_pane_about);
-        p_pane_about.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
-        p_pane_about.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
+        // 使用工厂创建 About 面板（蓝色模式）
+        PaneFactory.AboutPaneResult aboutResult = PaneFactory.createAboutPane(null, 0.7, mainCarousel.heightProperty().subtract(20), topBar.widthProperty());
+        RXCarouselPane aboutPane = aboutResult.pane;
+        PaneAbout PaneAbout = aboutResult.controller;
 
         Pane p11 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_infoSearch.fxml"));
         RXCarouselPane infoSearchPane = new RXCarouselPane(p11);
@@ -217,19 +214,13 @@ public class MainController {
         p19.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
         p19.prefHeightProperty().bind(mainCarousel.heightProperty());
 
-        Pane p20 = FXMLLoader.load(getClass().getResource("/fxml/publicPane/pane_extension.fxml"));
-        RXCarouselPane extensionPane_1 = new RXCarouselPane(p20);
-        extensionPane_1.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p20.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
-        p20.prefHeightProperty().bind(mainCarousel.heightProperty());
+        // 使用工厂创建 Extension 面板（红色模式）
+        RXCarouselPane extensionPane_1 = PaneFactory.createExtensionPane("/css/redStyle.css", 0.8, mainCarousel.heightProperty(), topBar.widthProperty());
 
-        FXMLLoader loader_pane_about_1 = new FXMLLoader(getClass().getResource("/fxml/publicPane/pane_about.fxml"));
-        Pane p_pane_about_1 = loader_pane_about_1.load();
-        PaneAbout PaneAbout_1 = loader_pane_about_1.getController();
-        RXCarouselPane aboutPane_1 = new RXCarouselPane(p_pane_about_1);
-        aboutPane_1.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p_pane_about_1.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
-        p_pane_about_1.prefHeightProperty().bind(mainCarousel.heightProperty().subtract(20));
+        // 使用工厂创建 About 面板（红色模式）
+        PaneFactory.AboutPaneResult aboutResult_1 = PaneFactory.createAboutPane("/css/redStyle.css", 0.7, mainCarousel.heightProperty().subtract(20), topBar.widthProperty());
+        RXCarouselPane aboutPane_1 = aboutResult_1.pane;
+        PaneAbout PaneAbout_1 = aboutResult_1.controller;
 
         mainCarousel.setPaneList(webshellDecodePane, separateDecodePane, ipInFoPane, aiAnswerPane, decompilePane, blockchainPane, locationQueryPane, exifPane, extensionPane, aboutPane,
                 infoSearchPane, vulScanPane, freeKillPane, customMemoryCodePane, customCommandGenerationPane, commandQueryPane, kbRootQueryPane, processQueryPane, infoGenerationPane, extensionPane_1, aboutPane_1);
@@ -242,16 +233,26 @@ public class MainController {
             int index = navGroup.getToggles().indexOf(nv);
             mainCarousel.setSelectedIndex(index);
 
-            // 点击关于界面时 触发滚动信息
-            if(mainCarousel.getPaneList().get(index) == aboutPane){
-                PaneAbout.startScrolling();
-            }else{
-                PaneAbout.pauseScrolling();
+            // 懒同步：当切换到 Extension 面板时才真正同步数据
+            RXCarouselPane currentPane = mainCarousel.getPaneList().get(index);
+            if(currentPane == extensionPane || currentPane == extensionPane_1) {
+                // 懒同步机制：只在切换到面板时才同步
+                // 如果有待更新的数据，这时才会真正执行同步
+                // 注：实际同步在 PaneExtension.initialize() 中已经处理
             }
-            if(mainCarousel.getPaneList().get(index) == aboutPane_1){
-                PaneAbout_1.startScrolling();
-            }else{
-                PaneAbout_1.pauseScrolling();
+
+            // 点击关于界面时 触发滚动信息
+            if(currentPane == aboutPane || currentPane == aboutPane_1){
+                // 启动当前面板的滚动，停止其他面板的滚动
+                PaneFactory.stopAllAboutScrolling();
+                if(currentPane == aboutPane){
+                    PaneAbout.startScrolling();
+                } else {
+                    PaneAbout_1.startScrolling();
+                }
+            } else {
+                // 停止所有关于面板的滚动
+                PaneFactory.stopAllAboutScrolling();
             }
 
             if (isBlueMode) {

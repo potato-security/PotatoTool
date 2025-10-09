@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.ui.PaneFactory;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -63,8 +64,14 @@ public class PaneAddBarDialog {
     private JsonElement targetValue;
     private boolean isAdd = true;// 模式：保存/修改
     private ChangeListener<String> modeListener;
+    
+    // 标志位：是否真正保存了数据
+    public static boolean dataSaved = false;
 
     public void initialize() {
+        // 初始化时重置标志位
+        dataSaved = false;
+        
         if(isBlueMode){
             an.getStyleClass().remove("redStyle");
             an.getStyleClass().add("blueStyle");
@@ -185,7 +192,12 @@ public class PaneAddBarDialog {
 
         }
         Constants.saveConfig("Extension", tmpJsonObj);
-
+        
+        // 智能同步：只同步被修改的分类（使用当前活动控制器）
+        PaneFactory.syncCategory(KeyData);
+        
+        // 设置保存成功标志
+        dataSaved = true;
 
         if (modeListener != null) {
             addBtn.textProperty().removeListener(modeListener);

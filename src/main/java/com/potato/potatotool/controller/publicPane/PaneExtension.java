@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.MainApplication;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.ui.PaneFactory;
 import javafx.animation.FadeTransition;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -32,7 +33,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +55,9 @@ public class PaneExtension {
     private VBox vBoxBar;
 
     private final ObservableList<Node> contentObj = FXCollections.observableArrayList();
+    
+    // 缓存：key -> FlowPane 的映射，用于增量更新
+    private final Map<String, FlowPane> flowPaneCache = new HashMap<>();
 
     @FXML
     private ListView listView;
@@ -73,8 +79,9 @@ public class PaneExtension {
         vBoxBar.setClip(clip);
 
         initData();
-
-
+        
+        // 设置为当前活动控制器
+        PaneFactory.setActiveController(this);
     }
 
     //  初始化数据
@@ -145,8 +152,101 @@ public class PaneExtension {
     public void reloadData() {
         accordionPane.getPanes().clear();
         listView.getItems().clear();
+        flowPaneCache.clear();
+        // 注意：不清除图片缓存，因为图片资源可以复用
 
         initData();
+    }
+    
+    /**
+     * 增量更新指定key的内容
+     * @param key 要更新的分类名称
+     */
+    public void updateCategory(String key) {
+        FlowPane flowPane = flowPaneCache.get(key);
+        if (flowPane == null) {
+            // 如果找不到缓存，则完全重建
+            reloadData();
+            return;
+        }
+        
+        // 清空该 FlowPane 的内容
+        flowPane.getChildren().clear();
+        
+        // 重新加载该分类的数据
+        try {
+            JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Extension");
+            if (tmpJsonObj == null) {
+                String tmpDataJsonStr = getResourceString("config");
+                tmpJsonObj = (JsonObject) (new Gson()).fromJson(tmpDataJsonStr, JsonObject.class).get("Extension");
+            }
+            
+            // 使用Constants.findKey来查找key，支持多层级结构
+            JsonElement targetValue = Constants.findKey(tmpJsonObj, key);
+            if (targetValue != null && targetValue.isJsonArray()) {
+                JsonArray tmpArrayData = targetValue.getAsJsonArray();
+                populateFlowPane(flowPane, tmpArrayData, key);
+            } else {
+                System.out.println("未找到分类数据: " + key);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * 图片缓存，避免重复加载
+     */
+    private final Map<String, Image> imageCache = new HashMap<>();
+    
+    /**
+     * 加载图片，使用缓存优化
+     */
+    private Image loadImageWithCache(String icon, String type) {
+        // 对于默认图标，直接从缓存读取
+        if (imageCache.containsKey(icon)) {
+            return imageCache.get(icon);
+        }
+        
+        Image image = null;
+        try {
+            if (icon.equals("") && type.equals("cmd")) {
+                icon = "/img/bar/cmd.png";
+            } else if (icon.equals("") && type.equals("web")) {
+                icon = "/img/bar/web.png";
+            }
+            
+            if (icon.startsWith("/img/bar/")) {
+                try (InputStream is = getClass().getResourceAsStream(icon)) {
+                    image = new Image(is);
+                    // 缓存内置图标
+                    imageCache.put(icon, image);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                image = new Image(new File(icon).toURI().toString());
+                if (image.isError()) {
+                    if (type.equals("cmd")) {
+                        icon = "/img/bar/cmd.png";
+                    } else if (type.equals("web")) {
+                        icon = "/img/bar/web.png";
+                    }
+                    if (icon.startsWith("/img/bar/")) {
+                        try (InputStream is = getClass().getResourceAsStream(icon)) {
+                            image = new Image(is);
+                            imageCache.put(icon, image);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(icon + "加载失败，该图片存在问题");
+            e.printStackTrace();
+        }
+        return image;
     }
 
     //  左侧导航转跳逻辑
@@ -199,7 +299,18 @@ public class PaneExtension {
         flowPane.setStyle("-fx-padding: 10");
         flowPane.setAlignment(javafx.geometry.Pos.TOP_LEFT);
         flowPane.setPrefWidth(sPane.getWidth() - 240);
+        
+        // 缓存 FlowPane
+        flowPaneCache.put(key, flowPane);
 
+        populateFlowPane(flowPane, tmpArrayData, key);
+        contentObj.add(flowPane);
+    }
+    
+    /**
+     * 填充FlowPane的内容
+     */
+    private void populateFlowPane(FlowPane flowPane, JsonArray tmpArrayData, String key) {
         for (int i = 0; i < tmpArrayData.size(); i++) {
             JsonElement element = tmpArrayData.get(i);
             JsonObject tmpDictData = element.getAsJsonObject();
@@ -215,42 +326,9 @@ public class PaneExtension {
 
 
             ImageView imageView = new ImageView();
-
-            try {
-                Image image = null;
-                if(icon.equals("") && type.equals("cmd")){
-                    icon = "/img/bar/cmd.png";
-                }else if(icon.equals("") && type.equals("web")){
-                    icon = "/img/bar/web.png";
-                }
-                if(icon.startsWith("/img/bar/")){
-                    try (InputStream is = getClass().getResourceAsStream(icon)) {
-                        image = new Image(is);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }else {
-                    image = new Image(new File(icon).toURI().toString());
-                    if(image.isError()){
-                        if(type.equals("cmd")){
-                            icon = "/img/bar/cmd.png";
-                        }else if(type.equals("web")){
-                            icon = "/img/bar/web.png";
-                        }
-                        if(icon.startsWith("/img/bar/")) {
-                            try (InputStream is = getClass().getResourceAsStream(icon)) {
-                                image = new Image(is);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-                imageView.setImage(image);
-            }catch (Exception e){
-                System.out.println(icon+"加载失败，该图片存在问题");
-                e.printStackTrace();
-            }
+            // 使用缓存加载图片
+            Image image = loadImageWithCache(icon, type);
+            imageView.setImage(image);
 
             imageView.setFitHeight(35.0);
             imageView.setFitWidth(35.0);
@@ -292,9 +370,9 @@ public class PaneExtension {
 
             VBox regionVBox = new VBox();
             regionVBox.setMaxWidth(20);
-            regionVBox.setTranslateX(-5);
-            regionVBox.setTranslateY(10);
+            // 优化：移除固定偏移，使用 margin 和 alignment
             regionVBox.setSpacing(15);
+            StackPane.setMargin(regionVBox, new javafx.geometry.Insets(5, 5, 5, 5));
             Region regionChange = new Region();
             regionChange.getStyleClass().add("changeIcon");
             Tooltip tooltipChange = new Tooltip("修改");
@@ -309,14 +387,13 @@ public class PaneExtension {
             regionVBox.getChildren().addAll(regionChange, regionDel);
             regionVBox.getStyleClass().add("regionVBox");
             StackPane stackPane = new StackPane(hBox,regionVBox);
-            stackPane.setAlignment(regionVBox, Pos.CENTER_RIGHT);
+            StackPane.setAlignment(regionVBox, Pos.TOP_RIGHT);  // 改为 TOP_RIGHT，与 card 对齐
             stackPane.getStyleClass().add("stackPane");
             Tooltip tooltipData = new Tooltip(describe+"\n"+type+"："+content);
             Tooltip.install(hBox, tooltipData);
 
             flowPane.getChildren().add(stackPane);
         }
-        contentObj.add(flowPane);
     }
 
 
@@ -365,55 +442,79 @@ public class PaneExtension {
 
     //  删除功能窗口
     private void delDialog(MouseEvent even) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.initOwner(sPane.getScene().getWindow());
-        alert.initModality(Modality.WINDOW_MODAL);
-        alert.initStyle(StageStyle.UTILITY);
-        alert.getDialogPane().getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
-        alert.setTitle("删除");
-        alert.setHeaderText("您确定要删除么？");
-        alert.setContentText("请再次确认");
+        // 设置当前控制器为活动控制器
+        PaneFactory.setActiveController(this);
+        
+        Region region = (Region) even.getSource();
+        Parent flowpane = region.getParent();
+        Parent vbox = flowpane.getParent();
+        Parent stackPane = vbox.getParent();
+        ListView contentObj = (ListView) stackPane.getParent().getParent().getParent().getParent().getParent(); //  ListView组件内部有多层嵌套
 
-        Button ok = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
-        ok.setOnAction(e->{
-            Region region = (Region) even.getSource();
-            Parent flowpane = region.getParent();
-            Parent vbox = flowpane.getParent();
-            Parent stackPane = vbox.getParent();
-            ListView contentObj = (ListView) stackPane.getParent().getParent().getParent().getParent().getParent(); //  ListView组件内部有多层嵌套
+        HBox hbox = (HBox) vbox.getChildrenUnmodifiable().get(0);
+        Label labelTitle = (Label) ((Parent)hbox.getChildrenUnmodifiable().get(1)).getChildrenUnmodifiable().get(0);
+        Label labelDescribe = (Label) ((Parent)hbox.getChildrenUnmodifiable().get(1)).getChildrenUnmodifiable().get(1);
 
-            HBox hbox = (HBox) vbox.getChildrenUnmodifiable().get(0);
-            Label labelTitle = (Label) ((Parent)hbox.getChildrenUnmodifiable().get(1)).getChildrenUnmodifiable().get(0);
-            Label labelDescribe = (Label) ((Parent)hbox.getChildrenUnmodifiable().get(1)).getChildrenUnmodifiable().get(1);
+        int stackPaneIndex = listViewFindNode(contentObj, stackPane);
+        if(stackPaneIndex==-1) return;
+        Label labelKey = (Label) ((HBox) contentObj.getItems().get(stackPaneIndex-1)).getChildrenUnmodifiable().get(1);
 
-            int stackPaneIndex = listViewFindNode(contentObj, stackPane);
-            if(stackPaneIndex==-1) return;
-            Label labelKey = (Label) ((HBox) contentObj.getItems().get(stackPaneIndex-1)).getChildrenUnmodifiable().get(1);
+        String key = labelKey.getText();
+        String title = labelTitle.getText();
+        String describe = labelDescribe.getText();
 
-            String key = labelKey.getText();
-            String title = labelTitle.getText();
-            String describe = labelDescribe.getText();
+        try {
+            Stage stage = new Stage();
+            stage.initOwner(sPane.getScene().getWindow());
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initStyle(StageStyle.TRANSPARENT);
+            stage.setAlwaysOnTop(true);
 
-            JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Extension");
-            JsonElement targetValue = Constants.findKey(tmpJsonObj, key);
-            if (targetValue != null && targetValue.isJsonArray()) {
-                JsonArray targetArray = (JsonArray) targetValue;
-                for (int i = 0; i < targetArray.size(); i++) {
-                    JsonObject obj = (JsonObject) targetArray.get(i);
-                    if (obj.get("title").getAsString().equals(title) && obj.get("describe").getAsString().equals(describe)) {
-                        targetArray.remove(i);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/publicPane/deleteConfirmDialog.fxml"));
+            AnchorPane dialogRoot = loader.load();
+            
+            // 获取控制器并设置要删除的项目信息
+            PaneDeleteConfirmDialog controller = loader.getController();
+            controller.setDeleteInfo(title, describe);
+
+            Scene scene = new Scene(dialogRoot);
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+            scene.setFill(null);    //  背景透明
+            stage.setScene(scene);
+            stage.setTitle("删除确认");
+            stage.showAndWait();  // 使用 showAndWait 等待用户操作
+
+            // 检查用户是否确认删除
+            if (PaneDeleteConfirmDialog.deleteConfirmed) {
+                JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Extension");
+                JsonElement targetValue = Constants.findKey(tmpJsonObj, key);
+                if (targetValue != null && targetValue.isJsonArray()) {
+                    JsonArray targetArray = (JsonArray) targetValue;
+                    for (int i = 0; i < targetArray.size(); i++) {
+                        JsonObject obj = (JsonObject) targetArray.get(i);
+                        if (obj.get("title").getAsString().equals(title) && obj.get("describe").getAsString().equals(describe)) {
+                            targetArray.remove(i);
+                            break;  // 找到后退出循环
+                        }
                     }
                 }
+                Constants.saveConfig("Extension", tmpJsonObj);
+                // 优化：只更新该分类，不完全重建
+                updateCategory(key);
+                // 智能同步：只同步被修改的分类（使用明确的源控制器）
+                PaneFactory.syncCategoryFrom(key, this);
             }
-            Constants.saveConfig("Extension", tmpJsonObj);
-            reloadData();
-        });
-        alert.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
     //  修改功能窗口
     private void changeDialog(MouseEvent even) {
+        // 设置当前控制器为活动控制器
+        PaneFactory.setActiveController(this);
+        
         Region region = (Region) even.getSource();
         Parent flowpane = region.getParent();
         Parent vbox = flowpane.getParent();
@@ -462,8 +563,15 @@ public class PaneExtension {
             stage.setTitle("修改子元素");
             stage.show();
 
+            // 优化：只在真正修改时才更新
             stage.setOnHidden(eventx -> {
-                reloadData();
+                // 检查是否真的保存了数据
+                if (PaneAddBarDialog.dataSaved) {
+                    String key = newLabelKey.getText();
+                    if (key != null && !key.isEmpty()) {
+                        updateCategory(key);
+                    }
+                }
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -472,6 +580,9 @@ public class PaneExtension {
 
     //  添加功能窗口
     private void addDialog(MouseEvent event) {
+        // 设置当前控制器为活动控制器
+        PaneFactory.setActiveController(this);
+        
         Region regionAdd = (Region) event.getSource();
         Parent parent = regionAdd.getParent();
         int regionAddIndex = parent.getChildrenUnmodifiable().indexOf(regionAdd);
@@ -501,8 +612,15 @@ public class PaneExtension {
             stage.setTitle("添加子元素");
             stage.show();
 
+            // 优化：只在真正添加时才更新
             stage.setOnHidden(eventx -> {
-                reloadData();
+                // 检查是否真的保存了数据
+                if (PaneAddBarDialog.dataSaved) {
+                    String key = newLabelKey.getText();
+                    if (key != null && !key.isEmpty()) {
+                        updateCategory(key);
+                    }
+                }
             });
         } catch (Exception e) {
             e.printStackTrace();

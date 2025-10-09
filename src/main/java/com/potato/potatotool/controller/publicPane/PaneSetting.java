@@ -11,6 +11,7 @@ import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.crypto.AESUtils;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -19,6 +20,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
@@ -30,6 +32,7 @@ import java.util.Map;
 import static com.potato.potatotool.ToStart.isBlueMode;
 import static com.potato.potatotool.content.Update.checkResAndGetDownUrl;
 import static com.potato.potatotool.content.Update.downloadAndSaveResource;
+import static com.potato.potatotool.controller.MainController.clipRect;
 
 /**
  * @author Potato
@@ -38,6 +41,9 @@ import static com.potato.potatotool.content.Update.downloadAndSaveResource;
 public class PaneSetting {
     @FXML
     private AnchorPane an;
+
+    @FXML
+    private VBox vBoxBar;
 
     @FXML
     private TextField proxy;
@@ -133,6 +139,17 @@ public class PaneSetting {
     private CFSwitch crawlProxy;
     @FXML
     private CFSwitch sslProxy;
+    
+    @FXML
+    private Accordion settingAccordion;
+    @FXML
+    private TitledPane basicPane;
+    @FXML
+    private TitledPane aiPane;
+    @FXML
+    private TitledPane assetPane;
+    @FXML
+    private TitledPane updatePane;
 
     private double offsetX,offsetY;
 
@@ -150,8 +167,100 @@ public class PaneSetting {
             an.getStyleClass().add("redStyle");
         }
 
+        SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(10.0);
+        Rectangle clip = clipRect(
+                vBoxBar, arcProperty
+        );
+        vBoxBar.setClip(clip);
+
         initProxyMap();
         initData();
+        
+        // 默认只展开第一项
+        settingAccordion.setExpandedPane(basicPane);
+    }
+    
+    /**
+     * 定位到指定配置项并展开对应面板
+     * @param configKey 配置项的 key（如 "Fofa_Key", "Hunter_Key" 等）
+     */
+    public void navigateToConfig(String configKey) {
+        Platform.runLater(() -> {
+            TextField targetField = null;
+            TitledPane targetPane = null;
+            
+            // 根据 configKey 定位到对应的输入框和面板
+            switch (configKey) {
+                case ConfigConstants.FOFA_KEY:
+                    targetField = fofaKey;
+                    targetPane = assetPane;
+                    break;
+                case ConfigConstants.HUNTER_KEY:
+                    targetPane = assetPane;
+                    // Hunter 是 VBox，需要聚焦到第一个 TextField
+                    if (hunterVBox.getChildren().size() > 0) {
+                        StackPane firstStack = (StackPane) hunterVBox.getChildren().get(0);
+                        targetField = (TextField) firstStack.getChildren().get(0);
+                    }
+                    break;
+                case ConfigConstants.QUAKE_KEY:
+                    targetPane = assetPane;
+                    if (quakeVBox.getChildren().size() > 0) {
+                        StackPane firstStack = (StackPane) quakeVBox.getChildren().get(0);
+                        targetField = (TextField) firstStack.getChildren().get(0);
+                    }
+                    break;
+                case ConfigConstants.ZOOMEYE_KEY:
+                    targetField = zoomeyeKey;
+                    targetPane = assetPane;
+                    break;
+                case ConfigConstants.SHODAN_KEY:
+                    targetField = shodanKey;
+                    targetPane = assetPane;
+                    break;
+                case ConfigConstants.GOOGLE_API:
+                    targetPane = assetPane;
+                    if (googleVBox.getChildren().size() > 0) {
+                        StackPane firstStack = (StackPane) googleVBox.getChildren().get(0);
+                        targetField = (TextField) firstStack.getChildren().get(0);
+                    }
+                    break;
+                case ConfigConstants.GITHUB_TOKEN:
+                    targetPane = assetPane;
+                    if (githubVBox.getChildren().size() > 0) {
+                        StackPane firstStack = (StackPane) githubVBox.getChildren().get(0);
+                        targetField = (TextField) firstStack.getChildren().get(0);
+                    }
+                    break;
+                case ConfigConstants.CHINAZ_COOKIE:
+                    targetField = chinazCookie;
+                    targetPane = assetPane;
+                    break;
+                case ConfigConstants.AIQICHA_COOKIE:
+                    targetField = aiqichaCookie;
+                    targetPane = assetPane;
+                    break;
+                default:
+                    // 如果没有匹配，默认展开资产测绘面板
+                    targetPane = assetPane;
+                    break;
+            }
+            
+            // 展开目标面板
+            if (targetPane != null) {
+                settingAccordion.setExpandedPane(targetPane);
+            }
+            
+            // 聚焦到目标输入框
+            if (targetField != null) {
+                TextField finalTargetField = targetField;
+                Platform.runLater(() -> {
+                    finalTargetField.requestFocus();
+                    // 选中所有文本，方便用户直接输入
+                    finalTargetField.selectAll();
+                });
+            }
+        });
     }
 
     private void initProxyMap() {
