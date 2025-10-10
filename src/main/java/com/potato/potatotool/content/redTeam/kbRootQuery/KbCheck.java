@@ -1,4 +1,4 @@
-package com.potato.potatotool.content.redTeam;
+package com.potato.potatotool.content.redTeam.kbRootQuery;
 
 import com.google.gson.JsonObject;
 import com.opencsv.CSVReader;
@@ -16,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import org.jsoup.Jsoup;
@@ -130,9 +131,9 @@ public class KbCheck {
 
     private static String getPathFromConfig() {
         try {
-            JsonObject updateConfig = (JsonObject) Constants.getOutsideConfig("UpDate");
-            return updateConfig.getAsJsonObject("winKbInfo")
-                    .get("Path")
+            JsonObject updateConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.UPDATE);
+            return updateConfig.getAsJsonObject(ConfigConstants.UPDATE_WIN_KB_INFO)
+                    .get(ConfigConstants.UPDATE_PATH)
                     .getAsString();
         } catch (Exception e) {
             return null;

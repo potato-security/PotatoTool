@@ -3,7 +3,8 @@ package com.potato.potatotool.utils.data;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
+import com.potato.potatotool.content.classObj.ConfigConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.utils.core.Constants;
 
 import org.json.JSONArray;
@@ -316,7 +317,7 @@ public class JsonUtils {
         try {
             JsonObject proxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
             
-            if (proxyConfig.has(ConfigConstants.PROXY_SERVICES) && 
+            if (proxyConfig.has(ConfigConstants.PROXY_SERVICES) &&
                 proxyConfig.get(ConfigConstants.PROXY_SERVICES).isJsonObject()) {
                 JsonObject services = proxyConfig.getAsJsonObject(ConfigConstants.PROXY_SERVICES);
                 if (services != null && services.has(serviceName)) {

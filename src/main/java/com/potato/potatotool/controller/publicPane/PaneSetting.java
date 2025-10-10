@@ -6,7 +6,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
+import com.potato.potatotool.content.classObj.ConfigConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.crypto.AESUtils;
 import javafx.animation.FadeTransition;
@@ -191,11 +192,11 @@ public class PaneSetting {
             
             // 根据 configKey 定位到对应的输入框和面板
             switch (configKey) {
-                case ConfigConstants.FOFA_KEY:
+                case AssetConstants.FOFA_KEY:
                     targetField = fofaKey;
                     targetPane = assetPane;
                     break;
-                case ConfigConstants.HUNTER_KEY:
+                case AssetConstants.HUNTER_KEY:
                     targetPane = assetPane;
                     // Hunter 是 VBox，需要聚焦到第一个 TextField
                     if (hunterVBox.getChildren().size() > 0) {
@@ -203,40 +204,40 @@ public class PaneSetting {
                         targetField = (TextField) firstStack.getChildren().get(0);
                     }
                     break;
-                case ConfigConstants.QUAKE_KEY:
+                case AssetConstants.QUAKE_KEY:
                     targetPane = assetPane;
                     if (quakeVBox.getChildren().size() > 0) {
                         StackPane firstStack = (StackPane) quakeVBox.getChildren().get(0);
                         targetField = (TextField) firstStack.getChildren().get(0);
                     }
                     break;
-                case ConfigConstants.ZOOMEYE_KEY:
+                case AssetConstants.ZOOMEYE_KEY:
                     targetField = zoomeyeKey;
                     targetPane = assetPane;
                     break;
-                case ConfigConstants.SHODAN_KEY:
+                case AssetConstants.SHODAN_KEY:
                     targetField = shodanKey;
                     targetPane = assetPane;
                     break;
-                case ConfigConstants.GOOGLE_API:
+                case AssetConstants.GOOGLE_API:
                     targetPane = assetPane;
                     if (googleVBox.getChildren().size() > 0) {
                         StackPane firstStack = (StackPane) googleVBox.getChildren().get(0);
                         targetField = (TextField) firstStack.getChildren().get(0);
                     }
                     break;
-                case ConfigConstants.GITHUB_TOKEN:
+                case AssetConstants.GITHUB_TOKEN:
                     targetPane = assetPane;
                     if (githubVBox.getChildren().size() > 0) {
                         StackPane firstStack = (StackPane) githubVBox.getChildren().get(0);
                         targetField = (TextField) firstStack.getChildren().get(0);
                     }
                     break;
-                case ConfigConstants.CHINAZ_COOKIE:
+                case AssetConstants.CHINAZ_COOKIE:
                     targetField = chinazCookie;
                     targetPane = assetPane;
                     break;
-                case ConfigConstants.AIQICHA_COOKIE:
+                case AssetConstants.AIQICHA_COOKIE:
                     targetField = aiqichaCookie;
                     targetPane = assetPane;
                     break;
@@ -265,17 +266,17 @@ public class PaneSetting {
 
     private void initProxyMap() {
         proxyMap.put(aiProxy, ConfigConstants.AI);
-        proxyMap.put(aiqichaProxy, ConfigConstants.AIQICHA_COOKIE);
-        proxyMap.put(chinazProxy, ConfigConstants.CHINAZ_COOKIE);
-        proxyMap.put(fofaProxy, ConfigConstants.FOFA_KEY);
-        proxyMap.put(hunterProxy, ConfigConstants.HUNTER_KEY);
-        proxyMap.put(quakeProxy, ConfigConstants.QUAKE_KEY);
-        proxyMap.put(shodanProxy, ConfigConstants.SHODAN_KEY);
-        proxyMap.put(zoomeyeProxy, ConfigConstants.ZOOMEYE_KEY);
-        proxyMap.put(googleProxy, ConfigConstants.GOOGLE_API);
-        proxyMap.put(githubProxy, ConfigConstants.GITHUB_TOKEN);
-        proxyMap.put(sslProxy, ConfigConstants.SSL);
-        proxyMap.put(crawlProxy, ConfigConstants.CRAWL);
+        proxyMap.put(aiqichaProxy, AssetConstants.AIQICHA_COOKIE);
+        proxyMap.put(chinazProxy, AssetConstants.CHINAZ_COOKIE);
+        proxyMap.put(fofaProxy, AssetConstants.FOFA_KEY);
+        proxyMap.put(hunterProxy, AssetConstants.HUNTER_KEY);
+        proxyMap.put(quakeProxy, AssetConstants.QUAKE_KEY);
+        proxyMap.put(shodanProxy, AssetConstants.SHODAN_KEY);
+        proxyMap.put(zoomeyeProxy, AssetConstants.ZOOMEYE_KEY);
+        proxyMap.put(googleProxy, AssetConstants.GOOGLE_API);
+        proxyMap.put(githubProxy, AssetConstants.GITHUB_TOKEN);
+        proxyMap.put(sslProxy, AssetConstants.SSL);
+        proxyMap.put(crawlProxy, AssetConstants.CRAWL);
     }
 
     private void initData() {
@@ -283,43 +284,43 @@ public class PaneSetting {
         proxy.setFocusTraversable(false);
 
         //  初始化默认代理配置
-        JsonObject tmpJsonObj_Proxy = (JsonObject) Constants.getOutsideConfig("Proxy");
-        boolean isProxy = tmpJsonObj_Proxy.getAsJsonPrimitive("enable").getAsBoolean();
-        String address = tmpJsonObj_Proxy.getAsJsonPrimitive("address").getAsString();
+        JsonObject tmpJsonObj_Proxy = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
+        boolean isProxy = tmpJsonObj_Proxy.getAsJsonPrimitive(ConfigConstants.PROXY_ENABLE).getAsBoolean();
+        String address = tmpJsonObj_Proxy.getAsJsonPrimitive(ConfigConstants.PROXY_ADDRESS).getAsString();
         proxy.setText(address);
         proxyButton.setSelected(isProxy);
 
 
         //  初始化默认反编译模式配置
-        JsonObject tmpJsonObj_Decompile = (JsonObject) Constants.getOutsideConfig("Decompile");
-        String decompileMode = tmpJsonObj_Decompile.getAsJsonPrimitive("decompileMode").getAsString();
+        JsonObject tmpJsonObj_Decompile = (JsonObject) Constants.getOutsideConfig(ConfigConstants.DECOMPILE);
+        String decompileMode = tmpJsonObj_Decompile.getAsJsonPrimitive(ConfigConstants.DECOMPILE_MODE).getAsString();
         decompileType.setValue(decompileMode);
 
         //  初始化默认AI配置
-        tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig("AI");
-        String AI_API_Base = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive("AI_API_Base").getAsString());
-        String AI_API_Key = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive("AI_API_Key").getAsString());
-        String AI_Model = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive("AI_Model").getAsString());
+        tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig(ConfigConstants.AI);
+        String AI_API_Base = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.AI_API_BASE).getAsString());
+        String AI_API_Key = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.AI_API_KEY).getAsString());
+        String AI_Model = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.AI_MODEL).getAsString());
         aiApiBase.setText(AI_API_Base);
         aiApiKey.setText(AI_API_Key);
         aiModel.setText(AI_Model);
 
         // 初始化资产测绘
-        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
-        String Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.CHINAZ_COOKIE).getAsString();
-        String Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.AIQICHA_COOKIE).getAsString();
-        String Fofa_Key = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.FOFA_KEY).getAsString();
-        String Zoomeye_Key = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.ZOOMEYE_KEY).getAsString();
-        String Shodan_Key = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.SHODAN_KEY).getAsString();
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
+        String Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.CHINAZ_COOKIE).getAsString();
+        String Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.AIQICHA_COOKIE).getAsString();
+        String Fofa_Key = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.FOFA_KEY).getAsString();
+        String Zoomeye_Key = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.ZOOMEYE_KEY).getAsString();
+        String Shodan_Key = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.SHODAN_KEY).getAsString();
         chinazCookie.setText(Chinaz_Cookie);
         aiqichaCookie.setText(Aiqicha_Cookie);
         fofaKey.setText(Fofa_Key);
         zoomeyeKey.setText(Zoomeye_Key);
         shodanKey.setText(Shodan_Key);
-        JsonArray Hunter_Key_List = tmpJsonObj_Asset.getAsJsonArray(ConfigConstants.HUNTER_KEY);
-        JsonArray Quake_Key_List = tmpJsonObj_Asset.getAsJsonArray(ConfigConstants.QUAKE_KEY);
-        JsonArray GitHub_Token_List = tmpJsonObj_Asset.getAsJsonArray(ConfigConstants.GITHUB_TOKEN);
-        JsonArray Google_API_List = tmpJsonObj_Asset.getAsJsonArray(ConfigConstants.GOOGLE_API);
+        JsonArray Hunter_Key_List = tmpJsonObj_Asset.getAsJsonArray(AssetConstants.HUNTER_KEY);
+        JsonArray Quake_Key_List = tmpJsonObj_Asset.getAsJsonArray(AssetConstants.QUAKE_KEY);
+        JsonArray GitHub_Token_List = tmpJsonObj_Asset.getAsJsonArray(AssetConstants.GITHUB_TOKEN);
+        JsonArray Google_API_List = tmpJsonObj_Asset.getAsJsonArray(AssetConstants.GOOGLE_API);
         setTextArrayData(Hunter_Key_List, hunterVBox);
         setTextArrayData(Quake_Key_List, quakeVBox);
         setTextArrayData(GitHub_Token_List, githubVBox);
@@ -327,7 +328,7 @@ public class PaneSetting {
         
         // 设置各服务的代理状态 - 从 Proxy.services 读取
         JsonObject proxyServices = new JsonObject();
-        if (tmpJsonObj_Proxy.has(ConfigConstants.PROXY_SERVICES) && 
+        if (tmpJsonObj_Proxy.has(ConfigConstants.PROXY_SERVICES) &&
             tmpJsonObj_Proxy.get(ConfigConstants.PROXY_SERVICES).isJsonObject()) {
             proxyServices = tmpJsonObj_Proxy.getAsJsonObject(ConfigConstants.PROXY_SERVICES);
         }
@@ -412,8 +413,8 @@ public class PaneSetting {
     void save(){
         Map<String, Object> configMap = new LinkedHashMap<>();
         Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
-        proxyConfigMap.put("enable", proxyButton.isSelected());
-        proxyConfigMap.put("address", proxy.getText());
+        proxyConfigMap.put(ConfigConstants.PROXY_ENABLE, proxyButton.isSelected());
+        proxyConfigMap.put(ConfigConstants.PROXY_ADDRESS, proxy.getText());
         
         // 保存各服务的代理状态到 Proxy.services
         Map<String, Object> servicesMap = new LinkedHashMap<>();
@@ -421,18 +422,18 @@ public class PaneSetting {
             servicesMap.put(key, checkbox.isSelected());
         });
         proxyConfigMap.put(ConfigConstants.PROXY_SERVICES, servicesMap);
-        configMap.put("Proxy", proxyConfigMap);
+        configMap.put(ConfigConstants.PROXY, proxyConfigMap);
 
         Map<String, Object> decompileMap = new LinkedHashMap<>();
-        decompileMap.put("decompileMode", (String)decompileType.getSelectionModel().getSelectedItem());
-        decompileMap.put("AI_optimization", false);
-        configMap.put("Decompile", decompileMap);
+        decompileMap.put(ConfigConstants.DECOMPILE_MODE, (String)decompileType.getSelectionModel().getSelectedItem());
+        decompileMap.put(ConfigConstants.DECOMPILE_AI_OPTIMIZATION, false);
+        configMap.put(ConfigConstants.DECOMPILE, decompileMap);
 
         Map<String, Object> aiMap = convertToMap(tmpJsonObj_AI);
-        aiMap.put("AI_API_Base", new AESUtils().encryptLocalConfig(aiApiBase.getText()));
-        aiMap.put("AI_API_Key", new AESUtils().encryptLocalConfig(aiApiKey.getText()));
-        aiMap.put("AI_Model", new AESUtils().encryptLocalConfig(aiModel.getText()));
-        configMap.put("AI", aiMap);
+        aiMap.put(ConfigConstants.AI_API_BASE, new AESUtils().encryptLocalConfig(aiApiBase.getText()));
+        aiMap.put(ConfigConstants.AI_API_KEY, new AESUtils().encryptLocalConfig(aiApiKey.getText()));
+        aiMap.put(ConfigConstants.AI_MODEL, new AESUtils().encryptLocalConfig(aiModel.getText()));
+        configMap.put(ConfigConstants.AI, aiMap);
 
         if(Constants.saveConfig(configMap)){
             showTip("保存成功");
@@ -732,29 +733,29 @@ public class PaneSetting {
 
         Map<String, Object> configMap = new LinkedHashMap<>();
         Map<String, Object> assetMap = new LinkedHashMap<>();
-        assetMap.put(ConfigConstants.CHINAZ_COOKIE, Chinaz_Cookie);
-        assetMap.put(ConfigConstants.AIQICHA_COOKIE, Aiqicha_Cookie);
-        assetMap.put(ConfigConstants.FOFA_KEY, Fofa_Key);
-        assetMap.put(ConfigConstants.HUNTER_KEY, Hunter_Key);
-        assetMap.put(ConfigConstants.QUAKE_KEY, Quake_Key);
-        assetMap.put(ConfigConstants.ZOOMEYE_KEY, Zoomeye_Key);
-        assetMap.put(ConfigConstants.SHODAN_KEY, Shodan_Key);
-        assetMap.put(ConfigConstants.GITHUB_TOKEN, GitHub_Token);
-        assetMap.put(ConfigConstants.GOOGLE_API, Google_API);
-        configMap.put(ConfigConstants.ASSET, assetMap);
+        assetMap.put(AssetConstants.CHINAZ_COOKIE, Chinaz_Cookie);
+        assetMap.put(AssetConstants.AIQICHA_COOKIE, Aiqicha_Cookie);
+        assetMap.put(AssetConstants.FOFA_KEY, Fofa_Key);
+        assetMap.put(AssetConstants.HUNTER_KEY, Hunter_Key);
+        assetMap.put(AssetConstants.QUAKE_KEY, Quake_Key);
+        assetMap.put(AssetConstants.ZOOMEYE_KEY, Zoomeye_Key);
+        assetMap.put(AssetConstants.SHODAN_KEY, Shodan_Key);
+        assetMap.put(AssetConstants.GITHUB_TOKEN, GitHub_Token);
+        assetMap.put(AssetConstants.GOOGLE_API, Google_API);
+        configMap.put(AssetConstants.ASSET, assetMap);
         
         // 保存代理配置到 Proxy.services（与 save() 方法保持一致）
         Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
         JsonObject currentProxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
-        proxyConfigMap.put("enable", currentProxyConfig.get("enable").getAsBoolean());
-        proxyConfigMap.put("address", currentProxyConfig.get("address").getAsString());
+        proxyConfigMap.put(ConfigConstants.PROXY_ENABLE, currentProxyConfig.get(ConfigConstants.PROXY_ENABLE).getAsBoolean());
+        proxyConfigMap.put(ConfigConstants.PROXY_ADDRESS, currentProxyConfig.get(ConfigConstants.PROXY_ADDRESS).getAsString());
         
         Map<String, Object> servicesMap = new LinkedHashMap<>();
         proxyMap.forEach((checkbox, key) -> {
             servicesMap.put(key, checkbox.isSelected());
         });
         proxyConfigMap.put(ConfigConstants.PROXY_SERVICES, servicesMap);
-        configMap.put("Proxy", proxyConfigMap);
+        configMap.put(ConfigConstants.PROXY, proxyConfigMap);
 
         if(Constants.saveConfig(configMap)){
             showTip("保存成功");

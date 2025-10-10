@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.AssetMapper;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetObj;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DataTypeConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
@@ -417,17 +417,17 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if (!hasSetKey(ConfigConstants.FOFA_KEY)) {
+                    if (!hasSetKey(AssetConstants.FOFA_KEY)) {
                         Platform.runLater(() -> {
                             fofaBox.setSelected(false);
-                            showTip("Fofa_Key未设置", true, ConfigConstants.FOFA_KEY);
+                            showTip("Fofa_Key未设置", true, AssetConstants.FOFA_KEY);
                         });
                     } else {
                         String error = getError_Fofa();
                         if (error != null) {
                             Platform.runLater(() -> {
                                 fofaBox.setSelected(!fofaBox.isSelected());
-                                showTip(error, true, ConfigConstants.FOFA_KEY);
+                                showTip(error, true, AssetConstants.FOFA_KEY);
                             });
                         }
                     }
@@ -449,17 +449,17 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(ConfigConstants.HUNTER_KEY)){
+                    if(!hasSetKey(AssetConstants.HUNTER_KEY)){
                         Platform.runLater(() -> {
                             hunterBox.setSelected(false);
-                            showTip("Hunter_Key未设置", true, ConfigConstants.HUNTER_KEY);
+                            showTip("Hunter_Key未设置", true, AssetConstants.HUNTER_KEY);
                         });
                     } else {
                         String error = getError_Hunter();
                         if (error != null) {
                             Platform.runLater(() -> {
                                 hunterBox.setSelected(!hunterBox.isSelected());
-                                showTip(error, true, ConfigConstants.HUNTER_KEY);
+                                showTip(error, true, AssetConstants.HUNTER_KEY);
                             });
                         }
                     }
@@ -477,17 +477,17 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(ConfigConstants.QUAKE_KEY)){
+                    if(!hasSetKey(AssetConstants.QUAKE_KEY)){
                         Platform.runLater(() -> {
                             quakeBox.setSelected(false);
-                            showTip("Quake_Key未设置", true, ConfigConstants.QUAKE_KEY);
+                            showTip("Quake_Key未设置", true, AssetConstants.QUAKE_KEY);
                         });
                     } else {
                         String error = getError_Quake();
                         if (error != null) {
                             Platform.runLater(() -> {
                                 quakeBox.setSelected(!quakeBox.isSelected());
-                                showTip(error, true, ConfigConstants.QUAKE_KEY);
+                                showTip(error, true, AssetConstants.QUAKE_KEY);
                             });
                         }
                     }
@@ -505,17 +505,17 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(ConfigConstants.ZOOMEYE_KEY)){
+                    if(!hasSetKey(AssetConstants.ZOOMEYE_KEY)){
                         Platform.runLater(() -> {
                             zoomeyeBox.setSelected(false);
-                            showTip("Zoomeye_Key未设置", true, ConfigConstants.ZOOMEYE_KEY);
+                            showTip("Zoomeye_Key未设置", true, AssetConstants.ZOOMEYE_KEY);
                         });
                     } else {
                         String error = getError_Zoomeye();
                         if (error != null) {
                             Platform.runLater(() -> {
                                 zoomeyeBox.setSelected(!zoomeyeBox.isSelected());
-                                showTip(error, true, ConfigConstants.ZOOMEYE_KEY);
+                                showTip(error, true, AssetConstants.ZOOMEYE_KEY);
                             });
                         }
                     }
@@ -533,17 +533,17 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(ConfigConstants.SHODAN_KEY)){
+                    if(!hasSetKey(AssetConstants.SHODAN_KEY)){
                         Platform.runLater(() -> {
                             shodanBox.setSelected(false);
-                            showTip("Shodan_Key未设置", true, ConfigConstants.SHODAN_KEY);
+                            showTip("Shodan_Key未设置", true, AssetConstants.SHODAN_KEY);
                         });
                     } else {
                         String error = getError_Shodan();
                         if (error != null) {
                             Platform.runLater(() -> {
                                 shodanBox.setSelected(!shodanBox.isSelected());
-                                showTip(error, true, ConfigConstants.SHODAN_KEY);
+                                showTip(error, true, AssetConstants.SHODAN_KEY);
                             });
                         }
                     }
@@ -565,10 +565,10 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(ConfigConstants.GOOGLE_API)){
+                    if(!hasSetKey(AssetConstants.GOOGLE_API)){
                         Platform.runLater(() -> {
                             googleBox.setSelected(false);
-                            showTip("Google_Api未设置", true, ConfigConstants.GOOGLE_API);
+                            showTip("Google_Api未设置", true, AssetConstants.GOOGLE_API);
                             maxGoogleSearchCountHBox.setVisible(false);
                             maxGoogleSearchCountHBox.setManaged(false);
                         });
@@ -577,7 +577,7 @@ public class PaneInfoSearch {
                         if (error != null) {
                             Platform.runLater(() -> {
                                 googleBox.setSelected(!googleBox.isSelected());
-                                showTip(error, true, ConfigConstants.GOOGLE_API);
+                                showTip(error, true, AssetConstants.GOOGLE_API);
                                 maxGoogleSearchCountHBox.setVisible(false);
                                 maxGoogleSearchCountHBox.setManaged(false);
                             });
@@ -603,10 +603,10 @@ public class PaneInfoSearch {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    if(!hasSetKey(ConfigConstants.GITHUB_TOKEN)){
+                    if(!hasSetKey(AssetConstants.GITHUB_TOKEN)){
                         Platform.runLater(() -> {
                             githubBox.setSelected(false);
-                            showTip("Github_Token未设置", true, ConfigConstants.GITHUB_TOKEN);
+                            showTip("Github_Token未设置", true, AssetConstants.GITHUB_TOKEN);
                             maxGithubSearchCountHBox.setVisible(false);
                             maxGithubSearchCountHBox.setManaged(false);
                         });
@@ -615,7 +615,7 @@ public class PaneInfoSearch {
                         if (error != null) {
                             Platform.runLater(() -> {
                                 githubBox.setSelected(!githubBox.isSelected());
-                                showTip(error, true, ConfigConstants.GITHUB_TOKEN);
+                                showTip(error, true, AssetConstants.GITHUB_TOKEN);
                                 maxGithubSearchCountHBox.setVisible(false);
                                 maxGithubSearchCountHBox.setManaged(false);
                             });

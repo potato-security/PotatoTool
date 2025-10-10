@@ -1,4 +1,4 @@
-package com.potato.potatotool.classObj;
+package com.potato.potatotool.content.redTeam.kbRootQuery.classObj;
 
 public class KbInfo {
 

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.crypto.SecurityInitializer;
 import com.potato.potatotool.utils.crypto.AESUtils;
@@ -38,11 +39,11 @@ public class AIUtilBak {
     public void askAi(String question, Object node){
 
         //  初始化默认AI配置
-        JsonObject tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig("AI");
-        String AI_Model = tmpJsonObj_AI.getAsJsonPrimitive("AI_Model").getAsString();
-        String AI_API_Key = tmpJsonObj_AI.getAsJsonPrimitive("AI_API_Key").getAsString();
+        JsonObject tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig(ConfigConstants.AI);
+        String AI_Model = tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.AI_MODEL).getAsString();
+        String AI_API_Key = tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.AI_API_KEY).getAsString();
         if(AI_API_Base == null) {
-            AI_API_Base = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive("Local_AI_API_Base").getAsString());
+            AI_API_Base = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.LOCAL_AI_API_BASE).getAsString());
         }
 
         RequestObj obj;
@@ -232,11 +233,11 @@ public class AIUtilBak {
     public String askAi_NoStream(String question){
 
         //  初始化默认AI配置
-        JsonObject tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig("AI");
-        String AI_Model = tmpJsonObj_AI.getAsJsonPrimitive("AI_Model").getAsString();
-        String AI_API_Key = tmpJsonObj_AI.getAsJsonPrimitive("AI_API_Key").getAsString();
+        JsonObject tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig(ConfigConstants.AI);
+        String AI_Model = tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.AI_MODEL).getAsString();
+        String AI_API_Key = tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.AI_API_KEY).getAsString();
         if(AI_API_Base == null) {
-            AI_API_Base = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive("Local_AI_API_Base").getAsString());
+            AI_API_Base = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.LOCAL_AI_API_BASE).getAsString());
         }
 
         RequestObj obj;

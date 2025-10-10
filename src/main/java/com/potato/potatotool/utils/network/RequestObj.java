@@ -1,6 +1,7 @@
 package com.potato.potatotool.utils.network;
 
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
 import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
@@ -71,9 +72,9 @@ public class RequestObj {
 
     private void initializeProxySettings() {
         //  初始化默认代理配置
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Proxy");
-        boolean enable = tmpJsonObj.getAsJsonPrimitive("enable").getAsBoolean();
-        String address = tmpJsonObj.getAsJsonPrimitive("address").getAsString();
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
+        boolean enable = tmpJsonObj.getAsJsonPrimitive(ConfigConstants.PROXY_ENABLE).getAsBoolean();
+        String address = tmpJsonObj.getAsJsonPrimitive(ConfigConstants.PROXY_ADDRESS).getAsString();
         if(enable && address.length() > 0){
             setProxies(address);
         }

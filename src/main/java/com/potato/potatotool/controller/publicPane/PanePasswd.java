@@ -3,6 +3,7 @@ package com.potato.potatotool.controller.publicPane;
 import com.dlsc.gemsfx.CFCheckBox;
 import com.google.gson.JsonElement;
 import com.leewyatt.rxcontrols.controls.RXPasswordField;
+import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import javafx.application.Platform;
@@ -97,7 +98,7 @@ public class PanePasswd {
             }
         });
 
-        JsonElement passwordObj = (JsonElement) Constants.getOutsideConfig("StartPassword");
+        JsonElement passwordObj = (JsonElement) Constants.getOutsideConfig(ConfigConstants.START_PASSWORD);
         if(passwordObj != null){
             initPassword = passwordObj.getAsString();
             if (initPassword.equals("")){

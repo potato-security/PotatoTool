@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.Update;
+import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.controller.publicPane.PaneLoad;
 import com.potato.potatotool.controller.publicPane.PanePasswd;
 import com.potato.potatotool.utils.core.Constants;
@@ -201,7 +202,7 @@ public class MainApplication extends Application {
         try {
             Files.createDirectories(configFolder);
             Path configFile = configFolder.resolve("config.json");
-            JsonElement tmpJsonObj = (JsonElement) Constants.getOutsideConfig("ConfigVersion");
+            JsonElement tmpJsonObj = (JsonElement) Constants.getOutsideConfig(ConfigConstants.CONFIG_VERSION);
             String tmpDataJsonStr = getResourceString("config");
             if (!Files.exists(configFile)) {    // 不存在本地配置文件
                 System.out.println("检测到本地配置文件不存在");

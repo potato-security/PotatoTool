@@ -2,7 +2,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.data.JsonUtils;
 import com.potato.potatotool.utils.data.StrUtils;
@@ -28,15 +28,15 @@ public class GetCompany {
     private  static String Chinaz_Cookie = "";
     private static Boolean Proxy = false;
     static {
-        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
-        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.CHINAZ_COOKIE).getAsString();
-        Proxy = JsonUtils.isProxyEnabled(ConfigConstants.CHINAZ_COOKIE);
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
+        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.CHINAZ_COOKIE).getAsString();
+        Proxy = JsonUtils.isProxyEnabled(AssetConstants.CHINAZ_COOKIE);
     }
 
     public static JsonArray getCompany_chinaz(String company) {
-        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
-        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.CHINAZ_COOKIE).getAsString();
-        Proxy = JsonUtils.isProxyEnabled(ConfigConstants.CHINAZ_COOKIE);
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
+        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.CHINAZ_COOKIE).getAsString();
+        Proxy = JsonUtils.isProxyEnabled(AssetConstants.CHINAZ_COOKIE);
 
         JsonArray companyList = new JsonArray();
         if(company.isEmpty()) return companyList;
@@ -90,9 +90,9 @@ public class GetCompany {
     }
 
     public static JsonObject getCompanyDetails_chinaz(String companyId, String companyName) {
-        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
-        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.CHINAZ_COOKIE).getAsString();
-        Proxy = JsonUtils.isProxyEnabled(ConfigConstants.CHINAZ_COOKIE);
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
+        Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.CHINAZ_COOKIE).getAsString();
+        Proxy = JsonUtils.isProxyEnabled(AssetConstants.CHINAZ_COOKIE);
 
         JsonObject companyDetailsMap = new JsonObject();
 

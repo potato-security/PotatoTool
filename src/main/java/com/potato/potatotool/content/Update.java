@@ -3,6 +3,7 @@ package com.potato.potatotool.content;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.network.RequestObj;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
@@ -70,11 +71,11 @@ public class Update {
                 if (downloadUrl != null) {
                     boolean needUpdate = true;
                     try {
-                        String topKey = "UpDate";
-                        JsonObject tmpJsonObj_UpDate = (JsonObject) Constants.getOutsideConfig(topKey);
+                        // topKey 已通过 ConfigConstants.UPDATE 替代
+                        JsonObject tmpJsonObj_UpDate = (JsonObject) Constants.getOutsideConfig(ConfigConstants.UPDATE);
                         JsonObject tmpJsonObj_arg = tmpJsonObj_UpDate.getAsJsonObject(argKey);
-                        String path = tmpJsonObj_arg.get("Path").getAsString();
-                        String Date = tmpJsonObj_arg.get("Date").getAsString();
+                        String path = tmpJsonObj_arg.get(ConfigConstants.UPDATE_PATH).getAsString();
+                        String Date = tmpJsonObj_arg.get(ConfigConstants.UPDATE_DATE).getAsString();
                         String newDate = extractDateFromFileName(fileName);
                         if (Date.equals(newDate) && Files.exists(Paths.get(path))) {
                             needUpdate = false;
@@ -133,11 +134,11 @@ public class Update {
                 if (downloadUrl != null) {
                     boolean needUpdate = true;
                     try {
-                        String topKey = "UpDate";
-                        JsonObject tmpJsonObj_UpDate = (JsonObject) Constants.getOutsideConfig(topKey);
+                        // topKey 已通过 ConfigConstants.UPDATE 替代
+                        JsonObject tmpJsonObj_UpDate = (JsonObject) Constants.getOutsideConfig(ConfigConstants.UPDATE);
                         JsonObject tmpJsonObj_arg = tmpJsonObj_UpDate.getAsJsonObject(argKey);
-                        String path = tmpJsonObj_arg.get("Path").getAsString();
-                        String Date = tmpJsonObj_arg.get("Date").getAsString();
+                        String path = tmpJsonObj_arg.get(ConfigConstants.UPDATE_PATH).getAsString();
+                        String Date = tmpJsonObj_arg.get(ConfigConstants.UPDATE_DATE).getAsString();
                         String newDate = extractDateFromFileName(fileName);
                         if (Date.equals(newDate) && Files.exists(Paths.get(path))) {
                             needUpdate = false;
@@ -256,11 +257,11 @@ public class Update {
 
     // 更新本地配置文件  并删除原有旧索引文件
     public static void updateLocalResourceConfig(String argKey, String filePath){
-        String topKey = "UpDate";
+        // topKey 已通过 ConfigConstants.UPDATE 替代
         JsonObject tmpJsonObj_UpDate;
         JsonObject tmpJsonObj_arg;
         try {
-            tmpJsonObj_UpDate = (JsonObject) Constants.getOutsideConfig(topKey);
+            tmpJsonObj_UpDate = (JsonObject) Constants.getOutsideConfig(ConfigConstants.UPDATE);
         } catch (Exception e){
             tmpJsonObj_UpDate = new JsonObject();
             tmpJsonObj_UpDate.add(argKey, new JsonObject());
@@ -274,7 +275,7 @@ public class Update {
         }
 
 
-        String Path = tmpJsonObj_arg.get("Path").getAsString();
+        String Path = tmpJsonObj_arg.get(ConfigConstants.UPDATE_PATH).getAsString();
 
         if(!Path.isEmpty() && !filePath.equals(Path)) {
             try {
@@ -289,11 +290,11 @@ public class Update {
 
         Map<String, Object> configMap = new LinkedHashMap<>();
         Map<String, String> argMap = new LinkedHashMap<>();
-        argMap.put("Path", filePath);
-        argMap.put("Date", extractDateFromFileName(filePath));
+        argMap.put(ConfigConstants.UPDATE_PATH, filePath);
+        argMap.put(ConfigConstants.UPDATE_DATE, extractDateFromFileName(filePath));
         configMap.put(argKey, argMap);
 
-        Constants.saveConfig(configMap, topKey);
+        Constants.saveConfig(configMap, ConfigConstants.UPDATE);
     }
 
 

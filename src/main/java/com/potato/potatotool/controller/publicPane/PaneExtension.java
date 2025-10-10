@@ -5,6 +5,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.MainApplication;
+import com.potato.potatotool.content.classObj.ConfigConstants;
+import com.potato.potatotool.content.classObj.ExtensionConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.ui.PaneFactory;
 import javafx.animation.FadeTransition;
@@ -87,11 +89,11 @@ public class PaneExtension {
     //  初始化数据
     private void initData() {
         try {
-            JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Extension");
+            JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.EXTENSION);
 
             if(tmpJsonObj == null){
                 String tmpDataJsonStr = getResourceString("config");
-                tmpJsonObj = (JsonObject) (new Gson()).fromJson(tmpDataJsonStr, JsonObject.class).get("Extension");
+                tmpJsonObj = (JsonObject) (new Gson()).fromJson(tmpDataJsonStr, JsonObject.class).get(ConfigConstants.EXTENSION);
             }
 
             for (String key : tmpJsonObj.keySet()) {
@@ -175,10 +177,10 @@ public class PaneExtension {
         
         // 重新加载该分类的数据
         try {
-            JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Extension");
+            JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.EXTENSION);
             if (tmpJsonObj == null) {
                 String tmpDataJsonStr = getResourceString("config");
-                tmpJsonObj = (JsonObject) (new Gson()).fromJson(tmpDataJsonStr, JsonObject.class).get("Extension");
+                tmpJsonObj = (JsonObject) (new Gson()).fromJson(tmpDataJsonStr, JsonObject.class).get(ConfigConstants.EXTENSION);
             }
             
             // 使用Constants.findKey来查找key，支持多层级结构
@@ -314,11 +316,11 @@ public class PaneExtension {
         for (int i = 0; i < tmpArrayData.size(); i++) {
             JsonElement element = tmpArrayData.get(i);
             JsonObject tmpDictData = element.getAsJsonObject();
-            String title = tmpDictData.get("title").getAsString();
-            String describe = tmpDictData.get("describe").getAsString();
-            String content = tmpDictData.get("content").getAsString();
-            String type = tmpDictData.get("type").getAsString();
-            String icon = tmpDictData.get("icon").getAsString();
+            String title = tmpDictData.get(ExtensionConstants.FIELD_TITLE).getAsString();
+            String describe = tmpDictData.get(ExtensionConstants.FIELD_DESCRIBE).getAsString();
+            String content = tmpDictData.get(ExtensionConstants.FIELD_CONTENT).getAsString();
+            String type = tmpDictData.get(ExtensionConstants.FIELD_TYPE).getAsString();
+            String icon = tmpDictData.get(ExtensionConstants.FIELD_ICON).getAsString();
 
             HBox hBox = new HBox();
             hBox.getStyleClass().add("cellHBox");
@@ -486,19 +488,19 @@ public class PaneExtension {
 
             // 检查用户是否确认删除
             if (PaneDeleteConfirmDialog.deleteConfirmed) {
-                JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Extension");
+                JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.EXTENSION);
                 JsonElement targetValue = Constants.findKey(tmpJsonObj, key);
                 if (targetValue != null && targetValue.isJsonArray()) {
                     JsonArray targetArray = (JsonArray) targetValue;
                     for (int i = 0; i < targetArray.size(); i++) {
                         JsonObject obj = (JsonObject) targetArray.get(i);
-                        if (obj.get("title").getAsString().equals(title) && obj.get("describe").getAsString().equals(describe)) {
+                        if (obj.get(ExtensionConstants.FIELD_TITLE).getAsString().equals(title) && obj.get(ExtensionConstants.FIELD_DESCRIBE).getAsString().equals(describe)) {
                             targetArray.remove(i);
                             break;  // 找到后退出循环
                         }
                     }
                 }
-                Constants.saveConfig("Extension", tmpJsonObj);
+                Constants.saveConfig(ConfigConstants.EXTENSION, tmpJsonObj);
                 // 优化：只更新该分类，不完全重建
                 updateCategory(key);
                 // 智能同步：只同步被修改的分类（使用明确的源控制器）

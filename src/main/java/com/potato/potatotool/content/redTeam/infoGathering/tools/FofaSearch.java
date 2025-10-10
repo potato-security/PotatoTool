@@ -3,7 +3,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.data.JsonUtils;
 import com.potato.potatotool.utils.data.StrUtils;
@@ -107,9 +107,9 @@ public class FofaSearch {
 
     public static String getError_Fofa() {
         isEffectiveKey = true;
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
-        boolean Proxy = JsonUtils.isProxyEnabled(ConfigConstants.FOFA_KEY);
-        FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive(ConfigConstants.FOFA_KEY).getAsString(), Proxy);
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
+        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.FOFA_KEY);
+        FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive(AssetConstants.FOFA_KEY).getAsString(), Proxy);
         String qInfo = "ip=\"8.8.8.8\"";
         if (fofaSearch.search_Fofa(qInfo).isEmpty()){
             isEffectiveKey = false;
@@ -152,9 +152,9 @@ public class FofaSearch {
     }
 
     public static void main(String[] args) {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
-        boolean Proxy = JsonUtils.isProxyEnabled(ConfigConstants.FOFA_KEY);
-        FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive(ConfigConstants.FOFA_KEY).getAsString(), Proxy);
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
+        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.FOFA_KEY);
+        FofaSearch fofaSearch = new FofaSearch(tmpJsonObj.getAsJsonPrimitive(AssetConstants.FOFA_KEY).getAsString(), Proxy);
 
         JsonArray domainInfo = fofaSearch.getInfoByCompanyOrDomain_Fofa("国家能源投资集团有限责任公司");
         System.out.println(domainInfo);

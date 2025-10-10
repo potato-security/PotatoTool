@@ -3,7 +3,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.infoLeakage.searchEn
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.redTeam.infoGathering.classObj.ConfigConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.data.StrUtils;
@@ -160,8 +160,8 @@ public class GoogleSearch {
 
     public static String getError_Google() {
         isEffectiveKey = true;
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
-        JsonArray jsonArray = tmpJsonObj.getAsJsonArray(ConfigConstants.GOOGLE_API);
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
+        JsonArray jsonArray = tmpJsonObj.getAsJsonArray(AssetConstants.GOOGLE_API);
         Set<HashMap<String, String>> google_API_List = new HashSet<>();
         for (JsonElement element : jsonArray) {
             HashMap<String, String> map = new HashMap<>();
@@ -172,7 +172,7 @@ public class GoogleSearch {
             }
             google_API_List.add(map);
         }
-        boolean Proxy = JsonUtils.isProxyEnabled(ConfigConstants.GOOGLE_API);
+        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.GOOGLE_API);
         GoogleSearch googleSearch = new GoogleSearch(google_API_List, Proxy);
         String domain = "【Check】";
         if (googleSearch.searchLeakageByDomain(domain, true, 1).isEmpty()){
@@ -184,8 +184,8 @@ public class GoogleSearch {
 
 
     public static void main(String[] args) {
-        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
-        JsonArray jsonArray = tmpJsonObj.getAsJsonArray(ConfigConstants.GOOGLE_API);
+        JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
+        JsonArray jsonArray = tmpJsonObj.getAsJsonArray(AssetConstants.GOOGLE_API);
         Set<HashMap<String, String>> google_API_List = new HashSet<>();
         for (JsonElement element : jsonArray) {
             HashMap<String, String> map = new HashMap<>();
@@ -196,7 +196,7 @@ public class GoogleSearch {
             }
             google_API_List.add(map);
         }
-        boolean Proxy = JsonUtils.isProxyEnabled(ConfigConstants.GOOGLE_API);
+        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.GOOGLE_API);
         GoogleSearch googleSearch = new GoogleSearch(google_API_List, Proxy);
 
 

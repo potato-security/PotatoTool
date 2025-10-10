@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.classObj.ConfigConstants;
+import com.potato.potatotool.content.classObj.ExtensionConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.ui.PaneFactory;
 import javafx.beans.value.ChangeListener;
@@ -91,10 +93,10 @@ public class PaneAddBarDialog {
                 Node nodeTitle = an.lookup("#labelTitle");
                 Node nodeDescribe = an.lookup("#labelDescribe");
 
-                tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Extension");
+                tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.EXTENSION);
                 if(tmpJsonObj == null){
                     String tmpDataJsonStr = getResourceString("config");
-                    tmpJsonObj = (JsonObject) (new Gson()).fromJson(tmpDataJsonStr, JsonObject.class).get("Extension");
+                    tmpJsonObj = (JsonObject) (new Gson()).fromJson(tmpDataJsonStr, JsonObject.class).get(ConfigConstants.EXTENSION);
                 }
 
                 targetValue = Constants.findKey(tmpJsonObj, KeyData);
@@ -108,12 +110,12 @@ public class PaneAddBarDialog {
                         JsonArray array = targetValue.getAsJsonArray();
                         array.forEach(jsonElement -> {
                             JsonObject obj = jsonElement.getAsJsonObject();
-                            if (obj.get("title").getAsString().equals(TitleData) && obj.get("describe").getAsString().equals(DescribeData)) {
-                                title.setText(obj.get("title").getAsString());
-                                describe.setText(obj.get("describe").getAsString());
-                                type.setValue(obj.get("type").getAsString());
-                                content.setText(obj.get("content").getAsString());
-                                icon.setText(obj.get("icon").getAsString());
+                            if (obj.get(ExtensionConstants.FIELD_TITLE).getAsString().equals(TitleData) && obj.get(ExtensionConstants.FIELD_DESCRIBE).getAsString().equals(DescribeData)) {
+                                title.setText(obj.get(ExtensionConstants.FIELD_TITLE).getAsString());
+                                describe.setText(obj.get(ExtensionConstants.FIELD_DESCRIBE).getAsString());
+                                type.setValue(obj.get(ExtensionConstants.FIELD_TYPE).getAsString());
+                                content.setText(obj.get(ExtensionConstants.FIELD_CONTENT).getAsString());
+                                icon.setText(obj.get(ExtensionConstants.FIELD_ICON).getAsString());
                             }
                         });
                     }
@@ -170,28 +172,28 @@ public class PaneAddBarDialog {
             JsonArray array = targetValue.getAsJsonArray();
             if(isAdd){
                 JsonObject elem = new JsonObject();
-                elem.addProperty("title", titleData);
-                elem.addProperty("describe", describeData);
-                elem.addProperty("content", contentData);
-                elem.addProperty("type", typeData);
-                elem.addProperty("icon",iconData);
+                elem.addProperty(ExtensionConstants.FIELD_TITLE, titleData);
+                elem.addProperty(ExtensionConstants.FIELD_DESCRIBE, describeData);
+                elem.addProperty(ExtensionConstants.FIELD_CONTENT, contentData);
+                elem.addProperty(ExtensionConstants.FIELD_TYPE, typeData);
+                elem.addProperty(ExtensionConstants.FIELD_ICON,iconData);
                 array.add(elem);
             }else{
                 for (JsonElement jsonElement : array) {
                     JsonObject obj = jsonElement.getAsJsonObject();
-                    if ( obj.get("title").getAsString().equals(TitleData) && obj.get("describe").getAsString().equals(DescribeData)) {
-                        obj.addProperty("title", titleData);
-                        obj.addProperty("describe", describeData);
-                        obj.addProperty("content", contentData);
-                        obj.addProperty("type", typeData);
-                        obj.addProperty("icon", iconData);
+                    if ( obj.get(ExtensionConstants.FIELD_TITLE).getAsString().equals(TitleData) && obj.get(ExtensionConstants.FIELD_DESCRIBE).getAsString().equals(DescribeData)) {
+                        obj.addProperty(ExtensionConstants.FIELD_TITLE, titleData);
+                        obj.addProperty(ExtensionConstants.FIELD_DESCRIBE, describeData);
+                        obj.addProperty(ExtensionConstants.FIELD_CONTENT, contentData);
+                        obj.addProperty(ExtensionConstants.FIELD_TYPE, typeData);
+                        obj.addProperty(ExtensionConstants.FIELD_ICON, iconData);
                         break;
                     }
                 };
             }
 
         }
-        Constants.saveConfig("Extension", tmpJsonObj);
+        Constants.saveConfig(ConfigConstants.EXTENSION, tmpJsonObj);
         
         // 智能同步：只同步被修改的分类（使用当前活动控制器）
         PaneFactory.syncCategory(KeyData);

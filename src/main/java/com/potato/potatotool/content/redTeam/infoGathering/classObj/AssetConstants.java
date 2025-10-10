@@ -5,11 +5,9 @@ package com.potato.potatotool.content.redTeam.infoGathering.classObj;
  * @author Potato
  * @date 2024/11/26 15:17
  */
-public interface ConfigConstants {
+public interface AssetConstants {
     // ========== 配置根节点 ==========
     String ASSET = "Asset";
-    String PROXY = "Proxy";
-    String AI = "AI";
     
     // ========== Asset 资产测绘相关 ==========
     String CHINAZ_COOKIE = "Chinaz_Cookie";
@@ -23,7 +21,5 @@ public interface ConfigConstants {
     String GITHUB_TOKEN = "GitHub_Token";
     String SSL = "SSL";
     String CRAWL = "Crawl";
-    
-    // ========== Proxy 代理配置相关 ==========
-    String PROXY_SERVICES = "services";  // 代理服务配置对象
+
 }

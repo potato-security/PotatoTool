@@ -1,6 +1,7 @@
 package com.potato.potatotool.utils.data;
 
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
@@ -93,8 +94,8 @@ public class DeserializerUtils{
                 // 导出java
                 String tips = "\n";
                 //  初始化默认反编译模式配置
-                JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Decompile");
-                String decompileMode = tmpJsonObj.getAsJsonPrimitive("decompileMode").getAsString();
+                JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.DECOMPILE);
+                String decompileMode = tmpJsonObj.getAsJsonPrimitive(ConfigConstants.DECOMPILE_MODE).getAsString();
 
                 String outputCode = tips + Decompile(resultByte, decompileMode);
                 StrUtils.createFile(outputCode, StrUtils.getCurrentJarDir() + File.separator + "Decompile" + File.separator + "serialize_" + uuid +".java");
@@ -137,8 +138,8 @@ public class DeserializerUtils{
             try {
                 path = path + ".java";
                 //  初始化默认反编译模式配置
-                JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig("Decompile");
-                String decompileMode = tmpJsonObj.getAsJsonPrimitive("decompileMode").getAsString();
+                JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.DECOMPILE);
+                String decompileMode = tmpJsonObj.getAsJsonPrimitive(ConfigConstants.DECOMPILE_MODE).getAsString();
                 String code = Decompile(byteData, decompileMode, path);
                 if(code!=null){
                     resultData = code.getBytes(StandardCharsets.UTF_8);

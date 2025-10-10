@@ -2,7 +2,7 @@ package com.potato.potatotool.controller.redTeam;
 
 import com.dlsc.gemsfx.CFCheckBox;
 import com.dlsc.gemsfx.FilterView;
-import com.potato.potatotool.classObj.KbInfo;
+import com.potato.potatotool.content.redTeam.kbRootQuery.classObj.KbInfo;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import javafx.application.Platform;
 import javafx.collections.transformation.SortedList;
@@ -19,7 +19,7 @@ import javafx.scene.layout.VBox;
 import java.util.*;
 
 import static com.potato.potatotool.ToStart.debugMode;
-import static com.potato.potatotool.content.redTeam.KbCheck.*;
+import static com.potato.potatotool.content.redTeam.kbRootQuery.KbCheck.*;
 
 /**
  * @author Potato
