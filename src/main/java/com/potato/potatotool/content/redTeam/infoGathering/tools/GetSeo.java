@@ -95,8 +95,9 @@ public class GetSeo {
 
             // 提取信息
             JsonObject domainInfo = extractDomainInfo_chinaz(doc);
-            JsonObject icpInfo = extractIcpInfo_chinaz(doc);
             JsonObject websiteInfo = extractWebsiteInfo(doc);
+            
+            JsonObject icpInfo = extractIcpInfo_chinaz(domain);
 
             // 尝试从描述中提取信息
             icpInfo = extractFromDescription(websiteInfo, icpInfo);
@@ -112,17 +113,6 @@ public class GetSeo {
         return seoMap;
     }
 
-    private static boolean isIcpInfoEmpty(JsonObject icpInfo) {
-        return isEmptyOrNull(icpInfo.get("备案号")) &&
-                isEmptyOrNull(icpInfo.get("备案所属")) &&
-                isEmptyOrNull(icpInfo.get("备案性质"));
-    }
-
-    private static boolean isEmptyOrNull(JsonElement element) {
-        return element == null ||
-                element.isJsonNull() ||
-                element.getAsString().trim().isEmpty();
-    }
 
     private static JsonObject extractFromDescription(JsonObject websiteInfo, JsonObject icpInfo) {
         String description = websiteInfo.get("网站描述").toString();
@@ -206,7 +196,9 @@ public class GetSeo {
         } else if (elem1.isJsonArray() && elem2.isJsonArray()) {
             return mergeJsonArrays(elem1.getAsJsonArray(), elem2.getAsJsonArray());
         } else {
-            if(elem1.equals("-") || elem1==null || elem1.isJsonNull() || elem1.getAsString().isEmpty()) return elem2;
+            if(elem1 == null || elem1.isJsonNull() || elem1.getAsString().isEmpty() || elem1.getAsString().equals("-")) {
+                return elem2;
+            }
             return elem1;
         }
     }
@@ -241,17 +233,17 @@ public class GetSeo {
         for (Element li : liElements) {
             String liText = li.text().trim();
 
-            if (liText.contains("注册人/机构")) {
+            if (liText.contains("注册人/机构")) {    // #whois_registrant
                 String org = li.selectFirst("a") != null ? li.selectFirst("a").text().trim() : "";
                 if (org.startsWith("//whois.ename.net") || org.contains("（更新）") || org.contains("redacted for privacy")) org = "";
                 domainInfo.addProperty("注册人/机构", org);
             }
 
-            if (liText.contains("年龄：")) {
+            if (liText.contains("年龄：")) {   // #whois_created
                 domainInfo.addProperty("域名年龄", liText.replace("年龄：", "").trim());
             }
 
-            if (liText.contains("邮箱") || liText.matches(".*@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}.*")) {
+            if (liText.contains("邮箱") || liText.matches(".*@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}.*")) {    // #whois_email
                 String emailHref = li.selectFirst("a") != null ? li.selectFirst("a").attr("href").trim() : "";
                 domainInfo.addProperty("注册邮箱", getEmail(emailHref));
             }
@@ -297,22 +289,63 @@ public class GetSeo {
         return email;
     }
 
-    // TODO 不要用绝对路径  https://seo.chinaz.com/www.shenhuagroup.com.cn   备案信息暂时隐藏了
-    private static JsonObject extractIcpInfo_chinaz(Document doc) {
-        JsonObject icpInfo = new JsonObject();
+    private static JsonObject extractIcpInfo_chinaz(String domain) {
+        JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(ConfigConstants.ASSET);
+        String Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(ConfigConstants.CHINAZ_COOKIE).getAsString();
+        boolean Proxy = JsonUtils.isProxyEnabled(ConfigConstants.CHINAZ_COOKIE);
 
-        icpInfo.addProperty("备案号", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > span:nth-of-type(1) > i > a"));
-        icpInfo.addProperty("备案所属", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > span:nth-of-type(2) > i"));
-        icpInfo.addProperty("备案性质", getElementText(doc, "body > div:nth-of-type(4) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > span:nth-of-type(3) > i"));
+        JsonObject icpInfo = new JsonObject();
+        icpInfo.addProperty("备案号", "-");
+        icpInfo.addProperty("备案所属", "-");
+        icpInfo.addProperty("备案性质", "-");
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Cookie", Chinaz_Cookie);
+
+        RequestObj obj = new RequestObj().setUrl("https://icp.chinaz.com/" + domain)
+        .setMethod("GET").setRetries(2).setHeaders(headers);
+        if(!Proxy) obj.setProxies(null);
+
+        try (CustomHttpResponse con = requests(obj)){
+            int statusCode = con.getResponseCode();
+
+            // 检查请求状态码
+            if (statusCode != 200) {
+                return icpInfo;
+            }
+
+            Document doc = con.getDocument();
+
+            // 提取备案号 (id=permit)
+            String permit = getElementText(doc, "#permit");
+            if (!permit.isEmpty()) {
+                icpInfo.addProperty("备案号", permit);
+            }
+
+            // 提取备案所属 (companyName)
+            String companyName = getElementText(doc, "#companyName");
+            if (!companyName.isEmpty()) {
+                icpInfo.addProperty("备案所属", companyName);
+            }
+
+            // 提取备案性质 (contactPhone)
+            String contactPhone = getElementText(doc, ".contactPhone");
+            if (!contactPhone.isEmpty()) {
+                icpInfo.addProperty("备案性质", contactPhone);
+            }
+
+        } catch (Exception e) {
+            if (debugMode) e.printStackTrace();
+        }
 
         return icpInfo;
     }
 
     private static JsonObject extractIcpInfo_aizhan(Document doc) {
         JsonObject icpInfo = new JsonObject();
-        icpInfo.addProperty("备案号", getElementText(doc, "#icp > li:nth-of-type(1) > a"));
-        icpInfo.addProperty("备案所属", getElementText(doc, "#icp > li:nth-of-type(3) > span"));
-        icpInfo.addProperty("备案性质", getElementText(doc, "#icp > li:nth-of-type(2) > span"));
+        icpInfo.addProperty("备案号", getElementText(doc, "#icp_icp"));
+        icpInfo.addProperty("备案所属", getElementText(doc, "#icp_company"));
+        icpInfo.addProperty("备案性质", getElementText(doc, "#icp_type"));
 
         return icpInfo;
     }
