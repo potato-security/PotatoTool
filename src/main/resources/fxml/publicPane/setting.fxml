@@ -30,7 +30,7 @@
             <VBox>
                 <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
                     <center>
-                        <Label style="-fx-padding: 0 0 0 30;-fx-font-size: 23;-fx-font-weight: bold;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="修改配置" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                        <Label style="-fx-padding: 0 0 0 30;-fx-font-size: 23;-fx-font-weight: bold;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="修改配置" userData="i18n:setting.title" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
                     </center>
                     <right>
                         <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
@@ -43,7 +43,7 @@
                                     </ImageView>
                                 </graphic>
                                 <tooltip>
-                                    <Tooltip text="关闭" />
+                                    <Tooltip text="关闭" userData="i18n:tooltip.close"/>
                                 </tooltip>
                             </Button>
                             <Pane minWidth="10"/>
@@ -56,32 +56,43 @@
                             <Accordion fx:id="settingAccordion" prefWidth="${an.width - 38}">
                                 <panes>
                                     <!-- 基础配置 -->
-                                    <TitledPane fx:id="basicPane" text="⚙️ 基础配置">
+                                    <TitledPane fx:id="basicPane" text="⚙️ 基础配置" userData="i18n:setting.basic.title">
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
                                             <StackPane>
-                                                <Label fx:id="maxWidthlabel" style="-fx-text-fill: -main-topBar-color;" textAlignment="RIGHT" text="长格式占位符："/>
+                                                <Label fx:id="maxWidthlabel" style="-fx-text-fill: -main-topBar-color;" textAlignment="RIGHT" text="长格式占位符：" userData="i18n:setting.basic.placeholder.long"/>
                                                 <HBox alignment="CENTER" spacing="10">
-                                                    <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置总代理：">
-                                                        <tooltip>
-                                                            <Tooltip text="优先级低于子代理开关" />
-                                                        </tooltip>
-                                                    </Label>
-                                                    <StackPane>
-                                                        <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" StackPane.alignment="CENTER">
-                                                            <tooltip>
-                                                                <Tooltip text="优先级低于子代理开关" />
-                                                            </tooltip>
-                                                        </TextField>
-                                                        <CFSwitch fx:id="proxyButton" onMouseClicked="#proxyBtn" StackPane.alignment="CENTER_RIGHT">
-                                                            <tooltip>
-                                                                <Tooltip text="优先级低于子代理开关" />
-                                                            </tooltip>
-                                                        </CFSwitch>
-                                                    </StackPane>
+                                                    <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="语言设置：" userData="i18n:setting.basic.language"/>
+                                                    <ComboBox fx:id="languageComboBox" prefHeight="20.0" prefWidth="250">
+                                                        <items>
+                                                            <FXCollections fx:factory="observableArrayList">
+                                                                <String fx:value="简体中文" />
+                                                                <String fx:value="English" />
+                                                            </FXCollections>
+                                                        </items>
+                                                    </ComboBox>
                                                 </HBox>
                                             </StackPane>
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="默认反编译器："/>
+                                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置总代理：" userData="i18n:setting.basic.proxy">
+                                                    <tooltip>
+                                                        <Tooltip text="优先级低于子代理开关" userData="i18n:setting.basic.proxy.tooltip"/>
+                                                    </tooltip>
+                                                </Label>
+                                                <StackPane>
+                                                    <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" userData="i18n-prompt:setting.basic.proxy.placeholder" StackPane.alignment="CENTER">
+                                                        <tooltip>
+                                                            <Tooltip text="优先级低于子代理开关" userData="i18n:setting.basic.proxy.tooltip"/>
+                                                        </tooltip>
+                                                    </TextField>
+                                                    <CFSwitch fx:id="proxyButton" onMouseClicked="#proxyBtn" StackPane.alignment="CENTER_RIGHT">
+                                                        <tooltip>
+                                                            <Tooltip text="优先级低于子代理开关" userData="i18n:setting.basic.proxy.tooltip"/>
+                                                        </tooltip>
+                                                    </CFSwitch>
+                                                </StackPane>
+                                            </HBox>
+                                            <HBox alignment="CENTER" spacing="10">
+                                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="默认反编译器：" userData="i18n:setting.basic.decompile"/>
                                                 <ComboBox fx:id="decompileType" prefHeight="20.0" prefWidth="250">
                                                     <items>
                                                         <FXCollections fx:factory="observableArrayList">
@@ -101,7 +112,7 @@
         <!--                            </HBox>-->
 
                                             <HBox alignment="CENTER">
-                                                <Button minHeight="38.0" minWidth="150" text="保存" onAction="#save">
+                                                <Button minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#save">
                                                     <effect>
                                                         <DropShadow />
                                                     </effect>
@@ -111,60 +122,56 @@
                                     </TitledPane>
 
                                     <!-- AI配置 -->
-                                    <TitledPane fx:id="aiPane" text="🤖 AI配置">
+                                    <TitledPane fx:id="aiPane" text="🤖 AI配置" userData="i18n:setting.ai.title">
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_API_Base：">
+                                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_API_Base：" userData="i18n:setting.ai.api.base">
                                                     <tooltip>
-                                                        <Tooltip text="请输入API接口。 不输入则使用本工具默认免费接口" />
+                                                        <Tooltip text="请输入API接口。 不输入则使用本工具默认免费接口" userData="i18n:setting.ai.api.base.tooltip"/>
                                                     </tooltip>
                                                 </Label>
-                                                <TextField fx:id="aiApiBase" promptText="不输入则使用默认接口" prefWidth="250">
+                                                <TextField fx:id="aiApiBase" promptText="不输入则使用默认接口" prefWidth="250" userData="i18n-prompt:setting.ai.api.base.placeholder">
                                                     <tooltip>
-                                                        <Tooltip text="请输入API接口。 不输入则使用本工具默认免费接口" />
+                                                        <Tooltip text="请输入API接口。 不输入则使用本工具默认免费接口" userData="i18n:setting.ai.api.base.tooltip"/>
                                                     </tooltip>
                                                 </TextField>
                                             </HBox>
 
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_API_Key：">
+                                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_API_Key：" userData="i18n:setting.ai.api.key">
                                                     <tooltip>
-                                                        <Tooltip text="请输入API密钥。 不输入则使用本工具默认免费接口" />
+                                                        <Tooltip text="请输入API密钥。 不输入则使用本工具默认免费接口" userData="i18n:setting.ai.api.key.tooltip"/>
                                                     </tooltip>
                                                 </Label>
-                                                <TextField fx:id="aiApiKey" promptText="不输入则使用默认接口" prefWidth="250">
+                                                <TextField fx:id="aiApiKey" promptText="不输入则使用默认接口" prefWidth="250" userData="i18n-prompt:setting.ai.api.key.placeholder">
                                                     <tooltip>
-                                                        <Tooltip text="请输入API密钥。 不输入则使用本工具默认免费接口" />
+                                                        <Tooltip text="请输入API密钥。 不输入则使用本工具默认免费接口" userData="i18n:setting.ai.api.key.tooltip"/>
                                                     </tooltip>
                                                 </TextField>
                                             </HBox>
 
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_Model：">
+                                                <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_Model：" userData="i18n:setting.ai.model">
                                                     <tooltip>
-                                                        <Tooltip text="请输入模型版本，（请和Key对应）如：gpt-5、gpt-4o-mini、gpt-4o、gpt-4-0314、gpt-3.5-turbo-16k-0613" />
+                                                        <Tooltip text="请输入模型版本，（请和Key对应）如：gpt-5、gpt-4o-mini、gpt-4o、gpt-4-0314、gpt-3.5-turbo-16k-0613" userData="i18n:setting.ai.model.tooltip"/>
                                                     </tooltip>
                                                 </Label>
-                                                <TextField fx:id="aiModel" promptText="不输入则使用默认接口" prefWidth="250">
+                                                <TextField fx:id="aiModel" promptText="不输入则使用默认接口" prefWidth="250" userData="i18n-prompt:setting.ai.model.placeholder">
                                                     <tooltip>
-                                                        <Tooltip text="请输入模型版本。 不输入则使用本工具默认免费接口" />
+                                                        <Tooltip text="请输入模型版本。 不输入则使用本工具默认免费接口" userData="i18n:setting.ai.model.tooltip"/>
                                                     </tooltip>
                                                 </TextField>
                                             </HBox>
 
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="代理：">
-                                                    <tooltip>
-                                                        <Tooltip text="请输入模型版本，（请和Key对应）如：gpt-5、gpt-4o-mini、gpt-4o、gpt-4-0314、gpt-3.5-turbo-16k-0613" />
-                                                    </tooltip>
-                                                </Label>
+                                                <Label  minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="代理：" userData="i18n:setting.ai.proxy"/>
                                                 <HBox prefWidth="250">
                                                     <CFSwitch fx:id="aiProxy"/>
                                                 </HBox>
                                             </HBox>
 
                                             <HBox alignment="CENTER">
-                                                <Button minHeight="38.0" minWidth="150" text="保存" onAction="#save">
+                                                <Button minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#save">
                                                     <effect>
                                                         <DropShadow />
                                                     </effect>
@@ -174,46 +181,46 @@
                                     </TitledPane>
 
                                     <!-- 资产测绘配置 -->
-                                    <TitledPane fx:id="assetPane" text="🔍 资产测绘配置">
+                                    <TitledPane fx:id="assetPane" text="🔍 资产测绘配置" userData="i18n:setting.asset.title">
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${maxWidthlabel.width}" visible="false"/>
                                                 <TextField visible="false" prefWidth="250"/>
                                                 <Label minWidth="20"/>
-                                                <Label text="  代理"/>
+                                                <Label text="  代理" userData="i18n:setting.basic.proxy.label"/>
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label fx:id="newMaxWidthlabel" textAlignment="RIGHT" text="Aiqicha_Cookie：">
+                                                <Label fx:id="newMaxWidthlabel" textAlignment="RIGHT" text="Aiqicha_Cookie：" userData="i18n:setting.asset.aiqicha">
                                                     <tooltip>
-                                                        <Tooltip text="使用BP直接抓包获取，或浏览器访问view-source:https://aiqicha.baidu.com获取Cookie" />
+                                                        <Tooltip text="使用BP直接抓包获取，或浏览器访问view-source:https://aiqicha.baidu.com获取Cookie" userData="i18n:setting.asset.aiqicha.tooltip"/>
                                                     </tooltip>
                                                 </Label>
                                                 <TextField fx:id="aiqichaCookie" prefWidth="250">
                                                     <tooltip>
-                                                        <Tooltip text="使用BP直接抓包获取，或浏览器访问view-source:https://aiqicha.baidu.com获取Cookie" />
+                                                        <Tooltip text="使用BP直接抓包获取，或浏览器访问view-source:https://aiqicha.baidu.com获取Cookie" userData="i18n:setting.asset.aiqicha.tooltip"/>
                                                     </tooltip>
                                                 </TextField>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="aiqichaProxy">
                                                     <tooltip>
-                                                        <Tooltip text="需要中国IP,建议关闭代理" />
+                                                        <Tooltip text="需要中国IP,建议关闭代理" userData="i18n:setting.asset.aiqicha.proxy.tooltip"/>
                                                     </tooltip>
                                                 </CFSwitch>
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Chinaz_Cookie："/>
+                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Chinaz_Cookie：" userData="i18n:setting.asset.chinaz"/>
                                                 <TextField fx:id="chinazCookie" prefWidth="250"/>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="chinazProxy"/>
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Fofa_Key："/>
+                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Fofa_Key：" userData="i18n:setting.asset.fofa"/>
                                                 <TextField fx:id="fofaKey" prefWidth="250"/>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="fofaProxy"/>
                                             </HBox>
                                             <HBox alignment="TOP_CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Hunter_Key："/>
+                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Hunter_Key：" userData="i18n:setting.asset.hunter"/>
                                                 <VBox fx:id="hunterVBox" alignment="CENTER_LEFT"  spacing="10">
                                                     <StackPane>
                                                         <TextField styleClass="paddingRightButton" prefWidth="250" StackPane.alignment="CENTER"/>
@@ -222,7 +229,7 @@
                                                                 <Region styleClass="addIcon"/>
                                                             </graphic>
                                                             <tooltip>
-                                                                <Tooltip text="添加" />
+                                                                <Tooltip text="添加" userData="i18n:tooltip.add"/>
                                                             </tooltip>
                                                         </Label>
                                                     </StackPane>
@@ -230,12 +237,12 @@
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="hunterProxy">
                                                     <tooltip>
-                                                        <Tooltip text="需要中国IP,建议关闭代理" />
+                                                        <Tooltip text="需要中国IP,建议关闭代理" userData="i18n:setting.asset.hunter.proxy.tooltip"/>
                                                     </tooltip>
                                                 </CFSwitch>
                                             </HBox>
                                             <HBox alignment="TOP_CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Quake_Key："/>
+                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Quake_Key：" userData="i18n:setting.asset.quake"/>
                                                 <VBox fx:id="quakeVBox" alignment="CENTER_LEFT"  spacing="10">
                                                     <StackPane>
                                                         <TextField styleClass="paddingRightButton" prefWidth="250" StackPane.alignment="CENTER"/>
@@ -244,7 +251,7 @@
                                                                 <Region styleClass="addIcon"/>
                                                             </graphic>
                                                             <tooltip>
-                                                                <Tooltip text="添加" />
+                                                                <Tooltip text="添加" userData="i18n:tooltip.add"/>
                                                             </tooltip>
                                                         </Label>
                                                     </StackPane>
@@ -253,28 +260,28 @@
                                                 <CFSwitch fx:id="quakeProxy"/>
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Shodan_Key："/>
+                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Shodan_Key：" userData="i18n:setting.asset.shodan"/>
                                                 <TextField fx:id="shodanKey" prefWidth="250"/>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="shodanProxy"/>
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Zoomeye_Key："/>
+                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Zoomeye_Key：" userData="i18n:setting.asset.zoomeye"/>
                                                 <TextField fx:id="zoomeyeKey" prefWidth="250"/>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="zoomeyeProxy">
                                                     <tooltip>
-                                                        <Tooltip text="需要国外IP,建议开启代理" />
+                                                        <Tooltip text="需要国外IP,建议开启代理" userData="i18n:setting.asset.zoomeye.proxy.tooltip"/>
                                                     </tooltip>
                                                 </CFSwitch>
                                             </HBox>
                                             <HBox alignment="TOP_CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Google_API："/>
+                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Google_API：" userData="i18n:setting.asset.google"/>
                                                 <VBox fx:id="googleVBox" alignment="CENTER_LEFT"  spacing="10">
                                                     <StackPane>
-                                                        <TextField styleClass="paddingRightButton" promptText="格式为Google_Key:Google_Cx" prefWidth="250" StackPane.alignment="CENTER">
+                                                        <TextField styleClass="paddingRightButton" promptText="格式为Google_Key:Google_Cx" prefWidth="250" StackPane.alignment="CENTER" userData="i18n-prompt:setting.asset.google.placeholder">
                                                             <tooltip>
-                                                                <Tooltip text="格式为Google_Key:Google_Cx" />
+                                                                <Tooltip text="格式为Google_Key:Google_Cx" userData="i18n:setting.asset.google.tooltip"/>
                                                             </tooltip>
                                                         </TextField>
                                                         <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
@@ -282,7 +289,7 @@
                                                                 <Region styleClass="addIcon"/>
                                                             </graphic>
                                                             <tooltip>
-                                                                <Tooltip text="添加" />
+                                                                <Tooltip text="添加" userData="i18n:tooltip.add"/>
                                                             </tooltip>
                                                         </Label>
                                                     </StackPane>
@@ -290,12 +297,12 @@
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="googleProxy">
                                                     <tooltip>
-                                                        <Tooltip text="需要国外IP,建议开启代理" />
+                                                        <Tooltip text="需要国外IP,建议开启代理" userData="i18n:setting.asset.google.proxy.tooltip"/>
                                                     </tooltip>
                                                 </CFSwitch>
                                             </HBox>
                                             <HBox alignment="TOP_CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="GitHub_Token："/>
+                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="GitHub_Token：" userData="i18n:setting.asset.github"/>
                                                 <VBox fx:id="githubVBox" alignment="CENTER_LEFT"  spacing="10">
                                                     <StackPane>
                                                         <TextField styleClass="paddingRightButton" prefWidth="250" StackPane.alignment="CENTER"/>
@@ -304,7 +311,7 @@
                                                                 <Region styleClass="addIcon"/>
                                                             </graphic>
                                                             <tooltip>
-                                                                <Tooltip text="添加" />
+                                                                <Tooltip text="添加" userData="i18n:tooltip.add"/>
                                                             </tooltip>
                                                         </Label>
                                                     </StackPane>
@@ -312,33 +319,33 @@
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="githubProxy">
                                                     <tooltip>
-                                                        <Tooltip text="国外IP更稳定，建议开启代理" />
+                                                        <Tooltip text="国外IP更稳定，建议开启代理" userData="i18n:setting.asset.github.proxy.tooltip"/>
                                                     </tooltip>
                                                 </CFSwitch>
                                             </HBox>
                                             <HBox alignment="TOP_CENTER" spacing="10">
                                                 <Label minWidth="${newMaxWidthlabel.width}"/>
-                                                <Label minWidth="250" alignment="CENTER" text="通过SSL获取子域"/>
+                                                <Label minWidth="250" alignment="CENTER" text="通过SSL获取子域" userData="i18n:setting.asset.ssl"/>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="sslProxy">
                                                     <tooltip>
-                                                        <Tooltip text="存在国外平台,建议开启代理" />
+                                                        <Tooltip text="存在国外平台,建议开启代理" userData="i18n:setting.asset.ssl.proxy.tooltip"/>
                                                     </tooltip>
                                                 </CFSwitch>
                                             </HBox>
                                             <HBox alignment="TOP_CENTER" spacing="10">
                                                 <Label minWidth="${newMaxWidthlabel.width}"/>
-                                                <Label minWidth="250" alignment="CENTER" text="对网站进行本地深度扫描"/>
+                                                <Label minWidth="250" alignment="CENTER" text="对网站进行本地深度扫描" userData="i18n:setting.asset.crawl"/>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="crawlProxy">
                                                     <tooltip>
-                                                        <Tooltip text="多为中国资产,建议关闭代理" />
+                                                        <Tooltip text="多为中国资产,建议关闭代理" userData="i18n:setting.asset.crawl.proxy.tooltip"/>
                                                     </tooltip>
                                                 </CFSwitch>
                                             </HBox>
 
                                             <HBox alignment="CENTER">
-                                                <Button minHeight="38.0" minWidth="150" text="保存" onAction="#saveAsset">
+                                                <Button minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#saveAsset">
                                                     <effect>
                                                         <DropShadow />
                                                     </effect>
@@ -348,19 +355,19 @@
                                     </TitledPane>
 
                                     <!-- 在线更新 -->
-                                    <TitledPane fx:id="updatePane" text="🔄 在线更新">
+                                    <TitledPane fx:id="updatePane" text="🔄 在线更新" userData="i18n:setting.update.title">
                                         <VBox styleClass="contentCellLast" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label fx:id="maxLabel" textAlignment="RIGHT" text="本地MD5库："/>
+                                                <Label fx:id="maxLabel" textAlignment="RIGHT" text="本地MD5库：" userData="i18n:setting.update.md5"/>
                                                 <HBox alignment="CENTER" prefWidth="470" spacing="20">
-                                                    <Label styleClass="tips" fx:id="md5Tips" visible="false" managed="false" text="已存在"/>
-                                                    <Button fx:id="md5CheckButton" styleClass="checkButton" minHeight="25.0" minWidth="100" text="检测" onAction="#checkMd5">
+                                                    <Label styleClass="tips" fx:id="md5Tips" visible="false" managed="false" text="已存在" userData="i18n:setting.update.md5.exists"/>
+                                                    <Button fx:id="md5CheckButton" styleClass="checkButton" minHeight="25.0" minWidth="100" text="检测" userData="i18n:setting.update.md5.check" onAction="#checkMd5">
                                                         <effect>
                                                             <DropShadow />
                                                         </effect>
                                                     </Button>
 
-                                                    <Button fx:id="md5UpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="下载" onAction="#updateMd5">
+                                                    <Button fx:id="md5UpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="下载" userData="i18n:setting.update.md5.download" onAction="#updateMd5">
                                                         <effect>
                                                             <DropShadow />
                                                         </effect>
@@ -371,7 +378,7 @@
                                                         <ProgressBar fx:id="md5ProgressBar" progress="0" prefHeight="10" prefWidth="350" />
                                                     </VBox>
 
-                                                    <Button fx:id="md5StopUpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="取消" onAction="#stopUpdateMd5">
+                                                    <Button fx:id="md5StopUpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="取消" userData="i18n:setting.update.md5.cancel" onAction="#stopUpdateMd5">
                                                         <effect>
                                                             <DropShadow />
                                                         </effect>
@@ -380,16 +387,16 @@
                                             </HBox>
 
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label minWidth="${maxLabel.width}" textAlignment="RIGHT" text="微软kb库："/>
+                                                <Label minWidth="${maxLabel.width}" textAlignment="RIGHT" text="微软kb库：" userData="i18n:setting.update.kb"/>
                                                 <HBox alignment="CENTER" prefWidth="470" spacing="20">
-                                                    <Label styleClass="tips" fx:id="kbTips" visible="false" managed="false" text="已为最新版"/>
-                                                    <Button fx:id="kbCheckButton" styleClass="checkButton" minHeight="25.0" minWidth="100" text="检测" onAction="#checkKb">
+                                                    <Label styleClass="tips" fx:id="kbTips" visible="false" managed="false" text="已为最新版" userData="i18n:setting.update.kb.latest"/>
+                                                    <Button fx:id="kbCheckButton" styleClass="checkButton" minHeight="25.0" minWidth="100" text="检测" userData="i18n:setting.update.kb.check" onAction="#checkKb">
                                                         <effect>
                                                             <DropShadow />
                                                         </effect>
                                                     </Button>
 
-                                                    <Button fx:id="kbUpdateButton" visible="false" managed="false" styleClass="checkButton" minHeight="25.0" minWidth="100" text="下载" onAction="#updateKb">
+                                                    <Button fx:id="kbUpdateButton" visible="false" managed="false" styleClass="checkButton" minHeight="25.0" minWidth="100" text="下载" userData="i18n:setting.update.kb.download" onAction="#updateKb">
                                                         <effect>
                                                             <DropShadow />
                                                         </effect>
@@ -400,7 +407,7 @@
                                                         <ProgressBar fx:id="kbProgressBar" progress="0" prefHeight="10" prefWidth="350" />
                                                     </VBox>
 
-                                                    <Button fx:id="kbStopUpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="取消" onAction="#stopUpdateKb">
+                                                    <Button fx:id="kbStopUpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="取消" userData="i18n:setting.update.kb.cancel" onAction="#stopUpdateKb">
                                                         <effect>
                                                             <DropShadow />
                                                         </effect>

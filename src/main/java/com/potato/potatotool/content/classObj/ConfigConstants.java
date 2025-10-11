@@ -14,6 +14,7 @@ public interface ConfigConstants {
     String UPDATE = "UpDate";  // 注意：配置文件中拼写为 UpDate
     String START_PASSWORD = "StartPassword";
     String CONFIG_VERSION = "ConfigVersion";
+    String LANGUAGE = "Language";
 
     // ========== Proxy 代理配置相关 ==========
     String PROXY_ENABLE = "enable";
@@ -38,4 +39,5 @@ public interface ConfigConstants {
     String UPDATE_PATH = "Path";
     String UPDATE_DATE = "Date";
     String UPDATE_WIN_KB_INFO = "winKbInfo";
+    
 }

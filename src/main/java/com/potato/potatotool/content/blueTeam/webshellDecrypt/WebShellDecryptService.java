@@ -6,6 +6,7 @@ import com.potato.potatotool.content.blueTeam.webshellDecrypt.decoder.ContentDec
 import com.potato.potatotool.content.blueTeam.webshellDecrypt.matcher.WebShellMatcher;
 import com.potato.potatotool.content.blueTeam.webshellDecrypt.model.DecryptResult;
 import com.potato.potatotool.content.blueTeam.webshellDecrypt.model.DecryptConfig;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.crypto.SecurityInitializer;
 import org.json.JSONObject;
 
@@ -42,7 +43,7 @@ public class WebShellDecryptService {
      */
     public DecryptResult decryptContent(String content, DecryptConfig config) {
         if (content == null || content.trim().isEmpty()) {
-            return DecryptResult.error("解密的内容不可为空");
+            return DecryptResult.error(I18nUtils.getString("webshell.error.empty"));
         }
         
         try {
@@ -104,7 +105,7 @@ public class WebShellDecryptService {
             return DecryptResult.success(resultData, encodeModes);
             
         } catch (Exception e) {
-            return DecryptResult.error("解密过程中发生异常: " + e.getMessage());
+            return DecryptResult.error(I18nUtils.getString("webshell.error.exception", e.getMessage()));
         }
     }
     
@@ -113,9 +114,9 @@ public class WebShellDecryptService {
      */
     private DecryptResult handleDecryptFailure(DecryptConfig config) {
         if (config.getTraverseList().isEmpty()) {
-            return DecryptResult.error("探测加密方式失败，请使用专项解密\\AES爆破");
+            return DecryptResult.error(I18nUtils.getString("webshell.error.detect.fail.default"));
         } else {
-            return DecryptResult.error("探测加密方式失败，请留言评论提供更多信息，让我们一起优化程序");
+            return DecryptResult.error(I18nUtils.getString("webshell.error.detect.fail.dict"));
         }
     }
     

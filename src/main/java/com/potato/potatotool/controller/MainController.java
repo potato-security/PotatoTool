@@ -7,6 +7,7 @@ import com.potato.potatotool.controller.publicPane.PaneAbout;
 import com.potato.potatotool.utils.ui.PaneFactory;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.ui.DialogUtils;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
@@ -271,7 +272,9 @@ public class MainController {
                 redBar.setTranslateX(0);
             }
         });
-
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(root));
     }
 
     private boolean isChangeModePaneRight = false;  // 是否向右移动

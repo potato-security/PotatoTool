@@ -19,8 +19,8 @@
     <VBox prefHeight="${sPane.height}" prefWidth="${sPane.width}" alignment="TOP_CENTER" spacing="20">
         <HBox alignment="CENTER_LEFT" prefWidth="${sPane.width}" spacing="20">
             <HBox prefWidth="${sPane.width/2 - 230}" alignment="CENTER" spacing="10">
-                <Label text="模式："/>
-                <ComboBox fx:id="searchModeBox" prefHeight="20.0" prefWidth="130" onAction="#chooseSearcchMode">
+                <Label text="模式：" userData="i18n:infosearch.mode"/>
+                <ComboBox fx:id="searchModeBox" prefHeight="20.0" prefWidth="130" userData="i18n-combobox:infosearch.mode" onAction="#chooseSearcchMode">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <String fx:value="智能检索" />
@@ -30,7 +30,7 @@
                 </ComboBox>
             </HBox>
             <StackPane maxWidth="${sPane.width/2}">
-                <TextField fx:id="question" prefWidth="${sPane.width / 2}" minHeight="50" promptText="请输入需要检索的IP/域名/企业名称……" />
+                <TextField fx:id="question" prefWidth="${sPane.width / 2}" minHeight="50" promptText="请输入需要检索的IP/域名/企业名称……" userData="i18n-prompt:infosearch.input.placeholder"/>
                 <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
                     <HBox layoutX="-70" spacing="5" layoutY="3">
                         <Label fx:id="uploadLabel" visible="true" managed="true" onMouseClicked="#searchUploadInput">
@@ -41,7 +41,7 @@
                                 <Cursor fx:constant="HAND" />
                             </cursor>
                             <tooltip>
-                                <Tooltip text="批量检索" />
+                                <Tooltip text="批量检索" userData="i18n:infosearch.batch"/>
                             </tooltip>
                         </Label>
                         <Label fx:id="sendLabel" visible="true" managed="true" onMouseClicked="#searchInput">
@@ -52,7 +52,7 @@
                                 <Cursor fx:constant="HAND" />
                             </cursor>
                             <tooltip>
-                                <Tooltip text="检索" />
+                                <Tooltip text="检索" userData="i18n:infosearch.search"/>
                             </tooltip>
                         </Label>
                         <Label  fx:id="stopLabel" visible="false" managed="false" onMouseClicked="#stopSearch">
@@ -63,7 +63,7 @@
                                 <Cursor fx:constant="HAND" />
                             </cursor>
                             <tooltip>
-                                <Tooltip text="停止检索" />
+                                <Tooltip text="停止检索" userData="i18n:infosearch.stop"/>
                             </tooltip>
                         </Label>
                     </HBox>
@@ -74,7 +74,7 @@
         <VBox id="settingVbox" prefWidth="${sPane.width}">
             <HBox alignment="CENTER" prefWidth="${sPane.width}">
                 <HBox alignment="CENTER" id="topLeftTitle" prefWidth="130">
-                    <Label text="平台选择："/>
+                    <Label text="平台选择：" userData="i18n:infosearch.platform"/>
                 </HBox>
                 <FlowPane alignment="CENTER_LEFT" id="topRightTitle" prefWidth="${sPane.width - 130}" hgap="20" vgap="10">
                     <CFCheckBox fx:id="fofaBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="Fofa" VBox.vgrow="ALWAYS" onMouseClicked="#checkFofa" />
@@ -89,86 +89,86 @@
 
             <HBox fx:id="advancedSetting" alignment="CENTER" prefWidth="${sPane.width}" visible="true" managed="true">
                 <HBox alignment="CENTER" id="bottomLeftTitle" prefWidth="130">
-                    <Label text="高级设置："/>
+                    <Label text="高级设置：" userData="i18n:infosearch.advanced"/>
                 </HBox>
                 <FlowPane alignment="CENTER_LEFT" id="bottomRightTitle" prefWidth="${sPane.width - 130}" hgap="20" vgap="10">
-                    <CFCheckBox fx:id="weightBox" alignment="CENTER" mnemonicParsing="false" selected="true" text="连带子公司" VBox.vgrow="ALWAYS" onMouseClicked="#checkWeight" >
+                    <CFCheckBox fx:id="weightBox" alignment="CENTER" mnemonicParsing="false" selected="true" text="连带子公司" userData="i18n:infosearch.weight" VBox.vgrow="ALWAYS" onMouseClicked="#checkWeight" >
                         <tooltip>
-                            <Tooltip text="例:80,90【二级公司权重>=90%，三级公司权重>=90%】" />
+                            <Tooltip text="例:80,90【二级公司权重>=90%，三级公司权重>=90%】" userData="i18n:infosearch.weight.tooltip"/>
                         </tooltip>
                     </CFCheckBox>
-                    <CFCheckBox fx:id="searchSslSubdomainBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="查询子域" VBox.vgrow="ALWAYS">
+                    <CFCheckBox fx:id="searchSslSubdomainBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="查询子域" userData="i18n:infosearch.subdomain" VBox.vgrow="ALWAYS">
                         <tooltip>
-                            <Tooltip text="略微耗时，请自行评估是否开启" />
+                            <Tooltip text="略微耗时，请自行评估是否开启" userData="i18n:infosearch.subdomain.tooltip"/>
                         </tooltip>
                     </CFCheckBox>
-                    <CFCheckBox fx:id="bruteForceSubdomainBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="爆破子域" VBox.vgrow="ALWAYS">
+                    <CFCheckBox fx:id="bruteForceSubdomainBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="爆破子域" userData="i18n:infosearch.bruteforce" VBox.vgrow="ALWAYS">
                         <tooltip>
-                            <Tooltip text="较为耗时，请自行评估是否开启" />
+                            <Tooltip text="较为耗时，请自行评估是否开启" userData="i18n:infosearch.bruteforce.tooltip"/>
                         </tooltip>
                     </CFCheckBox>
-                    <CFCheckBox fx:id="searchShadowAssetsBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="检索影子资产" VBox.vgrow="ALWAYS" onMouseClicked="#checkSearchShadowAssets" >
+                    <CFCheckBox fx:id="searchShadowAssetsBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="检索影子资产" userData="i18n:infosearch.shadow" VBox.vgrow="ALWAYS" onMouseClicked="#checkSearchShadowAssets" >
                         <tooltip>
-                            <Tooltip text="极度耗时，请自行评估是否开启" />
+                            <Tooltip text="极度耗时，请自行评估是否开启" userData="i18n:infosearch.shadow.tooltip"/>
                         </tooltip>
                     </CFCheckBox>
-                    <CFCheckBox fx:id="hasLocalFullDetectionBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="本地全量探测" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasLocalFullDetection" >
+                    <CFCheckBox fx:id="hasLocalFullDetectionBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="本地全量探测" userData="i18n:infosearch.fulldetect" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasLocalFullDetection" >
                         <tooltip>
-                            <Tooltip text="较为耗时，请自行评估是否开启" />
+                            <Tooltip text="较为耗时，请自行评估是否开启" userData="i18n:infosearch.fulldetect.tooltip"/>
                         </tooltip>
                     </CFCheckBox>
-                    <CFCheckBox fx:id="hasIconSearchBox" alignment="CENTER" mnemonicParsing="false" selected="true" text="Icon检索" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasIconSearch" >
+                    <CFCheckBox fx:id="hasIconSearchBox" alignment="CENTER" mnemonicParsing="false" selected="true" text="Icon检索" userData="i18n:infosearch.iconsearch" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasIconSearch" >
                         <tooltip>
-                            <Tooltip text="较为耗时，请自行评估是否开启" />
+                            <Tooltip text="较为耗时，请自行评估是否开启" userData="i18n:infosearch.iconsearch.tooltip"/>
                         </tooltip>
                     </CFCheckBox>
-                    <CFCheckBox fx:id="hasCrawlLinksBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="爬取链接" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasCrawlLinks" >
+                    <CFCheckBox fx:id="hasCrawlLinksBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="爬取链接" userData="i18n:infosearch.crawllinks" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasCrawlLinks" >
                         <tooltip>
-                            <Tooltip text="较为耗时，请自行评估是否开启" />
+                            <Tooltip text="较为耗时，请自行评估是否开启" userData="i18n:infosearch.crawllinks.tooltip"/>
                         </tooltip>
                     </CFCheckBox>
-                    <CFCheckBox fx:id="hasFindSensitiveInfoBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="获取敏感信息" VBox.vgrow="ALWAYS">
+                    <CFCheckBox fx:id="hasFindSensitiveInfoBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="获取敏感信息" userData="i18n:infosearch.sensitiveinfo" VBox.vgrow="ALWAYS">
                         <tooltip>
-                            <Tooltip text="略微耗时，请自行评估是否开启" />
+                            <Tooltip text="略微耗时，请自行评估是否开启" userData="i18n:infosearch.sensitiveinfo.tooltip"/>
                         </tooltip>
                     </CFCheckBox>
-                    <CFCheckBox fx:id="hasCipAggregatorBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="C段聚合" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasCipAggregator" >
+                    <CFCheckBox fx:id="hasCipAggregatorBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="C段聚合" userData="i18n:infosearch.cipaggregator" VBox.vgrow="ALWAYS" onMouseClicked="#checkhasCipAggregator" >
                         <tooltip>
-                            <Tooltip text="容易出现非资产内容，请自行评估是否开启" />
+                            <Tooltip text="容易出现非资产内容，请自行评估是否开启" userData="i18n:infosearch.cipaggregator.tooltip"/>
                         </tooltip>
                     </CFCheckBox>
 
                     <FlowPane alignment="CENTER_LEFT"  prefWidth="${sPane.width - 170}" hgap="20" vgap="10">
                         <HBox alignment="CENTER" fx:id="weightHBox" visible="true" managed="true">
-                            <Label text="子公司权重："/>
+                            <Label text="子公司权重：" userData="i18n:infosearch.weight.value"/>
                             <TextField fx:id="weightStr" prefWidth="150" text="100,100"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="maxDepthHBox" visible="false" managed="false">
-                            <Label text="爬链接深度："/>
+                            <Label text="爬链接深度：" userData="i18n:infosearch.crawldepth"/>
                             <TextField fx:id="maxDepth" prefWidth="150" text="2"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="maxSubPathCountHBox" visible="false" managed="false">
-                            <Label text="最大链接数："/>
+                            <Label text="最大链接数：" userData="i18n:infosearch.maxlinks"/>
                             <TextField fx:id="maxSubPathCount" prefWidth="150" text="30"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="localFullDetectionThresholdHBox" visible="true" managed="true">
-                            <Label text="本地探阈值："/>
+                            <Label text="本地探阈值：" userData="i18n:infosearch.localdetect.threshold"/>
                             <TextField fx:id="localFullDetectionThreshold" prefWidth="150" text="20"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="shadowAssetsThresholdHBox" visible="false" managed="false">
-                            <Label text="影资量阈值："/>
+                            <Label text="影资量阈值：" userData="i18n:infosearch.shadow.threshold"/>
                             <TextField fx:id="shadowAssetsThreshold" prefWidth="150" text="50"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="maxGoogleSearchCountHBox" visible="false" managed="false">
-                            <Label text="谷歌检索数："/>
+                            <Label text="谷歌检索数：" userData="i18n:infosearch.google.count"/>
                             <TextField fx:id="maxGoogleSearchCount" prefWidth="150" text="10"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="maxGithubSearchCountHBox" visible="false" managed="false">
-                            <Label text="仓库检索数："/>
+                            <Label text="仓库检索数：" userData="i18n:infosearch.github.count"/>
                             <TextField fx:id="maxGithubSearchCount" prefWidth="150" text="10"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="cipThresholdHBox" visible="false" managed="false">
-                            <Label text=" C聚合阈值："/>
+                            <Label text=" C聚合阈值：" userData="i18n:infosearch.cip.threshold"/>
                             <TextField fx:id="cipThreshold" prefWidth="150" text="4"/>
                         </HBox>
                     </FlowPane>
@@ -195,12 +195,12 @@
             </effect>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="公司别名设置"/>
+                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="公司别名设置" userData="i18n:infosearch.company.alias.title"/>
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
-                    <Label text="请增加/修改公司别名，将用于影子资产检索"/>
+                    <Label text="请增加/修改公司别名，将用于影子资产检索" userData="i18n:infosearch.company.alias.desc"/>
                     <VBox fx:id="companyNameVbox" spacing="10" alignment="CENTER"/>
-                    <Button fx:id="companyNameSave" prefWidth="150" styleClass="buttonBox" text="下一步" onAction="#saveCompanyNameField"/>
+                    <Button fx:id="companyNameSave" prefWidth="150" styleClass="buttonBox" text="下一步" userData="i18n:infosearch.next" onAction="#saveCompanyNameField"/>
                 </VBox>
             </VBox>
         </HBox>
@@ -213,12 +213,12 @@
             </effect>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="icon设置"/>
+                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="icon设置" userData="i18n:infosearch.icon.title"/>
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
-                    <Label text="请选择相关的icon，将用于基础检索 及 影子资产检索"/>
+                    <Label text="请选择相关的icon，将用于基础检索 及 影子资产检索" userData="i18n:infosearch.icon.desc"/>
                     <FlowPane fx:id="iconFlowPane" vgap="10" hgap="10" alignment="CENTER"/>
-                    <Button fx:id="iconSave" prefWidth="150" styleClass="buttonBox" text="下一步" onAction="#saveIconField"/>
+                    <Button fx:id="iconSave" prefWidth="150" styleClass="buttonBox" text="下一步" userData="i18n:infosearch.next" onAction="#saveIconField"/>
                 </VBox>
             </VBox>
         </HBox>
@@ -231,14 +231,14 @@
             </effect>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="选择域名"/>
+                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="选择域名" userData="i18n:infosearch.domain.title"/>
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
-                    <Label text="以下为反查到的域名，请选择"/>
+                    <Label text="以下为反查到的域名，请选择" userData="i18n:infosearch.domain.desc"/>
                     <ScrollPane maxHeight="300" hbarPolicy="NEVER">
                         <VBox fx:id="domainVbox" spacing="10" alignment="CENTER"/>
                     </ScrollPane>
-                    <Button fx:id="domainSave" prefWidth="150" styleClass="buttonBox" text="下一步" onAction="#saveDomainField"/>
+                    <Button fx:id="domainSave" prefWidth="150" styleClass="buttonBox" text="下一步" userData="i18n:infosearch.next" onAction="#saveDomainField"/>
                 </VBox>
             </VBox>
         </HBox>

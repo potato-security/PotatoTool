@@ -1,6 +1,7 @@
 package com.potato.potatotool.controller.blueTeam;
 
 import com.potato.potatotool.utils.ai.AIUtil;
+import com.potato.potatotool.utils.core.I18nUtils;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -81,6 +82,9 @@ public class PaneAiAnswer {
                 question.appendText(System.getProperty("line.separator"));
             }
         });
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     @FXML

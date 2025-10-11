@@ -4,6 +4,7 @@ import com.dlsc.gemsfx.CFCheckBox;
 import com.dlsc.gemsfx.FilterView;
 import com.potato.potatotool.content.redTeam.kbRootQuery.classObj.KbInfo;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.core.I18nUtils;
 import javafx.application.Platform;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
@@ -42,16 +43,23 @@ public class PaneKbRootQuery {
     FilterView<KbInfo> filterView;
 
 
-    FilterView.FilterGroup<KbInfo> productGroup = new FilterView.FilterGroup<>("影响产品");
-    FilterView.FilterGroup<KbInfo> componentGroup = new FilterView.FilterGroup<>("影响组件");
-    FilterView.FilterGroup<KbInfo> severityGroup = new FilterView.FilterGroup<>("严重性");
-    FilterView.FilterGroup<KbInfo> impactGroup = new FilterView.FilterGroup<>("漏洞影响");
-    FilterView.FilterGroup<KbInfo> pocGroup = new FilterView.FilterGroup<>("漏洞利用");
+    FilterView.FilterGroup<KbInfo> productGroup;
+    FilterView.FilterGroup<KbInfo> componentGroup;
+    FilterView.FilterGroup<KbInfo> severityGroup;
+    FilterView.FilterGroup<KbInfo> impactGroup;
+    FilterView.FilterGroup<KbInfo> pocGroup;
 
     TableView<KbInfo> tableView = new TableView<>();
 
     @FXML
     void initialize(){
+        // 使用工厂方法创建支持国际化的 FilterGroup
+        productGroup = I18nUtils.createI18nFilterGroup("kb.product");
+        componentGroup = I18nUtils.createI18nFilterGroup("kb.component");
+        severityGroup = I18nUtils.createI18nFilterGroup("kb.severity");
+        impactGroup = I18nUtils.createI18nFilterGroup("kb.impact");
+        pocGroup = I18nUtils.createI18nFilterGroup("kb.poc");
+        
         filterView = new FilterView<>();
         filterView.setShowHeader(false);
 
@@ -68,16 +76,26 @@ public class PaneKbRootQuery {
 //        filterView.getItems().add(new KbInfo("20170314","","4014329","Security Update for Adobe Flash Player","Windows 10 Version 1607 for 32-bit Systems","Adobe Flash Player","Critical","Remote Code Execution","4010250",""));
 
 
-        TableColumn<KbInfo, String> dateColumn = new TableColumn<>("发布日期");
-        TableColumn<KbInfo, String> cveColumn = new TableColumn<>("CVE编号");
-        TableColumn<KbInfo, String> kbColumn = new TableColumn<>("KB编号");
-        TableColumn<KbInfo, String> titleColumn = new TableColumn<>("标题");
-        TableColumn<KbInfo, String> productColumn = new TableColumn<>("影响产品");
-        TableColumn<KbInfo, String> componentColumn = new TableColumn<>("影响组件");
-        TableColumn<KbInfo, String> severityColumn = new TableColumn<>("严重性");
-        TableColumn<KbInfo, String> impactColumn = new TableColumn<>("漏洞影响");
-        TableColumn<KbInfo, String> repKbColumn = new TableColumn<>("替代KB编号");
-        TableColumn<KbInfo, String> pocColumn = new TableColumn<>("漏洞利用");
+        TableColumn<KbInfo, String> dateColumn = new TableColumn<>();
+        I18nUtils.bindTableColumn(dateColumn, "kb.date");
+        TableColumn<KbInfo, String> cveColumn = new TableColumn<>();
+        I18nUtils.bindTableColumn(cveColumn, "kb.cve");
+        TableColumn<KbInfo, String> kbColumn = new TableColumn<>();
+        I18nUtils.bindTableColumn(kbColumn, "kb.kb");
+        TableColumn<KbInfo, String> titleColumn = new TableColumn<>();
+        I18nUtils.bindTableColumn(titleColumn, "kb.title");
+        TableColumn<KbInfo, String> productColumn = new TableColumn<>();
+        I18nUtils.bindTableColumn(productColumn, "kb.product");
+        TableColumn<KbInfo, String> componentColumn = new TableColumn<>();
+        I18nUtils.bindTableColumn(componentColumn, "kb.component");
+        TableColumn<KbInfo, String> severityColumn = new TableColumn<>();
+        I18nUtils.bindTableColumn(severityColumn, "kb.severity");
+        TableColumn<KbInfo, String> impactColumn = new TableColumn<>();
+        I18nUtils.bindTableColumn(impactColumn, "kb.impact");
+        TableColumn<KbInfo, String> repKbColumn = new TableColumn<>();
+        I18nUtils.bindTableColumn(repKbColumn, "kb.repkb");
+        TableColumn<KbInfo, String> pocColumn = new TableColumn<>();
+        I18nUtils.bindTableColumn(pocColumn, "kb.poc");
 
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
         dateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -111,7 +129,9 @@ public class PaneKbRootQuery {
 
         // 列宽自动
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     private Thread currentThread;
@@ -121,7 +141,7 @@ public class PaneKbRootQuery {
         boolean isMucFilter = mucFilter.isSelected();
 
         if(!input.toLowerCase().contains("kb") && !input.toLowerCase().contains("]: q")){
-            inputText.setText("输入信息有误，请粘贴完整的systeminfo信息（含系统信息）");
+            inputText.setText(I18nUtils.getString("kb.error.invalid"));
             return;
         }
 
@@ -138,9 +158,9 @@ public class PaneKbRootQuery {
 
                     Label tipTitle = new Label();
                     if(isMucFilter) {
-                        tipTitle.setText("平替KB编号轮检中，请稍等……");
+                        tipTitle.setText(I18nUtils.getString("kb.checking.alt"));
                     }else {
-                        tipTitle.setText("查询中，请稍等……");
+                        tipTitle.setText(I18nUtils.getString("kb.querying"));
                     }
                     tipTitle.setId("tipTitle");
                     tableView.setPlaceholder(tipTitle);
@@ -237,14 +257,14 @@ public class PaneKbRootQuery {
                     });
                     filterView.getFilterGroups().setAll(productGroup, componentGroup, severityGroup, impactGroup, pocGroup);
 
-                    Label tipTitle = new Label("未检测到存在相应漏洞");
+                    Label tipTitle = new Label(I18nUtils.getString("kb.novuln"));
                     tipTitle.setId("tipTitle");
                     tableView.setPlaceholder(tipTitle);
                 });
             } catch (Exception e) {
                 if(debugMode) e.printStackTrace();
                 Platform.runLater(() -> {
-                    Label tipTitle = new Label("请检查systeminfo信息是否完整或正确");
+                    Label tipTitle = new Label(I18nUtils.getString("kb.checkinfo"));
                     tipTitle.setId("tipTitle");
                     tableView.setPlaceholder(tipTitle);
                 });

@@ -1,5 +1,6 @@
 package com.potato.potatotool.controller.blueTeam;
 
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.misc.QRCodeDecoder;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -32,6 +33,12 @@ public class PaneExif {
 
     @FXML
     private ListView listView;
+    
+    @FXML
+    void initialize() {
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+    }
 
     @FXML
     public void getExifFx(ActionEvent e) {
@@ -53,7 +60,7 @@ public class PaneExif {
             return;
         }
 
-        Label tipLabel = new Label("检索信息中……");
+        Label tipLabel = new Label(I18nUtils.getString("exif.querying"));
         tipLabel.setId("tipTitle");
         HBox hbox = new HBox(tipLabel);
         hbox.setPrefHeight(sPane.getHeight()-220);
@@ -73,7 +80,7 @@ public class PaneExif {
                 Platform.runLater(() -> {
                     if (metadataMap.isEmpty() && qrText.equals("读取错误")) {
                         listView.getItems().clear();
-                        Label tipLabel_tmp = new Label("不支持该类型文件");
+                        Label tipLabel_tmp = new Label(I18nUtils.getString("exif.unsupported"));
                         tipLabel_tmp.setId("tipTitle");
                         HBox hbox_tmp = new HBox(tipLabel_tmp);
                         hbox_tmp.setPrefHeight(sPane.getHeight() - 220);
@@ -86,7 +93,7 @@ public class PaneExif {
                     }
 
                     if (!qrText.equals("读取错误")) {
-                        Label tipLabel_tmp = new Label("二维码解析");
+                        Label tipLabel_tmp = new Label(I18nUtils.getString("exif.qrcode"));
                         tipLabel_tmp.setId("tipTitle");
                         Label tipSymbolLabel = new Label("：");
                         tipSymbolLabel.setId("tipSymbol");

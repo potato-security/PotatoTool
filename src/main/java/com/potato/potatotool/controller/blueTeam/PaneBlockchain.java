@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
+import com.potato.potatotool.utils.core.I18nUtils;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -87,7 +88,9 @@ public class PaneBlockchain {
         initTextData();
 
         listenSearch();
-
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     // 初始化样本数据
@@ -101,6 +104,7 @@ public class PaneBlockchain {
 
         for(int i = 0 ; i < testDataList.size() ; i ++){
             String testData = testDataList.get(i);
+            final int index = i + 1;
 
             RXLineButton rxLineButton = new RXLineButton();
             rxLineButton.setOnMouseClicked(event -> writeTestData(testData));
@@ -108,7 +112,8 @@ public class PaneBlockchain {
             rxLineButton.setPrefHeight(40);
             rxLineButton.setSpacing(3);
 
-            rxLineButton.setText("样本数据" + (i+1));
+            // 使用便捷方法绑定国际化，支持动态语言切换
+            I18nUtils.bindTextWithSuffix(rxLineButton, "app.sample.data", String.valueOf(index));
 
             VBox vBoxConent = new VBox();
             vBoxConent.setPrefWidth(sPane.getWidth() - 280);
@@ -153,7 +158,7 @@ public class PaneBlockchain {
             return;
         }
         backClearLabel.setVisible(true);
-        Label tips = new Label("正在查询有关\"" + input + "\"的信息（v1.0非全接口版本）……");
+        Label tips = new Label(I18nUtils.getString("blockchain.querying", input));
         tips.setAlignment(Pos.CENTER);
         tips.setId("tipTitle");
         tips.setPrefWidth(sPane.getWidth() - 50);
@@ -270,31 +275,31 @@ public class PaneBlockchain {
                         hBox.getChildren().addAll(imageView, label1);
                         hBox.setSpacing(10);
 
-                        Label label2 = new Label("地址hash：" + hash);
+                        Label label2 = new Label(I18nUtils.getString("blockchain.addr.hash", hash));
                         vBoxConent.getChildren().addAll(hBox, label2);
 
                         if(!addrAlias.equals("")){
-                            Label label = new Label("地址名：" + addrAlias);
+                            Label label = new Label(I18nUtils.getString("blockchain.addr.name", addrAlias));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!txCount.equals("")){
-                            Label label = new Label("交易量：" + txCount);
+                            Label label = new Label(I18nUtils.getString("blockchain.addr.txcount", txCount));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!spend.equals("")){
-                            Label label = new Label("支出：" + spend);
+                            Label label = new Label(I18nUtils.getString("blockchain.addr.spend", spend));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!receive.equals("")){
-                            Label label = new Label("收入：" + receive);
+                            Label label = new Label(I18nUtils.getString("blockchain.addr.receive", receive));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!balance.equals("")){
-                            Label label = new Label("余额：" + balance + " " + network);
+                            Label label = new Label(I18nUtils.getString("blockchain.addr.balance", balance, network));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!normalTxCount.equals("")){
-                            Label label = new Label("普通交易量：" + normalTxCount);
+                            Label label = new Label(I18nUtils.getString("blockchain.addr.normaltx", normalTxCount));
                             vBoxConent.getChildren().add(label);
                         }
 
@@ -343,27 +348,27 @@ public class PaneBlockchain {
                         hBox.getChildren().addAll(imageView, label1);
                         hBox.setSpacing(10);
 
-                        Label label2 = new Label("区块ID：" + block_no);
+                        Label label2 = new Label(I18nUtils.getString("blockchain.block.id", block_no));
                         vBoxConent.getChildren().addAll(hBox, label2);
 
                         if(!blockhash.equals("")){
-                            Label label = new Label("区块hash：" + blockhash);
+                            Label label = new Label(I18nUtils.getString("blockchain.block.hash", blockhash));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!time.equals("")){
-                            Label label = new Label("时间：" + time);
+                            Label label = new Label(I18nUtils.getString("blockchain.block.time", time));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!txCnt.equals("")){
-                            Label label = new Label("交易数：" + txCnt);
+                            Label label = new Label(I18nUtils.getString("blockchain.block.txcount", txCnt));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!confirmations.equals("")){
-                            Label label = new Label("确认数：" + confirmations);
+                            Label label = new Label(I18nUtils.getString("blockchain.block.confirm", confirmations));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!fee.equals("")){
-                            Label label = new Label("手续费：" + fee);
+                            Label label = new Label(I18nUtils.getString("blockchain.block.fee", fee));
                             vBoxConent.getChildren().add(label);
                         }
 
@@ -416,36 +421,36 @@ public class PaneBlockchain {
                         hBox.getChildren().addAll(imageView, label1);
                         hBox.setSpacing(10);
 
-                        Label label2 = new Label("区块ID：" + block_no);
-                        Label label3 = new Label("交易hash：" + txid);
+                        Label label2 = new Label(I18nUtils.getString("blockchain.block.id", block_no));
+                        Label label3 = new Label(I18nUtils.getString("blockchain.tx.hash", txid));
                         vBoxConent.getChildren().addAll(hBox, label2, label3);
 
                         if(!from.equals("")){
-                            Label label = new Label("From：" + from);
+                            Label label = new Label(I18nUtils.getString("blockchain.tx.from", from));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!to.equals("")){
-                            Label label = new Label("To：" + to);
+                            Label label = new Label(I18nUtils.getString("blockchain.tx.to", to));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!blockhash.equals("")){
-                            Label label = new Label("区块hash：" + blockhash);
+                            Label label = new Label(I18nUtils.getString("blockchain.block.hash", blockhash));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!time.equals("")){
-                            Label label = new Label("时间：" + time);
+                            Label label = new Label(I18nUtils.getString("blockchain.block.time", time));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!txCnt.equals("")){
-                            Label label = new Label("交易数：" + txCnt);
+                            Label label = new Label(I18nUtils.getString("blockchain.block.txcount", txCnt));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!confirmations.equals("")){
-                            Label label = new Label("确认数：" + confirmations);
+                            Label label = new Label(I18nUtils.getString("blockchain.block.confirm", confirmations));
                             vBoxConent.getChildren().add(label);
                         }
                         if(!fee.equals("")){
-                            Label label = new Label("手续费：" + fee);
+                            Label label = new Label(I18nUtils.getString("blockchain.block.fee", fee));
                             vBoxConent.getChildren().add(label);
                         }
 
@@ -463,7 +468,7 @@ public class PaneBlockchain {
                         contentObj.clear();
                         listViewCell.getItems().clear();
 
-                        Label tips = new Label("查询失败，请检查网络是否存在问题，并查看日志……");
+                        Label tips = new Label(I18nUtils.getString("blockchain.error.query"));
                         tips.setAlignment(Pos.CENTER);
                         tips.setId("tipTitle");
                         tips.setPrefWidth(sPane.getWidth() - 280);
@@ -490,7 +495,7 @@ public class PaneBlockchain {
         detailedContentObj.clear();
         detailedListView.getItems().clear();
 
-        Label tips = new Label("正在查询详情信息……");
+        Label tips = new Label(I18nUtils.getString("blockchain.querying.detail"));
         tips.setAlignment(Pos.CENTER);
         tips.setId("tipTitle");
         tips.setPrefWidth(sPane.getWidth() - 80);
@@ -522,7 +527,7 @@ public class PaneBlockchain {
                             //  获取交易地址基础信息
                             JsonObject addressInfo = address(network, address);
                             if (addressInfo != null) {
-                                String key = "地址信息";
+                                String key = I18nUtils.getString("blockchain.nav.addrinfo");
                                 JsonObject baseInfo = (JsonObject) ((JsonObject) addressInfo.get("data")).get("baseInfo");
 
                                 TitledPane titledPane = new TitledPane();
@@ -562,7 +567,7 @@ public class PaneBlockchain {
                             JsonObject balancetrend = balancetrend(network, address);
                             if (balancetrend != null) {
 
-                                String key = "近180天余额变化";
+                                String key = I18nUtils.getString("blockchain.nav.balance180");
 
                                 TitledPane titledPane = new TitledPane();
                                 titledPane.setText(key);
@@ -610,7 +615,7 @@ public class PaneBlockchain {
                             JsonObject tokenbalance = tokenbalance(network, address);
                             if (tokenbalance != null) {
 
-                                String key = "代币余额&转账记录";
+                                String key = I18nUtils.getString("blockchain.nav.tokenbalance");
                                 JsonArray tokenbalanceInfo = (JsonArray) tokenbalance.get("data");
 
                                 TitledPane titledPane = new TitledPane();
@@ -633,13 +638,13 @@ public class PaneBlockchain {
                                 newListView.setPrefWidth(tabelWidth);
                                 HBox hBox = new HBox();
                                 hBox.getStyleClass().add("tableTitle");
-                                Label label1 = new Label("全称");
+                                Label label1 = new Label(I18nUtils.getString("blockchain.table.fullname"));
                                 label1.setAlignment(Pos.CENTER);
                                 label1.setPrefWidth(tabelWidth / 3);
-                                Label label2 = new Label("余额");
+                                Label label2 = new Label(I18nUtils.getString("blockchain.table.balance"));
                                 label2.setAlignment(Pos.CENTER);
                                 label2.setPrefWidth(tabelWidth / 3);
-                                Label label3 = new Label("交易详情");
+                                Label label3 = new Label(I18nUtils.getString("blockchain.table.txdetail"));
                                 label3.setAlignment(Pos.CENTER);
                                 label3.setPrefWidth(tabelWidth / 3);
                                 hBox.getChildren().addAll(label1, label2, label3);
@@ -670,13 +675,13 @@ public class PaneBlockchain {
                                     Label label5 = new Label(balance + " " + balanceNetwork);
                                     label5.setAlignment(Pos.CENTER);
                                     label5.setPrefWidth(tabelWidth / 3);
-                                    Label label6 = new Label(transferCnt + "笔 ");
+                                    Label label6 = new Label(I18nUtils.getString("blockchain.tx.count", transferCnt));
                                     label6.setAlignment(Pos.CENTER);
                                     label6.setStyle("-fx-border-width: 0;-fx-border-width:0;");
 
                                     Region regionTokentrans = new Region();
                                     regionTokentrans.getStyleClass().add("tokentransIcon");
-                                    Tooltip tooltip = new Tooltip("查看交易详情");
+                                    Tooltip tooltip = new Tooltip(I18nUtils.getString("tooltip.view.txdetail"));
                                     Tooltip.install(regionTokentrans, tooltip);
                                     regionTokentrans.setOnMouseClicked(even -> showRegionTokentrans());
                                     HBox finalyHBox = new HBox(label6, regionTokentrans);
@@ -707,7 +712,7 @@ public class PaneBlockchain {
                         JsonObject blockInfo = block(network, block);
                         JsonObject baseInfo = (JsonObject) ((JsonObject) blockInfo.get("data")).get("baseInfo");
                         if (blockInfo != null && baseInfo != null && baseInfo.isJsonNull()) {
-                            String key = "区块信息";
+                            String key = I18nUtils.getString("blockchain.nav.blockinfo");
 
                             TitledPane titledPane = new TitledPane();
                             titledPane.setText(key);
@@ -754,7 +759,7 @@ public class PaneBlockchain {
                             ) {
                                 JsonObject getTxData = getTxData(network, block, "1", "20");
 
-                                String key = "交易(" + num1 + ")";
+                                String key = I18nUtils.getString("blockchain.nav.tx", num1);
                                 JsonArray tmpDataInfo = (JsonArray) getTxData.get("data");
 
                                 TitledPane titledPane = new TitledPane();
@@ -777,28 +782,28 @@ public class PaneBlockchain {
                                 newListView.setPrefWidth(tabelWidth);
                                 HBox hBox = new HBox();
                                 hBox.getStyleClass().add("tableTitle");
-                                Label label1 = new Label("交易哈希");
+                                Label label1 = new Label(I18nUtils.getString("blockchain.table.txhash"));
                                 label1.setAlignment(Pos.CENTER);
                                 label1.setPrefWidth(tabelWidth * 0.13);
-                                Label label2 = new Label("函数/ID");
+                                Label label2 = new Label(I18nUtils.getString("blockchain.table.function"));
                                 label2.setAlignment(Pos.CENTER);
                                 label2.setPrefWidth(tabelWidth * 0.12);
-                                Label label3 = new Label("区块高度");
+                                Label label3 = new Label(I18nUtils.getString("blockchain.table.blockheight"));
                                 label3.setAlignment(Pos.CENTER);
                                 label3.setPrefWidth(tabelWidth * 0.12);
-                                Label label4 = new Label("时间");
+                                Label label4 = new Label(I18nUtils.getString("blockchain.table.time"));
                                 label4.setAlignment(Pos.CENTER);
                                 label4.setPrefWidth(tabelWidth * 0.12);
-                                Label label5 = new Label("从");
+                                Label label5 = new Label(I18nUtils.getString("blockchain.table.from"));
                                 label5.setAlignment(Pos.CENTER);
                                 label5.setPrefWidth(tabelWidth * 0.13);
-                                Label label6 = new Label("到");
+                                Label label6 = new Label(I18nUtils.getString("blockchain.table.to"));
                                 label6.setAlignment(Pos.CENTER);
                                 label6.setPrefWidth(tabelWidth * 0.13);
-                                Label label7 = new Label("交易总额");
+                                Label label7 = new Label(I18nUtils.getString("blockchain.table.amount"));
                                 label7.setAlignment(Pos.CENTER);
                                 label7.setPrefWidth(tabelWidth * 0.125);
-                                Label label8 = new Label("手续费");
+                                Label label8 = new Label(I18nUtils.getString("blockchain.table.fee"));
                                 label8.setAlignment(Pos.CENTER);
                                 label8.setPrefWidth(tabelWidth * 0.125);
                                 hBox.getChildren().addAll(label1, label2, label3, label4, label5, label6, label7, label8);
@@ -877,7 +882,7 @@ public class PaneBlockchain {
                             ) {
                                 JsonObject getTokentransferData = getTokentransferData(network, block, "1", "20");
 
-                                String key = "代币交易(" + num2 + ")";
+                                String key = I18nUtils.getString("blockchain.nav.tokentx", num2);
                                 JsonObject tmpDataInfo = (JsonObject) getTokentransferData.get("data");
 
                                 TitledPane titledPane = new TitledPane();
@@ -900,25 +905,25 @@ public class PaneBlockchain {
                                 newListView.setPrefWidth(tabelWidth);
                                 HBox hBox = new HBox();
                                 hBox.getStyleClass().add("tableTitle");
-                                Label label1 = new Label("交易哈希");
+                                Label label1 = new Label(I18nUtils.getString("blockchain.table.txhash"));
                                 label1.setAlignment(Pos.CENTER);
                                 label1.setPrefWidth(tabelWidth * 0.15);
-                                Label label2 = new Label("区块高度");
+                                Label label2 = new Label(I18nUtils.getString("blockchain.table.blockheight"));
                                 label2.setAlignment(Pos.CENTER);
                                 label2.setPrefWidth(tabelWidth * 0.14);
-                                Label label3 = new Label("时间");
+                                Label label3 = new Label(I18nUtils.getString("blockchain.table.time"));
                                 label3.setAlignment(Pos.CENTER);
                                 label3.setPrefWidth(tabelWidth * 0.14);
-                                Label label4 = new Label("从");
+                                Label label4 = new Label(I18nUtils.getString("blockchain.table.from"));
                                 label4.setAlignment(Pos.CENTER);
                                 label4.setPrefWidth(tabelWidth * 0.15);
-                                Label label5 = new Label("到");
+                                Label label5 = new Label(I18nUtils.getString("blockchain.table.to"));
                                 label5.setAlignment(Pos.CENTER);
                                 label5.setPrefWidth(tabelWidth * 0.15);
-                                Label label6 = new Label("交易总额");
+                                Label label6 = new Label(I18nUtils.getString("blockchain.table.amount"));
                                 label6.setAlignment(Pos.CENTER);
                                 label6.setPrefWidth(tabelWidth * 0.17);
-                                Label label66 = new Label("代币");
+                                Label label66 = new Label(I18nUtils.getString("blockchain.table.token"));
                                 label66.setAlignment(Pos.CENTER);
                                 label66.setPrefWidth(tabelWidth * 0.1);
                                 hBox.getChildren().addAll(label1, label2, label3, label4, label5, label6, label66);
@@ -1014,7 +1019,7 @@ public class PaneBlockchain {
                             ) {
                                 JsonObject getInternalData = getInternalData(network, block, "1", "20");
 
-                                String key = "合约调用转帐(" + num3 + ")";
+                                String key = I18nUtils.getString("blockchain.nav.contracttx", num3);
                                 JsonObject tmpDataInfo = (JsonObject) getInternalData.get("data");
 
                                 TitledPane titledPane = new TitledPane();
@@ -1037,22 +1042,22 @@ public class PaneBlockchain {
                                 newListView.setPrefWidth(tabelWidth);
                                 HBox hBox = new HBox();
                                 hBox.getStyleClass().add("tableTitle");
-                                Label label1 = new Label("交易哈希");
+                                Label label1 = new Label(I18nUtils.getString("blockchain.table.txhash"));
                                 label1.setAlignment(Pos.CENTER);
                                 label1.setPrefWidth(tabelWidth * 0.16);
-                                Label label2 = new Label("区块高度");
+                                Label label2 = new Label(I18nUtils.getString("blockchain.table.blockheight"));
                                 label2.setAlignment(Pos.CENTER);
                                 label2.setPrefWidth(tabelWidth * 0.16);
-                                Label label3 = new Label("时间");
+                                Label label3 = new Label(I18nUtils.getString("blockchain.table.time"));
                                 label3.setAlignment(Pos.CENTER);
                                 label3.setPrefWidth(tabelWidth * 0.16);
-                                Label label4 = new Label("从");
+                                Label label4 = new Label(I18nUtils.getString("blockchain.table.from"));
                                 label4.setAlignment(Pos.CENTER);
                                 label4.setPrefWidth(tabelWidth * 0.16);
-                                Label label5 = new Label("到");
+                                Label label5 = new Label(I18nUtils.getString("blockchain.table.to"));
                                 label5.setAlignment(Pos.CENTER);
                                 label5.setPrefWidth(tabelWidth * 0.16);
-                                Label label6 = new Label("交易总额");
+                                Label label6 = new Label(I18nUtils.getString("blockchain.table.amount"));
                                 label6.setAlignment(Pos.CENTER);
                                 label6.setPrefWidth(tabelWidth * 0.2);
                                 hBox.getChildren().addAll(label1, label2, label3, label4, label5, label6);
@@ -1118,7 +1123,7 @@ public class PaneBlockchain {
                             detailedContentObj.clear();
                             detailedListView.getItems().clear();
 
-                            Label tips = new Label("查询失败，请检查网络是否存在问题，并查看日志……");
+                            Label tips = new Label(I18nUtils.getString("blockchain.error.query"));
                             tips.setAlignment(Pos.CENTER);
                             tips.setId("tipTitle");
                             tips.setPrefWidth(sPane.getWidth() - 280);

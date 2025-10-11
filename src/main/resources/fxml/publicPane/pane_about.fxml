@@ -16,15 +16,15 @@
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
     <VBox StackPane.alignment="TOP_RIGHT" translateX="170" maxWidth="160" maxHeight="180" styleClass="bar" alignment="CENTER_LEFT">
-        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="工具信息"  alignment="CENTER_LEFT"/>
-        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="鸣谢"  alignment="CENTER_LEFT"/>
-        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="150" spacing="3.0" text="建议/BUG反馈"  alignment="CENTER_LEFT"/>
-        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="交流群"  alignment="CENTER_LEFT"/>
+        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="工具信息" userData="i18n:about.menu.info" alignment="CENTER_LEFT"/>
+        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="鸣谢" userData="i18n:about.menu.thanks" alignment="CENTER_LEFT"/>
+        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="150" spacing="3.0" text="建议/BUG反馈" userData="i18n:about.menu.feedback" alignment="CENTER_LEFT"/>
+        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="交流群" userData="i18n:about.menu.group" alignment="CENTER_LEFT"/>
     </VBox>
 
     <ListView fx:id="listView" prefHeight="${sPane.height}" prefWidth="${sPane.width}">
 
-        <Text fx:id="info" text="工具信息" styleClass="titleText"/>
+        <Text fx:id="info" text="工具信息" userData="i18n:about.info.title" styleClass="titleText"/>
         <HBox alignment="CENTER">
             <VBox alignment="CENTER">
                 <ImageView fitHeight="200" fitWidth="200" pickOnBounds="true" preserveRatio="true">
@@ -36,19 +36,19 @@
             <Pane minWidth="20"/>
             <VBox alignment="CENTER_LEFT">
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label id="tipTitle" text="版本" />
+                    <Label id="tipTitle" text="版本" userData="i18n:about.version"/>
                     <Label wrapText="true" id="tipSymbol" text="："/>
-                    <RXLineButton prefHeight="40.0" prefWidth="150" spacing="3.0" text="V1.0（社区版）"  alignment="CENTER_LEFT"/>
+                    <RXLineButton prefHeight="40.0" prefWidth="150" spacing="3.0" text="V1.0（社区版）" userData="i18n:about.version.value" alignment="CENTER_LEFT"/>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label id="tipTitle" text="作者" />
+                    <Label id="tipTitle" text="作者" userData="i18n:about.author"/>
                     <Label wrapText="true" id="tipSymbol" text="："/>
                     <RXLineButton  onAction="#openBlog" prefHeight="40.0" prefWidth="70.0" spacing="3.0" text="Potato" alignment="CENTER_LEFT"/>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label id="tipTitle" text="仓库" />
+                    <Label id="tipTitle" text="仓库" userData="i18n:about.repo"/>
                     <Label wrapText="true" id="tipSymbol" text="："/>
-                    <RXLineButton onAction="#openGithub" prefHeight="40.0" prefWidth="300.0" spacing="3.0" text="https://github.com/ljy1058318852"  alignment="CENTER_LEFT"/>
+                    <RXLineButton onAction="#openGitHub" prefHeight="40.0" prefWidth="300.0" spacing="3.0" text="https://github.com/ljy1058318852"  alignment="CENTER_LEFT"/>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label id="tipTitle" text="CSDN" />
@@ -60,26 +60,26 @@
         <Pane minHeight="15" styleClass="linenoPane"/>
         <Pane minHeight="15"/>
 
-        <Text fx:id="notice" text="公告" styleClass="titleText"/>
+        <Text fx:id="notice" text="公告" userData="i18n:about.notice.title" styleClass="titleText"/>
         <HBox alignment="CENTER" style="-fx-padding: 10">
-            <Label id="tipTitle" text="目前本项目由本人独立维护，持续招募维护人员，宁缺毋滥，严格选拔" />
+            <Label id="tipTitle" text="目前本项目由本人独立维护，持续招募维护人员，宁缺毋滥，严格选拔" userData="i18n:about.notice.content"/>
         </HBox>
-        <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 0 120">
-            <Label id="tipTitle"  text="招募要求"/>
+        <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 0 120"  prefWidth="${sPane.width - 270}">
+            <Label id="tipTitle"  text="招募要求" userData="i18n:about.recruit"/>
             <Label wrapText="true" id="tipSymbol" text="："/>
             <Pane minWidth="10"/>
             <VBox spacing="10">
-                <Label wrapText="true" text="·精通 Java 编程语言及相关技术栈，具有扎实的面向对象编程(OOP)基础。" />
-                <Label wrapText="true" text="·在 JavaFX 中有丰富的开发经验，能够设计和实现复杂的用户界面(UI)。" />
-                <Label wrapText="true" text="·至少五年以上红蓝攻防领域相关工作经验。" />
-                <Label wrapText="true" text="·对网络安全充满热情，并具有创新意识。" />
-                <Label wrapText="true" text="·具备充足的空余时间来投入项目维护工作。" />
+                <Label wrapText="true" text="·精通 Java 编程语言及相关技术栈，具有扎实的面向对象编程(OOP)基础。" userData="i18n:about.recruit.1"/>
+                <Label wrapText="true" text="·在 JavaFX 中有丰富的开发经验，能够设计和实现复杂的用户界面(UI)。" userData="i18n:about.recruit.2"/>
+                <Label wrapText="true" text="·至少五年以上红蓝攻防领域相关工作经验。" userData="i18n:about.recruit.3"/>
+                <Label wrapText="true" text="·对网络安全充满热情，并具有创新意识。" userData="i18n:about.recruit.4"/>
+                <Label wrapText="true" text="·具备充足的空余时间来投入项目维护工作。" userData="i18n:about.recruit.5"/>
             </VBox>
         </HBox>
         <Pane minHeight="15" styleClass="linenoPane"/>
         <Pane minHeight="15"/>
 
-        <Text fx:id="thanks" text="鸣谢" styleClass="titleText"/>
+        <Text fx:id="thanks" text="鸣谢" userData="i18n:about.thanks.title" styleClass="titleText"/>
         <HBox>
             <VBox alignment="CENTER">
                 <ImageView fitHeight="200" fitWidth="200" pickOnBounds="true" preserveRatio="true">
@@ -97,10 +97,10 @@
         <Pane minHeight="15" styleClass="linenoPane"/>
         <Pane minHeight="15"/>
 
-        <Text fx:id="bug" text="建议/BUG反馈" styleClass="titleText"/>
+        <Text fx:id="bug" text="建议/BUG反馈" userData="i18n:about.feedback.title" styleClass="titleText"/>
         <Pane minHeight="40"/>
         <VBox fx:id="noWebBox" alignment="CENTER">
-            <Button fx:id="viewProfileButton" style="-fx-padding: 5 10 5 10" text="打开问卷星，在线提交建议" onAction="#openWJX">
+            <Button fx:id="viewProfileButton" style="-fx-padding: 5 10 5 10" text="打开GitHub，在线提交建议" userData="i18n:about.feedback.button" onAction="#openGitHubIssues">
                 <effect>
                     <DropShadow />
                 </effect>
@@ -112,8 +112,8 @@
                 </image>
             </ImageView>
             <Pane minHeight="20"/>
-            <Label text="或扫描二维码添加微信进行反馈，备注PotatoTool建议反馈"/>
-            <Label text="加交流群，备注PotatoTool交流群"/>
+            <Label text="或扫描二维码添加微信进行反馈，备注PotatoTool建议反馈" userData="i18n:about.feedback.wechat"/>
+            <Label text="加交流群，备注PotatoTool交流群" userData="i18n:about.feedback.group"/>
         </VBox>
         <VBox fx:id="webBox" alignment="CENTER"/>
         <Pane minHeight="15" styleClass="linenoPane"/>

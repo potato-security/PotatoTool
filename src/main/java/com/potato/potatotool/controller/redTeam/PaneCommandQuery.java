@@ -5,8 +5,10 @@ import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
 import com.potato.potatotool.content.redTeam.CommandHelp;
 import com.potato.potatotool.utils.ai.AIUtil;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -71,6 +73,9 @@ public class PaneCommandQuery {
         initData();
 
         listenSearch();
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     //  监听输入时回车
@@ -241,7 +246,7 @@ public class PaneCommandQuery {
                 RXLineButton commandLabel = new RXLineButton(command);
                 commandLabel.setWrapText(true);
                 commandLabel.setPrefHeight(30);
-                Button commandCopyBt = new Button("复制");
+                Button commandCopyBt = new Button(I18nUtils.getString("cmdquery.copy.button"));
                 commandCopyBt.getStyleClass().add("copyButton");
                 commandCopyBt.setVisible(false);
                 commandCopyBt.setManaged(false);
@@ -351,7 +356,7 @@ public class PaneCommandQuery {
         listView.getItems().clear();
 
         if(searchJsonObj.size() == 0){
-            Label tips = new Label("库中未找到有关\"" + query + "\"的命令，可尝试模糊搜索，AI帮你分析……");
+            Label tips = new Label(I18nUtils.getString("cmdquery.notfound", query));
             tips.setAlignment(Pos.CENTER);
             tips.setId("tipTitle");
             tips.setPrefWidth(sPane.getWidth() - 215);

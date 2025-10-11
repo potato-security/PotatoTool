@@ -1,5 +1,6 @@
 package com.potato.potatotool.controller.blueTeam;
 
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.ui.DefaultContextMenu;
 import com.potato.potatotool.utils.ai.CodeAnalyzerUtils;
 import com.potato.potatotool.utils.ui.CodeHighlightingAsync;
@@ -109,6 +110,9 @@ public class PaneDecompile {
             aiTextAreaStartX = event.getSceneX();
             aiTextAreaStartY = event.getSceneY();
         });
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
 
@@ -143,7 +147,7 @@ public class PaneDecompile {
             return;
         }
 
-        result.replaceText("反编译中，请稍等……");
+        result.replaceText(I18nUtils.getString("decompile.processing"));
 
         String decompileMode = (String) rulesComboBox.getSelectionModel().getSelectedItem();
 
@@ -190,7 +194,7 @@ public class PaneDecompile {
         }
         System.out.println(path);
 
-        result.replaceText("反编译中，请稍等……");
+        result.replaceText(I18nUtils.getString("decompile.processing"));
 
         String decompileMode = (String) rulesComboBox.getSelectionModel().getSelectedItem();
 
@@ -257,7 +261,7 @@ public class PaneDecompile {
         if(res.isEmpty()){
 
             aiTextArea.clear();
-            aiTextArea.appendText("反编译结果为空，AI暂无内容优化");
+            aiTextArea.appendText(I18nUtils.getString("decompile.ai.empty"));
             oldData = "";
 
         }else if (!resultStr.equals(oldData) && !isAiCD){
@@ -296,7 +300,7 @@ public class PaneDecompile {
         if(res.isEmpty()){
 
             aiTextArea.clear();
-            aiTextArea.appendText("反编译结果为空，AI暂无内容分析");
+            aiTextArea.appendText(I18nUtils.getString("decompile.ai.analyze.empty"));
             oldData = "";
 
         }else if (!isAiCD){

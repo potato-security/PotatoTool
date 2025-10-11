@@ -6,6 +6,8 @@ import com.leewyatt.rxcontrols.controls.RXPasswordField;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.core.I18nManager;
+import com.potato.potatotool.utils.core.I18nUtils;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -43,6 +45,8 @@ public class PanePasswd {
     private double offsetX,offsetY;
 
     private BooleanProperty isPasswdCorrect = new SimpleBooleanProperty(false);
+    
+    private I18nManager i18n = I18nManager.getInstance();
     public BooleanProperty passwdProperty() {
         return isPasswdCorrect;
     }
@@ -80,11 +84,11 @@ public class PanePasswd {
                 if (!isRememberMe &&  !initPassword.equals("")) {
                     deleteMe();
                 }
-                tipTitle.setText("密码正确，加载中……");
+                tipTitle.setText(i18n.getString("passwd.correct"));
                 isPasswdCorrect.set(true);
             });
         }else {
-            tipTitle.setText("密码错误，请重试！");
+            tipTitle.setText(i18n.getString("passwd.error"));
         }
     }
 
@@ -108,6 +112,9 @@ public class PanePasswd {
                 checkBox.setSelected(true);
             }
         }
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(an));
     }
 
     public void rememberMe(){

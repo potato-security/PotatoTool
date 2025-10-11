@@ -4,8 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -101,6 +103,9 @@ public class PaneCustomCommandGeneration {
         shellComboBox.setOnAction(event -> {
             replaceTips();
         });
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     private void replaceTips(){
@@ -223,7 +228,7 @@ public class PaneCustomCommandGeneration {
                 commandCopyBtBox.setStyle("-fx-padding: 5;");
                 commandCopyBtBox.setMaxWidth(110);
 
-                Button commandCopyBt = new Button("复制");
+                Button commandCopyBt = new Button(I18nUtils.getString("cmdquery.copy.button"));
                 commandCopyBt.getStyleClass().add("copyButton");
                 commandCopyBt.setOnAction(event -> copyTip(event, commandLabel, ""));
                 Button commandCopyBt_Base64 = new Button("Base64");

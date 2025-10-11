@@ -33,16 +33,16 @@
    <VBox alignment="CENTER" >
 
       <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-         <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入存在加密的文本/流量包"  />
+         <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入存在加密的文本/流量包" userData="i18n-prompt:webshell.input.placeholder"/>
       </Pane>
 
       <Pane minHeight="15"/>
       <HBox alignment="CENTER" spacing="20">
          <StackPane  onMouseEntered="#handleMouseEntered" onMouseExited="#handleMouseExited">
             <Label fx:id="tipTitle" visible="false" managed="false"/>
-            <Button styleClass="copyButton" fx:id="tipTitleCopy" text="复制" visible="false" managed="false" onAction="#copyTip" StackPane.alignment="CENTER_RIGHT"/>
+            <Button styleClass="copyButton" fx:id="tipTitleCopy" text="复制" userData="i18n:app.copy" visible="false" managed="false" onAction="#copyTip" StackPane.alignment="CENTER_RIGHT"/>
          </StackPane>
-         <ComboBox fx:id="rulesComboBox" prefHeight="30.0" minWidth="250" prefWidth="250" onAction="#rulesComboChoose">
+         <ComboBox fx:id="rulesComboBox" prefHeight="30.0" minWidth="250" prefWidth="250" userData="i18n-combobox:webshell.decrypt.rules" onAction="#rulesComboChoose">
             <items>
                <FXCollections fx:factory="observableArrayList">
                   <String fx:value="使用默认Key快速解密" />
@@ -68,30 +68,28 @@
                <Cursor fx:constant="HAND" />
             </cursor>
          </ComboBox>
-         <TextField fx:id="customKey" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Key"/>
-         <TextField fx:id="customIv" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Iv"/>
-         <TextField fx:id="customPath" visible="false" managed="false" editable="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="自定义字典路径"/>
+         <TextField fx:id="customKey" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Key" userData="i18n-prompt:webshell.key"/>
+         <TextField fx:id="customIv" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Iv" userData="i18n-prompt:webshell.iv"/>
+         <TextField fx:id="customPath" visible="false" managed="false" editable="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="自定义字典路径" userData="i18n-prompt:webshell.dictpath"/>
       </HBox>
 
       <Pane minHeight="15"/>
       <HBox alignment="CENTER">
-         <Button minHeight="48.0" minWidth="${sPane.width * 0.4}" text="上传流量包" onAction="#toDecodePcap">
+         <Button minHeight="48.0" minWidth="${sPane.width * 0.4}" text="上传流量包" userData="i18n:webshell.upload" onAction="#toDecodePcap">
             <effect>
                <DropShadow />
             </effect>
             <tooltip>
-               <Tooltip text="应对多种加密组合、数据混淆轻松推理还原（非CTF版）&#10;&#10;注：反序列化/class数据等中间产物会在程序根目录保存" >
-               </Tooltip>
+               <Tooltip text="应对多种加密组合、数据混淆轻松推理还原（非CTF版）&#10;&#10;注：反序列化/class数据等中间产物会在程序根目录保存" userData="i18n:webshell.upload.tooltip"/>
             </tooltip>
          </Button>
          <Label minWidth="${sPane.width * 0.1}"/>
-         <Button minHeight="48.0" minWidth="${sPane.width * 0.4}" text="一键解密" onAction="#toDecode">
+         <Button minHeight="48.0" minWidth="${sPane.width * 0.4}" text="一键解密" userData="i18n:webshell.decrypt" onAction="#toDecode">
             <effect>
                <DropShadow />
             </effect>
             <tooltip>
-               <Tooltip text="应对多种加密组合、数据混淆轻松推理还原（非CTF版）&#10;&#10;注：反序列化/class数据等中间产物会在程序根目录保存" >
-               </Tooltip>
+               <Tooltip text="应对多种加密组合、数据混淆轻松推理还原（非CTF版）&#10;&#10;注：反序列化/class数据等中间产物会在程序根目录保存" userData="i18n:webshell.decrypt.tooltip"/>
             </tooltip>
          </Button>
       </HBox>
@@ -111,11 +109,11 @@
                   <Region styleClass="AiImg"/>
                </graphic>
                <tooltip>
-                  <Tooltip text="AI分析" />
+                  <Tooltip text="AI分析" userData="i18n:webshell.ai"/>
                </tooltip>
             </Button>
             <Pane fx:id="aiPane" visible="false" maxWidth="0">
-               <TextArea fx:id="aiTextArea" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height * 0.43 + 12}" maxHeight="${sPane.height * 0.43 + 12}" minHeight="0" text="AI分析中，请稍等……" StackPane.alignment="CENTER_RIGHT"/>
+               <TextArea fx:id="aiTextArea" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height * 0.43 + 12}" maxHeight="${sPane.height * 0.43 + 12}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:webshell.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
                <Button fx:id="refreshAI" layoutX="-60" layoutY="6"  mnemonicParsing="false" onAction="#refreshAI">
                   <graphic>
                      <ImageView fitHeight="17.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
@@ -128,7 +126,7 @@
                      <Cursor fx:constant="HAND" />
                   </cursor>
                   <tooltip>
-                     <Tooltip text="重新进行AI分析" />
+                     <Tooltip text="重新进行AI分析" userData="i18n:webshell.ai.refresh"/>
                   </tooltip>
                </Button>
                <Button fx:id="closeAI" layoutX="-35" layoutY="6"  mnemonicParsing="false" onAction="#showAI">
@@ -143,7 +141,7 @@
                      <Cursor fx:constant="HAND" />
                   </cursor>
                   <tooltip>
-                     <Tooltip text="关闭" />
+                     <Tooltip text="关闭" userData="i18n:tooltip.close"/>
                   </tooltip>
                </Button>
             </Pane>
@@ -155,6 +153,6 @@
       <effect>
          <DropShadow/>
       </effect>
-      <Label fx:id="prompt" text="复制成功"/>
+      <Label fx:id="prompt" text="复制成功" userData="i18n:webshell.copied"/>
    </StackPane>
 </StackPane>

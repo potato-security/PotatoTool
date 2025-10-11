@@ -1,7 +1,8 @@
 package com.potato.potatotool.controller.blueTeam;
 
 import com.potato.potatotool.content.blueTeam.IpInfo;
-import com.potato.potatotool.utils.ui.DefaultContextMenu;
+import com.potato.potatotool.utils.core.I18nUtils;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -88,10 +89,8 @@ public class PaneGetIpInfo {
         codeAreas.addAll(Arrays.asList(result1, result2, result3, result4, result5, result6, result7, result8));
         virScrollPanes.addAll(Arrays.asList(virScrollPane1, virScrollPane2, virScrollPane3, virScrollPane4, virScrollPane5, virScrollPane6, virScrollPane7, virScrollPane8));
 
-        //  CodeArea添加右键菜单  协调ScrollPane>VirtualizedScrollPane>CodeArea嵌套时的滚动事件问题
+        //  协调ScrollPane>VirtualizedScrollPane>CodeArea嵌套时的滚动事件问题
         for (CodeArea codeArea : codeAreas) {
-            codeArea.setContextMenu(new DefaultContextMenu());
-
             codeArea.addEventFilter( ScrollEvent.ANY, scroll ->
             {
                 if(!codeArea.isFocused()){
@@ -120,7 +119,9 @@ public class PaneGetIpInfo {
         customTextField.setOnKeyReleased(event -> {
             rulesComboChoose(null);
         });
-
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     private LinkedHashMap<String, String> ipPosDict;
@@ -138,8 +139,10 @@ public class PaneGetIpInfo {
         result7.replaceText(inputStr);
         result8.replaceText(inputStr);
 
-        ipLabel.setText("IP提取");
-        ipLabelSelect.setText("筛选-IP提取");
+        ipLabel.textProperty().unbind();
+        ipLabel.setText(I18nUtils.getString("ipinfo.extract.title"));
+        ipLabelSelect.textProperty().unbind();
+        ipLabelSelect.setText(I18nUtils.getString("ipinfo.filter.extract"));        
 
         if(ipList.size() < 1){
             result1.clear();
@@ -162,8 +165,11 @@ public class PaneGetIpInfo {
 
         // result1 IP抽取
         result1.replaceText(joinList_r(ipList));
-        ipLabel.setText("IP提取(" + ipList.size() + ")");
-        ipLabelSelect.setText("筛选-IP提取(" + ipList.size() + ")");
+        // 使用 textProperty().unbind() 解除绑定后再设置
+        ipLabel.textProperty().unbind();
+        ipLabel.setText(I18nUtils.getString("ipinfo.extract.title") + "(" + ipList.size() + ")");
+        ipLabelSelect.textProperty().unbind();
+        ipLabelSelect.setText(I18nUtils.getString("ipinfo.filter.extract") + "(" + ipList.size() + ")");
 
         // result2 IP抽取+pos标记
         result2.clear();    //因为result2是append累加而非replaceText替换
@@ -222,7 +228,9 @@ public class PaneGetIpInfo {
         }else{
             newTmpipPosDict = IpInfo.filterIpPos(ipPosDict, selectedValue);
         }
-        ipLabelSelect.setText("筛选-IP提取(" + newTmpipPosDict.size() + ")");
+        // 使用 textProperty().unbind() 解除绑定后再设置
+        ipLabelSelect.textProperty().unbind();
+        ipLabelSelect.setText(I18nUtils.getString("ipinfo.filter.extract") + "(" + newTmpipPosDict.size() + ")");
 
         result7.replaceText(inputStr);
         result8.replaceText(inputStr);

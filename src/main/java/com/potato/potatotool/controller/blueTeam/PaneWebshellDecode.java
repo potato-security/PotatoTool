@@ -10,6 +10,7 @@ import com.potato.potatotool.content.blueTeam.webshellDecrypt.model.DecryptConfi
 import com.potato.potatotool.content.blueTeam.webshellDecrypt.model.DecryptResult;
 import com.potato.potatotool.utils.ai.CodeAnalyzerUtils;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import com.potato.potatotool.utils.ui.CodeHighlightingAsync;
 import com.potato.potatotool.utils.ui.DefaultContextMenu;
@@ -165,7 +166,9 @@ public class PaneWebshellDecode {
         //  设置默认第一个选项
         rulesComboBox.getSelectionModel().selectFirst();
         modeComboBox.getSelectionModel().selectFirst();
-
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     private final ObservableList<Node> contentObj = FXCollections.observableArrayList();
@@ -181,12 +184,15 @@ public class PaneWebshellDecode {
             String data = tmpDictData.get("data").getAsString();
             String mode = tmpDictData.get("mode").getAsString();
 
+            final int index = i + 1;
+            
             RXLineButton rxLineButton = new RXLineButton();
             rxLineButton.setOnMouseClicked(event -> writeTestData(data));
             rxLineButton.setPrefWidth(100);
             rxLineButton.setPrefHeight(40);
             rxLineButton.setSpacing(3);
-            rxLineButton.setText("样本数据" + (i+1));
+            // 使用便捷方法绑定国际化，支持动态语言切换
+            I18nUtils.bindTextWithSuffix(rxLineButton, "app.sample.data", String.valueOf(index));
             Tooltip tooltip = new Tooltip(mode);
             Tooltip.install(rxLineButton, tooltip);
 
@@ -243,7 +249,7 @@ public class PaneWebshellDecode {
         if(res.isEmpty()){
 
             aiTextArea.clear();
-            aiTextArea.appendText("探测加密结果为空，AI暂无内容分析");
+            aiTextArea.appendText(I18nUtils.getString("webshell.ai.detect.empty"));
             oldData = "";
 
         }else if((int)res.get("error") == 1){
@@ -290,7 +296,7 @@ public class PaneWebshellDecode {
         if(res.isEmpty()){
 
             aiTextArea.clear();
-            aiTextArea.appendText("探测加密结果为空，AI暂无内容分析");
+            aiTextArea.appendText(I18nUtils.getString("webshell.ai.detect.empty"));
             oldData = "";
 
         }else if((int)res.get("error") == 1){
@@ -431,7 +437,9 @@ public class PaneWebshellDecode {
             inputIv = null;
         }
 
-        result.replaceText(!traverse.isEmpty()? "请稍等，正在使用大型字典进行解密，可能需要一些时间……" : "解密进行中，请稍等……");
+        result.replaceText(!traverse.isEmpty()? 
+            I18nUtils.getString("webshell.decrypting.dict") : 
+            I18nUtils.getString("webshell.decrypting"));
 
         currentTask = new Task<Void>() {
             @Override
@@ -459,8 +467,9 @@ public class PaneWebshellDecode {
                         aiTextArea.clear();
                         aiTextArea.appendText(data);
                     }else {
-                        tipTitle.setText("自动识别："+encodeModeList);
-                        Tooltip tooltip = new Tooltip("自动识别："+encodeModeList);
+                        String recognizeText = I18nUtils.getString("webshell.auto.recognize", encodeModeList);
+                        tipTitle.setText(recognizeText);
+                        Tooltip tooltip = new Tooltip(recognizeText);
                         Tooltip.install(tipTitle, tooltip);
                         tipTitle.setVisible(true);
                         tipTitle.setManaged(true);
@@ -635,7 +644,9 @@ public class PaneWebshellDecode {
             inputIv = null;
         }
 
-        result.replaceText(!traverse.isEmpty()? "请稍等，数据包正在遍历使用大型字典进行解密，可能需要一些时间……" : "数据包遍历解密进行中，可能需要一些时间……");
+        result.replaceText(!traverse.isEmpty()? 
+            I18nUtils.getString("webshell.pcap.decrypting.dict") : 
+            I18nUtils.getString("webshell.pcap.decrypting"));
 
         String finalPath = path;
         currentTask = new Task<Void>() {
@@ -644,7 +655,7 @@ public class PaneWebshellDecode {
                 ReadPacketFile reader = new ReadPacketFile(finalPath, inputKey, inputIv, traverse, filePath);
                 String outputFilePath = reader.getPackets();
                 Platform.runLater(() -> {
-                    result.replaceText("流量包解密完成，已输出至：" + outputFilePath);
+                    result.replaceText(I18nUtils.getString("webshell.pcap.success", outputFilePath));
                 });
                 ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.DECRYPT_ARRAY);
                 return null;

@@ -1,8 +1,11 @@
 package com.potato.potatotool.controller.redTeam;
 
+import com.potato.potatotool.utils.core.I18nUtils;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.StackPane;
 
 import static com.potato.potatotool.content.redTeam.InfoGeneration.*;
 
@@ -11,6 +14,9 @@ import static com.potato.potatotool.content.redTeam.InfoGeneration.*;
  * @date 2023/3/21 17:16
  */
 public class PaneInfoGeneration {
+    
+    @FXML
+    private StackPane sPane;
 
     @FXML
     private TextField nameTF;
@@ -41,7 +47,12 @@ public class PaneInfoGeneration {
 
     @FXML
     private TextField organizationCodeTF;
-
+    
+    @FXML
+    void initialize() {
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+    }
 
     @FXML
     public void generation(ActionEvent event){

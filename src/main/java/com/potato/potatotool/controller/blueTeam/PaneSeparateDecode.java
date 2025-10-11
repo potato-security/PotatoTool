@@ -1,7 +1,9 @@
 package com.potato.potatotool.controller.blueTeam;
 
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import com.potato.potatotool.utils.ui.DefaultContextMenu;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -71,6 +73,9 @@ public class PaneSeparateDecode {
         encodeMap.put("strRev", StrUtils::strRev);
         encodeMap.put("Hex", StrUtils::hexEncode);
         encodeMap.put("Html", StrUtils::htmlEncode);
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     @FXML
@@ -99,7 +104,7 @@ public class PaneSeparateDecode {
 
     private void executeTask(Function<String, String> function, String content, String mode, String operation) {
         if (function == null) {
-            result.replaceText("该密文非" + mode + operation + "模式");
+            result.replaceText(I18nUtils.getString("separate.error.notmode", mode, operation));
             return;
         }
 
@@ -114,13 +119,13 @@ public class PaneSeparateDecode {
                 try {
                     result.replaceText((String) getValue());
                 }catch (Exception e){
-                    result.replaceText("该密文非" + mode + operation + "模式");
+                    result.replaceText(I18nUtils.getString("separate.error.notmode", mode, operation));
                 }
             }
 
             @Override
             protected void failed() {
-                result.replaceText("处理失败，请重试");
+                result.replaceText(I18nUtils.getString("separate.error.failed"));
             }
         };
 
@@ -134,16 +139,16 @@ public class PaneSeparateDecode {
         try {
             mode = ((RadioButton) checkboxGroup.getSelectedToggle()).getText();
         }catch (Exception e){
-            result.replaceText("请在上方选择加密/解密模式");
+            result.replaceText(I18nUtils.getString("separate.error.selectmode"));
             return false;
         }
         String Content = inputText.getText();
 
         if (mode == null) {
-            result.replaceText("请在上方选择加密/解密模式");
+            result.replaceText(I18nUtils.getString("separate.error.selectmode"));
             return false;
         }else if(Content.length() < 1){
-            result.replaceText("请在上方输入明文/密文");
+            result.replaceText(I18nUtils.getString("separate.error.inputtext"));
             return false;
         }
         return true;

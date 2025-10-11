@@ -16,7 +16,7 @@
     <VBox alignment="CENTER" prefWidth="${sPane.width}">
 
         <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-            <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入明文/密文"  />
+            <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入明文/密文" userData="i18n-prompt:separate.input.placeholder"/>
         </Pane>
 
         <Pane minHeight="15"/>
@@ -33,17 +33,17 @@
             <RadioButton text="Rot13" toggleGroup="$checkboxGroup"/>
             <RadioButton text="Chr" toggleGroup="$checkboxGroup"/>
             <RadioButton text="strRev" toggleGroup="$checkboxGroup"/>
-            <Label style="-fx-padding: 0;-fx-text-fill:grey;-fx-font-size: 13 " text="注：byte \ bcel \ cas \ log4j \ shiro \ gzip \ aes \ xor 等加解密暂时内置第一个模块内"/>
+            <Label style="-fx-padding: 0;-fx-text-fill:grey;-fx-font-size: 13 " text="注：byte \ bcel \ cas \ log4j \ shiro \ gzip \ aes \ xor 等加解密暂时内置第一个模块内" userData="i18n:separate.note"/>
         </FlowPane>
 
         <Pane minHeight="15"/>
         <HBox alignment="CENTER" spacing="20" prefWidth="${sPane.width}">
-            <Button minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="加密" onAction="#toEncode">
+            <Button minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="加密" userData="i18n:separate.encode" onAction="#toEncode">
                 <effect>
                     <DropShadow />
                 </effect>
             </Button>
-            <Button minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="解密" onAction="#toDecode">
+            <Button minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="解密" userData="i18n:separate.decode" onAction="#toDecode">
                 <effect>
                     <DropShadow />
                 </effect>

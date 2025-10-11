@@ -13,25 +13,25 @@
 
         <VBox fx:id="tipVBox" spacing="15" prefWidth="${sPane.width}">
             <HBox>
-                <Label id="tipTitle" text="当前版本"/>
+                <Label id="tipTitle" text="当前版本" userData="i18n:vulnscan.version"/>
                 <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label  wrapText="true" text="社区版"/>
+                <Label  wrapText="true" text="社区版" userData="i18n:vulnscan.version.value"/>
             </HBox>
 
             <HBox>
-                <Label id="tipTitle" text="内置POC脚本"/>
+                <Label id="tipTitle" text="内置POC脚本" userData="i18n:vulnscan.poc"/>
                 <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label wrapText="true" text="工具内置了大量的POC脚本，覆盖了多种漏洞类型和攻击场景。"/>
+                <Label wrapText="true" text="工具内置了大量的POC脚本，覆盖了多种漏洞类型和攻击场景。" userData="i18n:vulnscan.poc.desc"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="高度语言兼容性"/>
+                <Label id="tipTitle" text="高度语言兼容性" userData="i18n:vulnscan.langcompat"/>
                 <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label wrapText="true" text="支持python、json(内测中)、yarm的POC"/>
+                <Label wrapText="true" text="支持python、json(内测中)、yarm的POC" userData="i18n:vulnscan.langcompat.desc"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="高度代码兼容性"/>
+                <Label id="tipTitle" text="高度代码兼容性" userData="i18n:vulnscan.codecompat"/>
                 <Label wrapText="true" id="tipSymbol" text="："/>
-                <Label wrapText="true" text="支持用户提供不规范的POC(暂支持python)，智能调用不规范的POC并获取不规范的输出，智能判断是否存在对应漏洞。"/>
+                <Label wrapText="true" text="支持用户提供不规范的POC(暂支持python)，智能调用不规范的POC并获取不规范的输出，智能判断是否存在对应漏洞。" userData="i18n:vulnscan.codecompat.desc"/>
             </HBox>
         </VBox>
 

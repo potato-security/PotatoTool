@@ -2,6 +2,7 @@ package com.potato.potatotool.controller.blueTeam;
 
 import com.google.gson.JsonObject;
 import com.opencsv.CSVWriter;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -66,19 +67,20 @@ public class PaneLocationQuery {
 
     @FXML
     void initialize(){
-
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     @FXML
     public void getIdCardInfoFx(ActionEvent event) {
         String input = idCardInput.getText();
         if(input.isEmpty()){
-            idCardTF_born.setText("请输入正确的身份证号");
+            idCardTF_born.setText(I18nUtils.getString("location.invalid.idcard"));
             idCardTF_sex.setText("");
             idCardTF_att.setText("");
             return;
         }
-        idCardTF_born.setText("查询中……");
+        idCardTF_born.setText(I18nUtils.getString("location.querying"));
 
         Task<Void> task = new Task<Void>() {
             @Override
@@ -96,7 +98,7 @@ public class PaneLocationQuery {
                         idCardTF_att.setText("");
                     }
                 } else {
-                    idCardTF_born.setText("网络存在问题，请查看命令窗口debug日志");
+                    idCardTF_born.setText(I18nUtils.getString("location.network.error"));
                     idCardTF_sex.setText("");
                     idCardTF_att.setText("");
                 }
@@ -137,7 +139,7 @@ public class PaneLocationQuery {
             return;
         }
 
-        idCardInput.setText("批量查询中，请稍等……");
+        idCardInput.setText(I18nUtils.getString("location.batch.querying"));
 
         String finalPath = path;
         String csvFile = StrUtils.getCurrentJarDir() + File.separator + "Location" + File.separator +"idCard.csv";
@@ -180,7 +182,7 @@ public class PaneLocationQuery {
 
                                 writer.writeNext(data);
                                 Platform.runLater(() -> {
-                                    idCardInput.setText("批量查询中-" + finalLineNumber + "/" + totalLines);
+                                    idCardInput.setText(I18nUtils.getString("location.batch.progress", finalLineNumber, totalLines));
                                 });
                             }
                             lineNumber++;
@@ -192,7 +194,7 @@ public class PaneLocationQuery {
                     e.printStackTrace();
                 }
                 Platform.runLater(() -> {
-                    idCardInput.setText("批量查询完毕-导出位置：" + csvFile);
+                    idCardInput.setText(I18nUtils.getString("location.batch.complete", csvFile));
                 });
                 return null;
             }
@@ -215,11 +217,11 @@ public class PaneLocationQuery {
 
         String input = bankCardInput.getText();
         if (input.isEmpty()) {
-            bankCardTF_type.setText("请输入正确的银行卡号");
+            bankCardTF_type.setText(I18nUtils.getString("location.invalid.bankcard"));
             bankCardTF_bank.setText("");
             return;
         }
-        bankCardTF_bank.setText("查询中……");
+        bankCardTF_bank.setText(I18nUtils.getString("location.querying"));
 
         Task<Void> task = new Task<Void>() {
             @Override
@@ -231,7 +233,7 @@ public class PaneLocationQuery {
                     if(str.has("bank")) bankCardTF_bank.setText(str.get("bank").getAsString());
                     if(str.has("position")) bankCardTF_position.setText(str.get("position").getAsString());
                 } else {
-                    bankCardTF_bank.setText("银行卡号/网络存在问题，请查看命令窗口debug日志");
+                    bankCardTF_bank.setText(I18nUtils.getString("location.bankcard.error"));
                     bankCardTF_type.setText("");
                     bankCardTF_position.setText("");
                 }
@@ -272,7 +274,7 @@ public class PaneLocationQuery {
             return;
         }
 
-        bankCardInput.setText("批量查询中，请稍等……");
+        bankCardInput.setText(I18nUtils.getString("location.batch.querying"));
 
         String finalPath = path;
         String csvFile = StrUtils.getCurrentJarDir() + File.separator + "Location" + File.separator +"bankCard.csv";
@@ -315,7 +317,7 @@ public class PaneLocationQuery {
 
                                 writer.writeNext(data);
                                 Platform.runLater(() -> {
-                                    bankCardInput.setText("批量查询中-" + finalLineNumber + "/" + totalLines);
+                                    bankCardInput.setText(I18nUtils.getString("location.batch.progress", finalLineNumber, totalLines));
                                 });
                             }
                             lineNumber++;
@@ -327,7 +329,7 @@ public class PaneLocationQuery {
                     e.printStackTrace();
                 }
                 Platform.runLater(() -> {
-                    bankCardInput.setText("批量查询完毕-导出位置：" + csvFile);
+                    bankCardInput.setText(I18nUtils.getString("location.batch.complete", csvFile));
                 });
                 return null;
             }
@@ -345,7 +347,7 @@ public class PaneLocationQuery {
     public void getPhoneInfoFx(ActionEvent event) {
         String[] phoneList = {phoneInput.getText()};
         if(phoneInput.getText().isEmpty()){
-            phoneTF_Province.setText("请输入正确的手机号");
+            phoneTF_Province.setText(I18nUtils.getString("location.invalid.phone"));
             phoneTF_City.setText("");
             phoneTF_Operator.setText("");
             phoneTF_AreaCode.setText("");
@@ -354,7 +356,7 @@ public class PaneLocationQuery {
         }
         JsonObject result = getPhoneInfo(phoneList).get(0).getAsJsonObject();
 
-        phoneTF_Province.setText( (result.get("省份").getAsString().isEmpty())?  "请输入正确的手机号":result.get("省份").getAsString() );
+        phoneTF_Province.setText( (result.get("省份").getAsString().isEmpty())?  I18nUtils.getString("location.invalid.phone"):result.get("省份").getAsString() );
         phoneTF_City.setText(result.get("城市").getAsString());
         phoneTF_Operator.setText(result.get("运营商").getAsString());
         phoneTF_AreaCode.setText(result.get("区号").getAsString());
@@ -385,7 +387,7 @@ public class PaneLocationQuery {
             return;
         }
 
-        phoneInput.setText("批量查询中，请稍等……");
+        phoneInput.setText(I18nUtils.getString("location.batch.querying"));
 
         String finalPath = path;
         String csvFile = StrUtils.getCurrentJarDir() + File.separator + "Location" + File.separator +"phoneInfo.csv";
@@ -428,7 +430,7 @@ public class PaneLocationQuery {
 
                                 writer.writeNext(data);
                                 Platform.runLater(() -> {
-                                    phoneInput.setText("批量查询中-" + finalLineNumber + "/" + totalLines);
+                                    phoneInput.setText(I18nUtils.getString("location.batch.progress", finalLineNumber, totalLines));
                                 });
                             }
                             lineNumber++;
@@ -440,7 +442,7 @@ public class PaneLocationQuery {
                     e.printStackTrace();
                 }
                 Platform.runLater(() -> {
-                    phoneInput.setText("批量查询完毕-导出位置：" + csvFile);
+                    phoneInput.setText(I18nUtils.getString("location.batch.complete", csvFile));
                 });
                 return null;
             }

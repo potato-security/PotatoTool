@@ -1,5 +1,6 @@
 package com.potato.potatotool.controller.redTeam;
 
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -13,6 +14,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
@@ -37,6 +39,8 @@ import static com.potato.potatotool.controller.MainController.clipRect;
  * @date 2023/2/19 15:05
  */
 public class PaneFreeKill {
+    @FXML
+    private StackPane sPane;
 
     @FXML
     private VBox vBoxBar;
@@ -136,6 +140,11 @@ public class PaneFreeKill {
         behChoose(null);
         antChoose(null);
         cmdChoose(null);
+        
+        // 绑定国际化
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+        });
     }
 
     @FXML
@@ -240,11 +249,11 @@ public class PaneFreeKill {
                     }
                 }
             }
-            tipTitle.setText("全部webShell已生成到当前目录下：./webshell_KeyIs_" + pass + "/");
+            tipTitle.setText(I18nUtils.getString("freekill.success.all", pass));
 
         }catch (Exception e){
             e.printStackTrace();
-            tipTitle.setText("webShell生成失败，详细请查看命令窗口报错");
+            tipTitle.setText(I18nUtils.getString("freekill.error.generate"));
         }
         tipTitle.setVisible(true);
 
@@ -337,12 +346,12 @@ public class PaneFreeKill {
         String webShell_Manager = "Godzilla";
 
         if(godComboBox.getValue() == null){
-            tipTitleGod.setText("请选择脚本语言！");
+            tipTitleGod.setText(I18nUtils.getString("freekill.error.select.language"));
             tipTitleGod.setVisible(true);
             return;
         }
         if(godModeComboBox.getValue() == null){
-            tipTitleGod.setText("请选择编码方式！");
+            tipTitleGod.setText(I18nUtils.getString("freekill.error.select.encoding"));
             tipTitleGod.setVisible(true);
             return;
         }
@@ -376,12 +385,12 @@ public class PaneFreeKill {
         String webShell_Manager = "Behinder";
 
         if(behComboBox.getValue() == null){
-            tipTitleBeh.setText("请选择脚本语言！");
+            tipTitleBeh.setText(I18nUtils.getString("freekill.error.select.language"));
             tipTitleBeh.setVisible(true);
             return;
         }
         if(behModeComboBox.getValue() == null){
-            tipTitleBeh.setText("请选择编码方式！");
+            tipTitleBeh.setText(I18nUtils.getString("freekill.error.select.encoding"));
             tipTitleBeh.setVisible(true);
             return;
         }
@@ -416,12 +425,12 @@ public class PaneFreeKill {
         String webShell_Manager = "AntSword";
 
         if(antComboBox.getValue() == null){
-            tipTitleAnt.setText("请选择脚本语言！");
+            tipTitleAnt.setText(I18nUtils.getString("freekill.error.select.language"));
             tipTitleAnt.setVisible(true);
             return;
         }
         if(antModeComboBox.getValue() == null){
-            tipTitleAnt.setText("请选择编码方式！");
+            tipTitleAnt.setText(I18nUtils.getString("freekill.error.select.encoding"));
             tipTitleAnt.setVisible(true);
             return;
         }
@@ -455,12 +464,12 @@ public class PaneFreeKill {
         String webShell_Manager = "Cmd";
 
         if(cmdComboBox.getValue() == null){
-            tipTitleCmd.setText("请选择脚本语言！");
+            tipTitleCmd.setText(I18nUtils.getString("freekill.error.select.language"));
             tipTitleCmd.setVisible(true);
             return;
         }
         if(cmdModeComboBox.getValue() == null){
-            tipTitleCmd.setText("请选择编码方式！");
+            tipTitleCmd.setText(I18nUtils.getString("freekill.error.select.encoding"));
             tipTitleCmd.setVisible(true);
             return;
         }
@@ -551,11 +560,11 @@ public class PaneFreeKill {
                 try {
                     String outputPath = signature(exePathStr, sigFilePathStr);
                     Platform.runLater(() -> {
-                        tipTitleSigna.setText("签名附加完成，文件已导出至：" + outputPath);
+                        tipTitleSigna.setText(I18nUtils.getString("freekill.sig.success", outputPath));
                     });
                 } catch (Exception e) {
                     Platform.runLater(() -> {
-                        tipTitleSigna.setText("报错："+e.toString());
+                        tipTitleSigna.setText(I18nUtils.getString("freekill.sig.error", e.toString()));
                     });
                     e.printStackTrace();
                 }
@@ -624,11 +633,11 @@ public class PaneFreeKill {
                 try {
                     generateQRCodeImageWithLogo(contentQrStr, widthQrStr, widthQrStr, widthLogoStr, widthLogoStr, filePath, logoPathStr);
                     Platform.runLater(() -> {
-                        tipTitleQR.setText("二维码生成完成，文件已导出至：" + filePath);
+                        tipTitleQR.setText(I18nUtils.getString("freekill.qr.success", filePath));
                     });
                 } catch (Exception e) {
                     Platform.runLater(() -> {
-                        tipTitleQR.setText("报错："+e.toString());
+                        tipTitleQR.setText(I18nUtils.getString("freekill.qr.error", e.toString()));
                     });
                     e.printStackTrace();
                 }

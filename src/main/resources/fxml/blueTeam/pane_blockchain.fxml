@@ -24,7 +24,7 @@
 
     <VBox spacing="20" alignment="CENTER">
         <StackPane maxWidth="${sPane.width / 2}">
-            <TextField fx:id="question" minHeight="0" promptText="支持钱包地址、交易hash、区块ID、名词解释等" />
+            <TextField fx:id="question" minHeight="0" promptText="支持钱包地址、交易hash、区块ID、名词解释等" userData="i18n-prompt:blockchain.input.placeholder"/>
             <Pane  maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
                 <Label layoutX="-40" layoutY="3" onMouseClicked="#searchInput">
                     <graphic>
@@ -34,7 +34,7 @@
                         <Cursor fx:constant="HAND" />
                     </cursor>
                     <tooltip>
-                        <Tooltip text="查询" />
+                        <Tooltip text="查询" userData="i18n:blockchain.query"/>
                     </tooltip>
                 </Label>
             </Pane>
@@ -50,7 +50,7 @@
                         <Cursor fx:constant="HAND" />
                     </cursor>
                     <tooltip>
-                        <Tooltip text="返回" />
+                        <Tooltip text="返回" userData="i18n:blockchain.back"/>
                     </tooltip>
                 </Label>
             </StackPane>
@@ -64,7 +64,7 @@
                         <Cursor fx:constant="HAND" />
                     </cursor>
                     <tooltip>
-                        <Tooltip text="返回" />
+                        <Tooltip text="返回" userData="i18n:blockchain.back"/>
                     </tooltip>
                 </Label>
             </Pane>

@@ -1,5 +1,6 @@
 package com.potato.potatotool.content.blueTeam.webshellDecrypt.parser;
 
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.JsonUtils;
 import org.json.JSONObject;
 
@@ -49,7 +50,7 @@ public class HttpRequestParser {
         }
         
         if (startIndex == 3) {
-            throw new IllegalArgumentException("请求头部与PostData衔接处换行字符存在问题，请修改");
+            throw new IllegalArgumentException(I18nUtils.getString("webshell.error.post.header"));
         }
         
         return content.substring(startIndex);
@@ -63,7 +64,7 @@ public class HttpRequestParser {
         int endIndex = content.indexOf(" HTTP/");
         
         if (startIndex == 0 || endIndex == -1) {
-            throw new IllegalArgumentException("请求头部未检测到GetData开始和结束，请修改或手动提出");
+            throw new IllegalArgumentException(I18nUtils.getString("webshell.error.get.header"));
         }
         
         return content.substring(startIndex, endIndex);

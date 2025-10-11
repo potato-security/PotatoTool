@@ -7,7 +7,10 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.classObj.ExtensionConstants;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.core.I18nManager;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.ui.PaneFactory;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -69,6 +72,8 @@ public class PaneAddBarDialog {
     
     // 标志位：是否真正保存了数据
     public static boolean dataSaved = false;
+    
+    private I18nManager i18n = I18nManager.getInstance();
 
     public void initialize() {
         // 初始化时重置标志位
@@ -84,6 +89,9 @@ public class PaneAddBarDialog {
 
         //  设置默认第一个选项
         type.getSelectionModel().selectFirst();
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(an));
 
         //  监听是否模式发生改变（是否切换到修改模式）
         modeListener = new ChangeListener<String>() {
@@ -102,7 +110,7 @@ public class PaneAddBarDialog {
                 targetValue = Constants.findKey(tmpJsonObj, KeyData);
 
 
-                if(newText.equals("修改")){
+                if(newText.equals(I18nUtils.getString("addbar.submit.modify"))){
                     isAdd = false;
                     TitleData = ((Label)nodeTitle).getText();
                     DescribeData = ((Label)nodeDescribe).getText();
@@ -119,7 +127,7 @@ public class PaneAddBarDialog {
                             }
                         });
                     }
-                }else if(newText.equals("添加")){
+                }else if(newText.equals(I18nUtils.getString("addbar.submit.add"))){
                     isAdd = true;
                 }
 
@@ -133,7 +141,7 @@ public class PaneAddBarDialog {
     void getImg(ActionEvent e){
         FileChooser chooser = new FileChooser();
         FileChooser.ExtensionFilter filter =
-                new FileChooser.ExtensionFilter("选择图片", "*.png","*.jpg","*.jpeg");
+                new FileChooser.ExtensionFilter(i18n.getString("addbar.selectimage"), "*.png","*.jpg","*.jpeg");
         chooser.getExtensionFilters().add(filter);
 
         Stage stage = (Stage) ((Node)e.getSource()).getScene().getWindow();

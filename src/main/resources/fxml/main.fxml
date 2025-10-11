@@ -56,7 +56,7 @@
                                        <Region styleClass="blueImg"/>
                                     </graphic>
                                     <tooltip>
-                                       <Tooltip text="PotatoTool-蓝队版" />
+                                       <Tooltip text="PotatoTool-蓝队版" userData="i18n:main.blueteam.tooltip"/>
                                     </tooltip>
                                  </Label>
                                  <Label alignment="CENTER" prefHeight="${topBar.height}" prefWidth="200" styleClass="log-label" text="  RedTeam" textFill="WHITE">
@@ -64,7 +64,7 @@
                                        <Region styleClass="redImg"/>
                                     </graphic>
                                     <tooltip>
-                                       <Tooltip text="PotatoTool-红队版" />
+                                       <Tooltip text="PotatoTool-红队版" userData="i18n:main.redteam.tooltip"/>
                                     </tooltip>
                                  </Label>
                               </HBox>
@@ -93,7 +93,7 @@
                                     <Cursor fx:constant="HAND" />
                                  </cursor>
                                  <tooltip>
-                                    <Tooltip text="设置" />
+                                    <Tooltip text="设置" userData="i18n:main.setting"/>
                                  </tooltip>
                               </Button>
                               <Pane minWidth="1"/>
@@ -110,7 +110,7 @@
                                     <Cursor fx:constant="HAND" />
                                  </cursor>
                                  <tooltip>
-                                    <Tooltip text="全屏化" />
+                                    <Tooltip text="全屏化" userData="i18n:main.fullscreen"/>
                                  </tooltip>
                               </Button>
 
@@ -126,7 +126,7 @@
                                     <Cursor fx:constant="HAND" />
                                  </cursor>
                                  <tooltip>
-                                    <Tooltip text="缩小化" />
+                                    <Tooltip text="缩小化" userData="i18n:main.minimize"/>
                                  </tooltip>
                               </Button>
 
@@ -142,7 +142,7 @@
                                     <Cursor fx:constant="HAND" />
                                  </cursor>
                                  <tooltip>
-                                    <Tooltip text="关闭" />
+                                    <Tooltip text="关闭" userData="i18n:tooltip.close"/>
                                  </tooltip>
                               </Button>
 
@@ -164,36 +164,36 @@
                               <!-- 蓝队导航 -->
                               <FlowPane fx:id="blueBar" alignment="CENTER" hgap="10" vgap="10" prefHeight="80.0" styleClass="box-nav">
                                  <children>
-                                    <RXToggleButton selected="true" text="一键解密">
+                                    <RXToggleButton selected="true" text="一键解密" userData="i18n:main.blue.webshell">
                                        <toggleGroup>
                                           <ToggleGroup fx:id="navGroup" />
                                        </toggleGroup>
                                     </RXToggleButton>
-                                    <RXToggleButton text="专项加解密" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="IP信息筛选" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="AI分析" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="反编译" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="区块链溯源" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="归属地查询" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="文件元信息" toggleGroup="$navGroup"/>
-                                    <RXToggleButton text="扩展模块" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="关于" toggleGroup="$navGroup"/>
+                                    <RXToggleButton text="专项加解密" userData="i18n:main.blue.separate" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="IP信息筛选" userData="i18n:main.blue.ip" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="AI分析" userData="i18n:main.blue.ai" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="反编译" userData="i18n:main.blue.decompile" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="区块链溯源" userData="i18n:main.blue.blockchain" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="归属地查询" userData="i18n:main.blue.location" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="文件元信息" userData="i18n:main.blue.exif" toggleGroup="$navGroup"/>
+                                    <RXToggleButton text="扩展模块" userData="i18n:main.extension" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="关于" userData="i18n:main.about" toggleGroup="$navGroup"/>
                                  </children>
                               </FlowPane>
                               <!-- 红队导航 -->
                               <FlowPane fx:id="redBar" alignment="CENTER" hgap="10" vgap="10" prefHeight="80.0" styleClass="box-nav-red">
                                  <children>
-                                    <RXToggleButton text="信息收集" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="漏洞扫描" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="免杀" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="自定义内存马" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="命令生成" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="命令查询" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="KB提权查询" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="进程分析" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="信息生成" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="扩展模块" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="关于" toggleGroup="$navGroup"/>
+                                    <RXToggleButton text="信息收集" userData="i18n:main.red.infosearch" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="漏洞扫描" userData="i18n:main.red.vulnscan" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="免杀" userData="i18n:main.red.freekill" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="自定义内存马" userData="i18n:main.red.memshell" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="命令生成" userData="i18n:main.red.cmdgen" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="命令查询" userData="i18n:main.red.cmdquery" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="KB提权查询" userData="i18n:main.red.kbquery" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="进程分析" userData="i18n:main.red.process" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="信息生成" userData="i18n:main.red.infogen" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="扩展模块" userData="i18n:main.extension" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="关于" userData="i18n:main.about" toggleGroup="$navGroup"/>
                                  </children>
                               </FlowPane>
                            </StackPane>
@@ -207,14 +207,14 @@
                                           <Rectangle height="9999" width="55.0"/>
                                        </clip>
                                        <Rectangle fx:id="blueModePane" height="35.0" width="55.0"/>
-                                       <Button fx:id="btnBlueMode" text="蓝队" mnemonicParsing="false" onAction="#changeMode" prefHeight="35.0" prefWidth="55.0"/>
+                                       <Button fx:id="btnBlueMode" text="蓝队" userData="i18n:main.mode.blue" mnemonicParsing="false" onAction="#changeMode" prefHeight="35.0" prefWidth="55.0"/>
                                     </StackPane>
                                     <StackPane>
                                        <clip>
                                           <Rectangle height="9999" width="55.0"/>
                                        </clip>
                                        <Rectangle fx:id="redModePane" height="35.0" width="55.0" translateX="-55"/>
-                                       <Button fx:id="btnRedMode" text="红队" mnemonicParsing="false" onAction="#changeMode" prefHeight="35.0" prefWidth="55.0"/>
+                                       <Button fx:id="btnRedMode" text="红队" userData="i18n:main.mode.red" mnemonicParsing="false" onAction="#changeMode" prefHeight="35.0" prefWidth="55.0"/>
                                     </StackPane>
                                     <cursor>
                                        <Cursor fx:constant="HAND" />

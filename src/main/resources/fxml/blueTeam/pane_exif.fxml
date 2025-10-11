@@ -20,7 +20,7 @@
 
     <VBox fx:id="paneBox" alignment="CENTER" spacing="20">
 
-        <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width}" styleClass="btn" text="选择图片/文件" onAction="#getExifFx" translationDir="BOTTOM_TO_TOP">
+        <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width}" styleClass="btn" text="选择图片/文件" userData="i18n:exif.selectfile" onAction="#getExifFx" translationDir="BOTTOM_TO_TOP">
             <graphic>
                 <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                     <image>
@@ -38,7 +38,7 @@
 
         <ListView fx:id="listView"  prefWidth="${sPane.width - 20}" prefHeight="${sPane.height - 150}">
             <HBox prefHeight="${sPane.height - 220}"  alignment="CENTER">
-                <Label id="tipTitle" text="请上传需要获取元信息的文件……"/>
+                <Label id="tipTitle" text="请上传需要获取元信息的文件……" userData="i18n:exif.tip"/>
             </HBox>
         </ListView>
 

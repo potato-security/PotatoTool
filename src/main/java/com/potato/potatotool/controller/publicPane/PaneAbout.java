@@ -6,8 +6,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
 import com.potato.potatotool.MainApplication;
+import com.potato.potatotool.utils.core.I18nUtils;
 import javafx.animation.*;
 import javafx.application.HostServices;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -58,10 +60,11 @@ public class PaneAbout {
 
 
     public void initialize() {
-
         initRenderThanksData();
         scrollThankPane();
-
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     public void initRenderThanksData() {
@@ -152,7 +155,7 @@ public class PaneAbout {
 
     HostServices services = MainApplication.letGetHostServices();
     @FXML
-    void openGithub(){
+    void openGitHub(){
         services.showDocument("https://github.com/ljy1058318852");
     }
 
@@ -167,8 +170,8 @@ public class PaneAbout {
     }
 
     @FXML
-    void openWJX(){
-        services.showDocument("https://www.wjx.cn/vm/hsIQ1et.aspx");
+    void openGitHubIssues(){
+        services.showDocument("https://github.com/HotBoy-java/PotatoTool/issues");
     }
 
     @FXML

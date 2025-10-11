@@ -1,9 +1,12 @@
 package com.potato.potatotool.controller.redTeam;
 
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.JsonUtils;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.StackPane;
 import org.json.JSONObject;
 
 import static com.potato.potatotool.content.redTeam.TaskListCheck.*;
@@ -21,6 +24,9 @@ public class PaneProcessQuery {
         avJsonOjb = (JSONObject) taskListJsonObject.get("avList");
         tqJsonOjb = (JSONObject) taskListJsonObject.get("processList");
     }
+    
+    @FXML
+    private StackPane sPane;
 
     @FXML
     private TextArea inputText;
@@ -30,6 +36,12 @@ public class PaneProcessQuery {
 
     @FXML
     private TextArea canRoot;
+    
+    @FXML
+    void initialize() {
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+    }
 
     @FXML
     public void getInfo(ActionEvent event) {

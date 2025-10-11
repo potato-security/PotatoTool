@@ -12,7 +12,7 @@
 
     <VBox>
         <StackPane alignment="TOP_CENTER">
-            <Label id="tipTitle" text=" 为保留算力，暂留5轮会话记忆 "/>
+            <Label id="tipTitle" text=" 为保留算力，暂留5轮会话记忆 " userData="i18n:ai.note"/>
             <ScrollPane fx:id="scrollPane" vvalue="1.0" hbarPolicy="NEVER">
                 <VBox spacing="10" prefWidth="${sPane.width}" fx:id="msgBox"/>
             </ScrollPane>
@@ -30,7 +30,7 @@
                         <Cursor fx:constant="HAND" />
                     </cursor>
                     <tooltip>
-                        <Tooltip text="发送" />
+                        <Tooltip text="发送" userData="i18n:ai.send"/>
                     </tooltip>
                 </Label>
             </Pane>

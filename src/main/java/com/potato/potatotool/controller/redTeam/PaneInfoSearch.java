@@ -11,6 +11,7 @@ import com.potato.potatotool.content.redTeam.infoGathering.classObj.DataTypeCons
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AssetExcelExporter;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import com.potato.potatotool.utils.ui.DialogUtils;
 import javafx.animation.*;
@@ -185,6 +186,9 @@ public class PaneInfoSearch {
         checkBoxList.add(quakeBox);
         checkBoxList.add(zoomeyeBox);
         checkBoxList.add(shodanBox);
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     //  监听输入时回车
@@ -746,7 +750,7 @@ public class PaneInfoSearch {
             addLabel.getStyleClass().add("rightAddButton");
 
             addLabel.setGraphic(region);
-            Tooltip tooltip = new Tooltip("添加公司名");
+            Tooltip tooltip = new Tooltip(I18nUtils.getString("tooltip.add.company"));
             addLabel.setTooltip(tooltip);
             addLabel.setOnMouseClicked(event -> addField(null));
             addLabel.setTranslateX(35);
@@ -762,7 +766,7 @@ public class PaneInfoSearch {
             deleteLabel.getStyleClass().add("rightButton");
 
             deleteLabel.setGraphic(region);
-            Tooltip tooltip = new Tooltip("删除此公司名");
+            Tooltip tooltip = new Tooltip(I18nUtils.getString("tooltip.delete.company"));
             deleteLabel.setTooltip(tooltip);
             deleteLabel.setOnMouseClicked(event -> deleteField(hBox));
             StackPane.setAlignment(deleteLabel, Pos.CENTER_RIGHT);
@@ -869,7 +873,7 @@ public class PaneInfoSearch {
                 createCompanyNameHBox(companyName, index);
                 index++;
             }
-            companyNameSave.setText("下一步(" + countdown + ")");
+            companyNameSave.setText(I18nUtils.getString("infosearch.next") + "(" + countdown + ")");
 
             companyNameChoosePaneBox.setVisible(true);
             companyNameChoosePaneBox.setManaged(true);
@@ -886,7 +890,7 @@ public class PaneInfoSearch {
         countdownTimeline = new Timeline(
                 new KeyFrame(Duration.seconds(1), event -> {
                     if (countdown > 0) {
-                        button.setText("下一步(" + countdown + ")");
+                        button.setText(I18nUtils.getString("infosearch.next") + "(" + countdown + ")");
                         countdown--;
                     } else {
                         onCountdownComplete.run();
@@ -1009,7 +1013,7 @@ public class PaneInfoSearch {
                 }
             }
 
-            iconSave.setText("下一步(" + countdown + ")");
+            iconSave.setText(I18nUtils.getString("infosearch.next") + "(" + countdown + ")");
 
             iconChoosePaneBox.setVisible(true);
             iconChoosePaneBox.setManaged(true);
@@ -1224,7 +1228,7 @@ public class PaneInfoSearch {
                 });
             });
         } else {
-            contentBox.getChildren().add(new Label("未知类型或数据格式错误"));
+            contentBox.getChildren().add(new Label(I18nUtils.getString("infosearch.error.unknown")));
         }
 
         // 创建 TitledPane
@@ -1238,8 +1242,8 @@ public class PaneInfoSearch {
         TableView<Map.Entry<String, String>> tableView = new TableView<>();
         tableView.setPrefWidth(sPane.getPrefWidth() - 100);
 
-        TableColumn<Map.Entry<String, String>, String> keyColumn = createTableColumn("字段", tableView.getPrefWidth() * 0.2, true);
-        TableColumn<Map.Entry<String, String>, String> valueColumn = createTableColumn("值", tableView.getPrefWidth() * 0.8, false);
+        TableColumn<Map.Entry<String, String>, String> keyColumn = createTableColumn(I18nUtils.getString("infosearch.field"), tableView.getPrefWidth() * 0.2, true);
+        TableColumn<Map.Entry<String, String>, String> valueColumn = createTableColumn(I18nUtils.getString("infosearch.value"), tableView.getPrefWidth() * 0.8, false);
 
         // 将列添加到表格中
         tableView.getColumns().addAll(keyColumn, valueColumn);
@@ -1277,8 +1281,8 @@ public class PaneInfoSearch {
         TableView<Map.Entry<String, String>> tableView = new TableView<>();
         tableView.setPrefWidth(sPane.getPrefWidth() - 100);
 
-        TableColumn<Map.Entry<String, String>, String> keyColumn = createTableColumn("字段", tableView.getPrefWidth() * 0.2, true);
-        TableColumn<Map.Entry<String, String>, String> valueColumn = createTableColumn("值", tableView.getPrefWidth() * 0.8, false);
+        TableColumn<Map.Entry<String, String>, String> keyColumn = createTableColumn(I18nUtils.getString("infosearch.field"), tableView.getPrefWidth() * 0.2, true);
+        TableColumn<Map.Entry<String, String>, String> valueColumn = createTableColumn(I18nUtils.getString("infosearch.value"), tableView.getPrefWidth() * 0.8, false);
 
         tableView.getColumns().addAll(keyColumn, valueColumn);
 
@@ -1396,7 +1400,10 @@ public class PaneInfoSearch {
         Platform.runLater(() -> {
             domainListChoose = new JsonArray();
             if (domainList == null || domainList.size() == 0) return;
-            HBox header = createRow("域名", "所属", "添加时间", "更新时间", true);
+            HBox header = createRow(I18nUtils.getString("infosearch.domain.header.domain"), 
+                                      I18nUtils.getString("infosearch.domain.header.belong"), 
+                                      I18nUtils.getString("infosearch.domain.header.addtime"), 
+                                      I18nUtils.getString("infosearch.domain.header.uptime"), true);
             domainVbox.getChildren().add(header);
             for (JsonElement jsonElement : domainList) {
                 JsonObject jsonObject = jsonElement.getAsJsonObject();
@@ -1422,7 +1429,7 @@ public class PaneInfoSearch {
 
                 domainVbox.getChildren().add(row);
             }
-            domainSave.setText("下一步(" + countdown + ")");
+            domainSave.setText(I18nUtils.getString("infosearch.next") + "(" + countdown + ")");
 
             domainChoosePaneBox.setVisible(true);
             domainChoosePaneBox.setManaged(true);

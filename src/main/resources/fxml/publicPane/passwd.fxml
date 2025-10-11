@@ -48,7 +48,7 @@
                                     </ImageView>
                                 </graphic>
                                 <tooltip>
-                                    <Tooltip text="关闭" />
+                                    <Tooltip text="关闭" userData="i18n:tooltip.close"/>
                                 </tooltip>
                             </Button>
                             <Pane minWidth="15"/>
@@ -59,14 +59,14 @@
                 <VBox alignment="CENTER" spacing="10" prefWidth="${an.width - 18}" style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
 
                     <HBox alignment="CENTER" spacing="10">
-                        <Label text="启动密码："/>
-                        <RXPasswordField fx:id="passwd" buttonDisplayMode="AUTO" promptText="请输入密码……" prefWidth="200" />
+                        <Label text="启动密码：" userData="i18n:passwd.label"/>
+                        <RXPasswordField fx:id="passwd" buttonDisplayMode="AUTO" promptText="请输入密码……" userData="i18n-prompt:passwd.placeholder" prefWidth="200" />
                     </HBox>
 
-                    <CFCheckBox fx:id="checkBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="记住密码" VBox.vgrow="ALWAYS" />
+                    <CFCheckBox fx:id="checkBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="记住密码" userData="i18n:passwd.remember" VBox.vgrow="ALWAYS" />
 
                     <StackPane>
-                        <Button fx:id="startButton" minHeight="35.0" minWidth="100" text="启动" onAction="#start">
+                        <Button fx:id="startButton" minHeight="35.0" minWidth="100" text="启动" userData="i18n:passwd.start" onAction="#start">
                             <effect>
                                 <DropShadow />
                             </effect>

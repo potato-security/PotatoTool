@@ -4,6 +4,7 @@ import com.potato.potatotool.content.redTeam.memshell.GenerateMemoryShell;
 import com.potato.potatotool.content.redTeam.memshell.config.MemoryObj;
 import com.potato.potatotool.content.redTeam.memshell.util.ClassNameUtil;
 import com.potato.potatotool.content.redTeam.memshell.util.RandomHeaderUtil;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -13,6 +14,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -26,6 +28,8 @@ import static com.potato.potatotool.content.redTeam.memshell.config.MemoryShellC
  * @date 2023/3/21 17:10
  */
 public class PaneCustomMemoryCode {
+    @FXML
+    private StackPane sPane;
     @FXML
     private ComboBox toolTypeBox;
     @FXML
@@ -64,6 +68,7 @@ public class PaneCustomMemoryCode {
 
     public void initialize() {
         initRender();
+        Platform.runLater(() -> {I18nUtils.bindComponents(sPane);});
     }
 
     private void initRender() {
@@ -139,7 +144,7 @@ public class PaneCustomMemoryCode {
         }catch (Exception exception){}
 
         if (classFilePath == null) {
-            outTextArea.setText("未选择class文件！无法生成");
+            outTextArea.setText(I18nUtils.getString("memshell.error.select"));
         }
     }
 

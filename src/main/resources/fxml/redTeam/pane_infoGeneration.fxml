@@ -12,7 +12,7 @@
 
     <VBox alignment="CENTER" spacing="30">
 
-        <Button minHeight="48.0" minWidth="${sPane.width}" text="生成信息" onAction="#generation">
+        <Button minHeight="48.0" minWidth="${sPane.width}" text="生成信息" userData="i18n:infogen.generate" onAction="#generation">
             <effect>
                 <DropShadow />
             </effect>
@@ -20,52 +20,52 @@
 
         <FlowPane styleClass="flowPane" alignment="CENTER" hgap="20"  vgap="30"  prefWidth="${sPane.width - 20}">
             <HBox>
-                <Label id="tipTitle" text="           姓名          "/>
+                <Label id="tipTitle" text="           姓名          " userData="i18n:infogen.name"/>
                 <Label id="tipSymbol" text="："/>
                 <TextField prefWidth="${sPane.width / 2 -225}" maxWidth="300" fx:id="nameTF"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="           拼音          "/>
+                <Label id="tipTitle" text="           拼音          " userData="i18n:infogen.pinyin"/>
                 <Label id="tipSymbol" text="："/>
                 <TextField prefWidth="${sPane.width / 2 -225}" maxWidth="300" fx:id="nameToPinYinTF"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="         手机号        "/>
+                <Label id="tipTitle" text="         手机号        " userData="i18n:infogen.phone"/>
                 <Label id="tipSymbol" text="："/>
                 <TextField prefWidth="${sPane.width / 2 -225}" maxWidth="300" fx:id="phoneTF"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="         邮箱号        "/>
+                <Label id="tipTitle" text="         邮箱号        " userData="i18n:infogen.email"/>
                 <Label id="tipSymbol" text="："/>
                 <TextField prefWidth="${sPane.width / 2 -225}" maxWidth="300" fx:id="emailTF"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="       居住地址       "/>
+                <Label id="tipTitle" text="       居住地址       " userData="i18n:infogen.address"/>
                 <Label id="tipSymbol" text="："/>
                 <TextField prefWidth="${sPane.width / 2 -225}" maxWidth="300" fx:id="addressTF"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="       身份证号       "/>
+                <Label id="tipTitle" text="       身份证号       " userData="i18n:infogen.idcard"/>
                 <Label id="tipSymbol" text="："/>
                 <TextField prefWidth="${sPane.width / 2 -225}" maxWidth="300" fx:id="idCardTF"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="       银行卡号       "/>
+                <Label id="tipTitle" text="       银行卡号       " userData="i18n:infogen.bankcard"/>
                 <Label id="tipSymbol" text="："/>
                 <TextField prefWidth="${sPane.width / 2 -225}" maxWidth="300" fx:id="bankCardTF"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="         邮编号        "/>
+                <Label id="tipTitle" text="         邮编号        " userData="i18n:infogen.postcode"/>
                 <Label id="tipSymbol" text="："/>
                 <TextField prefWidth="${sPane.width / 2 -225}" maxWidth="300" fx:id="postalCodeTF"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="统一社会信用代码"/>
+                <Label id="tipTitle" text="统一社会信用代码" userData="i18n:infogen.creditcode"/>
                 <Label id="tipSymbol" text="："/>
                 <TextField prefWidth="${sPane.width / 2 -225}" maxWidth="300" fx:id="unifiedSocialCreditCodeTF"/>
             </HBox>
             <HBox>
-                <Label id="tipTitle" text="   组织机构代码   "/>
+                <Label id="tipTitle" text="   组织机构代码   " userData="i18n:infogen.orgcode"/>
                 <Label id="tipSymbol" text="："/>
                 <TextField prefWidth="${sPane.width / 2 -225}" maxWidth="300" fx:id="organizationCodeTF"/>
             </HBox>

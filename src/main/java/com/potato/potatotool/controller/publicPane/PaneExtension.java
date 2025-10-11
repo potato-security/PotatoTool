@@ -8,6 +8,7 @@ import com.potato.potatotool.MainApplication;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.classObj.ExtensionConstants;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.ui.PaneFactory;
 import javafx.animation.FadeTransition;
 import javafx.application.HostServices;
@@ -84,6 +85,9 @@ public class PaneExtension {
         
         // 设置为当前活动控制器
         PaneFactory.setActiveController(this);
+        
+        // 绑定国际化
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
     //  初始化数据
@@ -288,7 +292,7 @@ public class PaneExtension {
         Label labelTitle = new Label(key);
         Region regionAdd = new Region();
         regionAdd.getStyleClass().add("addIcon");
-        Tooltip tooltip = new Tooltip("添加子元素");
+        Tooltip tooltip = new Tooltip(I18nUtils.getString("tooltip.add.element"));
         Tooltip.install(regionAdd, tooltip);
         regionAdd.setOnMouseClicked(even->addDialog(even));
         hBoxTitle.getChildren().addAll(regionTitle, labelTitle, regionAdd);
@@ -377,13 +381,13 @@ public class PaneExtension {
             StackPane.setMargin(regionVBox, new javafx.geometry.Insets(5, 5, 5, 5));
             Region regionChange = new Region();
             regionChange.getStyleClass().add("changeIcon");
-            Tooltip tooltipChange = new Tooltip("修改");
+            Tooltip tooltipChange = new Tooltip(I18nUtils.getString("tooltip.modify"));
             Tooltip.install(regionChange, tooltipChange);
             regionChange.setOnMouseClicked(even->changeDialog(even));
 
             Region regionDel = new Region();
             regionDel.getStyleClass().add("delIcon");
-            Tooltip tooltipDel = new Tooltip("删除");
+            Tooltip tooltipDel = new Tooltip(I18nUtils.getString("tooltip.delete"));
             Tooltip.install(regionDel, tooltipDel);
             regionDel.setOnMouseClicked(even->delDialog(even));
             regionVBox.getChildren().addAll(regionChange, regionDel);
@@ -483,7 +487,7 @@ public class PaneExtension {
             scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
             scene.setFill(null);    //  背景透明
             stage.setScene(scene);
-            stage.setTitle("删除确认");
+            stage.setTitle(I18nUtils.getString("delete.window.title"));
             stage.showAndWait();  // 使用 showAndWait 等待用户操作
 
             // 检查用户是否确认删除
@@ -556,13 +560,13 @@ public class PaneExtension {
             dialogRoot.getChildren().addAll(newLabelKey, newLabelTitle, newLabelDescribe);
 
             Button addBtn = (Button) dialogRoot.lookup("#addBtn");
-            addBtn.setText("修改");
+            addBtn.setText(I18nUtils.getString("addbar.submit.modify"));
 
             Scene scene = new Scene(dialogRoot);
             scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
             scene.setFill(null);    //  背景透明
             stage.setScene(scene);
-            stage.setTitle("修改子元素");
+            stage.setTitle(I18nUtils.getString("addbar.window.title.modify"));
             stage.show();
 
             // 优化：只在真正修改时才更新
@@ -605,13 +609,13 @@ public class PaneExtension {
             dialogRoot.getChildren().addAll(newLabelKey);
 
             Button addBtn = (Button) dialogRoot.lookup("#addBtn");
-            addBtn.setText("添加");
+            addBtn.setText(I18nUtils.getString("addbar.submit.add"));
 
             Scene scene = new Scene(dialogRoot);
             scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
             scene.setFill(null);    //  背景透明
             stage.setScene(scene);
-            stage.setTitle("添加子元素");
+            stage.setTitle(I18nUtils.getString("addbar.window.title.add"));
             stage.show();
 
             // 优化：只在真正添加时才更新

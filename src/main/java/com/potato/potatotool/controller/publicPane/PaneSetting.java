@@ -9,6 +9,8 @@ import com.google.gson.reflect.TypeToken;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.core.I18nManager;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.crypto.AESUtils;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
@@ -72,7 +74,10 @@ public class PaneSetting {
     private VBox githubVBox;
 
     @FXML
-    private ComboBox decompileType;
+    private ComboBox<String> decompileType;
+    
+    @FXML
+    private ComboBox<String> languageComboBox;
 
     @FXML
     private TextField aiApiBase;
@@ -158,6 +163,9 @@ public class PaneSetting {
 
     // 初始化Map，建立checkbox和key的对应关系
     Map<CFSwitch, String> proxyMap = new LinkedHashMap<>();
+    
+    // 国际化管理器
+    private I18nManager i18n = I18nManager.getInstance();
 
     public void initialize() {
         if(isBlueMode){
@@ -179,6 +187,40 @@ public class PaneSetting {
         
         // 默认只展开第一项
         settingAccordion.setExpandedPane(basicPane);
+        
+        // 在所有组件初始化完成后再绑定国际化
+        Platform.runLater(() -> {
+            initLanguage();
+            I18nUtils.bindComponents(an);
+        });
+    }
+    
+    /**
+     * 初始化语言选择器
+     */
+    private void initLanguage() {
+        // 初始化语言下拉框
+        if (languageComboBox != null) {
+            // 获取当前语言并设置
+            String currentLang = i18n.getCurrentLanguageCode();
+            if ("zh_CN".equals(currentLang)) {
+                languageComboBox.setValue("简体中文");
+            } else {
+                languageComboBox.setValue("English");
+            }
+            // 注意：不再监听valueProperty，而是在save()方法中检查是否有变化
+        }
+    }
+    
+    /**
+     * 切换语言（只在保存时调用）
+     */
+    private void switchLanguage(String language) {
+        if ("简体中文".equals(language)) {
+            i18n.switchLanguage("zh_CN");
+        } else if ("English".equals(language)) {
+            i18n.switchLanguage("en_US");
+        }
     }
     
     /**
@@ -411,6 +453,11 @@ public class PaneSetting {
 
     @FXML
     void save(){
+        // 检查语言是否发生变化
+        String selectedLanguage = languageComboBox != null ? languageComboBox.getValue() : null;
+        String currentLanguageDisplay = "zh_CN".equals(i18n.getCurrentLanguageCode()) ? "简体中文" : "English";
+        boolean languageChanged = selectedLanguage != null && !selectedLanguage.equals(currentLanguageDisplay);
+        
         Map<String, Object> configMap = new LinkedHashMap<>();
         Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
         proxyConfigMap.put(ConfigConstants.PROXY_ENABLE, proxyButton.isSelected());
@@ -436,9 +483,13 @@ public class PaneSetting {
         configMap.put(ConfigConstants.AI, aiMap);
 
         if(Constants.saveConfig(configMap)){
-            showTip("保存成功");
+            if (languageChanged && selectedLanguage != null) {
+                // 如果语言发生了变化，则切换语言
+                switchLanguage(selectedLanguage);
+            }
+            showTip(i18n.getString("setting.save.success"));
         }else {
-            showTip("保存失败，请查看日志");
+            showTip(i18n.getString("setting.save.failed"));
         }
     }
 
@@ -453,7 +504,7 @@ public class PaneSetting {
     String md5DownUrl = null;
     @FXML
     public void checkMd5(ActionEvent event) {
-        md5CheckButton.setText("检测中");
+        md5CheckButton.setText(i18n.getString("setting.update.md5.checking"));
 
         if (md5CheckThread != null && md5CheckThread.isAlive()) {
             md5CheckThread.stop();   // 强行中断当前线程
@@ -467,7 +518,7 @@ public class PaneSetting {
 
             Platform.runLater(() -> {
                 if (md5DownUrl==null){
-                    md5Tips.setText("已存在");
+                    md5Tips.setText(i18n.getString("setting.update.md5.exists"));
                     md5Tips.setVisible(true);
                     md5Tips.setManaged(true);
                     md5CheckButton.setVisible(false);
@@ -479,7 +530,7 @@ public class PaneSetting {
                     md5CheckButton.setVisible(true);
                     md5CheckButton.setManaged(true);
                 }else {
-                    md5Tips.setText("不存在");
+                    md5Tips.setText(i18n.getString("setting.update.md5.notexists"));
                     md5Tips.setVisible(true);
                     md5Tips.setManaged(true);
                     md5CheckButton.setVisible(false);
@@ -487,7 +538,7 @@ public class PaneSetting {
                     md5UpdateButton.setVisible(true);
                     md5UpdateButton.setManaged(true);
                 }
-                md5CheckButton.setText("检测");
+                md5CheckButton.setText(i18n.getString("setting.update.md5.check"));
             });
         });
         md5CheckThread.start();
@@ -497,7 +548,7 @@ public class PaneSetting {
     String kbDownUrl = null;
     @FXML
     public void checkKb(ActionEvent event) {
-        kbCheckButton.setText("检测中");
+        kbCheckButton.setText(i18n.getString("setting.update.kb.checking"));
 
         if (kbCheckThread != null && kbCheckThread.isAlive()) {
             kbCheckThread.stop();   // 强行中断当前线程
@@ -511,7 +562,7 @@ public class PaneSetting {
 
             Platform.runLater(() -> {
                 if (kbDownUrl==null){
-                    kbTips.setText("已为最新版");
+                    kbTips.setText(i18n.getString("setting.update.kb.latest"));
                     kbTips.setVisible(true);
                     kbTips.setManaged(true);
                     kbCheckButton.setVisible(false);
@@ -523,7 +574,7 @@ public class PaneSetting {
                     kbCheckButton.setVisible(true);
                     kbCheckButton.setManaged(true);
                 }else {
-                    kbTips.setText("不存在");
+                    kbTips.setText(i18n.getString("setting.update.kb.notexists"));
                     kbTips.setVisible(true);
                     kbTips.setManaged(true);
                     kbCheckButton.setVisible(false);
@@ -531,7 +582,7 @@ public class PaneSetting {
                     kbUpdateButton.setVisible(true);
                     kbUpdateButton.setManaged(true);
                 }
-                kbCheckButton.setText("检测");
+                kbCheckButton.setText(i18n.getString("setting.update.kb.check"));
             });
         });
         kbCheckThread.start();
@@ -548,7 +599,7 @@ public class PaneSetting {
             md5UpdateThread.stop();
         }
 
-        md5ProgressLabel.setText("下载进度: 0%, 速度: -, 预估时间: -");
+        md5ProgressLabel.setText(I18nUtils.getString("setting.update.md5.progress", "0%", "-", "-"));
         md5ProgressBar.setProgress(0);
         md5Tips.setVisible(false);
         md5Tips.setManaged(false);
@@ -563,7 +614,7 @@ public class PaneSetting {
             downloadAndSaveResource("md5", md5DownUrl, md5ProgressBar, md5ProgressLabel);
 
             Platform.runLater(() -> {
-                md5Tips.setText("已存在");
+                md5Tips.setText(i18n.getString("setting.update.md5.exists"));
                 md5ProgressVBox.setManaged(false);
                 md5ProgressVBox.setVisible(false);
                 md5StopUpdateButton.setManaged(false);
@@ -586,7 +637,7 @@ public class PaneSetting {
             kbUpdateThread.stop();
         }
 
-        kbProgressLabel.setText("下载进度: 0%, 速度: -, 预估时间: -");
+        kbProgressLabel.setText(I18nUtils.getString("setting.update.kb.progress", "0%", "-", "-"));
         kbProgressBar.setProgress(0);
         kbTips.setVisible(false);
         kbTips.setManaged(false);
@@ -601,7 +652,7 @@ public class PaneSetting {
             downloadAndSaveResource("winKbInfo", kbDownUrl, kbProgressBar, kbProgressLabel);
 
             Platform.runLater(() -> {
-                kbTips.setText("已为最新版");
+                kbTips.setText(i18n.getString("setting.update.kb.latest"));
                 kbProgressVBox.setManaged(false);
                 kbProgressVBox.setVisible(false);
                 kbStopUpdateButton.setManaged(false);
@@ -683,7 +734,10 @@ public class PaneSetting {
         Region delIcon = new Region();
         delIcon.getStyleClass().add("delIcon");
         delLabel.setGraphic(delIcon);
-        delLabel.setTooltip(new Tooltip("删除"));
+        // 使用国际化绑定Tooltip
+        Tooltip delTooltip = new Tooltip();
+        delTooltip.textProperty().bind(i18n.createBinding("tooltip.delete"));
+        delLabel.setTooltip(delTooltip);
 
         // 将 TextField 和删除按钮 Label 添加到新的 StackPane
         newStackPane.getChildren().addAll(newTextField, delLabel);
@@ -721,6 +775,11 @@ public class PaneSetting {
 
     @FXML
     public void saveAsset(ActionEvent event) {
+        // 检查语言是否发生变化
+        String selectedLanguage = languageComboBox != null ? languageComboBox.getValue() : null;
+        String currentLanguageDisplay = "zh_CN".equals(i18n.getCurrentLanguageCode()) ? "简体中文" : "English";
+        boolean languageChanged = selectedLanguage != null && !selectedLanguage.equals(currentLanguageDisplay);
+        
         String Chinaz_Cookie = chinazCookie.getText().trim();
         String Aiqicha_Cookie = aiqichaCookie.getText().trim();
         String Fofa_Key = fofaKey.getText().trim();
@@ -758,9 +817,15 @@ public class PaneSetting {
         configMap.put(ConfigConstants.PROXY, proxyConfigMap);
 
         if(Constants.saveConfig(configMap)){
-            showTip("保存成功");
+            // 如果语言发生了变化，则切换语言
+            if (languageChanged && selectedLanguage != null) {
+                switchLanguage(selectedLanguage);
+                showTip(i18n.getString("setting.save.success") + " - " + i18n.getString("setting.language.changed"));
+            } else {
+                showTip(i18n.getString("setting.save.success"));
+            }
         }else {
-            showTip("保存失败，请查看日志");
+            showTip(i18n.getString("setting.save.failed"));
         }
     }
 

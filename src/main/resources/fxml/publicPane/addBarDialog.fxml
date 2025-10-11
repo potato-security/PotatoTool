@@ -29,7 +29,7 @@
     <VBox>
     <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
         <center>
-            <Label style="-fx-padding: 0 0 0 30;-fx-font-size: 23;-fx-font-weight: bold;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="添加项目" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+            <Label style="-fx-padding: 0 0 0 30;-fx-font-size: 23;-fx-font-weight: bold;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="添加项目" userData="i18n:addbar.title" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
         </center>
         <right>
             <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
@@ -42,7 +42,7 @@
                         </ImageView>
                     </graphic>
                     <tooltip>
-                        <Tooltip text="关闭" />
+                        <Tooltip text="关闭" userData="i18n:tooltip.close"/>
                     </tooltip>
                 </Button>
                 <Pane minWidth="10"/>
@@ -51,16 +51,16 @@
     </BorderPane>
     <VBox alignment="CENTER_LEFT" spacing="20" prefWidth="${an.width - 18}" style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
         <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text="名称："/>
+            <Label text="名称：" userData="i18n:addbar.name"/>
             <TextField fx:id="title" prefWidth="200"/>
         </HBox>
         <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text="描述："/>
+            <Label text="描述：" userData="i18n:addbar.description"/>
             <TextField fx:id="describe"  prefWidth="200"/>
         </HBox>
         <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text="类型："/>
-            <ComboBox fx:id="type" prefHeight="20.0" prefWidth="200">
+            <Label text="类型：" userData="i18n:addbar.type"/>
+            <ComboBox fx:id="type" prefHeight="20.0" prefWidth="200" userData="i18n-combobox:addbar.type">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
                         <String fx:value="执行命令" />
@@ -73,19 +73,19 @@
             </ComboBox>
         </HBox>
         <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text="操作："/>
+            <Label text="操作：" userData="i18n:addbar.action"/>
             <TextField fx:id="content" prefWidth="200"/>
         </HBox>
         <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text="图标："/>
+            <Label text="图标：" userData="i18n:addbar.icon"/>
             <StackPane>
-                <TextField style="-fx-padding: 5 80 5 5;" fx:id="icon" promptText="可为空" prefWidth="200" StackPane.alignment="CENTER"/>
-                <Button style="-fx-padding: 5;" text="选择图片" onAction="#getImg" StackPane.alignment="CENTER_RIGHT"/>
+                <TextField style="-fx-padding: 5 80 5 5;" fx:id="icon" promptText="可为空" userData="i18n-prompt:addbar.icon.placeholder" prefWidth="200" StackPane.alignment="CENTER"/>
+                <Button style="-fx-padding: 5;" text="选择图片" userData="i18n:addbar.selectimage" onAction="#getImg" StackPane.alignment="CENTER_RIGHT"/>
             </StackPane>
         </HBox>
 
         <HBox alignment="CENTER">
-            <Button fx:id="addBtn" minHeight="48.0" minWidth="150" text="修改/添加" onAction="#addBar">
+            <Button fx:id="addBtn" minHeight="48.0" minWidth="150" text="修改/添加" userData="i18n:addbar.submit" onAction="#addBar">
                 <effect>
                     <DropShadow />
                 </effect>

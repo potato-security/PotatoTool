@@ -21,22 +21,22 @@
                     <panes>
                         <TitledPane onMouseClicked="#toWebshell">
                             <graphic>
-                                <Label prefWidth="150" text="免杀webshell"/>
+                                <Label prefWidth="150" text="免杀webshell" userData="i18n:freekill.webshell"/>
                             </graphic>
                         </TitledPane>
                         <TitledPane onMouseClicked="#toSignature">
                             <graphic>
-                                <Label prefWidth="150" text="伪造签名"/>
+                                <Label prefWidth="150" text="伪造签名" userData="i18n:freekill.signature"/>
                             </graphic>
                         </TitledPane>
                         <TitledPane onMouseClicked="#toQR">
                             <graphic>
-                                <Label prefWidth="150" text="二维码生成"/>
+                                <Label prefWidth="150" text="二维码生成" userData="i18n:freekill.qrcode"/>
                             </graphic>
                         </TitledPane>
                         <TitledPane onMouseClicked="#toSecureProtect">
                             <graphic>
-                                <Label prefWidth="150" text="加壳(potato壳)"/>
+                                <Label prefWidth="150" text="加壳(potato壳)" userData="i18n:freekill.packer"/>
                             </graphic>
                         </TitledPane>
                     </panes>
@@ -55,7 +55,7 @@
                     </HBox>
                     <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="语言："/>
+                            <Label id="tipTitle_input" text="语言：" userData="i18n:freekill.language"/>
                             <ComboBox fx:id="godComboBox" prefHeight="30.0" minWidth="100" prefWidth="100" onAction="#godChoose">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
@@ -74,7 +74,7 @@
                         </HBox>
 
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="编码："/>
+                            <Label id="tipTitle_input" text="编码：" userData="i18n:freekill.encoding"/>
                             <ComboBox fx:id="godModeComboBox" prefHeight="30.0" minWidth="200" prefWidth="200">
                                 <cursor>
                                     <Cursor fx:constant="HAND" />
@@ -83,11 +83,11 @@
                         </HBox>
 
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="密码："/>
-                            <TextField fx:id="godKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码"/>
+                            <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
+                            <TextField fx:id="godKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
                         </HBox>
 
-                        <Button minHeight="40.0" minWidth="150" text="生成" onAction="#godWebshellGeneration">
+                        <Button minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#godWebshellGeneration">
                             <effect>
                                 <DropShadow />
                             </effect>
@@ -100,7 +100,7 @@
                     </HBox>
                     <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="语言："/>
+                            <Label id="tipTitle_input" text="语言：" userData="i18n:freekill.language"/>
                             <ComboBox fx:id="behComboBox" prefHeight="30.0" minWidth="100" prefWidth="100" onAction="#behChoose">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
@@ -118,7 +118,7 @@
                         </HBox>
 
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="编码："/>
+                            <Label id="tipTitle_input" text="编码：" userData="i18n:freekill.encoding"/>
                             <ComboBox fx:id="behModeComboBox" prefHeight="30.0" minWidth="200" prefWidth="200">
                                 <cursor>
                                     <Cursor fx:constant="HAND" />
@@ -127,11 +127,11 @@
                         </HBox>
 
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="密码："/>
-                            <TextField fx:id="behKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码"/>
+                            <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
+                            <TextField fx:id="behKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
                         </HBox>
 
-                        <Button minHeight="40.0" minWidth="150" text="生成" onAction="#behWebshellGeneration">
+                        <Button minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#behWebshellGeneration">
                             <effect>
                                 <DropShadow />
                             </effect>
@@ -145,7 +145,7 @@
                     </HBox>
                     <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="语言："/>
+                            <Label id="tipTitle_input" text="语言：" userData="i18n:freekill.language"/>
                             <ComboBox fx:id="antComboBox" prefHeight="30.0" minWidth="100" prefWidth="100" onAction="#antChoose">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
@@ -163,7 +163,7 @@
                         </HBox>
 
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="编码："/>
+                            <Label id="tipTitle_input" text="编码：" userData="i18n:freekill.encoding"/>
                             <ComboBox fx:id="antModeComboBox" prefHeight="30.0" minWidth="200" prefWidth="200">
                                 <items>
                                     <FXCollections fx:id="antFXCollections" fx:factory="observableArrayList">
@@ -176,11 +176,11 @@
                         </HBox>
 
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="密码："/>
-                            <TextField fx:id="antKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码"/>
+                            <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
+                            <TextField fx:id="antKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
                         </HBox>
 
-                        <Button minHeight="40.0" minWidth="150" text="生成" onAction="#antWebshellGeneration">
+                        <Button minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#antWebshellGeneration">
                             <effect>
                                 <DropShadow />
                             </effect>
@@ -193,7 +193,7 @@
                     </HBox>
                     <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="语言："/>
+                            <Label id="tipTitle_input" text="语言：" userData="i18n:freekill.language"/>
                             <ComboBox fx:id="cmdComboBox" prefHeight="30.0" minWidth="100" prefWidth="100" onAction="#cmdChoose">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
@@ -209,7 +209,7 @@
                         </HBox>
 
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="编码："/>
+                            <Label id="tipTitle_input" text="编码：" userData="i18n:freekill.encoding"/>
                             <ComboBox fx:id="cmdModeComboBox"  prefHeight="30.0" minWidth="200" prefWidth="200">
                                 <cursor>
                                     <Cursor fx:constant="HAND" />
@@ -218,11 +218,11 @@
                         </HBox>
 
                         <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="密码："/>
-                            <TextField fx:id="cmdKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码"/>
+                            <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
+                            <TextField fx:id="cmdKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
                         </HBox>
 
-                        <Button minHeight="40.0" minWidth="150" text="生成" onAction="#cmdWebshellGeneration">
+                        <Button minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#cmdWebshellGeneration">
                             <effect>
                                 <DropShadow />
                             </effect>
@@ -234,13 +234,13 @@
                     </HBox>
                     <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
                         <HBox alignment="CENTER" spacing="20">
-                            <Label id="tipTitle_input" text="[全部生成]"/>
+                            <Label id="tipTitle_input" text="[全部生成]" userData="i18n:freekill.generateall"/>
                             <HBox alignment="CENTER">
-                                <Label id="tipTitle_input" text="密码："/>
-                                <TextField fx:id="webShellKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码"/>
+                                <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
+                                <TextField fx:id="webShellKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
                             </HBox>
 
-                            <Button minHeight="40.0" minWidth="150" text="生成" onAction="#webshellGeneration">
+                            <Button minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#webshellGeneration">
                                 <effect>
                                     <DropShadow />
                                 </effect>
@@ -252,21 +252,21 @@
                 <VBox fx:id="signatureContent" maxHeight="${sPane.height}" alignment="CENTER" managed="false" visible="false">
                     <VBox styleClass="paddingVBox" prefWidth="${signatureContent.width}" spacing="30" alignment="CENTER">
                         <HBox alignment="CENTER" spacing="10">
-                            <Label text="无签名木马文件路径："/>
+                            <Label text="无签名木马文件路径：" userData="i18n:freekill.sig.unsigned"/>
                             <StackPane>
-                                <TextField style="-fx-padding: 5 80 5 5;" fx:id="sigFilePath" promptText="输入文件路径" prefWidth="400" StackPane.alignment="CENTER"/>
-                                <Button style="-fx-padding: 5;" text="选择文件" onAction="#getSigFilePath" StackPane.alignment="CENTER_RIGHT"/>
+                                <TextField style="-fx-padding: 5 80 5 5;" fx:id="sigFilePath" promptText="输入文件路径" userData="i18n-prompt:freekill.sig.path.placeholder" prefWidth="400" StackPane.alignment="CENTER"/>
+                                <Button style="-fx-padding: 5;" text="选择文件" userData="i18n:freekill.sig.selectfile" onAction="#getSigFilePath" StackPane.alignment="CENTER_RIGHT"/>
                             </StackPane>
                         </HBox>
                         <HBox alignment="CENTER" spacing="10">
-                            <Label text="有签名正规文件路径："/>
+                            <Label text="有签名正规文件路径：" userData="i18n:freekill.sig.signed"/>
                             <StackPane>
-                                <TextField style="-fx-padding: 5 80 5 5;" fx:id="exePath" promptText="输入文件路径" prefWidth="400" StackPane.alignment="CENTER"/>
-                                <Button style="-fx-padding: 5;" text="选择文件" onAction="#getExePath" StackPane.alignment="CENTER_RIGHT"/>
+                                <TextField style="-fx-padding: 5 80 5 5;" fx:id="exePath" promptText="输入文件路径" userData="i18n-prompt:freekill.sig.path.placeholder" prefWidth="400" StackPane.alignment="CENTER"/>
+                                <Button style="-fx-padding: 5;" text="选择文件" userData="i18n:freekill.sig.selectfile" onAction="#getExePath" StackPane.alignment="CENTER_RIGHT"/>
                             </StackPane>
                         </HBox>
                         <HBox alignment="CENTER">
-                            <Button fx:id="addBtn" minHeight="40.0" minWidth="150" text="伪造" onAction="#toSigna">
+                            <Button fx:id="addBtn" minHeight="40.0" minWidth="150" text="伪造" userData="i18n:freekill.sig.fake" onAction="#toSigna">
                                 <effect>
                                     <DropShadow />
                                 </effect>
@@ -279,26 +279,26 @@
                 <VBox fx:id="QRContent" maxHeight="${sPane.height}" alignment="CENTER" managed="false" visible="false">
                     <VBox styleClass="paddingVBox" prefWidth="${QRContent.width}" spacing="30" alignment="CENTER">
                         <HBox alignment="CENTER" spacing="10">
-                            <Label fx:id="contentQrLabel" text="二维码内容："/>
-                            <TextField style="-fx-padding: 5 80 5 5;" fx:id="contentQR" text="https://www.baidu.com" promptText="输入二维码内容/网址" prefWidth="400" StackPane.alignment="CENTER"/>
+                            <Label fx:id="contentQrLabel" text="二维码内容：" userData="i18n:freekill.qr.content"/>
+                            <TextField style="-fx-padding: 5 80 5 5;" fx:id="contentQR" text="https://www.baidu.com" promptText="输入二维码内容/网址" userData="i18n-prompt:freekill.qr.content.placeholder" prefWidth="400" StackPane.alignment="CENTER"/>
                         </HBox>
                         <HBox alignment="CENTER" spacing="10">
-                            <Label minWidth="${contentQrLabel.width}" text="二维码宽高："/>
-                            <TextField style="-fx-padding: 5 80 5 5;" fx:id="widthQR" text="300" promptText="输入二维码宽度/高度" prefWidth="400" StackPane.alignment="CENTER"/>
+                            <Label minWidth="${contentQrLabel.width}" text="二维码宽高：" userData="i18n:freekill.qr.size"/>
+                            <TextField style="-fx-padding: 5 80 5 5;" fx:id="widthQR" text="300" promptText="输入二维码宽度/高度" userData="i18n-prompt:freekill.qr.size.placeholder" prefWidth="400" StackPane.alignment="CENTER"/>
                         </HBox>
                         <HBox alignment="CENTER" spacing="10">
-                            <Label minWidth="${contentQrLabel.width}" text="Logo路径："/>
+                            <Label minWidth="${contentQrLabel.width}" text="Logo路径：" userData="i18n:freekill.qr.logo"/>
                             <StackPane>
-                                <TextField style="-fx-padding: 5 80 5 5;" fx:id="logoPath" promptText="输入logo文件路径，可为空" prefWidth="400" StackPane.alignment="CENTER"/>
-                                <Button style="-fx-padding: 5;" text="选择文件" onAction="#getLogoPath" StackPane.alignment="CENTER_RIGHT"/>
+                                <TextField style="-fx-padding: 5 80 5 5;" fx:id="logoPath" promptText="输入logo文件路径，可为空" userData="i18n-prompt:freekill.qr.logo.placeholder" prefWidth="400" StackPane.alignment="CENTER"/>
+                                <Button style="-fx-padding: 5;" text="选择文件" userData="i18n:freekill.qr.selectfile" onAction="#getLogoPath" StackPane.alignment="CENTER_RIGHT"/>
                             </StackPane>
                         </HBox>
                         <HBox alignment="CENTER" spacing="10">
-                            <Label minWidth="${contentQrLabel.width}" text="logo宽高："/>
-                            <TextField style="-fx-padding: 5 80 5 5;" fx:id="widthLogo" text="60" promptText="输入logo宽度/高度(过大易无法识别二维码)" prefWidth="400" StackPane.alignment="CENTER"/>
+                            <Label minWidth="${contentQrLabel.width}" text="logo宽高：" userData="i18n:freekill.qr.logosize"/>
+                            <TextField style="-fx-padding: 5 80 5 5;" fx:id="widthLogo" text="60" promptText="输入logo宽度/高度(过大易无法识别二维码)" userData="i18n-prompt:freekill.qr.logosize.placeholder" prefWidth="400" StackPane.alignment="CENTER"/>
                         </HBox>
                         <HBox alignment="CENTER">
-                            <Button minHeight="40.0" minWidth="150" text="生成二维码" onAction="#toQr">
+                            <Button minHeight="40.0" minWidth="150" text="生成二维码" userData="i18n:freekill.qr.generate" onAction="#toQr">
                                 <effect>
                                     <DropShadow />
                                 </effect>
@@ -310,74 +310,74 @@
 
                 <VBox fx:id="secureProtectContent" styleClass="closeImg" maxHeight="${sPane.height}" spacing="30" alignment="CENTER" managed="false" visible="false">
                     <HBox alignment="CENTER" spacing="10">
-                        <Label minWidth="${contentQrLabel.width}" text="文件路径："/>
+                        <Label minWidth="${contentQrLabel.width}" text="文件路径：" userData="i18n:freekill.packer.filepath"/>
                         <StackPane>
-                            <TextField style="-fx-padding: 5 80 5 5;" fx:id="filePath" promptText="输入文件路径" prefWidth="400" StackPane.alignment="CENTER"/>
-                            <Button style="-fx-padding: 5;" text="选择文件" onAction="#getLogoPath" StackPane.alignment="CENTER_RIGHT"/>
+                            <TextField style="-fx-padding: 5 80 5 5;" fx:id="filePath" promptText="输入文件路径" userData="i18n-prompt:freekill.packer.filepath.placeholder" prefWidth="400" StackPane.alignment="CENTER"/>
+                            <Button style="-fx-padding: 5;" text="选择文件" userData="i18n:freekill.packer.selectfile" onAction="#getLogoPath" StackPane.alignment="CENTER_RIGHT"/>
                         </StackPane>
                     </HBox>
 
                     <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                        <Label id="tipTitle_input_big" text="基本信息"/>
+                        <Label id="tipTitle_input_big" text="基本信息" userData="i18n:freekill.packer.basicinfo"/>
                     </HBox>
 
                     <VBox styleClass="paddingVBox" spacing="10" alignment="CENTER">
                         <HBox alignment="CENTER" spacing="10">
-                            <Label text="文件位置："/>
+                            <Label text="文件位置：" userData="i18n:freekill.packer.location"/>
                             <Label fx:id="filePos"/>
                         </HBox>
                         <HBox alignment="CENTER" spacing="10">
-                            <Label text="文件创建时间："/>
+                            <Label text="文件创建时间：" userData="i18n:freekill.packer.createtime"/>
                             <Label fx:id="fileCreateTime"/>
                         </HBox>
                         <HBox alignment="CENTER" spacing="10">
-                            <Label text="文件修改时间："/>
+                            <Label text="文件修改时间：" userData="i18n:freekill.packer.modifytime"/>
                             <Label fx:id="fileChangeTime"/>
                         </HBox>
                         <HBox alignment="CENTER" spacing="10">
-                            <Label text="文件最后访问时间："/>
+                            <Label text="文件最后访问时间：" userData="i18n:freekill.packer.accesstime"/>
                             <Label fx:id="fileRunTime"/>
                         </HBox>
                         <HBox alignment="CENTER" spacing="10">
-                            <Label text="文件类型："/>
+                            <Label text="文件类型：" userData="i18n:freekill.packer.filetype"/>
                             <Label fx:id="fileType"/>
                         </HBox>
                     </VBox>
 
                     <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                        <Label id="tipTitle_input_big" text="加密选项"/>
+                        <Label id="tipTitle_input_big" text="加密选项" userData="i18n:freekill.packer.encryption"/>
                     </HBox>
 
                     <VBox alignment="CENTER_LEFT"  styleClass="paddingVBox" style="-fx-padding: 20" spacing="10">
-                        <CFCheckBox fx:id="isImportPro" alignment="CENTER" mnemonicParsing="false" selected="false" text="导入表保护"/>
-                        <CFCheckBox fx:id="isMemoryPro" alignment="CENTER" mnemonicParsing="false" selected="false" text="内存校验"/>
-                        <CFCheckBox fx:id="isCompressPro" alignment="CENTER" mnemonicParsing="false" selected="false" text="压缩"/>
-                        <CFCheckBox fx:id="isResPro" alignment="CENTER" mnemonicParsing="false" selected="false" text="资源节加密"/>
-                        <CFCheckBox fx:id="isDebuggerDetection" alignment="CENTER" mnemonicParsing="false" selected="false" text="调试器检测"/>
-                        <CFCheckBox fx:id="isVirtualDetection" alignment="CENTER" mnemonicParsing="false" selected="false" text="虚拟机检测"/>
+                        <CFCheckBox fx:id="isImportPro" alignment="CENTER" mnemonicParsing="false" selected="false" text="导入表保护" userData="i18n:freekill.packer.importpro"/>
+                        <CFCheckBox fx:id="isMemoryPro" alignment="CENTER" mnemonicParsing="false" selected="false" text="内存校验" userData="i18n:freekill.packer.memorypro"/>
+                        <CFCheckBox fx:id="isCompressPro" alignment="CENTER" mnemonicParsing="false" selected="false" text="压缩" userData="i18n:freekill.packer.compress"/>
+                        <CFCheckBox fx:id="isResPro" alignment="CENTER" mnemonicParsing="false" selected="false" text="资源节加密" userData="i18n:freekill.packer.resourcepro"/>
+                        <CFCheckBox fx:id="isDebuggerDetection" alignment="CENTER" mnemonicParsing="false" selected="false" text="调试器检测" userData="i18n:freekill.packer.debugdetect"/>
+                        <CFCheckBox fx:id="isVirtualDetection" alignment="CENTER" mnemonicParsing="false" selected="false" text="虚拟机检测" userData="i18n:freekill.packer.vmdetect"/>
                     </VBox>
 
                     <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                        <Label id="tipTitle_input_big" text="函数选项"/>
+                        <Label id="tipTitle_input_big" text="函数选项" userData="i18n:freekill.packer.function"/>
                     </HBox>
 
                     <VBox styleClass="paddingVBox" style="-fx-padding: 20" spacing="10" alignment="CENTER">
                         <HBox spacing="20" alignment="CENTER">
                             <HBox alignment="CENTER" spacing="10">
-                                <Label text="函数总数："/>
+                                <Label text="函数总数：" userData="i18n:freekill.packer.func.total"/>
                                 <Label fx:id="funcSize" minWidth="100"/>
                             </HBox>
                             <HBox alignment="CENTER" spacing="10">
-                                <Label text="混淆数："/>
+                                <Label text="混淆数：" userData="i18n:freekill.packer.func.confusion"/>
                                 <Label fx:id="confusionSize" minWidth="100"/>
                             </HBox>
 
                             <HBox alignment="CENTER" spacing="10">
-                                <Label text="虚拟化数："/>
+                                <Label text="虚拟化数：" userData="i18n:freekill.packer.func.virtual"/>
                                 <Label fx:id="virtualizationSize" minWidth="100"/>
                             </HBox>
                             <HBox alignment="CENTER" spacing="10">
-                                <Label text="加密数："/>
+                                <Label text="加密数：" userData="i18n:freekill.packer.func.encrypt"/>
                                 <Label fx:id="encodeSize" minWidth="100"/>
                             </HBox>
                         </HBox>
@@ -388,7 +388,7 @@
                                         <panes>
                                             <TitledPane fx:id="myTitledPane" expanded="true">
                                                 <graphic>
-                                                    <Label prefWidth="150" text="函数地址表"/>
+                                                    <Label prefWidth="150" text="函数地址表" userData="i18n:freekill.packer.func.table"/>
                                                 </graphic>
                                                 <content>
                                                     <VBox spacing="5" styleClass="vBox">
@@ -410,8 +410,8 @@
                             </ScrollPane>
                             <VBox HBox.hgrow="ALWAYS" alignment="CENTER" spacing="10">
                                 <HBox alignment="CENTER" spacing="10">
-                                    <Label text="保护方案："/>
-                                    <ComboBox fx:id="getMode" prefHeight="20.0" prefWidth="250"  value="不保护">
+                                    <Label text="保护方案：" userData="i18n:freekill.packer.protect"/>
+                                    <ComboBox fx:id="getMode" prefHeight="20.0" prefWidth="250" userData="i18n-combobox:freekill.packer.protect.scheme; i18n-combobox-value:freekill.packer.protect.none" value="不保护">
                                         <items>
                                             <FXCollections fx:factory="observableArrayList">
                                                 <String fx:value="不保护" />
@@ -422,7 +422,7 @@
                                         </items>
                                     </ComboBox>
                                 </HBox>
-                                <Label text="汇编代码"/>
+                                <Label text="汇编代码" userData="i18n:freekill.packer.asmcode"/>
                                 <VBox fx:id="assemblyCode">
                                 </VBox>
                             </VBox>
