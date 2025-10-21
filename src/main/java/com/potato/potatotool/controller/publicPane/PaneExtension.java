@@ -296,14 +296,14 @@ public class PaneExtension {
         Tooltip.install(regionAdd, tooltip);
         regionAdd.setOnMouseClicked(even->addDialog(even));
         hBoxTitle.getChildren().addAll(regionTitle, labelTitle, regionAdd);
-        hBoxTitle.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        hBoxTitle.setAlignment(Pos.CENTER_LEFT);
         contentObj.add(hBoxTitle);
 
         FlowPane flowPane = new FlowPane();
         flowPane.setHgap(10);
         flowPane.setVgap(10);
         flowPane.setStyle("-fx-padding: 10");
-        flowPane.setAlignment(javafx.geometry.Pos.TOP_LEFT);
+        flowPane.setAlignment(Pos.TOP_LEFT);
         flowPane.setPrefWidth(sPane.getWidth() - 240);
         
         // 缓存 FlowPane
@@ -328,7 +328,7 @@ public class PaneExtension {
 
             HBox hBox = new HBox();
             hBox.getStyleClass().add("cellHBox");
-            hBox.setAlignment(javafx.geometry.Pos.CENTER);
+            hBox.setAlignment(Pos.CENTER);
 
 
             ImageView imageView = new ImageView();
@@ -347,7 +347,7 @@ public class PaneExtension {
             imageView.setPickOnBounds(true);
 
             VBox vBox = new VBox();
-            vBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            vBox.setAlignment(Pos.CENTER_LEFT);
             Label label1 = new Label(title);
             Label label2 = new Label(describe);
             label2.getStyleClass().add("tips");

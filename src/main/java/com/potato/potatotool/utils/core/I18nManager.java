@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleLongProperty;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +29,7 @@ public class I18nManager {
     private final List<I18nUpdatable> listeners = new CopyOnWriteArrayList<>();
     
     // 用于强制刷新binding的触发器
-    private final javafx.beans.property.SimpleLongProperty refreshTrigger = new javafx.beans.property.SimpleLongProperty(0);
+    private final SimpleLongProperty refreshTrigger = new SimpleLongProperty(0);
     
     // 防止递归触发
     private boolean isUpdating = false;

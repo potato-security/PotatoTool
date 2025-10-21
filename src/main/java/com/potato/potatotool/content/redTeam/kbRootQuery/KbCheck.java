@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.potato.potatotool.content.classObj.ConfigConstants;
+import com.potato.potatotool.storage.PathManager;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import org.jsoup.Jsoup;
@@ -131,13 +132,41 @@ public class KbCheck {
 
     private static String getPathFromConfig() {
         try {
+            // 获取顶层配置和UpDate配置
+            JsonObject rootConfig = (JsonObject) Constants.getOutsideConfig(null);
             JsonObject updateConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.UPDATE);
-            return updateConfig.getAsJsonObject(ConfigConstants.UPDATE_WIN_KB_INFO)
-                    .get(ConfigConstants.UPDATE_PATH)
-                    .getAsString();
+            
+            if (updateConfig != null && updateConfig.has(ConfigConstants.UPDATE_RESOURCES)) {
+                JsonObject resources = updateConfig.getAsJsonObject(ConfigConstants.UPDATE_RESOURCES);
+                if (resources.has(ConfigConstants.UPDATE_WIN_KB_INFO)) {
+                    JsonObject winKbInfo = resources.getAsJsonObject(ConfigConstants.UPDATE_WIN_KB_INFO);
+                    
+                    // 使用fileName字段 + ResourcePath拼接
+                    if (winKbInfo.has(ConfigConstants.UPDATE_FILE_NAME)) {
+                        String fileName = winKbInfo.get(ConfigConstants.UPDATE_FILE_NAME).getAsString();
+                        if (fileName != null && !fileName.isEmpty()) {
+                            // 获取顶层的ResourcePath
+                            String resourcePath = "";
+                            if (rootConfig != null && rootConfig.has(ConfigConstants.UPDATE_RESOURCE_PATH)) {
+                                resourcePath = rootConfig.get(ConfigConstants.UPDATE_RESOURCE_PATH).getAsString();
+                            }
+                            
+                            // 如果ResourcePath为空或不存在，使用PathManager获取默认路径
+                            if (resourcePath == null || resourcePath.isEmpty()) {
+                                PathManager pathManager = PathManager.getInstance();
+                                return pathManager.getResourcePath(fileName).toString();
+                            } else {
+                                // 拼接路径
+                                return Paths.get(resourcePath, fileName).toString();
+                            }
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
-            return null;
+            // 忽略异常
         }
+        return null;
     }
 
     private static boolean isValidPath(String path) {

@@ -8,11 +8,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
+import com.potato.potatotool.storage.PathManager;
+import com.potato.potatotool.update.UpdateInfo;
+import com.potato.potatotool.update.UpdateManager;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.I18nManager;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.crypto.AESUtils;
 import javafx.animation.FadeTransition;
+
+import static com.potato.potatotool.ToStart.debugMode;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.event.ActionEvent;
@@ -24,17 +29,19 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static com.potato.potatotool.ToStart.isBlueMode;
-import static com.potato.potatotool.content.Update.checkResAndGetDownUrl;
-import static com.potato.potatotool.content.Update.downloadAndSaveResource;
 import static com.potato.potatotool.controller.MainController.clipRect;
 
 /**
@@ -156,6 +163,29 @@ public class PaneSetting {
     private TitledPane assetPane;
     @FXML
     private TitledPane updatePane;
+    
+    // 更新设置相关
+    @FXML
+    private CFSwitch autoCheckUpdateSwitch;
+    
+    // 存储位置管理相关
+    @FXML
+    private Label configPathLabel;
+    @FXML
+    private TextField resourcePathField;
+    @FXML
+    private Label currentSizeLabel;
+    @FXML
+    private Label availableSizeLabel;
+    @FXML
+    private Button migrateButton;
+    @FXML
+    private Button resetPathButton;
+    @FXML
+    private Button checkAppUpdateButton;
+    
+    @FXML
+    private Button saveUpdateSettingsButton;
 
     private double offsetX,offsetY;
 
@@ -192,7 +222,60 @@ public class PaneSetting {
         Platform.runLater(() -> {
             initLanguage();
             I18nUtils.bindComponents(an);
+            // 国际化绑定后再初始化存储管理（避免按钮文本被绑定）
+            initStorageManagement();
         });
+    }
+    
+    /**
+     * 初始化存储位置管理和更新设置
+     */
+    private void initStorageManagement() {
+        PathManager pathManager = PathManager.getInstance();
+        
+        // 初始化自动检查更新开关
+        try {
+            JsonObject config = (JsonObject) Constants.getOutsideConfig(null);
+            if (config != null && config.has("UpDate")) {
+                JsonObject updateConfig = config.getAsJsonObject("UpDate");
+                if (updateConfig.has("autoCheck")) {
+                    boolean autoCheck = updateConfig.get("autoCheck").getAsBoolean();
+                    autoCheckUpdateSwitch.setSelected(autoCheck);
+                } else {
+                    autoCheckUpdateSwitch.setSelected(true); // 默认开启
+                }
+            } else {
+                autoCheckUpdateSwitch.setSelected(true); // 默认开启
+            }
+        } catch (Exception e) {
+            autoCheckUpdateSwitch.setSelected(true); // 默认开启
+        }
+        
+        // 显示配置文件路径
+        configPathLabel.setText(pathManager.getConfigBasePath().toString());
+        
+        // 显示资源文件路径
+        resourcePathField.setText(pathManager.getResourceBasePath().toString());
+        
+        // 显示初始状态
+        currentSizeLabel.setText(i18n.getString("update.storage.calculating"));
+        availableSizeLabel.setText(i18n.getString("update.storage.calculating"));
+        
+        // 初始化"检查软件更新"按钮文本（手动国际化，因为需要动态改变）
+        if (checkAppUpdateButton != null) {
+            checkAppUpdateButton.setText(i18n.getString("update.check.title"));
+        }
+        
+        // 异步计算占用空间
+        new Thread(() -> {
+            long currentSize = pathManager.getDirectorySize(pathManager.getResourceBasePath());
+            long availableSpace = pathManager.getAvailableSpace(pathManager.getResourceBasePath());
+            
+            Platform.runLater(() -> {
+                currentSizeLabel.setText(PathManager.formatSize(currentSize));
+                availableSizeLabel.setText(PathManager.formatSize(availableSpace));
+            });
+        }).start();
     }
     
     /**
@@ -441,7 +524,11 @@ public class PaneSetting {
         String startCommand = os.contains("windows") ? "start" :
                               os.contains("mac") ? "open" :
                               os.contains("linux") ? "xdg-open" : null;
-        String command = Paths.get(System.getProperty("user.home"), ".PotatoTool", "config.json").toString();
+        
+        // 使用PathManager获取配置文件路径
+        PathManager pathManager = PathManager.getInstance();
+        String command = pathManager.getConfigFilePath().toString();
+        
         try {
             new ProcessBuilder(startCommand, command).start();
         } catch (Exception e) {
@@ -483,6 +570,7 @@ public class PaneSetting {
         configMap.put(ConfigConstants.AI, aiMap);
 
         if(Constants.saveConfig(configMap)){
+            // 更新设置现在有独立的保存按钮，这里不再保存（避免重复）
             if (languageChanged && selectedLanguage != null) {
                 // 如果语言发生了变化，则切换语言
                 switchLanguage(selectedLanguage);
@@ -500,203 +588,38 @@ public class PaneSetting {
         );
     }
 
-    private Thread md5CheckThread;
-    String md5DownUrl = null;
+    // ========== 以下为旧的MD5/KB独立更新逻辑（已废弃，统一使用"检查软件更新"） ==========
+    // 注意：这些方法保留是为了兼容setting.fxml中的按钮绑定
+    // 建议：后续可以移除这些方法，统一使用checkAppUpdate
+    
     @FXML
     public void checkMd5(ActionEvent event) {
-        md5CheckButton.setText(i18n.getString("setting.update.md5.checking"));
-
-        if (md5CheckThread != null && md5CheckThread.isAlive()) {
-            md5CheckThread.stop();   // 强行中断当前线程
-        }
-        if (md5UpdateThread != null && md5UpdateThread.isAlive()) {
-            md5UpdateThread.stop();
-        }
-
-        md5CheckThread = new Thread(() -> {
-            md5DownUrl = checkResAndGetDownUrl("md5");
-
-            Platform.runLater(() -> {
-                if (md5DownUrl==null){
-                    md5Tips.setText(i18n.getString("setting.update.md5.exists"));
-                    md5Tips.setVisible(true);
-                    md5Tips.setManaged(true);
-                    md5CheckButton.setVisible(false);
-                    md5CheckButton.setManaged(false);
-                }else if (md5DownUrl.startsWith("[Error]")) {
-                    md5Tips.setText(md5DownUrl.replace("[Error]",""));
-                    md5Tips.setVisible(true);
-                    md5Tips.setManaged(true);
-                    md5CheckButton.setVisible(true);
-                    md5CheckButton.setManaged(true);
-                }else {
-                    md5Tips.setText(i18n.getString("setting.update.md5.notexists"));
-                    md5Tips.setVisible(true);
-                    md5Tips.setManaged(true);
-                    md5CheckButton.setVisible(false);
-                    md5CheckButton.setManaged(false);
-                    md5UpdateButton.setVisible(true);
-                    md5UpdateButton.setManaged(true);
-                }
-                md5CheckButton.setText(i18n.getString("setting.update.md5.check"));
-            });
-        });
-        md5CheckThread.start();
+        showTip(i18n.getString("update.storage.use.unified"));
     }
 
-    private Thread kbCheckThread;
-    String kbDownUrl = null;
     @FXML
     public void checkKb(ActionEvent event) {
-        kbCheckButton.setText(i18n.getString("setting.update.kb.checking"));
-
-        if (kbCheckThread != null && kbCheckThread.isAlive()) {
-            kbCheckThread.stop();   // 强行中断当前线程
-        }
-        if (kbUpdateThread != null && kbUpdateThread.isAlive()) {
-            kbUpdateThread.stop();
-        }
-
-        kbCheckThread = new Thread(() -> {
-            kbDownUrl = checkResAndGetDownUrl("winKbInfo");
-
-            Platform.runLater(() -> {
-                if (kbDownUrl==null){
-                    kbTips.setText(i18n.getString("setting.update.kb.latest"));
-                    kbTips.setVisible(true);
-                    kbTips.setManaged(true);
-                    kbCheckButton.setVisible(false);
-                    kbCheckButton.setManaged(false);
-                }else if (kbDownUrl.startsWith("[Error]")) {
-                    kbTips.setText(kbDownUrl.replace("[Error]",""));
-                    kbTips.setVisible(true);
-                    kbTips.setManaged(true);
-                    kbCheckButton.setVisible(true);
-                    kbCheckButton.setManaged(true);
-                }else {
-                    kbTips.setText(i18n.getString("setting.update.kb.notexists"));
-                    kbTips.setVisible(true);
-                    kbTips.setManaged(true);
-                    kbCheckButton.setVisible(false);
-                    kbCheckButton.setManaged(false);
-                    kbUpdateButton.setVisible(true);
-                    kbUpdateButton.setManaged(true);
-                }
-                kbCheckButton.setText(i18n.getString("setting.update.kb.check"));
-            });
-        });
-        kbCheckThread.start();
+        showTip(i18n.getString("update.storage.use.unified"));
     }
 
-    private Thread md5UpdateThread;
     @FXML
     public void updateMd5(ActionEvent event) {
-
-        if (md5CheckThread != null && md5CheckThread.isAlive()) {
-            md5CheckThread.stop();   // 强行中断当前线程
-        }
-        if (md5UpdateThread != null && md5UpdateThread.isAlive()) {
-            md5UpdateThread.stop();
-        }
-
-        md5ProgressLabel.setText(I18nUtils.getString("setting.update.md5.progress", "0%", "-", "-"));
-        md5ProgressBar.setProgress(0);
-        md5Tips.setVisible(false);
-        md5Tips.setManaged(false);
-        md5UpdateButton.setManaged(false);
-        md5UpdateButton.setVisible(false);
-        md5ProgressVBox.setManaged(true);
-        md5ProgressVBox.setVisible(true);
-        md5StopUpdateButton.setManaged(true);
-        md5StopUpdateButton.setVisible(true);
-
-        md5UpdateThread = new Thread(() -> {
-            downloadAndSaveResource("md5", md5DownUrl, md5ProgressBar, md5ProgressLabel);
-
-            Platform.runLater(() -> {
-                md5Tips.setText(i18n.getString("setting.update.md5.exists"));
-                md5ProgressVBox.setManaged(false);
-                md5ProgressVBox.setVisible(false);
-                md5StopUpdateButton.setManaged(false);
-                md5StopUpdateButton.setVisible(false);
-                md5Tips.setManaged(true);
-                md5Tips.setVisible(true);
-            });
-        });
-        md5UpdateThread.start();
+        showTip(i18n.getString("update.storage.use.unified"));
     }
 
-    private Thread kbUpdateThread;
     @FXML
     public void updateKb(ActionEvent event) {
-
-        if (kbCheckThread != null && kbCheckThread.isAlive()) {
-            kbCheckThread.stop();   // 强行中断当前线程
-        }
-        if (kbUpdateThread != null && kbUpdateThread.isAlive()) {
-            kbUpdateThread.stop();
-        }
-
-        kbProgressLabel.setText(I18nUtils.getString("setting.update.kb.progress", "0%", "-", "-"));
-        kbProgressBar.setProgress(0);
-        kbTips.setVisible(false);
-        kbTips.setManaged(false);
-        kbUpdateButton.setManaged(false);
-        kbUpdateButton.setVisible(false);
-        kbProgressVBox.setManaged(true);
-        kbProgressVBox.setVisible(true);
-        kbStopUpdateButton.setManaged(true);
-        kbStopUpdateButton.setVisible(true);
-
-        kbUpdateThread = new Thread(() -> {
-            downloadAndSaveResource("winKbInfo", kbDownUrl, kbProgressBar, kbProgressLabel);
-
-            Platform.runLater(() -> {
-                kbTips.setText(i18n.getString("setting.update.kb.latest"));
-                kbProgressVBox.setManaged(false);
-                kbProgressVBox.setVisible(false);
-                kbStopUpdateButton.setManaged(false);
-                kbStopUpdateButton.setVisible(false);
-                kbTips.setManaged(true);
-                kbTips.setVisible(true);
-            });
-        });
-        kbUpdateThread.start();
+        showTip(i18n.getString("update.storage.use.unified"));
     }
 
     @FXML
     public void stopUpdateMd5(ActionEvent event) {
-        md5StopUpdateButton.setVisible(false);
-        md5StopUpdateButton.setManaged(false);
-        md5ProgressVBox.setManaged(false);
-        md5ProgressVBox.setVisible(false);
-        md5CheckButton.setVisible(true);
-        md5CheckButton.setManaged(true);
-
-        if (md5CheckThread != null && md5CheckThread.isAlive()) {
-            md5CheckThread.stop();   // 强行中断当前线程
-        }
-        if (md5UpdateThread != null && md5UpdateThread.isAlive()) {
-            md5UpdateThread.stop();
-        }
+        // 已废弃
     }
 
     @FXML
     public void stopUpdateKb(ActionEvent event) {
-
-        kbStopUpdateButton.setVisible(false);
-        kbStopUpdateButton.setManaged(false);
-        kbProgressVBox.setManaged(false);
-        kbProgressVBox.setVisible(false);
-        kbCheckButton.setVisible(true);
-        kbCheckButton.setManaged(true);
-
-        if (kbCheckThread != null && kbCheckThread.isAlive()) {
-            kbCheckThread.stop();   // 强行中断当前线程
-        }
-        if (kbUpdateThread != null && kbUpdateThread.isAlive()) {
-            kbUpdateThread.stop();
-        }
+        // 已废弃
     }
 
     @FXML
@@ -907,5 +830,215 @@ public class PaneSetting {
         proxyMap.forEach((checkbox, key) -> {
             checkbox.setDisable(!proxyButton.isSelected());
         });
+    }
+    
+    /**
+     * 浏览资源路径
+     */
+    @FXML
+    public void browseResourcePath(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle(i18n.getString("update.storage.button.browse"));
+        
+        // 设置初始目录
+        File currentPath = new File(resourcePathField.getText());
+        if (currentPath.exists()) {
+            directoryChooser.setInitialDirectory(currentPath);
+        }
+        
+        Stage stage = (Stage) an.getScene().getWindow();
+        File selectedDirectory = directoryChooser.showDialog(stage);
+        
+        if (selectedDirectory != null) {
+            resourcePathField.setText(selectedDirectory.getAbsolutePath());
+        }
+    }
+    
+    /**
+     * 保存更新设置（独立按钮）
+     */
+    @FXML
+    public void saveUpdateSettings(ActionEvent event) {
+        try {
+            Map<String, Object> updateMap = new LinkedHashMap<>();
+            updateMap.put(ConfigConstants.UPDATE_AUTO_CHECK, autoCheckUpdateSwitch.isSelected());
+            
+            if (debugMode) System.out.println("保存更新设置: autoCheck=" + autoCheckUpdateSwitch.isSelected());
+            
+            Constants.saveConfig(updateMap, ConfigConstants.UPDATE);
+            Constants.cachedConfig = null;
+            
+            if (debugMode) System.out.println("更新设置已保存");
+            showTip(i18n.getString("setting.save.success"));
+            
+        } catch (Exception e) {
+            System.err.println("保存更新设置失败: " + e.getMessage());
+            e.printStackTrace();
+            showTip(i18n.getString("setting.save.failed"));
+        }
+    }
+    
+    /**
+     * 迁移资源文件
+     */
+    @FXML
+    public void migrateResources(ActionEvent event) {
+        String newPath = resourcePathField.getText();
+        PathManager pathManager = 
+                PathManager.getInstance();
+        
+        String currentPath = pathManager.getResourceBasePath().toString();
+        
+        // 检查新路径是否为空
+        if (newPath == null || newPath.trim().isEmpty()) {
+            showTip(i18n.getString("update.storage.path.empty"));
+            return;
+        }
+        
+        // 检查路径是否改变
+        if (newPath.trim().equals(currentPath)) {
+            showTip(i18n.getString("update.storage.path.same"));
+            return;
+        }
+        
+        // 确认对话框
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle(i18n.getString("update.storage.migrate.title"));
+        confirmAlert.setHeaderText(null);
+        confirmAlert.setContentText(
+            I18nUtils.getString("update.storage.migrate.message", newPath) + "\n\n" +
+            i18n.getString("update.storage.migrate.warning")
+        );
+        
+        confirmAlert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                // 禁用按钮
+                migrateButton.setDisable(true);
+                
+                // 异步迁移
+                new Thread(() -> {
+                    try {
+                        pathManager.migrateResources(
+                            java.nio.file.Paths.get(newPath),
+                            new PathManager.MigrationCallback() {
+                                @Override
+                                public void onProgress(int current, int total, String fileName) {
+                                    Platform.runLater(() -> {
+                                        String msg = I18nUtils.getString("update.storage.migrate.progress", 
+                                                                        current + 1, total) + " - " + fileName;
+                                        showTip(msg);
+                                    });
+                                }
+                                
+                                @Override
+                                public void onComplete() {
+                                    Platform.runLater(() -> {
+                                        showTip(i18n.getString("update.storage.migrate.success"));
+                                        migrateButton.setDisable(false);
+                                        initStorageManagement();
+                                    });
+                                }
+                                
+                                @Override
+                                public void onError(String error) {
+                                    Platform.runLater(() -> {
+                                        showTip(I18nUtils.getString("update.storage.migrate.failed", error));
+                                        migrateButton.setDisable(false);
+                                    });
+                                }
+                            }
+                        );
+                    } catch (Exception e) {
+                        Platform.runLater(() -> {
+                            showTip(I18nUtils.getString("update.storage.migrate.failed", e.getMessage()));
+                            migrateButton.setDisable(false);
+                        });
+                    }
+                }).start();
+            }
+        });
+    }
+    
+    /**
+     * 恢复默认路径
+     */
+    @FXML
+    public void resetResourcePath(ActionEvent event) {
+        PathManager pathManager = PathManager.getInstance();
+        
+        String defaultPath = pathManager.getConfigBasePath().resolve("resources").toString();
+        resourcePathField.setText(defaultPath);
+        
+        showTip(i18n.getString("update.storage.reset.tip"));
+    }
+    
+    /**
+     * 检查软件更新
+     */
+    @FXML
+    public void checkAppUpdate(ActionEvent event) {
+        // 保存原始文本
+        final String originalText = checkAppUpdateButton.getText();
+        
+        checkAppUpdateButton.setDisable(true);
+        checkAppUpdateButton.setText(i18n.getString("update.check.checking"));
+        
+        new Thread(() -> {
+            try {
+                UpdateManager updateManager = UpdateManager.getInstance();
+                
+                UpdateInfo updateInfo = updateManager.checkForUpdates();
+                
+                Platform.runLater(() -> {
+                    checkAppUpdateButton.setDisable(false);
+                    checkAppUpdateButton.setText(originalText);
+                    
+                    if (updateInfo.hasAnyUpdate()) {
+                        // 显示更新对话框
+                        showUpdateDialog(updateInfo);
+                    } else {
+                        showTip(i18n.getString("update.no.update.message"));
+                    }
+                });
+                
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    checkAppUpdateButton.setDisable(false);
+                    checkAppUpdateButton.setText(originalText);
+                    showTip(i18n.getString("update.check.failed") + ": " + e.getMessage());
+                    e.printStackTrace();
+                });
+            }
+        }).start();
+    }
+    
+    /**
+     * 显示更新对话框
+     */
+    private void showUpdateDialog(UpdateInfo updateInfo) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/fxml/publicPane/update_dialog.fxml"));
+            Scene scene = new Scene(loader.load());
+            
+            scene.setFill(null);
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+            
+            Stage updateStage = new Stage();
+            updateStage.initStyle(StageStyle.TRANSPARENT);
+            updateStage.setScene(scene);
+            updateStage.setTitle("PotatoTool - " + i18n.getString("update.check.title"));
+            updateStage.setAlwaysOnTop(true);  // 更新对话框置顶
+            
+            // 设置更新信息
+            PaneUpdateDialog controller = loader.getController();
+            controller.setUpdateInfo(updateInfo);
+            
+            updateStage.show();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showTip(I18nUtils.getString("update.storage.dialog.error", e.getMessage()));
+        }
     }
 }

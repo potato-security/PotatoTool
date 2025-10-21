@@ -1,11 +1,20 @@
 package com.potato.potatotool.utils.core;
 
+import javafx.beans.binding.StringBinding;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.text.Text;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import com.potato.potatotool.utils.ui.DefaultContextMenu;
 
@@ -71,8 +80,8 @@ public class I18nUtils {
         }
         
         // 特殊处理：ScrollPane 内的内容（确保扫描到延迟加载的内容）
-        if (node instanceof javafx.scene.control.ScrollPane) {
-            javafx.scene.control.ScrollPane scrollPane = (javafx.scene.control.ScrollPane) node;
+        if (node instanceof ScrollPane) {
+            ScrollPane scrollPane = (ScrollPane) node;
             if (scrollPane.getContent() != null) {
                 bindComponents(scrollPane.getContent());
             }
@@ -98,8 +107,8 @@ public class I18nUtils {
         }
         
         // 特殊处理：ListView 的 items
-        if (node instanceof javafx.scene.control.ListView) {
-            javafx.scene.control.ListView<?> listView = (javafx.scene.control.ListView<?>) node;
+        if (node instanceof ListView) {
+            ListView<?> listView = (ListView<?>) node;
             if (listView.getItems() != null) {
                 for (Object item : listView.getItems()) {
                     if (item instanceof Node) {
@@ -216,8 +225,8 @@ public class I18nUtils {
             ((Labeled) node).textProperty().bind(i18n.createBinding(key));
         } else if (node instanceof TitledPane) {
             ((TitledPane) node).textProperty().bind(i18n.createBinding(key));
-        } else if (node instanceof javafx.scene.text.Text) {
-            ((javafx.scene.text.Text) node).textProperty().bind(i18n.createBinding(key));
+        } else if (node instanceof Text) {
+            ((Text) node).textProperty().bind(i18n.createBinding(key));
         }
         // 注意：Tab 不是 Node 的子类，通过 bindTab 方法单独处理
     }
@@ -379,11 +388,11 @@ public class I18nUtils {
         
         try {
             // 尝试获取 textProperty 方法
-            java.lang.reflect.Method method = component.getClass().getMethod("textProperty");
+            Method method = component.getClass().getMethod("textProperty");
             Object property = method.invoke(component);
             
-            if (property instanceof javafx.beans.property.StringProperty) {
-                ((javafx.beans.property.StringProperty) property).bind(i18n.createBinding(key));
+            if (property instanceof StringProperty) {
+                ((StringProperty) property).bind(i18n.createBinding(key));
             }
         } catch (Exception e) {
             System.err.println("无法为组件绑定国际化: " + component.getClass().getName());
@@ -395,7 +404,7 @@ public class I18nUtils {
      * @param key 资源键
      * @return StringBinding对象
      */
-    public static javafx.beans.binding.StringBinding createBinding(String key) {
+    public static StringBinding createBinding(String key) {
         return i18n.createBinding(key);
     }
     
@@ -405,7 +414,7 @@ public class I18nUtils {
      * @param args 格式化参数
      * @return StringBinding对象
      */
-    public static javafx.beans.binding.StringBinding createBinding(String key, Object... args) {
+    public static StringBinding createBinding(String key, Object... args) {
         return i18n.createBinding(key, args);
     }
     
@@ -413,7 +422,7 @@ public class I18nUtils {
      * 获取语言环境属性（用于监听语言变化）
      * @return ObjectProperty<Locale>
      */
-    public static javafx.beans.property.ObjectProperty<java.util.Locale> localeProperty() {
+    public static ObjectProperty<Locale> localeProperty() {
         return i18n.localeProperty();
     }
     
@@ -450,8 +459,8 @@ public class I18nUtils {
      * @param key 资源键
      * @param suffixSupplier 后缀提供者（可为null）
      */
-    public static void bindDynamicText(javafx.scene.control.Labeled labeled, String key, 
-                                       java.util.function.Supplier<String> suffixSupplier) {
+    public static void bindDynamicText(Labeled labeled, String key, 
+                                       Supplier<String> suffixSupplier) {
         if (labeled == null || key == null) {
             return;
         }
@@ -480,8 +489,8 @@ public class I18nUtils {
      * @param key 资源键
      * @return Label对象
      */
-    public static javafx.scene.control.Label createI18nLabel(String key) {
-        javafx.scene.control.Label label = new javafx.scene.control.Label();
+    public static Label createI18nLabel(String key) {
+        Label label = new Label();
         label.textProperty().bind(i18n.createBinding(key));
         return label;
     }
@@ -491,8 +500,8 @@ public class I18nUtils {
      * @param key 资源键
      * @return Text对象
      */
-    public static javafx.scene.text.Text createI18nText(String key) {
-        javafx.scene.text.Text text = new javafx.scene.text.Text();
+    public static Text createI18nText(String key) {
+        Text text = new Text();
         text.textProperty().bind(i18n.createBinding(key));
         return text;
     }
@@ -524,7 +533,7 @@ public class I18nUtils {
         int selectedIndex = comboBox.getSelectionModel().getSelectedIndex();
         
         // 创建可观察列表来存储选项
-        javafx.collections.ObservableList<String> items = javafx.collections.FXCollections.observableArrayList();
+        ObservableList<String> items = FXCollections.observableArrayList();
         
         // 尝试两种格式：
         // 格式1: key.count + key.1, key.2, ...
@@ -607,7 +616,7 @@ public class I18nUtils {
         }
         
         Control control = (Control) node;
-        javafx.scene.control.ContextMenu contextMenu = new javafx.scene.control.ContextMenu();
+        ContextMenu contextMenu = new ContextMenu();
         
         // 读取菜单项数量
         String countKey = baseKey + ".count";
@@ -617,7 +626,7 @@ public class I18nUtils {
             int count = Integer.parseInt(countStr);
             for (int i = 1; i <= count; i++) {
                 String itemKey = baseKey + "." + i;
-                javafx.scene.control.MenuItem menuItem = new javafx.scene.control.MenuItem();
+                MenuItem menuItem = new MenuItem();
                 menuItem.textProperty().bind(i18n.createBinding(itemKey));
                 
                 // 可以在这里设置菜单项的动作（需要额外的机制来传递）
@@ -648,11 +657,11 @@ public class I18nUtils {
      */
     private static void autoAddContextMenu(Node node) {
         // 处理 TextField
-        if (node instanceof javafx.scene.control.TextField) {
-            javafx.scene.control.TextField textField = (javafx.scene.control.TextField) node;
+        if (node instanceof TextField) {
+            TextField textField = (TextField) node;
             
             // 检查是否已有自定义菜单（避免重复设置）
-            javafx.scene.control.ContextMenu existingMenu = textField.getContextMenu();
+            ContextMenu existingMenu = textField.getContextMenu();
             if (existingMenu instanceof DefaultContextMenu) {
                 return;
             }
@@ -664,11 +673,11 @@ public class I18nUtils {
             textField.setContextMenu(contextMenu);
         }
         // 处理 TextArea
-        else if (node instanceof javafx.scene.control.TextArea) {
-            javafx.scene.control.TextArea textArea = (javafx.scene.control.TextArea) node;
+        else if (node instanceof TextArea) {
+            TextArea textArea = (TextArea) node;
             
             // 检查是否已有自定义菜单（避免重复设置）
-            javafx.scene.control.ContextMenu existingMenu = textArea.getContextMenu();
+            ContextMenu existingMenu = textArea.getContextMenu();
             if (existingMenu instanceof DefaultContextMenu) {
                 return;
             }

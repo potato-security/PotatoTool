@@ -1,14 +1,21 @@
 package com.potato.potatotool;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.Update;
-import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.controller.publicPane.PaneLoad;
 import com.potato.potatotool.controller.publicPane.PanePasswd;
+import com.potato.potatotool.controller.publicPane.PaneUpdateDialog;
+import com.potato.potatotool.content.classObj.ConfigConstants;
+import com.potato.potatotool.storage.PathManager;
+import com.potato.potatotool.update.ResourceUpdate;
+import com.potato.potatotool.update.UpdateInfo;
+import com.potato.potatotool.update.UpdateManager;
+import com.potato.potatotool.update.resource.ResourceUpdater;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.crypto.SecurityInitializer;
 import com.potato.potatotool.utils.data.GzipUtils;
 import javafx.animation.FadeTransition;
@@ -62,6 +69,16 @@ public class MainApplication extends Application {
         };
 
         executor.submit(taskInit);
+        
+        // 启动时检查更新（异步，不阻塞启动）
+        // 优化：立即开始检查，不延迟等待
+        executor.submit(() -> {
+            try {
+                checkForUpdatesOnStartup();
+            } catch (Exception e) {
+                System.err.println("启动时检查更新失败: " + e.getMessage());
+            }
+        });
 
         //  输入密码界面stage
         Stage passwdStage = new Stage();
@@ -154,6 +171,7 @@ public class MainApplication extends Application {
         try {
             Stage loadStage = new Stage();
             loadStage.initStyle(StageStyle.TRANSPARENT);
+            loadStage.setAlwaysOnTop(true);  // 加载页面置顶
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/publicPane/load.fxml"));
             Scene loadScene = new Scene(loader.load());
             loadScene.setCamera(new PerspectiveCamera());
@@ -196,75 +214,136 @@ public class MainApplication extends Application {
 
 
     private void initEnvFile() {
-        String TMP_FOLDER = ".PotatoTool";
-        Path configFolder = Paths.get(System.getProperty("user.home"), TMP_FOLDER);
+        // 使用PathManager管理路径
+        PathManager pathManager = PathManager.getInstance();
+        
+        Path configFolder = pathManager.getConfigBasePath();
+        Path resourceFolder = pathManager.getResourceBasePath();
 
+        // 1. 初始化配置文件（简化逻辑，只判断是否存在）
         try {
             Files.createDirectories(configFolder);
-            Path configFile = configFolder.resolve("config.json");
-            JsonElement tmpJsonObj = (JsonElement) Constants.getOutsideConfig(ConfigConstants.CONFIG_VERSION);
-            String tmpDataJsonStr = getResourceString("config");
-            if (!Files.exists(configFile)) {    // 不存在本地配置文件
-                System.out.println("检测到本地配置文件不存在");
-                Files.write(configFile, tmpDataJsonStr.getBytes(StandardCharsets.UTF_8));
+            Path configFile = pathManager.getConfigFilePath();
+            
+            if (!Files.exists(configFile)) {
+                if (debugMode) System.out.println("检测到本地配置文件不存在，正在初始化...");
+                JsonObject config = com.google.gson.JsonParser.parseString(getResourceString("config")).getAsJsonObject();
+                Files.write(configFile, (new Gson()).toJson(config).getBytes(StandardCharsets.UTF_8));
                 Constants.cachedConfig = null;
-                System.out.println("本地配置文件初始化完成");
-            }else if(tmpJsonObj == null){
-                System.out.println("检测到本地配置为Bug版本，开始覆盖");   //修复Version2.1版本之前的乱码版本
-                Files.write(configFile, tmpDataJsonStr.getBytes(StandardCharsets.UTF_8));
-                Constants.cachedConfig = null;
-                System.out.println("本地配置文件初始化完成");
-            }else if(!tmpJsonObj.getAsString().equals("2.x")){    // 本地配置文件版本不对应
-                System.out.println("检测到本地配置文件版本较低");
-                JsonElement merged = mergeJsonElements((JsonElement) Constants.getOutsideConfig(null),  (JsonElement) (new Gson()).fromJson(tmpDataJsonStr, JsonObject.class));
-                saveConfig(merged);
-                Constants.cachedConfig = null;
-                System.out.println("本地配置文件更新完成");
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        try {
-            String propertyName = "bcprov";
-            String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
-            copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (7.9 * 1024 * 1024));
-            SecurityInitializer.initializeSecurityProvider();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            String propertyName = "ip2region";
-            String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
-            copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (10.5 * 1024 * 1024));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            String propertyName = "winKbInfo";
-            String fileNmae = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
-            if(!hasFileWithPrefix(configFolder, propertyName)) {
-                copyResourceToFile(propertyName, configFolder.resolve(fileNmae), (long) (70.5 * 1024 * 1024));
-                Update.updateLocalResourceConfig(propertyName, configFolder.resolve(fileNmae).toString());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            Path md5GzipPath = configFolder.resolve("md5_database.db.gzip");
-            if(Files.exists(md5GzipPath)){
-                String gzipAbsolutePath = md5GzipPath.toString();
-                String absolutePath = gzipAbsolutePath.replace(".gzip","");
-
-                GzipUtils.unGzipFile(gzipAbsolutePath, absolutePath, true);
+                if (debugMode) System.out.println("本地配置文件初始化完成");
+            } else {
+                // 配置文件存在，尝试合并新增字段（向后兼容）
+                try {
+                    JsonElement localConfig = (JsonElement) Constants.getOutsideConfig(null);
+                    JsonObject resourceConfig = com.google.gson.JsonParser.parseString(getResourceString("config")).getAsJsonObject();
+                    // 合并配置（保留本地值，添加新字段）
+                    JsonElement merged = mergeJsonElements(localConfig, resourceConfig);
+                    
+                    // 只有在配置真正发生变化时才保存（避免每次启动都重写文件）
+                    // 使用 JSON 字符串比较，忽略格式差异
+                    Gson gson = new Gson();
+                    String localJson = gson.toJson(localConfig);
+                    String mergedJson = gson.toJson(merged);
+                    
+                    if (!localJson.equals(mergedJson)) {
+                        if (debugMode) System.out.println("检测到配置结构变化，正在更新本地配置文件...");
+                        saveConfig(merged);
+                        Constants.cachedConfig = null;
+                        if (debugMode) System.out.println("本地配置文件已更新");
+                    }
+                } catch (Exception e) {
+                    if(debugMode) {
+                        System.err.println("合并配置文件失败: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
             }
         } catch (Exception e) {
+            System.err.println("初始化配置文件失败");
             e.printStackTrace();
         }
 
+        // 2. 释放BC加密库（必需，每次检查完整性）
+        try {
+            String propertyName = "bcprov";
+            String fileName = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
+            Path targetPath = pathManager.getBcprovPath();
+            
+            // 确保资源目录存在
+            Files.createDirectories(resourceFolder);
+            
+            // 使用常量检查文件是否完整
+            if (!Files.exists(targetPath) || 
+                Files.size(targetPath) < PathManager.BCPROV_EXPECTED_SIZE) {
+                System.out.println("释放BC加密库: " + fileName);
+                copyResourceToFile(propertyName, targetPath, 
+                                 PathManager.BCPROV_EXPECTED_SIZE);
+            }
+            
+            SecurityInitializer.initializeSecurityProvider();
+        } catch (Exception e) {
+            System.err.println("初始化BC加密库失败");
+            e.printStackTrace();
+        }
+
+        // 3. 释放IP地理位置库（必需，每次检查完整性）
+        try {
+            String propertyName = "ip2region";
+            String fileName = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
+            Path targetPath = pathManager.getIp2RegionPath();
+            
+            Files.createDirectories(resourceFolder);
+            
+            // 使用常量检查文件是否完整
+            if (!Files.exists(targetPath) || 
+                Files.size(targetPath) < PathManager.IP2REGION_EXPECTED_SIZE) {
+                System.out.println("释放IP地理位置库: " + fileName);
+                copyResourceToFile(propertyName, targetPath, 
+                                 PathManager.IP2REGION_EXPECTED_SIZE);
+            }
+        } catch (Exception e) {
+            System.err.println("初始化IP地理位置库失败");
+            e.printStackTrace();
+        }
+
+        // 4. 释放Windows补丁信息库基础版本（必需资源，但可在线更新）
+        try {
+            String propertyName = "winKbInfo";
+            String fileName = Paths.get(getConfigInfo(propertyName)).getFileName().toString();
+            
+            // 检查是否已存在任何版本的winKbInfo文件
+            if (!hasFileWithPrefix(resourceFolder, propertyName)) {
+                System.out.println("释放Windows补丁信息库基础版本: " + fileName);
+                Path targetPath = resourceFolder.resolve(fileName);
+                
+                // 使用常量
+                copyResourceToFile(propertyName, targetPath, 
+                                 PathManager.WINKB_EXPECTED_SIZE);
+                
+                // 更新资源配置
+                ResourceUpdater.updateLocalResourceConfig(
+                    propertyName, targetPath.toString());
+            }
+        } catch (Exception e) {
+            System.err.println("初始化Windows补丁信息库失败");
+            e.printStackTrace();
+        }
+
+        // 5. 处理之前下载的MD5数据库压缩包（如果存在则解压）
+        try {
+            Path md5GzipPath = pathManager.getMd5DatabaseGzipPath();
+            if (Files.exists(md5GzipPath)) {
+                if (debugMode) System.out.println("检测到已下载的MD5数据库压缩包，正在解压...");
+                Path md5DbPath = pathManager.getMd5DatabasePath();
+                
+                // 解压并删除压缩包
+                GzipUtils.unGzipFile(md5GzipPath.toString(), md5DbPath.toString(), true);
+                if (debugMode) System.out.println("MD5数据库解压完成");
+            }
+        } catch (Exception e) {
+            System.err.println("解压MD5数据库失败");
+            e.printStackTrace();
+        }
     }
 
     private static HostServices hostServices;
@@ -276,6 +355,190 @@ public class MainApplication extends Application {
         return hostServices;
     }
 
+    /**
+     * 启动时检查更新
+     */
+    private void checkForUpdatesOnStartup() {
+        try {
+            // 检查是否开启自动检查更新
+            JsonObject config = (JsonObject) Constants.getOutsideConfig(null);
+            if (config != null && config.has("UpDate")) {
+                JsonObject updateConfig = config.getAsJsonObject("UpDate");
+                if (updateConfig.has("autoCheck") && !updateConfig.get("autoCheck").getAsBoolean()) {
+                    if (debugMode) System.out.println("自动检查更新已关闭");
+                    return;
+                }
+            }
+            
+            if (debugMode) System.out.println("开始检查更新...");
+            
+            UpdateManager updateManager = UpdateManager.getInstance();
+            
+            UpdateInfo updateInfo = updateManager.checkForUpdates();
+            
+            if (updateInfo.hasAnyUpdate()) {
+                boolean shouldShowDialog = false;
+                
+                // 检查软件更新
+                boolean hasAppUpdate = false;
+                if (updateInfo.isAppNeedUpdate()) {
+                    String remoteVersion = updateInfo.getAppVersion().getVersion();
+                    if (isVersionSkipped(remoteVersion)) {
+                        if (debugMode) System.out.println("软件版本 " + remoteVersion + " 已被跳过，不提示软件更新");
+                    } else {
+                        hasAppUpdate = true;
+                        shouldShowDialog = true;
+                    }
+                }
+                
+                // 检查资源更新（即使APP被跳过，资源更新仍要显示）
+                // 但需要过滤掉被跳过的资源
+                int totalResourceUpdates = updateInfo.getResourceUpdates().size();
+                int unskippedResourceCount = 0;
+                if (updateInfo.hasResourceUpdates()) {
+                    for (ResourceUpdate ru : updateInfo.getResourceUpdates()) {
+                        if (!isResourceSkipped(ru.getResourceName(), ru.getRemoteVersion())) {
+                            unskippedResourceCount++;
+                        }
+                    }
+                    
+                    if (unskippedResourceCount > 0) {
+                        if (debugMode) System.out.println("发现 " + unskippedResourceCount + " 个资源需要更新（" + 
+                                         (totalResourceUpdates - unskippedResourceCount) + " 个已跳过）");
+                        shouldShowDialog = true;
+                    } else {
+                        if (debugMode) System.out.println("有 " + totalResourceUpdates + " 个资源更新，但全部已被跳过");
+                    }
+                }
+                
+                // 只要有需要显示的更新（APP未跳过 或 有资源更新），就显示对话框
+                if (shouldShowDialog) {
+                    if (debugMode) {
+                        System.out.println("发现可用更新:");
+                        if (hasAppUpdate) {
+                            System.out.println("  - 软件更新: " + updateInfo.getAppVersion().getVersion());
+                        }
+                        if (updateInfo.hasResourceUpdates()) {
+                            System.out.println("  - 资源更新: " + updateInfo.getResourceUpdates().size() + " 个");
+                        }
+                    }
+                    
+                    // 在UI线程显示更新对话框
+                    Platform.runLater(() -> showUpdateDialogOnStartup(updateInfo));
+                } else {
+                    if (debugMode) System.out.println("所有更新都已被跳过，不显示更新窗口");
+                }
+            }
+            
+        } catch (Exception e) {
+            // 检查更新失败不输出到控制台（避免用户困扰），只在debug模式输出
+            if (debugMode) {
+                System.err.println("检查更新失败: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * 检查版本是否被跳过
+     */
+    private boolean isVersionSkipped(String version) {
+        try {
+            JsonObject config = (JsonObject) Constants.getOutsideConfig(null);
+            if (config != null && config.has("UpDate")) {
+                JsonObject updateConfig = config.getAsJsonObject("UpDate");
+                if (updateConfig.has("skippedVersions")) {
+                    JsonArray skippedVersions = updateConfig.getAsJsonArray("skippedVersions");
+                    for (JsonElement elem : skippedVersions) {
+                        if (elem.getAsString().equals(version)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 忽略错误
+        }
+        return false;
+    }
+    
+    /**
+     * 检查资源是否被跳过
+     */
+    private boolean isResourceSkipped(String resourceName, String version) {
+        try {
+            JsonObject updateConfig = (JsonObject) 
+                    Constants.getOutsideConfig(ConfigConstants.UPDATE);
+            if (updateConfig != null && updateConfig.has(ConfigConstants.UPDATE_RESOURCES)) {
+                JsonObject resources = updateConfig.getAsJsonObject(
+                        ConfigConstants.UPDATE_RESOURCES);
+                if (resources.has(resourceName)) {
+                    JsonObject resourceConfig = resources.getAsJsonObject(resourceName);
+                    // 检查skippedVersions数组
+                    if (resourceConfig.has(ConfigConstants.UPDATE_SKIPPED_VERSIONS)) {
+                        JsonElement skippedElem = resourceConfig.get(
+                                ConfigConstants.UPDATE_SKIPPED_VERSIONS);
+                        if (skippedElem.isJsonArray()) {
+                            for (JsonElement elem : skippedElem.getAsJsonArray()) {
+                                if (elem.getAsString().equals(version)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 忽略错误
+        }
+        return false;
+    }
+    
+    /**
+     * 启动时显示更新对话框
+     */
+    private void showUpdateDialogOnStartup(UpdateInfo updateInfo) {
+        try {
+            FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/fxml/publicPane/update_dialog.fxml"));
+            Scene scene = new Scene(loader.load());
+            
+            scene.setFill(null);
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+            
+            Stage updateStage = new Stage();
+            updateStage.initStyle(StageStyle.TRANSPARENT);
+            updateStage.setScene(scene);
+            updateStage.setTitle("PotatoTool - " + 
+                                I18nUtils.getString("update.check.title"));
+            updateStage.setAlwaysOnTop(true);  // 更新对话框置顶
+            
+            // 设置图标
+            try {
+                InputStream iconStream = getClass().getResourceAsStream("/img/logo.png");
+                if (iconStream != null) {
+                    Image image = new Image(iconStream);
+                    updateStage.getIcons().add(image);
+                }
+            } catch (Exception e) {
+                // 忽略图标设置错误
+            }
+            
+            // 设置更新信息
+            PaneUpdateDialog controller = 
+                    loader.getController();
+            controller.setUpdateInfo(updateInfo);
+            
+            updateStage.show();
+            
+        } catch (Exception e) {
+            System.err.println("显示更新对话框失败: " + e.getMessage());
+            if (debugMode) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
     public static void main(String[] args) {
         launch();
     }

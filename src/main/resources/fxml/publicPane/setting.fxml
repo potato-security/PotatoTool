@@ -357,63 +357,98 @@
                                     <!-- 在线更新 -->
                                     <TitledPane fx:id="updatePane" text="🔄 在线更新" userData="i18n:setting.update.title">
                                         <VBox styleClass="contentCellLast" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
-                                            <HBox alignment="CENTER" spacing="10">
-                                                <Label fx:id="maxLabel" textAlignment="RIGHT" text="本地MD5库：" userData="i18n:setting.update.md5"/>
-                                                <HBox alignment="CENTER" prefWidth="470" spacing="20">
-                                                    <Label styleClass="tips" fx:id="md5Tips" visible="false" managed="false" text="已存在" userData="i18n:setting.update.md5.exists"/>
-                                                    <Button fx:id="md5CheckButton" styleClass="checkButton" minHeight="25.0" minWidth="100" text="检测" userData="i18n:setting.update.md5.check" onAction="#checkMd5">
-                                                        <effect>
-                                                            <DropShadow />
-                                                        </effect>
-                                                    </Button>
-
-                                                    <Button fx:id="md5UpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="下载" userData="i18n:setting.update.md5.download" onAction="#updateMd5">
-                                                        <effect>
-                                                            <DropShadow />
-                                                        </effect>
-                                                    </Button>
-
-                                                    <VBox fx:id="md5ProgressVBox" visible="false" managed="false">
-                                                        <Label styleClass="progressLabel" fx:id="md5ProgressLabel"/>
-                                                        <ProgressBar fx:id="md5ProgressBar" progress="0" prefHeight="10" prefWidth="350" />
-                                                    </VBox>
-
-                                                    <Button fx:id="md5StopUpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="取消" userData="i18n:setting.update.md5.cancel" onAction="#stopUpdateMd5">
-                                                        <effect>
-                                                            <DropShadow />
-                                                        </effect>
-                                                    </Button>
-                                                </HBox>
-                                            </HBox>
-
-                                            <HBox alignment="CENTER" spacing="10">
-                                                <Label minWidth="${maxLabel.width}" textAlignment="RIGHT" text="微软kb库：" userData="i18n:setting.update.kb"/>
-                                                <HBox alignment="CENTER" prefWidth="470" spacing="20">
-                                                    <Label styleClass="tips" fx:id="kbTips" visible="false" managed="false" text="已为最新版" userData="i18n:setting.update.kb.latest"/>
-                                                    <Button fx:id="kbCheckButton" styleClass="checkButton" minHeight="25.0" minWidth="100" text="检测" userData="i18n:setting.update.kb.check" onAction="#checkKb">
-                                                        <effect>
-                                                            <DropShadow />
-                                                        </effect>
-                                                    </Button>
-
-                                                    <Button fx:id="kbUpdateButton" visible="false" managed="false" styleClass="checkButton" minHeight="25.0" minWidth="100" text="下载" userData="i18n:setting.update.kb.download" onAction="#updateKb">
-                                                        <effect>
-                                                            <DropShadow />
-                                                        </effect>
-                                                    </Button>
-
-                                                    <VBox fx:id="kbProgressVBox" visible="false" managed="false">
-                                                        <Label styleClass="progressLabel" fx:id="kbProgressLabel"/>
-                                                        <ProgressBar fx:id="kbProgressBar" progress="0" prefHeight="10" prefWidth="350" />
-                                                    </VBox>
-
-                                                    <Button fx:id="kbStopUpdateButton" styleClass="checkButton" visible="false" managed="false" minHeight="25.0" minWidth="100" text="取消" userData="i18n:setting.update.kb.cancel" onAction="#stopUpdateKb">
+                                            <!-- 更新设置 -->
+                                            <VBox spacing="10" alignment="CENTER_LEFT">
+                                                <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" 
+                                                      text="更新设置" userData="i18n:update.settings.title"/>
+                                                
+                                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                                    <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" 
+                                                          text="启动时自动检查更新：" 
+                                                          userData="i18n:update.settings.auto.check"/>
+                                                    <CFSwitch fx:id="autoCheckUpdateSwitch">
+                                                        <tooltip>
+                                                            <Tooltip text="关闭后将不会在启动时自动检查更新，但仍可手动检查" 
+                                                                    userData="i18n:update.settings.auto.check.tip"/>
+                                                        </tooltip>
+                                                    </CFSwitch>
+                                                    <HBox prefWidth="125"></HBox>
+                                                    <Button fx:id="saveUpdateSettingsButton"
+                                                           text="保存"
+                                                           userData="i18n:app.save"
+                                                           onAction="#saveUpdateSettings" 
+                                                           minWidth="80" 
+                                                           prefHeight="30"
+                                                           styleClass="checkButton">
+                                                        <tooltip>
+                                                            <Tooltip text="保存更新设置" 
+                                                                    userData="i18n:update.settings.save.tip"/>
+                                                        </tooltip>
                                                         <effect>
                                                             <DropShadow />
                                                         </effect>
                                                     </Button>
                                                 </HBox>
-                                            </HBox>
+                                            </VBox>
+                                            
+                                            <!-- 分隔线 -->
+                                            <Separator prefWidth="${an.width - 58}"/>
+                                            
+                                            <!-- 存储位置管理 -->
+                                            <VBox spacing="15" alignment="CENTER_LEFT">
+                                                <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" 
+                                                      text="存储位置管理" userData="i18n:update.storage.title"/>
+                                                
+                                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                                    <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" 
+                                                          text="配置文件位置（不可修改）：" 
+                                                          userData="i18n:update.storage.config.path"/>
+                                                    <Label fx:id="configPathLabel" style="-fx-text-fill: gray;"/>
+                                                </HBox>
+                                                
+                                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                                    <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" 
+                                                          text="资源文件位置：" 
+                                                          userData="i18n:update.storage.resource.path"/>
+                                                    <TextField fx:id="resourcePathField" prefWidth="350" editable="false"/>
+                                                    <Button text="浏览..." userData="i18n:update.storage.button.browse" 
+                                                           onAction="#browseResourcePath" minWidth="80" minHeight="25">
+                                                        <effect><DropShadow /></effect>
+                                                    </Button>
+                                                </HBox>
+                                                
+                                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                                    <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" 
+                                                          text="当前占用空间：" 
+                                                          userData="i18n:update.storage.current.size"/>
+                                                    <Label fx:id="currentSizeLabel" text="计算中..."/>
+                                                </HBox>
+                                                
+                                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                                    <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" 
+                                                          text="可用空间：" 
+                                                          userData="i18n:update.storage.available.size"/>
+                                                    <Label fx:id="availableSizeLabel" text="计算中..."/>
+                                                </HBox>
+                                                
+                                                <HBox alignment="CENTER" spacing="10" style="-fx-padding: 10 0 0 0;">
+                                                    <Button text="迁移资源文件" userData="i18n:update.storage.button.migrate" 
+                                                           fx:id="migrateButton"
+                                                           onAction="#migrateResources" minWidth="120" minHeight="30">
+                                                        <effect><DropShadow /></effect>
+                                                    </Button>
+                                                    <Button text="恢复默认位置" userData="i18n:update.storage.button.reset" 
+                                                           fx:id="resetPathButton"
+                                                           onAction="#resetResourcePath" minWidth="120" minHeight="30">
+                                                        <effect><DropShadow /></effect>
+                                                    </Button>
+                                                    <Button text="检查软件更新" 
+                                                           fx:id="checkAppUpdateButton"
+                                                           onAction="#checkAppUpdate" minWidth="120" minHeight="30">
+                                                        <effect><DropShadow /></effect>
+                                                    </Button>
+                                                </HBox>
+                                            </VBox>
                                         </VBox>
                                     </TitledPane>
                                 </panes>

@@ -6,6 +6,7 @@ package com.potato.potatotool.utils.ip;
  */
 
 import java.io.UnsupportedEncodingException;
+import java.util.StringTokenizer;
 
 import static com.potato.potatotool.ToStart.debugMode;
 
@@ -20,7 +21,7 @@ public class QqwryParser {
      */
     public static byte[] getIpByteArrayFromString(String ip) {
         byte[] ret = new byte[4];
-        java.util.StringTokenizer st = new java.util.StringTokenizer(ip, ".");
+        StringTokenizer st = new StringTokenizer(ip, ".");
         try {
             ret[0] = (byte) (Integer.parseInt(st.nextToken()) & 0xFF);
             ret[1] = (byte) (Integer.parseInt(st.nextToken()) & 0xFF);

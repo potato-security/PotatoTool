@@ -5,6 +5,8 @@ import com.potato.potatotool.controller.publicPane.PaneAbout;
 import com.potato.potatotool.controller.publicPane.PaneExtension;
 import com.potato.potatotool.utils.core.Constants;
 import javafx.application.Platform;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.Pane;
 
@@ -44,7 +46,7 @@ public class PaneFactory {
      * @param widthProperty 宽度属性
      * @return RXCarouselPane
      */
-    public static RXCarouselPane createExtensionPane(String styleSheet, double widthBinding, javafx.beans.property.ReadOnlyDoubleProperty heightProperty, javafx.beans.property.ReadOnlyDoubleProperty widthProperty) {
+    public static RXCarouselPane createExtensionPane(String styleSheet, double widthBinding, ReadOnlyDoubleProperty heightProperty, ReadOnlyDoubleProperty widthProperty) {
         try {
             FXMLLoader loader = new FXMLLoader(PaneFactory.class.getResource("/fxml/publicPane/pane_extension.fxml"));
             Pane pane = loader.load();
@@ -86,7 +88,7 @@ public class PaneFactory {
      * @param widthProperty 宽度属性
      * @return RXCarouselPane 和 控制器的包装类
      */
-    public static AboutPaneResult createAboutPane(String styleSheet, double widthBinding, javafx.beans.binding.DoubleBinding heightBinding, javafx.beans.property.ReadOnlyDoubleProperty widthProperty) {
+    public static AboutPaneResult createAboutPane(String styleSheet, double widthBinding, DoubleBinding heightBinding, ReadOnlyDoubleProperty widthProperty) {
         try {
             FXMLLoader loader = new FXMLLoader(PaneFactory.class.getResource("/fxml/publicPane/pane_about.fxml"));
             Pane pane = loader.load();

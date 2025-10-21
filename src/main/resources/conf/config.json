@@ -1,5 +1,22 @@
 {
-  "ConfigVersion": "2.x",
+  "AppVersion": "2.4",
+  "ResourcePath": "",
+  "UpDate": {
+    "autoCheck": true,
+    "autoDownload": false,
+    "lastCheckTime": "",
+    "skippedVersions": [],
+    "resources": {
+      "winKbInfo": {
+        "version": "20251016",
+        "fileName": "",
+        "checksum": {
+          "sha256": "",
+          "md5": ""
+        }
+      }
+    }
+  },
   "StartPassword": "",
   "Proxy": {
     "enable": false,
@@ -41,12 +58,6 @@
     "Shodan_Key": "",
     "GitHub_Token": [],
     "Google_API": []
-  },
-  "UpDate": {
-    "winKbInfo": {
-      "Path": "",
-      "Date": ""
-    }
   },
   "Extension": {
     "快捷指令": {

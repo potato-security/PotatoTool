@@ -1,6 +1,7 @@
 package com.potato.potatotool.content.blueTeam.webshellDecrypt.decoder.utils;
 
 import com.google.gson.JsonObject;
+import com.potato.potatotool.storage.PathManager;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
 import com.potato.potatotool.utils.misc.SQLiteDBManager;
@@ -8,7 +9,6 @@ import com.potato.potatotool.utils.misc.SQLiteDBManager;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -46,14 +46,19 @@ public class MD5Decrypt {
         if(isMD5||isMD516||isSHA1){
 
             // 若不存在本地md5库，则直接调用在线md5接口
-            String TMP_FOLDER = ".PotatoTool";
-            Path md5Path = Paths.get(System.getProperty("user.home"), TMP_FOLDER).resolve("md5_database.db");
-            long fileSize = (long) (1.7 * 1024 * 1024 * 1024);
+            PathManager pathManager = PathManager.getInstance();
+            Path md5Path = pathManager.getMd5DatabasePath();
+            
+            // 检查MD5数据库是否存在且完整（使用常量）
+            long fileSize = 0;
             try {
                 fileSize = Files.size(md5Path);
-            } catch (IOException e) {}
+            } catch (IOException e) {
+                // 文件不存在或读取失败
+            }
 
-            if(!Files.exists(md5Path) || fileSize < (long) (1.66 * 1024 * 1024 * 1024)){
+            if(!Files.exists(md5Path) || 
+               fileSize < PathManager.MD5_DB_MIN_SIZE){
                 res = decryptByNet(encryptedString);
                 return res;
             }

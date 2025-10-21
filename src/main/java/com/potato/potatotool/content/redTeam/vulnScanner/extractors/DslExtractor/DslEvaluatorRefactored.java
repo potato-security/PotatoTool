@@ -1,8 +1,9 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Arrays;
+import java.util.regex.Matcher;
 
 /**
  * 重构后的DSL评估器
@@ -182,7 +183,7 @@ public class DslEvaluatorRefactored {
      * 评估函数调用（返回boolean结果）
      */
     private static boolean evaluateFunctionCall(String expression, Map<String, Object> context) {
-        java.util.regex.Matcher matcher = DslConstants.FUNCTION_PATTERN.matcher(expression);
+        Matcher matcher = DslConstants.FUNCTION_PATTERN.matcher(expression);
         if (matcher.find()) {
             String functionName = matcher.group(1).toLowerCase();
             

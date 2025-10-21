@@ -1,5 +1,7 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -278,7 +280,7 @@ public class DslContextBuilder {
             
             // 尝试直接访问字段
             try {
-                java.lang.reflect.Field field = clazz.getDeclaredField(fieldName);
+                Field field = clazz.getDeclaredField(fieldName);
                 field.setAccessible(true);
                 return field.get(obj);
             } catch (NoSuchFieldException e) {
@@ -288,7 +290,7 @@ public class DslContextBuilder {
             // 尝试getter方法
             String getterName = "get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
             try {
-                java.lang.reflect.Method getter = clazz.getMethod(getterName);
+                Method getter = clazz.getMethod(getterName);
                 return getter.invoke(obj);
             } catch (NoSuchMethodException e) {
                 // getter方法不存在
@@ -297,7 +299,7 @@ public class DslContextBuilder {
             // 尝试is方法（用于boolean类型）
             String isMethodName = "is" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
             try {
-                java.lang.reflect.Method isMethod = clazz.getMethod(isMethodName);
+                Method isMethod = clazz.getMethod(isMethodName);
                 return isMethod.invoke(obj);
             } catch (NoSuchMethodException e) {
                 // is方法不存在

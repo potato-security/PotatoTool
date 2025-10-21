@@ -231,7 +231,7 @@ public class DslUtils {
      * 提取函数名
      */
     public static String extractFunctionName(String expression) {
-        java.util.regex.Matcher matcher = DslConstants.FUNCTION_PATTERN.matcher(expression);
+        Matcher matcher = DslConstants.FUNCTION_PATTERN.matcher(expression);
         if (matcher.find()) {
             return matcher.group(1);
         }

@@ -1,26 +1,29 @@
 package com.potato.potatotool.utils.misc;
 
-/**
- * @author Potato
- * @date 2024/6/29 16:45
- */
 import com.potato.potatotool.content.blueTeam.webshellDecrypt.decoder.utils.MD5Decrypt;
+import com.potato.potatotool.storage.PathManager;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * SQLite数据库管理器 - 用于MD5密码库查询
+ * 
+ * @author Potato
+ * @date 2024/6/29 16:45
+ */
 public class SQLiteDBManager {
 
+    // 使用PathManager获取MD5数据库路径
+    private static Path getMd5DatabasePath() {
+        return PathManager.getInstance().getMd5DatabasePath();
+    }
 
-    private static final String TMP_FOLDER = ".PotatoTool";
-    private static final String md5DB_File = "md5_database.db";
-    private static final Path configFolder = Paths.get(System.getProperty("user.home"), TMP_FOLDER);
-    private static final Path md5DBFile = configFolder.resolve(md5DB_File);
-
-    private static final String DB_URL = "jdbc:sqlite:" + md5DBFile.toString();
+    private static String getDbUrl() {
+        return "jdbc:sqlite:" + getMd5DatabasePath().toString();
+    }
 
     public static void main(String[] args) {
         //生成处理代码，请勿删除！
@@ -74,7 +77,7 @@ public class SQLiteDBManager {
                 + "md5_16 TEXT NOT NULL, "
                 + "sha1 TEXT NOT NULL"
                 + ");";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(getDbUrl());
              PreparedStatement pstmt = conn.prepareStatement(createTableSQL)) {
             pstmt.executeUpdate();
             System.out.println("Table created.");
@@ -85,7 +88,7 @@ public class SQLiteDBManager {
 
     public static void insertMD5Mapping(String plaintext) {
         String insertSQL = "INSERT INTO md5_database (plaintext, md5_32, md5_16, sha1) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(getDbUrl());
              PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
             pstmt.setString(1, plaintext);
             pstmt.setString(2, MD5Decrypt.hashString(plaintext, "MD5"));
@@ -104,7 +107,7 @@ public class SQLiteDBManager {
 
     public static Map<String, String> hashGetPlaintext(String hash) {
         String querySQL = "SELECT plaintext, md5_32, md5_16, sha1 FROM md5_database WHERE md5_32 = ? OR md5_16 = ? OR sha1 = ?";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(getDbUrl());
              PreparedStatement pstmt = conn.prepareStatement(querySQL)) {
             pstmt.setString(1, hash);
             pstmt.setString(2, hash);
@@ -127,7 +130,7 @@ public class SQLiteDBManager {
 
     // 数据库不变动的情况下再调用  优化结构，减小体积
     public static void vacuumZipDB(){
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(getDbUrl());
              Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("VACUUM;");
             System.out.println("Database vacuumed successfully.");

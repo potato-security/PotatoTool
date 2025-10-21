@@ -424,7 +424,7 @@ public class DslFunctionEvaluator {
             pattern = pattern.replace("\\\\", "\\");
             
             // 编译并匹配正则表达式
-            java.util.regex.Pattern regexPattern = java.util.regex.Pattern.compile(pattern);
+            Pattern regexPattern = Pattern.compile(pattern);
             boolean matches = regexPattern.matcher(target).find();
             
             return matches;

@@ -7,6 +7,7 @@ import com.potato.potatotool.utils.ui.highlighters.MultiLanguageHighlighter;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -207,7 +208,7 @@ public class AutoDetectionExample extends Application {
      * @param message 错误信息
      */
     private void showErrorAlert(String title, String message) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+        Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);

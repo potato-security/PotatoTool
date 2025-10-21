@@ -4,12 +4,18 @@
 3、重新加载mvn配置(pom.xml)
 4、运行mvn clean package
 
+MANIFEST修改版本号
+About.fxml修改版本号
+config.json配置文件修改版本号
+
 MacOs的mvn没环境生效：source ~/.bash_profile
 
 发行版本不支持，查看当前java环境配置是否和pom.xml配置一致
 
 
 最终混淆后的jar被复制在./outJar/文件夹下
+
+更新github\potato.gold 云端资源文件\云端配置文件
 
 调试时： idea程序实参后面跟上debug    jar运行需要后面跟上debug
 webshell解密报错信息才会展示

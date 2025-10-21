@@ -1,17 +1,19 @@
 package com.potato.potatotool.utils.data;
 
-/**
- * @author Potato
- * @date 2024/7/1 09:43
- */
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.zip.*;
 
 import static com.potato.potatotool.ToStart.debugMode;
+
+/**
+ * Gzip压缩/解压工具类
+ * 
+ * @author Potato
+ * @date 2024/7/1 09:43
+ */
 
 public class GzipUtils {
 
@@ -61,7 +63,7 @@ public class GzipUtils {
         try {
             Files.createDirectories(targetPath.getParent());
         } catch (IOException e) {
-            if(debugMode) e.printStackTrace();
+            if(debugMode) throw new IllegalArgumentException("Failed to create target directory: " + targetPath.getParent(), e);
         }
 
         // 使用嵌套的 try-with-resources 确保正确的关闭顺序

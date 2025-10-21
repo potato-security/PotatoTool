@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import com.google.gson.*;
+import com.potato.potatotool.content.classObj.ConfigConstants;
 
 import static com.potato.potatotool.ToStart.debugMode;
 
@@ -307,7 +308,7 @@ public class Constants {
             String json = gson.toJson(config);
             Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
 
-            System.out.println("配置已保存");
+            // 配置保存成功，不输出日志（减少日志）
             cachedConfig = null;
             return true;
         } catch (IOException e) {
@@ -325,7 +326,7 @@ public class Constants {
             String json = gson.toJson(configJsonObj);
             Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
 
-            System.out.println("配置已保存");
+            // 配置保存成功，不输出日志（减少日志）
             cachedConfig = null;
         } catch (IOException e) {
             e.printStackTrace();
@@ -371,6 +372,69 @@ public class Constants {
             cachedConfig = null;
 
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * 合并保存资源配置到 UpDate.resources 节点（不覆盖其他资源）
+     * 
+     * 使用场景：更新单个或多个资源配置时，自动合并现有资源，避免覆盖
+     * 
+     * @param resourcesMap 要更新的资源配置Map，key为资源名称（如"winKbInfo"），value为资源配置信息
+     * @throws IllegalArgumentException 如果 resourcesMap 为空
+     * 
+     * @example
+     * <pre>
+     * // 更新单个资源
+     * Map<String, Object> resourceInfo = new LinkedHashMap<>();
+     * resourceInfo.put("version", "20250101");
+     * resourceInfo.put("fileName", "winKbInfo20250101.csv");
+     * 
+     * Map<String, Object> resourcesMap = new LinkedHashMap<>();
+     * resourcesMap.put("winKbInfo", resourceInfo);
+     * 
+     * Constants.saveResourceConfigMerge(resourcesMap);
+     * </pre>
+     */
+    public static void saveResourceConfigMerge(Map<String, Object> resourcesMap) {
+        if (resourcesMap == null || resourcesMap.isEmpty()) {
+            throw new IllegalArgumentException("resourcesMap 不能为空");
+        }
+        
+        try {
+            // 1. 读取现有配置
+            JsonObject config = (JsonObject) getOutsideConfig(ConfigConstants.UPDATE);
+            JsonObject existingResources = null;
+            
+            if (config != null && config.has(ConfigConstants.UPDATE_RESOURCES)) {
+                existingResources = config.getAsJsonObject(ConfigConstants.UPDATE_RESOURCES);
+            } else {
+                existingResources = new JsonObject();
+            }
+            
+            // 2. 使用 JsonObject 直接构建合并结果，避免类型混合问题
+            JsonObject mergedResources = new JsonObject();
+            
+            // 先添加现有的所有资源（保留未更新的资源）
+            for (String key : existingResources.keySet()) {
+                JsonElement element = existingResources.get(key);
+                mergedResources.add(key, element);
+            }
+            
+            // 再添加或更新新资源（覆盖同名资源）
+            // 统一转换为 JsonElement，确保类型一致性
+            for (Map.Entry<String, Object> entry : resourcesMap.entrySet()) {
+                mergedResources.add(entry.getKey(), gson.toJsonTree(entry.getValue()));
+            }
+            
+            // 3. 保存合并后的配置
+            Map<String, Object> saveMap = new LinkedHashMap<>();
+            saveMap.put(ConfigConstants.UPDATE_RESOURCES, mergedResources);
+            saveConfig(saveMap, ConfigConstants.UPDATE);
+            
+        } catch (Exception e) {
+            System.err.println("合并保存资源配置失败: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -420,29 +484,32 @@ public class Constants {
 
     /**
      * 递归合并两个JsonObject
+     * 规则：以 newObj（JAR内资源文件）的字段顺序为准，但优先使用 localObj（本地配置）的值
      */
     public static JsonObject mergeJsonObjects(JsonObject localObj, JsonObject newObj) {
         JsonObject merged = new JsonObject();
 
-        // 首先复制所有本地配置
-        for (Map.Entry<String, JsonElement> entry : localObj.entrySet()) {
-            merged.add(entry.getKey(), entry.getValue());
-        }
-
-        // 遍历新配置中的所有字段
+        // 按照新配置（JAR内）的字段顺序遍历
         for (Map.Entry<String, JsonElement> entry : newObj.entrySet()) {
             String key = entry.getKey();
             JsonElement newValue = entry.getValue();
 
-            // 如果本地配置没有这个字段，直接添加
-            if (!localObj.has(key)) {
+            // 如果本地配置有这个字段，递归合并（保留本地值）
+            if (localObj.has(key)) {
+                JsonElement localValue = localObj.get(key);
+                merged.add(key, mergeJsonElements(localValue, newValue));
+            } else {
+                // 本地配置没有这个字段，使用新配置的值（新增字段）
                 merged.add(key, newValue);
-                continue;
             }
-
-            // 递归合并现有字段
-            JsonElement localValue = localObj.get(key);
-            merged.add(key, mergeJsonElements(localValue, newValue));
+        }
+        
+        // 保留本地配置中存在但新配置中不存在的字段（向后兼容旧配置）
+        for (Map.Entry<String, JsonElement> entry : localObj.entrySet()) {
+            String key = entry.getKey();
+            if (!newObj.has(key)) {
+                merged.add(key, entry.getValue());
+            }
         }
 
         return merged;
@@ -605,18 +672,57 @@ public class Constants {
         return null;
     }
 
+    /**
+     * 从JAR资源复制文件到目标路径
+     * 会检查文件是否存在以及完整性（通过大小判断）
+     * 
+     * @param resourceName 资源名称（config.properties中的key）
+     * @param targetPath 目标路径
+     * @param expectedSize 期望的文件大小（字节），用于判断文件是否完整
+     * @throws IOException 复制失败
+     */
     public static void copyResourceToFile(String resourceName, Path targetPath, long expectedSize) throws IOException {
-        if (!Files.exists(targetPath) || Files.size(targetPath) < expectedSize) {
-            try (InputStream inputStream = getResourceStream(resourceName);
-                 FileOutputStream outputStream = new FileOutputStream(targetPath.toString())) {
-                byte[] buffer = new byte[16 * 1024];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-            } catch (Exception e){
-                e.printStackTrace();
+        // 检查文件是否存在且完整
+        if (!Files.exists(targetPath)) {
+            System.out.println("文件不存在，准备释放: " + targetPath.getFileName());
+        } else {
+            long currentSize = Files.size(targetPath);
+            if (currentSize < expectedSize) {
+                System.out.println("文件不完整 (当前: " + currentSize + " 字节, 期望: " + expectedSize + " 字节)，重新释放: " + targetPath.getFileName());
+            } else {
+                // 文件完整，跳过（不输出，减少日志）
+                return;
             }
+        }
+        
+        // 确保目标目录存在
+        Files.createDirectories(targetPath.getParent());
+        
+        // 从JAR资源复制文件
+        try (InputStream inputStream = getResourceStream(resourceName);
+             FileOutputStream outputStream = new FileOutputStream(targetPath.toString())) {
+            
+            byte[] buffer = new byte[16 * 1024];
+            int bytesRead;
+            long totalWritten = 0;
+            
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+                totalWritten += bytesRead;
+            }
+            
+            System.out.println("文件释放成功: " + targetPath.getFileName() + " (" + totalWritten + " 字节)");
+            
+            // 验证文件大小
+            long actualSize = Files.size(targetPath);
+            if (actualSize < expectedSize * 0.95) {  // 允许5%误差
+                System.err.println("警告: 释放的文件大小异常 (实际: " + actualSize + ", 期望: " + expectedSize + ")");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("释放文件失败: " + targetPath.getFileName());
+            e.printStackTrace();
+            throw new IOException("释放资源文件失败: " + resourceName, e);
         }
     }
 

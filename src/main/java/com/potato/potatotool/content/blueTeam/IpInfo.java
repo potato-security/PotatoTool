@@ -1,10 +1,10 @@
 package com.potato.potatotool.content.blueTeam;
 
+import com.potato.potatotool.storage.PathManager;
 import org.lionsoul.ip2region.SearchTest;
 import org.lionsoul.ip2region.xdb.Searcher;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -142,8 +142,10 @@ public class IpInfo {
         Searcher searcher = null;
 
         try {
-
-            String ip2regionPath = Paths.get(System.getProperty("user.home"), ".PotatoTool","ip2region.xdb").toString();
+            // 使用PathManager获取IP2Region数据库路径
+            PathManager pathManager = PathManager.getInstance();
+            String ip2regionPath = pathManager.getIp2RegionPath().toString();
+            
             searcher = SearchTest.createSearcher(ip2regionPath, "vectorIndex");
 
         } catch (IOException e) {

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane fx:id="an"
+            onMouseDragged="#topBarDraggedAction"
+            onMousePressed="#topBarPressedAction"
+            maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="600"
+            prefWidth="600"
+            style="-fx-background-color: transparent"
+            xmlns="http://javafx.com/javafx/"
+            xmlns:fx="http://javafx.com/fxml/1"
+            stylesheets="@../../css/common.css"
+            fx:controller="com.potato.potatotool.controller.publicPane.PaneUpdateDialog">
+    <children>
+        <StackPane AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" alignment="CENTER">
+            <VBox alignment="CENTER" style="-fx-padding: 9" fx:id="outerBorderPane">
+                <effect>
+                    <DropShadow/>
+                </effect>
+
+                <VBox>
+                    <!-- 顶部标题栏 -->
+                    <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;"
+                               prefHeight="57" prefWidth="${an.width - 18}">
+                        <center>
+                            <HBox style="-fx-padding: 0 0 0 45;" alignment="CENTER">
+                                <ImageView fitHeight="30.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../../img/PotatoTool.png" />
+                                    </image>
+                                </ImageView>
+                            </HBox>
+                        </center>
+                        <right>
+                            <HBox alignment="CENTER" prefHeight="${topBar.height}">
+                                <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction"
+                                       prefHeight="25.0" prefWidth="25.0">
+                                    <graphic>
+                                        <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@../../img/close.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                    <tooltip>
+                                        <Tooltip text="关闭" userData="i18n:tooltip.close"/>
+                                    </tooltip>
+                                </Button>
+                                <Pane minWidth="15"/>
+                            </HBox>
+                        </right>
+                    </BorderPane>
+
+                    <!-- 内容区域 -->
+                    <VBox spacing="15" prefWidth="${an.width - 18}"
+                         style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
+
+                        <!-- 标题 -->
+                        <Label fx:id="titleLabel" text="发现新版本"
+                              style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+                        <!-- 版本信息 -->
+                        <VBox spacing="8" fx:id="versionInfoBox">
+                            <Label fx:id="versionInfoLabel" text="新版本 2.6.0 可用，当前版本 2.5"
+                                  wrapText="true" style="-fx-font-size: 14px;"/>
+                        </VBox>
+
+                        <!-- 更新日志 -->
+                        <VBox spacing="5" fx:id="changelogBox" managed="false" visible="false">
+                            <Label text="更新日志：" userData="i18n:update.available.changelog"
+                                  style="-fx-font-weight: bold;"/>
+                            <TextArea fx:id="changelogText" editable="false" wrapText="true"
+                                     prefHeight="100" prefWidth="${an.width - 58}"
+                                     style="-fx-font-family: 'Microsoft YaHei', 'SimHei', sans-serif;"/>
+                        </VBox>
+
+                        <!-- 更新项列表（支持单独选择） -->
+                        <VBox spacing="5" fx:id="updateItemsBox" managed="false" visible="false">
+                            <Label text="可用更新：" userData="i18n:update.available.items"
+                                  style="-fx-font-weight: bold;"/>
+                            <ScrollPane maxHeight="100" prefWidth="${an.width - 58}" style="-fx-padding: 10; -fx-border-radius: 5;-fx-border-color: -main-border-color;">
+                                <VBox fx:id="updateItemsContainer" spacing="4" >
+                                    <!-- 更新项（CheckBox）将动态添加到这里 -->
+                                </VBox>
+                            </ScrollPane>
+                        </VBox>
+
+                        <!-- 下载进度区域 -->
+                        <VBox spacing="8" fx:id="progressBox" managed="false" visible="false">
+                            <Label fx:id="progressLabel" text="正在下载..."/>
+                            <ProgressBar fx:id="progressBar" prefWidth="${an.width - 58}" progress="0"/>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <Label fx:id="sizeLabel" text="0 MB / 0 MB"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="speedLabel" text="0 KB/s"/>
+                            </HBox>
+                        </VBox>
+
+                        <!-- 按钮区域 -->
+                        <HBox spacing="10" alignment="CENTER" fx:id="buttonBox">
+                            <Button fx:id="updateButton" text="更新选中项"
+                                   userData="i18n:update.available.button.update.selected"
+                                   onAction="#onUpdateClick" minWidth="100" prefHeight="35">
+                                <effect><DropShadow /></effect>
+                            </Button>
+                            <Button fx:id="skipButton" text="跳过选中项"
+                                   userData="i18n:update.available.button.skip.selected"
+                                   onAction="#onSkipClick" minWidth="100" prefHeight="35">
+                                <effect><DropShadow /></effect>
+                            </Button>
+                            <Button fx:id="laterButton" text="稍后提醒"
+                                   userData="i18n:update.available.button.later"
+                                   onAction="#onLaterClick" minWidth="100" prefHeight="35">
+                                <effect><DropShadow /></effect>
+                            </Button>
+                        </HBox>
+
+                        <!-- 重启按钮区域 -->
+                        <HBox spacing="10" alignment="CENTER" fx:id="restartBox"
+                             managed="false" visible="false">
+                            <Label fx:id="restartLabel" text="更新已就绪，点击重启应用完成更新"
+                                  userData="i18n:update.install.app.message"
+                                  style="-fx-font-size: 14px;"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="restartNowButton" text="立即重启"
+                                   userData="i18n:update.install.app.restart.now"
+                                   onAction="#onRestartNowClick" minWidth="120" prefHeight="35"
+                                   style="-fx-font-size: 14px;">
+                                <effect><DropShadow /></effect>
+                            </Button>
+                        </HBox>
+
+                    </VBox>
+                </VBox>
+        </VBox>
+
+            <!-- 提示组件 -->
+            <StackPane fx:id="promptPane" visible="false" managed="false"
+                      maxHeight="50" maxWidth="250" alignment="CENTER"
+                      style="-fx-background-color: transparent;">
+                <Label fx:id="prompt" text=""
+                      style="-fx-background-color: -main-btnContent-color; -fx-padding: 10 20; -fx-background-radius: 5; -fx-font-size: 14px;">
+                    <effect>
+                        <DropShadow/>
+                    </effect>
+                </Label>
+            </StackPane>
+        </StackPane>
+    </children>
+</AnchorPane>
+

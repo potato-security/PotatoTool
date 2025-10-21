@@ -13,7 +13,6 @@ public interface ConfigConstants {
     String EXTENSION = "Extension";
     String UPDATE = "UpDate";  // 注意：配置文件中拼写为 UpDate
     String START_PASSWORD = "StartPassword";
-    String CONFIG_VERSION = "ConfigVersion";
     String LANGUAGE = "Language";
 
     // ========== Proxy 代理配置相关 ==========
@@ -36,8 +35,19 @@ public interface ConfigConstants {
     String DECOMPILE_AI_OPTIMIZATION = "AI_optimization";
 
     // ========== Update 更新配置相关 ==========
-    String UPDATE_PATH = "Path";
-    String UPDATE_DATE = "Date";
     String UPDATE_WIN_KB_INFO = "winKbInfo";
+    
+    String UPDATE_APP_VERSION = "AppVersion";          // 软件当前版本（顶层配置）
+    String UPDATE_RESOURCE_PATH = "ResourcePath";      // 自定义资源路径（顶层配置）
+    String UPDATE_LAST_CHECK_TIME = "lastCheckTime";   // 上次检查更新时间
+    String UPDATE_AUTO_CHECK = "autoCheck";            // 自动检查更新
+    String UPDATE_AUTO_DOWNLOAD = "autoDownload";      // 自动下载更新
+    String UPDATE_RESOURCES = "resources";             // 资源更新信息
+    String UPDATE_VERSION = "version";                 // 版本号
+    String UPDATE_FILE_NAME = "fileName";              // 资源文件名（不包含路径）
+    String UPDATE_CHECKSUM = "checksum";               // 文件校验和对象
+    String UPDATE_CHECKSUM_SHA256 = "sha256";          // SHA256哈希值
+    String UPDATE_CHECKSUM_MD5 = "md5";                // MD5哈希值
+    String UPDATE_SKIPPED_VERSIONS = "skippedVersions"; // 跳过的版本列表
     
 }
