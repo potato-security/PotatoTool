@@ -1,0 +1,28 @@
+id: basic-http-test
+
+info:
+  name: Basic HTTP Test POC
+  author: Potato
+  severity: info
+  description: 基础HTTP协议测试用例
+  reference:
+    - https://example.com
+  tags: test,http,basic
+
+http:
+  - method: GET
+    path:
+      - /api/test
+    headers:
+      User-Agent: Mozilla/5.0
+      Accept: application/json
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - success
+        part: body
+        condition: and
+

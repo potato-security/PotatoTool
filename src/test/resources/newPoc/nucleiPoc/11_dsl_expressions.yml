@@ -1,0 +1,31 @@
+id: dsl-expressions-test
+
+info:
+  name: DSL Expressions Test
+  author: Potato
+  severity: medium
+  description: 测试DSL表达式功能
+  tags: test,dsl
+
+http:
+  - method: GET
+    path:
+      - "/api/data"
+    matchers:
+      - type: dsl
+        dsl:
+          - "status_code == 200"
+          - "len(body) > 100 && len(body) < 10000"
+          - "contains(body, 'success')"
+          - "regex('\\d{4}', body)"
+          - "md5(body) != '5d41402abc4b2a76b9719d911017c592'"
+          - "base64(body) != ''"
+        condition: and
+        name: dsl_matcher
+    extractors:
+      - type: dsl
+        dsl:
+          - "regex('id=(\\d+)', body)"
+          - "substr(body, 0, 10)"
+        name: extracted_data
+

@@ -1,0 +1,52 @@
+id: extractors-test
+
+info:
+  name: Extractors Test
+  author: Potato
+  severity: info
+  description: 测试所有提取器类型
+  tags: test,extractors
+
+http:
+  - method: GET
+    path:
+      - /api/data
+    extractors:
+      # Regex Extractor
+      - type: regex
+        regex:
+          - "token=(\\w+)"
+        part: body
+        group: 1
+        name: token
+      
+      # JSON Extractor
+      - type: json
+        json:
+          - '.data.id'
+        part: body
+        name: user_id
+      
+      # XPath Extractor
+      - type: xpath
+        xpath:
+          - "/response/token"
+        attribute: text
+        name: auth_token
+      
+      # DSL Extractor
+      - type: dsl
+        dsl:
+          - "regex('id=(\\d+)', body)"
+        name: record_id
+      
+      # Kval Extractor
+      - type: kval
+        kval:
+          - "Set-Cookie: session=(.*)"
+        name: session_cookie
+    matchers:
+      - type: status
+        status:
+          - 200
+

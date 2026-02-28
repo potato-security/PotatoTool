@@ -1,0 +1,47 @@
+{
+  "Name": "Basic Test POC",
+  "Level": "3",
+  "Tags": ["test", "rce"],
+  "Description": "基础POC测试用例",
+  "Product": "Test Product",
+  "Author": "Potato",
+  "Homepage": "https://example.com",
+  "Impact": "测试影响说明",
+  "Recommendation": "升级到最新版本",
+  "HasExp": false,
+  "ScanSteps": [
+    {
+      "Request": {
+        "method": "GET",
+        "uri": "/api/test",
+        "header": {
+          "User-Agent": "Mozilla/5.0",
+          "Accept": "application/json"
+        },
+        "follow_redirect": false
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200",
+            "bz": "状态码必须为200"
+          },
+          {
+            "type": "item",
+            "variable": "$body",
+            "operation": "contains",
+            "value": "success",
+            "bz": "响应体包含success"
+          }
+        ]
+      }
+    }
+  ],
+  "ExploitSteps": []
+}
+

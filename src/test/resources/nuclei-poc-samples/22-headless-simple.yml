@@ -1,0 +1,25 @@
+id: headless-simple-test
+
+info:
+  name: Headless Simple Page Title Test
+  author: Potato
+  severity: info
+  description: 简单的 Headless 页面标题检测
+  tags: test,headless,simple
+
+headless:
+  - steps:
+      - action: navigate
+        args:
+          url: "https://www.example.com"
+      - action: waitload
+      - action: script
+        args:
+          code: "return document.title"
+    
+    matchers:
+      - type: word
+        words:
+          - "Example"
+
+

@@ -1,0 +1,75 @@
+{
+  "pocInfo": {
+    "vulID": "multi-step-001",
+    "version": "1",
+    "name": "Multiple Steps with Results",
+    "protocol": "http",
+    "vulType": "Information Disclosure",
+    "author": "TestAuthor",
+    "desc": "测试多个步骤，每个步骤都有result提取"
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/login",
+        "status": "200",
+        "match": {
+          "regex": ["login"]
+        }
+      }
+    ],
+    "attack": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/user/1",
+        "status": "200",
+        "match": {
+          "regex": ["user_id"]
+        },
+        "result": {
+          "UserInfo": {
+            "Id": "<regex>id:(\\d+)",
+            "Name": "<regex>name:([^\\s]+)"
+          }
+        }
+      },
+      {
+        "step": "1",
+        "method": "GET",
+        "vulPath": "/api/admin",
+        "necessary": "需要先获取用户信息",
+        "status": "200",
+        "match": {
+          "regex": ["admin"]
+        },
+        "result": {
+          "AdminInfo": {
+            "Username": "<regex>username:([^\\s]+)",
+            "Password": "<regex>password:([^\\s]+)",
+            "Role": "<regex>role:([^\\s]+)"
+          }
+        }
+      },
+      {
+        "step": "2",
+        "method": "GET",
+        "vulPath": "/api/config",
+        "necessary": "需要管理员权限",
+        "status": "200",
+        "match": {
+          "regex": ["config"]
+        },
+        "result": {
+          "ConfigInfo": {
+            "Database": "<regex>db:([^\\s]+)",
+            "Key": "<regex>key:([^\\s]+)"
+          }
+        }
+      }
+    ]
+  }
+}
+

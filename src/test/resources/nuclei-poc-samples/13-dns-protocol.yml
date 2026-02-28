@@ -1,0 +1,145 @@
+id: dns-protocol-test
+
+info:
+  name: DNS Protocol Comprehensive Test
+  author: Potato
+  severity: info
+  description: |
+    DNS 协议完整测试样例
+    测试所有常见的 DNS 记录类型查询
+  tags: test,dns,protocol
+  reference:
+    - https://docs.projectdiscovery.io/templates/protocols/dns
+
+# 测试用例1: A 记录查询（IPv4 地址）
+dns:
+  # 基础 A 记录查询
+  - name:
+      - "www.example.com"
+    type: A
+    recursion: true
+    retries: 2
+    matchers-condition: or
+    matchers:
+      - type: word
+        words:
+          - "93.184."  # example.com 的 IP 前缀
+        name: "ip_check"
+      
+      - type: regex
+        regex:
+          - "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$"
+        name: "ip_format_check"
+      
+      - type: dsl
+        dsl:
+          - "len(body) > 0"
+          - "contains(body, '.')"
+        condition: and
+        name: "dsl_check"
+    
+    extractors:
+      - type: regex
+        name: "ip_address"
+        regex:
+          - "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})"
+        group: 1
+
+  # 测试用例2: AAAA 记录查询（IPv6 地址）
+  - name:
+      - "www.google.com"
+    type: AAAA
+    recursion: true
+    matchers:
+      - type: word
+        words:
+          - ":"  # IPv6 地址包含冒号
+        name: "ipv6_check"
+
+  # 测试用例3: CNAME 记录查询（别名）
+  - name:
+      - "www.github.com"
+    type: CNAME
+    recursion: true
+    matchers:
+      - type: word
+        words:
+          - ".github.io"
+          - ".github.com"
+        condition: or
+        name: "cname_check"
+
+  # 测试用例4: MX 记录查询（邮件服务器）
+  - name:
+      - "gmail.com"
+    type: MX
+    recursion: true
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "gmail-smtp-in.l.google.com"
+        name: "mx_server_check"
+      
+      - type: regex
+        regex:
+          - "\\d+ [a-zA-Z0-9.-]+\\.google\\.com"
+        name: "mx_format_check"
+    
+    extractors:
+      - type: regex
+        name: "mx_priority"
+        regex:
+          - "^(\\d+)"
+        group: 1
+
+  # 测试用例5: TXT 记录查询（SPF/DKIM 等）
+  - name:
+      - "google.com"
+    type: TXT
+    recursion: true
+    matchers:
+      - type: word
+        words:
+          - "v=spf1"
+          - "google"
+        condition: and
+        name: "spf_check"
+
+  # 测试用例6: NS 记录查询（名称服务器）
+  - name:
+      - "example.com"
+    type: NS
+    recursion: true
+    matchers:
+      - type: word
+        words:
+          - "ns"
+          - ".icann.org"
+        condition: or
+        name: "ns_check"
+
+  # 测试用例7: 使用自定义 DNS 服务器
+  - name:
+      - "www.baidu.com"
+    type: A
+    resolvers: "8.8.8.8"  # Google Public DNS
+    recursion: true
+    retries: 3
+    matchers:
+      - type: regex
+        regex:
+          - "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$"
+        name: "custom_resolver_check"
+
+# 变量支持测试
+variables:
+  test_domain: "example.com"
+  dns_type: "A"
+
+# 流程控制（如果支持多步骤）
+flow: |
+  dns(1) && dns(2) && dns(3)
+
+
+

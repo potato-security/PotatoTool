@@ -1,0 +1,48 @@
+id: complex-nested-test
+
+info:
+  name: Complex Nested Test
+  author: Potato
+  severity: high
+  description: 测试复杂嵌套和条件组合
+  tags: test,complex,nested
+
+http:
+  - method: GET
+    path:
+      - "/api/data"
+    matchers-condition: or
+    matchers:
+      - type: status
+        status:
+          - 200
+        condition: and
+        name: status_ok
+      
+      - type: dsl
+        dsl:
+          - "status_code >= 200 && status_code < 300"
+          - "contains(all_headers, 'session')"
+        condition: and
+        name: dsl_complex
+      
+      - type: word
+        words:
+          - "error"
+          - "exception"
+        part: body
+        negative: true
+        condition: and
+        name: no_errors
+    extractors:
+      - type: regex
+        regex:
+          - "data-id=\"(\\d+)\""
+        part: body
+        name: data_id
+      - type: json
+        json:
+          - '.items[0].id'
+        part: body
+        name: first_item_id
+

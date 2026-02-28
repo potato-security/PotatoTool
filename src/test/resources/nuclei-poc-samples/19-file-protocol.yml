@@ -1,0 +1,106 @@
+id: file-protocol-test
+
+info:
+  name: File Protocol Comprehensive Test
+  author: Potato
+  severity: info
+  description: |
+    File 协议完整测试样例
+    测试文件扫描、内容匹配、敏感信息检测
+  tags: test,file,protocol
+  reference:
+    - https://docs.projectdiscovery.io/templates/protocols/file
+
+# 测试用例1: 基础文件扫描（按扩展名）
+file:
+  # 扫描日志文件中的密码
+  - extensions:
+      - log
+      - txt
+    paths:
+      - "/var/log"
+      - "/tmp"
+    recursive: true
+    max-size: 10485760  # 10MB
+    
+    matchers-condition: or
+    matchers:
+      - type: word
+        words:
+          - "password"
+          - "passwd"
+          - "pwd"
+        condition: or
+        case-insensitive: true
+        name: "password_leak"
+      
+      - type: regex
+        regex:
+          - "password\\s*[:=]\\s*['\"]?([^'\"\\s]+)"
+        name: "password_pattern"
+    
+    extractors:
+      - type: regex
+        name: "extracted_password"
+        regex:
+          - "password\\s*[:=]\\s*['\"]?([^'\"\\s]+)"
+        group: 1
+
+  # 测试用例2: 扫描配置文件
+  - extensions:
+      - conf
+      - config
+      - ini
+      - yml
+      - yaml
+    paths:
+      - "/etc"
+    recursive: false
+    
+    matchers:
+      - type: word
+        words:
+          - "api_key"
+          - "secret"
+          - "token"
+        condition: or
+        name: "secret_leak"
+
+  # 测试用例3: 扫描 SSH 私钥
+  - paths:
+      - "~/.ssh/id_rsa"
+      - "~/.ssh/id_dsa"
+    
+    matchers:
+      - type: word
+        words:
+          - "BEGIN RSA PRIVATE KEY"
+          - "BEGIN DSA PRIVATE KEY"
+          - "BEGIN OPENSSH PRIVATE KEY"
+        condition: or
+        name: "ssh_private_key"
+
+  # 测试用例4: 扫描备份文件
+  - extensions:
+      - bak
+      - backup
+      - old
+      - "~"
+    paths:
+      - "/var/www"
+      - "/home"
+    recursive: true
+    max-size: 52428800  # 50MB
+    
+    matchers:
+      - type: regex
+        regex:
+          - "\\.(sql|db|sqlite)"
+        name: "database_backup"
+
+# 变量支持
+variables:
+  scan_path: "/var/log"
+  max_file_size: "10485760"
+
+

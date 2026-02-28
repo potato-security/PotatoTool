@@ -1,0 +1,59 @@
+id: payloads-fuzzing-advanced
+info:
+  name: Advanced Payloads and Fuzzing Test
+  author: Potato
+  severity: high
+  description: 测试高级Payload生成和模糊测试
+  tags: test,payloads,fuzzing
+
+http:
+  - method: POST
+    path:
+      - "/api/search"
+    headers:
+      Content-Type: "application/json"
+    body: |
+      {
+        "query": "{{query}}",
+        "offset": "{{offset}}",
+        "limit": "{{limit}}"
+      }
+    matchers:
+      - type: status
+        status:
+          - 200
+        name: search_success
+      - type: json
+        json:
+          - '.results'
+        part: body
+        name: results_found
+    extractors:
+      - type: json
+        json:
+          - '.results[0].id'
+        part: body
+        name: first_result_id
+
+payloads:
+  query:
+    - "test"
+    - "admin"
+    - "{{rand_text_alpha(10)}}"
+    - "{{base64('test')}}"
+    - "{{url_encode('test query')}}"
+  offset:
+    - "0"
+    - "10"
+    - "100"
+    - "{{rand_int(0, 1000)}}"
+  limit:
+    - "10"
+    - "20"
+    - "50"
+    - "{{rand_int(10, 100)}}"
+
+attack: clusterbomb
+max-redirects: 5
+threads: 10
+

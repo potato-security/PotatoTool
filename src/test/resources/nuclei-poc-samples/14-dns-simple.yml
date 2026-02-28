@@ -1,0 +1,20 @@
+id: dns-simple-test
+
+info:
+  name: DNS Simple A Record Test
+  author: Potato
+  severity: info
+  description: 简单的 DNS A 记录查询测试
+  tags: test,dns,simple
+
+dns:
+  - name:
+      - "www.example.com"
+    type: A
+    matchers:
+      - type: word
+        words:
+          - "93.184."
+
+
+

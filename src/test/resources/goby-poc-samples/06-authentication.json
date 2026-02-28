@@ -1,0 +1,45 @@
+{
+  "Name": "Authentication POC",
+  "Level": "3",
+  "Tags": ["auth"],
+  "Description": "带认证的POC测试",
+  "Product": "Test Product",
+  "Author": "Potato",
+  "HasExp": false,
+  "Authentication": {
+    "type": "basic",
+    "username": "admin",
+    "password": "admin123"
+  },
+  "ScanSteps": [
+    {
+      "Request": {
+        "method": "GET",
+        "uri": "/api/admin",
+        "header": {
+          "User-Agent": "Test"
+        }
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          },
+          {
+            "type": "item",
+            "variable": "$body",
+            "operation": "contains",
+            "value": "admin panel"
+          }
+        ]
+      }
+    }
+  ],
+  "ExploitSteps": []
+}
+

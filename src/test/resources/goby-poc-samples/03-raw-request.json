@@ -1,0 +1,36 @@
+{
+  "Name": "Raw HTTP Request POC",
+  "Level": "2",
+  "Tags": ["rce", "injection"],
+  "Description": "使用raw原始报文的POC测试",
+  "Product": "Test Product",
+  "Author": "Potato",
+  "HasExp": false,
+  "ScanSteps": [
+    {
+      "Request": {
+        "raw": "POST /api/command HTTP/1.1\r\nHost: {{Hostname}}\r\nContent-Type: application/x-www-form-urlencoded\r\nUser-Agent: PotatoTool/2.5\r\n\r\ncmd=whoami&debug=1"
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          },
+          {
+            "type": "item",
+            "variable": "$body",
+            "operation": "regex",
+            "value": "root|admin|user"
+          }
+        ]
+      }
+    }
+  ],
+  "ExploitSteps": []
+}
+

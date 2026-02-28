@@ -1,0 +1,25 @@
+id: tcp-protocol-test
+
+info:
+  name: TCP Protocol Test
+  author: Potato
+  severity: medium
+  description: TCP协议测试用例
+  tags: test,tcp
+
+tcp:
+  - host:
+      - "{{Hostname}}"
+    port: "6379,6380"
+    inputs:
+      - data: "PING\r\n"
+        type: hex
+        name: ping
+        read: 1024
+    matchers:
+      - type: word
+        words:
+          - "+PONG"
+        condition: and
+        name: redis_check
+

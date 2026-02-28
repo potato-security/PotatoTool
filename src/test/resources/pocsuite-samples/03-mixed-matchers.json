@@ -1,0 +1,27 @@
+{
+  "pocInfo": {
+    "vulID": "test-003",
+    "version": "1",
+    "name": "Mixed Matchers (Regex + Time + Status)",
+    "protocol": "http",
+    "vulType": "SQL Injection",
+    "author": "TestAuthor"
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/search",
+        "params": "id=1' AND SLEEP(3)--",
+        "necessary": "",
+        "status": "200",
+        "match": {
+          "regex": ["result"],
+          "time": "3"
+        }
+      }
+    ]
+  }
+}
+

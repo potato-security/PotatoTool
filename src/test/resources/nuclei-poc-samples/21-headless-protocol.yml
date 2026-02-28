@@ -1,0 +1,126 @@
+id: headless-protocol-test
+
+info:
+  name: Headless Protocol Comprehensive Test
+  author: Potato
+  severity: info
+  description: |
+    Headless 协议完整测试样例
+    测试无头浏览器操作、JavaScript 执行、DOM 操作
+  tags: test,headless,browser,javascript
+  reference:
+    - https://docs.projectdiscovery.io/templates/protocols/headless
+
+# 测试用例1: 基础页面导航和标题检测
+headless:
+  # 导航并检测页面标题
+  - steps:
+      - action: navigate
+        args:
+          url: "{{BaseURL}}"
+      - action: waitload
+      - action: script
+        args:
+          code: "return document.title"
+    
+    matchers:
+      - type: word
+        words:
+          - "Example"
+        part: raw
+        name: "title_check"
+
+  # 测试用例2: JavaScript 执行和DOM操作
+  - steps:
+      - action: navigate
+        args:
+          url: "https://www.example.com"
+      - action: waitload
+      - action: script
+        args:
+          code: "return document.querySelector('h1').textContent"
+      - action: script
+        args:
+          code: "return document.body.innerHTML.length"
+    
+    matchers:
+      - type: dsl
+        dsl:
+          - "len(body) > 0"
+        name: "content_exists"
+    
+    extractors:
+      - type: regex
+        name: "h1_text"
+        regex:
+          - "<h1>(.*?)</h1>"
+        group: 1
+
+  # 测试用例3: 元素点击操作
+  - steps:
+      - action: navigate
+        args:
+          url: "{{BaseURL}}"
+      - action: waitload
+      - action: click
+        args:
+          selector: "a.link"
+      - action: waitload
+    
+    matchers:
+      - type: word
+        words:
+          - "clicked"
+        name: "click_success"
+
+  # 测试用例4: 表单输入操作
+  - steps:
+      - action: navigate
+        args:
+          url: "{{BaseURL}}/login"
+      - action: waitvisible
+        args:
+          selector: "#username"
+      - action: input
+        args:
+          selector: "#username"
+          value: "admin"
+      - action: input
+        args:
+          selector: "#password"
+          value: "test123"
+      - action: click
+        args:
+          selector: "button[type='submit']"
+      - action: sleep
+        args:
+          duration: "2000"
+    
+    matchers:
+      - type: word
+        words:
+          - "dashboard"
+          - "welcome"
+        condition: or
+        name: "login_success"
+
+  # 测试用例5: 截图功能
+  - steps:
+      - action: navigate
+        args:
+          url: "https://www.example.com"
+      - action: waitload
+      - action: screenshot
+    
+    matchers:
+      - type: dsl
+        dsl:
+          - "len(screenshot) > 0"
+        name: "screenshot_taken"
+
+# 变量支持
+variables:
+  base_domain: "example.com"
+  login_user: "admin"
+
+

@@ -1,0 +1,79 @@
+{
+  "Name": "Alibaba Nacos Default Password (Test)",
+  "Level": "1",
+  "Tags": ["Default Password"],
+  "GobyQuery": "title=\"Nacos\"",
+  "Description": "测试 Nacos 默认密码漏洞 (nacos/nacos)",
+  "Product": "Alibaba Nacos",
+  "Homepage": "",
+  "Author": "Potato",
+  "Impact": "",
+  "Recommendation": "",
+  "References": [],
+  "HasExp": false,
+  "ExpParams": null,
+  "ExpTips": {
+    "Type": "",
+    "Content": ""
+  },
+  "ScanSteps": [
+    "OR",
+    {
+      "Request": {
+        "method": "POST",
+        "uri": "/v1/auth/users/login",
+        "follow_redirect": false,
+        "header": {
+          "User-Agent": "Nacos-Server",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "data_type": "text",
+        "data": "username=nacos&password=nacos"
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200",
+            "bz": ""
+          }
+        ]
+      },
+      "SetVariable": []
+    },
+    {
+      "Request": {
+        "method": "POST",
+        "uri": "/nacos/v1/auth/users/login",
+        "follow_redirect": false,
+        "header": {
+          "User-Agent": "Nacos-Server",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "data_type": "text",
+        "data": "username=nacos&password=nacos"
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200",
+            "bz": ""
+          }
+        ]
+      },
+      "SetVariable": []
+    }
+  ],
+  "ExploitSteps": [],
+  "PostTime": "0000-00-00 00:00:00",
+  "GobyVersion": "0.0.0"
+}

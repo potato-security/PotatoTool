@@ -1,0 +1,22 @@
+# Nuclei POC - 简单测试：状态码匹配
+# 复杂度：★☆☆☆☆
+# 测试点：STATUS 匹配器
+
+id: vulnlab-health-check
+
+info:
+  name: VulnLab Health Check
+  author: test
+  severity: info
+  description: 测试健康检查接口
+  tags: health,test
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/health"
+    
+    matchers:
+      - type: status
+        status:
+          - 200

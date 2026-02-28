@@ -1,0 +1,26 @@
+id: dnslog-integration-test
+
+info:
+  name: DNSLog Integration Test
+  author: Potato
+  severity: critical
+  description: 测试DNSLog集成（SSRF/XXE等外带检测）
+  tags: test,dnslog,out-of-band
+
+http:
+  - method: GET
+    path:
+      - "/api/proxy?url=http://{{dnslog_domain}}"
+    headers:
+      User-Agent: "Mozilla/5.0"
+    # 注意：dnslog_domain 变量需要在执行时通过 DnsLogService 生成
+    # 这里使用占位符，实际执行时会替换
+    matchers:
+      - type: status
+        status:
+          - 200
+          - 302
+        name: request_sent
+    # DNSLog检测在后续步骤中通过查询DnsLogService实现
+    # 而不是通过matcher，因为DNS查询是异步的
+

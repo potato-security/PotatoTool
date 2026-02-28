@@ -1,0 +1,19 @@
+id: ssl-simple-test
+
+info:
+  name: SSL Simple Certificate Test
+  author: Potato
+  severity: info
+  description: 简单的 SSL 证书检测
+  tags: test,ssl,simple
+
+ssl:
+  - address: "www.baidu.com:443"
+    matchers:
+      - type: word
+        words:
+          - "CN="
+        part: raw
+
+
+

@@ -1,0 +1,65 @@
+{
+  "Name": "Variable Extraction POC",
+  "Level": "3",
+  "Tags": ["test"],
+  "Description": "变量提取和引用测试",
+  "Product": "Test Product",
+  "Author": "Potato",
+  "HasExp": false,
+  "ScanSteps": [
+    {
+      "Request": {
+        "method": "GET",
+        "uri": "/api/auth",
+        "header": {
+          "User-Agent": "Test"
+        },
+        "set_variable": [
+          "token|body|regex|token=([a-zA-Z0-9]+)"
+        ]
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          }
+        ]
+      }
+    },
+    {
+      "Request": {
+        "method": "GET",
+        "uri": "/api/user",
+        "header": {
+          "Authorization": "Bearer {{{token}}}",
+          "User-Agent": "Test"
+        }
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          },
+          {
+            "type": "item",
+            "variable": "$body",
+            "operation": "contains",
+            "value": "username"
+          }
+        ]
+      }
+    }
+  ],
+  "ExploitSteps": []
+}
+

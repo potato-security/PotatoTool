@@ -1,0 +1,77 @@
+id: ssl-protocol-test
+
+info:
+  name: SSL/TLS Protocol Comprehensive Test
+  author: Potato
+  severity: info
+  description: |
+    SSL/TLS 协议完整测试样例
+    测试证书信息、协议版本、加密套件等
+  tags: test,ssl,tls,certificate
+  reference:
+    - https://docs.projectdiscovery.io/templates/protocols/ssl
+
+# 测试用例1: 基础证书信息检测
+ssl:
+  # 检测证书主题
+  - address: "{{Host}}:{{Port}}"
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "CN="
+        part: raw
+        name: "certificate_cn_check"
+      
+      - type: regex
+        regex:
+          - "TLS"
+        part: raw
+        name: "tls_protocol_check"
+    
+    extractors:
+      - type: regex
+        name: "certificate_subject"
+        regex:
+          - "Subject: (.*)"
+        group: 1
+      
+      - type: regex
+        name: "certificate_issuer"
+        regex:
+          - "Issuer: (.*)"
+        group: 1
+
+  # 测试用例2: 检测证书过期
+  - address: "{{Host}}:{{Port}}"
+    matchers:
+      - type: word
+        words:
+          - "NotAfter"
+        part: raw
+        name: "expiry_date_check"
+
+  # 测试用例3: 检测 TLS 版本
+  - address: "{{Host}}:{{Port}}"
+    matchers:
+      - type: word
+        words:
+          - "TLSv1.2"
+          - "TLSv1.3"
+        condition: or
+        name: "tls_version_check"
+
+  # 测试用例4: 检测加密套件
+  - address: "{{Host}}:{{Port}}"
+    matchers:
+      - type: regex
+        regex:
+          - "TLS_[A-Z_0-9]+"
+        name: "cipher_suite_check"
+
+# 变量支持
+variables:
+  default_port: "443"
+
+
+

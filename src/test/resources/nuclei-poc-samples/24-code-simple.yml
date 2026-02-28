@@ -1,0 +1,21 @@
+id: code-simple-test
+
+info:
+  name: Code Simple Calculation Test
+  author: Potato
+  severity: info
+  description: 简单的 Code JavaScript 执行测试
+  tags: test,code,simple
+
+code:
+  - engine:
+      - javascript
+    source: |
+      1 + 2 + 3
+    
+    matchers:
+      - type: word
+        words:
+          - "6"
+
+

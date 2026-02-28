@@ -1,0 +1,32 @@
+id: advanced-features-test
+
+info:
+  name: Advanced Features Test
+  author: Potato
+  severity: info
+  description: 测试高级特性（认证、Cookie、重定向等）
+  tags: test,advanced
+
+http:
+  - method: GET
+    path:
+      - "/admin/users"
+    headers:
+      Authorization: "Bearer test-token"
+    cookie-reuse: true
+    redirects: true
+    disable-cookie: false
+    unsafe: false
+    stop-at-first-match: true
+    threads: 5
+    matchers:
+      - type: status
+        status:
+          - 200
+        name: status_check
+      - type: word
+        words:
+          - "admin"
+        part: body
+        name: content_check
+

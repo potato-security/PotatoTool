@@ -1,0 +1,26 @@
+id: bimi-record-detect
+
+info:
+  name: BIMI Record - Detection
+  author: rxerium
+  severity: info
+  description: |
+    A BIMI record was detected
+  reference:
+    - https://postmarkapp.com/blog/what-the-heck-is-bimi
+  metadata:
+    max-request: 1
+  tags: dns,bimi
+dns:
+  - name: "{{FQDN}}"
+    type: TXT
+    matchers:
+      - type: word
+        words:
+          - "v=BIMI1"
+
+    extractors:
+      - type: regex
+        regex:
+          - "v=BIMI1(.+)"
+# digest: 490a004630440220644603fbfa004fd157be52b0d662acd32141d251f1cbed2d430e700d1b89763802202dea39c5faafa69eec6a22089e669c6ef45c0bbf92cccdb2a8b8ae2e839449b3:922c64590222798bb761d5b6d8e72950

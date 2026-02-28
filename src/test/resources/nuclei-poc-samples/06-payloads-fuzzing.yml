@@ -1,0 +1,35 @@
+id: payloads-fuzzing-test
+
+info:
+  name: Payloads Fuzzing Test
+  author: Potato
+  severity: high
+  description: 测试Payload模糊测试功能
+  tags: test,payloads,fuzzing
+
+http:
+  - method: POST
+    path:
+      - "/api/search"
+    headers:
+      Content-Type: "application/json"
+    body: '{"query":"{{payload}}","type":"{{type}}"}'
+    payloads:
+      payload:
+        - "test1"
+        - "test2"
+        - "admin"
+      type:
+        - "user"
+        - "admin"
+    attack: clusterbomb
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "result"
+        part: body
+        condition: and
+

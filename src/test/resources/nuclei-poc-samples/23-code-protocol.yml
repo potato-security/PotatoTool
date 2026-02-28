@@ -1,0 +1,111 @@
+id: code-protocol-test
+
+info:
+  name: Code Protocol Comprehensive Test
+  author: Potato
+  severity: info
+  description: |
+    Code 协议完整测试样例
+    测试 JavaScript 代码执行、自定义检测逻辑
+  tags: test,code,javascript
+  reference:
+    - https://docs.projectdiscovery.io/templates/protocols/code
+
+# 测试用例1: 基础 JavaScript 执行
+code:
+  # 简单计算
+  - engine:
+      - javascript
+    source: |
+      // 简单的数学计算
+      var result = 1 + 2 + 3;
+      result;
+    
+    matchers:
+      - type: word
+        words:
+          - "6"
+        part: raw
+        name: "calculation_check"
+
+  # 测试用例2: 字符串操作
+  - engine:
+      - javascript
+    source: |
+      var text = "Hello, World!";
+      var upper = text.toUpperCase();
+      var contains = upper.includes("HELLO");
+      contains;
+    
+    matchers:
+      - type: word
+        words:
+          - "true"
+        name: "string_operation_check"
+
+  # 测试用例3: 复杂逻辑判断
+  - engine:
+      - javascript
+    source: |
+      // 模拟检测逻辑
+      var statusCode = 200;
+      var bodyLength = 1024;
+      var hasKeyword = true;
+      
+      // 判断是否存在漏洞
+      var isVulnerable = (statusCode === 200) && 
+                        (bodyLength > 100) && 
+                        hasKeyword;
+      
+      isVulnerable;
+    
+    matchers:
+      - type: dsl
+        dsl:
+          - "contains(body, 'true')"
+        name: "logic_check"
+
+  # 测试用例4: 数组和循环
+  - engine:
+      - javascript
+    source: |
+      var numbers = [];
+      for (var i = 1; i <= 5; i++) {
+          numbers.push(i * 2);
+      }
+      numbers.join(',');
+    
+    matchers:
+      - type: regex
+        regex:
+          - "2,4,6,8,10"
+        name: "array_check"
+    
+    extractors:
+      - type: regex
+        name: "result_numbers"
+        regex:
+          - "(\\d+,\\d+,\\d+,\\d+,\\d+)"
+        group: 1
+
+  # 测试用例5: 使用 console.log
+  - engine:
+      - javascript
+    source: |
+      console.log("Debug: Starting check");
+      var data = {"status": "ok", "code": 200};
+      console.log("Data:", JSON.stringify(data));
+      data.status;
+    
+    matchers:
+      - type: word
+        words:
+          - "ok"
+        name: "json_check"
+
+# 变量支持
+variables:
+  target_url: "https://example.com"
+  expected_code: "200"
+
+

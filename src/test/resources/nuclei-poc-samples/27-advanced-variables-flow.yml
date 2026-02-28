@@ -1,0 +1,67 @@
+id: advanced-variables-flow
+info:
+  name: Advanced Variables and Flow Test
+  author: Potato
+  severity: medium
+  description: 测试高级变量和流程控制
+  tags: test,variables,flow,advanced
+
+variables:
+  base_path: "/api/v1"
+  username: "admin"
+  password: "{{rand_text_alpha(16)}}"
+  timestamp: "{{to_unix_time(now())}}"
+  session_id: "{{rand_text_alphanumeric(32)}}"
+
+http:
+  - method: POST
+    path:
+      - "{{BaseURL}}{{base_path}}/login"
+    headers:
+      X-Session-ID: "{{session_id}}"
+      X-Timestamp: "{{timestamp}}"
+    body: |
+      {
+        "username": "{{username}}",
+        "password": "{{password}}",
+        "timestamp": "{{timestamp}}"
+      }
+    matchers:
+      - type: json
+        json:
+          - '.status'
+          - '.token'
+        part: body
+        name: login_success
+    extractors:
+      - type: json
+        json:
+          - '.token'
+        part: body
+        name: auth_token
+      - type: json
+        json:
+          - '.user_id'
+        part: body
+        name: user_id
+
+  - method: GET
+    path:
+      - "{{BaseURL}}{{base_path}}/profile"
+    headers:
+      Authorization: "Bearer {{auth_token}}"
+      X-User-ID: "{{user_id}}"
+    matchers:
+      - type: status
+        status:
+          - 200
+        name: profile_loaded
+      - type: json
+        json:
+          - '.username'
+        part: body
+        name: profile_match
+
+# Flow 定义执行顺序：先登录(http-1)，再获取资料(http-2)
+flow: http(1) && http(2)
+

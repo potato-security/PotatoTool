@@ -1,0 +1,33 @@
+{
+  "pocInfo": {
+    "vulID": "test-002",
+    "version": "1",
+    "name": "POC with Necessary Field",
+    "protocol": "http",
+    "vulType": "Auth Bypass",
+    "author": "TestAuthor"
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/login",
+        "necessary": "",
+        "match": {
+          "status": "200"
+        }
+      },
+      {
+        "step": "1",
+        "method": "GET",
+        "vulPath": "/admin",
+        "necessary": "需要先通过步骤0进行登录认证",
+        "match": {
+          "regex": ["admin panel"]
+        }
+      }
+    ]
+  }
+}
+

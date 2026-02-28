@@ -1,0 +1,60 @@
+{
+  "pocInfo": {
+    "vulID": "complex-match-001",
+    "version": "1",
+    "name": "Complex Match Combinations",
+    "protocol": "http",
+    "vulType": "SQL Injection",
+    "author": "TestAuthor",
+    "desc": "测试复杂的匹配组合：regex + time + status + multiple regex"
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "POST",
+        "vulPath": "/api/search",
+        "params": "q=1' AND SLEEP(5)--",
+        "headers": {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-Custom-Header": "test"
+        },
+        "status": "200",
+        "match": {
+          "regex": ["success", "ok", "result"],
+          "time": "5"
+        }
+      },
+      {
+        "step": "1",
+        "method": "GET",
+        "vulPath": "/api/status",
+        "necessary": "需要先通过步骤0",
+        "status": "200",
+        "match": {
+          "regex": ["status.*ok"]
+        }
+      }
+    ],
+    "attack": [
+      {
+        "step": "0",
+        "method": "POST",
+        "vulPath": "/api/exploit",
+        "params": "cmd=whoami",
+        "status": "200",
+        "match": {
+          "regex": ["root", "admin"],
+          "time": "2"
+        },
+        "result": {
+          "ShellInfo": {
+            "Command": "<regex>command:([^\\n]+)",
+            "Output": "<regex>output:([^\\n]+)"
+          }
+        }
+      }
+    ]
+  }
+}
+

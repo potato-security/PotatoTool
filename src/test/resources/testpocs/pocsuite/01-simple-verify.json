@@ -1,0 +1,28 @@
+{
+  "pocInfo": {
+    "vulID": "vulnlab-backup-leak",
+    "version": "1",
+    "name": "VulnLab Backup File Leak",
+    "protocol": "http",
+    "vulType": "信息泄露",
+    "author": "test",
+    "desc": "检测备份文件泄露"
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/backup.sql",
+        "params": "",
+        "necessary": "",
+        "match": {
+          "regex": ["CREATE TABLE", "INSERT INTO", "MySQL dump"]
+        },
+        "result": {
+          "db_info": "<regex>Database: (\\w+)"
+        }
+      }
+    ]
+  }
+}

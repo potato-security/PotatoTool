@@ -1,0 +1,51 @@
+{
+  "Name": "Multi-Path POC",
+  "Level": "2",
+  "Tags": ["discovery"],
+  "Description": "多路径测试POC",
+  "Product": "Test Product",
+  "Author": "Potato",
+  "HasExp": false,
+  "ScanSteps": [
+    {
+      "Request": {
+        "method": "GET",
+        "uris": [
+          "/admin",
+          "/administrator",
+          "/manage",
+          "/backend"
+        ],
+        "header": {
+          "User-Agent": "Test"
+        }
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "OR",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          },
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "301"
+          },
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "302"
+          }
+        ]
+      }
+    }
+  ],
+  "ExploitSteps": []
+}
+

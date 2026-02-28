@@ -1,0 +1,45 @@
+# Nuclei POC - 正则匹配 + 提取器
+# 复杂度：★★★☆☆
+# 测试点：REGEX 匹配器、regex 提取器
+
+id: vulnlab-config-leak
+
+info:
+  name: VulnLab Config Leak
+  author: test
+  severity: high
+  description: 检测配置文件泄露
+  tags: config,leak,exposure
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/admin/config"
+    
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      
+      - type: regex
+        part: body
+        regex:
+          - "admin\\.password=([^\\s]+)"
+          - "database\\.password=([^\\s]+)"
+          - "api\\.secret_key=([^\\s]+)"
+    
+    extractors:
+      - type: regex
+        name: admin_password
+        part: body
+        group: 1
+        regex:
+          - "admin\\.password=([^\\s]+)"
+      
+      - type: regex
+        name: db_password
+        part: body
+        group: 1
+        regex:
+          - "database\\.password=([^\\s]+)"

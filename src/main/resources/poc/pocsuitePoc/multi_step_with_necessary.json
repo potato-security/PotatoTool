@@ -1,0 +1,107 @@
+{
+  "pocInfo": {
+    "vulID": "example-002",
+    "version": "1",
+    "vulDate": "2025-11-01",
+    "createDate": "2025-11-01",
+    "updateDate": "2025-11-01",
+    "name": "Multi-Step POC with Necessary Conditions Example",
+    "protocol": "http",
+    "vulType": "Authentication Bypass",
+    "author": "Potato",
+    "references": [
+      "https://github.com/knownsec/Pocsuite3"
+    ],
+    "appName": "Example CMS",
+    "appVersion": "2.0",
+    "appPowerLink": "https://example.com",
+    "desc": "这是一个多步骤 POC 示例，展示了 necessary 字段的使用。该漏洞需要先获取 token，然后才能访问管理面板。",
+    "samples": [
+      "http://127.0.0.1:8080"
+    ]
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/auth/token",
+        "params": "",
+        "necessary": "",
+        "headers": {
+          "User-Agent": "Mozilla/5.0"
+        },
+        "status": "200",
+        "match": {
+          "regex": [
+            "token"
+          ],
+          "time": ""
+        }
+      },
+      {
+        "step": "1",
+        "method": "GET",
+        "vulPath": "/admin/panel",
+        "params": "",
+        "necessary": "此步骤需要先通过步骤0获取有效的认证token",
+        "headers": {
+          "User-Agent": "Mozilla/5.0",
+          "Authorization": "Bearer {{token}}"
+        },
+        "status": "200",
+        "match": {
+          "regex": [
+            "admin",
+            "dashboard"
+          ],
+          "time": ""
+        }
+      }
+    ],
+    "attack": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/auth/token",
+        "params": "",
+        "necessary": "",
+        "headers": {
+          "User-Agent": "Mozilla/5.0"
+        },
+        "status": "200",
+        "match": {
+          "regex": [
+            "token"
+          ],
+          "time": ""
+        }
+      },
+      {
+        "step": "1",
+        "method": "GET",
+        "vulPath": "/admin/users",
+        "params": "",
+        "necessary": "需要先获取认证token（步骤0）",
+        "headers": {
+          "User-Agent": "Mozilla/5.0",
+          "Authorization": "Bearer {{token}}"
+        },
+        "status": "200",
+        "match": {
+          "regex": [
+            "users"
+          ],
+          "time": ""
+        },
+        "result": {
+          "VerifyInfo": {
+            "URL": "/admin/users",
+            "Payload": "通过认证绕过访问管理员用户列表"
+          }
+        }
+      }
+    ]
+  }
+}
+

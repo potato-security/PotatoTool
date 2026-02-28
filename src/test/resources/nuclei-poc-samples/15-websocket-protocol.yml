@@ -1,0 +1,81 @@
+id: websocket-protocol-test
+
+info:
+  name: WebSocket Protocol Comprehensive Test
+  author: Potato
+  severity: info
+  description: |
+    WebSocket 协议完整测试样例
+    测试 WebSocket 连接、消息发送和接收
+  tags: test,websocket,protocol
+  reference:
+    - https://docs.projectdiscovery.io/templates/protocols/websocket
+
+# 测试用例1: 基础 WebSocket Echo 测试
+websocket:
+  # Echo 服务器测试
+  - address: "wss://echo.websocket.org/.ws"
+    inputs:
+      - data: '{"action":"ping"}'
+      - data: 'Hello WebSocket'
+      - data: 'Test message'
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "ping"
+          - "Hello"
+        condition: or
+        name: "echo_response_check"
+      
+      - type: dsl
+        dsl:
+          - "len(body) > 0"
+        name: "response_exists"
+    
+    extractors:
+      - type: regex
+        name: "response_content"
+        regex:
+          - "(.*)"
+        group: 1
+
+  # 测试用例2: JSON 消息测试
+  - address: "wss://echo.websocket.org/.ws"
+    headers:
+      User-Agent: "PotatoTool/2.5.1"
+    inputs:
+      - data: '{"type":"test","message":"WebSocket test"}'
+    
+    matchers:
+      - type: word
+        words:
+          - "test"
+          - "WebSocket"
+        condition: and
+        name: "json_message_check"
+
+  # 测试用例3: 多消息序列测试
+  - address: "wss://echo.websocket.org/.ws"
+    inputs:
+      - data: "Message 1"
+        name: "first_message"
+      - data: "Message 2"
+        name: "second_message"
+      - data: "Message 3"
+        name: "third_message"
+    
+    matchers:
+      - type: regex
+        regex:
+          - "Message \\d+"
+        name: "sequence_check"
+
+# 变量支持
+variables:
+  ws_server: "echo.websocket.org"
+  test_data: "WebSocket Test"
+
+
+

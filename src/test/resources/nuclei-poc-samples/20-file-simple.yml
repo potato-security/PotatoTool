@@ -1,0 +1,24 @@
+id: file-simple-test
+
+info:
+  name: File Simple Password Search
+  author: Potato
+  severity: info
+  description: 简单的文件内容检测（搜索密码）
+  tags: test,file,simple
+
+file:
+  - extensions:
+      - log
+      - txt
+    paths:
+      - "./src/test/resources"
+    recursive: false
+    
+    matchers:
+      - type: word
+        words:
+          - "password"
+        case-insensitive: true
+
+

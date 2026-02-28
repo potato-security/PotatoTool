@@ -1,0 +1,93 @@
+id: multi-protocol-flow
+info:
+  name: Multi-Protocol Flow Test
+  author: Potato
+  severity: high
+  description: 测试多协议组合和流程控制
+  tags: test,multi-protocol,flow
+
+variables:
+  target_domain: "example.com"
+  api_path: "/api/endpoint"
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}{{api_path}}"
+    matchers:
+      - type: status
+        status:
+          - 200
+        name: http_success
+    extractors:
+      - type: regex
+        regex:
+          - "token=(\\w+)"
+        part: body
+        name: api_token
+
+dns:
+  - type: A
+    name:
+      - "{{target_domain}}"
+    matchers:
+      - type: dsl
+        dsl:
+          - "len(results) > 0"
+        name: dns_resolved
+
+file:
+  - paths:
+      - "/etc/passwd"
+      - "/etc/hosts"
+    matchers:
+      - type: word
+        words:
+          - "root"
+        part: body
+        name: file_found
+
+ssl:
+  - address: "{{target_domain}}:443"
+    matchers:
+      - type: dsl
+        dsl:
+          - "len(certificate) > 0"
+        name: ssl_cert_found
+
+websocket:
+  - path: "/ws"
+    matchers:
+      - type: word
+        words:
+          - "connected"
+        part: body
+        name: ws_connected
+
+headless:
+  - steps:
+      - action: navigate
+        url: "https://{{target_domain}}"
+      - action: extract
+        extractors:
+          - type: regex
+            regex:
+              - "title: (.+)"
+            part: body
+        name: page_title
+
+code:
+  - engine:
+      - javascript
+    source: |
+      function execute() {
+        const token = "{{api_token}}";
+        const hash = sha256(token);
+        return hash;
+      }
+    matchers:
+      - type: dsl
+        dsl:
+          - "len(results) > 0"
+        name: code_executed
+

@@ -1,0 +1,28 @@
+id: raw-request-test
+
+info:
+  name: Raw Request Test
+  author: Potato
+  severity: info
+  description: 测试原始HTTP请求格式
+  tags: test,raw
+
+http:
+  - raw:
+      - |
+        GET /api/test HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0
+        Accept: application/json
+        X-Custom-Header: test-value
+        
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "success"
+        part: body
+        condition: and
+

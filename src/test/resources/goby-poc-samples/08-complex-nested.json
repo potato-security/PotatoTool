@@ -1,0 +1,169 @@
+{
+  "Name": "Complex Nested Logic POC",
+  "Level": "1",
+  "Tags": ["rce", "critical"],
+  "Description": "超级复杂的嵌套逻辑测试",
+  "Product": "Test Product",
+  "Author": "Potato",
+  "HasExp": true,
+  "ExpParams": [
+    {
+      "Name": "cmd",
+      "Type": "input",
+      "Value": "whoami"
+    }
+  ],
+  "ScanSteps": [
+    "OR",
+    {
+      "Request": {
+        "method": "POST",
+        "uri": "/api/v1/exec",
+        "header": {
+          "Content-Type": "application/json"
+        },
+        "data": "{\"command\":\"id\"}",
+        "set_variable": [
+          "output1|body|regex|result\":\"([^\"]+)\""
+        ]
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          },
+          {
+            "type": "group",
+            "operation": "OR",
+            "checks": [
+              {
+                "type": "item",
+                "variable": "$body",
+                "operation": "regex",
+                "value": "uid=\\d+\\(\\w+\\)"
+              },
+              {
+                "type": "item",
+                "variable": "$body",
+                "operation": "regex",
+                "value": "gid=\\d+\\(\\w+\\)"
+              }
+            ]
+          },
+          {
+            "type": "group",
+            "operation": "AND",
+            "checks": [
+              {
+                "type": "item",
+                "variable": "$body",
+                "operation": "not contains",
+                "value": "error"
+              },
+              {
+                "type": "item",
+                "variable": "$body",
+                "operation": "not contains",
+                "value": "exception"
+              },
+              {
+                "type": "group",
+                "operation": "OR",
+                "checks": [
+                  {
+                    "type": "item",
+                    "variable": "$header",
+                    "operation": "contains",
+                    "value": "application/json"
+                  },
+                  {
+                    "type": "item",
+                    "variable": "$header",
+                    "operation": "contains",
+                    "value": "text/plain"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "Request": {
+        "method": "POST",
+        "uri": "/api/v2/execute",
+        "header": {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "data": "cmd=whoami",
+        "set_variable": [
+          "output2|body|regex|output=([\\w\\s]+)"
+        ]
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          },
+          {
+            "type": "group",
+            "operation": "OR",
+            "checks": [
+              {
+                "type": "item",
+                "variable": "$body",
+                "operation": "regex",
+                "value": "root|admin|user|www-data"
+              },
+              {
+                "type": "item",
+                "variable": "$body",
+                "operation": "contains",
+                "value": "Command executed successfully"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "ExploitSteps": [
+    {
+      "Request": {
+        "method": "POST",
+        "uri": "/api/v1/exec",
+        "header": {
+          "Content-Type": "application/json"
+        },
+        "data": "{\"command\":\"{{{cmd}}}\"}"
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          }
+        ]
+      },
+      "SetVariable": [
+        "exploit_output|body|regex|result\":\"([^\"]+)\""
+      ]
+    }
+  ]
+}
+

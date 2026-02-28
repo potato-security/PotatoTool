@@ -1,0 +1,21 @@
+id: websocket-simple-test
+
+info:
+  name: WebSocket Simple Echo Test
+  author: Potato
+  severity: info
+  description: 简单的 WebSocket Echo 测试
+  tags: test,websocket,simple
+
+websocket:
+  - address: "wss://echo.websocket.org/.ws"
+    inputs:
+      - data: "Hello WebSocket"
+    
+    matchers:
+      - type: word
+        words:
+          - "Hello"
+
+
+

@@ -1,0 +1,25 @@
+# Xray POC - 简单 CEL 表达式
+# 复杂度：★★☆☆☆
+# 测试点：CEL 表达式匹配
+
+name: poc-yaml-vulnlab-git-config
+manual: true
+transport: http
+set:
+  rand: randomInt(100000, 999999)
+rules:
+  r0:
+    request:
+      cache: true
+      method: GET
+      path: /.git/config
+    expression: response.status == 200 && response.body.bcontains(b"[core]") && response.body.bcontains(b"[remote")
+    output:
+      search: '"url = ([^"\\s]+)"'
+      result: search
+expression: r0()
+detail:
+  author: test
+  info: VulnLab Git Config Leak
+  description: Git 配置文件泄露
+  version: 1.0

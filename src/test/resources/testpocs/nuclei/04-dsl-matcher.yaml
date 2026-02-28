@@ -1,0 +1,29 @@
+# Nuclei POC - DSL 表达式匹配
+# 复杂度：★★★☆☆
+# 测试点：DSL 匹配器、内置函数
+
+id: vulnlab-sqli-detect
+
+info:
+  name: VulnLab SQL Injection Detection
+  author: test
+  severity: high
+  description: 检测 SQL 注入漏洞
+  tags: sqli,injection
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/sqli?id=1'"
+    
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      
+      - type: dsl
+        dsl:
+          - 'contains(body, "SQL syntax error")'
+          - 'contains(body, "SELECT * FROM")'
+          - 'status_code == 200'

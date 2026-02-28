@@ -1,0 +1,124 @@
+{
+  "pocInfo": {
+    "vulID": "full-features-001",
+    "version": "1",
+    "name": "Full Pocsuite Features Test",
+    "protocol": "http",
+    "vulType": "RCE",
+    "vulDate": "2024-01-01",
+    "createDate": "2024-01-01",
+    "updateDate": "2024-01-02",
+    "author": "TestAuthor",
+    "references": [
+      "https://example.com/cve-001",
+      "https://example.com/advisory"
+    ],
+    "appName": "TestApp",
+    "appVersion": "1.0.0",
+    "appPowerLink": "https://example.com",
+    "desc": "测试Pocsuite的所有功能特性",
+    "samples": [
+      "https://example.com/vuln1",
+      "https://example.com/vuln2"
+    ]
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/verify",
+        "params": "test=1",
+        "necessary": "初始验证步骤",
+        "headers": {
+          "User-Agent": "Pocsuite",
+          "Accept": "application/json"
+        },
+        "status": "200",
+        "match": {
+          "regex": ["success", "ok"],
+          "time": "1"
+        }
+      },
+      {
+        "step": "1",
+        "method": "POST",
+        "vulPath": "/api/login",
+        "params": "username=admin&password=admin",
+        "necessary": "需要先通过步骤0",
+        "headers": {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "status": "200",
+        "match": {
+          "regex": ["login.*success"]
+        }
+      }
+    ],
+    "attack": [
+      {
+        "step": "0",
+        "method": "POST",
+        "vulPath": "/api/exploit",
+        "params": "cmd=whoami",
+        "necessary": "需要登录认证",
+        "headers": {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Cookie": "session=test"
+        },
+        "status": "200",
+        "match": {
+          "regex": ["root", "admin"],
+          "time": "2"
+        },
+        "result": {
+          "ShellInfo": {
+            "Command": "<regex>command[\\s=:]+([^\\n]+)",
+            "Output": "<regex>output[\\s=:]+([^\\n]+)",
+            "User": "<regex>user[\\s=:]+([^\\s\\n]+)"
+          },
+          "SiteAttr": {
+            "Path": "<regex>path[\\s=:]+([^\\s\\n]+)",
+            "Hostname": "<regex>hostname[\\s=:]+([^\\s\\n]+)"
+          },
+          "AdminInfo": {
+            "Username": "<regex>username[\\s=:]+([^\\s\\n]+)",
+            "Password": "<regex>password[\\s=:]+([^\\s\\n]+)",
+            "Uid": "<regex>uid[\\s=:]+(\\d+)",
+            "Groupid": "<regex>gid[\\s=:]+(\\d+)"
+          },
+          "DBInfo": {
+            "Hostname": "<regex>dbhost[\\s=:]+([^\\s\\n]+)",
+            "DBname": "<regex>dbname[\\s=:]+([^\\s\\n]+)",
+            "Tables": {
+              "TableName": "<regex>table[\\s=:]+([^\\s\\n]+)",
+              "Columns": {
+                "ColumnName": "<regex>column[\\s=:]+([^\\s\\n]+)",
+                "Type": "<regex>type[\\s=:]+([^\\s\\n]+)"
+              }
+            }
+          },
+          "FileInfo": {
+            "Filename": "<regex>filename[\\s=:]+([^\\s\\n]+)",
+            "Content": "<regex>content[\\s=:]+([\\s\\S]+?)(?=\\n\\w+|$)",
+            "Path": "<regex>filepath[\\s=:]+([^\\s\\n]+)"
+          },
+          "Process": {
+            "Name": "<regex>process[\\s=:]+([^\\s\\n]+)",
+            "Pid": "<regex>pid[\\s=:]+(\\d+)"
+          },
+          "VerifyInfo": {
+            "URL": "<regex>url[\\s=:]+(https?://[^\\s\\n]+)",
+            "Payload": "<regex>payload[\\s=:]+([^\\s\\n]+)",
+            "Postdata": "<regex>postdata[\\s=:]+([^\\s\\n]+)"
+          },
+          "XSSInfo": {
+            "Payload": "<regex>xss[\\s=:]+([^\\s\\n]+)",
+            "URL": "<regex>url[\\s=:]+(https?://[^\\s\\n]+)"
+          }
+        }
+      }
+    ]
+  }
+}
+

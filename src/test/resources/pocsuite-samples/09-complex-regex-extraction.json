@@ -1,0 +1,63 @@
+{
+  "pocInfo": {
+    "vulID": "complex-regex-001",
+    "version": "1",
+    "name": "Complex Regex Extraction",
+    "protocol": "http",
+    "vulType": "SQL Injection",
+    "author": "TestAuthor",
+    "desc": "测试复杂正则表达式的提取"
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/test",
+        "status": "200",
+        "match": {
+          "regex": ["test"]
+        }
+      }
+    ],
+    "attack": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/data",
+        "status": "200",
+        "match": {
+          "regex": ["data"]
+        },
+        "result": {
+          "FileInfo": {
+            "Filename": "<regex>filename[\\s=:]+([^\\s\\n]+)",
+            "Content": "<regex>content[\\s=:]+([\\s\\S]+?)(?=\\n\\w+|$)",
+            "Path": "<regex>path[\\s=:]+([^\\s\\n]+)"
+          },
+          "SiteAttr": {
+            "Path": "<regex>path[\\s=:]+([^\\s\\n]+)",
+            "Hostname": "<regex>hostname[\\s=:]+([^\\s\\n]+)",
+            "IP": "<regex>ip[\\s=:]+(\\d+\\.\\d+\\.\\d+\\.\\d+)"
+          },
+          "VerifyInfo": {
+            "URL": "<regex>url[\\s=:]+(https?://[^\\s\\n]+)",
+            "Payload": "<regex>payload[\\s=:]+([^\\s\\n]+)",
+            "Postdata": "<regex>postdata[\\s=:]+([^\\s\\n]+)"
+          },
+          "DBInfo": {
+            "Hostname": "<regex>hostname[\\s=:]+([^\\s\\n]+)",
+            "DBname": "<regex>database[\\s=:]+([^\\s\\n]+)",
+            "Tables": {
+              "TableName": "<regex>table[\\s=:]+([^\\s\\n]+)",
+              "Columns": {
+                "ColumnName": "<regex>column[\\s=:]+([^\\s\\n]+)"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+

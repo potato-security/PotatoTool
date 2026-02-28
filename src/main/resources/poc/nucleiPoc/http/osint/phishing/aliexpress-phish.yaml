@@ -1,0 +1,35 @@
+id: aliexpress-phish
+
+info:
+  name: aliexpress phishing Detection
+  author: rxerium
+  severity: info
+  description: |
+    An aliexpress phishing website was detected
+  reference:
+    - https://aliexpress.com
+  metadata:
+    max-request: 1
+  tags: phishing,aliexpress,osint
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    host-redirects: true
+    max-redirects: 2
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - 'AliExpress - Affordable Prices on Top Brands with Free Shipping'
+
+      - type: status
+        status:
+          - 200
+
+      - type: dsl
+        dsl:
+          - '!contains(host,"aliexpress.com")'
+# digest: 4a0a004730450220587d81d9abb995abead2bb75a9b88c4cfbf7fccbb3c12b8279783e408134d75c022100bf1e2ac70bebc554ab51a3c38d0eb622b06284c62270e889cc2e959c17d96fa2:922c64590222798bb761d5b6d8e72950

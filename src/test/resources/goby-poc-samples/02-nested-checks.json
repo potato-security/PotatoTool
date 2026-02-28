@@ -1,0 +1,72 @@
+{
+  "Name": "Nested Checks POC",
+  "Level": "2",
+  "Tags": ["injection", "sql"],
+  "Description": "复杂嵌套检查测试用例",
+  "Product": "Test Product",
+  "Author": "Potato",
+  "HasExp": false,
+  "ScanSteps": [
+    {
+      "Request": {
+        "method": "POST",
+        "uri": "/api/login",
+        "header": {
+          "Content-Type": "application/json"
+        },
+        "data_type": "text",
+        "data": "{\"username\":\"admin\",\"password\":\"' OR '1'='1\"}"
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          },
+          {
+            "type": "group",
+            "operation": "OR",
+            "checks": [
+              {
+                "type": "item",
+                "variable": "$body",
+                "operation": "contains",
+                "value": "login success"
+              },
+              {
+                "type": "item",
+                "variable": "$body",
+                "operation": "contains",
+                "value": "welcome"
+              },
+              {
+                "type": "group",
+                "operation": "AND",
+                "checks": [
+                  {
+                    "type": "item",
+                    "variable": "$body",
+                    "operation": "regex",
+                    "value": "token=[a-zA-Z0-9]+"
+                  },
+                  {
+                    "type": "item",
+                    "variable": "$header",
+                    "operation": "contains",
+                    "value": "Set-Cookie"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "ExploitSteps": []
+}
+

@@ -1,0 +1,37 @@
+{
+  "Name": "VulnLab PHPInfo Detection",
+  "Level": "1",
+  "Tags": ["phpinfo", "info-leak"],
+  "GobyQuery": "app=\"PHP\"",
+  "Description": "检测 PHPInfo 页面泄露",
+  "Product": "PHP",
+  "Homepage": "https://www.php.net",
+  "Author": "test",
+  "Impact": "信息泄露可能暴露服务器配置信息",
+  "Recommendation": "删除或限制访问 phpinfo 页面",
+  "HasExp": true,
+  "ExpParams": [],
+  "ScanSteps": [
+    "AND",
+    {
+      "Request": {
+        "method": "GET",
+        "uri": "/phpinfo",
+        "follow_redirect": false,
+        "header": {},
+        "data_type": "text",
+        "data": ""
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {"type": "item", "variable": "$code", "operation": "==", "value": "200"},
+          {"type": "item", "variable": "$body", "operation": "contains", "value": "PHP Version"},
+          {"type": "item", "variable": "$body", "operation": "contains", "value": "DOCUMENT_ROOT"}
+        ]
+      }
+    }
+  ],
+  "ExploitSteps": null
+}

@@ -1,0 +1,63 @@
+{
+  "pocInfo": {
+    "vulID": "test-pocsuite-multi-step",
+    "version": "1",
+    "vulDate": "2025-11-27",
+    "createDate": "2025-11-27",
+    "updateDate": "2025-11-27",
+    "name": "Multi-Step Authentication Bypass (Test)",
+    "protocol": "http",
+    "vulType": "Authentication Bypass",
+    "author": "Potato",
+    "references": [],
+    "appName": "Test CMS",
+    "appVersion": "1.0",
+    "appPowerLink": "",
+    "desc": "测试多步骤认证绕过漏洞：先获取 token，再访问管理面板",
+    "samples": []
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/api/auth/token",
+        "params": "",
+        "necessary": "",
+        "headers": {
+          "User-Agent": "Mozilla/5.0"
+        },
+        "status": "200",
+        "match": {
+          "regex": [
+            "token"
+          ],
+          "time": ""
+        },
+        "output": {
+          "token": "<regex>\"token\":\"([^\"]+)\""
+        }
+      },
+      {
+        "step": "1",
+        "method": "GET",
+        "vulPath": "/admin/panel",
+        "params": "",
+        "necessary": "需要先获取 token",
+        "headers": {
+          "User-Agent": "Mozilla/5.0",
+          "Authorization": "Bearer {{token}}"
+        },
+        "status": "200",
+        "match": {
+          "regex": [
+            "admin",
+            "dashboard"
+          ],
+          "time": ""
+        }
+      }
+    ],
+    "attack": []
+  }
+}

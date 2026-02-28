@@ -1,0 +1,40 @@
+id: variables-flow-test
+
+info:
+  name: Variables and Flow Test
+  author: Potato
+  severity: high
+  description: 测试变量和流程控制
+  tags: test,variables,flow
+
+variables:
+  api_key: "test-key-123"
+  version: "1.0"
+
+http:
+  - method: GET
+    path:
+      - "/api/{{api_key}}/info"
+    headers:
+      X-Version: "{{version}}"
+    matchers:
+      - type: status
+        status:
+          - 200
+        name: step1
+
+  - method: POST
+    path:
+      - "/api/{{api_key}}/update"
+    headers:
+      X-Version: "{{version}}"
+    body: "{\"action\":\"test\"}"
+    matchers:
+      - type: word
+        words:
+          - "success"
+        part: body
+        name: step2
+
+flow: http(1) && http(2)
+

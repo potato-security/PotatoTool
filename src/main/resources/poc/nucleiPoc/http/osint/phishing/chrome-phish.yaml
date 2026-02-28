@@ -1,0 +1,35 @@
+id: chrome-phish
+
+info:
+  name: chrome phishing Detection
+  author: rxerium
+  severity: info
+  description: |
+    A chrome phishing website was detected
+  reference:
+    - https://www.google.com/intl/en_uk/chrome/
+  metadata:
+    max-request: 1
+  tags: phishing,chrome,osint
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    host-redirects: true
+    max-redirects: 2
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - 'Google Chrome – Download the fast, secure browser from Google'
+
+      - type: status
+        status:
+          - 200
+
+      - type: dsl
+        dsl:
+          - '!contains(host,"google.com")'
+# digest: 490a0046304402207a6dc18c9ae6c3ba9da9a1e76694745153320070c9f6f35e63e87d72059a98a702202b267311472cf6b2d8a9de9493699b7bedd41ef95703bea2523558a43fe7447a:922c64590222798bb761d5b6d8e72950

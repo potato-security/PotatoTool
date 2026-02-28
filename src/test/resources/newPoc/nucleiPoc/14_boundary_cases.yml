@@ -1,0 +1,122 @@
+id: boundary-edge-cases
+info:
+  name: Boundary and Edge Cases Test
+  author: Potato
+  severity: info
+  description: 测试边界情况和错误处理
+  tags: test,boundary,edge-cases
+
+http:
+  # 测试1: 空body
+  - method: GET
+    path:
+      - "/api/empty"
+    matchers:
+      - type: dsl
+        dsl:
+          - "len(body) == 0"
+        name: empty_body
+    extractors:
+      - type: dsl
+        dsl:
+          - "body"
+        name: empty_extracted
+
+  # 测试2: 超大body
+  - method: GET
+    path:
+      - "/api/large"
+    matchers:
+      - type: dsl
+        dsl:
+          - "len(body) > 1000000"
+        name: large_body
+
+  # 测试3: 特殊字符
+  - method: POST
+    path:
+      - "/api/special"
+    body: "{{rand_text_alpha(1000)}}<script>alert('xss')</script>{{base64('test')}}"
+    matchers:
+      - type: word
+        words:
+          - "<script>"
+        part: body
+        name: special_chars
+
+  # 测试4: Unicode字符
+  - method: GET
+    path:
+      - "/api/unicode"
+    matchers:
+      - type: dsl
+        dsl:
+          - "contains(body, unicode_decode('\\u4e2d\\u6587'))"
+        name: unicode_chars
+
+  # 测试5: 数字边界
+  - method: GET
+    path:
+      - "/api/number?id={{rand_int(0, 2147483647)}}"
+    matchers:
+      - type: dsl
+        dsl:
+          - "status_code >= 0 && status_code <= 999"
+        name: number_boundary
+
+  # 测试6: 嵌套深度
+  - method: GET
+    path:
+      - "/api/nested"
+    matchers:
+      - type: dsl
+        dsl:
+          - "md5(sha256(base64(hex_decode(body)))) != ''"
+        name: deep_nesting
+
+  # 测试7: 空字符串处理
+  - method: GET
+    path:
+      - "/api/empty-string"
+    matchers:
+      - type: dsl
+        dsl:
+          - "trim(body) == ''"
+        name: empty_string
+
+  # 测试8: NULL值处理
+  - method: GET
+    path:
+      - "/api/null"
+    matchers:
+      - type: dsl
+        dsl:
+          - "body != null"
+        name: not_null
+
+  # 测试9: 正则边界
+  - method: GET
+    path:
+      - "/api/regex"
+    matchers:
+      - type: regex
+        regex:
+          - ".*"
+          - "^.+$"
+          - "\\d{0,}"
+        part: body
+        name: regex_boundary
+
+  # 测试10: 编码边界
+  - method: GET
+    path:
+      - "/api/encoding"
+    matchers:
+      - type: dsl
+        dsl:
+          - "len(base64('')) == 0"
+          - "len(url_encode('')) == 0"
+          - "len(hex_encode('')) == 0"
+        condition: and
+        name: encoding_boundary
+

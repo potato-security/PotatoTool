@@ -1,0 +1,48 @@
+id: multi-step-test
+
+info:
+  name: Multi-Step Test
+  author: Potato
+  severity: high
+  description: 测试多步骤检测流程
+  tags: test,multi-step
+
+http:
+  # Step 1: 登录获取Token
+  - method: POST
+    path:
+      - "/api/login"
+    headers:
+      Content-Type: "application/json"
+    body: '{"username":"admin","password":"admin123"}'
+    extractors:
+      - type: regex
+        regex:
+          - '"token":"([^"]+)"'
+        part: body
+        name: auth_token
+    matchers:
+      - type: status
+        status:
+          - 200
+        name: login_success
+
+  # Step 2: 使用Token访问受保护资源
+  - method: GET
+    path:
+      - "/api/user/profile"
+    headers:
+      Authorization: "Bearer {{auth_token}}"
+    matchers:
+      - type: status
+        status:
+          - 200
+        name: auth_check
+      - type: word
+        words:
+          - "profile"
+        part: body
+        name: content_check
+
+flow: http(1) && http(2)
+

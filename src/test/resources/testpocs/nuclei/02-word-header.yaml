@@ -1,0 +1,35 @@
+# Nuclei POC - 关键词 + 响应头匹配
+# 复杂度：★★☆☆☆
+# 测试点：WORD 匹配器、header part、AND 条件
+
+id: vulnlab-version-detect
+
+info:
+  name: VulnLab Version Detection
+  author: test
+  severity: info
+  description: 检测 VulnLab 版本信息
+  tags: version,detect
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/version"
+    
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      
+      - type: word
+        part: header
+        words:
+          - "X-Powered-By: VulnLab"
+          - "VulnLab"
+      
+      - type: word
+        part: body
+        words:
+          - "version"
+          - "1.0.0"

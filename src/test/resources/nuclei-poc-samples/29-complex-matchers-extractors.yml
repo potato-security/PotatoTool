@@ -1,0 +1,127 @@
+id: complex-matchers-extractors
+info:
+  name: Complex Matchers and Extractors Test
+  author: Potato
+  severity: high
+  description: 测试复杂匹配器和提取器组合
+  tags: test,matchers,extractors,complex
+
+http:
+  - method: GET
+    path:
+      - "/api/data?id={{rand_int(1, 1000)}}"
+    headers:
+      X-Request-ID: "{{rand_text_alphanumeric(16)}}"
+    matchers-condition: or
+    matchers:
+      # 状态码匹配
+      - type: status
+        status:
+          - 200
+          - 201
+          - 204
+        condition: and
+        name: status_match
+      
+      # DSL匹配 - 复杂条件
+      - type: dsl
+        dsl:
+          - "status_code >= 200 && status_code < 300"
+          - "len(body) > 100 && len(body) < 10000"
+          - "contains(all_headers, 'content-type')"
+          - "md5(body) != ''"
+          - "regex('\\d{4}', body)"
+        condition: and
+        name: dsl_complex
+      
+      # Word匹配 - 多个词
+      - type: word
+        words:
+          - "success"
+          - "data"
+          - "result"
+        part: body
+        condition: and
+        name: word_match
+      
+      # 正则匹配
+      - type: regex
+        regex:
+          - "\\d{4}-\\d{2}-\\d{2}"
+          - "[A-Z0-9]{32}"
+        part: body
+        condition: and
+        name: regex_match
+      
+      # JSON匹配
+      - type: json
+        json:
+          - '.status'
+          - '.data'
+        part: body
+        condition: and
+        name: json_match
+      
+      # Binary匹配
+      - type: binary
+        binary:
+          - "4D5A"
+        part: body
+        name: binary_match
+      
+      # 负向匹配
+      - type: word
+        words:
+          - "error"
+          - "exception"
+          - "failed"
+        part: body
+        negative: true
+        condition: and
+        name: no_errors
+    
+    extractors:
+      # 正则提取器
+      - type: regex
+        regex:
+          - "id=(\\d+)"
+          - "token=([A-Za-z0-9]+)"
+        part: body
+        name: regex_extracted
+      
+      # JSON提取器
+      - type: json
+        json:
+          - '.id'
+          - '.name'
+          - '.items[0].id'
+          - '.data.list[*].value'
+        part: body
+        name: json_extracted
+      
+      # DSL提取器 - 复杂提取
+      - type: dsl
+        dsl:
+          - "md5(body)"
+          - "base64(body)"
+          - "sha256(body)"
+          - "substr(body, 0, 100)"
+          - "regex('id=(\\d+)', body)"
+        name: dsl_extracted
+      
+      # XPath提取器
+      - type: xpath
+        xpath:
+          - "/html/head/title"
+          - "//div[@class='content']/text()"
+        part: body
+        name: xpath_extracted
+      
+      # KVal提取器
+      - type: kval
+        kval:
+          - "status"
+          - "data"
+        part: body
+        name: kval_extracted
+

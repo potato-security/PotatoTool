@@ -1,0 +1,60 @@
+# Nuclei POC - 多步骤流程 + 变量传递
+# 复杂度：★★★★☆
+# 测试点：多步骤执行、变量提取、跨步骤引用
+
+id: vulnlab-multi-step-auth
+
+info:
+  name: VulnLab Multi-Step Authentication Bypass
+  author: test
+  severity: critical
+  description: 多步骤认证绕过测试
+  tags: auth,bypass,multi-step
+
+http:
+  - method: POST
+    path:
+      - "{{BaseURL}}/api/login"
+    headers:
+      Content-Type: application/json
+    body: '{"username":"admin","password":"admin"}'
+    
+    matchers:
+      - type: status
+        status:
+          - 200
+    
+    extractors:
+      - type: regex
+        name: auth_token
+        part: body
+        internal: true
+        group: 1
+        regex:
+          - '"token":"([^"]+)"'
+  
+  - method: GET
+    path:
+      - "{{BaseURL}}/api/secret"
+    headers:
+      Authorization: "Bearer {{auth_token}}"
+    
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      
+      - type: word
+        part: body
+        words:
+          - "TOP_SECRET_DATA"
+          - "multi_step_success"
+    
+    extractors:
+      - type: regex
+        name: secret_data
+        part: body
+        group: 1
+        regex:
+          - '"secret":"([^"]+)"'

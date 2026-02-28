@@ -1,0 +1,39 @@
+{
+  "Name": "Global Variables POC",
+  "Level": "2",
+  "Tags": ["test"],
+  "Description": "全局变量测试",
+  "Product": "Test Product",
+  "Author": "Potato",
+  "HasExp": false,
+  "GlobalVariables": {
+    "api_key": "test_key_12345",
+    "version": "v2",
+    "format": "json"
+  },
+  "ScanSteps": [
+    {
+      "Request": {
+        "method": "GET",
+        "uri": "/api/{{{version}}}/data?key={{{api_key}}}&format={{{format}}}",
+        "header": {
+          "User-Agent": "Test"
+        }
+      },
+      "ResponseTest": {
+        "type": "group",
+        "operation": "AND",
+        "checks": [
+          {
+            "type": "item",
+            "variable": "$code",
+            "operation": "==",
+            "value": "200"
+          }
+        ]
+      }
+    }
+  ],
+  "ExploitSteps": []
+}
+

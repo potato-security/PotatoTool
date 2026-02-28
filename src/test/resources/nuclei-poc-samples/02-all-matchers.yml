@@ -1,0 +1,74 @@
+id: all-matchers-test
+
+info:
+  name: All Matchers Test
+  author: Potato
+  severity: medium
+  description: 测试所有匹配器类型
+  tags: test,matchers
+
+http:
+  - method: GET
+    path:
+      - /test
+    matchers-condition: and
+    matchers:
+      # Status Matcher
+      - type: status
+        status:
+          - 200
+          - 302
+        name: status_check
+      
+      # Word Matcher
+      - type: word
+        words:
+          - "test"
+          - "success"
+        part: body
+        case-insensitive: true
+        condition: or
+        name: word_check
+      
+      # Regex Matcher
+      - type: regex
+        regex:
+          - "\\d{4}-\\d{2}-\\d{2}"
+        part: body
+        group: 1
+        name: regex_check
+      
+      # Binary Matcher
+      - type: binary
+        binary:
+          - "504B0304"  # ZIP file header
+        part: body
+        name: binary_check
+      
+      # DSL Matcher
+      - type: dsl
+        dsl:
+          - "status_code == 200"
+          - "len(body) > 100"
+        condition: and
+        name: dsl_check
+      
+      # JSON Matcher
+      - type: json
+        json:
+          - '.status == "ok"'
+        name: json_check
+      
+      # Kval Matcher
+      - type: kval
+        kval:
+          - "Content-Type: application/json"
+        part: header
+        name: kval_check
+      
+      # XPath Matcher
+      - type: xpath
+        xpath:
+          - "/html/head/title"
+        name: xpath_check
+

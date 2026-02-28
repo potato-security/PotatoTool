@@ -1,0 +1,78 @@
+{
+  "pocInfo": {
+    "vulID": "edge-cases-001",
+    "version": "1",
+    "name": "Edge Cases Test",
+    "protocol": "http",
+    "vulType": "Test",
+    "author": "TestAuthor",
+    "desc": "测试边界情况和异常情况"
+  },
+  "pocExecute": {
+    "verify": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/test",
+        "params": "",
+        "necessary": "",
+        "status": "",
+        "match": {
+          "regex": []
+        }
+      },
+      {
+        "step": "1",
+        "method": "GET",
+        "vulPath": "/test2",
+        "match": {
+          "time": "0"
+        }
+      },
+      {
+        "step": "2",
+        "method": "GET",
+        "vulPath": "/test3",
+        "status": "200"
+      },
+      {
+        "step": "3",
+        "method": "GET",
+        "vulPath": "/test4",
+        "match": {
+          "regex": ["test"],
+          "time": ""
+        }
+      }
+    ],
+    "attack": [
+      {
+        "step": "0",
+        "method": "GET",
+        "vulPath": "/attack",
+        "result": {}
+      },
+      {
+        "step": "1",
+        "method": "GET",
+        "vulPath": "/attack2",
+        "result": {
+          "EmptyInfo": ""
+        }
+      },
+      {
+        "step": "2",
+        "method": "GET",
+        "vulPath": "/attack3",
+        "result": {
+          "MixedInfo": {
+            "RegexField": "<regex>test:([^\\s]+)",
+            "PlainField": "plain_value",
+            "NestedEmpty": {}
+          }
+        }
+      }
+    ]
+  }
+}
+

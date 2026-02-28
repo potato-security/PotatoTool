@@ -1,0 +1,35 @@
+id: quora-phish
+
+info:
+  name: quora phishing Detection
+  author: rxerium
+  severity: info
+  description: |
+    A quora phishing website was detected
+  reference:
+    - https://quora.com
+  metadata:
+    max-request: 1
+  tags: phishing,quora,osint
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    host-redirects: true
+    max-redirects: 2
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - 'Quora - A place to share knowledge and better understand the world'
+
+      - type: status
+        status:
+          - 200
+
+      - type: dsl
+        dsl:
+          - '!contains(host,"quora.com")'
+# digest: 4b0a00483046022100f3c2f40a5476362579ef9d0382a63a7fb49866d765404ff7aff4dfea8142104f022100c0ea0307739096c5dcb211e9231a0f74d76139be36b4cd166a1a6d7972165f01:922c64590222798bb761d5b6d8e72950

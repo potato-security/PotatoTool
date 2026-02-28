@@ -1,0 +1,26 @@
+id: slims-cms-detect
+
+info:
+  name: Slims CMS - Detect
+  author: nblirwn
+  severity: info
+  description: Detects Senayan Library Management System (SLiMS) CMS
+  reference:
+    - https://github.com/slims
+  metadata:
+    verified: true
+    max-request: 1
+    shodan-query: html:'content="SLiMS'
+  tags: tech,slims,cms,senayan
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    matchers:
+      - type: word
+        part: body
+        words:
+          - 'content="SLiMS'
+# digest: 4a0a0047304502206335046add818c8b99b770f9d33f8c6d686eda85c72a68e63b9d717272768105022100f11b2c886499ba88052b47291cd0c636d22a31294dd3a8b7693054a5c5650de9:922c64590222798bb761d5b6d8e72950
