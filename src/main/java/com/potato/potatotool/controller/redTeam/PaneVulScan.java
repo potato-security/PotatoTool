@@ -4,6 +4,8 @@ import com.dlsc.gemsfx.CFCheckBox;
 import com.sun.javafx.scene.control.skin.DatePickerSkin;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.InputType;
 import com.potato.potatotool.content.redTeam.vulnScanner.core.SmartPocSelector.PocSelectionResult;
@@ -22,7 +24,9 @@ import com.potato.potatotool.content.redTeam.vulnScanner.loader.PocLoader;
 import com.potato.potatotool.content.redTeam.vulnScanner.loader.PocUpdater;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.ScanLogger;
 import com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig;
+import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.I18nUtils;
+import com.potato.potatotool.utils.data.JsonUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;
@@ -203,7 +207,8 @@ public class PaneVulScan {
 
         // 初始化UI
         initializeUI();
-        
+        syncProxySwitchState();
+
         // 初始化POC管理增强功能
         initPocManageEnhanced();
         
@@ -352,8 +357,11 @@ public class PaneVulScan {
         }
 
         // 代理设置
-        if (enableProxyBox.isSelected()) {
-            // TODO: 从系统配置中获取代理设置
+        boolean mainProxyEnabled = JsonUtils.isMainProxyEnabled();
+        boolean vulnScanProxyEnabled = enableProxyBox.isSelected();
+        String proxyAddress = JsonUtils.getMainProxyAddress();
+        if (mainProxyEnabled && vulnScanProxyEnabled && isValidProxyAddress(proxyAddress)) {
+            config.setProxy(proxyAddress.trim());
         }
 
         // 调试模式
@@ -377,6 +385,14 @@ public class PaneVulScan {
         }
 
         return config;
+    }
+
+    private boolean isValidProxyAddress(String proxyAddress) {
+        if (proxyAddress == null) {
+            return false;
+        }
+        String trimmed = proxyAddress.trim();
+        return !trimmed.isEmpty() && (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("socks://"));
     }
 
     /**
@@ -763,7 +779,22 @@ public class PaneVulScan {
         pocTableView.setItems(filtered);
     }
     
-    // ==================== CheckBox事件 ====================
+    private void syncProxySwitchState() {
+        JsonObject proxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
+        JsonObject vulnScanConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
+
+        boolean mainProxyEnabled = proxyConfig != null
+                && proxyConfig.has(ConfigConstants.PROXY_ENABLE)
+                && proxyConfig.get(ConfigConstants.PROXY_ENABLE).getAsBoolean();
+
+        boolean vulnScanProxyEnabled = vulnScanConfig != null
+                && vulnScanConfig.has(ConfigConstants.VULNSCAN_PROXY_ENABLED)
+                && vulnScanConfig.get(ConfigConstants.VULNSCAN_PROXY_ENABLED).getAsBoolean();
+
+        enableProxyBox.setSelected(vulnScanProxyEnabled);
+        enableProxyBox.setDisable(!mainProxyEnabled);
+    }
+
     
     @FXML
     public void checkNuclei(MouseEvent event) {
@@ -787,6 +818,9 @@ public class PaneVulScan {
     
     @FXML
     public void checkProxy(MouseEvent event) {
+        if (enableProxyBox.isDisable()) {
+            return;
+        }
         enableProxyBox.setSelected(!enableProxyBox.isSelected());
     }
     

@@ -53,8 +53,8 @@ public class AIUtil {
             AI_API_Key = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.LOCAL_AI_API_KEY).getAsString());
         }
 
-        // 读取 AI 代理配置
-        boolean useAIProxy = JsonUtils.isProxyEnabled(ConfigConstants.AI);
+        // 读取 AI 代理配置（主代理 + AI 子代理）
+        boolean useAIProxy = JsonUtils.isMainProxyEnabled() && JsonUtils.isProxyEnabled(ConfigConstants.AI);
 
         RequestObj obj;
         if (!isLocal){
@@ -263,8 +263,8 @@ public class AIUtil {
             AI_API_Key = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.LOCAL_AI_API_KEY).getAsString());
         }
 
-        // 读取 AI 代理配置
-        boolean useAIProxy = JsonUtils.isProxyEnabled(ConfigConstants.AI);
+        // 读取 AI 代理配置（主代理 + AI 子代理）
+        boolean useAIProxy = JsonUtils.isMainProxyEnabled() && JsonUtils.isProxyEnabled(ConfigConstants.AI);
 
         RequestObj obj;
         if (!isLocal){

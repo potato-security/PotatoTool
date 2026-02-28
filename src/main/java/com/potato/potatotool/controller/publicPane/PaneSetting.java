@@ -435,6 +435,12 @@ public class PaneSetting {
         proxyMap.put(githubProxy, AssetConstants.GITHUB_TOKEN);
         proxyMap.put(sslProxy, AssetConstants.SSL);
         proxyMap.put(crawlProxy, AssetConstants.CRAWL);
+        proxyMap.put(vulnScanProxySwitch, ConfigConstants.VULNSCAN_SERVICE);
+    }
+
+    private void syncProxyChildrenState() {
+        boolean mainProxyEnabled = proxyButton.isSelected();
+        proxyMap.forEach((checkbox, key) -> checkbox.setDisable(!mainProxyEnabled));
     }
 
     private void initData() {
@@ -495,8 +501,8 @@ public class PaneSetting {
         proxyMap.forEach((checkbox, key) -> {
             boolean proxyEnabled = finalProxyServices.has(key) && finalProxyServices.get(key).getAsBoolean();
             checkbox.setSelected(proxyEnabled);
-            checkbox.setDisable(!proxyButton.isSelected());
         });
+        syncProxyChildrenState();
 
     }
 
@@ -827,9 +833,7 @@ public class PaneSetting {
     @FXML
     public void proxyBtn(MouseEvent event) {
         proxyButton.setSelected(!proxyButton.isSelected());
-        proxyMap.forEach((checkbox, key) -> {
-            checkbox.setDisable(!proxyButton.isSelected());
-        });
+        syncProxyChildrenState();
     }
     
     /**
@@ -1068,6 +1072,7 @@ public class PaneSetting {
      */
     private void initVulnScanData() {
         try {
+            vulnScanProxySwitch.setTooltip(new Tooltip(i18n.getString("setting.vulnscan.proxy.tip")));
             JsonObject vulnScanConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
             if (vulnScanConfig == null) {
                 vulnScanConfig = new JsonObject();

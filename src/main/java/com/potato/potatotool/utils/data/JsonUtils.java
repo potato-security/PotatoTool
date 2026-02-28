@@ -307,9 +307,45 @@ public class JsonUtils {
     }
 
     /**
+     * 检查主代理开关是否启用
+     * 从 Proxy.enable 读取配置
+     *
+     * @return 是否启用主代理
+     */
+    public static boolean isMainProxyEnabled() {
+        try {
+            JsonObject proxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
+            if (proxyConfig != null && proxyConfig.has(ConfigConstants.PROXY_ENABLE)) {
+                return proxyConfig.get(ConfigConstants.PROXY_ENABLE).getAsBoolean();
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * 获取主代理地址
+     * 从 Proxy.address 读取配置
+     *
+     * @return 代理地址，未配置时返回空字符串
+     */
+    public static String getMainProxyAddress() {
+        try {
+            JsonObject proxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
+            if (proxyConfig != null && proxyConfig.has(ConfigConstants.PROXY_ADDRESS)) {
+                return proxyConfig.get(ConfigConstants.PROXY_ADDRESS).getAsString();
+            }
+            return "";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
      * 检查指定服务是否启用代理
      * 从 Proxy.services.{serviceName} 读取配置
-     * 
+     *
      * @param serviceName 服务名称（如 ConfigConstants.AI, ConfigConstants.FOFA_KEY 等）
      * @return 是否启用代理
      */

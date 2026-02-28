@@ -77,18 +77,18 @@
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置总代理：" userData="i18n:setting.basic.proxy">
                                                     <tooltip>
-                                                        <Tooltip text="优先级低于子代理开关" userData="i18n:setting.basic.proxy.tooltip"/>
+                                                        <Tooltip text="主代理为总开关，关闭后子服务代理不可用；开启后按子开关决定是否使用代理" userData="i18n:setting.basic.proxy.tooltip"/>
                                                     </tooltip>
                                                 </Label>
                                                 <StackPane>
                                                     <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" userData="i18n-prompt:setting.basic.proxy.placeholder" StackPane.alignment="CENTER">
                                                         <tooltip>
-                                                            <Tooltip text="优先级低于子代理开关" userData="i18n:setting.basic.proxy.tooltip"/>
+                                                            <Tooltip text="主代理为总开关，关闭后子服务代理不可用；开启后按子开关决定是否使用代理" userData="i18n:setting.basic.proxy.tooltip"/>
                                                         </tooltip>
                                                     </TextField>
                                                     <CFSwitch fx:id="proxyButton" onMouseClicked="#proxyBtn" StackPane.alignment="CENTER_RIGHT">
                                                         <tooltip>
-                                                            <Tooltip text="优先级低于子代理开关" userData="i18n:setting.basic.proxy.tooltip"/>
+                                                            <Tooltip text="主代理为总开关，关闭后子服务代理不可用；开启后按子开关决定是否使用代理" userData="i18n:setting.basic.proxy.tooltip"/>
                                                         </tooltip>
                                                     </CFSwitch>
                                                 </StackPane>
@@ -412,7 +412,7 @@
                                                     <HBox alignment="CENTER_LEFT" spacing="8">
                                                         <Label text="使用代理:" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.proxy"/>
                                                         <CFSwitch fx:id="vulnScanProxySwitch">
-                                                            <tooltip><Tooltip text="启用后将使用全局代理进行扫描" userData="i18n:setting.vulnscan.proxy.tip"/></tooltip>
+                                                            <tooltip><Tooltip text="需先启用主代理，开启后将使用全局代理进行扫描" userData="i18n:setting.vulnscan.proxy.tip"/></tooltip>
                                                         </CFSwitch>
                                                     </HBox>
                                                 </FlowPane>
