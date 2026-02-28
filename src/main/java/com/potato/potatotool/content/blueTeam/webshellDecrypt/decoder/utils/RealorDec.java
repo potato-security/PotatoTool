@@ -29,7 +29,7 @@ public class RealorDec {
 
             if (res == null){
                 String tmp_res = new String(nt_crypt(StrUtils.base64Decode(str.replace("#", "=").getBytes(StandardCharsets.UTF_8)),false));
-                if (ReadabilityChecker.assessReadability(tmp_res)){
+                if (ReadabilityChecker.assessReadability(tmp_res,1,0)){
                     List<String> list = Arrays.asList("(", ")", "'", "\"", "[", "]", "\\", "{", "}", "：", "《", "》", "【", "】");
 
                     // 排除低概率意外情况，比如admin123

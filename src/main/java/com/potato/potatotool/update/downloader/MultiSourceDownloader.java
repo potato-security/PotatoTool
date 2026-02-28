@@ -1,13 +1,17 @@
 package com.potato.potatotool.update.downloader;
 
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
+import com.potato.potatotool.utils.network.RequestUtils;
+
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.potato.potatotool.ToStart.debugMode;
 
@@ -83,29 +87,31 @@ public class MultiSourceDownloader {
      */
     public void download(String urlString, Path targetFile, 
                         DownloadProgressCallback callback) throws Exception {
-        HttpURLConnection conn = null;
+        CustomHttpResponse response = null;
         
         try {
             // 检查是否已存在部分下载
             long existingSize = Files.exists(targetFile) ? Files.size(targetFile) : 0;
             
-            URL url = new URL(urlString);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(CONNECT_TIMEOUT);
-            conn.setReadTimeout(READ_TIMEOUT);
-            conn.setRequestProperty("User-Agent", "PotatoTool/2.5");
+            RequestObj requestObj = new RequestObj()
+                    .setUrl(urlString)
+                    .setMethod("GET")
+                    .setTimeOut(CONNECT_TIMEOUT / 1000)
+                    .setReadTimeout(READ_TIMEOUT / 1000);
             
             // 支持断点续传
+            Map<String, String> headers = new HashMap<>();
             if (existingSize > 0) {
-                conn.setRequestProperty("Range", "bytes=" + existingSize + "-");
+                headers.put("Range", "bytes=" + existingSize + "-");
                 if (debugMode) System.out.println("检测到部分下载，启用断点续传: " + formatSize(existingSize));
             }
+            if (!headers.isEmpty()) {
+                requestObj.setHeaders(headers);
+            }
             
-            // 连接
-            conn.connect();
+            response = RequestUtils.requests(requestObj, null);
             
-            int responseCode = conn.getResponseCode();
+            int responseCode = response.getResponseCode();
             
             // 206 表示部分内容（断点续传成功）
             // 200 表示完整内容
@@ -114,7 +120,7 @@ public class MultiSourceDownloader {
             }
             
             // 获取文件总大小和剩余需要下载的大小
-            long contentLength = conn.getContentLengthLong();
+            long contentLength = response.getContentLength();
             long totalSize;
             long remainingSize;
             boolean appendMode;
@@ -129,10 +135,6 @@ public class MultiSourceDownloader {
                 // 200 响应，服务器返回完整文件
                 totalSize = contentLength;
                 
-                // 注意：不在这里判断文件是否已完整下载
-                // 文件完整性和版本一致性应该在调用方通过哈希校验来判断
-                // 这里只负责下载逻辑
-                
                 // 服务器不支持断点续传或Range请求无效，需要重新下载
                 if (existingSize > 0) {
                     if (debugMode) {
@@ -140,21 +142,21 @@ public class MultiSourceDownloader {
                         System.out.println("本地文件大小: " + formatSize(existingSize) + ", 服务器文件大小: " + formatSize(contentLength));
                     }
                     
-                    conn.disconnect();
+                    response.disconnect();
+                    response = null;
                     Files.delete(targetFile);
                     existingSize = 0;
                     
                     // 重新连接
-                    conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("GET");
-                    conn.setConnectTimeout(CONNECT_TIMEOUT);
-                    conn.setReadTimeout(READ_TIMEOUT);
-                    conn.setRequestProperty("User-Agent", "PotatoTool/2.5");
-                    conn.connect();
+                    requestObj = new RequestObj()
+                            .setUrl(urlString)
+                            .setMethod("GET")
+                            .setTimeOut(CONNECT_TIMEOUT / 1000)
+                            .setReadTimeout(READ_TIMEOUT / 1000);
                     
-                    // 重新获取响应码和内容长度
-                    responseCode = conn.getResponseCode();
-                    contentLength = conn.getContentLengthLong();
+                    response = RequestUtils.requests(requestObj, null);
+                    responseCode = response.getResponseCode();
+                    contentLength = response.getContentLength();
                     totalSize = contentLength;
                 }
                 
@@ -165,7 +167,7 @@ public class MultiSourceDownloader {
             callback.onStart(urlString, totalSize);
             
             // 下载文件
-            try (InputStream in = conn.getInputStream();
+            try (InputStream in = response.getInputStream();
                  FileOutputStream out = new FileOutputStream(targetFile.toFile(), appendMode)) {
                 
                 byte[] buffer = new byte[BUFFER_SIZE];
@@ -207,8 +209,8 @@ public class MultiSourceDownloader {
             }
             
         } finally {
-            if (conn != null) {
-                conn.disconnect();
+            if (response != null) {
+                response.disconnect();
             }
         }
     }
@@ -251,19 +253,24 @@ public class MultiSourceDownloader {
      * @return 速度（字节/秒），-1表示不可达
      */
     private long testDownloadSpeed(String urlString) throws Exception {
-        HttpURLConnection conn = null;
+        CustomHttpResponse response = null;
         
         try {
             long startTime = System.currentTimeMillis();
             
-            URL url = new URL(urlString);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(3000);
-            conn.setReadTimeout(5000);
-            conn.setRequestProperty("Range", "bytes=0-" + (SPEED_TEST_SIZE - 1));
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Range", "bytes=0-" + (SPEED_TEST_SIZE - 1));
             
-            try (InputStream in = conn.getInputStream()) {
+            RequestObj requestObj = new RequestObj()
+                    .setUrl(urlString)
+                    .setMethod("GET")
+                    .setTimeOut(3)
+                    .setReadTimeout(5)
+                    .setHeaders(headers);
+            
+            response = RequestUtils.requests(requestObj, null);
+            
+            try (InputStream in = response.getInputStream()) {
                 byte[] buffer = new byte[8192];
                 long totalBytes = 0;
                 int bytesRead;
@@ -279,8 +286,8 @@ public class MultiSourceDownloader {
             }
             
         } finally {
-            if (conn != null) {
-                conn.disconnect();
+            if (response != null) {
+                response.disconnect();
             }
         }
     }

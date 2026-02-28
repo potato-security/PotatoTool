@@ -55,39 +55,26 @@ public class ComboDecryptStrategy implements DecryptStrategy {
     private String tryComboDecryptWithThreeModes(String content, DecryptConfig config, List<String> encodeMode) {
         
         // 尝试组合解密-URLdecode+【(Base64+XOR)/AES】 【兼容+Gzip】
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < 2; i++) {
             String tmpConText = content;
-            
-            // 针对开头可能存在pass=的情况
-            String tmpPassStr = "";
-            if(i == 1) {
-                if(!content.contains("=")) continue;
-                int indexEq = content.indexOf("=") + 1;
-                int indexAnd = content.contains("&") ? content.indexOf("&") : content.length();
-                if(indexEq < indexAnd) {
-                    tmpConText = content.substring(indexEq, indexAnd);
-                    tmpPassStr = content.substring(0, indexEq);
-                    if (tmpConText.contains("=")) continue;
-                }
-            }
             
             // 针对开头结尾存在pass+key的情况
             String tempMd5PassKey = "";
-            if(i == 2) {
+            if(i == 1) {
                 if(content.length() < 33 || content.contains("&")) continue;
                 tempMd5PassKey = "流量中提取到md5(pass+md5(key))=" + content.substring(0,16) + content.substring(content.length()-16, content.length()) + "\n";
                 tmpConText = content.substring(16, content.length()-16);
                 if(!ReadabilityChecker.assessReadability(tempMd5PassKey) || !ReadabilityChecker.assessReadability(tmpConText)) continue;
             }
-            
+
             String conText1 = str.urlDecode(tmpConText);
             if(!conText1.equals(tmpConText)) encodeMode.add("URLdecode");
-            
+
             String tmp_conText3 = null;
             try {
                 byte[] tmp_conText2 = str.base64Decode(conText1.getBytes(StandardCharsets.UTF_8));
-                if(!ReadabilityChecker.assessReadability(tmp_conText2, 1, 0)) {   //  无乱码则继续进行xor解密尝试
-                    tmp_conText3 = str.xorEncode(tmp_conText2, config.getInputKey(), config.getTraverseList(), config.getCustomPath());
+                if(!ReadabilityChecker.assessReadability(tmp_conText2, 1, 0)) {   //  乱码则继续进行xor解密尝试
+                    tmp_conText3 = str.godzillaXorEncode(tmp_conText2, config.getInputKey(), config.getTraverseList(), config.getCustomPath());
                 }
             } catch (Exception e) {
                 // 忽略异常
@@ -95,12 +82,9 @@ public class ComboDecryptStrategy implements DecryptStrategy {
             
             if(tmp_conText3 != null) {
                 encodeMode.add("Base64");
-                encodeMode.add("XOR/" + str.xorKey);
-                
+                encodeMode.add("XOR/" + str.godzillaXorKey);
+
                 if(i == 1) {
-                    encodeMode.add("PassStr:" + tmpPassStr);
-                }
-                if(i == 2) {
                     encodeMode.add("Md5PassKey:" + tempMd5PassKey);
                 }
                 
@@ -110,14 +94,10 @@ public class ComboDecryptStrategy implements DecryptStrategy {
             } else {
                 // 可能使用的AES
                 String conText4 = new String(aes.aesWebShellDecode(conText1, config.getInputKey(), config.getInputIv(), config.getTraverseList(), config.getCustomPath()), StandardCharsets.UTF_8);
-                
                 if(!conText4.equals(conText1)) {
                     encodeMode.add("AES\\" + aes.mode_AES.get() + "\\" + aes.padding_AES.get() + "<key:iv>" + aes.key_AES.get() + ":" + aes.iv_AES.get());
 
                     if(i == 1) {
-                        encodeMode.add("PassStr:" + tmpPassStr);
-                    }
-                    if(i == 2) {
                         encodeMode.add("Md5PassKey:" + tempMd5PassKey.trim());
                     }
                     

@@ -810,6 +810,10 @@
     -fx-pref-width: 10;
     -fx-padding: 0;
 }
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: derive(-main-border-color, 20%);
+    -fx-cursor: hand;
+}
 .scroll-bar:horizontal {
     -fx-background-color: null;
     -fx-background-radius: 5;
@@ -821,6 +825,30 @@
     -fx-background-radius: 5;
     -fx-pref-height: 10;
     -fx-padding: 0;
+}
+.scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: derive(-main-border-color, 20%);
+    -fx-cursor: hand;
+}
+
+/* 增加滚动步长（提升滚轮灵敏度） */
+.scroll-pane .scroll-bar:vertical {
+    -fx-unit-increment: 20;      /* 单次滚轮滚动距离（原默认10px） */
+    -fx-block-increment: 60;     /* 点击滚动条轨道距离 */
+}
+.scroll-pane .scroll-bar:horizontal {
+    -fx-unit-increment: 20;
+    -fx-block-increment: 60;
+}
+
+/* ListView 滚动条步长优化 */
+.list-view .scroll-bar:vertical {
+    -fx-unit-increment: 20;
+    -fx-block-increment: 60;
+}
+.list-view .scroll-bar:horizontal {
+    -fx-unit-increment: 20;
+    -fx-block-increment: 60;
 }
 .scroll-pane{
     -fx-background: transparent;
@@ -911,7 +939,17 @@
 
 #promptPane{
     -fx-background-color: -main-btnContent-color;
-    -fx-background-radius: 8;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 20, 0, 0, 5);
+}
+
+#promptPane .label{
+    -fx-text-fill: -main-font-color;
+    -fx-font-size: 14;
+    -fx-padding: 16 32 16 32;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
 }
 
 *{
@@ -971,4 +1009,83 @@
     -fx-background-color: -main-border-color;
     -fx-background-radius: 8px;
     -fx-padding: 0;
+}
+
+/* DatePicker popup 暗色主题 */
+.date-picker-popup {
+    -fx-background-color: -main-btnContent-color;
+    -fx-border-color: -main-border-color;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.date-picker-popup > .month-year-pane {
+    -fx-background-color: -main-cell-color;
+    -fx-background-radius: 5 5 0 0;
+    -fx-padding: 6;
+}
+
+.date-picker-popup > .month-year-pane > .spinner > .label {
+    -fx-text-fill: -main-font-color;
+    -fx-font-weight: bold;
+}
+
+.date-picker-popup > .month-year-pane > .spinner > .button {
+    -fx-background-color: transparent;
+}
+
+.date-picker-popup > .month-year-pane > .spinner > .button:hover {
+    -fx-background-color: rgba(62, 206, 227, 0.2);
+}
+
+.date-picker-popup > .month-year-pane > .spinner > .button > .left-arrow,
+.date-picker-popup > .month-year-pane > .spinner > .button > .right-arrow {
+    -fx-background-color: -main-font-color;
+}
+
+.date-picker-popup .week-number-cell {
+    -fx-text-fill: -main-lineno-color;
+    -fx-background-color: -main-topBar-color;
+}
+
+.date-picker-popup .day-name-cell {
+    -fx-text-fill: -main-border-color;
+    -fx-background-color: -main-topBar-color;
+}
+
+.date-picker-popup .day-cell {
+    -fx-background-color: -main-cell-color;
+    -fx-text-fill: -main-font-color;
+    -fx-background-radius: 3;
+}
+
+.date-picker-popup > * > .day-cell:hover {
+    -fx-background-color: -main-borderHover-color;
+}
+
+.date-picker-popup > * > .selected,
+.date-picker-popup > * > .today.selected {
+    -fx-background-color: -main-border-color;
+    -fx-text-fill: white;
+    -fx-background-radius: 3;
+    -fx-background-insets: 1;
+}
+
+.date-picker-popup > * > .today {
+    -fx-background-color: -main-cell-color, -main-border-color, -main-cell-color;
+    -fx-background-insets: 1, 2, 3;
+    -fx-text-fill: -main-font-color;
+}
+
+.date-picker-popup > * > .today:hover,
+.date-picker-popup > * > .today.selected {
+    -fx-background-color: -main-border-color, -main-borderHover-color, -main-border-color;
+    -fx-background-insets: 1, 2, 3;
+}
+
+.date-picker-popup .next-month,
+.date-picker-popup .previous-month {
+    -fx-text-fill: -main-lineno-color;
+    -fx-background-color: -main-topBar-color;
 }

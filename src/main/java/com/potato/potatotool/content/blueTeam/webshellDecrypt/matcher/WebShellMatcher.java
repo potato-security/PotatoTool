@@ -21,6 +21,16 @@ public class WebShellMatcher {
     private static final String[] GESILA_BASE64_FEATURES = {
         "=eval(base64_decode(strrev(urldecode("
     };
+
+    // 哥斯拉V1密文特征
+    private static final String[] GESILA_DECODE_FEATURES = {
+        "11CD6A8758984163",
+        "taBMJzvSU8HNQ/pv6dyuhvKdq",
+        "o2ao1oodeTpDcc7AmK70vEkaKl7",
+        "bxjqMjjwgqgg6V7AmEdd9j9OAb3",
+        "n5zDpmWgpiGkX4EwjJMpP0iS2v3",
+        "N7NGXwlJOU3unElL9BrkuPzzfLK"
+    };
     
     private static final String[] GESILA_JSP_FEATURES = {
         "string xc=",
@@ -169,7 +179,10 @@ public class WebShellMatcher {
     
     // 冰蝎默认密钥
     private static final String BINGXIE_DEFAULT_KEY = "e45e329feb5d925b";
-    
+
+    // 哥斯拉默认密钥
+    private static final String GESILA_DEFAULT_KEY = "3c6e0b8a9c15224a";
+
     /**
      * WebShell管理工具特征匹配
      * 
@@ -190,7 +203,7 @@ public class WebShellMatcher {
         List<String> matchedFeatures = new ArrayList<>();
         
         // 按优先级进行特征匹配
-        if (matchGesila(lowerDecrypted)) {
+        if (matchGesila(lowerDecrypted, aesKey)) {
             matchedFeatures.add("哥斯拉");
         } else if (matchBingxie(lowerOriginal, lowerDecrypted, aesKey)) {
             matchedFeatures.add("冰蝎");
@@ -227,17 +240,27 @@ public class WebShellMatcher {
      * @param content 待检测内容（已转小写）
      * @return 是否匹配哥斯拉特征
      */
-    private boolean matchGesila(String content) {
+    private boolean matchGesila(String content, String aesKey) {
         // 检查MD5特征
-        if (content.startsWith("流量中提取到md5(pass+md5(key)") || content.startsWith("pass=")) {
+        if (content.startsWith("流量中提取到md5(pass+md5(key)")) {
             return true;
         }
-        
+
+        // 检查AES密钥是否为冰蝎默认密钥
+        if (BINGXIE_DEFAULT_KEY.equals(aesKey)) {
+            return true;
+        }
+
         // 检查methodName特征
         if (content.startsWith("methodname=")) {
             return true;
         }
-        
+
+        // 哥斯拉密文特征
+        if (containsAnyElements(content,GESILA_DECODE_FEATURES)) {
+            return true;
+        }
+
         // 哥斯拉base64特征
         if (containsAllElements(content, GESILA_BASE64_FEATURES)) {
             return true;

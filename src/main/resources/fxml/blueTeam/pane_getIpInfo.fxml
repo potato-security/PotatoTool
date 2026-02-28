@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
+<?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.layout.FlowPane?>
@@ -6,7 +8,6 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
@@ -24,7 +25,7 @@
       <VBox alignment="CENTER">
          <children>
             <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-               <TextArea fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入netstat -ano或者net -pantu执行后的内容" userData="i18n-prompt:ipinfo.input.placeholder"/>
+               <SmoothTextArea fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入netstat -ano或者net -pantu执行后的内容" userData="i18n-prompt:ipinfo.input.placeholder"/>
             </Pane>
             <Pane minHeight="15"/>
             <HBox alignment="CENTER">
@@ -35,7 +36,7 @@
                </Button>
             </HBox>
             <Pane minHeight="20"/>
-            <ScrollPane prefHeight="${sPane.height * 0.6 - 83}">
+            <SmoothScrollPane prefHeight="${sPane.height * 0.6 - 83}">
                 <FlowPane fx:id="flowPane" alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
                    <children>
                        <StackPane styleClass="codeAreaPane">
@@ -108,7 +109,7 @@
                        </StackPane>
                    </children>
                 </FlowPane>
-            </ScrollPane>
+            </SmoothScrollPane>
          </children>
       </VBox>
    </children>

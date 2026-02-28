@@ -1,5 +1,8 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor;
 
+import com.potato.potatotool.content.redTeam.vulnScanner.core.ResponseCache;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -13,29 +16,111 @@ import java.util.Map;
 public class DslContextBuilder {
 
     /**
-     * 创建DSL上下文
-     * 从HTTP响应和请求中提取各种信息构建上下文映射
+     * 创建DSL上下文（支持多响应）
+     * 从HTTP响应、请求和缓存的多个响应中提取信息构建上下文映射
+     *
+     * 支持索引响应变量：
+     * - body_1, body_2, body_3 - 各个响应的body
+     * - status_code_1, status_code_2 - 各个响应的状态码
+     * - header_1, header_2 - 各个响应的响应头
+     *
+     * @param response 当前响应对象
+     * @param request 请求对象
+     * @param responseCache 响应缓存
+     * @param stepId 步骤ID（用于查找缓存的多响应）
      */
-    public static Map<String, Object> createDslContext(Object response, Object request) {
+    public static Map<String, Object> createDslContext(Object response, Object request,
+                                                       ResponseCache responseCache, String stepId) {
         Map<String, Object> context = new HashMap<>();
-        
+
         try {
-            // 提取响应信息
+            // 提取当前响应信息（无索引）
             if (response != null) {
                 extractResponseInfo(response, context);
             }
-            
+
             // 提取请求信息
             if (request != null) {
                 extractRequestInfo(request, context);
             }
-            
+
+            // 提取缓存的多个响应（带索引）
+            if (responseCache != null && stepId != null) {
+                extractMultipleResponses(responseCache, stepId, context);
+            }
+
         } catch (Exception e) {
             System.err.println("创建DSL上下文时发生错误: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         return context;
+    }
+
+    /**
+     * 创建DSL上下文（原有方法，保持兼容性）
+     * 从HTTP响应和请求中提取各种信息构建上下文映射
+     */
+    public static Map<String, Object> createDslContext(Object response, Object request) {
+        return createDslContext(response, request, null, null);
+    }
+
+    /**
+     * 从ResponseCache中提取多个响应的信息（支持索引变量）
+     *
+     * 提取格式：
+     * - body_1 -> 第1个响应的body
+     * - body_2 -> 第2个响应的body
+     * - status_code_1 -> 第1个响应的状态码
+     * - status_code_2 -> 第2个响应的状态码
+     *
+     * @param responseCache 响应缓存
+     * @param baseStepId 基础步骤ID
+     * @param context 上下文映射
+     */
+    private static void extractMultipleResponses(ResponseCache responseCache, String baseStepId,
+                                                 Map<String, Object> context) {
+        try {
+            // 尝试读取最多5个索引响应（Nuclei最多支持5个）
+            for (int i = 1; i <= 5; i++) {
+                String cacheKey = baseStepId + "_" + i;
+                ResponseCache.CachedResponse cachedResp = responseCache.get(cacheKey);
+
+                if (cachedResp != null) {
+                    // 提取索引变量
+                    String indexSuffix = "_" + i;
+
+                    // body_1, body_2, ...
+                    if (cachedResp.getBody() != null) {
+                        context.put("body" + indexSuffix, cachedResp.getBody());
+                    }
+
+                    // status_code_1, status_code_2, ...
+                    context.put("status_code" + indexSuffix, cachedResp.getStatusCode());
+                    context.put("status" + indexSuffix, cachedResp.getStatusCode());
+
+                    // header_1, header_2, ...
+                    if (cachedResp.getHeader() != null) {
+                        context.put("header" + indexSuffix, cachedResp.getHeader());
+                        context.put("all_headers" + indexSuffix, cachedResp.getHeader());
+                    }
+
+                    // raw_1, raw_2, ... (原始字节数组)
+                    if (cachedResp.getRawBytes() != null) {
+                        context.put("raw" + indexSuffix, cachedResp.getRawBytes());
+                    }
+
+                    // content_length_1, content_length_2, ...
+                    if (cachedResp.getBody() != null) {
+                        context.put("content_length" + indexSuffix, cachedResp.getBody().length());
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("提取多响应信息时发生错误: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -49,80 +134,129 @@ public class DslContextBuilder {
                 return;
             }
             
-            // 使用反射获取响应字段
-            Class<?> responseClass = response.getClass();
-            
-            // 提取状态码
-            try {
-                Object statusCode = getFieldValue(response, "statusCode");
-                if (statusCode == null) {
-                    statusCode = getFieldValue(response, "status");
-                }
-                if (statusCode != null) {
-                    context.put("status", statusCode);
-                    context.put("status_code", statusCode);
-                }
-            } catch (Exception e) {
-                // 忽略字段不存在的错误
+            // 特殊处理 CustomHttpResponse 类型
+            if (response instanceof CustomHttpResponse) {
+                extractFromCustomHttpResponse((CustomHttpResponse) response, context);
+                return;
             }
             
-            // 提取响应体
-            try {
-                Object body = getFieldValue(response, "body");
-                if (body == null) {
-                    body = getFieldValue(response, "content");
-                }
-                if (body != null) {
-                    context.put("body", body.toString());
-                    context.put("response", body.toString());
-                }
-            } catch (Exception e) {
-                // 忽略字段不存在的错误
-            }
-            
-            // 提取响应头
-            try {
-                Object headers = getFieldValue(response, "headers");
-                if (headers != null) {
-                    context.put("headers", headers);
-                    context.put("all_headers", headers);
-                    
-                    // 如果headers是Map类型，提取常用头部
-                    if (headers instanceof Map) {
-                        Map<?, ?> headerMap = (Map<?, ?>) headers;
-                        extractCommonHeaders(headerMap, context);
-                    }
-                }
-            } catch (Exception e) {
-                // 忽略字段不存在的错误
-            }
-            
-            // 提取内容长度
-            try {
-                Object contentLength = getFieldValue(response, "contentLength");
-                if (contentLength != null) {
-                    context.put("content_length", contentLength);
-                }
-            } catch (Exception e) {
-                // 忽略字段不存在的错误
-            }
-            
-            // 提取延迟时间
-            try {
-                Object latency = getFieldValue(response, "latency");
-                if (latency == null) {
-                    latency = getFieldValue(response, "time");
-                }
-                if (latency != null) {
-                    context.put("latency", latency);
-                    context.put("time", latency);
-                }
-            } catch (Exception e) {
-                // 忽略字段不存在的错误
-            }
+            // 使用反射获取响应字段（通用处理）
+            extractResponseInfoByReflection(response, context);
             
         } catch (Exception e) {
             System.err.println("提取响应信息时发生错误: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 从 CustomHttpResponse 中提取信息
+     */
+    private static void extractFromCustomHttpResponse(CustomHttpResponse response, Map<String, Object> context) {
+        // 状态码
+        int statusCode = response.getResponseCode();
+        context.put("status", statusCode);
+        context.put("status_code", statusCode);
+        
+        // 响应体
+        String body = response.getTextStr();
+        if (body != null) {
+            context.put("body", body);
+            context.put("response", body);
+        }
+        
+        // 响应头
+        String headers = response.getHeaderFieldsText();
+        if (headers != null) {
+            context.put("headers", headers);
+            context.put("all_headers", headers);
+        }
+        
+        // 内容长度
+        context.put("content_length", response.getContentLength());
+        
+        // 响应时间
+        context.put("latency", response.getResponseTime());
+        context.put("time", response.getResponseTime());
+        context.put("duration", response.getResponseTime());
+        
+        // 内容类型
+        String contentType = response.getContentType();
+        if (contentType != null) {
+            context.put("content_type", contentType);
+        }
+    }
+    
+    /**
+     * 使用反射提取响应信息（通用处理）
+     */
+    private static void extractResponseInfoByReflection(Object response, Map<String, Object> context) {
+        // 提取状态码
+        try {
+            Object statusCode = getFieldValue(response, "statusCode");
+            if (statusCode == null) {
+                statusCode = getFieldValue(response, "status");
+            }
+            if (statusCode != null) {
+                context.put("status", statusCode);
+                context.put("status_code", statusCode);
+            }
+        } catch (Exception e) {
+            // 忽略字段不存在的错误
+        }
+        
+        // 提取响应体
+        try {
+            Object body = getFieldValue(response, "body");
+            if (body == null) {
+                body = getFieldValue(response, "content");
+            }
+            if (body != null) {
+                context.put("body", body.toString());
+                context.put("response", body.toString());
+            }
+        } catch (Exception e) {
+            // 忽略字段不存在的错误
+        }
+        
+        // 提取响应头
+        try {
+            Object headers = getFieldValue(response, "headers");
+            if (headers != null) {
+                context.put("headers", headers);
+                context.put("all_headers", headers);
+                
+                // 如果headers是Map类型，提取常用头部
+                if (headers instanceof Map) {
+                    Map<?, ?> headerMap = (Map<?, ?>) headers;
+                    extractCommonHeaders(headerMap, context);
+                }
+            }
+        } catch (Exception e) {
+            // 忽略字段不存在的错误
+        }
+        
+        // 提取内容长度
+        try {
+            Object contentLength = getFieldValue(response, "contentLength");
+            if (contentLength != null) {
+                context.put("content_length", contentLength);
+            }
+        } catch (Exception e) {
+            // 忽略字段不存在的错误
+        }
+        
+        // 提取延迟时间
+        try {
+            Object latency = getFieldValue(response, "latency");
+            if (latency == null) {
+                latency = getFieldValue(response, "time");
+            }
+            if (latency != null) {
+                context.put("latency", latency);
+                context.put("time", latency);
+            }
+        } catch (Exception e) {
+            // 忽略字段不存在的错误
         }
     }
 

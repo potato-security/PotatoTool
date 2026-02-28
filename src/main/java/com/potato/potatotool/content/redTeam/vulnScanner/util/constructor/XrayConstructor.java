@@ -6,7 +6,7 @@ import org.yaml.snakeyaml.TypeDescription;
 
 /**
  * @author Potato
- * @date 2025/3/18 15:24
+ * @date 2025/2/18 15:24
  */
 public class XrayConstructor extends YamlConstructor {
 

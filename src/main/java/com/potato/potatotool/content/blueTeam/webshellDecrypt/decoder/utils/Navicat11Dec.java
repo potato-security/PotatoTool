@@ -149,7 +149,7 @@ public class Navicat11Dec {
             byte[] inData = StrUtils.hexToByteArray(hexString);
             byte[] outData = Decrypt(inData);
             String res = new String(outData, StandardCharsets.UTF_8);
-            res = ReadabilityChecker.assessReadability(res) ? res : null;
+            res = ReadabilityChecker.assessReadability(res,1,0) ? res : null;
 
             return res;
         } catch (Exception e) {

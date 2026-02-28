@@ -88,6 +88,17 @@
             <artifactId>procyon-compilertools</artifactId>
             <version>0.6.0</version>
         </dependency>
+        <!-- Bouncy Castle for TLS/SSL operations and JARM fingerprinting -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.70</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bctls-jdk15on</artifactId>
+            <version>1.70</version>
+        </dependency>
         <dependency>
             <groupId>org.jasypt</groupId>
             <artifactId>jasypt</artifactId>
@@ -112,6 +123,12 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.8.9</version>
+        </dependency>
+        <!-- JsonPath for advanced JSON extraction -->
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>2.7.0</version>
         </dependency>
         <dependency>
             <groupId>com.opencsv</groupId>
@@ -208,6 +225,49 @@
             <artifactId>jsoup</artifactId>
             <version>1.18.1</version>
         </dependency>
+        <!-- WebSocket 客户端库 - 用于 Nuclei WebSocket 协议支持 -->
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+        <!-- Selenium WebDriver - 用于 Nuclei Headless 协议支持 -->
+        <!-- 注意：使用3.141.59版本以支持Java 8，Selenium 4.x需要Java 11+ -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>3.141.59</version>
+            <exclusions>
+                <!-- 排除Selenium自带的OkHttp，使用项目的OkHttp 4.12.0 -->
+                <exclusion>
+                    <groupId>com.squareup.okhttp3</groupId>
+                    <artifactId>okhttp</artifactId>
+                </exclusion>
+                <!-- 排除旧版本的okio -->
+                <exclusion>
+                    <groupId>com.squareup.okio</groupId>
+                    <artifactId>okio</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Apache POI - Word和Excel报告生成 (Java 8+兼容) -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+        <!-- WebDriverManager - 自动管理浏览器驱动 -->
+        <!-- 注意：使用3.8.1版本以支持Java 8，WebDriverManager 4.x+需要Java 11+ -->
+        <dependency>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+            <version>3.8.1</version>
+        </dependency>
         <dependency>
             <groupId>org.pcap4j</groupId>
             <artifactId>pcap4j-core</artifactId>
@@ -275,11 +335,6 @@
             <version>3.11.1</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>5.3.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>2.4</version>
@@ -294,6 +349,95 @@
             <artifactId>jackson-jq</artifactId>
             <version>1.2.0</version>
         </dependency>
+
+        <!-- ========== 二进制序列化格式支持 ========== -->
+        <!-- BSON - MongoDB二进制JSON格式 -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>bson</artifactId>
+            <version>4.11.1</version>
+        </dependency>
+
+        <!-- MessagePack - 高效二进制序列化格式 -->
+        <dependency>
+            <groupId>org.msgpack</groupId>
+            <artifactId>msgpack-core</artifactId>
+            <version>0.9.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.msgpack</groupId>
+            <artifactId>jackson-dataformat-msgpack</artifactId>
+            <version>0.9.8</version>
+        </dependency>
+
+        <!-- CBOR - RFC 8949标准二进制格式 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-cbor</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+
+        <!-- Smile - Jackson二进制JSON格式 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-smile</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+
+        <!-- Hessian - Caucho二进制协议 -->
+        <dependency>
+            <groupId>com.caucho</groupId>
+            <artifactId>hessian</artifactId>
+            <version>4.0.66</version>
+        </dependency>
+
+        <!-- Kryo - 高性能Java序列化 -->
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>5.5.0</version>
+        </dependency>
+
+        <!-- FST - Fast Serialization -->
+        <dependency>
+            <groupId>de.ruedigermoeller</groupId>
+            <artifactId>fst</artifactId>
+            <version>2.57</version>
+        </dependency>
+
+        <!-- Protobuf - Google Protocol Buffers（模糊解析） -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.25.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java-util</artifactId>
+            <version>3.25.1</version>
+        </dependency>
+
+        <!-- Avro - Apache Avro（模糊解析） -->
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.11.3</version>
+        </dependency>
+
+        <!-- Thrift - Apache Thrift（模糊解析） -->
+        <dependency>
+            <groupId>org.apache.thrift</groupId>
+            <artifactId>libthrift</artifactId>
+            <version>0.19.0</version>
+        </dependency>
+
+        <!-- Parquet - Apache Parquet（列式存储） -->
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-common</artifactId>
+            <version>1.13.1</version>
+        </dependency>
+
         <dependency>
             <groupId>org.commonmark</groupId>
             <artifactId>commonmark</artifactId>
@@ -303,6 +447,12 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>4.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

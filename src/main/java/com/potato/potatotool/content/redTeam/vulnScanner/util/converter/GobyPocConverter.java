@@ -7,15 +7,16 @@ import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.Matcher
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.MatchersCondition;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.OperationType;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.Severity;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.RawHttpRequestParser;
 
 import java.util.*;
 
 /**
  * @author Potato
- * @date 2025/3/19 16:30
+ * @date 2025/2/19 16:30
  * Goby JSON POC转换器，用于将Goby格式的POC转换为通用PocObj
  */
-public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
+public class GobyPocConverter extends AbstractPocConverter<GobyJsonObj.PocJson> {
 
     /**
      * 将Goby JSON POC转换为通用PocObj
@@ -31,6 +32,9 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
 
         PocObj.Poc poc = new PocObj.Poc();
         
+        // 初始化基本字段
+        initBasicFields(poc);
+        
         // 转换基本信息
         convertBasicInfo(gobyPoc, poc);
         
@@ -42,10 +46,13 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
         
         // 处理参数
         convertExpParams(gobyPoc, poc);
-        
+
         // 设置原始POC
         // poc.setOriginalPoc(gobyPoc);
         poc.setOriginalFormat("goby");
+
+        // 设置 variablesType（Goby 默认为 clusterbomb）
+        poc.setVariablesType(PocObj.VariablesType.clusterbomb);
 
         return poc;
     }
@@ -91,6 +98,30 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
             poc.setSearchQueries(searchQueries);
         }
         
+        // 转换认证配置（Phase 3新增）
+        if (gobyPoc.getAuthentication() != null) {
+            convertAuthentication(gobyPoc, poc);
+        }
+        
+        // 转换全局变量到统一的variables字段（Phase 2新增）
+        // Goby的GlobalVariables是Map<String, String>，需要转换为Map<String, List<String>>
+        // 每个单值包装成单元素List，保持与Nuclei payloads的统一数据结构
+        if (gobyPoc.getGlobalVariables() != null && !gobyPoc.getGlobalVariables().isEmpty()) {
+            Map<String, List<String>> variables = poc.getVariables();
+            if (variables == null) {
+                variables = new HashMap<>();
+            }
+            
+            // 将GlobalVariables转换为统一格式
+            for (Map.Entry<String, String> entry : gobyPoc.getGlobalVariables().entrySet()) {
+                List<String> valueList = new ArrayList<>();
+                valueList.add(entry.getValue());
+                variables.put(entry.getKey(), valueList);
+            }
+            
+            poc.setVariables(variables);
+        }
+        
         // 设置协议
         poc.setProtocol("http"); // Goby默认使用HTTP协议
     }
@@ -103,32 +134,7 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
             poc.setSeverity(Severity.UNKNOWN);
             return;
         }
-        
-        switch (gobyPoc.getLevel().toLowerCase()) {
-            // 文本表示
-            case "info":
-            case "5":
-                poc.setSeverity(Severity.INFO);
-                break;
-            case "low":
-            case "4":
-                poc.setSeverity(Severity.LOW);
-                break;
-            case "medium":
-            case "3":
-                poc.setSeverity(Severity.MEDIUM);
-                break;
-            case "high":
-            case "2":
-                poc.setSeverity(Severity.HIGH);
-                break;
-            case "critical":
-            case "1":
-                poc.setSeverity(Severity.CRITICAL);
-                break;
-            default:
-                poc.setSeverity(Severity.UNKNOWN);
-        }
+        poc.setSeverity(parseSeverity(gobyPoc.getLevel()));
     }
     
     /**
@@ -158,14 +164,39 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
         for (int i = startIndex; i < gobyPoc.getScanSteps().size(); i++) {
             Object stepObj = gobyPoc.getScanSteps().get(i);
             try {
-                PocObj.PocStep step = new PocObj.PocStep();
-                step.setStepId("scan_" + i);
-                
                 // 修改这里：不直接强制类型转换，而是从Map构建ScanStep对象
                 if (stepObj instanceof Map) {
                     GobyJsonObj.ScanStep scanStep = convertMapToScanStep((Map<String, Object>) stepObj);
-                    convertScanStep(scanStep, step, globalCondition, poc);
-                    verifySteps.add(step);
+                    
+                    // 检查是否有多路径（支持Goby官方的uri数组格式）
+                    if (scanStep.getRequest() != null && scanStep.getRequest().getAllUris().size() > 1) {
+                        // 多路径：为每个URI创建一个独立的步骤
+                        List<String> allUris = scanStep.getRequest().getAllUris();
+                        for (int uriIndex = 0; uriIndex < allUris.size(); uriIndex++) {
+                            PocObj.PocStep step = new PocObj.PocStep();
+                            step.setStepId("scan_" + i + "_uri_" + uriIndex);
+                            
+                            // 临时设置单个URI
+                            String originalUri = scanStep.getRequest().getUri();
+                            List<String> originalUris = scanStep.getRequest().getUris();
+                            scanStep.getRequest().setUri(allUris.get(uriIndex));
+                            scanStep.getRequest().setUris(null);
+                            
+                            // 转换步骤
+                            convertScanStep(scanStep, step, globalCondition, poc);
+                            verifySteps.add(step);
+                            
+                            // 恢复原始值
+                            scanStep.getRequest().setUri(originalUri);
+                            scanStep.getRequest().setUris(originalUris);
+                        }
+                    } else {
+                        // 单路径：直接转换
+                        PocObj.PocStep step = new PocObj.PocStep();
+                        step.setStepId("scan_" + i);
+                        convertScanStep(scanStep, step, globalCondition, poc);
+                        verifySteps.add(step);
+                    }
                 } else {
                     System.out.println("扫描步骤格式不正确: " + stepObj.getClass().getName());
                 }
@@ -177,6 +208,8 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
         
         if (!verifySteps.isEmpty()) {
             poc.setVerifySteps(verifySteps);
+            // 设置步骤之间的条件（Goby POC 的 ScanSteps 开头的 "OR" 或 "AND" 表示步骤之间的关系）
+            poc.setStepsCondition(globalCondition);
         }
     }
     
@@ -195,9 +228,32 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
                 
                 request.setMethod(safeGetString(requestMap, "method"));
                 request.setUri(safeGetString(requestMap, "uri"));
+                request.setRaw(safeGetString(requestMap, "raw"));  // 原始HTTP报文（Phase 2新增）
                 request.setFollow_redirect(safeGetBoolean(requestMap, "follow_redirect"));
                 request.setData_type(safeGetString(requestMap, "data_type"));
                 request.setData(safeGetString(requestMap, "data"));
+                
+                // 处理cookies（Phase 3新增）
+                if (requestMap.containsKey("cookies") && requestMap.get("cookies") instanceof Map) {
+                    Map<String, Object> cookiesMap = (Map<String, Object>) requestMap.get("cookies");
+                    Map<String, String> cookies = new HashMap<>();
+                    for (Map.Entry<String, Object> entry : cookiesMap.entrySet()) {
+                        cookies.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : "");
+                    }
+                    request.setCookies(cookies);
+                }
+                
+                // 处理uris数组（多路径支持）
+                if (requestMap.containsKey("uris") && requestMap.get("uris") instanceof List) {
+                    List<Object> urisList = (List<Object>) requestMap.get("uris");
+                    List<String> uris = new ArrayList<>();
+                    for (Object uri : urisList) {
+                        if (uri != null) {
+                            uris.add(uri.toString());
+                        }
+                    }
+                    request.setUris(uris);
+                }
                 
                 // 处理header
                 if (requestMap.containsKey("header") && requestMap.get("header") instanceof Map) {
@@ -306,16 +362,46 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
         // 处理Request
         if (scanStep.getRequest() != null) {
             GobyJsonObj.Request request = scanStep.getRequest();
-            step.setMethod(request.getMethod());
-            step.setPath(request.getUri());
-            step.setFollowRedirect(request.isFollow_redirect());
             
-            if (request.getHeader() != null && !request.getHeader().isEmpty()) {
-                step.setHeaders(new HashMap<>(request.getHeader()));
+            // 优先处理raw原始报文（Phase 2新增）
+            if (request.getRaw() != null && !request.getRaw().trim().isEmpty()) {
+                // 解析原始HTTP报文
+                try {
+                    RawHttpRequestParser.ParsedRequest parsed = RawHttpRequestParser.parse(request.getRaw());
+                    
+                    // 使用解析后的值
+                    step.setMethod(parsed.getMethod());
+                    step.setPath(parsed.getPath());
+                    
+                    if (parsed.getHeaders() != null && !parsed.getHeaders().isEmpty()) {
+                        step.setHeaders(new HashMap<>(parsed.getHeaders()));
+                    }
+                    
+                    step.setBody(parsed.getBody());
+                    
+                    // raw报文默认为text类型
+                    if (step.getDataType() == null) {
+                        step.setDataType("text");
+                    }
+                    
+                } catch (Exception e) {
+                    System.err.println("解析原始HTTP报文失败 [Poc: " + poc.getId() + ", Step: " + step.getStepId() + "]: " + e.getMessage());
+                    System.err.println("将降级使用常规字段。警告：如果此POC依赖畸形报文，扫描可能失败！");
+                    // 降级到普通字段处理
+                }
+            } else {
+                // 普通字段处理
+                step.setMethod(request.getMethod());
+                step.setPath(request.getUri());
+                step.setFollowRedirect(request.isFollow_redirect());
+                
+                if (request.getHeader() != null && !request.getHeader().isEmpty()) {
+                    step.setHeaders(new HashMap<>(request.getHeader()));
+                }
+                
+                step.setBody(request.getData());
+                step.setDataType(request.getData_type());
             }
-            
-            step.setBody(request.getData());
-            step.setDataType(request.getData_type());
             
             // 处理Request中的Set_variable提取器
             if (request.getSet_variable() != null && !request.getSet_variable().isEmpty()) {
@@ -437,6 +523,12 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
                     matcher.setType(MatcherType.WORD);
                 } else if ("$header".equals(variable)) {
                     matcher.setType(MatcherType.WORD);
+                } else if ("$time".equals(variable)) {
+                    // 时间盲注检测：支持响应时间匹配
+                    matcher.setType(MatcherType.TIME);
+                } else if ("$length".equals(variable)) {
+                    // 响应长度检测：支持响应大小匹配
+                    matcher.setType(MatcherType.SIZE);
                 } else {
                     matcher.setType(MatcherType.WORD); // 默认为WORD类型
                 }
@@ -476,6 +568,18 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
                     case "<":
                         matcher.setOperation(OperationType.LESS);
                         break;
+                    case ">=":
+                        matcher.setOperation(OperationType.GREATER_EQUAL);
+                        break;
+                    case "<=":
+                        matcher.setOperation(OperationType.LESS_EQUAL);
+                        break;
+                    case "diff":
+                        // diff操作用于对比两个响应的差异（Phase 3新增）
+                        // 通常用于布尔盲注检测
+                        matcher.setType(MatcherType.WORD);
+                        matcher.setOperation(OperationType.DIFF);
+                        break;
                     default:
                         matcher.setOperation(OperationType.DEFAULT);
                 }
@@ -504,10 +608,19 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
                         matcher.setPart("body");
                         break;
                     case "$header":
+                    case "$head":   // Goby POC 也可能使用 $head
                         matcher.setPart("header");
                         break;
                     case "$code":
                         matcher.setPart("status");
+                        break;
+                    case "$time":
+                        // 响应时间：不需要设置part，因为从response直接获取
+                        matcher.setPart("time");
+                        break;
+                    case "$length":
+                        // 响应长度：基于body长度
+                        matcher.setPart("body");
                         break;
                     default:
                         matcher.setPart(variable);
@@ -522,6 +635,11 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
         
         // 设置备注
         matcher.setName(check.getBz() != null && !check.getBz().isEmpty()? check.getBz() : "");
+        
+        // 设置时间单位（Goby 的 $time 变量单位为毫秒）
+        if (matcher.getType() == MatcherType.TIME) {
+            matcher.setTimeUnit("ms"); // Goby 时间单位为毫秒
+        }
         
         return matcher;
     }
@@ -538,16 +656,28 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
         }
         
         // 分割提取器定义字符串
-        String[] parts = extractorDef.split("\\|");
-        if (parts.length < 3) {
+        String[] parts = extractorDef.split("\\|", -1); // 使用-1保留空字符串
+        if (parts.length < 2) {
             System.out.println("跳过不正确的提取器格式: " + extractorDef);
             return null;
         }
         
         String varName = parts[0].trim();
-        String dataSource = parts[1].trim().toLowerCase();
-        String operation = parts[2].trim().toLowerCase();
+        String dataSource = parts.length > 1 ? parts[1].trim().toLowerCase() : "";
+        String operation = parts.length > 2 && !parts[2].trim().isEmpty() ? parts[2].trim().toLowerCase() : "regex";
         String value = parts.length > 3 && parts[3] != null ? parts[3].trim() : "";
+        
+        // 如果操作类型是undefined或空，默认使用regex
+        if (operation.isEmpty() || "undefined".equals(operation)) {
+            operation = "regex";
+        }
+        
+        // 如果只有2个部分（变量名|数据源），且数据源是lastbody/body等，默认使用regex提取全部内容
+        if (parts.length == 2 && (dataSource.equals("lastbody") || dataSource.equals("body") || 
+            dataSource.equals("lastraw") || dataSource.equals("header") || dataSource.equals("lastheader"))) {
+            operation = "regex";
+            value = ".*"; // 匹配所有内容
+        }
         
         // 特殊情况处理：随机字符串生成
         if ("rand".equals(dataSource) && ("str".equals(operation) || "int".equals(operation))) {
@@ -572,6 +702,15 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
             // 将DNSLog定义添加到payloads
             List<String> values = new ArrayList<>();
             values.add("@@dnslog()"); // 生成dnslog域名并检查
+            poc.getVariables().put(varName, values);
+            return null;
+        }
+        
+        // 特殊情况处理：HTTPLog
+        if ("httplog".equals(dataSource)) {
+            // 将HTTPLog定义添加到payloads
+            List<String> values = new ArrayList<>();
+            values.add("@@httplog()"); // 生成HTTP反连URL并检查
             poc.getVariables().put(varName, values);
             return null;
         }
@@ -681,6 +820,9 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
             case "dnslog":
                 extractor.setPart("dnslog");
                 break;
+            case "httplog":
+                extractor.setPart("httplog");
+                break;
             default:
                 extractor.setPart("body"); // 默认使用body
         }
@@ -772,14 +914,39 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
         for (int i = startIndex; i < gobyPoc.getExploitSteps().size(); i++) {
             Object stepObj = gobyPoc.getExploitSteps().get(i);
             try {
-                PocObj.PocStep step = new PocObj.PocStep();
-                step.setStepId("exploit_" + i);
-                
                 // 修改这里：不直接强制类型转换，而是从Map构建ScanStep对象
                 if (stepObj instanceof Map) {
                     GobyJsonObj.ScanStep exploitStep = convertMapToScanStep((Map<String, Object>) stepObj);
-                    convertScanStep(exploitStep, step, globalCondition, poc);
-                    exploitSteps.add(step);
+                    
+                    // 检查是否有多路径（支持Goby官方的uri数组格式）
+                    if (exploitStep.getRequest() != null && exploitStep.getRequest().getAllUris().size() > 1) {
+                        // 多路径：为每个URI创建一个独立的步骤
+                        List<String> allUris = exploitStep.getRequest().getAllUris();
+                        for (int uriIndex = 0; uriIndex < allUris.size(); uriIndex++) {
+                            PocObj.PocStep step = new PocObj.PocStep();
+                            step.setStepId("exploit_" + i + "_uri_" + uriIndex);
+                            
+                            // 临时设置单个URI
+                            String originalUri = exploitStep.getRequest().getUri();
+                            List<String> originalUris = exploitStep.getRequest().getUris();
+                            exploitStep.getRequest().setUri(allUris.get(uriIndex));
+                            exploitStep.getRequest().setUris(null);
+                            
+                            // 转换步骤
+                            convertScanStep(exploitStep, step, globalCondition, poc);
+                            exploitSteps.add(step);
+                            
+                            // 恢复原始值
+                            exploitStep.getRequest().setUri(originalUri);
+                            exploitStep.getRequest().setUris(originalUris);
+                        }
+                    } else {
+                        // 单路径：直接转换
+                        PocObj.PocStep step = new PocObj.PocStep();
+                        step.setStepId("exploit_" + i);
+                        convertScanStep(exploitStep, step, globalCondition, poc);
+                        exploitSteps.add(step);
+                    }
                 } else {
                     System.out.println("利用步骤格式不正确: " + stepObj.getClass().getName());
                 }
@@ -823,33 +990,56 @@ public class GobyPocConverter implements IPocConverter<GobyJsonObj.PocJson> {
     }
     
     /**
-     * 从Map中安全获取字符串值
-     * @param map Map对象
-     * @param key 键名
-     * @return 字符串值，如果不存在则返回null
+     * 转换认证配置
+     * 将Goby的Authentication对象转换为GlobalConfig.authConfig
      */
-    private String safeGetString(Map<String, Object> map, String key) {
-        if (map == null || key == null || !map.containsKey(key)) {
-            return null;
+    private void convertAuthentication(GobyJsonObj.PocJson gobyPoc, PocObj.Poc poc) {
+        GobyJsonObj.Authentication auth = gobyPoc.getAuthentication();
+        if (auth == null) {
+            return;
         }
-        Object value = map.get(key);
-        return value != null ? value.toString() : null;
-    }
-    
-    /**
-     * 从Map中安全获取布尔值
-     * @param map Map对象
-     * @param key 键名
-     * @return 布尔值，如果不存在则返回false
-     */
-    private boolean safeGetBoolean(Map<String, Object> map, String key) {
-        if (map == null || key == null || !map.containsKey(key)) {
-            return false;
+        
+        Map<String, String> authConfig = new HashMap<>();
+        
+        // 保存认证类型
+        if (auth.getType() != null) {
+            authConfig.put("type", auth.getType());
         }
-        Object value = map.get(key);
-        if (value instanceof Boolean) {
-            return (Boolean) value;
+        
+        // 保存认证参数
+        if (auth.getUsername() != null) {
+            authConfig.put("username", auth.getUsername());
         }
-        return value != null && "true".equalsIgnoreCase(value.toString());
+        if (auth.getPassword() != null) {
+            authConfig.put("password", auth.getPassword());
+        }
+        if (auth.getToken() != null) {
+            authConfig.put("token", auth.getToken());
+        }
+        
+        // 保存cookies
+        if (auth.getCookies() != null && !auth.getCookies().isEmpty()) {
+            // 将cookies转换为JSON字符串存储
+            StringBuilder cookiesJson = new StringBuilder("{");
+            boolean first = true;
+            for (Map.Entry<String, String> entry : auth.getCookies().entrySet()) {
+                if (!first) {
+                    cookiesJson.append(",");
+                }
+                cookiesJson.append("\"").append(entry.getKey()).append("\":\"")
+                          .append(entry.getValue()).append("\"");
+                first = false;
+            }
+            cookiesJson.append("}");
+            authConfig.put("cookies", cookiesJson.toString());
+        }
+        
+        // 设置到GlobalConfig
+        if (!authConfig.isEmpty()) {
+            if (poc.getGlobalConfig() == null) {
+                poc.setGlobalConfig(new PocObj.GlobalConfig());
+            }
+            poc.getGlobalConfig().setAuthConfig(authConfig);
+        }
     }
 }

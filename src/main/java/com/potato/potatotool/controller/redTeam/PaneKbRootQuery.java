@@ -5,6 +5,7 @@ import com.dlsc.gemsfx.FilterView;
 import com.potato.potatotool.content.redTeam.kbRootQuery.classObj.KbInfo;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.core.I18nUtils;
+import com.potato.potatotool.utils.ui.SmoothTableView;
 import javafx.application.Platform;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
@@ -49,7 +50,7 @@ public class PaneKbRootQuery {
     FilterView.FilterGroup<KbInfo> impactGroup;
     FilterView.FilterGroup<KbInfo> pocGroup;
 
-    TableView<KbInfo> tableView = new TableView<>();
+    TableView<KbInfo> tableView = new SmoothTableView<>();
 
     @FXML
     void initialize(){

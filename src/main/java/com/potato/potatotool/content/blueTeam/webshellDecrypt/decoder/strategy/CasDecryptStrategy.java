@@ -29,7 +29,7 @@ public class CasDecryptStrategy implements DecryptStrategy {
             encodeMode.add("CAS(Base64+AES\\"+aes.mode_AES.get()+"\\"+aes.padding_AES.get()+"<key:iv>"+aes.key_AES.get()+":"+aes.iv_AES.get()+")");
             if(aes.gzipCode) encodeMode.add("Gzip");
             if(aes.classCode) encodeMode.add("Class编译");
-            if(aes.serializeCode) encodeMode.add("反序列化");
+            if(aes.javaSerializeCode) encodeMode.add("反序列化");
             // encodeMode已经通过参数传递
 
             return casData;

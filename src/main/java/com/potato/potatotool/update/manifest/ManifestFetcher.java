@@ -3,12 +3,10 @@ package com.potato.potatotool.update.manifest;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
+import com.potato.potatotool.utils.network.RequestUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,55 +90,40 @@ public class ManifestFetcher {
      * 从指定源获取清单
      */
     private Manifest fetchFromSource(String urlString) throws Exception {
-        HttpURLConnection conn = null;
         try {
-            URL url = new URL(urlString);
-            conn = (HttpURLConnection) url.openConnection();
+            RequestObj requestObj = new RequestObj()
+                    .setUrl(urlString)
+                    .setMethod("GET")
+                    .setTimeOut(CONNECT_TIMEOUT / 1000)
+                    .setReadTimeout(READ_TIMEOUT / 1000);
             
-            // 设置请求参数
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(CONNECT_TIMEOUT);
-            conn.setReadTimeout(READ_TIMEOUT);
-            conn.setRequestProperty("User-Agent", "PotatoTool/2.5");
-            conn.setRequestProperty("Accept", "application/json");
-            
-            // 检查响应码
-            int responseCode = conn.getResponseCode();
-            if (responseCode != 200) {
-                throw new Exception("HTTP错误: " + responseCode);
-            }
-            
-            // 读取响应
-            StringBuilder response = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line).append("\n");
-                }
-            }
-            
-            String jsonContent = response.toString();
-            
-            // 解析JSON
-            try {
-                Manifest manifest = gson.fromJson(jsonContent, Manifest.class);
-                
-                // 验证清单有效性
-                if (!validateManifest(manifest)) {
-                    throw new Exception("清单格式无效");
+            try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
+                // 检查响应码
+                int responseCode = response.getResponseCode();
+                if (responseCode != 200) {
+                    throw new Exception("HTTP错误: " + responseCode);
                 }
                 
-                return manifest;
+                // 读取响应
+                String jsonContent = response.getTextStr();
                 
-            } catch (JsonSyntaxException e) {
-                throw new Exception("JSON解析失败: " + e.getMessage(), e);
+                // 解析JSON
+                try {
+                    Manifest manifest = gson.fromJson(jsonContent, Manifest.class);
+                    
+                    // 验证清单有效性
+                    if (!validateManifest(manifest)) {
+                        throw new Exception("清单格式无效");
+                    }
+                    
+                    return manifest;
+                    
+                } catch (JsonSyntaxException e) {
+                    throw new Exception("JSON解析失败: " + e.getMessage(), e);
+                }
             }
-            
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
+        } catch (Exception e) {
+            throw e;
         }
     }
     
@@ -197,32 +180,27 @@ public class ManifestFetcher {
      * @return 响应时间（毫秒），-1表示不可达
      */
     public long testSourceReachability(String urlString) {
-        HttpURLConnection conn = null;
         try {
             long startTime = System.currentTimeMillis();
             
-            URL url = new URL(urlString);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("HEAD");
-            conn.setConnectTimeout(3000);
-            conn.setReadTimeout(3000);
+            RequestObj requestObj = new RequestObj()
+                    .setUrl(urlString)
+                    .setMethod("HEAD")
+                    .setTimeOut(3)
+                    .setReadTimeout(3);
             
-            int responseCode = conn.getResponseCode();
-            
-            long elapsed = System.currentTimeMillis() - startTime;
-            
-            if (responseCode == 200 || responseCode == 301 || responseCode == 302) {
-                return elapsed;
-            } else {
-                return -1;
+            try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
+                int responseCode = response.getResponseCode();
+                long elapsed = System.currentTimeMillis() - startTime;
+                
+                if (responseCode == 200 || responseCode == 301 || responseCode == 302) {
+                    return elapsed;
+                } else {
+                    return -1;
+                }
             }
-            
         } catch (Exception e) {
             return -1;
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
         }
     }
 }

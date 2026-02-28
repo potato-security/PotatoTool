@@ -316,7 +316,7 @@ public class Constants {
         }
         return false;
     }
-    public static void saveConfig(JsonObject configJsonObj) {
+    public static boolean saveConfig(JsonObject configJsonObj) {
         try {
             Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
             Files.createDirectories(configFolder);
@@ -328,14 +328,16 @@ public class Constants {
 
             // 配置保存成功，不输出日志（减少日志）
             cachedConfig = null;
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
-    public static void saveConfig(JsonElement configJsonElement) {
-        saveConfig(configJsonElement.getAsJsonObject());
+    public static boolean saveConfig(JsonElement configJsonElement) {
+        return saveConfig(configJsonElement.getAsJsonObject());
     }
-    public static void saveConfig(Map<String, Object> configMap, String topKey) {
+    public static boolean saveConfig(Map<String, Object> configMap, String topKey) {
 
         try {
             Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
@@ -370,9 +372,10 @@ public class Constants {
 
             System.out.println("配置已保存");
             cachedConfig = null;
-
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
     
@@ -397,7 +400,7 @@ public class Constants {
      * Constants.saveResourceConfigMerge(resourcesMap);
      * </pre>
      */
-    public static void saveResourceConfigMerge(Map<String, Object> resourcesMap) {
+    public static boolean saveResourceConfigMerge(Map<String, Object> resourcesMap) {
         if (resourcesMap == null || resourcesMap.isEmpty()) {
             throw new IllegalArgumentException("resourcesMap 不能为空");
         }
@@ -431,11 +434,12 @@ public class Constants {
             // 3. 保存合并后的配置
             Map<String, Object> saveMap = new LinkedHashMap<>();
             saveMap.put(ConfigConstants.UPDATE_RESOURCES, mergedResources);
-            saveConfig(saveMap, ConfigConstants.UPDATE);
+            return saveConfig(saveMap, ConfigConstants.UPDATE);
             
         } catch (Exception e) {
             System.err.println("合并保存资源配置失败: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
     }
 

@@ -1,9 +1,12 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 重构后的DSL评估器
@@ -13,24 +16,134 @@ import java.util.regex.Matcher;
 public class DslEvaluatorRefactored {
 
     /**
-     * 使用嵌套匹配器匹配DSL表达式
+     * 表达式解析缓存 - 避免重复解析相同表达式
+     * Key: DSL表达式字符串
+     * Value: 解析后的匹配器列表
+     */
+    private static final Map<String, List<DslExpressionParser.DslMatcher>> EXPRESSION_CACHE = 
+        new ConcurrentHashMap<>(256);
+    
+    /**
+     * 最大缓存条目数
+     */
+    private static final int MAX_CACHE_SIZE = 1000;
+    
+    /**
+     * 未知函数警告记录 - 避免重复警告
+     */
+    private static final Map<String, Boolean> UNKNOWN_FUNCTION_WARNED = new ConcurrentHashMap<>();
+
+    /**
+     * 验证DSL表达式语法
+     * 在转换阶段调用，提前发现语法错误
+     * 
+     * @param dslExpression DSL表达式
+     * @throws IllegalArgumentException 如果语法错误
+     */
+    public static void validateDslSyntax(String dslExpression) {
+        if (dslExpression == null || dslExpression.trim().isEmpty()) {
+            throw new IllegalArgumentException("DSL表达式不能为空");
+        }
+        
+        try {
+            // 使用空上下文进行语法检查
+            Map<String, Object> emptyContext = new HashMap<>();
+            emptyContext.put("body", "");
+            emptyContext.put("header", "");
+            emptyContext.put("status", 200);
+            
+            // 尝试解析表达式
+            DslExpressionParser.parseDslToMatchers(Arrays.asList(dslExpression));
+            
+            // 验证函数名称
+            validateFunctionNames(dslExpression);
+            
+        } catch (Exception e) {
+            throw new IllegalArgumentException("DSL表达式语法错误: " + dslExpression + " - " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * 验证DSL表达式中的函数名称
+     */
+    private static void validateFunctionNames(String expression) {
+        // 先移除字符串字面量，避免误判字符串内容为函数调用
+        String expressionWithoutStrings = DslUtils.removeStringLiterals(expression);
+
+        // 提取所有函数调用
+        Pattern pattern = Pattern.compile("(\\w+)\\s*\\(");
+        Matcher matcher = pattern.matcher(expressionWithoutStrings);
+
+        while (matcher.find()) {
+            String functionName = matcher.group(1).toLowerCase();
+            if (!DslFunctionTypeManager.isKnownFunction(functionName)) {
+                // 排除比较运算符和逻辑运算符
+                if (!functionName.matches("(and|or|not|true|false)")) {
+                    throw new IllegalArgumentException("未知的DSL函数: " + functionName);
+                }
+            }
+        }
+    }
+
+    /**
+     * 使用嵌套匹配器匹配DSL表达式（支持多响应）
+     * 这是主要的入口方法，支持Nuclei多块raw请求场景
+     *
+     * @param dslExpressions DSL表达式列表
+     * @param response 当前响应对象
+     * @param request 请求对象
+     * @param responseCache 响应缓存（用于访问body_1, body_2等索引变量）
+     * @param stepId 步骤ID（用于从缓存中查找多个响应）
+     * @return 是否匹配成功
+     */
+    public static boolean matchDslWithNestedMatchers(List<String> dslExpressions, Object response, Object request,
+                                                     Object responseCache, String stepId) {
+        try {
+            // 创建DSL上下文（支持多响应）
+            Map<String, Object> context;
+            if (responseCache instanceof com.potato.potatotool.content.redTeam.vulnScanner.core.ResponseCache && stepId != null) {
+                // 使用多响应版本，提取body_1, body_2, status_code_2等索引变量
+                context = DslContextBuilder.createDslContext(response, request,
+                    (com.potato.potatotool.content.redTeam.vulnScanner.core.ResponseCache) responseCache, stepId);
+            } else {
+                // 回退到原有版本
+                context = DslContextBuilder.createDslContext(response, request);
+            }
+
+            // 解析DSL表达式为匹配器（使用缓存）
+            List<DslExpressionParser.DslMatcher> matchers = getCachedMatchers(dslExpressions);
+
+            // 处理匹配器并返回结果
+            return DslMatcherProcessor.processMatchers(matchers, context);
+
+        } catch (Exception e) {
+            System.err.println("DSL匹配失败: " + e.getMessage());
+            e.printStackTrace();
+
+            // 回退到统一DSL评估
+            return evaluateUnifiedDslFallback(dslExpressions, response, request);
+        }
+    }
+
+    /**
+     * 使用嵌套匹配器匹配DSL表达式（兼容原有接口）
      * 这是主要的入口方法
      */
     public static boolean matchDslWithNestedMatchers(List<String> dslExpressions, Object response, Object request) {
         try {
             // 创建DSL上下文
             Map<String, Object> context = DslContextBuilder.createDslContext(response, request);
-            
-            // 解析DSL表达式为匹配器
-            List<DslExpressionParser.DslMatcher> matchers = DslExpressionParser.parseDslToMatchers(dslExpressions);
-            
+
+            // 解析DSL表达式为匹配器（使用缓存）
+            List<DslExpressionParser.DslMatcher> matchers = getCachedMatchers(dslExpressions);
+
             // 处理匹配器并返回结果
             return DslMatcherProcessor.processMatchers(matchers, context);
-            
+
         } catch (Exception e) {
             System.err.println("DSL匹配失败: " + e.getMessage());
             e.printStackTrace();
-            
+
             // 回退到统一DSL评估
             return evaluateUnifiedDslFallback(dslExpressions, response, request);
         }
@@ -89,10 +202,17 @@ public class DslEvaluatorRefactored {
             // 标准化表达式
             String normalizedExpression = DslUtils.normalizeExpression(expression);
             
-            // 检查是否包含未识别的函数
-            if (DslUtils.containsUnrecognizedFunctions(normalizedExpression)) {
-                System.err.println("表达式包含未识别的函数，跳过评估: " + normalizedExpression);
-                return false;
+            // 检查是否包含未识别的函数 - 改进策略：警告但继续尝试评估
+            List<String> unrecognizedFunctions = DslUtils.findUnrecognizedFunctions(normalizedExpression);
+            if (!unrecognizedFunctions.isEmpty()) {
+                // 只警告一次，避免重复日志
+                for (String func : unrecognizedFunctions) {
+                    if (!UNKNOWN_FUNCTION_WARNED.containsKey(func)) {
+                        System.err.println("警告: 发现未识别的DSL函数 '" + func + "'，将尝试继续评估表达式");
+                        UNKNOWN_FUNCTION_WARNED.put(func, true);
+                    }
+                }
+                // 不再直接返回false，继续尝试评估已知部分
             }
             
             // 处理逻辑操作符
@@ -192,6 +312,10 @@ public class DslEvaluatorRefactored {
                 case "contains":
                 case "bcontains":
                     return DslFunctionEvaluator.evaluateContainsFunction(expression, context);
+                case "contains_any":
+                    return DslFunctionEvaluator.evaluateContainsAnyFunction(expression, context);
+                case "contains_all":
+                    return DslFunctionEvaluator.evaluateContainsAllFunction(expression, context);
                 case "matches":
                 case "bmatches":
                     return DslFunctionEvaluator.evaluateMatchesFunction(expression, context);
@@ -201,6 +325,8 @@ public class DslEvaluatorRefactored {
                     return DslFunctionEvaluator.evaluateEndsWithFunction(expression, context);
                 case "regex":
                     return DslFunctionEvaluator.evaluateRegexFunction(expression, context);
+                case "compare_versions":
+                    return DslFunctionEvaluator.evaluateCompareVersionsFunction(expression, context);
                 
                 // 返回值的函数，需要在比较上下文中使用
                 case "len":
@@ -223,9 +349,12 @@ public class DslEvaluatorRefactored {
                     
                 case "tolowercase":
                 case "to_lower":
+                case "tolower":  // 添加tolower别名
                 case "touppercase":
                 case "to_upper":
+                case "toupper":  // 添加toupper别名
                 case "base64":
+                case "base64_py":
                 case "md5":
                 case "substr":
                 case "trim":
@@ -392,11 +521,14 @@ public class DslEvaluatorRefactored {
             // 字符串函数
             case "tolowercase":
             case "to_lower":
+            case "tolower":  // 添加tolower别名
                 return DslFunctionEvaluator.evaluateToLowerCaseFunction(expression, context);
             case "touppercase":
             case "to_upper":
+            case "toupper":  // 添加toupper别名
                 return DslFunctionEvaluator.evaluateToUpperCaseFunction(expression, context);
             case "base64":
+            case "base64_py":
                 return DslFunctionEvaluator.evaluateBase64Function(expression, context);
             case "md5":
                 return DslFunctionEvaluator.evaluateMd5Function(expression, context);
@@ -412,6 +544,10 @@ public class DslEvaluatorRefactored {
             case "contains":
             case "bcontains":
                 return String.valueOf(DslFunctionEvaluator.evaluateContainsFunction(expression, context));
+            case "contains_any":
+                return String.valueOf(DslFunctionEvaluator.evaluateContainsAnyFunction(expression, context));
+            case "contains_all":
+                return String.valueOf(DslFunctionEvaluator.evaluateContainsAllFunction(expression, context));
             case "matches":
             case "bmatches":
                 return String.valueOf(DslFunctionEvaluator.evaluateMatchesFunction(expression, context));
@@ -421,6 +557,8 @@ public class DslEvaluatorRefactored {
                 return String.valueOf(DslFunctionEvaluator.evaluateEndsWithFunction(expression, context));
             case "regex":
                 return String.valueOf(DslFunctionEvaluator.evaluateRegexFunction(expression, context));
+            case "compare_versions":
+                return String.valueOf(DslFunctionEvaluator.evaluateCompareVersionsFunction(expression, context));
                 
             // 数值函数转字符串
             case "len":
@@ -449,7 +587,7 @@ public class DslEvaluatorRefactored {
     }
     
 
-    
+
 
 
     /**
@@ -494,24 +632,62 @@ public class DslEvaluatorRefactored {
     }
 
     /**
+     * 从缓存获取或解析匹配器
+     * 
+     * @param dslExpressions DSL表达式列表
+     * @return 解析后的匹配器列表
+     */
+    private static List<DslExpressionParser.DslMatcher> getCachedMatchers(List<String> dslExpressions) {
+        // 生成缓存键
+        String cacheKey = String.join("|||", dslExpressions);
+        
+        // 尝试从缓存获取
+        List<DslExpressionParser.DslMatcher> cached = EXPRESSION_CACHE.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+        
+        // 缓存未命中，解析表达式
+        List<DslExpressionParser.DslMatcher> matchers = DslExpressionParser.parseDslToMatchers(dslExpressions);
+        
+        // 缓存结果（检查大小限制）
+        if (EXPRESSION_CACHE.size() < MAX_CACHE_SIZE) {
+            EXPRESSION_CACHE.put(cacheKey, matchers);
+        } else {
+            // 缓存满了，清除部分旧条目（简单策略：清除一半）
+            int removeCount = MAX_CACHE_SIZE / 2;
+            EXPRESSION_CACHE.keySet().stream()
+                .limit(removeCount)
+                .forEach(EXPRESSION_CACHE::remove);
+            EXPRESSION_CACHE.put(cacheKey, matchers);
+        }
+        
+        return matchers;
+    }
+    
+    /**
+     * 清除表达式缓存
+     */
+    public static void clearCache() {
+        EXPRESSION_CACHE.clear();
+        UNKNOWN_FUNCTION_WARNED.clear();
+    }
+    
+    /**
+     * 获取缓存统计信息
+     */
+    public static String getCacheStats() {
+        return String.format("DSL缓存: %d条表达式, %d个未知函数已警告", 
+            EXPRESSION_CACHE.size(), UNKNOWN_FUNCTION_WARNED.size());
+    }
+    
+    /**
      * 获取DSL评估统计信息
      */
     public static String getEvaluationStats() {
-        return "DSL评估器已优化，支持函数返回值和boolean判断的分离处理";
+        return "DSL评估器已优化，支持表达式缓存和改进的未知函数处理策略";
     }
 
-    /**
-     * 验证DSL表达式语法
-     */
-    public static boolean validateDslSyntax(String expression) {
-        try {
-            String normalized = DslUtils.normalizeExpression(expression);
-            return !DslUtils.containsUnrecognizedFunctions(normalized);
-        } catch (Exception e) {
-            System.err.println("验证DSL语法时出错: " + e.getMessage());
-            return false;
-        }
-    }
 
     /**
      * 获取支持的函数列表
@@ -526,7 +702,7 @@ public class DslEvaluatorRefactored {
     public static String[] getSupportedObjects() {
         return DslConstants.KNOWN_OBJECTS.clone();
     }
-    
+
     /**
      * 获取函数的返回值类型
      * @param functionName 函数名
@@ -558,6 +734,7 @@ public class DslEvaluatorRefactored {
             case "touppercase":
             case "to_upper":
             case "base64":
+            case "base64_py":
             case "md5":
             case "substr":
             case "trim":

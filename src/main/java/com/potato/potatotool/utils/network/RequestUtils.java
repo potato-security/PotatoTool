@@ -13,11 +13,7 @@ import java.net.*;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
@@ -58,6 +54,85 @@ public class RequestUtils {
     }
 
     private static final SSLSocketFactory trustAllSSLSocketFactory = createTrustAllSSLSocketFactory();
+    
+    /**
+     * 自定义 SNI 的 SSLSocketFactory 包装类
+     * 用于在 TLS 握手时设置自定义的 Server Name Indication
+     * 仅在需要时实例化，避免不启用时的冗余操作
+     */
+    private static class CustomSniSSLSocketFactory extends SSLSocketFactory {
+        private final SSLSocketFactory delegate;
+        private final String customSni;
+        
+        public CustomSniSSLSocketFactory(SSLSocketFactory delegate, String customSni) {
+            this.delegate = delegate;
+            this.customSni = customSni;
+        }
+        
+        @Override
+        public String[] getDefaultCipherSuites() {
+            return delegate.getDefaultCipherSuites();
+        }
+        
+        @Override
+        public String[] getSupportedCipherSuites() {
+            return delegate.getSupportedCipherSuites();
+        }
+        
+        @Override
+        public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException {
+            SSLSocket sslSocket = (SSLSocket) delegate.createSocket(socket, host, port, autoClose);
+            applySni(sslSocket);
+            return sslSocket;
+        }
+        
+        @Override
+        public Socket createSocket(String host, int port) throws IOException {
+            SSLSocket sslSocket = (SSLSocket) delegate.createSocket(host, port);
+            applySni(sslSocket);
+            return sslSocket;
+        }
+        
+        @Override
+        public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException {
+            SSLSocket sslSocket = (SSLSocket) delegate.createSocket(host, port, localHost, localPort);
+            applySni(sslSocket);
+            return sslSocket;
+        }
+        
+        @Override
+        public Socket createSocket(InetAddress host, int port) throws IOException {
+            SSLSocket sslSocket = (SSLSocket) delegate.createSocket(host, port);
+            applySni(sslSocket);
+            return sslSocket;
+        }
+        
+        @Override
+        public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
+            SSLSocket sslSocket = (SSLSocket) delegate.createSocket(address, port, localAddress, localPort);
+            applySni(sslSocket);
+            return sslSocket;
+        }
+        
+        /**
+         * 应用自定义 SNI 到 SSLSocket
+         * 使用 SSLParameters.setServerNames() 设置 TLS SNI 扩展
+         */
+        private void applySni(SSLSocket sslSocket) {
+            if (customSni == null || customSni.isEmpty()) {
+                return;
+            }
+            try {
+                SSLParameters params = sslSocket.getSSLParameters();
+                // SNIHostName 从 Java 8 开始支持
+                params.setServerNames(Collections.singletonList(new SNIHostName(customSni)));
+                sslSocket.setSSLParameters(params);
+            } catch (Exception e) {
+                // 如果设置失败（如无效的主机名），记录警告但不中断请求
+                System.err.println("[WARN] 设置自定义 SNI 失败: " + customSni + " - " + e.getMessage());
+            }
+        }
+    }
     
     /**
      * 协议升级/降级拦截器，处理HTTP/HTTPS协议切换
@@ -113,11 +188,18 @@ public class RequestUtils {
                 
                 // 检查5xx服务器错误，进行重试
                 if (response.code() >= 500 && state.retryCount < maxRetries) {
+                    // 检查线程是否被中断
+                    if (Thread.currentThread().isInterrupted()) {
+                        response.close();
+                        requestStateMap.remove(requestKey);
+                        throw new IOException("请求被中断");
+                    }
+
                     if (debugMode) {
                         System.err.println("服务器错误 (" + response.code() + "), 重试 " + (state.retryCount + 1) + "/" + maxRetries + ": " + originalRequest.url());
                     }
                     response.close();
-                    
+
                     // 重试前等待
                     try {
                         Thread.sleep(1000 * (requestObj.getRetryWaitTime() + state.retryCount)); // 递增等待时间
@@ -127,7 +209,7 @@ public class RequestUtils {
                         throw new IOException("重试被中断", ie);
                     }
                     state.retryCount++;
-                    
+
                     return chain.proceed(originalRequest);
                 }
                 
@@ -154,10 +236,16 @@ public class RequestUtils {
                 
                 // 检查是否可以重试（非协议切换的普通重试）
                 if (state.retryCount < maxRetries) {
+                    // 检查线程是否被中断
+                    if (Thread.currentThread().isInterrupted()) {
+                        requestStateMap.remove(requestKey);
+                        throw new IOException("请求被中断", e);
+                    }
+
                     if (debugMode) {
                         System.err.println("网络异常，重试 " + (state.retryCount + 1) + "/" + maxRetries + ": " + originalRequest.url() + " - " + e.getMessage());
                     }
-                    
+
                     // 重试前等待
                     try {
                         Thread.sleep(1000 * (requestObj.getRetryWaitTime() + state.retryCount)); // 递增等待时间
@@ -167,7 +255,7 @@ public class RequestUtils {
                         throw new IOException("重试被中断", ie);
                     }
                     state.retryCount++;
-                    
+
                     return chain.proceed(originalRequest);
                 }
                 
@@ -363,12 +451,22 @@ public class RequestUtils {
                .readTimeout(readTimeout, TimeUnit.SECONDS)
                .writeTimeout(writeTimeout, TimeUnit.SECONDS)
                .callTimeout(callTimeout, TimeUnit.SECONDS) // 添加整体调用超时，防止请求长时间挂起
-               .sslSocketFactory(trustAllSSLSocketFactory, trustAllTrustManager)
                .hostnameVerifier((hostname, session) -> true)
                .addInterceptor(new ProtocolFallbackInterceptor(maxRetries, requestObj))
                .retryOnConnectionFailure(false)
                .connectionPool(connectionPool) // 始终设置连接池
                .dispatcher(dispatcher); // 始终设置调度器
+
+        // 设置 SSL Socket Factory
+        // 仅在启用自定义 SNI 时创建包装类，否则使用默认的 trustAllSSLSocketFactory
+        if (requestObj.hasTlsSni()) {
+            // 启用自定义 SNI - 创建包装 SSLSocketFactory
+            SSLSocketFactory sniFactory = new CustomSniSSLSocketFactory(trustAllSSLSocketFactory, requestObj.getTlsSni());
+            builder.sslSocketFactory(sniFactory, trustAllTrustManager);
+        } else {
+            // 默认行为 - 使用静态共享的 trustAllSSLSocketFactory，无额外开销
+            builder.sslSocketFactory(trustAllSSLSocketFactory, trustAllTrustManager);
+        }
 
         // 设置代理
         if (proxies != null && !proxies.isEmpty()) {
@@ -416,7 +514,13 @@ public class RequestUtils {
         Request.Builder builder = new Request.Builder();
         
         // 设置URL
-        builder.url(requestObj.getUrl());
+        if (requestObj.getPreserveRawUrl()) {
+            // 保留原始URL编码（用于POC扫描），不进行归一化
+            builder.url(buildRawHttpUrl(requestObj.getUrl()));
+        } else {
+            // 默认行为：允许OkHttp进行URL归一化
+            builder.url(requestObj.getUrl());
+        }
         
         // 设置请求头
         setHeaders(builder, requestObj);
@@ -425,6 +529,59 @@ public class RequestUtils {
         setRequestBody(builder, requestObj);
         
         return builder.build();
+    }
+    
+    /**
+     * 构建保留原始编码的HttpUrl
+     * 用于POC扫描时保留路径遍历等特殊编码（如 %2e%2e、%u002e 等）
+     */
+    private static HttpUrl buildRawHttpUrl(String rawUrl) throws Exception {
+        try {
+            // 使用URI解析，getRawPath()可以获取原始未解码的路径
+            URI uri = new URI(rawUrl);
+            String protocol = uri.getScheme();
+            String host = uri.getHost();
+            int port = uri.getPort();
+            String rawPath = uri.getRawPath();      // 保留原始编码
+            String rawQuery = uri.getRawQuery();    // 保留原始编码
+            
+            // 如果解析失败或host为空，回退到默认方式
+            if (host == null || host.isEmpty()) {
+                return HttpUrl.parse(rawUrl);
+            }
+            
+            // 如果路径为空，使用根路径
+            if (rawPath == null || rawPath.isEmpty()) {
+                rawPath = "/";
+            }
+            
+            // 使用HttpUrl.Builder构建URL，保留原始编码
+            HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
+                .scheme(protocol != null ? protocol : "http")
+                .host(host);
+            
+            // 设置端口（如果指定了）
+            if (port != -1) {
+                urlBuilder.port(port);
+            }
+            
+            // 使用encodedPath保留原始编码（不会被二次编码或归一化）
+            urlBuilder.encodedPath(rawPath);
+            
+            // 设置查询参数（如果有）
+            if (rawQuery != null && !rawQuery.isEmpty()) {
+                urlBuilder.encodedQuery(rawQuery);
+            }
+            
+            return urlBuilder.build();
+        } catch (Exception e) {
+            // URI 解析失败时，回退到默认方式（允许归一化）
+            HttpUrl result = HttpUrl.parse(rawUrl);
+            if (result == null) {
+                throw new IllegalArgumentException("无法解析URL: " + rawUrl, e);
+            }
+            return result;
+        }
     }
 
     /**
@@ -441,19 +598,47 @@ public class RequestUtils {
         }
         
         builder.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
-        builder.header("Tool-Test", "Potato-Test");
-        
+
         // 设置Bearer Token
         String bearerToken = requestObj.getBearerToken();
         if (!bearerToken.isEmpty()) {
             builder.header("Authorization", "Bearer " + bearerToken.replace("Bearer ", ""));
         }
-        
+
         // 设置自定义头部
         Map<String, String> headers = requestObj.getHeaders();
         if (headers != null) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
-                builder.header(entry.getKey(), entry.getValue());
+                String headerName = entry.getKey();
+                String headerValue = entry.getValue();
+
+                // 验证 header name 是否合法（不包含空格、换行等非法字符）
+                if (headerName == null || headerName.trim().isEmpty() || headerValue == null || headerValue.trim().isEmpty()) {
+                    System.err.println("[警告] 跳过空的 header name/value");
+                    continue;
+                }
+
+                // HTTP header name 不能包含空格、换行符、制表符等控制字符
+                if (headerName.contains(" ") || headerName.contains("\t") ||
+                    headerName.contains("\n") || headerName.contains("\r") ||
+                    headerName.contains(":") || headerName.contains("/")) {
+                    System.err.println("[警告] 跳过包含非法字符的 header name: " +
+                        headerName.substring(0, Math.min(50, headerName.length())).replace("\n", "\\n").replace("\r", "\\r"));
+                    continue;
+                }
+
+                try {
+                    // 处理占位符替换
+                    if (headerValue.contains("{{randomAgent}}")) {
+                        headerValue = headerValue.replace("{{randomAgent}}", StrUtils.RandomUserAgent());
+                    }
+                    if (headerValue.contains("{{UUID}}")) {
+                        headerValue = headerValue.replace("{{UUID}}",UUID.randomUUID().toString().replace("-", ""));
+                    }
+                    builder.header(headerName, headerValue);
+                } catch (IllegalArgumentException e) {
+                    System.err.println("[错误] 设置 header 失败 [" + headerName + "]: " + e.getMessage());
+                }
             }
         }
     }

@@ -9,7 +9,7 @@ import org.yaml.snakeyaml.introspector.PropertyUtils;
 /**
  * 通用的YAML构造器基类，处理带连字符的字段名映射
  * @author Potato
- * @date 2025/3/18 15:24
+ * @date 2025/2/18 15:24
  */
 public abstract class YamlConstructor extends Constructor {
 
@@ -17,22 +17,28 @@ public abstract class YamlConstructor extends Constructor {
         super(theRoot, loaderOptions);
         
         // 设置PropertyUtils处理带连字符的字段名映射
-        setPropertyUtils(new PropertyUtils() {
+        PropertyUtils propertyUtils = new PropertyUtils() {
             @Override
             public Property getProperty(Class<?> type, String name) {
-                // 处理带连字符的字段名映射
+                // 处理带连字符的字段名映射 (max-request -> max_request)
                 if (name.contains("-")) {
-                    String camelCaseName = name.replace("-", "_");
-                    Property property = super.getProperty(type, camelCaseName);
-                    if (property != null) {
-                        return property;
+                    String underscoreName = name.replace("-", "_");
+                    try {
+                        return super.getProperty(type, underscoreName);
+                    } catch (Exception e) {
+                        // 如果下划线版本也找不到，继续尝试原名
                     }
                 }
-                // 设置忽略未映射的字段
-                setSkipMissingProperties(true);
-                return super.getProperty(type, name);
+                try {
+                    return super.getProperty(type, name);
+                } catch (Exception e) {
+                    // 忽略未映射的字段，返回 null 让 SnakeYAML 跳过
+                    return null;
+                }
             }
-        });
+        };
+        propertyUtils.setSkipMissingProperties(true);
+        setPropertyUtils(propertyUtils);
     }
 
     /**

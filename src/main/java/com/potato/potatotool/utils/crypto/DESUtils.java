@@ -279,6 +279,7 @@ public class DESUtils {
             keyArray.add("1a1dc91c907325c6");
             keyArray.add("ab645dd196197df7");
             keyArray.add("5f4dcc3b5aa765d6");
+            keyArray.add("fd690c56512ce362");
             keyArray.add("changeit");
             keyArray.add("whir2014");
             keyArray.add("li_01010");
@@ -386,11 +387,17 @@ public class DESUtils {
             padding_DES.set(PADDING_PKCS5_PADDING);
             key_DES.set("(hex)"+ StrUtils.byteToHex(key));
             iv_DES.set("null");
-            return new String(decryptedData, StandardCharsets.UTF_8);
+
+            String result = new String(decryptedData, StandardCharsets.UTF_8);
+            // 判断不存在乱码，防止误报
+            boolean isReadable = ReadabilityChecker.assessReadability(result, 1, 0);
+            if(isReadable){
+                return result;
+            }
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
-            return null;
         }
+        return null;
     }
 
     static byte[] generateRandomKey(byte[] head) {

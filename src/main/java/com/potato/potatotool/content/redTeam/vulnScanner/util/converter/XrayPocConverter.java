@@ -5,6 +5,8 @@ import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.Matcher
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.MatcherType;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.MatchersCondition;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.XrayYamlObj;
+import com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtractor.SetVariableEvaluator;
+import com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtractor.XrayCelParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,9 +14,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.potato.potatotool.content.redTeam.vulnScanner.event.ScanErrorEvent.logUnrecognizedExpression;
+
 /**
  * @author Potato
- * @date 2025/3/19 16:30
+ * @date 2025/2/19 16:30
  * Xray YAML POC转换器，用于将Xray格式的POC转换为通用PocObj
  */
 public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
@@ -278,8 +282,17 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
      * @return 匹配器对象
      */
     private Matcher createExpressionMatcher(String expression) {
+        // 验证CEL表达式语法
+        try {
+            XrayCelParser.validateCelSyntax(expression);
+        } catch (IllegalArgumentException e) {
+            System.err.println("警告: Xray CEL表达式验证失败 - " + e.getMessage());
+            logUnrecognizedExpression(e.getMessage());
+            // 继续执行，但记录警告
+        }
+        
         Matcher matcher = new Matcher();
-        matcher.setType(MatcherType.DSL);
+        matcher.setType(MatcherType.CEL);
         List<String> values = new ArrayList<>();
         values.add(expression);
         matcher.setValues(values);
@@ -306,62 +319,115 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
      * @param poc 通用POC对象
      */
     private void convertVariables(XrayYamlObj.Poc xrayPoc, PocObj.Poc poc) {
-        // 处理set变量
+        // 创建合并的变量 Map（先 set，后 payloads，允许覆盖）
+        Map<String, List<String>> combinedVariables = new HashMap<>();
+
+        // 1. 处理 set 变量（支持变量引用和属性访问）
         if (xrayPoc.getSet() != null && !xrayPoc.getSet().isEmpty()) {
-            Map<String, List<String>> payloadsMap = new HashMap<>();
+            Map<String, List<String>> setMap = new HashMap<>();
+            Map<String, String> evaluatedSimpleVars = new HashMap<>(); // 存储已求值的字符串变量
+            Map<String, Object> objectContext = new HashMap<>(); // 存储对象（如 ReverseObject）
+
+            // 求值所有 set 变量（支持引用已求值的变量和属性访问）
             for (Map.Entry<String, Object> entry : xrayPoc.getSet().entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
+
                 if (value instanceof List) {
-                    // 如果值是列表，直接转换
+                    // 如果值是列表，对每个元素求值
                     List<String> valueList = new ArrayList<>();
                     for (Object item : (List<?>) value) {
                         if (item != null) {
-                            valueList.add(item.toString());
+                            // 执行函数求值，并支持变量替换和属性访问
+                            String strValue = item.toString();
+                            String evaluated = evaluateWithVariableSubstitution(strValue, evaluatedSimpleVars, objectContext);
+                            valueList.add(evaluated);
                         }
                     }
-                    payloadsMap.put(key, valueList);
+                    setMap.put(key, valueList);
                 } else if (value != null) {
                     // 如果值不是列表但不为空，创建只有一个元素的列表
+                    String strValue = value.toString();
+                    
+                    // 如果是 newReverse() 等返回对象的函数，标记为需要在运行时求值的表达式
+                    // 注意：不立即执行，避免在转换阶段创建对象，而是让 Executor 在运行时创建
+                    if (strValue.contains("newReverse()")) {
+                        List<String> valueList = new ArrayList<>();
+                        valueList.add("@@expression:" + strValue);
+                        setMap.put(key, valueList);
+                        // 记录到 evaluatedSimpleVars 以便后续引用也能识别（尽管后续引用可能也需要运行时处理）
+                        evaluatedSimpleVars.put(key, "@@expression:" + strValue);
+                        continue;
+                    }
+                    
+                    // 如果引用了 reverse 对象的属性（如 reverse.url, reverse.domain），也标记为运行时表达式
+                    if (strValue.startsWith("reverse.") || strValue.contains("reverse.")) {
+                        List<String> valueList = new ArrayList<>();
+                        valueList.add("@@expression:" + strValue);
+                        setMap.put(key, valueList);
+                        evaluatedSimpleVars.put(key, "@@expression:" + strValue);
+                        continue;
+                    }
+                    
+                    String evaluated = evaluateWithVariableSubstitution(strValue, evaluatedSimpleVars, objectContext);
                     List<String> valueList = new ArrayList<>();
-                    valueList.add(value.toString());
-                    payloadsMap.put(key, valueList);
+                    valueList.add(evaluated);
+                    setMap.put(key, valueList);
+
+                    // 保存单值变量供后续引用
+                    evaluatedSimpleVars.put(key, evaluated);
                 }
             }
-            if (!payloadsMap.isEmpty()) {
-                poc.setVariables(payloadsMap);
-            }
+
+            // 将 set 变量添加到合并 Map
+            combinedVariables.putAll(setMap);
         }
-        
-        // 处理payloads
+
+        // 2. 处理 payloads 变量（可覆盖 set 中的同名变量）
         if (xrayPoc.getPayloads() != null && xrayPoc.getPayloads().getPayloads() != null && !xrayPoc.getPayloads().getPayloads().isEmpty()) {
             Map<String, List<String>> payloadsMap = new HashMap<>();
-            
+
             for (Map.Entry<String, Object> entry : xrayPoc.getPayloads().getPayloads().entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                
+
                 if (value instanceof List) {
-                    // 如果值是列表，直接转换
+                    // 如果值是列表，对每个��素求值
                     List<String> valueList = new ArrayList<>();
                     for (Object item : (List<?>) value) {
                         if (item != null) {
-                            valueList.add(item.toString());
+                            // 执行函数求值
+                            String evaluated = SetVariableEvaluator.evaluateVariable(item.toString());
+                            valueList.add(evaluated);
                         }
                     }
                     payloadsMap.put(key, valueList);
                 } else if (value != null) {
                     // 如果值不是列表但不为空，创建只有一个元素的列表
+                    // 执行函数求值
+                    String evaluated = SetVariableEvaluator.evaluateVariable(value.toString());
                     List<String> valueList = new ArrayList<>();
-                    valueList.add(value.toString());
+                    valueList.add(evaluated);
                     payloadsMap.put(key, valueList);
                 }
             }
-            
-            if (!payloadsMap.isEmpty()) {
-                poc.setVariables(payloadsMap);
-            }
+
+            // 将 payloads 变量合并到 combinedVariables（允许覆盖 set）
+            combinedVariables.putAll(payloadsMap);
         }
+
+        // 3. 一次性设置所有变量
+        if (!combinedVariables.isEmpty()) {
+            poc.setVariables(combinedVariables);
+        }
+
+        // 4. 解析 continue_ 字段（命中一个 payload 后是否继续）
+        if (xrayPoc.getPayloads() != null) {
+            poc.setContinueOnMatch(xrayPoc.getPayloads().isContinue_());
+        }
+
+        // 5. 设置 variablesType（Xray 默认为 clusterbomb）
+        poc.setVariablesType(PocObj.VariablesType.clusterbomb);
     }
     
     /**
@@ -371,8 +437,18 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
      */
     private void convertGlobalExpression(XrayYamlObj.Poc xrayPoc, PocObj.Poc poc) {
         if (xrayPoc.getExpression() != null && !xrayPoc.getExpression().isEmpty()) {
+            String expression = xrayPoc.getExpression();
             // 将全局expression设置为flow字段
-            poc.setFlow(xrayPoc.getExpression());
+            poc.setFlow(expression);
+            
+            // 根据全局表达式设置步骤间的条件
+            // 如果表达式包含 || (OR)，设置为 OR 条件
+            // 如果表达式包含 && (AND) 或只有单个规则调用，设置为 AND 条件
+            if (expression.contains("||")) {
+                poc.setStepsCondition(MatchersCondition.OR);
+            } else {
+                poc.setStepsCondition(MatchersCondition.AND);
+            }
         }
     }
     
@@ -400,5 +476,35 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
             return Boolean.parseBoolean(String.valueOf(map.get(key)));
         }
         return false;
+    }
+    
+    /**
+     * 求值并替换变量（带对象上下文）
+     * 
+     * @param value 待求值的字符串（可能包含变量引用或属性访问）
+     * @param variables 已求值的字符串变量映射
+     * @param objectContext 对象上下文（如 ReverseObject）
+     * @return 求值后的结果
+     */
+    private String evaluateWithVariableSubstitution(String value, Map<String, String> variables, Map<String, Object> objectContext) {
+        if (value == null) {
+            return "";
+        }
+        
+        // 先替换已知变量（支持 {{varName}} 格式）
+        String substituted = value;
+        if (variables != null && !variables.isEmpty()) {
+            for (Map.Entry<String, String> entry : variables.entrySet()) {
+                String varName = entry.getKey();
+                String varValue = entry.getValue();
+                if (varName != null && varValue != null) {
+                    // 替换 {{varName}} 格式
+                    substituted = substituted.replace("{{" + varName + "}}", varValue);
+                }
+            }
+        }
+        
+        // 然后执行函数求值（传入对象上下文以支持属性访问）
+        return com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtractor.SetVariableEvaluator.evaluateVariable(substituted, objectContext);
     }
 }

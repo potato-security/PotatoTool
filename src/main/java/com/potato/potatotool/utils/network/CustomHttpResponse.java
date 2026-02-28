@@ -63,14 +63,16 @@ public class CustomHttpResponse implements AutoCloseable {
         if (dataBuffer == null) {
             try {
                 ResponseBody body = response.body();
+                int statusCode = response.code();
+
                 if (body != null) {
                     try (InputStream inputStream = body.byteStream();
                          ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                        
+
                         byte[] buffer = new byte[16 * 1024];
                         int bytesRead;
                         int totalBytesRead = 0;
-                        
+
                         while ((bytesRead = inputStream.read(buffer)) != -1) {
                             // 检查大小限制
                             if (totalBytesRead + bytesRead > maxSize) {
@@ -81,7 +83,7 @@ public class CustomHttpResponse implements AutoCloseable {
                                 }
                                 break;
                             }
-                            
+
                             outputStream.write(buffer, 0, bytesRead);
                             totalBytesRead += bytesRead;
                         }
@@ -90,8 +92,20 @@ public class CustomHttpResponse implements AutoCloseable {
                 } else {
                     dataBuffer = new byte[0];
                 }
+            } catch (java.io.EOFException e) {
+                // 针对 EOF 异常的特殊处理（常见于重定向响应）
+                int statusCode = response.code();
+                if (statusCode >= 300 && statusCode < 400) {
+                    // 3xx 重定向：EOF 是正常的，不输出完整堆栈
+                    System.err.println("读取重定向响应体时遇到 EOF（状态码: " + statusCode + "），这通常是正常的");
+                } else {
+                    // 非重定向状态码：输出详细错误
+                    System.err.println("读取响应数据失败，状态码: " + statusCode + ", 错误: EOFException");
+                    e.printStackTrace();
+                }
+                dataBuffer = new byte[0];
             } catch (Exception e) {
-                // 对于网络异常等情况，返回空数组而不是抛出异常
+                // 其他异常：完整输出
                 System.err.println("读取响应数据失败，状态码: " + response.code() + ", 错误: " + e.getMessage());
                 e.printStackTrace();
                 dataBuffer = new byte[0];

@@ -64,9 +64,20 @@ public class SingleDecryptStrategy implements DecryptStrategy {
         if (aes.classCode || des.classCode || str.classCode) {
             encodeMode.add("Class编译");
         }
-        if (aes.serializeCode || des.serializeCode || str.serializeCode) {
+        if (aes.javaSerializeCode || des.serializeCode || str.javaSerializeCode) {
             encodeMode.add("反序列化");
         }
+
+        // 检查二进制序列化格式
+        if (str.bsonCode) encodeMode.add("BSON");
+        if (str.messagePackCode) encodeMode.add("MessagePack");
+        if (str.cborCode) encodeMode.add("CBOR");
+        if (str.smileCode) encodeMode.add("Smile");
+        if (str.hessianCode) encodeMode.add("Hessian");
+        if (str.ubjsonCode) encodeMode.add("UBJSON");
+        if (str.kryoCode) encodeMode.add("Kryo");
+        if (str.fstCode) encodeMode.add("FST");
+        if (str.avroCode) encodeMode.add("Avro");
     }
     
     /**
@@ -117,17 +128,16 @@ public class SingleDecryptStrategy implements DecryptStrategy {
         
         // Hex解码特殊处理
         currentStep = performHexDecoding(recorder, currentStep);
-        
+
+
         // 第二次Base64解码
         currentStep = performSecondBase64Decoding(recorder, currentStep);
-        
+
+
         // Seeyon Base64解码
-        currentStep = executeAndRecord(recorder, "seeyonBase64", currentStep, input -> {
-            if(input.length()< 5) return input;
-            String result = str.seeyonBase64Decode(input);
-            return ReadabilityChecker.assessReadability(result, 1 , 0) ? result : input;
-        });
-        
+        currentStep = executeAndRecord(recorder, "seeyonBase64", currentStep,
+                input -> str.seeyonBase64Decode(input));
+
         return currentStep;
     }
     
@@ -135,12 +145,12 @@ public class SingleDecryptStrategy implements DecryptStrategy {
      * 执行Hex解码
      */
     private String performHexDecoding(DecryptStepRecorder recorder, String content) {
-        boolean hexBeforeSerialize = str.serializeCode;
+        boolean hexBeforeSerialize = str.javaSerializeCode;
         boolean hexBeforeClass = str.classCode;
         
         String hexResult = str.hexDecode(content);
         
-        boolean hexAfterSerialize = str.serializeCode;
+        boolean hexAfterSerialize = str.javaSerializeCode;
         boolean hexAfterClass = str.classCode;
         
         // 判断解密后字符串可读性
@@ -159,14 +169,16 @@ public class SingleDecryptStrategy implements DecryptStrategy {
      * 执行第二次Base64解码
      */
     private String performSecondBase64Decoding(DecryptStepRecorder recorder, String content) {
-        String result = str.base64Decode(content);
-        
+        String result = str.base64DecodeWebShell(content);
+
         if (result != null && result.length() > 100) {
             // 兼容js的btoa(toBinary(payload))
             result = ReadabilityChecker.assessReadability(result, 0.5, 0)
                 ? result : content;
-        } else {
+        } else if (result != null) {
             result = ReadabilityChecker.assessReadability(result) ? result : content;
+        } else {
+            result = content;
         }
         
         // 只有当结果真正改变时才记录步骤

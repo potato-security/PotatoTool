@@ -2,12 +2,14 @@ package com.potato.potatotool.content.redTeam.vulnScanner.classObj;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Potato
- * @date 2025/3/12 17:17
+ * @date 2025/2/12 17:17
  */
 public class GobyJsonObj {
     @Data
@@ -31,6 +33,25 @@ public class GobyJsonObj {
         private List<Object> ExploitSteps;
         private String PostTime;
         private String GobyVersion;
+        
+        // 全局变量 - 在所有步骤间共享（Phase 2新增）
+        private Map<String, String> GlobalVariables;
+        
+        // 认证配置 - 用于需要认证的POC（Phase 3新增）
+        private Authentication Authentication;
+    }
+    
+    /**
+     * 认证配置
+     * 支持多种认证方式：Basic、Bearer、Digest等
+     */
+    @Data
+    public static class Authentication {
+        private String type;          // 认证类型: basic, bearer, digest, cookie
+        private String username;      // 用户名(用于basic/digest)
+        private String password;      // 密码(用于basic/digest)
+        private String token;         // Token(用于bearer)
+        private Map<String, String> cookies;  // Cookie(用于cookie认证)
     }
 
     @Data
@@ -77,12 +98,32 @@ public class GobyJsonObj {
     @Data
     public static class Request {
         private String method;
-        private String uri;
+        private String uri;                    // 单个路径
+        private List<String> uris;              // 多路径支持（Goby官方支持）
+        private String raw;                     // 原始HTTP报文（Phase 2新增）
         private boolean follow_redirect;
         private LinkedHashMap<String, String> header = new LinkedHashMap<>();
         private String data_type;
         private String data;
         private List<String> set_variable;
+        private Map<String, String> cookies;    // Cookie配置（Phase 3新增）
+        
+        /**
+         * 获取所有URI路径（兼容单路径和多路径）
+         * @return URI列表
+         */
+        public List<String> getAllUris() {
+            List<String> allUris = new ArrayList<>();
+            // 优先使用uris数组
+            if (uris != null && !uris.isEmpty()) {
+                allUris.addAll(uris);
+            } 
+            // 否则使用单个uri
+            else if (uri != null && !uri.isEmpty()) {
+                allUris.add(uri);
+            }
+            return allUris;
+        }
     }
 
     @Data

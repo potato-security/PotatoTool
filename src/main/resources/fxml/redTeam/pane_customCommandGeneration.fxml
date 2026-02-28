@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
+<?import com.potato.potatotool.utils.ui.SmoothListView?>
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -11,7 +13,7 @@
            fx:controller="com.potato.potatotool.controller.redTeam.PaneCustomCommandGeneration"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <ScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}">
+    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}">
         <VBox alignment="CENTER" spacing="20" prefWidth="${sPane.width - 15}">
 
             <HBox alignment="CENTER_LEFT" prefWidth="${sPane.width - 15}">
@@ -39,28 +41,25 @@
             </HBox>
 
             <HBox alignment="CENTER" prefWidth="${sPane.width - 15}">
-                <ScrollPane maxHeight="${sPane.height - 80}" hbarPolicy="NEVER">
+                <SmoothScrollPane maxHeight="${sPane.height - 80}" hbarPolicy="NEVER">
                     <VBox fx:id="vBoxBar">
                         <Accordion fx:id="accordionPane"/>
                     </VBox>
-                </ScrollPane>
+                </SmoothScrollPane>
 
                 <Region HBox.hgrow="ALWAYS" />
 
                 <StackPane>
-                    <ListView fx:id="listView" prefWidth="${sPane.width - 215}" prefHeight="${sPane.height - 80}" maxHeight="${sPane.height - 100}" />
+                    <SmoothListView fx:id="listView" prefWidth="${sPane.width - 215}" prefHeight="${sPane.height - 80}" maxHeight="${sPane.height - 100}" />
                 </StackPane>
             </HBox>
 
         </VBox>
-    </ScrollPane>
+    </SmoothScrollPane>
 
 
-    <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="200" alignment="CENTER" StackPane.alignment="CENTER">
-        <effect>
-            <DropShadow/>
-        </effect>
-        <Label fx:id="prompt" text="复制成功" userData="i18n:cmdgen.copied"/>
+    <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
+        <Label fx:id="prompt" text="复制成功" userData="i18n:cmdgen.copied" maxWidth="600"/>
     </StackPane>
 
 </StackPane>

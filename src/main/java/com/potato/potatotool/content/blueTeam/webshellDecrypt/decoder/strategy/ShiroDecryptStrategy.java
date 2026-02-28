@@ -39,7 +39,7 @@ public class ShiroDecryptStrategy implements DecryptStrategy {
             encodeMode.add("Shiro(Base64+AES\\"+aes.mode_AES.get()+"\\"+aes.padding_AES.get()+"<key:iv>"+aes.key_AES.get()+":"+aes.iv_AES.get()+")");
             if( aes.gzipCode || str.gzipCode) encodeMode.add("Gzip");
             if( aes.classCode || str.classCode) encodeMode.add("Class编译");
-            if( aes.serializeCode || str.serializeCode) encodeMode.add("反序列化");
+            if( aes.javaSerializeCode || str.javaSerializeCode) encodeMode.add("反序列化");
             // encodeMode已经通过参数传递
 
             return Shiro;

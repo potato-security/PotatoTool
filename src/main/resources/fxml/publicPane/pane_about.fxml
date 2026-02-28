@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -22,7 +23,8 @@
         <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="交流群" userData="i18n:about.menu.group" alignment="CENTER_LEFT"/>
     </VBox>
 
-    <ListView fx:id="listView" prefHeight="${sPane.height}" prefWidth="${sPane.width}">
+    <SmoothScrollPane fx:id="mainScrollPane" fitToWidth="true" hbarPolicy="NEVER" prefHeight="${sPane.height}" prefWidth="${sPane.width}">
+        <VBox fx:id="contentVBox">
 
         <Text fx:id="info" text="工具信息" userData="i18n:about.info.title" styleClass="titleText"/>
         <HBox alignment="CENTER">
@@ -89,10 +91,10 @@
                 </ImageView>
             </VBox>
             <Pane minWidth="20"/>
-            <ScrollPane fx:id="thanksScrollPane" vbarPolicy="NEVER" hbarPolicy="NEVER" prefWidth="${sPane.width - 270}" prefHeight="260">
+            <SmoothScrollPane fx:id="thanksScrollPane" vbarPolicy="NEVER" hbarPolicy="NEVER" prefWidth="${sPane.width - 270}" prefHeight="260">
                 <VBox fx:id="thanksVBox" spacing="10">
                 </VBox>
-            </ScrollPane>
+            </SmoothScrollPane>
         </HBox>
         <Pane minHeight="15" styleClass="linenoPane"/>
         <Pane minHeight="15"/>
@@ -119,7 +121,8 @@
         <Pane minHeight="15" styleClass="linenoPane"/>
         <Pane minHeight="15"/>
 
-    </ListView>
+        </VBox>
+    </SmoothScrollPane>
 
     <ImageView fitHeight="230" fitWidth="230" pickOnBounds="true" preserveRatio="true" translateX="250" scaleX="-1" StackPane.alignment="BOTTOM_RIGHT">
         <image>

@@ -38,7 +38,10 @@ public class PaneAbout {
     private VBox noWebBox;
 
     @FXML
-    private ListView listView;
+    private ScrollPane mainScrollPane;
+
+    @FXML
+    private VBox contentVBox;
 
     @FXML
     private Text info;
@@ -177,12 +180,16 @@ public class PaneAbout {
     @FXML
     void redirect(ActionEvent event) {
         String newKey = ((RXLineButton) event.getSource()).getText();
-        for (int i = 0; i < listView.getItems().size(); i++) {
-            Node node = (Node) listView.getItems().get(i);
+        for (Node node : contentVBox.getChildren()) {
             if (node instanceof Text) {
-                String key = ((Text)node).getText();
-                if(key.equals(newKey)){
-                    listView.scrollTo(i);
+                String key = ((Text) node).getText();
+                if (key.equals(newKey)) {
+                    // 计算目标位置并滚动
+                    double contentHeight = contentVBox.getBoundsInLocal().getHeight();
+                    double viewportHeight = mainScrollPane.getViewportBounds().getHeight();
+                    double nodeY = node.getBoundsInParent().getMinY();
+                    double scrollValue = nodeY / (contentHeight - viewportHeight);
+                    mainScrollPane.setVvalue(Math.min(1.0, Math.max(0.0, scrollValue)));
                     return;
                 }
             }

@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
+<?import com.potato.potatotool.utils.ui.SmoothTextArea?>
+<?import com.potato.potatotool.utils.ui.SmoothListView?>
 
 <?import javafx.scene.layout.StackPane?>
 
@@ -28,12 +31,12 @@
            xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneWebshellDecode">
-   <ListView fx:id="testDataList" translateX="180" maxWidth="160" maxHeight="300" StackPane.alignment="TOP_RIGHT"/>
+   <SmoothListView fx:id="testDataList" translateX="180" maxWidth="160" maxHeight="300" StackPane.alignment="TOP_RIGHT"/>
 
    <VBox alignment="CENTER" >
 
       <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-         <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入存在加密的文本/流量包" userData="i18n-prompt:webshell.input.placeholder"/>
+         <SmoothTextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入存在加密的文本/流量包" userData="i18n-prompt:webshell.input.placeholder"/>
       </Pane>
 
       <Pane minHeight="15"/>
@@ -113,7 +116,7 @@
                </tooltip>
             </Button>
             <Pane fx:id="aiPane" visible="false" maxWidth="0">
-               <TextArea fx:id="aiTextArea" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height * 0.43 + 12}" maxHeight="${sPane.height * 0.43 + 12}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:webshell.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
+               <SmoothTextArea fx:id="aiTextArea" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height * 0.43 + 12}" maxHeight="${sPane.height * 0.43 + 12}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:webshell.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
                <Button fx:id="refreshAI" layoutX="-60" layoutY="6"  mnemonicParsing="false" onAction="#refreshAI">
                   <graphic>
                      <ImageView fitHeight="17.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
@@ -149,10 +152,7 @@
       </StackPane>
    </VBox>
 
-   <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="200" alignment="CENTER" StackPane.alignment="CENTER">
-      <effect>
-         <DropShadow/>
-      </effect>
-      <Label fx:id="prompt" text="复制成功" userData="i18n:webshell.copied"/>
+   <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
+      <Label fx:id="prompt" text="复制成功" userData="i18n:webshell.copied" maxWidth="600"/>
    </StackPane>
 </StackPane>

@@ -25,12 +25,12 @@ import java.util.regex.PatternSyntaxException;
 public class VariableExtractor {
 
     /**
-     * 从HTTP响应中提取变量
+     * 从HTTP响应中提取变量（支持 Object 类型的变量映射）
      * @param response HTTP响应对象
      * @param extractors 提取器列表
      * @param extractedValues 提取的变量映射
      */
-    public static void extractVariables(CustomHttpResponse response, List<PocObj.Matcher> extractors, Map<String, String> extractedValues) {
+    public static void extractVariablesObj(CustomHttpResponse response, List<PocObj.Matcher> extractors, Map<String, Object> extractedValues) {
         if (response == null || extractors == null || extractors.isEmpty() || extractedValues == null) {
             return;
         }
@@ -58,14 +58,21 @@ public class VariableExtractor {
                     extractedValue = extractRegex(content, values, group);
                     break;
                 case JSON:
-                    extractedValue = JsonExtractor.extractJson(content, values);
+                    // Goby使用JsonPath语法（$开头），Xray使用jq语法（.开头）
+                    if (values != null && !values.isEmpty()) {
+                        String expr = values.get(0);
+                        if (expr != null && expr.trim().startsWith("$")) {
+                            // JsonPath语法（Goby）
+                            extractedValue = JsonExtractor.extractByJsonPath(content, expr.trim());
+                        } else {
+                            // jq语法（Xray）
+                            extractedValue = JsonExtractor.extractJson(content, values);
+                        }
+                    }
                     break;
                 case XPATH:
                     extractedValue = extractXpath(content, values, attribute);
                     break;
-//                case DSL:
-//                    extractedValue = DslEvaluator.extractDsl(response, values);
-//                    break;
                 case KVAL:
                     extractedValue = extractKval(content, values);
                     break;
@@ -75,6 +82,66 @@ public class VariableExtractor {
             }
 
             // 如果成功提取了值，则保存到变量映射中
+            if (extractedValue != null) {
+                extractedValues.put(extractor.getName(), extractedValue);
+            }
+        }
+    }
+
+    /**
+     * 从HTTP响应中提取变量
+     * @param response HTTP响应对象
+     * @param extractors 提取器列表
+     * @param extractedValues 提取的变量映射
+     */
+    public static void extractVariables(CustomHttpResponse response, List<PocObj.Matcher> extractors, Map<String, String> extractedValues) {
+        if (response == null || extractors == null || extractors.isEmpty() || extractedValues == null) {
+            return;
+        }
+        
+        for (PocObj.Matcher extractor : extractors) {
+            if (extractor == null || extractor.getName() == null || extractor.getName().isEmpty()) {
+                continue;
+            }
+
+            String part = extractor.getPart();
+            String content = getResponsePart(response, part);
+            
+            if (content == null || content.isEmpty()) {
+                continue;
+            }
+
+            String extractedValue = null;
+            PocObj.MatcherType type = extractor.getType();
+            List<String> values = extractor.getValues();
+            int group = extractor.getGroup();
+            String attribute = extractor.getAttribute();
+
+            switch (type) {
+                case REGEX:
+                    extractedValue = extractRegex(content, values, group);
+                    break;
+                case JSON:
+                    if (values != null && !values.isEmpty()) {
+                        String expr = values.get(0);
+                        if (expr != null && expr.trim().startsWith("$")) {
+                            extractedValue = JsonExtractor.extractByJsonPath(content, expr.trim());
+                        } else {
+                            extractedValue = JsonExtractor.extractJson(content, values);
+                        }
+                    }
+                    break;
+                case XPATH:
+                    extractedValue = extractXpath(content, values, attribute);
+                    break;
+                case KVAL:
+                    extractedValue = extractKval(content, values);
+                    break;
+                default:
+                    // System.out.println("不支持的提取器类型");
+                    break;
+            }
+
             if (extractedValue != null) {
                 extractedValues.put(extractor.getName(), extractedValue);
             }
@@ -100,10 +167,6 @@ public class VariableExtractor {
                     return response.getHeaderFieldsText();
                 case "status":
                     try {
-                        // 确保连接对象不为空
-                        if (response == null) {
-                            return "0";
-                        }
                         return String.valueOf(response.getResponseCode());
                     } catch (Exception e) {
                         System.err.println("获取响应状态码失败: " + e.getMessage());
@@ -111,14 +174,23 @@ public class VariableExtractor {
                     }
                 case "all":
                     return response.getAllResponseText();
+                // Nuclei 特殊部分名称支持
+                case "set_cookie":
+                case "set-cookie":
+                    return getHeaderCaseInsensitive(response, "Set-Cookie");
+                case "location":
+                    return getHeaderCaseInsensitive(response, "Location");
+                case "content_type":
+                case "content-type":
+                    return getHeaderCaseInsensitive(response, "Content-Type");
+                case "content_length":
+                case "content-length":
+                    return getHeaderCaseInsensitive(response, "Content-Length");
                 default:
-                    // 尝试获取特定的响应头
-                    Map<String, List<String>> fields = response.getHeaderFields();
-                    if (fields != null) {
-                        List<String> headerValues = fields.get(part);
-                        if (headerValues != null && !headerValues.isEmpty()) {
-                            return String.join("; ", headerValues);
-                        }
+                    // 尝试获取特定的响应头（大小写不敏感）
+                    String headerValue = getHeaderCaseInsensitive(response, part);
+                    if (headerValue != null) {
+                        return headerValue;
                     }
                     return null;
             }
@@ -128,12 +200,41 @@ public class VariableExtractor {
         }
     }
 
+    /**
+     * 大小写不敏感地获取响应头
+     * @param response HTTP响应对象
+     * @param headerName 头名称（任意大小写）
+     * @return 头值，如果不存在返回 null
+     */
+    private static String getHeaderCaseInsensitive(CustomHttpResponse response, String headerName) {
+        if (response == null || headerName == null) {
+            return null;
+        }
+        Map<String, List<String>> fields = response.getHeaderFields();
+        if (fields == null) {
+            return null;
+        }
+        // 遍历所有头，进行大小写不敏感匹配
+        for (Map.Entry<String, List<String>> entry : fields.entrySet()) {
+            if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(headerName)) {
+                List<String> values = entry.getValue();
+                if (values != null && !values.isEmpty()) {
+                    return String.join("; ", values);
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * 使用正则表达式提取变量
+     * 支持命名分组：
+     * - Java风格: (?<name>pattern)
+     * - Python风格: (?P<name>pattern) - 自动转换为Java风格
+     * 
      * @param content 内容
      * @param patterns 正则表达式列表
-     * @param group 捕获组索引
+     * @param group 捕获组索引（0=完整匹配，1=第一组，-1=自动检测命名组）
      * @return 提取的值
      */
     private static String extractRegex(String content, List<String> patterns, int group) {
@@ -143,20 +244,85 @@ public class VariableExtractor {
 
         for (String regex : patterns) {
             try {
-                Pattern pattern = Pattern.compile(regex);
+                // 转换Python风格命名分组 (?P<name>) 为Java风格 (?<name>)
+                String javaRegex = convertPythonNamedGroups(regex);
+                
+                // 检测是否包含命名分组
+                String namedGroupName = extractNamedGroupName(javaRegex);
+                
+                Pattern pattern = Pattern.compile(javaRegex);
                 Matcher matcher = pattern.matcher(content);
 
                 if (matcher.find()) {
-                    // 确保组号有效
+                    // 优先使用命名分组
+                    if (namedGroupName != null && !namedGroupName.isEmpty()) {
+                        try {
+                            return matcher.group(namedGroupName);
+                        } catch (IllegalArgumentException e) {
+                            // 命名分组不存在，降级到数字分组
+                            System.err.println("命名分组不存在: " + namedGroupName);
+                        }
+                    }
+                    
+                    // 使用数字分组
                     int effectiveGroup = group;
+                    
+                    // group=-1 表示自动选择：优先第一个捕获组，否则完整匹配
+                    if (effectiveGroup == -1) {
+                        effectiveGroup = matcher.groupCount() > 0 ? 1 : 0;
+                    }
+                    
+                    // 确保组号有效
                     if (effectiveGroup < 0 || effectiveGroup > matcher.groupCount()) {
                         effectiveGroup = matcher.groupCount() > 0 ? 1 : 0;
                     }
+                    
                     return matcher.group(effectiveGroup);
                 }
             } catch (PatternSyntaxException e) {
-                // 忽略非法正则表达式
+                System.err.println("无效的正则表达式: " + regex + " - " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("正则提取失败: " + e.getMessage());
             }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * 将Python风格的命名分组转换为Java风格
+     * Python: (?P<name>pattern)
+     * Java:   (?<name>pattern)
+     * 
+     * @param pythonRegex Python风格正则表达式
+     * @return Java风格正则表达式
+     */
+    private static String convertPythonNamedGroups(String pythonRegex) {
+        if (pythonRegex == null || !pythonRegex.contains("(?P<")) {
+            return pythonRegex;
+        }
+        
+        // 将 (?P<name> 替换为 (?<name>
+        return pythonRegex.replaceAll("\\(\\?P<", "(?<");
+    }
+    
+    /**
+     * 从正则表达式中提取命名分组的名称
+     * 
+     * @param regex 正则表达式
+     * @return 第一个命名分组的名称，如果没有则返回null
+     */
+    private static String extractNamedGroupName(String regex) {
+        if (regex == null || regex.isEmpty()) {
+            return null;
+        }
+        
+        // 匹配Java风格命名分组: (?<name>
+        Pattern namedGroupPattern = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>");
+        Matcher matcher = namedGroupPattern.matcher(regex);
+        
+        if (matcher.find()) {
+            return matcher.group(1);
         }
         
         return null;
@@ -175,7 +341,14 @@ public class VariableExtractor {
         }
 
         // 如果内容不像XML，直接返回
-        if (!content.trim().startsWith("<")) {
+        String trimmed = content.trim();
+        if (!trimmed.startsWith("<")) {
+            return null;
+        }
+
+        // ========== HTML 内容检测（避免将 HTML 当作 XML 严格解析）==========
+        if (isHtmlContentForXPath(trimmed)) {
+            // HTML 内容不适合严格 XML 解析，静默返回 null
             return null;
         }
 
@@ -183,6 +356,23 @@ public class VariableExtractor {
             // 创建DOM解析器
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
+
+            // ========== 设置自定义 ErrorHandler 抑制 [Fatal Error] 输出 ==========
+            builder.setErrorHandler(new org.xml.sax.ErrorHandler() {
+                @Override
+                public void warning(org.xml.sax.SAXParseException e) {
+                    // 抑制警告
+                }
+                @Override
+                public void error(org.xml.sax.SAXParseException e) {
+                    // 抑制错误
+                }
+                @Override
+                public void fatalError(org.xml.sax.SAXParseException e) {
+                    // 抑制致命错误（不打印 [Fatal Error]）
+                }
+            });
+
             Document doc = builder.parse(new InputSource(new StringReader(content)));
 
             // 创建Saxon XPath对象以支持XPath 2.0
@@ -205,14 +395,65 @@ public class VariableExtractor {
                         return result.toString();
                     }
                 } catch (Exception e) {
-                    System.err.println("XPath提取失败: " + xpathExpr + ", 错误: " + e.getMessage());
+                    // XPath 查询失败，尝试下一个表达式
                 }
             }
         } catch (Exception e) {
-            System.err.println("XML解析失败: " + e.getMessage());
+            // XML 解析失败（可能是 HTML 内容），静默返回 null
         }
-        
+
         return null;
+    }
+
+    /**
+     * 检测内容是否为 HTML（用于 XPath 提取场景）
+     * @param content 待检测内容
+     * @return true 如果是 HTML 内容
+     */
+    private static boolean isHtmlContentForXPath(String content) {
+        if (content == null || content.isEmpty()) {
+            return false;
+        }
+
+        String lower = content.toLowerCase();
+
+        // 1. 检测 HTML DOCTYPE 声明
+        if (lower.startsWith("<!doctype html")) {
+            return true;
+        }
+
+        // 2. 检测 <html 标签
+        if (lower.startsWith("<html") || lower.contains("<html ") || lower.contains("<html>")) {
+            return true;
+        }
+
+        // 3. 检测常见的 HTML 专属标签
+        String[] htmlTags = {
+            "<head", "<body", "<div", "<span", "<table", "<form",
+            "<input", "<button", "<script", "<style", "<meta", "<link"
+        };
+        for (String tag : htmlTags) {
+            if (lower.contains(tag)) {
+                return true;
+            }
+        }
+
+        // 4. 检测 HTML 实体引用
+        String[] htmlEntities = {"&nbsp;", "&copy;", "&reg;", "&middot;", "&mdash;", "&ndash;"};
+        for (String entity : htmlEntities) {
+            if (lower.contains(entity)) {
+                return true;
+            }
+        }
+
+        // 5. 检测 HTML5 布尔属性
+        if (lower.contains(" defer") || lower.contains(" async") ||
+            lower.contains(" checked") || lower.contains(" disabled") ||
+            lower.contains(" crossorigin")) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -238,16 +479,27 @@ public class VariableExtractor {
             
             String[] kv = null;
             
-            // 尝试不同的分隔符
-            if (line.contains(":")) {
-                kv = line.split(":", 2);
-            } else if (line.contains("=")) {
-                kv = line.split("=", 2);
-            } else if (line.contains("\t")) {
-                kv = line.split("\t", 2);
-            } else if (line.contains(" - ")) {
-                kv = line.split(" - ", 2);
-            } else if (line.contains("; ")) {
+            // 优先检查是否是Set-Cookie格式（以Set-Cookie:开头）
+            if (line.trim().startsWith("Set-Cookie:") || line.trim().startsWith("set-cookie:")) {
+                String[] cookieKv = line.split(":", 2);
+                if (cookieKv.length == 2) {
+                    String value = cookieKv[1].trim();
+                    // 处理 Set-Cookie 头的所有属性
+                    String[] cookieAttrs = value.split(";\\s*");
+                    for (String attr : cookieAttrs) {
+                        if (attr.contains("=")) {
+                            String[] attrPair = attr.split("=", 2);
+                            String attrKey = attrPair[0].trim();
+                            String attrValue = (attrPair.length == 2) ? attrPair[1].trim() : "";
+                            kvMap.put(attrKey, attrValue);
+                        }
+                    }
+                }
+                continue; // 已处理此行，继续下一行
+            }
+            
+            // 优先检查是否是Cookie格式（包含 ; 分隔的多个键值对）
+            if (line.contains("; ") && line.contains("=")) {
                 // 处理HTTP Cookie格式: name=value; name2=value2
                 String[] parts = line.split("; ");
                 for (String part : parts) {
@@ -260,27 +512,25 @@ public class VariableExtractor {
                 }
                 continue; // 已处理此行，继续下一行
             }
+            
+            // 尝试不同的分隔符
+            if (line.contains(":")) {
+                kv = line.split(":", 2);
+            } else if (line.contains("=")) {
+                kv = line.split("=", 2);
+            } else if (line.contains("\t")) {
+                kv = line.split("\t", 2);
+            } else if (line.contains(" - ")) {
+                kv = line.split(" - ", 2);
+            }
 
             if (kv != null && kv.length == 2) {
                 String key = kv[0].trim();
                 String value = kv[1].trim();
                 kvMap.put(key, value);
-
-                // 处理 Set-Cookie 头的所有属性
-                if ("Set-Cookie".equalsIgnoreCase(key)) {
-                    String[] cookieAttrs = value.split(";\\s*");
-                    for (String attr : cookieAttrs) {
-                        if (attr.contains("=")) {
-                            String[] attrPair = attr.split("=", 2);
-                            String attrKey = attrPair[0].trim();
-                            String attrValue = (attrPair.length == 2) ? attrPair[1].trim() : "";
-                            kvMap.put(attrKey, attrValue);
-                        }
-                    }
-                }
             }
         }
-        System.out.println(kvMap);
+        
         // 查找匹配的键
         for (String keyExpr : kvExpressions) {
             String value = kvMap.get(keyExpr.trim());

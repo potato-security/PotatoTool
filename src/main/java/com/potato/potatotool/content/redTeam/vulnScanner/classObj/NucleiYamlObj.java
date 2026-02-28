@@ -1,6 +1,9 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.classObj;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.AccessLevel;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 
 import java.util.*;
@@ -21,6 +24,13 @@ public class NucleiYamlObj {
         private List<Http> http;
         private List<Request> requests;
         private List<Tcp> tcp;
+        private List<Dns> dns;
+        private List<WebSocket> websocket;
+        private List<Ssl> ssl;
+        private List<FileProtocol> file;
+        private List<Headless> headless;
+        private List<Code> code;
+        private List<Code> javascript;  // JavaScript协议（与code协议相同结构）
     }
 
     @Data
@@ -48,6 +58,14 @@ public class NucleiYamlObj {
         private Object google_query;
         private Object publicwww_query;
         private Object zoomeye_query;
+        
+        // 兼容 YAML 连字符格式字段名
+        public void setMaxRequest(int maxRequest) { this.max_request = maxRequest; }
+        public void setShodanQuery(Object shodanQuery) { this.shodan_query = shodanQuery; }
+        public void setFofaQuery(Object fofaQuery) { this.fofa_query = fofaQuery; }
+        public void setGoogleQuery(Object googleQuery) { this.google_query = googleQuery; }
+        public void setPublicwwwQuery(Object publicwwwQuery) { this.publicwww_query = publicwwwQuery; }
+        public void setZoomeyeQuery(Object zoomeyeQuery) { this.zoomeye_query = zoomeyeQuery; }
     }
 
     @Data
@@ -56,6 +74,12 @@ public class NucleiYamlObj {
         private String cvss_score;
         private String cve_id;
         private String cwe_id;
+        
+        // 兼容 YAML 连字符格式字段名
+        public void setCvssMetrics(String cvssMetrics) { this.cvss_metrics = cvssMetrics; }
+        public void setCvssScore(String cvssScore) { this.cvss_score = cvssScore; }
+        public void setCveId(String cveId) { this.cve_id = cveId; }
+        public void setCweId(String cweId) { this.cwe_id = cweId; }
     }
 
     public enum Part {
@@ -125,6 +149,7 @@ public class NucleiYamlObj {
 
     @Data
     public static class Tcp {
+        @Setter(AccessLevel.NONE)
         private List<String> host;
         private List<Input> inputs;
         private String port; // 6379,6380
@@ -135,6 +160,16 @@ public class NucleiYamlObj {
         private MatchersCondition matchers_condition;
         private List<TemplateMatcher> matchers;
         private List<TemplateMatcher> extractors;
+
+        // 支持 YAML 中 host 为字符串的情况
+        public void setHost(String hostStr) {
+            this.host = Collections.singletonList(hostStr);
+        }
+
+        // 支持 YAML 中 host 为列表的情况
+        public void setHost(List<String> hostList) {
+            this.host = hostList;
+        }
     }
 
     public enum InputType {
@@ -233,5 +268,128 @@ public class NucleiYamlObj {
         private String attribute;
         private Condition condition;
         private String name;
+    }
+
+    /**
+     * DNS 协议配置
+     * 根据Nuclei官方文档，name字段只接受单个字符串，不是列表
+     * 如果需要查询多个域名，应该创建多个DNS请求块
+     */
+    @Data
+    public static class Dns {
+        private String name;  // 单个域名字符串，如 "{{FQDN}}" 或 "example.com"
+        private String type = "A";
+        private String dns_class = "INET";
+        private boolean recursion = true;
+        private int retries = 2;
+        private String resolvers;
+        private MatchersCondition matchers_condition;
+        private List<TemplateMatcher> matchers = new ArrayList<>();
+        private List<TemplateMatcher> extractors = new ArrayList<>();
+    }
+
+    /**
+     * WebSocket 协议配置
+     */
+    @Data
+    public static class WebSocket {
+        private String address;
+        private Map<String, String> headers;
+        private List<WebSocketInput> inputs;
+        private int attack;
+        private Map<String, Object> payloads;
+        private MatchersCondition matchers_condition;
+        private List<TemplateMatcher> matchers;
+        private List<TemplateMatcher> extractors;
+    }
+
+    @Data
+    public static class WebSocketInput {
+        private String data;
+        private String name;
+    }
+
+    /**
+     * SSL/TLS 协议配置
+     */
+    @Data
+    public static class Ssl {
+        private String address;
+        private MatchersCondition matchers_condition;
+        private List<TemplateMatcher> matchers;
+        private List<TemplateMatcher> extractors;
+    }
+
+    /**
+     * File 协议配置
+     */
+    @Data
+    public static class FileProtocol {
+        private List<String> extensions;
+        private List<String> paths;
+        private boolean recursive = false;
+        private int max_size = 104857600;
+        private MatchersCondition matchers_condition;
+        private List<TemplateMatcher> matchers;
+        private List<TemplateMatcher> extractors;
+    }
+
+    /**
+     * Headless 协议配置
+     */
+    @Data
+    public static class Headless {
+        private List<HeadlessStep> steps;
+        private MatchersCondition matchers_condition;
+        private List<TemplateMatcher> matchers;
+        private List<TemplateMatcher> extractors;
+    }
+
+    /**
+     * Headless 操作类型枚举
+     */
+    public enum HeadlessAction {
+        navigate, waitload, script, click, input, screenshot, sleep, waitvisible
+    }
+
+    @Data
+    public static class HeadlessStep {
+        private String action;
+        private Map<String, String> args;
+    }
+
+    /**
+     * Code 协议配置
+     * 注意：Nuclei YAML 使用 'code:' 字段，需要兼容映射到 source
+     */
+    @Data
+    public static class Code {
+        private List<String> engine;
+        private String source;
+        private MatchersCondition matchers_condition;
+        private List<TemplateMatcher> matchers;
+        private List<TemplateMatcher> extractors;
+        
+        /**
+         * 兼容 Nuclei YAML 中的 'code' 字段
+         * 将 code 字段值映射到 source
+         */
+        public void setCode(String code) {
+            this.source = code;
+        }
+        
+        /**
+         * 获取代码（优先返回 source）
+         */
+        public String getCode() {
+            return this.source;
+        }
+    }
+
+    /**
+     * Code 引擎类型枚举
+     */
+    public enum CodeEngine {
+        javascript, python
     }
 }

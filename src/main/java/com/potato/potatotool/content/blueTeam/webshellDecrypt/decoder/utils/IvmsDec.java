@@ -1,6 +1,7 @@
 package com.potato.potatotool.content.blueTeam.webshellDecrypt.decoder.utils;
 
 import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.misc.ReadabilityChecker;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -28,12 +29,20 @@ public class IvmsDec {
             SecretKey secretKey = kgen.generateKey();
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(2, new SecretKeySpec(secretKey.getEncoded(), "AES"));
-            byte[] result = cipher.doFinal(StrUtils.hexToByteArray(str));
-            return new String(result, StandardCharsets.UTF_8);
+            byte[] resultByte = cipher.doFinal(StrUtils.hexToByteArray(str));
+
+            String result =  new String(resultByte, StandardCharsets.UTF_8);
+
+            // 判断不存在乱码，防止误报
+            boolean isReadable = ReadabilityChecker.assessReadability(result, 1, 0);
+            if(isReadable){
+                return result;
+            }
+
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
-            return null;
         }
+        return null;
     }
 
     public static void main(String []args) {

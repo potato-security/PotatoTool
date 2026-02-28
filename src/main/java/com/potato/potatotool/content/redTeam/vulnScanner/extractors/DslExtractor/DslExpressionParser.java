@@ -218,21 +218,62 @@ public class DslExpressionParser {
 
     /**
      * 解析contains函数的参数
+     * 改进：支持嵌套括号的正确匹配，正确处理引号内的括号字符
      */
     public static String[] parseContainsFunction(String expression) {
         try {
-            int startIndex = expression.indexOf('(') + 1;
-            int endIndex = expression.lastIndexOf(')');
-            
-            if (startIndex >= endIndex) {
+            int startIndex = expression.indexOf('(');
+
+            if (startIndex < 0 || startIndex >= expression.length() - 1) {
                 return new String[0];
             }
-            
-            String argsString = expression.substring(startIndex, endIndex);
+
+            // 从第一个左括号开始，匹配对应的右括号（支持嵌套括号和引号）
+            int parenthesesLevel = 0;
+            int endIndex = -1;
+            boolean inQuotes = false;
+            char quoteChar = '\0';
+
+            for (int i = startIndex; i < expression.length(); i++) {
+                char c = expression.charAt(i);
+
+                // 处理引号状态
+                if (!inQuotes && (c == '"' || c == '\'')) {
+                    inQuotes = true;
+                    quoteChar = c;
+                } else if (inQuotes && c == quoteChar) {
+                    // 检查是否为转义引号
+                    if (i > 0 && expression.charAt(i - 1) != '\\') {
+                        inQuotes = false;
+                    }
+                } else if (!inQuotes) {
+                    // 只在非引号状态下处理括号
+                    if (c == '(') {
+                        parenthesesLevel++;
+                    } else if (c == ')') {
+                        parenthesesLevel--;
+
+                        if (parenthesesLevel == 0) {
+                            // 找到匹配的右括号
+                            endIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (endIndex <= startIndex) {
+                // 降低日志级别，这通常不是错误
+                // System.err.println("[警告] 未找到匹配的右括号: " + expression);
+                return new String[0];
+            }
+
+            // 提取括号内的参数字符串
+            String argsString = expression.substring(startIndex + 1, endIndex);
             return parseArguments(argsString);
-            
+
         } catch (Exception e) {
-            System.err.println("解析contains函数参数失败: " + e.getMessage());
+            System.err.println("解析contains函数参数失败: " + expression + " - " + e.getMessage());
             return new String[0];
         }
     }

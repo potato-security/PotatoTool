@@ -6,6 +6,7 @@ import com.potato.potatotool.utils.crypto.BlowfishUtils;
 import com.potato.potatotool.utils.crypto.DESUtils;
 import com.potato.potatotool.utils.crypto.RSAUtils;
 import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.misc.ReadabilityChecker;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class DatabaseDecryptStrategy implements DecryptStrategy {
         
         // 尝试各种数据库解密
         String result = tryDatabaseDecryption(content, config, encodeMode);
+
         if (result != null) {
             return result;
         }
@@ -152,7 +154,11 @@ public class DatabaseDecryptStrategy implements DecryptStrategy {
 
     private String tryDruidDecrypt(String content, List<String> encodeMode) {
         String result = RSAUtils.decrypt("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAINRom1IY639dDMD0FFw7zMsxRVABYGJnKxSpO84dyJgXaIkoTZkE1JaWE2/gtgli28vgM72UHf2EGhxbLZwzhsCAwEAAQ==", content);
-        if (result != null) {
+
+        // 判断不存在乱码，防止误报
+        boolean isReadable = ReadabilityChecker.assessReadability(result, 1, 0);
+
+        if (result != null && isReadable) {
             encodeMode.add("Druid_rsa");
             return result;
         }

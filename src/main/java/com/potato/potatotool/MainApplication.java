@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.redTeam.vulnScanner.storage.PocDatabaseInitializer;
 import com.potato.potatotool.controller.publicPane.PaneLoad;
 import com.potato.potatotool.controller.publicPane.PanePasswd;
 import com.potato.potatotool.controller.publicPane.PaneUpdateDialog;
@@ -335,7 +336,7 @@ public class MainApplication extends Application {
             if (Files.exists(md5GzipPath)) {
                 if (debugMode) System.out.println("检测到已下载的MD5数据库压缩包，正在解压...");
                 Path md5DbPath = pathManager.getMd5DatabasePath();
-                
+
                 // 解压并删除压缩包
                 GzipUtils.unGzipFile(md5GzipPath.toString(), md5DbPath.toString(), true);
                 if (debugMode) System.out.println("MD5数据库解压完成");
@@ -344,6 +345,58 @@ public class MainApplication extends Application {
             System.err.println("解压MD5数据库失败");
             e.printStackTrace();
         }
+
+        // 6. 异步初始化POC数据库（不阻塞启动，提升启动速度）
+        executor.submit(() -> {
+            try {
+                if (debugMode) System.out.println("正在后台初始化POC数据库...");
+                PocDatabaseInitializer initializer = PocDatabaseInitializer.getInstance();
+
+                PocDatabaseInitializer.InitResult result = initializer.initialize(
+                    new PocDatabaseInitializer.InitCallback() {
+                        @Override
+                        public void onProgress(String message) {
+                            if (debugMode) System.out.println("  " + message);
+                        }
+
+                        @Override
+                        public void onFailures(java.util.List<com.potato.potatotool.content.redTeam
+                                .vulnScanner.storage.PocDatabaseManager.FailedEntry> failedEntries) {
+                            if (failedEntries != null && !failedEntries.isEmpty()) {
+                                System.err.println("⚠ 以下 POC 加载失败 (" + failedEntries.size() + " 个):");
+                                // 只显示前 10 个失败项，避免输出过多
+                                int showCount = Math.min(failedEntries.size(), 10);
+                                for (int i = 0; i < showCount; i++) {
+                                    System.err.println("  - " + failedEntries.get(i));
+                                }
+                                if (failedEntries.size() > 10) {
+                                    System.err.println("  ... 还有 " + (failedEntries.size() - 10) + " 个未显示");
+                                }
+                            }
+                        }
+                    }
+                );
+
+                if (result.isSuccess()) {
+                    StringBuilder sb = new StringBuilder();
+                    if(result.getPocCount()>0 || result.getSkipCount()>0 || result.getFailedCount() > 0) {
+                        sb.append("✓ POC数据库初始化完成: 成功 ").append(result.getPocCount()).append(" 个");
+                    }
+                    if (result.getSkipCount() > 0) {
+                        sb.append(", 跳过 ").append(result.getSkipCount()).append(" 个");
+                    }
+                    if (result.getFailedCount() > 0) {
+                        sb.append(", 失败 ").append(result.getFailedCount()).append(" 个");
+                    }
+                    System.out.println(sb.toString());
+                } else {
+                    System.err.println("✗ POC数据库初始化失败: " + result.getMessage());
+                }
+            } catch (Exception e) {
+                System.err.println("初始化POC数据库失败: " + e.getMessage());
+                if (debugMode) e.printStackTrace();
+            }
+        });
     }
 
     private static HostServices hostServices;

@@ -16,6 +16,7 @@ import com.potato.potatotool.utils.core.I18nManager;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.crypto.AESUtils;
 import javafx.animation.FadeTransition;
+import java.util.HashMap;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import javafx.application.Platform;
@@ -162,12 +163,42 @@ public class PaneSetting {
     @FXML
     private TitledPane assetPane;
     @FXML
+    private TitledPane vulnScanPane;
+    @FXML
     private TitledPane updatePane;
+
+    // 漏洞扫描配置相关
+    @FXML
+    private TextField vulnScanCoreThreads;
+    @FXML
+    private TextField vulnScanMaxThreads;
+    @FXML
+    private TextField vulnScanQueueSize;
+    @FXML
+    private TextField vulnScanTimeout;
+    @FXML
+    private TextField vulnScanRetries;
+    @FXML
+    private CFSwitch vulnScanProxySwitch;
+    @FXML
+    private TextField vulnScanReportDir;
+    @FXML
+    private ComboBox<String> vulnScanReportFormat;
+    @FXML
+    private CFSwitch vulnScanAutoExport;
     
+    // HTTP Headers管理
+    @FXML
+    private TitledPane headerPane;
+    @FXML
+    private TextArea defaultHeadersArea;
+    @FXML
+    private FlowPane headerTemplatePane;
+
     // 更新设置相关
     @FXML
     private CFSwitch autoCheckUpdateSwitch;
-    
+
     // 存储位置管理相关
     @FXML
     private Label configPathLabel;
@@ -214,7 +245,9 @@ public class PaneSetting {
 
         initProxyMap();
         initData();
-        
+        initVulnScanData();
+        initHeadersData();
+
         // 默认只展开第一项
         settingAccordion.setExpandedPane(basicPane);
         
@@ -588,39 +621,6 @@ public class PaneSetting {
         );
     }
 
-    // ========== 以下为旧的MD5/KB独立更新逻辑（已废弃，统一使用"检查软件更新"） ==========
-    // 注意：这些方法保留是为了兼容setting.fxml中的按钮绑定
-    // 建议：后续可以移除这些方法，统一使用checkAppUpdate
-    
-    @FXML
-    public void checkMd5(ActionEvent event) {
-        showTip(i18n.getString("update.storage.use.unified"));
-    }
-
-    @FXML
-    public void checkKb(ActionEvent event) {
-        showTip(i18n.getString("update.storage.use.unified"));
-    }
-
-    @FXML
-    public void updateMd5(ActionEvent event) {
-        showTip(i18n.getString("update.storage.use.unified"));
-    }
-
-    @FXML
-    public void updateKb(ActionEvent event) {
-        showTip(i18n.getString("update.storage.use.unified"));
-    }
-
-    @FXML
-    public void stopUpdateMd5(ActionEvent event) {
-        // 已废弃
-    }
-
-    @FXML
-    public void stopUpdateKb(ActionEvent event) {
-        // 已废弃
-    }
 
     @FXML
     public void delTextField(MouseEvent event) {
@@ -1029,16 +1029,361 @@ public class PaneSetting {
             updateStage.setScene(scene);
             updateStage.setTitle("PotatoTool - " + i18n.getString("update.check.title"));
             updateStage.setAlwaysOnTop(true);  // 更新对话框置顶
-            
+
             // 设置更新信息
             PaneUpdateDialog controller = loader.getController();
             controller.setUpdateInfo(updateInfo);
-            
+
             updateStage.show();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             showTip(I18nUtils.getString("update.storage.dialog.error", e.getMessage()));
         }
     }
+
+    // ==================== 漏洞扫描配置 ====================
+    
+    /**
+     * 恢复漏洞扫描配置为默认值
+     */
+    @FXML
+    public void resetVulnScanDefaults(ActionEvent event) {
+        // 设置默认值
+        vulnScanCoreThreads.setText("10");
+        vulnScanMaxThreads.setText("50");
+        vulnScanQueueSize.setText("1000");
+        vulnScanTimeout.setText("15");
+        vulnScanRetries.setText("2");
+        vulnScanProxySwitch.setSelected(false);
+        vulnScanReportDir.setText("reports");
+        vulnScanReportFormat.setValue("HTML");
+        vulnScanAutoExport.setSelected(false);
+        
+        showTip("已恢复默认配置，请点击保存生效");
+    }
+    
+    /**
+     * 初始化漏洞扫描配置数据
+     */
+    private void initVulnScanData() {
+        try {
+            JsonObject vulnScanConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
+            if (vulnScanConfig == null) {
+                vulnScanConfig = new JsonObject();
+            }
+            
+            // 线程池配置
+            JsonObject threadPoolConfig = vulnScanConfig.has(ConfigConstants.VULNSCAN_THREAD_POOL) ?
+                vulnScanConfig.getAsJsonObject(ConfigConstants.VULNSCAN_THREAD_POOL) : new JsonObject();
+            
+            if (threadPoolConfig.has(ConfigConstants.VULNSCAN_CORE_THREADS)) {
+                vulnScanCoreThreads.setText(String.valueOf(threadPoolConfig.get(ConfigConstants.VULNSCAN_CORE_THREADS).getAsInt()));
+            }
+            if (threadPoolConfig.has(ConfigConstants.VULNSCAN_MAX_THREADS)) {
+                vulnScanMaxThreads.setText(String.valueOf(threadPoolConfig.get(ConfigConstants.VULNSCAN_MAX_THREADS).getAsInt()));
+            }
+            if (threadPoolConfig.has(ConfigConstants.VULNSCAN_QUEUE_SIZE)) {
+                vulnScanQueueSize.setText(String.valueOf(threadPoolConfig.get(ConfigConstants.VULNSCAN_QUEUE_SIZE).getAsInt()));
+            }
+            
+            // 网络配置
+            if (vulnScanConfig.has(ConfigConstants.VULNSCAN_TIMEOUT)) {
+                vulnScanTimeout.setText(String.valueOf(vulnScanConfig.get(ConfigConstants.VULNSCAN_TIMEOUT).getAsInt()));
+            }
+            if (vulnScanConfig.has(ConfigConstants.VULNSCAN_RETRIES)) {
+                vulnScanRetries.setText(String.valueOf(vulnScanConfig.get(ConfigConstants.VULNSCAN_RETRIES).getAsInt()));
+            }
+            if (vulnScanConfig.has(ConfigConstants.VULNSCAN_PROXY_ENABLED)) {
+                vulnScanProxySwitch.setSelected(vulnScanConfig.get(ConfigConstants.VULNSCAN_PROXY_ENABLED).getAsBoolean());
+            }
+            
+            // 报告配置
+            JsonObject reportConfig = vulnScanConfig.has(ConfigConstants.VULNSCAN_REPORT) ?
+                vulnScanConfig.getAsJsonObject(ConfigConstants.VULNSCAN_REPORT) : new JsonObject();
+            
+            if (reportConfig.has(ConfigConstants.VULNSCAN_REPORT_DEFAULT_DIR)) {
+                vulnScanReportDir.setText(reportConfig.get(ConfigConstants.VULNSCAN_REPORT_DEFAULT_DIR).getAsString());
+            }
+            if (reportConfig.has(ConfigConstants.VULNSCAN_REPORT_DEFAULT_FORMAT)) {
+                String format = reportConfig.get(ConfigConstants.VULNSCAN_REPORT_DEFAULT_FORMAT).getAsString();
+                vulnScanReportFormat.setValue(format);
+            } else {
+                vulnScanReportFormat.setValue("HTML");
+            }
+            if (reportConfig.has(ConfigConstants.VULNSCAN_REPORT_AUTO_EXPORT)) {
+                vulnScanAutoExport.setSelected(reportConfig.get(ConfigConstants.VULNSCAN_REPORT_AUTO_EXPORT).getAsBoolean());
+            }
+            
+        } catch (Exception e) {
+            if (debugMode) {
+                System.err.println("初始化漏洞扫描配置失败: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * 保存漏洞扫描配置
+     */
+    @FXML
+    public void saveVulnScan(ActionEvent event) {
+        try {
+            // 获取当前完整的VulnScan配置
+            JsonObject currentVulnScan = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
+            if (currentVulnScan == null) {
+                currentVulnScan = new JsonObject();
+            }
+            
+            Map<String, Object> configMap = new LinkedHashMap<>();
+            Map<String, Object> vulnScanMap = new LinkedHashMap<>();
+            
+            // 保留原有配置项
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_POC_DIR)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_POC_DIR, currentVulnScan.get(ConfigConstants.VULNSCAN_POC_DIR).getAsString());
+            }
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_REPORT_DIR)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_REPORT_DIR, currentVulnScan.get(ConfigConstants.VULNSCAN_REPORT_DIR).getAsString());
+            }
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_THREADS)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_THREADS, currentVulnScan.get(ConfigConstants.VULNSCAN_THREADS).getAsInt());
+            }
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_USER_AGENT)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_USER_AGENT, currentVulnScan.get(ConfigConstants.VULNSCAN_USER_AGENT).getAsString());
+            }
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_DEBUG)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_DEBUG, currentVulnScan.get(ConfigConstants.VULNSCAN_DEBUG).getAsBoolean());
+            }
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_VERBOSE)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_VERBOSE, currentVulnScan.get(ConfigConstants.VULNSCAN_VERBOSE).getAsBoolean());
+            }
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_MAX_RESPONSE_SIZE)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_MAX_RESPONSE_SIZE, currentVulnScan.get(ConfigConstants.VULNSCAN_MAX_RESPONSE_SIZE).getAsInt());
+            }
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_MAX_CONNECTIONS)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_MAX_CONNECTIONS, currentVulnScan.get(ConfigConstants.VULNSCAN_MAX_CONNECTIONS).getAsInt());
+            }
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_CONNECTION_TIMEOUT)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_CONNECTION_TIMEOUT, currentVulnScan.get(ConfigConstants.VULNSCAN_CONNECTION_TIMEOUT).getAsInt());
+            }
+            
+            // 保留 defaultHeaders, headerTemplates, variables 配置
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_CUSTOM_HEADERS)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_CUSTOM_HEADERS,
+                    new Gson().fromJson(currentVulnScan.get(ConfigConstants.VULNSCAN_CUSTOM_HEADERS), Object.class));
+            }
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_VARIABLES)) {
+                vulnScanMap.put(ConfigConstants.VULNSCAN_VARIABLES, 
+                    new Gson().fromJson(currentVulnScan.get(ConfigConstants.VULNSCAN_VARIABLES), Object.class));
+            }
+            
+            // 更新超时和重试配置
+            String timeoutText = vulnScanTimeout.getText().trim();
+            if (!timeoutText.isEmpty()) {
+                try {
+                    vulnScanMap.put(ConfigConstants.VULNSCAN_TIMEOUT, Integer.parseInt(timeoutText));
+                } catch (NumberFormatException e) {
+                    showTip("超时时间必须是数字");
+                    return;
+                }
+            }
+            
+            String retriesText = vulnScanRetries.getText().trim();
+            if (!retriesText.isEmpty()) {
+                try {
+                    vulnScanMap.put(ConfigConstants.VULNSCAN_RETRIES, Integer.parseInt(retriesText));
+                } catch (NumberFormatException e) {
+                    showTip("重试次数必须是数字");
+                    return;
+                }
+            }
+            
+            // 代理配置
+            vulnScanMap.put(ConfigConstants.VULNSCAN_PROXY_ENABLED, vulnScanProxySwitch.isSelected());
+            
+            // 线程池配置
+            Map<String, Object> threadPoolMap = new LinkedHashMap<>();
+            String coreThreadsText = vulnScanCoreThreads.getText().trim();
+            if (!coreThreadsText.isEmpty()) {
+                try {
+                    threadPoolMap.put(ConfigConstants.VULNSCAN_CORE_THREADS, Integer.parseInt(coreThreadsText));
+                } catch (NumberFormatException e) {
+                    showTip("核心线程数必须是数字");
+                    return;
+                }
+            }
+            
+            String maxThreadsText = vulnScanMaxThreads.getText().trim();
+            if (!maxThreadsText.isEmpty()) {
+                try {
+                    threadPoolMap.put(ConfigConstants.VULNSCAN_MAX_THREADS, Integer.parseInt(maxThreadsText));
+                } catch (NumberFormatException e) {
+                    showTip("最大线程数必须是数字");
+                    return;
+                }
+            }
+            
+            String queueSizeText = vulnScanQueueSize.getText().trim();
+            if (!queueSizeText.isEmpty()) {
+                try {
+                    threadPoolMap.put(ConfigConstants.VULNSCAN_QUEUE_SIZE, Integer.parseInt(queueSizeText));
+                } catch (NumberFormatException e) {
+                    showTip("队列大小必须是数字");
+                    return;
+                }
+            }
+            vulnScanMap.put(ConfigConstants.VULNSCAN_THREAD_POOL, threadPoolMap);
+            
+            // 报告配置
+            Map<String, Object> reportMap = new LinkedHashMap<>();
+            String reportDir = vulnScanReportDir.getText().trim();
+            if (!reportDir.isEmpty()) {
+                reportMap.put(ConfigConstants.VULNSCAN_REPORT_DEFAULT_DIR, reportDir);
+            }
+            
+            // 保留原有的命名模板
+            if (currentVulnScan.has(ConfigConstants.VULNSCAN_REPORT)) {
+                JsonObject currentReport = currentVulnScan.getAsJsonObject(ConfigConstants.VULNSCAN_REPORT);
+                if (currentReport.has(ConfigConstants.VULNSCAN_REPORT_NAME_TEMPLATE)) {
+                    reportMap.put(ConfigConstants.VULNSCAN_REPORT_NAME_TEMPLATE, 
+                        currentReport.get(ConfigConstants.VULNSCAN_REPORT_NAME_TEMPLATE).getAsString());
+                }
+            }
+            
+            reportMap.put(ConfigConstants.VULNSCAN_REPORT_AUTO_EXPORT, vulnScanAutoExport.isSelected());
+            
+            String format = vulnScanReportFormat.getValue();
+            if (format != null && !format.isEmpty()) {
+                reportMap.put(ConfigConstants.VULNSCAN_REPORT_DEFAULT_FORMAT, format);
+            }
+            vulnScanMap.put(ConfigConstants.VULNSCAN_REPORT, reportMap);
+            
+            configMap.put(ConfigConstants.VULNSCAN, vulnScanMap);
+            
+            if (Constants.saveConfig(configMap)) {
+                showTip(i18n.getString("setting.save.success"));
+                // 刷新VulnScanConfig缓存
+                com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig.getInstance().reload();
+            } else {
+                showTip(i18n.getString("setting.save.failed"));
+            }
+            
+        } catch (Exception e) {
+            showTip("保存失败: " + e.getMessage());
+            if (debugMode) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    // ==================== HTTP Headers 管理 ====================
+
+    /**
+     * 初始化Headers数据
+     */
+    private void initHeadersData() {
+        com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager headerManager =
+            com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager.getInstance();
+
+        // 动态生成模板按钮
+        if (headerTemplatePane != null) {
+            headerTemplatePane.getChildren().clear();
+            for (String templateName : headerManager.getTemplateNames()) {
+                Button btn = new Button(templateName);
+                btn.getStyleClass().add("preset-tag");
+                btn.setOnAction(e -> {
+                    Map<String, String> templateHeaders = headerManager.getTemplate(templateName);
+                    if (!templateHeaders.isEmpty() && defaultHeadersArea != null) {
+                        StringBuilder sb = new StringBuilder();
+                        for (Map.Entry<String, String> entry : templateHeaders.entrySet()) {
+                            sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+                        }
+                        defaultHeadersArea.setText(sb.toString().trim());
+                    }
+                    showTip("已应用模板: " + templateName);
+                });
+                headerTemplatePane.getChildren().add(btn);
+            }
+        }
+
+        // 加载customHeaders到编辑区
+        try {
+            JsonObject vulnScanConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
+            if (vulnScanConfig == null) return;
+
+            if (vulnScanConfig.has(ConfigConstants.VULNSCAN_CUSTOM_HEADERS)) {
+                JsonObject headers = vulnScanConfig.getAsJsonObject(ConfigConstants.VULNSCAN_CUSTOM_HEADERS);
+                StringBuilder sb = new StringBuilder();
+                for (String key : headers.keySet()) {
+                    sb.append(key).append(": ").append(headers.get(key).getAsString()).append("\n");
+                }
+                if (defaultHeadersArea != null) {
+                    defaultHeadersArea.setText(sb.toString().trim());
+                }
+            }
+        } catch (Exception e) {
+            if (debugMode) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @FXML
+    public void resetHeaders(ActionEvent event) {
+        com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager headerManager =
+            com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager.getInstance();
+        Map<String, String> builtinHeaders = headerManager.getBuiltinDefaultHeaders();
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : builtinHeaders.entrySet()) {
+            sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
+        if (defaultHeadersArea != null) {
+            defaultHeadersArea.setText(sb.toString().trim());
+        }
+        // 自动持久化
+        headerManager.saveCustomHeaders(builtinHeaders);
+        showTip("已重置为默认值并保存");
+    }
+
+    @FXML
+    public void saveHeaders(ActionEvent event) {
+        try {
+            Map<String, String> headers = parseHeadersText(defaultHeadersArea != null ? defaultHeadersArea.getText() : "");
+
+            com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager headerManager =
+                com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager.getInstance();
+            if (headerManager.saveCustomHeaders(headers)) {
+                showTip("Headers 已保存（全局生效）");
+            } else {
+                showTip("保存失败");
+            }
+        } catch (Exception e) {
+            showTip("保存失败: " + e.getMessage());
+            if (debugMode) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 解析Headers文本为Map
+     */
+    private Map<String, String> parseHeadersText(String text) {
+        Map<String, String> headers = new LinkedHashMap<>();
+        if (text == null || text.isEmpty()) return headers;
+
+        for (String line : text.split("\n")) {
+            line = line.trim();
+            if (line.isEmpty() || !line.contains(":")) continue;
+
+            int colonIndex = line.indexOf(":");
+            String key = line.substring(0, colonIndex).trim();
+            String value = line.substring(colonIndex + 1).trim();
+            if (!key.isEmpty()) {
+                headers.put(key, value);
+            }
+        }
+        return headers;
+    }
+
 }

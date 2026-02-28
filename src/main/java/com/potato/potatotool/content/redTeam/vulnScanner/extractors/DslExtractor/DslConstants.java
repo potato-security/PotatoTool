@@ -4,25 +4,82 @@ import java.util.regex.Pattern;
 
 /**
  * DSL常量和配置类
- * 包含所有DSL评估器使用的常量、已知函数列表、对象列表等
+ * 包含所有Nuclei DSL评估器使用的常量、已知函数列表、对象列表等
  */
 public class DslConstants {
 
     /**
-     * 已知可以处理的函数列表
+     * Nuclei官方支持的Helper Functions列表
+     * 包含官方函数及其常用别名
      */
     public static final String[] KNOWN_FUNCTIONS = {
-            "contains", "bcontains", "icontains", "ibcontains", "matches", "bmatches",
-            "to_lower", "toLowerCase", "to_upper", "toUpperCase", "ignoreCase",
-            "base64", "md5", "sha1", "sha256", "substr", "len", "regex", "rand",
-            "string", "bytes", "reverse", "wait", "sleep", "submatch", "all_headers",
-            "body", "body_string", "status_code", "content_length", "content_type", "latency",
-            "header", "html_element", "html_attribute", "raw", "request", "response",
-            "htmlelement", "jsonpath", "contains_all", "contains_any", "compare_versions",
-            "startswith", "endswith", "mmh3", "base64_py", "base64_decode", "hex_encode",
-            "hex_decode", "replace", "tolower", "toupper", "interactsh_protocol", "tostring",
-            "json_minify", "concat", "to_number", "to_string", "to_unix_time", "trim",
-            "trim_space", "trim_suffix", "unixtime", "urldecode", "version_compare"
+            // 布尔函数（官方 + 别名 + 变体）
+            "contains", "bcontains", "icontains", "ibcontains",  // contains变体：二进制、忽略大小写
+            "contains_all", "contains_any", 
+            "starts_with", "startswith",  // 别名
+            "ends_with", "endswith",      // 别名
+            "equals_any", "compare_versions", 
+            "regex", "matches", "bmatches",  // 正则匹配变体
+            
+            // 字符串转换函数（官方 + 别名）
+            "to_lower", "tolower", "tolowercase", "toLowerCase",  // 别名
+            "to_upper", "toupper", "touppercase", "toUpperCase",  // 别名
+            "to_string", "tostring",  // 别名
+            "to_number", "to_title",
+            
+            // 字符串截取函数
+            "substr",  // 子字符串提取
+            
+            // Base64函数
+            "base64", "base64_decode", "base64_py",
+            
+            // 哈希函数
+            "md5", "sha1", "sha256", "sha512", "mmh3",
+            
+            // 十六进制函数
+            "hex_encode", "hex_decode", "hex_to_dec", "dec_to_hex", "bin_to_dec",
+            
+            // URL函数
+            "url_encode", "url_decode", "urldecode",  // 别名
+            
+            // 字符串处理函数
+            "trim", "trim_space", "trim_left", "trim_right", "trim_prefix", "trim_suffix",
+            "replace", "replace_regex", "concat", "reverse", "repeat",
+            
+            // 长度函数
+            "len", "length",
+            
+            // 时间函数（官方 + 别名）
+            "unix_time", "unixtime",  // 别名
+            "to_unix_time", "date_time",
+            
+            // 等待函数
+            "wait_for", "sleep", "wait",
+            
+            // 随机函数
+            "rand_text_alpha", "rand_text_alphanumeric", "rand_text_numeric",
+            "rand_base", "rand_int", "rand_char", "rand_ip",  // 添加缺失的随机函数
+            
+            // JSON函数
+            "json_minify", "json_prettify",
+            
+            // 压缩函数
+            "gzip", "gzip_decode", "zlib", "zlib_decode",
+            
+            // 反序列化函数
+            "generate_java_gadget",
+            
+            // JWT函数
+            "generate_jwt",
+            
+            // 加密函数
+            "aes_gcm",
+            
+            // 网络函数
+            "resolve", "ip_format",
+            
+            // TLS指纹函数
+            "jarm"  // JARM指纹（TLS指纹识别）
     };
 
     /**
@@ -31,10 +88,18 @@ public class DslConstants {
     public static final String[] KNOWN_OBJECTS = {
             "response", "request", "status", "headers", "body", "content_type",
             "content_length", "raw", "time", "latency", "path", "host", "scheme", "port", "url",
-            "header", "location", "body_1", "body_2", "body_3", "body_4", "body_5",
-            "header_1", "header_2", "header_3", "header_4", "header_5", "status_code_1",
-            "status_code_2", "location_1", "location_2", "content_type", "server", "set_cookie",
-            "all_headers", "data", "BaseURL", "version", "internal_detected_version", "last_version"
+            "header", "location", "server", "set_cookie", "all_headers", "data", 
+            // 带下标的变量
+            "body_1", "body_2", "body_3", "body_4", "body_5",
+            "header_1", "header_2", "header_3", "header_4", "header_5",
+            "status_code_1", "status_code_2", "status_code_3", "status_code_4", "status_code_5",
+            "location_1", "location_2", "location_3", "location_4", "location_5",
+            "response_1", "response_2", "response_3", "response_4", "response_5",
+            // 版本相关
+            "version", "internal_detected_version", "last_version", "phpversion",
+            // 其他变量
+            "BaseURL", "Hostname", "username", "interactsh_request", "interactsh_protocol",
+            "status_code", "content_type_1", "content_type_2"
     };
 
     /**
@@ -52,25 +117,16 @@ public class DslConstants {
     public static final Pattern OBJECT_PATTERN = Pattern.compile("\\b(\\w+)\\.(\\w+)");
     public static final Pattern AND_PATTERN = Pattern.compile("\\band\\b", Pattern.CASE_INSENSITIVE);
     public static final Pattern OR_PATTERN = Pattern.compile("\\bor\\b", Pattern.CASE_INSENSITIVE);
-    public static final Pattern NOT_PATTERN = Pattern.compile("(\\bnot\\b|!)", Pattern.CASE_INSENSITIVE);
+    // 修改 NOT_PATTERN 排除 != 运算符，使用负向前瞻 (?!=) 确保 ! 后面不跟 =
+    public static final Pattern NOT_PATTERN = Pattern.compile("(\\bnot\\b|!(?!=))", Pattern.CASE_INSENSITIVE);
 
     /**
      * 语法替换规则
+     * 用于标准化Nuclei DSL表达式
      */
     public static final String[][] SYNTAX_REPLACEMENTS = {
-            // 替换Xray特有的语法为统一格式
-            // 替换bcontains为contains
-            {"bcontains\\s*\\(", "contains("},
-            // 替换b"字符串"或b'字符串'为普通字符串
-            {"b([\"'])", "$1"},
-            {"icontains\\s*\\(", "ignoreCase(contains("},
-            {"ibcontains\\s*\\(", "ignoreCase(contains("},
-            {"bmatches\\s*\\(", "matches("},
-            {"to_lower\\s*\\(", "toLowerCase("},
-            {"to_upper\\s*\\(", "toUpperCase("},
-            {"compare_versions\\s*\\(", "version_compare("},
-            {"tolower\\s*\\(", "toLowerCase("},
-            {"toupper\\s*\\(", "toUpperCase("}
+            // 替换b"字符串"或b'字符串'为普通字符串（Nuclei支持二进制字符串前缀）
+            {"b([\"'])", "$1"}
     };
 
     /**

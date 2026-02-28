@@ -1,6 +1,7 @@
 package com.potato.potatotool.content.blueTeam.webshellDecrypt.decoder.utils;
 
 
+import com.potato.potatotool.utils.misc.ReadabilityChecker;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,14 +31,18 @@ public class SpringDec {
             StandardPBEStringEncryptor decryptor = new StandardPBEStringEncryptor();
             decryptor.setPassword(cryptoPassword);
 
-            String res = decryptor.decrypt(content);
+            String result = decryptor.decrypt(content);
 
-            return res;
+            // 判断不存在乱码，防止误报
+            boolean isReadable = ReadabilityChecker.assessReadability(result, 1, 0);
+            if(isReadable){
+                return result;
+            }
 
         }catch (Exception e){
             if(debugMode)e.printStackTrace();
-            return null;
         }
+        return null;
     }
 
     public static void main(String []args) {

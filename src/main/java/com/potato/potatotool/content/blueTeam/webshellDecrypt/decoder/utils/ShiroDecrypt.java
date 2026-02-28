@@ -34,7 +34,14 @@ public class ShiroDecrypt {
      */
     public byte[] decrypt(String code, String inputKey, AESUtils aes, StrUtils str){
 
-        // 排除非AES加密格式字符串传入
+        byte[] res = null;
+        int rememberIndex = code.indexOf("rememberMe=") + 11;
+        code = rememberIndex==10 ? code : code.substring(rememberIndex);    //code.replace("rememberMe=","");
+        int cookieEndIndex = code.indexOf(';');
+        code = cookieEndIndex == -1 ? code : code.substring(0, cookieEndIndex);
+        code = code.trim();
+
+        // 排除非AES加密格式字符串传入（仅校验 rememberMe 的值部分）
         String aesPattern = "^[A-Za-z0-9+/]+={0,2}$";
         Pattern pattern = Pattern.compile(aesPattern);
         Matcher matcher = pattern.matcher(code.replace("\n","").replace("\r","").replace("\t",""));
@@ -42,10 +49,6 @@ public class ShiroDecrypt {
         if (!matcher.matches()) {
             return null;
         }
-
-        byte[] res = null;
-        int rememberIndex = code.indexOf("rememberMe=") + 11;
-        code = rememberIndex==10 ? code : code.substring(rememberIndex);    //code.replace("rememberMe=","");
         Set<String> keyArray = new LinkedHashSet<>();
 
 
@@ -70,6 +73,16 @@ public class ShiroDecrypt {
             }
         }
 
+        byte[] rememberMeBytes;
+        rememberMeBytes = StrUtils.base64Decode(code.getBytes(StandardCharsets.UTF_8));
+
+        if (rememberMeBytes == null || rememberMeBytes.length <= 16) {
+            return null;
+        }
+
+        byte[] rememberMeIv = Arrays.copyOfRange(rememberMeBytes, 0, 16);
+        byte[] rememberMeCipherCbc = Arrays.copyOfRange(rememberMeBytes, 16, rememberMeBytes.length);
+
         String[] modeArray = {"CBC", "GCM"};
 
         String poolName = ExecutorServiceManager.ExecutorPoolNames.SHIRO_DECRYPT;
@@ -78,21 +91,20 @@ public class ShiroDecrypt {
 
         for (String keyStr : keyArray) {
             for (String mode : modeArray) {
-                String finalCode = code;
                 CompletableFuture<byte[]> future = CompletableFuture.supplyAsync(() -> {
                     try {
                         byte[] key = keyStr.getBytes(StandardCharsets.UTF_8);
-                        byte[] iv = aes.generateRandomBytes(16);
+                        byte[] iv = rememberMeIv;
                         String padding = mode.equals("GCM") ? "NoPadding" : "PKCS7Padding";
 
                         key = str.base64Decode(key);
-                        byte[] cipherText = str.base64Decode(finalCode.getBytes(StandardCharsets.UTF_8));
-                        byte[] decryptedTextBytes = aes.decrypt(cipherText, key, iv, mode, padding);
+                        byte[] cipherText = mode.equals("GCM")? rememberMeBytes : rememberMeCipherCbc;
+                        byte[] decryptedTextBytes = aes.decrypt(cipherText , key, iv, mode, padding);
                         if(decryptedTextBytes != null && !decryptedTextBytes.equals("")) {
                             aes.mode_AES.set(mode);
                             aes.padding_AES.set(padding);
                             aes.key_AES.set(keyStr);
-                            aes.iv_AES.set(mode.equals("GCM") ? "Null" : "Random");
+                            aes.iv_AES.set(mode.equals("GCM") ? "Null" : Base64.getEncoder().encodeToString(rememberMeIv) );
 
                             // 停止所有线程
                             ExecutorServiceManager.shutdownExecutor(poolName);
@@ -111,7 +123,7 @@ public class ShiroDecrypt {
         for (Future<?> future : futures) {
             try {
                 byte[] result = (byte[]) future.get();
-                if (result != null && !result.equals("")) {
+                if (result != null && result.length > 0) {
                     res = result;
                     break;
                 }

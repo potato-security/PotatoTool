@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
+<?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -77,7 +79,7 @@
                         <VBox spacing="5" fx:id="changelogBox" managed="false" visible="false">
                             <Label text="更新日志：" userData="i18n:update.available.changelog"
                                   style="-fx-font-weight: bold;"/>
-                            <TextArea fx:id="changelogText" editable="false" wrapText="true"
+                            <SmoothTextArea fx:id="changelogText" editable="false" wrapText="true"
                                      prefHeight="100" prefWidth="${an.width - 58}"
                                      style="-fx-font-family: 'Microsoft YaHei', 'SimHei', sans-serif;"/>
                         </VBox>
@@ -86,11 +88,11 @@
                         <VBox spacing="5" fx:id="updateItemsBox" managed="false" visible="false">
                             <Label text="可用更新：" userData="i18n:update.available.items"
                                   style="-fx-font-weight: bold;"/>
-                            <ScrollPane maxHeight="100" prefWidth="${an.width - 58}" style="-fx-padding: 10; -fx-border-radius: 5;-fx-border-color: -main-border-color;">
+                            <SmoothScrollPane maxHeight="100" prefWidth="${an.width - 58}" style="-fx-padding: 10; -fx-border-radius: 5;-fx-border-color: -main-border-color;">
                                 <VBox fx:id="updateItemsContainer" spacing="4" >
                                     <!-- 更新项（CheckBox）将动态添加到这里 -->
                                 </VBox>
-                            </ScrollPane>
+                            </SmoothScrollPane>
                         </VBox>
 
                         <!-- 下载进度区域 -->

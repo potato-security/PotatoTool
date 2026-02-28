@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -176,16 +177,13 @@
             </HBox>
         </VBox>
 
-        <ScrollPane fx:id="scroll" VBox.vgrow="ALWAYS">
+        <SmoothScrollPane fx:id="scroll" VBox.vgrow="ALWAYS">
             <VBox fx:id="echoVbox" alignment="TOP_LEFT" spacing="10" />
-        </ScrollPane>
+        </SmoothScrollPane>
     </VBox>
 
-    <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="350" alignment="CENTER" StackPane.alignment="CENTER">
-        <effect>
-            <DropShadow/>
-        </effect>
-        <Label fx:id="prompt"/>
+    <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
+        <Label fx:id="prompt" maxWidth="600"/>
     </StackPane>
 
     <VBox fx:id="companyNameChoosePaneBox" styleClass="choosePaneBox" visible="false" managed="false" alignment="CENTER">
@@ -235,9 +233,9 @@
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
                     <Label text="以下为反查到的域名，请选择" userData="i18n:infosearch.domain.desc"/>
-                    <ScrollPane maxHeight="300" hbarPolicy="NEVER">
+                    <SmoothScrollPane maxHeight="300" hbarPolicy="NEVER">
                         <VBox fx:id="domainVbox" spacing="10" alignment="CENTER"/>
-                    </ScrollPane>
+                    </SmoothScrollPane>
                     <Button fx:id="domainSave" prefWidth="150" styleClass="buttonBox" text="下一步" userData="i18n:infosearch.next" onAction="#saveDomainField"/>
                 </VBox>
             </VBox>

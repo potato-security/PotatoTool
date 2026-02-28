@@ -1,12 +1,12 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor;
 
-import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslConstants;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
@@ -17,8 +17,8 @@ import java.util.regex.Matcher;
 public class DslUtils {
 
     /**
-     * 标准化DSL表达式
-     * 替换Xray和Nuclei特定语法为标准形式
+     * 标准化Nuclei DSL表达式
+     * 替换Nuclei特定语法为标准形式
      */
     public static String normalizeExpression(String expression) {
         if (expression == null || expression.trim().isEmpty()) {
@@ -42,39 +42,204 @@ public class DslUtils {
 
     /**
      * 检查表达式是否包含未识别的函数
+     * 改进版：更智能地处理嵌套函数、取反操作等
      */
     public static boolean containsUnrecognizedFunctions(String expression) {
         if (expression == null || expression.trim().isEmpty()) {
             return false;
         }
 
-        // 检查函数调用
-        Matcher functionMatcher = DslConstants.FUNCTION_PATTERN.matcher(expression);
-        while (functionMatcher.find()) {
-            String functionName = functionMatcher.group(1);
-            
-            // 过滤逻辑操作符，避免将 "or (" 或 "and (" 误识别为函数
-            if (isLogicalOperator(functionName)) {
-                continue;
+        // 清理表达式：移除取反符号、括号等，以便更好地识别
+        String cleanedExpression = expression.trim();
+        
+        // 移除开头的取反符号
+        if (cleanedExpression.startsWith("!")) {
+            cleanedExpression = cleanedExpression.substring(1).trim();
+        }
+        
+        // 移除最外层的括号
+        if (cleanedExpression.startsWith("(") && cleanedExpression.endsWith(")")) {
+            cleanedExpression = cleanedExpression.substring(1, cleanedExpression.length() - 1).trim();
+        }
+
+        // 使用改进的函数提取方法来检查所有函数调用
+        return containsUnrecognizedFunctionsRecursive(cleanedExpression);
+    }
+    
+    /**
+     * 递归检查表达式中的未识别函数
+     */
+    private static boolean containsUnrecognizedFunctionsRecursive(String expression) {
+        if (expression == null || expression.trim().isEmpty()) {
+            return false;
+        }
+        
+        // 如果是字符串字面量，直接跳过检查（字符串内容不应该被当作 DSL 代码检查）
+        String trimmed = expression.trim();
+        if ((trimmed.startsWith("\"") && trimmed.endsWith("\"")) || 
+            (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+            return false;
+        }
+        
+        // 处理逻辑操作符分隔的表达式
+        if (expression.contains("&&") || expression.contains("||")) {
+            // 分割表达式并递归检查每个部分
+            String[] parts = expression.split("(&&|\\|\\|)");
+            for (String part : parts) {
+                if (containsUnrecognizedFunctionsRecursive(part.trim())) {
+                    return true;
+                }
             }
-            
-            if (!isKnownFunction(functionName) && !isInternalResultObject(functionName)) {
+            return false;
+        }
+        
+        // 先移除字符串字面量，避免误检测字符串内部的模式
+        String expressionWithoutStrings = removeStringLiterals(expression);
+        
+        // 从清理后的表达式中提取函数名
+        String functionName = extractFunctionName(expressionWithoutStrings);
+        
+        if (functionName != null) {
+            // 检查函数名是否已知
+            if (!isLogicalOperator(functionName) && 
+                !isKnownFunction(functionName) && 
+                !isInternalResultObject(functionName) &&
+                !DslFunctionTypeManager.isKnownFunction(functionName)) {
                 System.err.println("未识别的函数: " + functionName + " 在表达式: " + expression);
                 return true;
             }
+            
+            // 递归检查函数参数中的嵌套函数
+            // 注意：只检查非字符串字面量的参数
+            String[] args = extractFunctionArgs(expression);
+            for (String arg : args) {
+                String argTrimmed = arg.trim();
+                // 跳过字符串字面量参数
+                if ((argTrimmed.startsWith("\"") && argTrimmed.endsWith("\"")) || 
+                    (argTrimmed.startsWith("'") && argTrimmed.endsWith("'"))) {
+                    continue;
+                }
+                // 跳过纯数字或简单变量名（不含函数调用或对象访问）
+                if (argTrimmed.matches("^[a-zA-Z_][a-zA-Z0-9_]*$")) {
+                    continue;
+                }
+                if (containsUnrecognizedFunctionsRecursive(argTrimmed)) {
+                    return true;
+                }
+            }
         }
-
-        // 检查对象属性
-        Matcher objectMatcher = DslConstants.OBJECT_PATTERN.matcher(expression);
+        
+        // 检查对象属性（排除带下标的变量）
+        Matcher objectMatcher = DslConstants.OBJECT_PATTERN.matcher(expressionWithoutStrings);
         while (objectMatcher.find()) {
             String objectName = objectMatcher.group(1);
-            if (!isKnownObject(objectName) && !isInternalResultObject(objectName)) {
-                System.err.println("未识别的对象: " + objectName + " 在表达式: " + expression);
-                return true;
+            // 排除数字、已知对象和内部对象
+            if (!objectName.matches("\\d+") && 
+                !isKnownObject(objectName) &&
+                !isInternalResultObject(objectName)) {
+                // 只打印警告，不阻止执行（因为可能是自定义变量）
+                // System.err.println("未识别的对象: " + objectName + " 在表达式: " + expressionWithoutStrings);
+                // return true;  // 暂时不因未知对象而返回 true
             }
         }
 
         return false;
+    }
+    
+    /**
+     * 查找表达式中所有未识别的函数名称
+     * 改进版：返回未识别函数列表而非布尔值，便于更精细的处理
+     * 
+     * @param expression DSL表达式
+     * @return 未识别的函数名称列表
+     */
+    public static List<String> findUnrecognizedFunctions(String expression) {
+        List<String> unrecognizedFunctions = new ArrayList<>();
+        
+        if (expression == null || expression.trim().isEmpty()) {
+            return unrecognizedFunctions;
+        }
+        
+        // 移除字符串字面量
+        String expressionWithoutStrings = removeStringLiterals(expression);
+        
+        // 提取所有函数调用
+        Matcher matcher = DslConstants.FUNCTION_PATTERN.matcher(expressionWithoutStrings);
+        
+        while (matcher.find()) {
+            String functionName = matcher.group(1);
+            String lowerName = functionName.toLowerCase();
+            
+            // 跳过逻辑操作符和已知函数
+            if (!isLogicalOperator(lowerName) && 
+                !isKnownFunction(lowerName) && 
+                !isInternalResultObject(lowerName) &&
+                !DslFunctionTypeManager.isKnownFunction(lowerName) &&
+                !lowerName.equals("true") && 
+                !lowerName.equals("false")) {
+                // 避免重复添加
+                if (!unrecognizedFunctions.contains(functionName)) {
+                    unrecognizedFunctions.add(functionName);
+                }
+            }
+        }
+        
+        return unrecognizedFunctions;
+    }
+
+    /**
+     * 移除字符串字面量，替换为占位符
+     * 这样可以避免检查字符串内部的内容
+     */
+    public static String removeStringLiterals(String expression) {
+        if (expression == null) {
+            return "";
+        }
+        
+        StringBuilder result = new StringBuilder();
+        boolean inDoubleQuote = false;
+        boolean inSingleQuote = false;
+        boolean escaped = false;
+        
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+            
+            if (escaped) {
+                // 跳过转义字符
+                escaped = false;
+                if (!inDoubleQuote && !inSingleQuote) {
+                    result.append(c);
+                }
+                continue;
+            }
+            
+            if (c == '\\') {
+                escaped = true;
+                if (!inDoubleQuote && !inSingleQuote) {
+                    result.append(c);
+                }
+                continue;
+            }
+            
+            if (c == '"' && !inSingleQuote) {
+                inDoubleQuote = !inDoubleQuote;
+                result.append(c); // 保留引号
+                continue;
+            }
+            
+            if (c == '\'' && !inDoubleQuote) {
+                inSingleQuote = !inSingleQuote;
+                result.append(c); // 保留引号
+                continue;
+            }
+            
+            // 如果在字符串内部，跳过（不添加到结果中）
+            if (!inDoubleQuote && !inSingleQuote) {
+                result.append(c);
+            }
+        }
+        
+        return result.toString();
     }
 
     /**
@@ -216,15 +381,73 @@ public class DslUtils {
     }
 
     /**
-     * 检查比较操作符
+     * 检查比较操作符（只查找引号外的运算符）
      */
     public static String findComparisonOperator(String expression) {
-        for (String operator : DslConstants.COMPARISON_OPERATORS) {
-            if (expression.contains(operator)) {
+        // 按优先级排序：先检查长运算符，再检查短运算符
+        String[] sortedOperators = {"!=", "==", ">=", "<=", ">", "<"};
+        
+        for (String operator : sortedOperators) {
+            int index = findOperatorOutsideQuotes(expression, operator);
+            if (index >= 0) {
                 return operator;
             }
         }
         return null;
+    }
+    
+    /**
+     * 在引号外查找运算符的位置
+     * @return 运算符位置，如果不在引号外则返回 -1
+     */
+    private static int findOperatorOutsideQuotes(String expression, String operator) {
+        boolean inDoubleQuote = false;
+        boolean inSingleQuote = false;
+        int parenDepth = 0;
+        
+        for (int i = 0; i <= expression.length() - operator.length(); i++) {
+            char c = expression.charAt(i);
+            
+            // 跟踪引号状态
+            if (c == '"' && !inSingleQuote) {
+                inDoubleQuote = !inDoubleQuote;
+                continue;
+            }
+            if (c == '\'' && !inDoubleQuote) {
+                inSingleQuote = !inSingleQuote;
+                continue;
+            }
+            
+            // 跟踪括号深度（只在函数参数内部时不匹配）
+            if (!inDoubleQuote && !inSingleQuote) {
+                if (c == '(') {
+                    parenDepth++;
+                } else if (c == ')') {
+                    parenDepth--;
+                }
+            }
+            
+            // 只在引号外且不在函数参数内部时匹配运算符
+            if (!inDoubleQuote && !inSingleQuote && parenDepth == 0) {
+                if (expression.substring(i).startsWith(operator)) {
+                    // 确保不是更长运算符的一部分
+                    if (operator.equals(">") && i > 0 && expression.charAt(i - 1) == '=') {
+                        continue; // 是 >= 的一部分
+                    }
+                    if (operator.equals("<") && i > 0 && expression.charAt(i - 1) == '=') {
+                        continue; // 是 <= 的一部分
+                    }
+                    if (operator.equals("=") && i + 1 < expression.length() && expression.charAt(i + 1) == '=') {
+                        continue; // 是 == 的一部分
+                    }
+                    if (operator.equals("!") && i + 1 < expression.length() && expression.charAt(i + 1) == '=') {
+                        continue; // 是 != 的一部分
+                    }
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     /**
@@ -304,7 +527,7 @@ public class DslUtils {
      * 智能分割函数参数，处理嵌套括号
      */
     private static String[] splitFunctionArgs(String argsString) {
-        java.util.List<String> args = new java.util.ArrayList<>();
+        List<String> args = new ArrayList<>();
         int start = 0;
         int parenCount = 0;
         boolean inQuotes = false;

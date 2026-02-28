@@ -19,6 +19,7 @@ import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
+import com.potato.potatotool.utils.ui.SmoothTableView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -1239,7 +1240,7 @@ public class PaneInfoSearch {
     }
 
     private TableView<Map.Entry<String, String>> createSEODataTable(JsonObject seoData) {
-        TableView<Map.Entry<String, String>> tableView = new TableView<>();
+        TableView<Map.Entry<String, String>> tableView = new SmoothTableView<>();
         tableView.setPrefWidth(sPane.getPrefWidth() - 100);
 
         TableColumn<Map.Entry<String, String>, String> keyColumn = createTableColumn(I18nUtils.getString("infosearch.field"), tableView.getPrefWidth() * 0.2, true);
@@ -1278,7 +1279,7 @@ public class PaneInfoSearch {
 
     // 创建键值对表格
     private TableView<Map.Entry<String, String>> createGenericDataTable(JsonObject data, String header) {
-        TableView<Map.Entry<String, String>> tableView = new TableView<>();
+        TableView<Map.Entry<String, String>> tableView = new SmoothTableView<>();
         tableView.setPrefWidth(sPane.getPrefWidth() - 100);
 
         TableColumn<Map.Entry<String, String>, String> keyColumn = createTableColumn(I18nUtils.getString("infosearch.field"), tableView.getPrefWidth() * 0.2, true);
@@ -1302,7 +1303,7 @@ public class PaneInfoSearch {
 
     // 创建数组类型表格
     private TableView<Map<String, String>> createArrayDataTable(JsonArray dataArray, String[] keys, String header) {
-        TableView<Map<String, String>> tableView = new TableView<>();
+        TableView<Map<String, String>> tableView = new SmoothTableView<>();
         tableView.setPrefWidth(sPane.getPrefWidth() - 100);
         // 列宽自动
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);

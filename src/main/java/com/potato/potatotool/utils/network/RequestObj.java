@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -65,9 +66,34 @@ public class RequestObj {
     private int maxResponseSize = Integer.MAX_VALUE;
     private ConnectionPool connectionPool;
     private Dispatcher dispatcher;
+    /** 是否保留原始URL编码（不进行归一化），用于POC扫描时保留路径遍历等特殊编码 */
+    private boolean preserveRawUrl = false;
+    /** 自定义 TLS SNI 主机名（用于 SSRF 检测），为 null 时使用默认行为 */
+    private String tlsSni;
 
     public RequestObj(){
         initializeProxySettings();
+        initializeHeaderSettings();
+    }
+
+    private void initializeHeaderSettings() {
+        try {
+            JsonObject vulnScanConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
+            if (vulnScanConfig != null && vulnScanConfig.has(ConfigConstants.VULNSCAN_CUSTOM_HEADERS)
+                    && vulnScanConfig.get(ConfigConstants.VULNSCAN_CUSTOM_HEADERS).isJsonObject()) {
+                JsonObject headersObj = vulnScanConfig.getAsJsonObject(ConfigConstants.VULNSCAN_CUSTOM_HEADERS);
+                if (headersObj.size() > 0) {
+                    LinkedHashMap<String, String> globalHeaders = new LinkedHashMap<>();
+                    for (String key : headersObj.keySet()) {
+                        if (!headersObj.get(key).isJsonNull()) {
+                            globalHeaders.put(key, headersObj.get(key).getAsString());
+                        }
+                    }
+                    this.headers = globalHeaders;
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private void initializeProxySettings() {
@@ -86,14 +112,25 @@ public class RequestObj {
         return this;
     }
 
-    private static final String[] VALID_METHODS = {"GET", "POST", "OPTIONS", "PUT", "DELETE", "HEAD"};
+    private static final String[] VALID_METHODS = {
+        "GET", "POST", "OPTIONS", "PUT", "DELETE", "HEAD",
+        "PATCH",  // RESTful API 常用
+        "TRACE",  // HTTP 调试方法
+        "CONNECT",  // HTTP 隧道
+        "PURGE",  // Varnish 缓存清除
+        "DEBUG",  // ASP.NET 调试
+        "PROPFIND", "PROPPATCH", "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK",  // WebDAV 方法
+        "TRACK"  // 类似 TRACE
+    };
     
     private void validateMethod(String method) {
         if (method == null || method.trim().isEmpty()) {
             throw new IllegalArgumentException("[×] 请求方法不能为空");
         }
-        if (!Arrays.asList(VALID_METHODS).contains(method.toUpperCase())) {
-            throw new IllegalArgumentException("[×] 不支持的请求方法: " + method);
+        // 不再严格验证方法名，允许任意方法（用于安全测试）
+        // 只检查是否包含非法字符
+        if (method.contains(" ") || method.contains("\n") || method.contains("\r")) {
+            throw new IllegalArgumentException("[×] 请求方法包含非法字符: " + method);
         }
     }
 
@@ -114,7 +151,15 @@ public class RequestObj {
     }
 
     public RequestObj setHeaders(Map<String, String> headers) {
-        this.headers = headers;
+        if (headers == null) {
+            this.headers = null;
+            return this;
+        }
+        if (this.headers == null) {
+            this.headers = new LinkedHashMap<>(headers);
+        } else {
+            this.headers.putAll(headers);
+        }
         return this;
     }
 
@@ -319,6 +364,24 @@ public class RequestObj {
     }
 
     /**
+     * 设置是否保留原始URL编码（不进行归一化）
+     * 用于POC扫描时保留路径遍历等特殊编码（如 %2e%2e、%u002e 等）
+     * @param preserveRawUrl true-保留原始编码，false-允许归一化（默认）
+     * @return RequestObj
+     */
+    public RequestObj setPreserveRawUrl(boolean preserveRawUrl) {
+        this.preserveRawUrl = preserveRawUrl;
+        return this;
+    }
+
+    /**
+     * 获取是否保留原始URL编码
+     */
+    public boolean getPreserveRawUrl() {
+        return preserveRawUrl;
+    }
+
+    /**
      * 设置自定义连接池
      * @param connectionPool 连接池实例
      * @return OkHttpRequestObj
@@ -352,6 +415,33 @@ public class RequestObj {
      */
     public Dispatcher getDispatcher() {
         return dispatcher;
+    }
+
+    /**
+     * 设置自定义 TLS SNI 主机名
+     * 用于 SSRF 检测，在 TLS 握手时使用指定的主机名而非实际连接的主机
+     * @param tlsSni 自定义 SNI 主机名，设为 null 或空字符串表示不启用
+     * @return RequestObj
+     */
+    public RequestObj setTlsSni(String tlsSni) {
+        this.tlsSni = (tlsSni != null && !tlsSni.trim().isEmpty()) ? tlsSni.trim() : null;
+        return this;
+    }
+
+    /**
+     * 获取自定义 TLS SNI 主机名
+     * @return SNI 主机名，null 表示未启用自定义 SNI
+     */
+    public String getTlsSni() {
+        return tlsSni;
+    }
+
+    /**
+     * 检查是否启用了自定义 TLS SNI
+     * @return true 表示启用了自定义 SNI
+     */
+    public boolean hasTlsSni() {
+        return tlsSni != null;
     }
 
 }

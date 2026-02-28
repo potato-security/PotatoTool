@@ -19,19 +19,18 @@ public class BlockchainTraceability {
 
     public static String blockUrl = getConfigInfo("blockchainUrl");
     public static HashMap<String, String> headers = new HashMap();
-    public static RequestObj obj;
     static {
         headers.put("AuthToken", "MHg2ZCwweDcwLDB4NzMsMHg3OSwweDdhLDB4NDQsMHgzMywweDc0LDB4NmQsMHg0NiwweDc1LDB4MzIsMHg3NywweDQ4LDB4NzEsMHg2YywweDZmLDB4NzUsMHgzOCwweDc3LDB4NmMsMHg0NiwweDY4LDB4MmYsMHg0OSwweDQ4LDB4NTEsMHgzNywweDQ3LDB4MzksMHg0NywweDRiLDB4NDcsMHg0YiwweDcxLDB4MzYsMHg2MSwweDM1LDB4NDMsMHg3MiwweDY1LDB4NmUsMHg2MywweDU0LDB4NDQsMHgzMiwweDRiLDB4NTAsMHg2NywweDc4LDB4NWEsMHg0ZCwweDM5LDB4NjEsMHg0ZCwweDRjLDB4MzksMHg1YSwweDJiLDB4NGEsMHg0NCwweDM2LDB4NGIsMHg2ZCwweDVhLDB4NTIsMHg0YywweDcxLDB4NGQsMHgzNiwweDczLDB4NDIsMHg2NywweDM5LDB4NzMsMHg3NCwweDRkLDB4NjUsMHg0MiwweDY3LDB4NmQsMHgzOCwweDUyLDB4NzIsMHg0NSwweDUyLDB4NTcsMHg1OCwweDU4LDB4NzYsMHgzNywweDcwLDB4NGMsMHg3MiwweDc3LDB4NGYsMHg0NiwweDM3LDB4NzMsMHg0OSwweDMyLDB4NTcsMHgzNCwweDZiLDB4NzUsMHg1OSwweDRkLDB4M2Q=");
+    }
 
-        obj = new RequestObj();
-        obj.setMethod("GET");
-        obj.setHeaders(headers);
+    private static RequestObj createRequestObj() {
+        return new RequestObj().setMethod("GET").setHeaders(headers);
     }
 
 
     //  检索用户输入
     public static JsonObject search(String arg){
-        obj.setUrl(blockUrl + "/search?arg=" + StrUtils.urlEncode(arg));
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/search?arg=" + StrUtils.urlEncode(arg));
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -46,7 +45,7 @@ public class BlockchainTraceability {
 
     //  获取交易地址基础信息
     public static JsonObject address(String network, String address){
-        obj.setUrl(blockUrl + "/address?address=" + address + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/address?address=" + address + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -61,7 +60,7 @@ public class BlockchainTraceability {
 
     //  代币余额
     public static JsonObject tokenbalance(String network, String address){
-        obj.setUrl(blockUrl + "/tokenbalance?address=" + address + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/tokenbalance?address=" + address + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -76,7 +75,7 @@ public class BlockchainTraceability {
 
     //  代币余额交换信息
     public static JsonObject tokentrans(String network, String address, String to, String sumNum){ // 预知总数
-        obj.setUrl(blockUrl + "/tokentrans?address=" + address + "&to=" + to + "&sumNum=" + sumNum + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/tokentrans?address=" + address + "&to=" + to + "&sumNum=" + sumNum + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -88,7 +87,7 @@ public class BlockchainTraceability {
         return null;
     }
     public static JsonObject tokentrans(String network, String address, String to, String index, String size){ // 指定页数及条数
-        obj.setUrl(blockUrl + "/tokentrans?address=" + address + "&to=" + to + "&index=" + index + "&size=" + size + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/tokentrans?address=" + address + "&to=" + to + "&index=" + index + "&size=" + size + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -103,7 +102,7 @@ public class BlockchainTraceability {
 
     //  近180天余额变化
     public static JsonObject balancetrend(String network, String address){
-        obj.setUrl(blockUrl + "/balancetrend?address=" + address + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/balancetrend?address=" + address + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -118,7 +117,7 @@ public class BlockchainTraceability {
 
     //  地址交易信息
     public static JsonObject addressTransaction(String network, String address, String sumNum){ // 预知总数
-        obj.setUrl(blockUrl + "/addressTransaction?address=" + address + "&sumNum=" + sumNum + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/addressTransaction?address=" + address + "&sumNum=" + sumNum + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -130,7 +129,7 @@ public class BlockchainTraceability {
         return null;
     }
     public static JsonObject addressTransaction(String network, String address, String index, String size){ // 指定页数及条数
-        obj.setUrl(blockUrl + "/addressTransaction?address=" + address + "&index=" + index + "&size=" + size + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/addressTransaction?address=" + address + "&index=" + index + "&size=" + size + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -145,7 +144,7 @@ public class BlockchainTraceability {
 
     //  TRX波场链为基础的TRC10/TRC10代币类型分类
     public static JsonObject tokenClassification(String network, String address, String type){
-        obj.setUrl(blockUrl + "/tokenClassification?address=" + address + "&network=" + network + "&type=" + type );
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/tokenClassification?address=" + address + "&network=" + network + "&type=" + type );
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -160,7 +159,7 @@ public class BlockchainTraceability {
 
     //  获取交易块基本信息
     public static JsonObject block(String network, String block){
-        obj.setUrl(blockUrl + "/block?block=" + block + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/block?block=" + block + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -175,7 +174,7 @@ public class BlockchainTraceability {
 
     //  合约调用转帐
     public static JsonObject getInternalData(String network, String block, String sumNum){ // 预知总数
-        obj.setUrl(blockUrl + "/getInternalData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/getInternalData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -187,7 +186,7 @@ public class BlockchainTraceability {
         return null;
     }
     public static JsonObject getInternalData(String network, String block, String index, String size){ // 指定页数及条数
-        obj.setUrl(blockUrl + "/getInternalData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/getInternalData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -202,7 +201,7 @@ public class BlockchainTraceability {
 
     //  代币交易
     public static JsonObject getTokentransferData(String network, String block, String sumNum){ // 预知总数
-        obj.setUrl(blockUrl + "/getTokentransferData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/getTokentransferData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -214,7 +213,7 @@ public class BlockchainTraceability {
         return null;
     }
     public static JsonObject getTokentransferData(String network, String block, String index, String size){ // 指定页数及条数
-        obj.setUrl(blockUrl + "/getTokentransferData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/getTokentransferData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -229,7 +228,7 @@ public class BlockchainTraceability {
 
     //  块相关交易
     public static JsonObject getTxData(String network, String block, String sumNum){ // 预知总数
-        obj.setUrl(blockUrl + "/getTxData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/getTxData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();
@@ -241,7 +240,7 @@ public class BlockchainTraceability {
         return null;
     }
     public static JsonObject getTxData(String network, String block, String index, String size){ // 指定页数及条数
-        obj.setUrl(blockUrl + "/getTxData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/getTxData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
 
         try (CustomHttpResponse con = requests(obj)){
             JsonObject res = con.getJson().getAsJsonObject();

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>

@@ -17,12 +17,10 @@ import java.util.stream.Stream;
 /**
  * POC管理器，用于统一管理POC文件的解析和转换
  * @author Potato
- * @date 2025/3/20 10:30
+ * @date 2025/2/20 10:30
  */
 public class PocManager {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private static final String TRANSFORM_DIR = "/Users/a/Desktop/项目开发/PotatoTool/src/main/java/com/potato/potatotool/content/redTeam/vulnScanner/transform/";
-    // private static final String TRANSFORM_DIR = "C:\\Users\\potato\\Desktop\\PotatoTool\\src\\main\\java\\com\\potato\\potatotool\\content\\redTeam\\vulnScanner\\transform";
     /**
      * 解析指定目录下的所有POC文件
      * @param pocDirPath POC文件目录路径
@@ -86,44 +84,11 @@ public class PocManager {
             }
         }
         
-        // 如果成功解析了POC，则保存到transform目录 DEBUG方法
-        if (pocObj != null) {
-//            savePocToTransformDir(filePath, pocObj);
-        } else {
+        if (pocObj == null) {
             System.err.println("无法识别的POC格式或解析失败: " + filePath);
         }
         
         return pocObj;
     }
     
-    /**
-     * 将解析后的POC对象保存到transform目录下的同名JSON文件
-     * 
-     * @param originalFilePath 原始文件路径
-     * @param pocObj 解析后的POC对象
-     * @throws IOException 当保存失败时抛出异常
-     */
-    private static void savePocToTransformDir(String originalFilePath, PocObj.Poc pocObj) throws IOException {
-        // 获取原始文件名（不含扩展名）
-        Path originalPath = Paths.get(originalFilePath);
-        String fileName = originalPath.getFileName().toString();
-        int dotIndex = fileName.lastIndexOf('.');
-        String fileNameWithoutExt = (dotIndex > 0) ? fileName.substring(0, dotIndex) : fileName;
-        
-        // 创建transform目录（如果不存在）
-        Path transformDir = Paths.get(TRANSFORM_DIR);
-        if (!Files.exists(transformDir)) {
-            Files.createDirectories(transformDir);
-        }
-        
-        // 构建目标文件路径
-        Path targetFilePath = transformDir.resolve(fileNameWithoutExt + ".json");
-        
-        // 使用Gson将对象转换为JSON并保存
-        try (FileWriter writer = new FileWriter(targetFilePath.toFile())) {
-            gson.toJson(pocObj, writer);
-        }
-        
-        System.out.println("POC已保存到: " + targetFilePath.toAbsolutePath());
-    }
 }

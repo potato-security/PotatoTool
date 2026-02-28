@@ -2,6 +2,7 @@ package com.potato.potatotool.content.blueTeam.webshellDecrypt.decoder.utils;
 
 
 import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.misc.ReadabilityChecker;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -43,7 +44,13 @@ public class WeblogicDecUtils {
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
-        return cleartext;
+
+        // 判断不存在乱码，防止误报
+        boolean isReadable = ReadabilityChecker.assessReadability(cleartext, 1, 0);
+        if(isReadable){
+            return cleartext;
+        }
+        return null;
     }
 
     public String decryptAES(String customPath, String ciphertext) throws Exception {

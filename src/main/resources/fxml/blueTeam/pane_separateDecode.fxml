@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
+<?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -16,7 +18,7 @@
     <VBox alignment="CENTER" prefWidth="${sPane.width}">
 
         <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-            <TextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入明文/密文" userData="i18n-prompt:separate.input.placeholder"/>
+            <SmoothTextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入明文/密文" userData="i18n-prompt:separate.input.placeholder"/>
         </Pane>
 
         <Pane minHeight="15"/>

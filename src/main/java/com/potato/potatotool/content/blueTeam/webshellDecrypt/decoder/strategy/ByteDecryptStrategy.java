@@ -26,12 +26,23 @@ public class ByteDecryptStrategy implements DecryptStrategy {
             
             if (result != null) {
                 encodeMode.add("Byte转换");
-                
+
                 // 检查是否有额外的编码
                 if (byteD.gzipCode) encodeMode.add("Gzip");
                 if (byteD.classCode) encodeMode.add("Class编译");
-                if (byteD.serializeCode) encodeMode.add("反序列化");
-                
+                if (byteD.javaSerializeCode) encodeMode.add("反序列化");
+
+                // 检查二进制序列化格式
+                if (byteD.bsonCode) encodeMode.add("BSON");
+                if (byteD.messagePackCode) encodeMode.add("MessagePack");
+                if (byteD.cborCode) encodeMode.add("CBOR");
+                if (byteD.smileCode) encodeMode.add("Smile");
+                if (byteD.hessianCode) encodeMode.add("Hessian");
+                if (byteD.ubjsonCode) encodeMode.add("UBJSON");
+                if (byteD.kryoCode) encodeMode.add("Kryo");
+                if (byteD.fstCode) encodeMode.add("FST");
+                if (byteD.avroCode) encodeMode.add("Avro");
+
                 // encodeMode已经通过参数传递
                 return new String(result, StandardCharsets.UTF_8);
             }

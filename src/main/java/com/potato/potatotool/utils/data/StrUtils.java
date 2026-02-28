@@ -1,5 +1,6 @@
 package com.potato.potatotool.utils.data;
 
+import com.potato.potatotool.content.blueTeam.webshellDecrypt.decoder.utils.BinaryDeserializerFactory;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.misc.ReadabilityChecker;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -842,6 +843,7 @@ public class StrUtils {
     public static String base64Encode(byte[] conText) {
         return Base64.getEncoder().encodeToString(conText);
     }
+
     // 等同python中的codecs.encode(content, "base64")
     public static String base64Encode_codesc(byte[] content) {
         // 使用Base64类对内容进行编码，并在每76个字符后换行（和Python中codecs类似）
@@ -863,7 +865,7 @@ public class StrUtils {
         String str2 = "gx74KW1roM9qwzPFVOBLSlYaeyncdNbI=JfUCQRHtj2+Z05vshXi3GAEuT/m8Dpk6";  // 新映射字典
 
         baseText = baseText.trim();
-        if(baseText.length() == 2) return null;
+        if(baseText.length() < 4) return null;
 
         Map<Character, Character> map = new HashMap<>();
         for(int i = 0; i < str2.length(); i++) {
@@ -881,6 +883,10 @@ public class StrUtils {
 
         if(res==null){
             res = seeyonOldBase64Decode(output.toString());
+        }
+        // 增强：对解密结果进行可读性检查
+        if(res != null && !ReadabilityChecker.assessReadability(res, 1, 0)) {
+            return null;
         }
 
         return res;
@@ -917,13 +923,23 @@ public class StrUtils {
             for (int i = 0; i < encodeStringCharArray.length; ++i) {
                 encodeStringCharArray[i] = (char) (encodeStringCharArray[i] - '\u0001');
             }
-            return new String(encodeStringCharArray);
+            String result = new String(encodeStringCharArray);
+            // 判断不存在乱码，防止误报
+            boolean isReadable = ReadabilityChecker.assessReadability(result, 1, 0);
+            if(isReadable){
+                return result;
+            }
 
         }else if(baseText.startsWith("/2.4/")){
 
             baseText = baseText.substring("/2.4/".length());
             String SM4_KEY = "E6C63180C2806DD1F47B859DE501C15F";
-            return SM4Decrypt(baseText, SM4_KEY);
+            String result = SM4Decrypt(baseText, SM4_KEY);
+            // 判断不存在乱码，防止误报
+            boolean isReadable = ReadabilityChecker.assessReadability(result, 1, 0);
+            if(isReadable){
+                return result;
+            }
 
         }
         return null;
@@ -949,7 +965,13 @@ public class StrUtils {
             }
             baseText = stringBuilder.toString();
         }
-        return baseText;
+
+        // 判断不存在乱码，防止误报
+        boolean isReadable = ReadabilityChecker.assessReadability(baseText, 1, 0);
+        if(isReadable){
+            return baseText;
+        }
+        return null;
     }
 
     public static String SM4Decrypt(String cipher, String key) {
@@ -984,15 +1006,26 @@ public class StrUtils {
      * @throws Exception
      */
     public boolean classCode = false;
-    public boolean serializeCode = false;
+    public boolean javaSerializeCode = false;
     public boolean gzipCode = false;
-    public String base64Decode(String baseText) {
+
+    // 二进制序列化格式标志
+    public boolean bsonCode = false;
+    public boolean messagePackCode = false;
+    public boolean cborCode = false;
+    public boolean smileCode = false;
+    public boolean hessianCode = false;
+    public boolean ubjsonCode = false;
+    public boolean kryoCode = false;
+    public boolean fstCode = false;
+    public boolean avroCode = false;
+    public String detectedBinaryFormat = null;
+
+    public String base64DecodeWebShell(String baseText) {
         try {
             baseText = baseText.replace("\n","").replace("\r","").replace("\t","");
 
             byte[] decodeBytes = Base64.getDecoder().decode(baseText);
-
-
 
             if(StrUtils.byteStartsWith(decodeBytes, 0, new byte[]{(byte) 0x1F, (byte) 0x8B})) {
 
@@ -1021,7 +1054,15 @@ public class StrUtils {
 
             if (tmpSerDecryptedTextBytes != null) {
                 decodeBytes = tmpSerDecryptedTextBytes;
-                serializeCode = true;
+                javaSerializeCode = true;
+            }
+
+            // 二进制序列化格式检测
+            if (!classCode && !javaSerializeCode) {
+                byte[] binaryDeserialized = detectAndDeserializeBinary(decodeBytes);
+                if (binaryDeserialized != null) {
+                    decodeBytes = binaryDeserialized;
+                }
             }
 
             return new String(decodeBytes, StandardCharsets.UTF_8);
@@ -1030,6 +1071,18 @@ public class StrUtils {
             return null;
         }
     }
+
+    public String base64Decode(String baseText) {
+        try {
+            baseText = baseText.replace("\n","").replace("\r","").replace("\t","");
+            byte[] decodeBytes = Base64.getDecoder().decode(baseText);
+            return new String(decodeBytes, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+            return null;
+        }
+    }
+
     public static byte[] base64Decode(byte[] baseText) {
         try {
             baseText = bytesRemoveByte(baseText, new String[]{"\n", "\r", "\t"});
@@ -1129,7 +1182,15 @@ public class StrUtils {
 
             if (tmpSerDecryptedTextBytes != null) {
                 tmpRes = tmpSerDecryptedTextBytes;
-                serializeCode = true;
+                javaSerializeCode = true;  // 重命名：serializeCode → javaSerializeCode
+            }
+
+            // 新增：二进制序列化格式检测
+            if (!classCode && !javaSerializeCode) {
+                byte[] binaryDeserialized = detectAndDeserializeBinary(tmpRes);
+                if (binaryDeserialized != null) {
+                    tmpRes = binaryDeserialized;
+                }
             }
 
             return new String(tmpRes, StandardCharsets.UTF_8);
@@ -1137,6 +1198,79 @@ public class StrUtils {
             if(debugMode)e.printStackTrace();
             return oldData;
         }
+    }
+
+    /**
+     * 检测并反序列化二进制格式
+     * <p>
+     * 分两步处理：
+     * 1. 先检测格式类型
+     * 2. 再执行反序列化获取结果
+     * </p>
+     *
+     * @param data 待检测数据
+     * @return 反序列化后的字节数组，如果无法识别或解析失败则返回null
+     */
+    private byte[] detectAndDeserializeBinary(byte[] data) {
+        if (data == null || data.length == 0) {
+            return null;
+        }
+
+        try {
+            // 步骤1：检测格式（不执行反序列化）
+            String format = BinaryDeserializerFactory.detectFormat(data);
+            if(debugMode) System.out.println("检测到存在反序列化format:"+format);
+            if (format == null) {
+                return null;  // 未识别的格式
+            }
+
+            // 步骤2：执行反序列化
+            String result = BinaryDeserializerFactory.autoDeserialize(data);
+            if (result == null) {
+                return null;  // 反序列化失败
+            }
+
+            // 步骤3：根据检测到的格式设置标志
+            detectedBinaryFormat = format;
+            switch (format.toUpperCase()) {
+                case "BSON":
+                    bsonCode = true;
+                    break;
+                case "MESSAGEPACK":
+                    messagePackCode = true;
+                    break;
+                case "CBOR":
+                    cborCode = true;
+                    break;
+                case "SMILE":
+                    smileCode = true;
+                    break;
+                case "HESSIAN":
+                    hessianCode = true;
+                    break;
+                case "UBJSON":
+                    ubjsonCode = true;
+                    break;
+                case "KRYO":
+                    kryoCode = true;
+                    break;
+                case "FST":
+                    fstCode = true;
+                    break;
+                case "AVRO":
+                    avroCode = true;
+                    break;
+            }
+
+            return result.getBytes(StandardCharsets.UTF_8);
+
+        } catch (Exception e) {
+            if (debugMode) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -1444,12 +1578,19 @@ public class StrUtils {
 
 
     /**
-     *  异或加/解密
+     * 哥斯拉(Godzilla) WebShell 专用 XOR 加密/解密
+     *
+     * ⚠️ 注意：这不是标准 XOR 实现！
+     * 使用 key[(i+1) % keyLength] 而非标准的 key[i % keyLength]
+     *
+     * 此实现专为解密哥斯拉(Godzilla)、冰蝎(Behinder)等 WebShell 流量设计。
+     * 如需标准 XOR 加密，请使用 xorEncode() 方法。
+     *
      * @param data   源byte数组
      * @param key    异或的byte数组
      * @return       异或后的byte数组
      */
-    public byte[] xorEncode(byte[] data, byte[] key) {
+    public byte[] godzillaXorEncode(byte[] data, byte[] key) {
         byte[] encryptedData = new byte[data.length];
         int keyLength = key.length;
 
@@ -1460,12 +1601,30 @@ public class StrUtils {
 
         return encryptedData;
     }
-    // 兼容String传参，单独异或可使用这个
-    public String xorEncode(String data, String key) {
-        return new String( xorEncode(data.getBytes(StandardCharsets.UTF_8), key.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8 );
+    /**
+     * 哥斯拉(Godzilla) WebShell 专用 XOR 加密/解密（String 参数便捷方法）
+     *
+     * @param data 源字符串
+     * @param key  密钥字符串
+     * @return     异或后的字符串
+     */
+    public String godzillaXorEncode(String data, String key) {
+        return new String( godzillaXorEncode(data.getBytes(StandardCharsets.UTF_8), key.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8 );
     }
 
-    public byte[] xorEncode(byte[] data, String key) {
+    /**
+     * 哥斯拉(Godzilla) WebShell 专用 XOR 加密/解密（byte[] + String key）
+     *
+     * 兼容特性：
+     * - 自动检测 Gzip 压缩并解压
+     * - 自动处理哥斯拉特殊空字符（0x00 → 0x3D）
+     * - 可读性检测（ReadabilityChecker）
+     *
+     * @param data 源byte数组
+     * @param key  异或密钥字符串
+     * @return     解密后的byte数组，失败返回 null
+     */
+    public byte[] godzillaXorEncode(byte[] data, String key) {
         byte[] encryptedData = new byte[data.length];
 
         byte[] keyByte = key.getBytes(StandardCharsets.UTF_8);
@@ -1479,10 +1638,10 @@ public class StrUtils {
         String res = new String(encryptedData, StandardCharsets.UTF_8);
 
         if (ReadabilityChecker.assessReadability(res, new double[]{1, 0})) {
-            xorKey = key;
+            godzillaXorKey = key;
             return encryptedData;
         } else if (res.startsWith("methodName") && res.length() > 15) {
-            xorKey = key;
+            godzillaXorKey = key;
 
             if(StrUtils.byteArrayContains(encryptedData, new byte[]{0, 0, 0}) != -1 && !StrUtils.byteStartsWith(encryptedData, 0, new byte[]{(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE}) && !StrUtils.byteStartsWith(encryptedData, 0, new byte[]{(byte) 0xAC, (byte) 0xED, 0x00, 0x05}) ){  // 针对于哥斯拉key和value空字符需要转换为等号
                 encryptedData = StrUtils.byteReplaceZeroToD3(encryptedData);
@@ -1497,7 +1656,7 @@ public class StrUtils {
                         tmpGzipRes = StrUtils.byteReplaceZeroToD3(tmpGzipRes);
                     }
 
-                    xorKey = key + "+Gzip";
+                    godzillaXorKey = key + "+Gzip";
 
                     return tmpGzipRes;
                 }
@@ -1507,6 +1666,46 @@ public class StrUtils {
         return null;
     }
 
+
+    /**
+     * 标准 XOR 加密/解密
+     *
+     * 使用标准的 key[i % keyLength] 循环密钥方案
+     * 加密和解密使用相同方法（XOR 的对称性）
+     *
+     * @param data 源byte数组
+     * @param key  异或密钥byte数组
+     * @return     异或后的byte数组
+     */
+    public static byte[] xorEncode(byte[] data, byte[] key) {
+        if (data == null || key == null || key.length == 0) {
+            throw new IllegalArgumentException("Data and key must not be null or empty");
+        }
+
+        byte[] result = new byte[data.length];
+        int keyLength = key.length;
+
+        for (int i = 0; i < data.length; i++) {
+            result[i] = (byte) (data[i] ^ key[i % keyLength]);
+        }
+
+        return result;
+    }
+
+    /**
+     * 标准 XOR 加密/解密（String 参数便捷方法）
+     *
+     * @param data 源字符串
+     * @param key  密钥字符串
+     * @return     异或后的字符串
+     */
+    public static String xorEncode(String data, String key) {
+        return new String(
+            xorEncode(data.getBytes(StandardCharsets.UTF_8),
+                      key.getBytes(StandardCharsets.UTF_8)),
+            StandardCharsets.UTF_8
+        );
+    }
 
     /**
      * 获取字符串中的数字，无则返回0
@@ -1523,8 +1722,10 @@ public class StrUtils {
 
 
     /**
-     * ！！！！！【兼容联合Gzip解密】！！！！！
-     *  异或加/解密           webshell Key作为异或的第二byte[]
+     * 哥斯拉(Godzilla) WebShell 专用 XOR 加密/解密（带字典爆破功能）
+     *
+     * 兼容联合Gzip解密
+     *
      * @param data          源byte数组
      * @param inputKeyStr   可以使用null，注意使用：(String) null
      * @param traverse      [可不传]调用50w字典进行爆破，将忽略inputKeyStr传入值
@@ -1532,8 +1733,8 @@ public class StrUtils {
      * @return              异或后的byte数组
      */
     public Set<String> keyArray_AES = new LinkedHashSet<>();
-    public String xorKey = "";
-    public String xorEncode(byte[] data, String inputKeyStr, List traverse, String customPath) {
+    public String godzillaXorKey = "";
+    public String godzillaXorEncode(byte[] data, String inputKeyStr, List traverse, String customPath) {
         if(data == null) return null;
 
         byte[] res = null;
@@ -1575,6 +1776,7 @@ public class StrUtils {
             keyArray.add("1a1dc91c907325c6");
             keyArray.add("ab645dd196197df7");
             keyArray.add("5f4dcc3b5aa765d6");
+            keyArray.add("fd690c56512ce362");
             keyArray.add("changeit");
         } else if( inputKeyStr != null ){
             keyArray.add(inputKeyStr);
@@ -1595,7 +1797,7 @@ public class StrUtils {
 
         for(String key : keyArray){
             CompletableFuture<byte[]> future = CompletableFuture.supplyAsync(() -> {
-                byte[] result = xorEncode(data, key);
+                byte[] result = godzillaXorEncode(data, key);
                 if (result != null && !result.equals("")) {
                     // 停止所有线程
                     ExecutorServiceManager.shutdownExecutor(poolName);

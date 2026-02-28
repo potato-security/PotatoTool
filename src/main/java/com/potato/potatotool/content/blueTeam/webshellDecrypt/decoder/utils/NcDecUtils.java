@@ -62,11 +62,16 @@ public class NcDecUtils {
 
     public String decodeToStr(String s) {
         try {
-            return new String(this.decode(s, key));
+            String result = new String(this.decode(s, key));
+            // 判断不存在乱码，防止误报
+            boolean isReadable = ReadabilityChecker.assessReadability(result, 1, 0);
+            if(isReadable){
+                return result;
+            }
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
-            return null;
         }
+        return null;
     }
     public String decodeToStr(String s, long k) {
         try {

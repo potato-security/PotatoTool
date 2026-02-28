@@ -1,5 +1,6 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,7 +46,9 @@ public class DslMatcherProcessor {
         try {
             // 处理逻辑操作符
             if (matcher.getOperator() != null) {
-                return processLogicalOperator(matcher, context);
+                boolean result = processLogicalOperator(matcher, context);
+                System.out.println("[DEBUG] DSL逻辑操作符: " + matcher.getOperator() + " => " + result);
+                return result;
             }
 
             // 处理具体的匹配器类型
@@ -53,17 +56,26 @@ public class DslMatcherProcessor {
             String expression = matcher.getExpression();
 
             if (type == null || expression == null) {
+                System.out.println("[DEBUG] DSL匹配器类型或表达式为空: type=" + type + ", expr=" + expression);
                 return false;
             }
+            
+            boolean result;
 
             switch (type.toLowerCase()) {
                 case "contains":
-                    return DslFunctionEvaluator.evaluateContainsFunction(expression, context);
+                    result = DslFunctionEvaluator.evaluateContainsFunction(expression, context);
+                    System.out.println("[DEBUG] DSL contains: " + expression + " => " + result);
+                    return result;
                 case "matches":
-                    return DslFunctionEvaluator.evaluateMatchesFunction(expression, context);
+                    result = DslFunctionEvaluator.evaluateMatchesFunction(expression, context);
+                    System.out.println("[DEBUG] DSL matches: " + expression + " => " + result);
+                    return result;
                 case "len":
                 case "length":
-                    return DslFunctionEvaluator.evaluateLenFunction(expression, context);
+                    result = DslFunctionEvaluator.evaluateLenFunction(expression, context);
+                    System.out.println("[DEBUG] DSL len: " + expression + " => " + result);
+                    return result;
                 case "startswith":
                     return DslFunctionEvaluator.evaluateStartsWithFunction(expression, context);
                 case "endswith":
@@ -71,14 +83,22 @@ public class DslMatcherProcessor {
                 case "ignorecase":
                     return processIgnoreCaseMatcher(expression, context);
                 case "status":
-                    return processStatusMatcher(expression, context);
+                    result = processStatusMatcher(expression, context);
+                    System.out.println("[DEBUG] DSL status: " + expression + " => " + result);
+                    return result;
                 case "comparison":
-                    return processComparisonMatcher(expression, context);
+                    result = processComparisonMatcher(expression, context);
+                    System.out.println("[DEBUG] DSL comparison: " + expression + " => " + result);
+                    return result;
                 case "function":
-                    return processFunctionMatcher(expression, context);
+                    result = processFunctionMatcher(expression, context);
+                    System.out.println("[DEBUG] DSL function: " + expression + " => " + result);
+                    return result;
                 case "dsl":
                 default:
-                    return processDslMatcher(expression, context);
+                    result = processDslMatcher(expression, context);
+                    System.out.println("[DEBUG] DSL default: type=" + type + ", expr=" + expression + " => " + result);
+                    return result;
             }
             
         } catch (Exception e) {
@@ -143,7 +163,7 @@ public class DslMatcherProcessor {
             String innerExpression = expression.substring(startIndex, endIndex);
             
             // 创建临时上下文，将所有字符串值转换为小写
-            Map<String, Object> tempContext = new java.util.HashMap<>(context);
+            Map<String, Object> tempContext = new HashMap<>(context);
             for (Map.Entry<String, Object> entry : context.entrySet()) {
                 if (entry.getValue() instanceof String) {
                     tempContext.put(entry.getKey(), ((String) entry.getValue()).toLowerCase());
@@ -218,6 +238,12 @@ public class DslMatcherProcessor {
      */
     private static boolean processFunctionMatcher(String expression, Map<String, Object> context) {
         try {
+            // 检查是否包含比较运算符（如 md5(body) != 'xxx'）
+            String operator = DslUtils.findComparisonOperator(expression);
+            if (operator != null) {
+                return processFunctionWithComparison(expression, operator, context);
+            }
+            
             // 提取函数名
             String functionName = DslUtils.extractFunctionName(expression);
             if (functionName == null) {
@@ -237,6 +263,43 @@ public class DslMatcherProcessor {
             
         } catch (Exception e) {
             System.err.println("处理函数匹配器失败: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * 处理带比较运算符的函数表达式（如 md5(body) != 'xxx'）
+     */
+    private static boolean processFunctionWithComparison(String expression, String operator, Map<String, Object> context) {
+        try {
+            // 按运算符分割表达式
+            int operatorIndex = expression.indexOf(operator);
+            if (operatorIndex < 0) {
+                return false;
+            }
+            
+            String leftPart = expression.substring(0, operatorIndex).trim();
+            String rightPart = expression.substring(operatorIndex + operator.length()).trim();
+            
+            // 计算左边函数的值
+            String functionName = DslUtils.extractFunctionName(leftPart);
+            if (functionName == null) {
+                return false;
+            }
+            
+            String normalizedFunctionName = functionName.toLowerCase();
+            String leftValue = DslFunctionTypeManager.evaluateFunctionAsString(normalizedFunctionName, leftPart, context);
+            
+            // 处理右边的值（移除引号）
+            String rightValue = DslUtils.cleanStringValue(rightPart);
+            
+            System.out.println("[DEBUG] DSL function: " + functionName + "(body) = '" + leftValue + "' " + operator + " '" + rightValue + "'");
+            
+            // 执行比较
+            return compareValues(leftValue, operator, rightValue);
+            
+        } catch (Exception e) {
+            System.err.println("处理函数比较表达式失败: " + e.getMessage());
             return false;
         }
     }

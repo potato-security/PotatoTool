@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 
 <?import javafx.scene.layout.*?>
 
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Accordion?>
-<?import javafx.scene.control.ListView?>
+<?import com.potato.potatotool.utils.ui.SmoothListView?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.effect.DropShadow?>
 <StackPane xmlns="http://javafx.com/javafx/"
@@ -17,15 +17,15 @@
     <BorderPane>
 
         <left>
-            <ScrollPane maxHeight="${sPane.height - 10}" hbarPolicy="NEVER">
+            <SmoothScrollPane maxHeight="${sPane.height - 10}" hbarPolicy="NEVER">
                 <VBox fx:id="vBoxBar">
                     <Accordion fx:id="accordionPane"/>
                 </VBox>
-            </ScrollPane>
+            </SmoothScrollPane>
         </left>
 
         <right>
-            <ListView fx:id="listView" prefWidth="${sPane.width - 210}" maxHeight="${sPane.height - 10}" />
+            <SmoothListView fx:id="listView" prefWidth="${sPane.width - 210}" maxHeight="${sPane.height - 10}" />
         </right>
     </BorderPane>
 

@@ -2,7 +2,12 @@ package com.potato.potatotool.content.redTeam.infoGathering.cdn;
 
 import com.potato.potatotool.utils.core.Constants;
 import org.apache.commons.net.util.SubnetUtils;
-import org.xbill.DNS.*;
+import org.xbill.DNS.ARecord;
+import org.xbill.DNS.CNAMERecord;
+import org.xbill.DNS.Lookup;
+import org.xbill.DNS.Record;
+import org.xbill.DNS.SOARecord;
+import org.xbill.DNS.Type;
 
 import java.io.IOException;
 import java.util.List;

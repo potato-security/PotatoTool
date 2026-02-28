@@ -34,6 +34,12 @@ public class PathManager {
     public static final String MD5_DATABASE_FILE = "md5_database.db";
     public static final String MD5_DATABASE_GZIP = "md5_database.db.gzip";
     
+    // 漏洞扫描相关
+    public static final String VULNSCAN_FOLDER = "vulnscan";
+    public static final String VULNSCAN_DB_FILE = "vulnscan.db";
+    public static final String POC_DB_FILE = "poc.db";
+    public static final String POC_DB_GZIP = "poc.db.gzip";
+    
     // 资源文件期望大小常量（用于完整性检查）
     public static final long BCPROV_EXPECTED_SIZE = (long) (7.9 * 1024 * 1024);      // 7.9MB
     public static final long IP2REGION_EXPECTED_SIZE = (long) (10.5 * 1024 * 1024);  // 10.5MB

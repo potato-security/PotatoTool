@@ -23,6 +23,8 @@ public class ToStart {
         System.setProperty("http.keepAlive", "false");   // 禁用 Keep-Alive
         // 为 macOS dock 设置图标
         setMacDockIcon();
+        // 关闭Optional.or告警
+        setOptionalException();
 
         // 检查命令行参数是否包含 "debug" 参数
         for (String arg : args) {
@@ -33,6 +35,20 @@ public class ToStart {
             }
         }
         MainApplication.main(args);
+    }
+
+    private static void setOptionalException() {
+        // 在 MainApplication 或 ToStart 的 main/start 方法最开始添加
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            // 忽略 RichTextFX 在 Java 8 下的 Optional.or 兼容性问题
+            if (throwable instanceof NoSuchMethodError
+                    && throwable.getMessage() != null
+                    && throwable.getMessage().contains("Optional.or")) {
+                return; // 静默忽略
+            }
+            // 其他异常正常打印
+            throwable.printStackTrace();
+        });
     }
 
     private static boolean isMacOS() {

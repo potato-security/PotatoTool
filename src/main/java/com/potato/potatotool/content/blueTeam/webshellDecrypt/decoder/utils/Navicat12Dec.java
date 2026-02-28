@@ -24,7 +24,7 @@ public class Navicat12Dec {
         try {
             byte[] res_tmp = aes.decrypt(StrUtils.hexToByteArray(str), key.getBytes(StandardCharsets.UTF_8), iv.getBytes(StandardCharsets.UTF_8), mode, padding);
             String res = new String(res_tmp, StandardCharsets.UTF_8);
-            res = ReadabilityChecker.assessReadability(res) ? res : null;
+            res = ReadabilityChecker.assessReadability(res,1,0) ? res : null;
 
             return res;
         } catch (Exception e) {

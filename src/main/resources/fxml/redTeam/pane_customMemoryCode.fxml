@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
+<?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -11,7 +13,7 @@
            fx:id="sPane"
            fx:controller="com.potato.potatotool.controller.redTeam.PaneCustomMemoryCode"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
-    <ScrollPane maxWidth="${sPane.width}" maxHeight="${sPane.height}" hbarPolicy="NEVER" style="-fx-padding: 0">
+    <SmoothScrollPane maxWidth="${sPane.width}" maxHeight="${sPane.height}" hbarPolicy="NEVER" style="-fx-padding: 0">
         <VBox fx:id="paneBox" spacing="20" alignment="TOP_CENTER">
 
             <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
@@ -114,8 +116,8 @@
                 </effect>
             </Button>
 
-            <TextArea fx:id="outTextArea" wrapText="true" prefHeight="${sPane.height * 0.4}" prefWidth="${sPane.width - 10}" />
+            <SmoothTextArea fx:id="outTextArea" wrapText="true" prefHeight="${sPane.height * 0.4}" prefWidth="${sPane.width - 10}" />
 
         </VBox>
-    </ScrollPane>
+    </SmoothScrollPane>
 </StackPane>

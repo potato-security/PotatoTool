@@ -20,7 +20,7 @@ public class QiangzhiDec {
             String res = decrypt(str.substring(3), key);
 
             String res_bs64 = new StrUtils().base64Decode(res);
-            res_bs64 = ReadabilityChecker.assessReadability(res_bs64) ? res_bs64 : null;
+            res_bs64 = ReadabilityChecker.assessReadability(res_bs64,1,0) ? res_bs64 : null;
 
             return res_bs64 != null ? res_bs64 : res;
         }

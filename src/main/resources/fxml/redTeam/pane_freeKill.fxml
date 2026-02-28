@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -15,7 +16,7 @@
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
     <HBox alignment="CENTER" prefWidth="${sPane.width - 15}" prefHeight="${sPane.height}">
-        <ScrollPane maxHeight="${sPane.height}" hbarPolicy="NEVER">
+        <SmoothScrollPane maxHeight="${sPane.height}" hbarPolicy="NEVER">
             <VBox fx:id="vBoxBar">
                 <Accordion fx:id="accordionPane">
                     <panes>
@@ -42,11 +43,11 @@
                     </panes>
                 </Accordion>
             </VBox>
-        </ScrollPane>
+        </SmoothScrollPane>
 
         <Region HBox.hgrow="ALWAYS" />
 
-        <ScrollPane prefWidth="${sPane.width - 215}" maxWidth="${sPane.width - 215}" maxHeight="${sPane.height}" hbarPolicy="NEVER" fx:id="contentSp">
+        <SmoothScrollPane prefWidth="${sPane.width - 215}" maxWidth="${sPane.width - 215}" maxHeight="${sPane.height}" hbarPolicy="NEVER" fx:id="contentSp">
             <VBox minWidth="${sPane.width - 265}" alignment="CENTER">
                 <VBox fx:id="webshellContent" alignment="CENTER" managed="true" visible="true">
                     <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
@@ -382,7 +383,7 @@
                             </HBox>
                         </HBox>
                         <HBox spacing="10" alignment="CENTER">
-                            <ScrollPane maxHeight="500" hbarPolicy="NEVER">
+                            <SmoothScrollPane maxHeight="500" hbarPolicy="NEVER">
                                 <VBox minHeight="500" fx:id="vBoxBarFunc">
                                     <Accordion expandedPane="$myTitledPane">
                                         <panes>
@@ -407,7 +408,7 @@
                                         </panes>
                                     </Accordion>
                                 </VBox>
-                            </ScrollPane>
+                            </SmoothScrollPane>
                             <VBox HBox.hgrow="ALWAYS" alignment="CENTER" spacing="10">
                                 <HBox alignment="CENTER" spacing="10">
                                     <Label text="保护方案：" userData="i18n:freekill.packer.protect"/>
@@ -431,7 +432,7 @@
 
                 </VBox>
             </VBox>
-        </ScrollPane>
+        </SmoothScrollPane>
     </HBox>
 
 

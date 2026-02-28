@@ -11,8 +11,10 @@
     -fx-background-radius: 8;
     -fx-padding: 20;
 }
-#listView{
-    -fx-padding: 10;
+#mainScrollPane{
+    -fx-background-color: -main-topBar-color;
+    -fx-background-radius: 8;
+    -fx-padding: 20;
     -fx-border-color: -main-border-color;
     -fx-border-width: 1;
     -fx-border-radius: 8;

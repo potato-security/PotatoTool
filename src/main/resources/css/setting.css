@@ -102,3 +102,33 @@
 .addIcon:pressed{
     -fx-background-color: -main-borderHover-color;
 }
+.tiny-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-text-fill: -main-linenoText-color;
+    -fx-border-color: -main-lineno-color;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-font-size: 11;
+    -fx-padding: 2 8 2 8;
+    -fx-cursor: hand;
+}
+.tiny-button:hover {
+    -fx-text-fill: -main-border-color;
+    -fx-border-color: -main-border-color;
+}
+.preset-tag {
+    -fx-background-color: transparent;
+    -fx-background-radius: 12;
+    -fx-text-fill: -main-linenoText-color;
+    -fx-border-color: -main-lineno-color;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-font-size: 11;
+    -fx-padding: 3 10 3 10;
+    -fx-cursor: hand;
+}
+.preset-tag:hover {
+    -fx-text-fill: -main-border-color;
+    -fx-border-color: -main-border-color;
+}

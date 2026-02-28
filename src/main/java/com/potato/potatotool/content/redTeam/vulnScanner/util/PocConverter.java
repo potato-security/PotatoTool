@@ -1,5 +1,6 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +19,7 @@ import org.yaml.snakeyaml.Yaml;
 
 /**
  * @author Potato
- * @date 2025/3/19 16:30
+ * @date 2025/2/19 16:30
  * POC格式转换工具类，用于将不同格式的POC转换为通用PocObj
  * 该类已重构为门面模式，实际转换逻辑已移至converter包下的具体转换器实现类
  */
@@ -96,8 +97,26 @@ public class PocConverter {
         NucleiYamlObj.Poc poc = new NucleiYamlObj.Poc();
         try (InputStream input = new FileInputStream(fileName)) {
             poc = yaml.loadAs(input, NucleiYamlObj.Poc.class);
+            
+            // 添加详细的调试日志
+            if (poc != null) {
+                System.out.println("=== YAML 解析成功 ===");
+                System.out.println("文件: " + new File(fileName).getName());
+                System.out.println("ID: " + poc.getId());
+                System.out.println("协议检测:");
+                System.out.println("  - HTTP: " + (poc.getHttp() != null ? poc.getHttp().size() + " 个" : "null"));
+                System.out.println("  - TCP: " + (poc.getTcp() != null ? poc.getTcp().size() + " 个" : "null"));
+                System.out.println("  - DNS: " + (poc.getDns() != null ? poc.getDns().size() + " 个" : "null"));
+                System.out.println("  - SSL: " + (poc.getSsl() != null ? poc.getSsl().size() + " 个" : "null"));
+                System.out.println("  - WebSocket: " + (poc.getWebsocket() != null ? poc.getWebsocket().size() + " 个" : "null"));
+                System.out.println("  - File: " + (poc.getFile() != null ? poc.getFile().size() + " 个" : "null"));
+                System.out.println("  - Code: " + (poc.getCode() != null ? poc.getCode().size() + " 个" : "null"));
+                System.out.println("  - Headless: " + (poc.getHeadless() != null ? poc.getHeadless().size() + " 个" : "null"));
+                System.out.println("  - Flow: " + poc.getFlow());
+            }
         } catch (Exception e) {
             System.err.println("Error loading Nuclei YAML POC file: " + e.getMessage());
+            e.printStackTrace(); // 打印完整堆栈信息
         }
         return poc;
     }
@@ -115,6 +134,48 @@ public class PocConverter {
             System.err.println("Error loading Xray YAML POC file: " + e.getMessage());
         }
         return poc;
+    }
+
+    // ==================== 从内容加载 ====================
+    
+    public static NucleiYamlObj.Poc loadNucleiYamlFromContent(String content) {
+        LoaderOptions loaderOptions = new LoaderOptions();
+        loaderOptions.setAllowDuplicateKeys(false);
+        NucleiConstructor constructor = new NucleiConstructor(NucleiYamlObj.Poc.class, loaderOptions);
+        Yaml yaml = new Yaml(constructor);
+        try {
+            return yaml.loadAs(content, NucleiYamlObj.Poc.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public static XrayYamlObj.Poc loadXrayYamlFromContent(String content) {
+        LoaderOptions loaderOptions = new LoaderOptions();
+        loaderOptions.setAllowDuplicateKeys(false);
+        XrayConstructor constructor = new XrayConstructor(XrayYamlObj.Poc.class, loaderOptions);
+        Yaml yaml = new Yaml(constructor);
+        try {
+            return yaml.loadAs(content, XrayYamlObj.Poc.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public static GobyJsonObj.PocJson loadGobyJsonFromContent(String content) {
+        try {
+            return new Gson().fromJson(content, GobyJsonObj.PocJson.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public static PocsuiteJsonObj.PocJson loadPocsuiteJsonFromContent(String content) {
+        try {
+            return new Gson().fromJson(content, PocsuiteJsonObj.PocJson.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }

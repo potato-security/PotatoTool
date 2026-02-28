@@ -102,7 +102,7 @@ public class AESUtils {
      * @throws Exception 解密过程中的异常
      */
     public boolean classCode = false;
-    public boolean serializeCode = false;
+    public boolean javaSerializeCode = false;
     public boolean gzipCode = false;
     public byte[] decrypt(byte[] cipherText, byte[] key, byte[] iv, String mode, String padding) throws Exception {
         try {
@@ -176,12 +176,12 @@ public class AESUtils {
 
             if (tmpSerDecryptedTextBytes != null) {
                 decryptedTextBytes = tmpSerDecryptedTextBytes;
-                serializeCode = true;
+                javaSerializeCode = true;
             }
 
             boolean readability = ReadabilityChecker.assessReadability(decryptedTextBytes);
 
-            return (!classCode && !serializeCode && !readability) ? null : decryptedTextBytes;
+            return (!classCode && !javaSerializeCode && !readability) ? null : decryptedTextBytes;
 
         }catch (Exception e){
             if(debugMode)e.printStackTrace();
@@ -304,6 +304,7 @@ public class AESUtils {
             keyArray.add("1a1dc91c907325c6");
             keyArray.add("ab645dd196197df7");
             keyArray.add("5f4dcc3b5aa765d6");
+            keyArray.add("fd690c56512ce362");
             keyArray.add("changeit");
             keyArray.add("whir2014");
             keyArray.add("1234567890123456");
@@ -357,7 +358,7 @@ public class AESUtils {
                                     key_AES.set(keyStr);
                                     iv_AES.set(!iv.equals("Null") ? (mode.equals("ECB") ? "Null" : new String(iv, StandardCharsets.UTF_8)) : "Null");
                                     classCode = aes.classCode;
-                                    serializeCode = aes.serializeCode;
+                                    javaSerializeCode = aes.javaSerializeCode;
 
                                     // 停止所有线程
                                     ExecutorServiceManager.shutdownExecutor(poolName);

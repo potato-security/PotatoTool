@@ -4,6 +4,8 @@ import com.potato.potatotool.utils.data.DeserializerUtils;
 import com.potato.potatotool.utils.data.GzipUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 
+import java.nio.charset.StandardCharsets;
+
 import static com.potato.potatotool.ToStart.debugMode;
 
 /**
@@ -13,8 +15,22 @@ import static com.potato.potatotool.ToStart.debugMode;
 public class ByteDecrypt {
 
     public boolean classCode = false;
-    public boolean serializeCode = false;
+    public boolean javaSerializeCode = false;
     public boolean gzipCode = false;
+
+    // 二进制序列化格式标志
+    public boolean bsonCode = false;
+    public boolean messagePackCode = false;
+    public boolean cborCode = false;
+    public boolean smileCode = false;
+    public boolean hessianCode = false;
+    public boolean ubjsonCode = false;
+    public boolean kryoCode = false;
+    public boolean fstCode = false;
+    public boolean avroCode = false;
+
+    // 记录检测到的格式类型
+    public String detectedBinaryFormat = null;
 
     public static byte[] convertToByteArray(String input) {
         String[] parts = input.split(",");
@@ -63,13 +79,93 @@ public class ByteDecrypt {
 
             if (tmpSerDecryptedTextBytes != null) {
                 byteArray = tmpSerDecryptedTextBytes;
-                serializeCode = true;
+                javaSerializeCode = true;
+            }
+
+            // 二进制序列化格式检测
+            if (!classCode && !javaSerializeCode) {  // 避免重复检测
+                byte[] binaryDeserialized = detectAndDeserializeBinary(byteArray);
+                if (binaryDeserialized != null) {
+                    byteArray = binaryDeserialized;
+                }
             }
 
             return byteArray;
 
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * 检测并反序列化二进制格式
+     * <p>
+     * 分两步处理：
+     * 1. 先检测格式类型
+     * 2. 再执行反序列化获取结果
+     * </p>
+     *
+     * @param data 待检测数据
+     * @return 反序列化后的字节数组，如果无法识别或解析失败则返回null
+     */
+    private byte[] detectAndDeserializeBinary(byte[] data) {
+        if (data == null || data.length == 0) {
+            return null;
+        }
+
+        try {
+            // 步骤1：检测格式（不执行反序列化）
+            String format = BinaryDeserializerFactory.detectFormat(data);
+            if (format == null) {
+                return null;  // 未识别的格式
+            }
+
+            // 步骤2：执行反序列化
+            String result = BinaryDeserializerFactory.autoDeserialize(data);
+            if (result == null) {
+                return null;  // 反序列化失败
+            }
+
+            // 步骤3：根据检测到的格式设置标志
+            detectedBinaryFormat = format;
+            switch (format.toUpperCase()) {
+                case "BSON":
+                    bsonCode = true;
+                    break;
+                case "MESSAGEPACK":
+                    messagePackCode = true;
+                    break;
+                case "CBOR":
+                    cborCode = true;
+                    break;
+                case "SMILE":
+                    smileCode = true;
+                    break;
+                case "HESSIAN":
+                    hessianCode = true;
+                    break;
+                case "UBJSON":
+                    ubjsonCode = true;
+                    break;
+                case "KRYO":
+                    kryoCode = true;
+                    break;
+                case "FST":
+                    fstCode = true;
+                    break;
+                case "AVRO":
+                    avroCode = true;
+                    break;
+            }
+
+            return result.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        } catch (Exception e) {
+            if (debugMode) {
+                e.printStackTrace();
+            }
         }
 
         return null;

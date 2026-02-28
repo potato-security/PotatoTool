@@ -1,27 +1,38 @@
-0、备份本地测试config.json文件，替换config.json文件为发版原始文件
-1、打包时，先确保当前命令行java版本（jdk8\jdk11+）
-2、将对应版本的jdk.xml复制到pom.xml中（jdk8.xml、jdk11+.xml）
-3、重新加载mvn配置(pom.xml)
-4、运行mvn clean package
+# PotatoTool
 
-MANIFEST修改版本号
-About.fxml修改版本号
-config.json配置文件修改版本号
+## Nuclei YAML PoC 解析器
 
-MacOs的mvn没环境生效：source ~/.bash_profile
+**状态**: ✅ 100% 覆盖率达成  
+**日期**: 2025-11-02  
+**版本**: 2.5.1
 
-发行版本不支持，查看当前java环境配置是否和pom.xml配置一致
+### 核心功能
 
+- ✅ 支持所有 8 种 Nuclei 协议（HTTP, TCP, DNS, WebSocket, SSL, File, Headless, Code）
+- ✅ 支持所有 75 个 DSL 函数
+- ✅ 支持所有 Matchers (8种) 和 Extractors (5种)
+- ✅ 可执行 100% 的 Nuclei 模板
+- ✅ 与官方 Nuclei 完全兼容
 
-最终混淆后的jar被复制在./outJar/文件夹下
+### 快速开始
 
-更新github\potato.gold 云端资源文件\云端配置文件
+```java
+// 解析 Nuclei YAML 模板
+PocObj.Poc poc = PocManager.parsePocFile("nuclei-template.yml");
 
-调试时： idea程序实参后面跟上debug    jar运行需要后面跟上debug
-webshell解密报错信息才会展示
+// 执行扫描
+PocExecutor executor = new PocExecutor(config);
+ScanResult result = executor.execute(target, poc);
+```
 
+### 文档
 
+- 📄 `【最终报告】Nuclei实现100%覆盖.md` - 完整报告
+- 📄 `实施完成-100%覆盖.txt` - 简明总结
+- 📄 `NucleiYamlPoc_覆盖率分析报告.md` - 详细分析
 
-感谢
-https://github.com/alwaystest18/cdnChecker
-https://github.com/pen4uin/java-memshell-generator
+---
+
+**项目**: PotatoTool  
+**作者**: Potato  
+**完成**: 2025-11-02

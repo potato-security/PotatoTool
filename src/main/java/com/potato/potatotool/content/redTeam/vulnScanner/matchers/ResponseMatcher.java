@@ -1,14 +1,21 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.matchers;
 
+import com.potato.potatotool.content.redTeam.vulnScanner.core.ResponseCache;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslEvaluatorRefactored;
+import com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtractor.XrayCelEvaluator;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.JsonExtractor;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.VariableExtractor;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.InteractshClient;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -18,13 +25,56 @@ import java.util.regex.PatternSyntaxException;
 public class ResponseMatcher {
 
     /**
-     * 匹配HTTP响应是否符合条件列表
+     * 匹配HTTP响应是否符合条件列表（无缓存版本）
      * @param response HTTP响应对象
      * @param matchers 匹配器列表
      * @param condition 匹配条件（AND/OR）
      * @return 是否匹配成功
      */
     public static boolean matchResponse(CustomHttpResponse response, List<PocObj.Matcher> matchers, PocObj.MatchersCondition condition) {
+        return matchResponse(response, matchers, condition, null, null);
+    }
+
+    /**
+     * 匹配HTTP响应是否符合条件列表（带缓存版本）
+     * @param response HTTP响应对象
+     * @param matchers 匹配器列表
+     * @param condition 匹配条件（AND/OR）
+     * @param responseCache 响应缓存（用于diff操作和多响应支持）
+     * @return 是否匹配成功
+     */
+    public static boolean matchResponse(CustomHttpResponse response, List<PocObj.Matcher> matchers,
+                                       PocObj.MatchersCondition condition, ResponseCache responseCache) {
+        return matchResponse(response, matchers, condition, responseCache, null);
+    }
+
+    /**
+     * 匹配HTTP响应是否符合条件列表（完整版本）
+     * @param response HTTP响应对象
+     * @param matchers 匹配器列表
+     * @param condition 匹配条件（AND/OR）
+     * @param responseCache 响应缓存（用于diff操作和多响应支持）
+     * @param stepId 步骤ID（用于多响应场景，支持body_1, body_2等变量）
+     * @return 是否匹配成功
+     */
+    public static boolean matchResponse(CustomHttpResponse response, List<PocObj.Matcher> matchers,
+                                       PocObj.MatchersCondition condition, ResponseCache responseCache, String stepId) {
+        return matchResponse(response, matchers, condition, responseCache, stepId, null);
+    }
+    
+    /**
+     * 匹配HTTP响应是否符合条件列表（带 POC 变量版本）
+     * @param response HTTP响应对象
+     * @param matchers 匹配器列表
+     * @param condition 匹配条件（AND/OR）
+     * @param responseCache 响应缓存（用于diff操作和多响应支持）
+     * @param stepId 步骤ID（用于多响应场景，支持body_1, body_2等变量）
+     * @param pocVariables POC 变量映射（用于 CEL 表达式中的变量替换，如 s1, s2）
+     * @return 是否匹配成功
+     */
+    public static boolean matchResponse(CustomHttpResponse response, List<PocObj.Matcher> matchers,
+                                       PocObj.MatchersCondition condition, ResponseCache responseCache,
+                                       String stepId, Map<String, Object> pocVariables) {
         if (matchers == null || matchers.isEmpty()) {
             return false;
         }
@@ -32,90 +82,379 @@ public class ResponseMatcher {
         // AND条件：所有匹配器都必须匹配成功
         if (condition == PocObj.MatchersCondition.AND) {
             for (PocObj.Matcher matcher : matchers) {
-                if (!matchSingleMatcher(response, matcher)) {
+                if (!matchSingleMatcher(response, matcher, responseCache, stepId, pocVariables)) {
                     return false;
                 }
             }
             return true;
-        } 
-        // OR条件：任意一个匹配器匹配成功即可
+        }
+        // OR条件：需要更严格的匹配逻辑
         else if (condition == PocObj.MatchersCondition.OR) {
+            // 统计内容匹配器（WORD, REGEX, DSL, CEL, JSON）的数量
+            int contentMatcherCount = 0;
+            boolean hasContentMatch = false;
+
             for (PocObj.Matcher matcher : matchers) {
-                if (matchSingleMatcher(response, matcher)) {
-                    return true;
+                PocObj.MatcherType type = matcher.getType();
+                boolean isContentMatcher = (type == PocObj.MatcherType.WORD ||
+                                           type == PocObj.MatcherType.REGEX ||
+                                           type == PocObj.MatcherType.DSL ||
+                                           type == PocObj.MatcherType.CEL ||
+                                           type == PocObj.MatcherType.JSON);
+
+                if (isContentMatcher) {
+                    contentMatcherCount++;
+                }
+
+                boolean matched = matchSingleMatcher(response, matcher, responseCache, stepId, pocVariables);
+
+                if (matched) {
+                    if (isContentMatcher) {
+                        hasContentMatch = true;
+                    }
+                    // 如果没有内容匹配器，则任意匹配即可
+                    if (contentMatcherCount == 0) {
+                        return true;
+                    }
                 }
             }
+
+            // 如果有内容匹配器，必须至少有一个内容匹配器匹配成功
+            // 这样可以防止仅凭 HTTP 200 状态码就判定为漏洞
+            if (contentMatcherCount > 0) {
+                return hasContentMatch;
+            }
+
             return false;
         }
-        
+
         return false;
+    }
+    
+    /**
+     * 匹配单个匹配器（无缓存版本）
+     */
+    private static boolean matchSingleMatcher(CustomHttpResponse response, PocObj.Matcher matcher) {
+        return matchSingleMatcher(response, matcher, null, null);
+    }
+
+    /**
+     * 匹配单个匹配器（带缓存版本）
+     */
+    private static boolean matchSingleMatcher(CustomHttpResponse response, PocObj.Matcher matcher, ResponseCache responseCache) {
+        return matchSingleMatcher(response, matcher, responseCache, null);
     }
 
     /**
      * 匹配单个匹配器
+     * 
+     * 匹配器类型分类：
+     * - 响应级别（不需要 content）：STATUS, TIME, DSL, CEL, DIFF
+     * - 内容级别（需要 content）：WORD, REGEX, SIZE, JSON
+     * - 字节级别（需要 byte[]）：BINARY, HASH
+     * - 组合类型：GROUP
+     * 
      * @param response HTTP响应对象
      * @param matcher 匹配器
+     * @param responseCache 响应缓存
+     * @param stepId 步骤ID（用于多响应场景）
      * @return 是否匹配成功
      */
-    private static boolean matchSingleMatcher(CustomHttpResponse response, PocObj.Matcher matcher) {
-        if (matcher == null || matcher.getValues() == null || matcher.getValues().isEmpty()) {
+    private static boolean matchSingleMatcher(CustomHttpResponse response, PocObj.Matcher matcher,
+                                             ResponseCache responseCache, String stepId) {
+        return matchSingleMatcher(response, matcher, responseCache, stepId, null);
+    }
+    
+    /**
+     * 匹配单个匹配器（带 POC 变量）
+     */
+    private static boolean matchSingleMatcher(CustomHttpResponse response, PocObj.Matcher matcher,
+                                             ResponseCache responseCache, String stepId,
+                                             Map<String, Object> pocVariables) {
+        // 1. 基础校验
+        if (matcher == null || matcher.getType() == null) {
             return false;
         }
-
-        String part = matcher.getPart();
-        String content = VariableExtractor.getResponsePart(response, part);
-        byte[] contentByte = response.getByteArray();
         
-        if (content == null) {
-            return false;
-        }
-
         PocObj.MatcherType type = matcher.getType();
         List<String> values = matcher.getValues();
-        boolean caseInsensitive = matcher.isCaseInsensitive();
         PocObj.OperationType operation = matcher.getOperation();
-
+        
+        // 2. 特殊操作：DIFF 比较（用于盲注检测）
+        if (operation == PocObj.OperationType.DIFF && responseCache != null) {
+            return matchDiff(response, values, matcher.getPart(), responseCache);
+        }
+        
+        // 3. 按类型分派处理
         switch (type) {
+            // ========== 响应级别匹配（不需要提取 content）==========
             case STATUS:
-                try {
-                    return matchStatus(response.getResponseCode(), values);
-                }catch (Exception e){
-                    return false;
-                }
-            case SIZE:
-                int size = content.length();
-                return matchSize(size, values, operation);
-            case WORD:
-                return matchWord(content, values, caseInsensitive);
-            case REGEX:
-                return matchRegex(content, values, caseInsensitive);
-            case BINARY:
-                return matchBinary(contentByte, values);
-            case HASH:
-                return matchHash(contentByte, values, operation);
-            case JSON:
-                return JsonExtractor.matchJson(content, values);
-            case DSL:
-                return DslEvaluatorRefactored.matchDslWithNestedMatchers(values, response, response);
+                return matchStatusCode(response, values);
+                
             case TIME:
-                return matchTime(response.getResponseTime(), values, operation);
-            case GROUP:
-                // 处理子匹配器组
-                if (matcher.getSubMatchers() != null && !matcher.getSubMatchers().isEmpty()) {
-                    List<PocObj.Matcher> subMatchers = matcher.getSubMatchers();
-                    String condition = matcher.getCondition();
-                    PocObj.MatchersCondition matchersCondition = PocObj.MatchersCondition.AND;
-                    if (condition != null && condition.equalsIgnoreCase("OR")) {
-                        matchersCondition = PocObj.MatchersCondition.OR;
-                    }
-                    return matchResponse(response, subMatchers, matchersCondition);
+                return matchTime(response.getResponseTime(), values, operation, matcher.getTimeUnit());
+                
+            case DSL:
+                // Nuclei DSL 表达式匹配
+                return matchDsl(values, response, responseCache, stepId);
+                
+            case CEL:
+                // Xray CEL 表达式匹配（传递 POC 变量用于表达式求值）
+                return matchCel(values, response, pocVariables);
+                
+            // ========== 内容级别匹配（需要提取 content）==========
+            case WORD:
+            case REGEX:
+            case SIZE:
+            case JSON:
+                // 特殊处理：DNSLog 验证 ($reserver)
+                if (matcher.getPart() != null && 
+                   ("$reserver".equalsIgnoreCase(matcher.getPart()) || "reserver".equalsIgnoreCase(matcher.getPart()))) {
+                    return checkDnsLog(values);
                 }
-                return false;
+                return matchContentBased(type, matcher, response, pocVariables);
+                
+            // ========== 字节级别匹配（需要 byte[]）==========
+            case BINARY:
+            case HASH:
+                return matchBytesBased(type, matcher, response);
+                
+            // ========== 组合类型 ==========
+            case GROUP:
+                return matchGroup(matcher, response, responseCache, stepId);
+                
             default:
                 return false;
         }
     }
+    
+    /**
+     * 状态码匹配
+     */
+    private static boolean matchStatusCode(CustomHttpResponse response, List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return false;
+        }
+        try {
+            return matchStatus(response.getResponseCode(), values);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * DSL 表达式匹配（Nuclei）
+     */
+    private static boolean matchDsl(List<String> values, CustomHttpResponse response, 
+                                    ResponseCache responseCache, String stepId) {
+        if (values == null || values.isEmpty()) {
+            return false;
+        }
+        return DslEvaluatorRefactored.matchDslWithNestedMatchers(values, response, response, responseCache, stepId);
+    }
+    
+    /**
+     * CEL 表达式匹配（Xray）
+     */
+    private static boolean matchCel(List<String> values, CustomHttpResponse response, 
+                                    Map<String, Object> pocVariables) {
+        if (values == null || values.isEmpty()) {
+            return false;
+        }
+        return XrayCelEvaluator.evaluate(values.get(0), response, null, pocVariables);
+    }
+    
+    /**
+     * 基于内容的匹配（WORD, REGEX, SIZE, JSON）
+     */
+    private static boolean matchContentBased(PocObj.MatcherType type, PocObj.Matcher matcher, 
+                                             CustomHttpResponse response,
+                                             Map<String, Object> pocVariables) {
+        List<String> values = matcher.getValues();
+        if (values == null || values.isEmpty()) {
+            return false;
+        }
+        
+        // 替换 Goby 风格的变量引用 {{{varName}}}
+        if (pocVariables != null && !pocVariables.isEmpty()) {
+            values = substituteGobyVariables(values, pocVariables);
+        }
+        
+        String part = matcher.getPart();
+        String content = VariableExtractor.getResponsePart(response, part);
+        if (content == null) {
+            return false;
+        }
+        
+        boolean caseInsensitive = matcher.isCaseInsensitive();
+        
+        PocObj.OperationType operation = matcher.getOperation();
+        
+        switch (type) {
+            case WORD:
+                // HTTP 头名称是大小写不敏感的，对 header 匹配默认忽略大小写
+                boolean effectiveCaseInsensitive = caseInsensitive || "header".equalsIgnoreCase(part);
+                boolean wordMatch = matchWord(content, values, effectiveCaseInsensitive);
+                // 处理 NOT_CONTAINS 操作
+                if (operation == PocObj.OperationType.NOT_CONTAINS) {
+                    return !wordMatch;
+                }
+                return wordMatch;
+            case REGEX:
+                return matchRegex(content, values, caseInsensitive);
+            case SIZE:
+                return matchSize(content.length(), values, matcher.getOperation());
+            case JSON:
+                return JsonExtractor.matchJson(content, values);
+            default:
+                return false;
+        }
+    }
+    
+    /**
+     * 基于字节的匹配（BINARY, HASH）
+     */
+    private static boolean matchBytesBased(PocObj.MatcherType type, PocObj.Matcher matcher,
+                                           CustomHttpResponse response) {
+        List<String> values = matcher.getValues();
+        if (values == null || values.isEmpty()) {
+            return false;
+        }
+        
+        byte[] contentBytes = response.getByteArray();
+        if (contentBytes == null) {
+            return false;
+        }
+        
+        switch (type) {
+            case BINARY:
+                return matchBinary(contentBytes, values);
+            case HASH:
+                return matchHash(contentBytes, values, matcher.getOperation());
+            default:
+                return false;
+        }
+    }
+    
+    /**
+     * 匹配器组匹配（GROUP）
+     */
+    private static boolean matchGroup(PocObj.Matcher matcher, CustomHttpResponse response,
+                                      ResponseCache responseCache, String stepId) {
+        List<PocObj.Matcher> subMatchers = matcher.getSubMatchers();
+        if (subMatchers == null || subMatchers.isEmpty()) {
+            return false;
+        }
+        
+        // 解析组合条件（默认 AND）
+        PocObj.MatchersCondition condition = PocObj.MatchersCondition.AND;
+        if ("OR".equalsIgnoreCase(matcher.getCondition())) {
+            condition = PocObj.MatchersCondition.OR;
+        }
+        
+        return matchResponse(response, subMatchers, condition, responseCache, stepId);
+    }
+    
+    /**
+     * 匹配差异对比
+     * 用于布尔盲注检测，对比当前响应与之前缓存的响应
+     * 
+     * @param currentResponse 当前响应
+     * @param values 匹配值（格式：cacheKey 或 cacheKey1:cacheKey2）
+     * @param compareType 对比类型（body, header, status, length, time）
+     * @param responseCache 响应缓存
+     * @return 是否存在差异
+     */
+    private static boolean matchDiff(CustomHttpResponse currentResponse, List<String> values, 
+                                    String compareType, ResponseCache responseCache) {
+        if (values == null || values.isEmpty() || responseCache == null) {
+            return false;
+        }
+        
+        String value = values.get(0);
+        if (value == null || value.isEmpty()) {
+            return false;
+        }
+        
+        // 解析缓存键
+        // 格式1: "key1" - 对比当前响应与缓存key1
+        // 格式2: "key1:key2" - 对比缓存key1与缓存key2
+        String[] keys = value.split(":");
+        
+        if (keys.length == 1) {
+            // 对比当前响应与缓存的响应
+            String cacheKey = keys[0].trim();
+            ResponseCache.CachedResponse cachedResp = responseCache.get(cacheKey);
+            
+            if (cachedResp == null) {
+                System.err.println("未找到缓存的响应: " + cacheKey);
+                return false;
+            }
+            
+            // 将当前响应转换为CachedResponse进行对比
+            ResponseCache.CachedResponse currentCached = new ResponseCache.CachedResponse(
+                currentResponse.getResponseCode(),
+                currentResponse.getTextStr(),
+                currentResponse.getHeaderFieldsText(),
+                currentResponse.getByteArray(),
+                currentResponse.getResponseTime(),
+                0, 0
+            );
+            
+            ResponseCache.DiffResult result = ResponseCache.diff(currentCached, cachedResp, compareType);
+            return result.isDifferent();
+            
+        } else if (keys.length == 2) {
+            // 对比两个缓存的响应
+            String cacheKey1 = keys[0].trim();
+            String cacheKey2 = keys[1].trim();
+            
+            ResponseCache.DiffResult result = responseCache.diff(cacheKey1, cacheKey2, compareType);
+            if (result == null) {
+                return false;
+            }
+            
+            return result.isDifferent();
+        } else {
+            System.err.println("无效的diff格式: " + value);
+            return false;
+        }
+    }
 
+
+    private static boolean checkDnsLog(List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return false;
+        }
+
+        for (String value : values) {
+            if (value == null || value.isEmpty()) continue;
+
+            // 1. 尝试 Interactsh 验证（Nuclei OOB）
+            try {
+                if (value.contains("oast.") || value.contains("interactsh.")) {
+                    InteractshClient client = InteractshClient.getDefaultInstance();
+                    if (client != null && client.hasInteraction(value)) {
+                        return true;
+                    }
+                }
+            } catch (Exception e) {
+                // Interactsh 查询失败，继续尝试其他方式
+            }
+
+            // 2. 尝试 DnsLogService 验证（dnslog.cn / ceye.io）
+            try {
+                String records = DnsLogService.queryDnsLogRecords(value);
+                if (records != null && !records.isEmpty() && !records.equals("[]")) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // DnsLog 查询失败
+            }
+        }
+
+        return false;
+    }
 
     /**
      * 匹配HTTP状态码
@@ -302,53 +641,76 @@ public class ResponseMatcher {
 
     /**
      * 匹配响应时间
-     * @param responseTime 实际响应时间
-     * @param values 期望的响应时间列表
+     * 
+     * @param responseTime 实际响应时间（毫秒）- 内部统一使用毫秒作为标准单位
+     * @param values 期望的响应时间列表（原始值，单位由 timeUnit 决定）
      * @param operation 比较操作类型
+     * @param timeUnit 时间单位：
+     *                 - "ms": 毫秒（Goby、内部标准）
+     *                 - "s": 秒（Pocsuite、默认值）
+     *                 - null: 默认为秒（向后兼容）
      * @return 是否匹配成功
+     * 
+     * 说明：
+     * - Pocsuite JsonPoc: time 字段单位为秒 (s)
+     * - Goby JsonPoc: $time 变量单位为毫秒 (ms)
+     * - 内部统一使用毫秒进行比较
      */
-    private static boolean matchTime(long responseTime, List<String> values, PocObj.OperationType operation) {
+    private static boolean matchTime(long responseTime, List<String> values, 
+                                     PocObj.OperationType operation, String timeUnit) {
         if (values == null || values.isEmpty()) {
             return false;
         }
 
         for (String value : values) {
             try {
-                long targetTime = Long.parseLong(value.trim());
+                double targetTime = Double.parseDouble(value.trim());
+                long targetTimeMs;
+                
+                // 根据时间单位转换为毫秒
+                if ("ms".equals(timeUnit)) {
+                    // Goby: 已经是毫秒，直接使用
+                    targetTimeMs = (long) targetTime;
+                } else {
+                    // Pocsuite 或默认: 秒转毫秒
+                    targetTimeMs = (long) (targetTime * 1000);
+                }
 
                 switch (operation) {
                     case NOT_EQUAL:
-                        if (responseTime != targetTime) {
+                        if (responseTime != targetTimeMs) {
                             return true;
                         }
                         break;
                     case GREATER:
-                        if (responseTime > targetTime) {
+                        if (responseTime > targetTimeMs) {
                             return true;
                         }
                         break;
                     case LESS:
-                        if (responseTime < targetTime) {
+                        if (responseTime < targetTimeMs) {
                             return true;
                         }
                         break;
                     case GREATER_EQUAL:
-                        if (responseTime >= targetTime) {
+                        if (responseTime >= targetTimeMs) {
                             return true;
                         }
                         break;
                     case LESS_EQUAL:
-                        if (responseTime <= targetTime) {
+                        if (responseTime <= targetTimeMs) {
                             return true;
                         }
                         break;
                     default:
-                        if (responseTime == targetTime) {
+                        // 默认使用大于等于（符合 Pocsuite 官方语义）
+                        if (responseTime >= targetTimeMs) {
                             return true;
                         }
                 }
             } catch (NumberFormatException e) {
                 // 忽略非法值
+                System.err.println("Invalid time value: " + value);
             }
         }
         
@@ -397,5 +759,46 @@ public class ResponseMatcher {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+    
+    /**
+     * 替换 Goby 风格的变量引用 {{{varName}}}
+     * @param values 原始值列表
+     * @param pocVariables POC 变量映射
+     * @return 替换后的值列表
+     */
+    private static List<String> substituteGobyVariables(List<String> values, Map<String, Object> pocVariables) {
+        if (values == null || values.isEmpty() || pocVariables == null || pocVariables.isEmpty()) {
+            return values;
+        }
+        
+        List<String> result = new ArrayList<>(values.size());
+        // Goby 变量格式: {{{varName}}}
+        Pattern pattern = Pattern.compile("\\{\\{\\{([^}]+)\\}\\}\\}");
+        
+        for (String value : values) {
+            if (value == null) {
+                result.add(null);
+                continue;
+            }
+            
+            Matcher m = pattern.matcher(value);
+            StringBuffer sb = new StringBuffer();
+            
+            while (m.find()) {
+                String varName = m.group(1);
+                Object varValue = pocVariables.get(varName);
+                if (varValue != null) {
+                    m.appendReplacement(sb, Matcher.quoteReplacement(varValue.toString()));
+                } else {
+                    // 变量未找到，保留原样
+                    m.appendReplacement(sb, Matcher.quoteReplacement(m.group(0)));
+                }
+            }
+            m.appendTail(sb);
+            result.add(sb.toString());
+        }
+        
+        return result;
     }
 } 

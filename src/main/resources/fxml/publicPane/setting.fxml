@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
+<?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 
 <?import java.lang.*?>
 <?import java.util.*?>
@@ -50,13 +52,13 @@
                         </HBox>
                     </right>
                 </BorderPane>
-                <ScrollPane prefHeight="550" styleClass="SPane" prefWidth="${an.width - 18}">
+                <SmoothScrollPane prefHeight="550" styleClass="SPane" prefWidth="${an.width - 18}">
                     <VBox styleClass="content" alignment="CENTER" spacing="10" prefWidth="${an.width - 28}">
                         <VBox fx:id="vBoxBar">
                             <Accordion fx:id="settingAccordion" prefWidth="${an.width - 38}">
                                 <panes>
                                     <!-- 基础配置 -->
-                                    <TitledPane fx:id="basicPane" text="⚙️ 基础配置" userData="i18n:setting.basic.title">
+                                    <TitledPane fx:id="basicPane" text="基础配置" userData="i18n:setting.basic.title">
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
                                             <StackPane>
                                                 <Label fx:id="maxWidthlabel" style="-fx-text-fill: -main-topBar-color;" textAlignment="RIGHT" text="长格式占位符：" userData="i18n:setting.basic.placeholder.long"/>
@@ -122,7 +124,7 @@
                                     </TitledPane>
 
                                     <!-- AI配置 -->
-                                    <TitledPane fx:id="aiPane" text="🤖 AI配置" userData="i18n:setting.ai.title">
+                                    <TitledPane fx:id="aiPane" text="AI配置" userData="i18n:setting.ai.title">
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="AI_API_Base：" userData="i18n:setting.ai.api.base">
@@ -181,7 +183,7 @@
                                     </TitledPane>
 
                                     <!-- 资产测绘配置 -->
-                                    <TitledPane fx:id="assetPane" text="🔍 资产测绘配置" userData="i18n:setting.asset.title">
+                                    <TitledPane fx:id="assetPane" text="资产测绘配置" userData="i18n:setting.asset.title">
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${maxWidthlabel.width}" visible="false"/>
@@ -354,8 +356,161 @@
                                         </VBox>
                                     </TitledPane>
 
+                                    <!-- 漏洞扫描配置 -->
+                                    <TitledPane fx:id="vulnScanPane" text="漏洞扫描配置" userData="i18n:setting.vulnscan.title">
+                                        <VBox styleClass="contentCell" alignment="CENTER" spacing="15" style="-fx-padding: 15;">
+                                            
+                                            <!-- 性能配置区 -->
+                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M11.11 23.569a1.2 1.2 0 0 1-.447-.087 1.19 1.19 0 0 1-.741-1.074l-.545-7.569H3.2a1.2 1.2 0 0 1-1.056-1.776l8.4-15.6a1.2 1.2 0 0 1 2.244.696l-.545 7.569h6.157a1.2 1.2 0 0 1 1.056 1.776l-8.4 15.6a1.2 1.2 0 0 1-.946.465z'; -fx-background-color: -main-border-color;"/>
+                                                    <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: -main-border-color;"
+                                                          text="性能配置" userData="i18n:setting.vulnscan.performance"/>
+                                                </HBox>
+                                                <FlowPane hgap="25" vgap="12" alignment="CENTER_LEFT">
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="核心线程:" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.core.threads"/>
+                                                        <TextField fx:id="vulnScanCoreThreads" prefWidth="70" promptText="10" style="-fx-font-size: 12px;">
+                                                            <tooltip><Tooltip text="并发扫描的基础线程数 (建议: 2-20)" userData="i18n:setting.vulnscan.core.threads.tip"/></tooltip>
+                                                        </TextField>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="最大线程:" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.max.threads"/>
+                                                        <TextField fx:id="vulnScanMaxThreads" prefWidth="70" promptText="50" style="-fx-font-size: 12px;">
+                                                            <tooltip><Tooltip text="高负载时的最大线程数 (建议: 10-100)" userData="i18n:setting.vulnscan.max.threads.tip"/></tooltip>
+                                                        </TextField>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="队列容量:" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.queue.size"/>
+                                                        <TextField fx:id="vulnScanQueueSize" prefWidth="80" promptText="1000" style="-fx-font-size: 12px;">
+                                                            <tooltip><Tooltip text="等待执行的任务队列大小" userData="i18n:setting.vulnscan.queue.size.tip"/></tooltip>
+                                                        </TextField>
+                                                    </HBox>
+                                                </FlowPane>
+                                            </VBox>
+                                            
+                                            <!-- 网络配置区 -->
+                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'; -fx-background-color: -main-border-color;"/>
+                                                    <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: -main-border-color;"
+                                                          text="网络配置" userData="i18n:setting.vulnscan.network"/>
+                                                </HBox>
+                                                <FlowPane hgap="25" vgap="12" alignment="CENTER_LEFT">
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="超时(秒):" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.timeout"/>
+                                                        <TextField fx:id="vulnScanTimeout" prefWidth="60" promptText="15" style="-fx-font-size: 12px;">
+                                                            <tooltip><Tooltip text="HTTP请求超时时间" userData="i18n:setting.vulnscan.timeout.tip"/></tooltip>
+                                                        </TextField>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="重试次数:" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.retries"/>
+                                                        <TextField fx:id="vulnScanRetries" prefWidth="50" promptText="2" style="-fx-font-size: 12px;">
+                                                            <tooltip><Tooltip text="请求失败后的重试次数" userData="i18n:setting.vulnscan.retries.tip"/></tooltip>
+                                                        </TextField>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="使用代理:" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.proxy"/>
+                                                        <CFSwitch fx:id="vulnScanProxySwitch">
+                                                            <tooltip><Tooltip text="启用后将使用全局代理进行扫描" userData="i18n:setting.vulnscan.proxy.tip"/></tooltip>
+                                                        </CFSwitch>
+                                                    </HBox>
+                                                </FlowPane>
+                                            </VBox>
+                                            
+                                            <!-- 报告配置区 -->
+                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z'; -fx-background-color: -main-border-color;"/>
+                                                    <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: -main-border-color;"
+                                                          text="报告配置" userData="i18n:setting.vulnscan.report"/>
+                                                </HBox>
+                                                <FlowPane hgap="25" vgap="12" alignment="CENTER_LEFT">
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="输出目录:" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.report.dir"/>
+                                                        <TextField fx:id="vulnScanReportDir" prefWidth="150" promptText="reports" style="-fx-font-size: 12px;">
+                                                            <tooltip><Tooltip text="扫描报告的保存目录" userData="i18n:setting.vulnscan.report.dir.tip"/></tooltip>
+                                                        </TextField>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="导出格式:" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.report.format"/>
+                                                        <ComboBox fx:id="vulnScanReportFormat" prefWidth="90" style="-fx-font-size: 12px;">
+                                                            <items>
+                                                                <FXCollections fx:factory="observableArrayList">
+                                                                    <String fx:value="HTML" />
+                                                                    <String fx:value="JSON" />
+                                                                    <String fx:value="CSV" />
+                                                                    <String fx:value="Excel" />
+                                                                </FXCollections>
+                                                            </items>
+                                                        </ComboBox>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="自动导出:" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.auto.export"/>
+                                                        <CFSwitch fx:id="vulnScanAutoExport">
+                                                            <tooltip><Tooltip text="扫描完成后自动生成报告" userData="i18n:setting.vulnscan.auto.export.tip"/></tooltip>
+                                                        </CFSwitch>
+                                                    </HBox>
+                                                </FlowPane>
+                                            </VBox>
+                                            
+                                            <!-- 操作按钮 -->
+                                            <HBox alignment="CENTER" spacing="15" style="-fx-padding: 5 0 0 0;">
+                                                <Button minHeight="32" minWidth="100" text="恢复默认" onAction="#resetVulnScanDefaults" style="-fx-font-size: 12px;" userData="i18n:setting.vulnscan.reset">
+                                                    <tooltip><Tooltip text="将所有配置恢复为默认值" userData="i18n:setting.vulnscan.reset.tip"/></tooltip>
+                                                    <effect><DropShadow color="#00000020" radius="3" offsetY="1"/></effect>
+                                                </Button>
+                                                <Button minHeight="32" minWidth="100" text="保存配置" userData="i18n:app.save" onAction="#saveVulnScan" style="-fx-font-size: 12px; -fx-base: -main-border-color;">
+                                                    <effect><DropShadow color="#00000030" radius="3" offsetY="1"/></effect>
+                                                </Button>
+                                            </HBox>
+                                        </VBox>
+                                    </TitledPane>
+                                    
+                                    <!-- HTTP Headers 管理 -->
+                                    <TitledPane fx:id="headerPane" text="HTTP Headers 管理" userData="i18n:setting.headers.title">
+                                        <VBox styleClass="contentCell" alignment="CENTER" spacing="15" style="-fx-padding: 15;">
+
+                                            <!-- Header模板 -->
+                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z'; -fx-background-color: -main-border-color;"/>
+                                                    <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: -main-border-color;"
+                                                          text="Header 模板" userData="i18n:setting.headers.template"/>
+                                                </HBox>
+                                                <FlowPane fx:id="headerTemplatePane" hgap="10" vgap="8">
+                                                </FlowPane>
+                                            </VBox>
+
+                                            <!-- Headers 编辑区 -->
+                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'; -fx-background-color: -main-border-color;"/>
+                                                    <Label style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: -main-border-color;"
+                                                          text="Headers 配置（全局生效）" userData="i18n:setting.headers.edit"/>
+                                                </HBox>
+                                                <Label style="-fx-font-size: 11px; -fx-text-fill: #888888;"
+                                                      text="提示：如果自定义了 User-Agent 则会覆盖随机UA；此处配置对所有HTTP请求全局生效" userData="i18n:setting.headers.edit.tip"/>
+                                                <SmoothTextArea fx:id="defaultHeadersArea" prefHeight="120" promptText="Accept: */*&#10;Accept-Language: zh-CN,zh;q=0.9,en;q=0.8&#10;User-Agent: 自定义UA（可选，会覆盖随机UA）"
+                                                          style="-fx-font-family: 'Consolas', monospace; -fx-font-size: 11px;">
+                                                    <tooltip><Tooltip text="每行一个Header，格式: Header-Name: Header-Value" userData="i18n:setting.headers.default.tip"/></tooltip>
+                                                </SmoothTextArea>
+                                            </VBox>
+
+                                            <!-- 操作按钮 -->
+                                            <HBox alignment="CENTER" spacing="15" style="-fx-padding: 5 0 0 0;">
+                                                <Button minHeight="32" minWidth="100" text="重置为默认" onAction="#resetHeaders" style="-fx-font-size: 12px;" userData="i18n:setting.headers.reset">
+                                                    <effect><DropShadow color="#00000020" radius="3" offsetY="1"/></effect>
+                                                </Button>
+                                                <Button minHeight="32" minWidth="100" text="保存" onAction="#saveHeaders" style="-fx-font-size: 12px; -fx-base: -main-border-color;" userData="i18n:setting.headers.save">
+                                                    <effect><DropShadow color="#00000030" radius="3" offsetY="1"/></effect>
+                                                </Button>
+                                            </HBox>
+                                        </VBox>
+                                    </TitledPane>
+
                                     <!-- 在线更新 -->
-                                    <TitledPane fx:id="updatePane" text="🔄 在线更新" userData="i18n:setting.update.title">
+                                    <TitledPane fx:id="updatePane" text="在线更新" userData="i18n:setting.update.title">
                                         <VBox styleClass="contentCellLast" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
                                             <!-- 更新设置 -->
                                             <VBox spacing="10" alignment="CENTER_LEFT">
@@ -455,13 +610,10 @@
                             </Accordion>
                         </VBox>
                     </VBox>
-                </ScrollPane>
+                </SmoothScrollPane>
             </VBox>
-            <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"  maxHeight="50" maxWidth="250" alignment="CENTER" StackPane.alignment="CENTER">
-                <effect>
-                    <DropShadow/>
-                </effect>
-                <Label fx:id="prompt"/>
+            <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
+                <Label fx:id="prompt" maxWidth="600"/>
             </StackPane>
         </StackPane>
     </children>

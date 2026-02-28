@@ -129,7 +129,7 @@ public class ReadabilityChecker {
     public static void main(String[] args) {
         String decryptedString = "Decrypted result";
 
-        boolean isReadable = assessReadability(decryptedString);
+        boolean isReadable = assessReadability(decryptedString,1,0);
         System.out.println("Is readable? " + isReadable);
     }
 }
