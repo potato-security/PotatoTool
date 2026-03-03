@@ -75,17 +75,21 @@ public class NucleiYamlObjTest {
         assertNotNull(poc.getHttp());
         NucleiYamlObj.Http http = poc.getHttp().get(0);
         assertNotNull(http.getMatchers());
-        assertEquals(8, http.getMatchers().size(), "应该有8个匹配器");
+        assertEquals(10, http.getMatchers().size(), "应该有10个匹配器");
         
         // 验证各种匹配器类型
-        boolean hasStatus = false, hasWord = false, hasRegex = false, hasBinary = false;
-        boolean hasDsl = false, hasJson = false, hasKval = false, hasXpath = false;
+        boolean hasStatus = false, hasSize = false, hasWord = false, hasRegex = false, hasBinary = false;
+        boolean hasTime = false, hasDsl = false, hasJson = false, hasKval = false, hasXpath = false;
         
         for (NucleiYamlObj.TemplateMatcher matcher : http.getMatchers()) {
             switch (matcher.getType()) {
                 case "status":
                     hasStatus = true;
                     assertTrue(matcher instanceof NucleiYamlObj.Status);
+                    break;
+                case "size":
+                    hasSize = true;
+                    assertTrue(matcher instanceof NucleiYamlObj.Size);
                     break;
                 case "word":
                     hasWord = true;
@@ -98,6 +102,10 @@ public class NucleiYamlObjTest {
                 case "binary":
                     hasBinary = true;
                     assertTrue(matcher instanceof NucleiYamlObj.Binary);
+                    break;
+                case "time":
+                    hasTime = true;
+                    assertTrue(matcher instanceof NucleiYamlObj.Time);
                     break;
                 case "dsl":
                     hasDsl = true;
@@ -118,8 +126,8 @@ public class NucleiYamlObjTest {
             }
         }
         
-        assertTrue(hasStatus && hasWord && hasRegex && hasBinary && 
-                  hasDsl && hasJson && hasKval && hasXpath, 
+        assertTrue(hasStatus && hasSize && hasWord && hasRegex && hasBinary &&
+                  hasTime && hasDsl && hasJson && hasKval && hasXpath,
                   "所有匹配器类型都应该被解析");
     }
     

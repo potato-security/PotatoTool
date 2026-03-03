@@ -1,0 +1,24 @@
+id: network-protocol-test
+
+info:
+  name: Network Protocol Test
+  author: Potato
+  severity: medium
+  description: network协议兼容测试用例
+  tags: test,network
+
+network:
+  - host:
+      - "{{Hostname}}"
+    port: "6379,6380"
+    inputs:
+      - data: "PING\r\n"
+        type: hex
+        name: ping
+        read: 1024
+    matchers:
+      - type: word
+        words:
+          - "+PONG"
+        condition: and
+        name: redis_check

@@ -281,6 +281,72 @@ public class ReportEnhancementTest {
         System.out.println("✅ 大数据处理测试通过");
     }
 
+    @Test
+    public void testJsonReportShouldNotExportInternalWarnings() throws Exception {
+        ScanResult result = createMockResult(
+            "http://example.com/internal-warning",
+            "内部告警字段导出边界测试",
+            "internal-warning-boundary-test",
+            PocObj.Severity.MEDIUM,
+            "Boundary Test",
+            "/api/test",
+            "test-payload",
+            "GET /api/test HTTP/1.1\nHost: example.com\n",
+            "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\"ok\":true}"
+        );
+
+        // 模拟内部字段（应只存在运行态，不应进入导出报告）
+        java.util.Map<String, Object> details = new java.util.HashMap<>();
+        details.put("semanticWarnings", java.util.Arrays.asList("semantic-warning-1"));
+        details.put("conversionWarnings", java.util.Arrays.asList("conversion-warning-1"));
+        details.put("unsupportedCapabilities", java.util.Arrays.asList("unsupported-cap-1"));
+        result.setDetails(details);
+
+        // outputData 是业务输出，应该保留
+        java.util.Map<String, Object> outputData = new java.util.HashMap<>();
+        outputData.put("businessKey", "businessValue");
+        result.setOutputData(outputData);
+
+        // POC内部诊断字段（同样不应导出）
+        PocObj.Poc poc = result.getPoc();
+        java.util.Map<String, Object> semWarn = new java.util.HashMap<>();
+        semWarn.put("code", "semantic-warning-2");
+        java.util.Map<String, Object> convWarn = new java.util.HashMap<>();
+        convWarn.put("code", "conversion-warning-2");
+        java.util.Map<String, Object> unsupWarn = new java.util.HashMap<>();
+        unsupWarn.put("code", "unsupported-cap-2");
+
+        poc.setSemanticWarnings(java.util.Arrays.asList(semWarn));
+        poc.setConversionWarnings(java.util.Arrays.asList(convWarn));
+        poc.setUnsupportedCapabilities(java.util.Arrays.asList(unsupWarn));
+
+        java.util.List<ScanResult> results = new java.util.ArrayList<>();
+        results.add(result);
+
+        JsonReportGenerator generator = new JsonReportGenerator();
+        File reportFile = tempDir.resolve("json-warning-boundary-report.json").toFile();
+        File output = generator.generate(results, reportFile.getAbsolutePath());
+
+        assertTrue(output.exists(), "JSON报告文件应该被创建");
+
+        String content = new String(java.nio.file.Files.readAllBytes(output.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+
+        // 内部诊断字段不应导出
+        assertFalse(content.contains("semanticWarnings"), "报告不应包含 semanticWarnings");
+        assertFalse(content.contains("conversionWarnings"), "报告不应包含 conversionWarnings");
+        assertFalse(content.contains("unsupportedCapabilities"), "报告不应包含 unsupportedCapabilities");
+        assertFalse(content.contains("warningSummary"), "报告不应包含 warningSummary");
+        assertFalse(content.contains("matcherPolicy"), "报告不应包含 matcherPolicy");
+        assertFalse(content.contains("flowExecutionMode"), "报告不应包含 flowExecutionMode");
+
+        // 业务字段应保留
+        assertTrue(content.contains("outputData"), "报告应包含 outputData");
+        assertTrue(content.contains("businessKey"), "报告应包含 outputData 业务键");
+        assertTrue(content.contains("businessValue"), "报告应包含 outputData 业务值");
+
+        System.out.println("✅ JSON报告内部字段导出边界测试通过");
+    }
+
     /**
      * 创建模拟的扫描结果
      */

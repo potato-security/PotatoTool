@@ -19,7 +19,13 @@ http:
           - 200
           - 302
         name: status_check
-      
+
+      # Size Matcher
+      - type: size
+        size:
+          - 100
+        name: size_check
+
       # Word Matcher
       - type: word
         words:
@@ -29,7 +35,7 @@ http:
         case-insensitive: true
         condition: or
         name: word_check
-      
+
       # Regex Matcher
       - type: regex
         regex:
@@ -37,14 +43,20 @@ http:
         part: body
         group: 1
         name: regex_check
-      
+
       # Binary Matcher
       - type: binary
         binary:
           - "504B0304"  # ZIP file header
         part: body
         name: binary_check
-      
+
+      # Time Matcher
+      - type: time
+        time:
+          - "1"
+        name: time_check
+
       # DSL Matcher
       - type: dsl
         dsl:
@@ -52,23 +64,22 @@ http:
           - "len(body) > 100"
         condition: and
         name: dsl_check
-      
+
       # JSON Matcher
       - type: json
         json:
           - '.status == "ok"'
         name: json_check
-      
+
       # Kval Matcher
       - type: kval
         kval:
           - "Content-Type: application/json"
         part: header
         name: kval_check
-      
+
       # XPath Matcher
       - type: xpath
         xpath:
           - "/html/head/title"
         name: xpath_check
-

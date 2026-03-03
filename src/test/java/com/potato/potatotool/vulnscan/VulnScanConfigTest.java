@@ -35,7 +35,7 @@ public class VulnScanConfigTest {
             HeaderManager headerManager = HeaderManager.getInstance();
             
             // 测试获取默认Headers
-            Map<String, String> defaultHeaders = headerManager.getDefaultHeaders();
+            Map<String, String> defaultHeaders = headerManager.getCustomHeaders();
             System.out.println("✓ 默认Headers数量: " + defaultHeaders.size());
             for (Map.Entry<String, String> entry : defaultHeaders.entrySet()) {
                 System.out.println("  - " + entry.getKey() + ": " + 

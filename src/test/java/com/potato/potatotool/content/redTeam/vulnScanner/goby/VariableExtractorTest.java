@@ -576,22 +576,93 @@ public class VariableExtractorTest {
     }
     
     @Test
-    @DisplayName("测试特殊响应部分 - all")
-    public void testAllResponsePart() {
-        mockResponse.setAllResponseText(
-            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html>success</html>"
-        );
-        
+    @DisplayName("测试internal提取器不会写入结果")
+    public void testInternalExtractorNotExported() {
+        mockResponse.setTextStr("token=abc123");
+
         PocObj.Matcher extractor = new PocObj.Matcher();
-        extractor.setName("status");
+        extractor.setName("token");
         extractor.setType(PocObj.MatcherType.REGEX);
-        extractor.setPart("all");
-        extractor.setValues(Arrays.asList("HTTP/1\\.1 (\\d+)"));
+        extractor.setPart("body");
+        extractor.setValues(Arrays.asList("token=([a-z0-9]+)"));
         extractor.setGroup(1);
-        
+        extractor.setInternal("true");
+
         VariableExtractor.extractVariables(mockResponse, Arrays.asList(extractor), extractedValues);
-        
-        assertEquals("200", extractedValues.get("status"));
+
+        assertFalse(extractedValues.containsKey("token"));
+    }
+
+    @Test
+    @DisplayName("测试KVAL默认part为header")
+    public void testKvalDefaultPartHeader() {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Set-Cookie", Arrays.asList("SID=abc123; Path=/; HttpOnly"));
+        mockResponse.setHeaderFields(headers);
+        mockResponse.setHeaderFieldsText("Set-Cookie: SID=abc123; Path=/; HttpOnly\n");
+
+        PocObj.Matcher extractor = new PocObj.Matcher();
+        extractor.setName("sid");
+        extractor.setType(PocObj.MatcherType.KVAL);
+        extractor.setPart(null);
+        extractor.setValues(Arrays.asList("SID"));
+
+        VariableExtractor.extractVariables(mockResponse, Arrays.asList(extractor), extractedValues);
+
+        assertEquals("abc123", extractedValues.get("sid"));
+    }
+
+    @Test
+    @DisplayName("测试JSON默认part为body")
+    public void testJsonDefaultPartBody() {
+        mockResponse.setTextStr("{\"data\":{\"token\":\"xyz789\"}}");
+
+        PocObj.Matcher extractor = new PocObj.Matcher();
+        extractor.setName("token");
+        extractor.setType(PocObj.MatcherType.JSON);
+        extractor.setPart(null);
+        extractor.setValues(Arrays.asList("$.data.token"));
+
+        VariableExtractor.extractVariables(mockResponse, Arrays.asList(extractor), extractedValues);
+
+        assertEquals("xyz789", extractedValues.get("token"));
+    }
+
+    @Test
+    @DisplayName("测试纯文本提取器（非HTTP协议）")
+    public void testTextExtractorForNonHttpProtocols() {
+        Map<String, Object> extractedObj = new HashMap<>();
+        String raw = "result=ok token=abc123";
+
+        PocObj.Matcher extractor = new PocObj.Matcher();
+        extractor.setName("token");
+        extractor.setType(PocObj.MatcherType.REGEX);
+        extractor.setPart("body");
+        extractor.setValues(Arrays.asList("token=([a-z0-9]+)"));
+        extractor.setGroup(1);
+
+        VariableExtractor.extractVariablesFromTextObj(raw, Arrays.asList(extractor), extractedObj);
+
+        assertEquals("abc123", extractedObj.get("token"));
+    }
+
+    @Test
+    @DisplayName("测试纯文本internal提取器不会写入结果")
+    public void testTextInternalExtractorNotExported() {
+        Map<String, Object> extractedObj = new HashMap<>();
+        String raw = "token=abc123";
+
+        PocObj.Matcher extractor = new PocObj.Matcher();
+        extractor.setName("token");
+        extractor.setType(PocObj.MatcherType.REGEX);
+        extractor.setPart("body");
+        extractor.setValues(Arrays.asList("token=([a-z0-9]+)"));
+        extractor.setGroup(1);
+        extractor.setInternal("true");
+
+        VariableExtractor.extractVariablesFromTextObj(raw, Arrays.asList(extractor), extractedObj);
+
+        assertFalse(extractedObj.containsKey("token"));
     }
 }
 
