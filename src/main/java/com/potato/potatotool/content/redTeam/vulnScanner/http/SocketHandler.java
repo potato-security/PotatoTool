@@ -138,7 +138,7 @@ public class SocketHandler {
         private String error;
 
         public String getRawString() {
-            return raw != null ? new String(raw, StandardCharsets.UTF_8) : "";
+            return raw != null ? new String(raw, StandardCharsets.ISO_8859_1) : "";
         }
     }
 }

@@ -9,9 +9,12 @@ import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.Severit
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslEvaluatorRefactored;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.potato.potatotool.content.redTeam.vulnScanner.event.ScanErrorEvent.logUnrecognizedExpression;
 
@@ -21,6 +24,14 @@ import static com.potato.potatotool.content.redTeam.vulnScanner.event.ScanErrorE
  * Nuclei YAML POC转换器，用于将Nuclei格式的POC转换为通用PocObj
  */
 public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> {
+
+    private static final Set<String> SUPPORTED_MATCHER_TYPES = new HashSet<>(Arrays.asList(
+            "status", "size", "word", "regex", "binary", "dsl", "time", "xpath", "json", "kval"
+    ));
+    private static final String PROTOCOL_INFO_PREFIX = "协议检测结果: ";
+
+    private List<Map<String, Object>> conversionWarnings = new ArrayList<>();
+    private List<Map<String, Object>> unsupportedCapabilities = new ArrayList<>();
 
     /**
      * 将Nuclei YAML POC转换为通用PocObj
@@ -34,12 +45,15 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             System.err.println("❌ POC 对象为 null，无法转换");
             return null;
         }
-        
-        
+
+        PocObj.Poc poc = new PocObj.Poc();
+        this.conversionWarnings = new ArrayList<>();
+        this.unsupportedCapabilities = new ArrayList<>();
+
         // 详细检查每个协议
         boolean hasProtocol = false;
-        StringBuilder protocolInfo = new StringBuilder("协议检测结果: ");
-        
+        StringBuilder protocolInfo = new StringBuilder(PROTOCOL_INFO_PREFIX);
+
         if (nucleiPoc.getHttp() != null && !nucleiPoc.getHttp().isEmpty()) {
             hasProtocol = true;
             protocolInfo.append("HTTP(").append(nucleiPoc.getHttp().size()).append(") ");
@@ -51,6 +65,10 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         if (nucleiPoc.getTcp() != null && !nucleiPoc.getTcp().isEmpty()) {
             hasProtocol = true;
             protocolInfo.append("TCP(").append(nucleiPoc.getTcp().size()).append(") ");
+        }
+        if (nucleiPoc.getNetwork() != null && !nucleiPoc.getNetwork().isEmpty()) {
+            hasProtocol = true;
+            protocolInfo.append("Network(").append(nucleiPoc.getNetwork().size()).append(") ");
         }
         if (nucleiPoc.getDns() != null && !nucleiPoc.getDns().isEmpty()) {
             hasProtocol = true;
@@ -83,39 +101,63 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
 
         if (!hasProtocol) {
             System.err.println("❌ POC ID: " + nucleiPoc.getId() + " - 未检测到任何协议");
-            System.err.println("   " + nucleiPoc.toString());
-            System.err.println("   " + protocolInfo.toString());
+            System.err.println("   " + nucleiPoc);
+            System.err.println("   " + protocolInfo);
             System.err.println("   可能原因: YAML 解析失败，导致协议字段为 null 或空");
-            System.out.println("输入的非Nuclei_Yaml_POC对象");
-            return null;
+
+            convertBasicInfo(nucleiPoc, poc);
+            convertSearchQueries(nucleiPoc, poc);
+            convertVariablesAndFlow(nucleiPoc, poc);
+
+            String protocolSnapshot = protocolInfo.length() > "协议检测结果: ".length()
+                    ? protocolInfo.toString()
+                    : "协议检测结果: none";
+
+            addUnsupportedCapability(
+                    "NO_PROTOCOL_BLOCK",
+                    "P0",
+                    "nuclei",
+                    "global",
+                    "protocol",
+                    protocolSnapshot,
+                    "drop",
+                    "模板未检测到任何协议块，当前不执行扫描"
+            );
+
+            finalizeConvertedPoc(poc, nucleiPoc);
+            return poc;
         }
-        
-        System.out.println("✅ POC 转换开始 - ID: " + nucleiPoc.getId() + ", " + protocolInfo.toString());
-        
-        PocObj.Poc poc = new PocObj.Poc();
-        
+
+        System.out.println("✅ POC 转换开始 - ID: " + nucleiPoc.getId() + ", " + protocolInfo);
+
         // 转换基本信息
         convertBasicInfo(nucleiPoc, poc);
-        
+
         // 转换搜索查询
         convertSearchQueries(nucleiPoc, poc);
-        
+
         // 处理变量和流程
         convertVariablesAndFlow(nucleiPoc, poc);
-        
+
         // 设置协议并处理请求
         setProtocolAndProcessRequests(nucleiPoc, poc);
-        
+
         // 设置原始POC
-        poc.setOriginalPoc(nucleiPoc);
-        poc.setOriginalFormat("nuclei");
+        finalizeConvertedPoc(poc, nucleiPoc);
 
         // 注意：Nuclei 默认攻击模式为 batteringram（已在 PocObj 中设置）
         // 如果 Nuclei POC 在 YAML 中指定了 attack 字段，会在 processPayloads 方法中覆盖默认值
 
         return poc;
     }
-    
+
+    private void finalizeConvertedPoc(PocObj.Poc poc, NucleiYamlObj.Poc nucleiPoc) {
+        poc.setOriginalPoc(nucleiPoc);
+        poc.setOriginalFormat("nuclei");
+        poc.setConversionWarnings(new ArrayList<>(conversionWarnings));
+        poc.setUnsupportedCapabilities(new ArrayList<>(unsupportedCapabilities));
+    }
+
     /**
      * 转换基本信息
      * @param nucleiPoc Nuclei POC对象
@@ -296,6 +338,11 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         poc.setSelfContained(nucleiPoc.isSelf_contained());
         if (nucleiPoc.getFlow() != null && !nucleiPoc.getFlow().isEmpty()) {
             poc.setFlow(nucleiPoc.getFlow());
+            if (!isSimpleFlowExpression(nucleiPoc.getFlow())) {
+                addConversionWarning("UNSUPPORTED_FLOW_EXPRESSION", "P1", "nuclei", "global", "flow",
+                        nucleiPoc.getFlow(), "fallback",
+                        "flow 表达式超出当前简化执行子集，后续阶段将按兼容路径执行");
+            }
         }
         
         // 处理payloads字段
@@ -319,6 +366,9 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         } else if (nucleiPoc.getTcp() != null && !nucleiPoc.getTcp().isEmpty()) {
             poc.setProtocol("tcp");
             processTcpRequests(nucleiPoc.getTcp(), poc);
+        } else if (nucleiPoc.getNetwork() != null && !nucleiPoc.getNetwork().isEmpty()) {
+            poc.setProtocol("tcp");
+            processTcpRequests(nucleiPoc.getNetwork(), poc);
         } else if (nucleiPoc.getDns() != null && !nucleiPoc.getDns().isEmpty()) {
             poc.setProtocol("dns");
             processDnsRequests(nucleiPoc.getDns(), poc);
@@ -486,6 +536,10 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     matchers.add(matcher);
                 }
             } catch (Exception e) {
+                String matcherType = templateMatcher != null ? templateMatcher.getType() : "unknown";
+                addConversionWarning("MATCHER_CONVERSION_ERROR", "P1", "nuclei", inferProtocolFromStep(step),
+                        "matcher", matcherType, "fallback",
+                        "转换匹配器时出错: " + e.getMessage());
                 System.out.println("转换匹配器时出错: " + e.getMessage());
                 e.printStackTrace();
             }
@@ -636,8 +690,15 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             // 调试: 输出实际的matcher类型
             System.out.println("[DEBUG] Matcher类型: " + templateMatcher.getType() + ", 实际类: " + templateMatcher.getClass().getSimpleName());
             
+            String matcherType = templateMatcher.getType();
+            if (!SUPPORTED_MATCHER_TYPES.contains(matcherType)) {
+                addUnsupportedCapability("UNSUPPORTED_MATCHER_TYPE", "P0", "nuclei", "unknown",
+                        "matcher.type", matcherType, "fallback",
+                        "当前版本不支持该 matcher 类型，已降级为 UNKNOWN");
+            }
+
             // 根据类型设置匹配器类型
-            switch (templateMatcher.getType()) {
+            switch (matcherType) {
                 case "status":
                     matcher.setType(MatcherType.STATUS);
                     if (templateMatcher instanceof NucleiYamlObj.Status) {
@@ -657,6 +718,24 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                             matcher.setName(status.getName());
                         } else {
                             matcher.setName("status_matcher");
+                        }
+                    }
+                    break;
+                case "size":
+                    matcher.setType(MatcherType.SIZE);
+                    if (templateMatcher instanceof NucleiYamlObj.Size) {
+                        NucleiYamlObj.Size size = (NucleiYamlObj.Size) templateMatcher;
+                        List<String> values = new ArrayList<>();
+                        if (size.getSize() != null) {
+                            for (Integer expectedSize : size.getSize()) {
+                                values.add(String.valueOf(expectedSize));
+                            }
+                        }
+                        matcher.setValues(values);
+                        if (size.getName() != null && !size.getName().isEmpty()) {
+                            matcher.setName(size.getName());
+                        } else {
+                            matcher.setName("size_matcher");
                         }
                     }
                     break;
@@ -733,12 +812,29 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                         }
                     }
                     break;
+                case "time":
+                    matcher.setType(MatcherType.TIME);
+                    if (templateMatcher instanceof NucleiYamlObj.Time) {
+                        NucleiYamlObj.Time time = (NucleiYamlObj.Time) templateMatcher;
+                        matcher.setValues(time.getTime());
+                        matcher.setOperation(PocObj.OperationType.GREATER_EQUAL);
+                        matcher.setPart("response_time");
+                        matcher.setTimeUnit("s");
+                        if (time.getName() != null && !time.getName().isEmpty()) {
+                            matcher.setName(time.getName());
+                        } else {
+                            matcher.setName("time_matcher");
+                        }
+                    }
+                    break;
                 case "xpath":
                     matcher.setType(MatcherType.XPATH);
                     if (templateMatcher instanceof NucleiYamlObj.Xpath) {
                         NucleiYamlObj.Xpath xpath = (NucleiYamlObj.Xpath) templateMatcher;
                         matcher.setValues(xpath.getXpath());
+                        matcher.setPart(xpath.getPart());
                         matcher.setAttribute(xpath.getAttribute());
+                        matcher.setNegative(xpath.isNegative());
                         // 设置名称，优先使用matcher自带的name
                         if (xpath.getName() != null && !xpath.getName().isEmpty()) {
                             matcher.setName(xpath.getName());
@@ -752,6 +848,8 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     if (templateMatcher instanceof NucleiYamlObj.Json) {
                         NucleiYamlObj.Json json = (NucleiYamlObj.Json) templateMatcher;
                         matcher.setValues(json.getJson());
+                        matcher.setPart(json.getPart());
+                        matcher.setNegative(json.isNegative());
                         // 设置名称，优先使用matcher自带的name
                         if (json.getName() != null && !json.getName().isEmpty()) {
                             matcher.setName(json.getName());
@@ -765,6 +863,8 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     if (templateMatcher instanceof NucleiYamlObj.Kval) {
                         NucleiYamlObj.Kval kval = (NucleiYamlObj.Kval) templateMatcher;
                         matcher.setValues(kval.getKval());
+                        matcher.setPart(kval.getPart());
+                        matcher.setNegative(kval.isNegative());
                         // 设置名称，优先使用matcher自带的name
                         if (kval.getName() != null && !kval.getName().isEmpty()) {
                             matcher.setName(kval.getName());
@@ -817,6 +917,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                         matcher.setValues(regex.getRegex());
                         matcher.setOperation(PocObj.OperationType.REGEX_MATCH);
                         matcher.setGroup(regex.getGroup());
+                        matcher.setInternal(String.valueOf(regex.isInternal()));
                         
                         // 设置名称，优先使用extractor自带的name
                         if (regex.getName() != null && !regex.getName().isEmpty()) {
@@ -831,35 +932,37 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     NucleiYamlObj.Json json = (NucleiYamlObj.Json) extractor;
                     if (json.getJson() != null && !json.getJson().isEmpty()) {
                         matcher.setType(PocObj.MatcherType.JSON);
-                        matcher.setPart("body");
+                        matcher.setPart(json.getPart());
                         matcher.setValues(json.getJson());
+                        matcher.setNegative(json.isNegative());
                         matcher.setOperation(PocObj.OperationType.DEFAULT);
-                        
+
                         // 设置名称，优先使用extractor自带的name
                         if (json.getName() != null && !json.getName().isEmpty()) {
                             matcher.setName(json.getName());
                         } else {
                             matcher.setName("json_" + extractorList.size());
                         }
-                        
+
                         extractorList.add(matcher);
                     }
                 } else if (extractor instanceof NucleiYamlObj.Xpath) {
                     NucleiYamlObj.Xpath xpath = (NucleiYamlObj.Xpath) extractor;
                     if (xpath.getXpath() != null && !xpath.getXpath().isEmpty()) {
                         matcher.setType(PocObj.MatcherType.XPATH);
-                        matcher.setPart("body");
+                        matcher.setPart(xpath.getPart());
                         matcher.setValues(xpath.getXpath());
                         matcher.setAttribute(xpath.getAttribute());
+                        matcher.setNegative(xpath.isNegative());
                         matcher.setOperation(PocObj.OperationType.DEFAULT);
-                        
+
                         // 设置名称，优先使用extractor自带的name
                         if (xpath.getName() != null && !xpath.getName().isEmpty()) {
                             matcher.setName(xpath.getName());
                         } else {
                             matcher.setName("xpath_" + extractorList.size());
                         }
-                        
+
                         extractorList.add(matcher);
                     }
                 } else if (extractor instanceof NucleiYamlObj.Dsl) {
@@ -894,20 +997,30 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     NucleiYamlObj.Kval kval = (NucleiYamlObj.Kval) extractor;
                     if (kval.getKval() != null && !kval.getKval().isEmpty()) {
                         matcher.setType(PocObj.MatcherType.KVAL);
+                        matcher.setPart(kval.getPart());
                         matcher.setValues(kval.getKval());
+                        matcher.setNegative(kval.isNegative());
                         matcher.setOperation(PocObj.OperationType.DEFAULT);
-                        
+
                         // 设置名称，优先使用extractor自带的name
                         if (kval.getName() != null && !kval.getName().isEmpty()) {
                             matcher.setName(kval.getName());
                         } else {
                             matcher.setName("kval_" + extractorList.size());
                         }
-                        
+
                         extractorList.add(matcher);
                     }
+                } else {
+                    addUnsupportedCapability("UNSUPPORTED_EXTRACTOR_TYPE", "P1", "nuclei", inferProtocolFromStep(step),
+                            "extractor.type", extractor.getType(), "fallback",
+                            "当前版本未实现该 extractor 类型，已忽略");
                 }
             } catch (Exception e) {
+                String extractorType = extractor != null ? extractor.getType() : "unknown";
+                addConversionWarning("EXTRACTOR_CONVERSION_ERROR", "P1", "nuclei", inferProtocolFromStep(step),
+                        "extractor", extractorType, "fallback",
+                        "处理提取器时出错: " + e.getMessage());
                 System.out.println("处理提取器时出错: " + e.getMessage());
                 e.printStackTrace();
             }
@@ -1105,7 +1218,19 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 }
             }
         }
-        
+
+        // 处理Network请求中的payloads（与TCP结构兼容）
+        if (nucleiPoc.getNetwork() != null && !nucleiPoc.getNetwork().isEmpty()) {
+            for (NucleiYamlObj.Tcp network : nucleiPoc.getNetwork()) {
+                if (network.getPayloads() != null && !network.getPayloads().isEmpty()) {
+                    transformPayloadMap(network.getPayloads(), payloads);
+                }
+                if (network.getAttack() != null) {
+                    poc.setVariablesType(network.getAttack());
+                }
+            }
+        }
+
         if (!payloads.isEmpty()) {
             // 获取现有的变量并合并新的payloads
             Map<String, List<String>> existingVariables = poc.getVariables();
@@ -1518,25 +1643,72 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
      */
     private PocObj.CodeStep createCodeStep(NucleiYamlObj.Code codeRequest, int index) {
         PocObj.CodeStep step = new PocObj.CodeStep();
-        
+
         // 设置步骤 ID
         step.setStepId("code_" + index);
-        
+
         // 设置代码引擎（默认 JavaScript）
         if (codeRequest.getEngine() != null && !codeRequest.getEngine().isEmpty()) {
             step.setEngine(codeRequest.getEngine().get(0));
         } else {
             step.setEngine("javascript");
         }
-        
+
         step.setSource(codeRequest.getSource());
-        
+
         // 处理匹配器
         processMatchers(codeRequest.getMatchers(), codeRequest.getMatchers_condition(), step);
-        
+
         // 处理提取器
         processExtractors(codeRequest.getExtractors(), step);
-        
+
         return step;
+    }
+
+    private void addConversionWarning(String code, String level, String format, String protocol,
+                                      String field, Object value, String action, String message) {
+        Map<String, Object> warning = new HashMap<>();
+        warning.put("code", code);
+        warning.put("level", level);
+        warning.put("format", format);
+        warning.put("protocol", protocol);
+        warning.put("field", field);
+        warning.put("value", value == null ? "" : String.valueOf(value));
+        warning.put("action", action);
+        warning.put("message", message);
+        conversionWarnings.add(warning);
+    }
+
+    private void addUnsupportedCapability(String code, String level, String format, String protocol,
+                                          String field, Object value, String action, String message) {
+        Map<String, Object> capability = new HashMap<>();
+        capability.put("code", code);
+        capability.put("level", level);
+        capability.put("format", format);
+        capability.put("protocol", protocol);
+        capability.put("field", field);
+        capability.put("value", value == null ? "" : String.valueOf(value));
+        capability.put("action", action);
+        capability.put("message", message);
+        unsupportedCapabilities.add(capability);
+    }
+
+    private String inferProtocolFromStep(PocObj.PocStep step) {
+        if (step == null || step.getStepId() == null) {
+            return "unknown";
+        }
+        String stepId = step.getStepId().toLowerCase();
+        int idx = stepId.indexOf('_');
+        return idx > 0 ? stepId.substring(0, idx) : stepId;
+    }
+
+    private boolean isSimpleFlowExpression(String flow) {
+        if (flow == null || flow.trim().isEmpty()) {
+            return true;
+        }
+        // 与 PocExecutor 保持一致：支持 http_1/http(1) 且仅包含 &&/|| 组合的简单表达式
+        String normalized = flow.trim();
+        return normalized.matches("(?i)\\s*[a-z]+_?\\d+\\s*([&]{2}|[|]{2})\\s*[a-z]+_?\\d+(\\s*([&]{2}|[|]{2})\\s*[a-z]+_?\\d+)*\\s*")
+                || normalized.matches("(?i)\\s*[a-z]+\\(\\d+\\)\\s*([&]{2}|[|]{2})\\s*[a-z]+\\(\\d+\\)(\\s*([&]{2}|[|]{2})\\s*[a-z]+\\(\\d+\\))*\\s*");
     }
 }

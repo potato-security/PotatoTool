@@ -2,6 +2,7 @@ package com.potato.potatotool.content.redTeam.vulnScanner.extractors;
 
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
+import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslEvaluatorRefactored;
 import net.sf.saxon.xpath.XPathFactoryImpl;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -40,9 +41,9 @@ public class VariableExtractor {
                 continue;
             }
 
-            String part = extractor.getPart();
+            String part = resolveExtractorPart(extractor);
             String content = getResponsePart(response, part);
-            
+
             if (content == null || content.isEmpty()) {
                 continue;
             }
@@ -76,12 +77,82 @@ public class VariableExtractor {
                 case KVAL:
                     extractedValue = extractKval(content, values);
                     break;
+                case DSL:
+                    extractedValue = extractDsl(content, values, response, part);
+                    break;
                 default:
                     System.out.println("不支持的提取器类型");
                     break;
             }
 
+            // internal=true: 仅参与内部变量链路，不进入最终输出
+            if (isInternalExtractor(extractor)) {
+                continue;
+            }
+
             // 如果成功提取了值，则保存到变量映射中
+            if (extractedValue != null) {
+                extractedValues.put(extractor.getName(), extractedValue);
+            }
+        }
+    }
+
+    /**
+     * 从纯文本响应中提取变量（用于非HTTP协议）
+     */
+    public static void extractVariablesFromTextObj(String rawContent, List<PocObj.Matcher> extractors, Map<String, Object> extractedValues) {
+        if (rawContent == null || extractors == null || extractors.isEmpty() || extractedValues == null) {
+            return;
+        }
+
+        for (PocObj.Matcher extractor : extractors) {
+            if (extractor == null || extractor.getName() == null || extractor.getName().isEmpty()) {
+                continue;
+            }
+
+            String part = resolveExtractorPart(extractor);
+            String content = getTextPart(rawContent, part);
+            if (content == null || content.isEmpty()) {
+                continue;
+            }
+
+            String extractedValue = null;
+            PocObj.MatcherType type = extractor.getType();
+            List<String> values = extractor.getValues();
+            int group = extractor.getGroup();
+            String attribute = extractor.getAttribute();
+
+            switch (type) {
+                case REGEX:
+                    extractedValue = extractRegex(content, values, group);
+                    break;
+                case JSON:
+                    if (values != null && !values.isEmpty()) {
+                        String expr = values.get(0);
+                        if (expr != null && expr.trim().startsWith("$")) {
+                            extractedValue = JsonExtractor.extractByJsonPath(content, expr.trim());
+                        } else {
+                            extractedValue = JsonExtractor.extractJson(content, values);
+                        }
+                    }
+                    break;
+                case XPATH:
+                    extractedValue = extractXpath(content, values, attribute);
+                    break;
+                case KVAL:
+                    extractedValue = extractKval(content, values);
+                    break;
+                case DSL:
+                    extractedValue = extractDsl(content, values, null, part);
+                    break;
+                default:
+                    break;
+            }
+
+            if (isInternalExtractor(extractor)) {
+                continue;
+            }
+
             if (extractedValue != null) {
                 extractedValues.put(extractor.getName(), extractedValue);
             }
@@ -104,7 +175,7 @@ public class VariableExtractor {
                 continue;
             }
 
-            String part = extractor.getPart();
+            String part = resolveExtractorPart(extractor);
             String content = getResponsePart(response, part);
             
             if (content == null || content.isEmpty()) {
@@ -137,14 +208,69 @@ public class VariableExtractor {
                 case KVAL:
                     extractedValue = extractKval(content, values);
                     break;
+                case DSL:
+                    extractedValue = extractDsl(content, values, response, part);
+                    break;
                 default:
                     // System.out.println("不支持的提取器类型");
                     break;
             }
 
+            // internal=true: 仅控制最终展示，不影响变量提取链路
             if (extractedValue != null) {
                 extractedValues.put(extractor.getName(), extractedValue);
             }
+        }
+    }
+
+    private static boolean isInternalExtractor(PocObj.Matcher extractor) {
+        if (extractor == null) {
+            return false;
+        }
+        String internal = extractor.getInternal();
+        return internal != null && "true".equalsIgnoreCase(internal.trim());
+    }
+
+    private static String resolveExtractorPart(PocObj.Matcher extractor) {
+        if (extractor == null) {
+            return null;
+        }
+        String part = extractor.getPart();
+        if (part != null && !part.trim().isEmpty()) {
+            return part;
+        }
+
+        if (extractor.getType() == PocObj.MatcherType.KVAL) {
+            return "header";
+        }
+        return "body";
+    }
+
+    private static String getTextPart(String rawContent, String part) {
+        if (rawContent == null || rawContent.isEmpty()) {
+            return null;
+        }
+        if (part == null || part.trim().isEmpty()) {
+            return rawContent;
+        }
+
+        String normalizedPart = part.toLowerCase();
+        switch (normalizedPart) {
+            case "body":
+            case "all":
+                return rawContent;
+            case "header":
+            case "status":
+            case "set_cookie":
+            case "set-cookie":
+            case "location":
+            case "content_type":
+            case "content-type":
+            case "content_length":
+            case "content-length":
+                return rawContent;
+            default:
+                return rawContent;
         }
     }
 
@@ -454,6 +580,56 @@ public class VariableExtractor {
         }
 
         return false;
+    }
+
+    /**
+     * 使用DSL表达式提取变量
+     * @param content 响应内容
+     * @param dslExpressions DSL表达式列表
+     * @param response HTTP响应对象（可为null）
+     * @param part 提取部位
+     * @return 提取值
+     */
+    private static String extractDsl(String content, List<String> dslExpressions, CustomHttpResponse response, String part) {
+        if (dslExpressions == null || dslExpressions.isEmpty()) {
+            return null;
+        }
+
+        Map<String, Object> context = new HashMap<>();
+        if (content != null) {
+            context.put("body", content);
+            context.put("raw", content);
+            context.put("data", content);
+        }
+
+        if (response != null) {
+            context.put("status_code", response.getResponseCode());
+            context.put("response_time", response.getResponseTime());
+
+            String headersText = response.getHeaderFieldsText();
+            context.put("all_headers", headersText != null ? headersText : "");
+            context.put("header", headersText != null ? headersText : "");
+
+            String allText = response.getAllResponseText();
+            context.put("all", allText != null ? allText : "");
+        }
+
+        if (part != null && content != null) {
+            context.put(part, content);
+        }
+
+        for (String dslExpr : dslExpressions) {
+            if (dslExpr == null || dslExpr.trim().isEmpty()) {
+                continue;
+            }
+
+            String evaluated = DslEvaluatorRefactored.resolveValueOrFunction(dslExpr, context);
+            if (evaluated != null) {
+                return evaluated;
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -71,7 +71,12 @@ public class PocObj {
         // 原始POC
         private Object originalPoc;         // 原始POC对象
         private String originalFormat;      // 原始POC格式
-        
+
+        // 内部语义诊断信息（仅运行态使用，不用于导出报告）
+        private List<Map<String, Object>> conversionWarnings = new ArrayList<>();
+        private List<Map<String, Object>> semanticWarnings = new ArrayList<>();
+        private List<Map<String, Object>> unsupportedCapabilities = new ArrayList<>();
+
         // ========== 新增：输入类型与分类 ==========
         /**
          * 适用的输入类型（URL/IP:端口/域名/本地路径等）

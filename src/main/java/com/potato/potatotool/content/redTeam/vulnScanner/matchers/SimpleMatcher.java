@@ -104,10 +104,6 @@ public class SimpleMatcher {
             case REGEX:
                 result = matchRegex(content, values, caseInsensitive, matcher.getCondition());
                 break;
-            case STATUS:
-                // 状态匹配 - 通常用于 HTTP，简化协议可能不需要
-                result = values.stream().anyMatch(v -> content.contains(v));
-                break;
             case DSL:
                 // DSL 匹配 - 评估 DSL 表达式
                 result = matchDsl(content, values, matcher.getCondition());
@@ -116,9 +112,17 @@ public class SimpleMatcher {
                 // 二进制匹配 - 将内容转为十六进制后匹配
                 result = matchBinary(content, values, matcher.getCondition());
                 break;
+            case GROUP:
+                if (matcher.getSubMatchers() == null || matcher.getSubMatchers().isEmpty()) {
+                    result = false;
+                } else {
+                    MatchersCondition groupCondition = "OR".equalsIgnoreCase(matcher.getCondition())
+                            ? MatchersCondition.OR : MatchersCondition.AND;
+                    result = matchWithCondition(content, matcher.getSubMatchers(), groupCondition);
+                }
+                break;
             default:
-                // DSL/CEL/XPATH等类型由ResponseMatcher处理，不会走到SimpleMatcher
-                System.err.println("[SimpleMatcher] 不支持的匹配类型: " + type);
+                System.err.println("[SimpleMatcher] 非HTTP协议不支持的匹配类型: " + type);
                 result = false;
         }
         

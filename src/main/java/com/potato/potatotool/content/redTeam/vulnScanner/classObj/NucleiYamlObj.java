@@ -24,6 +24,7 @@ public class NucleiYamlObj {
         private List<Http> http;
         private List<Request> requests;
         private List<Tcp> tcp;
+        private List<Tcp> network;  // network 协议（与 tcp 协议结构兼容）
         private List<Dns> dns;
         private List<WebSocket> websocket;
         private List<Ssl> ssl;
@@ -201,6 +202,14 @@ public class NucleiYamlObj {
     }
 
     @Data
+    public static class Size implements TemplateMatcher {
+        private String type = "size";
+        private List<Integer> size;
+        private Condition condition;
+        private String name;
+    }
+
+    @Data
     public static class Word implements TemplateMatcher {
         private String type = "word";
         private String encoding;
@@ -232,6 +241,14 @@ public class NucleiYamlObj {
     }
 
     @Data
+    public static class Time implements TemplateMatcher {
+        private String type = "time";
+        private List<String> time;
+        private Condition condition;
+        private String name;
+    }
+
+    @Data
     public static class Regex implements TemplateMatcher {
         private String type = "regex";
 //        private Part part = Part.body;
@@ -247,8 +264,10 @@ public class NucleiYamlObj {
     @Data
     public static class Json implements TemplateMatcher {
         private String type = "json";
+        private String part = "body";
         private List<String> json;
         private Condition condition;
+        private boolean negative;
         private String name;
     }
 
@@ -258,15 +277,18 @@ public class NucleiYamlObj {
         private List<String> kval;
         private String part = "all";
         private Condition condition;
+        private boolean negative;
         private String name;
     }
 
     @Data
     public static class Xpath implements TemplateMatcher {
         private String type = "xpath";
+        private String part = "body";
         private List<String> xpath;
         private String attribute;
         private Condition condition;
+        private boolean negative;
         private String name;
     }
 

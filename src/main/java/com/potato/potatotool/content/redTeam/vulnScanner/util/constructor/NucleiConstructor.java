@@ -19,9 +19,11 @@ public class NucleiConstructor extends YamlConstructor {
 
     static {
         TYPE_MAP.put("status", NucleiYamlObj.Status.class);
+        TYPE_MAP.put("size", NucleiYamlObj.Size.class);
         TYPE_MAP.put("word", NucleiYamlObj.Word.class);
         TYPE_MAP.put("binary", NucleiYamlObj.Binary.class);
         TYPE_MAP.put("dsl", NucleiYamlObj.Dsl.class);
+        TYPE_MAP.put("time", NucleiYamlObj.Time.class);
         TYPE_MAP.put("regex", NucleiYamlObj.Regex.class);
         TYPE_MAP.put("json", NucleiYamlObj.Json.class);
         TYPE_MAP.put("kval", NucleiYamlObj.Kval.class);

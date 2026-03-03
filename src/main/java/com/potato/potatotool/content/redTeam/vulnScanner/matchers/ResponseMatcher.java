@@ -88,43 +88,14 @@ public class ResponseMatcher {
             }
             return true;
         }
-        // OR条件：需要更严格的匹配逻辑
-        else if (condition == PocObj.MatchersCondition.OR) {
-            // 统计内容匹配器（WORD, REGEX, DSL, CEL, JSON）的数量
-            int contentMatcherCount = 0;
-            boolean hasContentMatch = false;
 
+        // OR条件：任一匹配器匹配成功即可（官方语义）
+        if (condition == PocObj.MatchersCondition.OR) {
             for (PocObj.Matcher matcher : matchers) {
-                PocObj.MatcherType type = matcher.getType();
-                boolean isContentMatcher = (type == PocObj.MatcherType.WORD ||
-                                           type == PocObj.MatcherType.REGEX ||
-                                           type == PocObj.MatcherType.DSL ||
-                                           type == PocObj.MatcherType.CEL ||
-                                           type == PocObj.MatcherType.JSON);
-
-                if (isContentMatcher) {
-                    contentMatcherCount++;
-                }
-
-                boolean matched = matchSingleMatcher(response, matcher, responseCache, stepId, pocVariables);
-
-                if (matched) {
-                    if (isContentMatcher) {
-                        hasContentMatch = true;
-                    }
-                    // 如果没有内容匹配器，则任意匹配即可
-                    if (contentMatcherCount == 0) {
-                        return true;
-                    }
+                if (matchSingleMatcher(response, matcher, responseCache, stepId, pocVariables)) {
+                    return true;
                 }
             }
-
-            // 如果有内容匹配器，必须至少有一个内容匹配器匹配成功
-            // 这样可以防止仅凭 HTTP 200 状态码就判定为漏洞
-            if (contentMatcherCount > 0) {
-                return hasContentMatch;
-            }
-
             return false;
         }
 
@@ -179,53 +150,67 @@ public class ResponseMatcher {
         PocObj.MatcherType type = matcher.getType();
         List<String> values = matcher.getValues();
         PocObj.OperationType operation = matcher.getOperation();
-        
+        boolean negative = matcher.isNegative();
+
+        boolean matched;
+
         // 2. 特殊操作：DIFF 比较（用于盲注检测）
         if (operation == PocObj.OperationType.DIFF && responseCache != null) {
-            return matchDiff(response, values, matcher.getPart(), responseCache);
+            matched = matchDiff(response, values, matcher.getPart(), responseCache);
+            return negative ? !matched : matched;
         }
-        
-        // 3. 按类型分派处理
+
         switch (type) {
             // ========== 响应级别匹配（不需要提取 content）==========
             case STATUS:
-                return matchStatusCode(response, values);
-                
+                matched = matchStatusCode(response, values);
+                break;
+
             case TIME:
-                return matchTime(response.getResponseTime(), values, operation, matcher.getTimeUnit());
-                
+                matched = matchTime(response.getResponseTime(), values, operation, matcher.getTimeUnit());
+                break;
+
             case DSL:
                 // Nuclei DSL 表达式匹配
-                return matchDsl(values, response, responseCache, stepId);
-                
+                matched = matchDsl(values, response, responseCache, stepId);
+                break;
+
             case CEL:
                 // Xray CEL 表达式匹配（传递 POC 变量用于表达式求值）
-                return matchCel(values, response, pocVariables);
-                
+                matched = matchCel(values, response, pocVariables);
+                break;
+
             // ========== 内容级别匹配（需要提取 content）==========
             case WORD:
             case REGEX:
             case SIZE:
             case JSON:
                 // 特殊处理：DNSLog 验证 ($reserver)
-                if (matcher.getPart() != null && 
+                if (matcher.getPart() != null &&
                    ("$reserver".equalsIgnoreCase(matcher.getPart()) || "reserver".equalsIgnoreCase(matcher.getPart()))) {
-                    return checkDnsLog(values);
+                    matched = checkDnsLog(values);
+                } else {
+                    matched = matchContentBased(type, matcher, response, pocVariables);
                 }
-                return matchContentBased(type, matcher, response, pocVariables);
-                
+                break;
+
             // ========== 字节级别匹配（需要 byte[]）==========
             case BINARY:
             case HASH:
-                return matchBytesBased(type, matcher, response);
-                
+                matched = matchBytesBased(type, matcher, response);
+                break;
+
             // ========== 组合类型 ==========
             case GROUP:
-                return matchGroup(matcher, response, responseCache, stepId);
-                
+                matched = matchGroup(matcher, response, responseCache, stepId);
+                break;
+
             default:
-                return false;
+                matched = false;
+                break;
         }
+
+        return negative ? !matched : matched;
     }
     
     /**
@@ -352,7 +337,8 @@ public class ResponseMatcher {
             condition = PocObj.MatchersCondition.OR;
         }
         
-        return matchResponse(response, subMatchers, condition, responseCache, stepId);
+        boolean groupResult = matchResponse(response, subMatchers, condition, responseCache, stepId);
+        return groupResult;
     }
     
     /**

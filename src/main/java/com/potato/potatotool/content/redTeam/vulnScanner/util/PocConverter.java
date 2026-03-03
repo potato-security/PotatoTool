@@ -106,6 +106,7 @@ public class PocConverter {
                 System.out.println("协议检测:");
                 System.out.println("  - HTTP: " + (poc.getHttp() != null ? poc.getHttp().size() + " 个" : "null"));
                 System.out.println("  - TCP: " + (poc.getTcp() != null ? poc.getTcp().size() + " 个" : "null"));
+                System.out.println("  - Network: " + (poc.getNetwork() != null ? poc.getNetwork().size() + " 个" : "null"));
                 System.out.println("  - DNS: " + (poc.getDns() != null ? poc.getDns().size() + " 个" : "null"));
                 System.out.println("  - SSL: " + (poc.getSsl() != null ? poc.getSsl().size() + " 个" : "null"));
                 System.out.println("  - WebSocket: " + (poc.getWebsocket() != null ? poc.getWebsocket().size() + " 个" : "null"));

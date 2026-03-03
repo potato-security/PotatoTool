@@ -11,38 +11,47 @@ import com.potato.potatotool.content.redTeam.vulnScanner.model.StepExecutionReco
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * JSON报告生成器
  * 使用Gson生成JSON格式报告
- * 
+ *
  * @author Potato
  * @date 2025/11/03
  */
 public class JsonReportGenerator {
-    
+
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    
+
     public File generate(List<ScanResult> results, String outputPath) throws IOException {
+        return generate(results, outputPath, false);
+    }
+
+    public File generate(List<ScanResult> results, String outputPath, boolean auditMode) throws IOException {
         JsonObject report = new JsonObject();
-        
+
         // 报告元信息
         JsonObject metadata = new JsonObject();
         metadata.addProperty("tool", "PotatoTool");
         metadata.addProperty("version", "2.5.1");
         metadata.addProperty("generateTime", sdf.format(new Date()));
         report.add("metadata", metadata);
-        
+
         // 统计信息
         JsonObject statistics = new JsonObject();
-        statistics.addProperty("targetCount", 
+        statistics.addProperty("targetCount",
             (int) results.stream().map(ScanResult::getTarget).distinct().count());
-        statistics.addProperty("pocCount", 
+        statistics.addProperty("pocCount",
             (int) results.stream().map(r -> r.getPoc().getId()).distinct().count());
         statistics.addProperty("vulnCount", results.size());
-        
+
         // 按严重度统计
         JsonObject severityStats = new JsonObject();
         Map<PocObj.Severity, Long> severityCount = new HashMap<>();
@@ -54,7 +63,7 @@ public class JsonReportGenerator {
             severityStats.addProperty(entry.getKey().name(), entry.getValue());
         }
         statistics.add("severityStats", severityStats);
-        
+
         // 按格式统计
         JsonObject formatStats = new JsonObject();
         Map<String, Long> formatCount = new HashMap<>();
@@ -66,9 +75,9 @@ public class JsonReportGenerator {
             formatStats.addProperty(entry.getKey(), entry.getValue());
         }
         statistics.add("formatStats", formatStats);
-        
+
         report.add("statistics", statistics);
-        
+
         // 漏洞详情
         JsonArray vulnerabilities = new JsonArray();
         for (ScanResult result : results) {
@@ -167,20 +176,12 @@ public class JsonReportGenerator {
 
                     // 请求体（限制长度）
                     if (record.getRequestBody() != null && !record.getRequestBody().isEmpty()) {
-                        String body = record.getRequestBody();
-                        if (body.length() > 2000) {
-                            body = body.substring(0, 2000) + "...(截断)";
-                        }
-                        stepObj.addProperty("requestBody", body);
+                        stepObj.addProperty("requestBody", truncateForReport(record.getRequestBody()));
                     }
 
                     // 响应体（限制长度）
                     if (record.getResponseBody() != null && !record.getResponseBody().isEmpty()) {
-                        String body = record.getResponseBody();
-                        if (body.length() > 2000) {
-                            body = body.substring(0, 2000) + "...(截断)";
-                        }
-                        stepObj.addProperty("responseBody", body);
+                        stepObj.addProperty("responseBody", truncateForReport(record.getResponseBody()));
                     }
 
                     // 提取的变量
@@ -223,20 +224,119 @@ public class JsonReportGenerator {
                 vuln.add("tags", tags);
             }
 
+            if (auditMode) {
+                appendAuditFields(vuln, result);
+            }
+
             vulnerabilities.add(vuln);
         }
         report.add("vulnerabilities", vulnerabilities);
-        
+
         // 写入文件
         File outputFile = new File(outputPath);
         outputFile.getParentFile().mkdirs();
-        
+
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.UTF_8))) {
             writer.write(gson.toJson(report));
         }
-        
+
         return outputFile;
+    }
+
+    private void appendAuditFields(JsonObject vuln, ScanResult result) {
+        if (result == null) {
+            return;
+        }
+        Map<String, Object> details = result.getDetails();
+        if (details == null || details.isEmpty()) {
+            return;
+        }
+
+        appendWarningSummary(vuln, details.get("warningSummary"));
+        appendDiagnosticCodes(vuln, details);
+    }
+
+    private void appendDiagnosticCodes(JsonObject vuln, Map<String, Object> details) {
+        JsonArray diagnosticCodes = buildDiagnosticCodes(details);
+        if (diagnosticCodes.size() > 0) {
+            vuln.add("diagnosticCodes", diagnosticCodes);
+        }
+    }
+
+    private void appendWarningSummary(JsonObject vuln, Object warningSummary) {
+        if (warningSummary instanceof Map) {
+            JsonObject warningSummaryObj = toJsonObject((Map<?, ?>) warningSummary);
+            if (warningSummaryObj.size() > 0) {
+                vuln.add("warningSummary", warningSummaryObj);
+            }
+            return;
+        }
+
+        if (warningSummary != null) {
+            vuln.addProperty("warningSummary", String.valueOf(warningSummary));
+        }
+    }
+
+    private JsonObject toJsonObject(Map<?, ?> source) {
+        JsonObject target = new JsonObject();
+        for (Map.Entry<?, ?> entry : source.entrySet()) {
+            if (entry == null || entry.getKey() == null || entry.getValue() == null) {
+                continue;
+            }
+            String key = String.valueOf(entry.getKey());
+            Object value = entry.getValue();
+            if (value instanceof Number) {
+                target.addProperty(key, (Number) value);
+            } else if (value instanceof Boolean) {
+                target.addProperty(key, (Boolean) value);
+            } else {
+                target.addProperty(key, String.valueOf(value));
+            }
+        }
+        return target;
+    }
+
+    private String truncateForReport(String content) {
+        if (content == null || content.length() <= 2000) {
+            return content;
+        }
+        return content.substring(0, 2000) + "...(截断)";
+    }
+
+    private JsonArray buildDiagnosticCodes(Map<String, Object> details) {
+        Set<String> codes = new LinkedHashSet<>();
+        collectCodes(details.get("semanticWarnings"), codes);
+        collectCodes(details.get("conversionWarnings"), codes);
+        collectCodes(details.get("unsupportedCapabilities"), codes);
+
+        JsonArray result = new JsonArray();
+        for (String code : codes) {
+            result.add(code);
+        }
+        return result;
+    }
+
+    private void collectCodes(Object warningObj, Set<String> codes) {
+        if (!(warningObj instanceof List)) {
+            return;
+        }
+
+        List<?> warnings = (List<?>) warningObj;
+        for (Object item : warnings) {
+            if (!(item instanceof Map)) {
+                continue;
+            }
+            Map<?, ?> warning = (Map<?, ?>) item;
+            Object codeObj = warning.get("code");
+            if (codeObj == null) {
+                continue;
+            }
+            String code = String.valueOf(codeObj);
+            if (!code.isEmpty()) {
+                codes.add(code);
+            }
+        }
     }
 }
 

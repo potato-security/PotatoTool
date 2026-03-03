@@ -9,10 +9,12 @@ import com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtra
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtractor.XrayCelParser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.potato.potatotool.content.redTeam.vulnScanner.event.ScanErrorEvent.logUnrecognizedExpression;
 
@@ -22,6 +24,11 @@ import static com.potato.potatotool.content.redTeam.vulnScanner.event.ScanErrorE
  * Xray YAML POC转换器，用于将Xray格式的POC转换为通用PocObj
  */
 public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
+
+    private static final Pattern SIMPLE_GLOBAL_EXPRESSION = Pattern.compile("^[a-zA-Z_][\\w-]*(\\(\\))?(\\s*(&&|\\|\\|)\\s*[a-zA-Z_][\\w-]*(\\(\\))?)*$");
+
+    private List<Map<String, Object>> conversionWarnings = new ArrayList<>();
+    private List<Map<String, Object>> unsupportedCapabilities = new ArrayList<>();
 
     /**
      * 将Xray YAML POC转换为通用PocObj
@@ -36,6 +43,8 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
         }
         
         PocObj.Poc poc = new PocObj.Poc();
+        this.conversionWarnings = new ArrayList<>();
+        this.unsupportedCapabilities = new ArrayList<>();
         
         // 转换基本信息
         convertBasicInfo(xrayPoc, poc);
@@ -55,7 +64,9 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
         // 设置原始POC
         // poc.setOriginalPoc(xrayPoc);
         poc.setOriginalFormat("xray");
-        
+        poc.setConversionWarnings(new ArrayList<>(conversionWarnings));
+        poc.setUnsupportedCapabilities(new ArrayList<>(unsupportedCapabilities));
+
         return poc;
     }
     
@@ -115,6 +126,9 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
                 // 处理LinkedHashMap到Rule对象的转换
                 Object ruleObj = entry.getValue();
                 if (!(ruleObj instanceof LinkedHashMap)) {
+                    addConversionWarning("XRAY_RULE_FORMAT_INVALID", "P1", "xray", "http",
+                            "rules." + entry.getKey(), ruleObj == null ? "null" : ruleObj.getClass().getName(),
+                            "fallback", "规则格式不是 LinkedHashMap，已跳过该规则");
                     System.out.println("规则格式不正确: " + ruleObj.getClass().getName());
                     continue;
                 }
@@ -264,8 +278,12 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
             matchers.add(matcher);
             step.setMatchers(matchers);
             step.setMatchersCondition(MatchersCondition.AND); // Xray默认使用AND条件
+        } else {
+            addConversionWarning("XRAY_RULE_EXPRESSION_EMPTY", "P1", "xray", "http",
+                    "rules." + stepId + ".expression", "", "fallback",
+                    "规则未配置 expression，可能导致匹配行为不完整");
         }
-        
+
         // 设置输出
         if (rule.getOutput() != null && !rule.getOutput().isEmpty()) {
             Map<String, Object> result = new HashMap<>();
@@ -286,11 +304,14 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
         try {
             XrayCelParser.validateCelSyntax(expression);
         } catch (IllegalArgumentException e) {
+            addConversionWarning("XRAY_CEL_SYNTAX_INVALID", "P1", "xray", "http",
+                    "expression", expression, "fallback",
+                    "Xray CEL表达式验证失败: " + e.getMessage());
             System.err.println("警告: Xray CEL表达式验证失败 - " + e.getMessage());
             logUnrecognizedExpression(e.getMessage());
             // 继续执行，但记录警告
         }
-        
+
         Matcher matcher = new Matcher();
         matcher.setType(MatcherType.CEL);
         List<String> values = new ArrayList<>();
@@ -440,14 +461,18 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
             String expression = xrayPoc.getExpression();
             // 将全局expression设置为flow字段
             poc.setFlow(expression);
-            
-            // 根据全局表达式设置步骤间的条件
-            // 如果表达式包含 || (OR)，设置为 OR 条件
-            // 如果表达式包含 && (AND) 或只有单个规则调用，设置为 AND 条件
-            if (expression.contains("||")) {
-                poc.setStepsCondition(MatchersCondition.OR);
+
+            // 当前仅对简单全局表达式设置 stepsCondition，复杂表达式只保留 flow
+            if (isSimpleGlobalExpression(expression)) {
+                if (expression.contains("||")) {
+                    poc.setStepsCondition(MatchersCondition.OR);
+                } else {
+                    poc.setStepsCondition(MatchersCondition.AND);
+                }
             } else {
-                poc.setStepsCondition(MatchersCondition.AND);
+                addConversionWarning("XRAY_GLOBAL_EXPRESSION_COMPLEX", "P1", "xray", "global",
+                        "expression", expression, "fallback",
+                        "全局 expression 超出简化子集，stepsCondition 不再强行推断");
             }
         }
     }
@@ -478,6 +503,27 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
         return false;
     }
     
+    private void addConversionWarning(String code, String level, String format, String protocol,
+                                      String field, Object value, String action, String message) {
+        Map<String, Object> warning = new HashMap<>();
+        warning.put("code", code);
+        warning.put("level", level);
+        warning.put("format", format);
+        warning.put("protocol", protocol);
+        warning.put("field", field);
+        warning.put("value", value == null ? "" : String.valueOf(value));
+        warning.put("action", action);
+        warning.put("message", message);
+        conversionWarnings.add(warning);
+    }
+
+    private boolean isSimpleGlobalExpression(String expression) {
+        if (expression == null || expression.trim().isEmpty()) {
+            return true;
+        }
+        return SIMPLE_GLOBAL_EXPRESSION.matcher(expression.trim()).matches();
+    }
+
     /**
      * 求值并替换变量（带对象上下文）
      * 
