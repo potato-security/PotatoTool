@@ -72,6 +72,7 @@ public class DslFunctionTypeManager {
         STRING_FUNCTIONS.add("dec_to_hex");
         STRING_FUNCTIONS.add("bin_to_dec");
         STRING_FUNCTIONS.add("url_encode");
+        STRING_FUNCTIONS.add("urlencode");  // 别名
         STRING_FUNCTIONS.add("url_decode");
         STRING_FUNCTIONS.add("urldecode");  // 别名
         STRING_FUNCTIONS.add("trim");
@@ -79,6 +80,7 @@ public class DslFunctionTypeManager {
         STRING_FUNCTIONS.add("trim_left");
         STRING_FUNCTIONS.add("trim_right");
         STRING_FUNCTIONS.add("trim_prefix");
+        STRING_FUNCTIONS.add("trimprefix");  // 别名
         STRING_FUNCTIONS.add("trim_suffix");
         STRING_FUNCTIONS.add("replace");
         STRING_FUNCTIONS.add("replace_regex");
@@ -107,6 +109,9 @@ public class DslFunctionTypeManager {
         STRING_FUNCTIONS.add("date_time");
         STRING_FUNCTIONS.add("json_minify");
         STRING_FUNCTIONS.add("json_prettify");
+        STRING_FUNCTIONS.add("json_encode");
+        STRING_FUNCTIONS.add("unicode_encode");
+        STRING_FUNCTIONS.add("unicode_decode");
         STRING_FUNCTIONS.add("gzip");
         STRING_FUNCTIONS.add("gzip_decode");
         STRING_FUNCTIONS.add("zlib");
@@ -114,8 +119,12 @@ public class DslFunctionTypeManager {
         STRING_FUNCTIONS.add("generate_java_gadget");
         STRING_FUNCTIONS.add("generate_jwt");
         STRING_FUNCTIONS.add("aes_gcm");
+        STRING_FUNCTIONS.add("aes_cbc");
         STRING_FUNCTIONS.add("resolve");
         STRING_FUNCTIONS.add("ip_format");
+        STRING_FUNCTIONS.add("public_ip");
+        STRING_FUNCTIONS.add("zip");
+        STRING_FUNCTIONS.add("html_unescape");
         STRING_FUNCTIONS.add("jarm");         // JARM指纹
         STRING_FUNCTIONS.add("wait_for");
         STRING_FUNCTIONS.add("sleep");
@@ -126,8 +135,10 @@ public class DslFunctionTypeManager {
         NUMERIC_FUNCTIONS.add("length");
         NUMERIC_FUNCTIONS.add("unix_time");
         NUMERIC_FUNCTIONS.add("unixtime");  // 别名
+        NUMERIC_FUNCTIONS.add("now");
         NUMERIC_FUNCTIONS.add("to_unix_time");
         NUMERIC_FUNCTIONS.add("to_number");
+        NUMERIC_FUNCTIONS.add("unpack");
     }
 
     /**
@@ -380,6 +391,7 @@ public class DslFunctionTypeManager {
             
             // URL函数
             case "url_encode":
+            case "urlencode":  // 别名
                 return DslFunctionEvaluator.evaluateUrlEncodeFunction(expression, context);
             case "url_decode":
             case "urldecode":  // 别名
@@ -414,6 +426,7 @@ public class DslFunctionTypeManager {
                 }
                 return null;
             case "trim_prefix":
+            case "trimprefix":
                 try {
                     String[] args = DslUtils.extractFunctionArgs(expression);
                     if (args.length >= 2) {
@@ -542,15 +555,44 @@ public class DslFunctionTypeManager {
             case "date_time":
                 try {
                     String[] args = DslUtils.extractFunctionArgs(expression);
-                    if (args.length > 0) {
+                    if (args.length == 1) {
                         String format = DslUtils.cleanStringValue(args[0]);
                         return format != null ? DslFunctionExtended.dateTime(format) : null;
+                    } else if (args.length >= 2) {
+                        String arg0Format = DslUtils.cleanStringValue(args[0]);
+                        String arg1Format = DslUtils.cleanStringValue(args[1]);
+
+                        String format;
+                        String rawTime;
+
+                        // 兼容两种写法：
+                        // 1) date_time(time, format)
+                        // 2) date_time(format, time)
+                        if (looksLikeDateFormat(arg0Format)) {
+                            format = arg0Format;
+                            rawTime = DslEvaluatorRefactored.resolveValueOrFunction(args[1], context);
+                        } else {
+                            format = arg1Format;
+                            rawTime = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
+                        }
+
+                        if (rawTime != null && format != null) {
+                            long unixSeconds;
+                            try {
+                                unixSeconds = Long.parseLong(rawTime.trim());
+                            } catch (NumberFormatException nfe) {
+                                unixSeconds = DslFunctionExtended.toUnixTime(rawTime);
+                            }
+                            return DslFunctionExtended.dateTime(unixSeconds, format);
+                        }
                     }
                 } catch (Exception e) {
                     System.err.println("评估date_time函数失败: " + e.getMessage());
                 }
                 return null;
-            
+            case "now":
+                return String.valueOf(DslFunctionExtended.now());
+
             // JSON函数
             case "json_minify":
                 try {
@@ -572,6 +614,39 @@ public class DslFunctionTypeManager {
                     }
                 } catch (Exception e) {
                     System.err.println("评估json_prettify函数失败: " + e.getMessage());
+                }
+                return null;
+            case "json_encode":
+                try {
+                    String[] args = DslUtils.extractFunctionArgs(expression);
+                    if (args.length > 0) {
+                        String value = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
+                        return value != null ? DslFunctionExtended.jsonEncode(value) : null;
+                    }
+                } catch (Exception e) {
+                    System.err.println("评估json_encode函数失败: " + e.getMessage());
+                }
+                return null;
+            case "unicode_encode":
+                try {
+                    String[] args = DslUtils.extractFunctionArgs(expression);
+                    if (args.length > 0) {
+                        String value = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
+                        return value != null ? DslFunctionExtended.unicodeEncode(value) : null;
+                    }
+                } catch (Exception e) {
+                    System.err.println("评估unicode_encode函数失败: " + e.getMessage());
+                }
+                return null;
+            case "unicode_decode":
+                try {
+                    String[] args = DslUtils.extractFunctionArgs(expression);
+                    if (args.length > 0) {
+                        String value = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
+                        return value != null ? DslFunctionExtended.unicodeDecode(value) : null;
+                    }
+                } catch (Exception e) {
+                    System.err.println("评估unicode_decode函数失败: " + e.getMessage());
                 }
                 return null;
             
@@ -687,6 +762,21 @@ public class DslFunctionTypeManager {
                     System.err.println("评估aes_gcm函数失败: " + e.getMessage());
                 }
                 return null;
+            case "aes_cbc":
+                try {
+                    String[] args = DslUtils.extractFunctionArgs(expression);
+                    if (args.length >= 3) {
+                        String plaintext = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
+                        String key = DslEvaluatorRefactored.resolveValueOrFunction(args[1], context);
+                        String iv = DslEvaluatorRefactored.resolveValueOrFunction(args[2], context);
+                        return plaintext != null && key != null && iv != null
+                                ? DslFunctionExtended.aesCbc(plaintext, key, iv)
+                                : null;
+                    }
+                } catch (Exception e) {
+                    System.err.println("评估aes_cbc函数失败: " + e.getMessage());
+                }
+                return null;
             
             // 网络函数
             case "resolve":
@@ -718,6 +808,42 @@ public class DslFunctionTypeManager {
                 }
                 return null;
             
+            case "public_ip":
+                try {
+                    return DslFunctionExtended.publicIp();
+                } catch (Exception e) {
+                    System.err.println("评估public_ip函数失败: " + e.getMessage());
+                }
+                return null;
+            case "zip":
+                try {
+                    String[] args = DslUtils.extractFunctionArgs(expression);
+                    if (args.length >= 2) {
+                        String filename = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
+                        if (filename == null) {
+                            filename = DslUtils.cleanStringValue(args[0]);
+                        } else {
+                            filename = DslUtils.cleanStringValue(filename);
+                        }
+
+                        String content = DslEvaluatorRefactored.resolveValueOrFunction(args[1], context);
+                        if (content == null) {
+                            content = DslUtils.cleanStringValue(args[1]);
+                        }
+
+                        if (filename == null || filename.trim().isEmpty()) {
+                            filename = "payload.bin";
+                        }
+                        return content != null ? DslFunctionExtended.zip(filename, content) : null;
+                    }
+                } catch (Exception e) {
+                    System.err.println("评估zip函数失败: " + e.getMessage());
+                }
+                return null;
+
+            case "html_unescape":
+                return DslFunctionEvaluator.evaluateHtmlUnescapeFunction(expression, context);
+
             // TLS指纹函数
             case "jarm":
                 try {
@@ -823,6 +949,8 @@ public class DslFunctionTypeManager {
             case "unixtime":  // 别名
                 long unixTime = System.currentTimeMillis() / 1000;
                 return String.valueOf(unixTime);
+            case "now":
+                return String.valueOf(DslFunctionExtended.now());
             case "to_unix_time":
                 try {
                     String[] args = DslUtils.extractFunctionArgs(expression);
@@ -851,6 +979,23 @@ public class DslFunctionTypeManager {
                     System.err.println("评估to_number函数失败: " + e.getMessage());
                 }
                 return null;
+            case "unpack":
+                try {
+                    String[] args = DslUtils.extractFunctionArgs(expression);
+                    if (args.length >= 2) {
+                        String format = DslUtils.cleanStringValue(args[0]);
+                        String raw = DslEvaluatorRefactored.resolveValueOrFunction(args[1], context);
+                        if (raw == null) {
+                            raw = DslUtils.cleanStringValue(args[1]);
+                        }
+                        if (format != null && raw != null) {
+                            return evaluateUnpackFunction(format, raw);
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("评估unpack函数失败: " + e.getMessage());
+                }
+                return null;
             default:
                 return null;
         }
@@ -876,6 +1021,77 @@ public class DslFunctionTypeManager {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    private static String evaluateUnpackFunction(String format, String raw) {
+        try {
+            String normalized = raw == null ? null : raw.trim();
+            if (normalized == null || normalized.isEmpty()) {
+                return null;
+            }
+
+            byte[] bytes;
+            String cleaned = normalized;
+            if (cleaned.startsWith("0x") || cleaned.startsWith("0X")) {
+                cleaned = cleaned.substring(2);
+            }
+            cleaned = cleaned.replaceAll("\\s+", "");
+
+            if (cleaned.matches("(?i)^[0-9a-f]+$")) {
+                if ((cleaned.length() & 1) == 1) {
+                    cleaned = "0" + cleaned;
+                }
+                bytes = hexToBytes(cleaned);
+            } else {
+                bytes = normalized.getBytes("ISO-8859-1");
+            }
+
+            if (">I".equals(format)) {
+                if (bytes.length < 4) {
+                    return null;
+                }
+                long v = ((bytes[0] & 0xFFL) << 24)
+                        | ((bytes[1] & 0xFFL) << 16)
+                        | ((bytes[2] & 0xFFL) << 8)
+                        | (bytes[3] & 0xFFL);
+                return String.valueOf(v);
+            }
+
+            if (bytes.length == 0) {
+                return null;
+            }
+            long first = bytes[0] & 0xFFL;
+            return String.valueOf(first);
+        } catch (Exception e) {
+            System.err.println("unpack解析失败: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private static byte[] hexToBytes(String hex) {
+        int len = hex.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            int hi = Character.digit(hex.charAt(i), 16);
+            int lo = Character.digit(hex.charAt(i + 1), 16);
+            if (hi < 0 || lo < 0) {
+                throw new IllegalArgumentException("invalid hex");
+            }
+            data[i / 2] = (byte) ((hi << 4) + lo);
+        }
+        return data;
+    }
+
+    private static boolean looksLikeDateFormat(String value) {
+        if (value == null || value.isEmpty()) {
+            return false;
+        }
+        return value.contains("%") || value.contains("yyyy") || value.contains("yy")
+                || value.contains("MM") || value.contains("dd") || value.contains("HH")
+                || value.contains("mm") || value.contains("ss") || value.contains("2006")
+                || value.contains("01") || value.contains("02") || value.contains("15")
+                || value.contains("04") || value.contains("05") || value.contains("-")
+                || value.contains("/") || value.contains(":");
     }
 
     /**

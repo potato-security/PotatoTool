@@ -42,11 +42,19 @@ import static com.potato.potatotool.utils.network.RequestUtils.requests;
 /**
  * POC执行器
  * 负责执行单个POC对目标的扫描
- * 
+ *
  * @author Potato
  * @date 2024-10-28
  */
 public class PocExecutor {
+
+    private static final List<PocObj.MatcherType> NON_HTTP_ALLOWED_MATCHERS = Arrays.asList(
+            PocObj.MatcherType.WORD,
+            PocObj.MatcherType.REGEX,
+            PocObj.MatcherType.BINARY,
+            PocObj.MatcherType.DSL,
+            PocObj.MatcherType.GROUP
+    );
 
     private final ScanConfig scanConfig;
     private final ConnectionPoolManager connectionPool;
@@ -63,6 +71,7 @@ public class PocExecutor {
     private ThreadLocal<Map<String, Object>> extractedOutputData = ThreadLocal.withInitial(HashMap::new);
     private ThreadLocal<Map<String, String>> usedVariableValues = ThreadLocal.withInitial(HashMap::new);
     private ThreadLocal<List<String>> usedParamKeys = ThreadLocal.withInitial(ArrayList::new);
+    private ThreadLocal<List<Map<String, Object>>> semanticWarnings = ThreadLocal.withInitial(ArrayList::new);
 
     public PocExecutor(ScanConfig scanConfig) {
         this.scanConfig = scanConfig != null ? scanConfig : new ScanConfig();
@@ -128,6 +137,18 @@ public class PocExecutor {
 
         List<PocObj.PocStep> steps = poc.getVerifySteps();
         PocObj.GlobalConfig globalConfig = poc.getGlobalConfig();
+
+        if (poc.getFlow() != null && !poc.getFlow().trim().isEmpty() && !isSimpleFlowExpression(poc.getFlow())) {
+            addSemanticWarning(
+                    "FLOW_EXECUTION_FALLBACK",
+                    "P1",
+                    poc.getProtocol(),
+                    "flow",
+                    poc.getFlow(),
+                    "fallback",
+                    "当前版本仍以兼容执行路径处理 flow，后续将切换到专用 flow 执行器"
+            );
+        }
 
         // 从POC对象中获取变量
         Map<String, List<String>> pocVariables = poc.getVariables();
@@ -209,6 +230,9 @@ public class PocExecutor {
         if (!hasMultipleValues) {
             // 使用工具类统一处理运行时表达式评估
             Map<String, Object> extractedValues = RuntimeExpressionEvaluator.evaluateVariables(pocVariables);
+            if (poc.getFlow() != null && !poc.getFlow().trim().isEmpty()) {
+                return executeStepsWithFlow(target, steps, globalConfig, extractedValues, poc.getFlow(), poc.getStepsCondition());
+            }
             // 传递步骤条件（OR/AND）
             return executeStepsWithVariables(target, steps, globalConfig, extractedValues, poc.getStepsCondition());
         }
@@ -292,7 +316,12 @@ public class PocExecutor {
 
             try {
                 // 使用当前组合执行所有步骤
-                boolean success = executeStepsWithVariables(target, steps, globalConfig, objectCombination);
+                boolean success;
+                if (poc.getFlow() != null && !poc.getFlow().trim().isEmpty()) {
+                    success = executeStepsWithFlow(target, steps, globalConfig, objectCombination, poc.getFlow(), poc.getStepsCondition());
+                } else {
+                    success = executeStepsWithVariables(target, steps, globalConfig, objectCombination, poc.getStepsCondition());
+                }
 
                 if (success) {
                     anySuccess = true;
@@ -311,6 +340,110 @@ public class PocExecutor {
         return anySuccess;
     }
     
+    private boolean executeStepsWithFlow(
+        String target,
+        List<PocObj.PocStep> steps,
+        PocObj.GlobalConfig globalConfig,
+        Map<String, Object> initialVariables,
+        String flowExpression,
+        PocObj.MatchersCondition fallbackCondition
+    ) throws Exception {
+        if (flowExpression == null || flowExpression.trim().isEmpty()) {
+            return executeStepsWithVariables(target, steps, globalConfig, initialVariables, fallbackCondition);
+        }
+
+        String normalizedFlow = flowExpression.trim();
+        if (!isSimpleFlowExpression(normalizedFlow)) {
+            addSemanticWarning(
+                    "FLOW_COMPLEX_FALLBACK",
+                    "P1",
+                    "mixed",
+                    "flow",
+                    normalizedFlow,
+                    "fallback",
+                    "复杂 flow 表达式暂按 stepsCondition 兼容执行"
+            );
+            return executeStepsWithVariables(target, steps, globalConfig, initialVariables, fallbackCondition);
+        }
+
+        Map<String, Object> extractedValues = new HashMap<>(initialVariables);
+        Map<String, PocObj.PocStep> stepMap = new HashMap<>();
+        for (PocObj.PocStep step : steps) {
+            if (step != null && step.getStepId() != null) {
+                stepMap.put(step.getStepId().toLowerCase(), step);
+            }
+        }
+
+        if (normalizedFlow.contains("||")) {
+            String[] orGroups = normalizedFlow.split("\\|\\|");
+            for (String group : orGroups) {
+                String[] andParts = group.split("&&");
+                boolean groupMatched = true;
+
+                for (String part : andParts) {
+                    String token = normalizeFlowToken(part);
+                    PocObj.PocStep step = stepMap.get(token);
+                    if (step == null) {
+                        addSemanticWarning("FLOW_STEP_NOT_FOUND", "P1", "mixed", "flow",
+                                token, "skip", "flow 中引用的步骤不存在");
+                        groupMatched = false;
+                        break;
+                    }
+                    if (!executeSingleStep(target, step, globalConfig, extractedValues, steps)) {
+                        groupMatched = false;
+                        break;
+                    }
+                }
+
+                if (groupMatched) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        String[] andParts = normalizedFlow.split("&&");
+        for (String part : andParts) {
+            String token = normalizeFlowToken(part);
+            PocObj.PocStep step = stepMap.get(token);
+            if (step == null) {
+                addSemanticWarning("FLOW_STEP_NOT_FOUND", "P1", "mixed", "flow",
+                        token, "skip", "flow 中引用的步骤不存在");
+                return false;
+            }
+            if (!executeSingleStep(target, step, globalConfig, extractedValues, steps)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isSimpleFlowExpression(String flowExpression) {
+        if (flowExpression == null || flowExpression.trim().isEmpty()) {
+            return true;
+        }
+        String flow = flowExpression.trim();
+        return flow.matches("(?i)\\s*[a-z]+_?\\d+\\s*([&]{2}|[|]{2})\\s*[a-z]+_?\\d+(\\s*([&]{2}|[|]{2})\\s*[a-z]+_?\\d+)*\\s*")
+                || flow.matches("(?i)\\s*[a-z]+\\(\\d+\\)\\s*([&]{2}|[|]{2})\\s*[a-z]+\\(\\d+\\)(\\s*([&]{2}|[|]{2})\\s*[a-z]+\\(\\d+\\))*\\s*");
+    }
+
+    private String normalizeFlowToken(String token) {
+        if (token == null) {
+            return "";
+        }
+        String normalized = token.trim().toLowerCase();
+        if (normalized.contains("(") && normalized.endsWith(")")) {
+            int left = normalized.indexOf('(');
+            int right = normalized.lastIndexOf(')');
+            if (left > 0 && right > left + 1) {
+                String prefix = normalized.substring(0, left);
+                String idx = normalized.substring(left + 1, right);
+                return prefix + "_" + idx;
+            }
+        }
+        return normalized;
+    }
+
     /**
      * 使用指定变量执行步骤（AND 条件）
      */
@@ -931,20 +1064,15 @@ public class PocExecutor {
             if (paramKeys != null && !paramKeys.isEmpty()) {
                 result.setParamKeys(new ArrayList<>(paramKeys));
             }
+
+            attachInternalWarningDetails(result, poc);
         } catch (Exception e) {
             if (debugMode) {
                 System.err.println("填充增强报告字段失败: " + e.getMessage());
             }
         } finally {
             // 清理 ThreadLocal 防止内存泄漏
-            lastMatchedRequest.remove();
-            lastMatchedResponse.remove();
-            lastMatchedPath.remove();
-            lastMatchedPayload.remove();
-            stepExecutionRecords.remove();
-            extractedOutputData.remove();
-            usedVariableValues.remove();
-            usedParamKeys.remove();
+            clearThreadLocals();
         }
 
         return result;
@@ -1005,9 +1133,23 @@ public class PocExecutor {
         result.setVulnerable(false);
         result.setTimestamp(System.currentTimeMillis());
         result.addDetail("scan_duration", System.currentTimeMillis() - startTime);
+        attachInternalWarningDetails(result, poc);
+        clearThreadLocals();
         return result;
     }
     
+    private void clearThreadLocals() {
+        lastMatchedRequest.remove();
+        lastMatchedResponse.remove();
+        lastMatchedPath.remove();
+        lastMatchedPayload.remove();
+        stepExecutionRecords.remove();
+        extractedOutputData.remove();
+        usedVariableValues.remove();
+        usedParamKeys.remove();
+        semanticWarnings.remove();
+    }
+
     /**
      * 提取 output 变量（Xray POC）
      * 使用 CEL 表达式从响应中提取数据
@@ -1235,9 +1377,14 @@ public class PocExecutor {
             
             // 构造可匹配的响应体
             String responseBody = String.join("\n", dnsResponse.getAnswers());
-            
+
+            if (dnsStep.getExtractors() != null && !dnsStep.getExtractors().isEmpty()) {
+                VariableExtractor.extractVariablesFromTextObj(responseBody, dnsStep.getExtractors(), variables);
+            }
+
             // 执行匹配（简化版，使用字符串匹配）
             if (dnsStep.getMatchers() != null && !dnsStep.getMatchers().isEmpty()) {
+                validateNonHttpMatcherTypes(dnsStep, "dns");
                 boolean matched = SimpleMatcher.match(responseBody, dnsStep);
                 if (!matched) {
                     System.out.println("DNS 响应不匹配");
@@ -1275,10 +1422,15 @@ public class PocExecutor {
                 System.err.println("WebSocket 通信失败: " + wsResponse.getError());
                 return false;
             }
-            
+
+            String responseBody = String.join("\n", wsResponse.getReceivedMessages());
+            if (wsStep.getExtractors() != null && !wsStep.getExtractors().isEmpty()) {
+                VariableExtractor.extractVariablesFromTextObj(responseBody, wsStep.getExtractors(), variables);
+            }
+
             // 执行匹配
             if (wsStep.getMatchers() != null && !wsStep.getMatchers().isEmpty()) {
-                String responseBody = String.join("\n", wsResponse.getReceivedMessages());
+                validateNonHttpMatcherTypes(wsStep, "websocket");
                 boolean matched = SimpleMatcher.match(responseBody, wsStep);
                 if (!matched) {
                     System.out.println("WebSocket 响应不匹配");
@@ -1312,10 +1464,16 @@ public class PocExecutor {
                 System.err.println("SSL/TLS 检测失败: " + sslResponse.getError());
                 return false;
             }
-            
+
+            String raw = sslResponse.getRaw();
+            if (sslStep.getExtractors() != null && !sslStep.getExtractors().isEmpty()) {
+                VariableExtractor.extractVariablesFromTextObj(raw, sslStep.getExtractors(), variables);
+            }
+
             // 执行匹配
             if (sslStep.getMatchers() != null && !sslStep.getMatchers().isEmpty()) {
-                boolean matched = SimpleMatcher.match(sslResponse.getRaw(), sslStep);
+                validateNonHttpMatcherTypes(sslStep, "ssl");
+                boolean matched = SimpleMatcher.match(raw, sslStep);
                 if (!matched) {
                     System.out.println("SSL/TLS 响应不匹配");
                     return false;
@@ -1357,20 +1515,30 @@ public class PocExecutor {
             }
             
             // 执行匹配（检查任意文件匹配即可）
-            if (fileStep.getMatchers() != null && !fileStep.getMatchers().isEmpty()) {
-                for (FileHandler.FileResponse fileResponse : fileResponses) {
-                    if (fileResponse.isSuccess() && fileResponse.getContent() != null) {
-                        boolean matched = SimpleMatcher.match(fileResponse.getContent(), fileStep);
+            boolean hasMatchers = fileStep.getMatchers() != null && !fileStep.getMatchers().isEmpty();
+            if (hasMatchers) {
+                validateNonHttpMatcherTypes(fileStep, "file");
+            }
+            for (FileHandler.FileResponse fileResponse : fileResponses) {
+                if (fileResponse.isSuccess() && fileResponse.getContent() != null) {
+                    String content = fileResponse.getContent();
+                    if (fileStep.getExtractors() != null && !fileStep.getExtractors().isEmpty()) {
+                        VariableExtractor.extractVariablesFromTextObj(content, fileStep.getExtractors(), variables);
+                    }
+                    if (hasMatchers) {
+                        boolean matched = SimpleMatcher.match(content, fileStep);
                         if (matched) {
                             System.out.println("✓ 文件匹配成功: " + fileResponse.getPath());
                             return true;
                         }
                     }
                 }
+            }
+            if (hasMatchers) {
                 System.out.println("所有文件都不匹配");
                 return false;
             }
-            
+
             System.out.println("✓ File 步骤执行成功");
             return true;
             
@@ -1407,10 +1575,16 @@ public class PocExecutor {
                 System.err.println("Headless 操作失败: " + headlessResponse.getError());
                 return false;
             }
-            
+
+            String pageSource = headlessResponse.getPageSource();
+            if (headlessStep.getExtractors() != null && !headlessStep.getExtractors().isEmpty()) {
+                VariableExtractor.extractVariablesFromTextObj(pageSource, headlessStep.getExtractors(), variables);
+            }
+
             // 执行匹配
             if (headlessStep.getMatchers() != null && !headlessStep.getMatchers().isEmpty()) {
-                boolean matched = SimpleMatcher.match(headlessResponse.getPageSource(), headlessStep);
+                validateNonHttpMatcherTypes(headlessStep, "headless");
+                boolean matched = SimpleMatcher.match(pageSource, headlessStep);
                 if (!matched) {
                     System.out.println("Headless 响应不匹配");
                     return false;
@@ -1519,7 +1693,11 @@ public class PocExecutor {
             }
 
             // 执行匹配
+            if (codeStep.getExtractors() != null && !codeStep.getExtractors().isEmpty()) {
+                VariableExtractor.extractVariablesFromTextObj(resultString, codeStep.getExtractors(), variables);
+            }
             if (codeStep.getMatchers() != null && !codeStep.getMatchers().isEmpty()) {
+                validateNonHttpMatcherTypes(codeStep, "code");
                 boolean matched = SimpleMatcher.match(resultString, codeStep);
                 if (!matched) {
                     System.out.println("Code 结果不匹配");
@@ -1585,8 +1763,13 @@ public class PocExecutor {
             }
 
             // 执行匹配
+            String raw = response.getRawString();
+            if (tcpStep.getExtractors() != null && !tcpStep.getExtractors().isEmpty()) {
+                VariableExtractor.extractVariablesFromTextObj(raw, tcpStep.getExtractors(), variables);
+            }
             if (tcpStep.getMatchers() != null && !tcpStep.getMatchers().isEmpty()) {
-                boolean matched = SimpleMatcher.match(response.getRawString(), tcpStep);
+                validateNonHttpMatcherTypes(tcpStep, "tcp");
+                boolean matched = SimpleMatcher.match(raw, tcpStep);
                 if (!matched) {
                     System.out.println("TCP 响应不匹配");
                     return false;
@@ -1599,6 +1782,108 @@ public class PocExecutor {
         } catch (Exception e) {
             System.err.println("TCP 步骤执行失败: " + e.getMessage());
             return false;
+        }
+    }
+
+    private void addSemanticWarning(String code, String level, String protocol,
+                                    String field, Object value, String action, String message) {
+        Map<String, Object> warning = new HashMap<>();
+        warning.put("code", code);
+        warning.put("level", level);
+        warning.put("protocol", protocol);
+        warning.put("field", field);
+        warning.put("value", value == null ? "" : String.valueOf(value));
+        warning.put("action", action);
+        warning.put("message", message);
+        semanticWarnings.get().add(warning);
+    }
+
+    private void attachInternalWarningDetails(ScanResult result, PocObj.Poc poc) {
+        if (result == null) {
+            return;
+        }
+
+        List<Map<String, Object>> semantic = semanticWarnings.get();
+        if (semantic != null && !semantic.isEmpty()) {
+            result.addDetail("semanticWarnings", new ArrayList<>(semantic));
+        }
+
+        if (poc != null) {
+            if (poc.getConversionWarnings() != null && !poc.getConversionWarnings().isEmpty()) {
+                result.addDetail("conversionWarnings", new ArrayList<>(poc.getConversionWarnings()));
+            }
+            if (poc.getUnsupportedCapabilities() != null && !poc.getUnsupportedCapabilities().isEmpty()) {
+                result.addDetail("unsupportedCapabilities", new ArrayList<>(poc.getUnsupportedCapabilities()));
+            }
+        }
+
+        String flowMode;
+        if (poc != null && poc.getFlow() != null && !poc.getFlow().trim().isEmpty()) {
+            flowMode = isSimpleFlowExpression(poc.getFlow()) ? "flow" : "flow-fallback";
+        } else {
+            flowMode = "stepsCondition";
+        }
+        result.addDetail("flowExecutionMode", flowMode);
+        result.addDetail("matcherPolicy", "legacy_guarded");
+
+        int p0 = countWarningByLevel(semantic, poc, "P0");
+        int p1 = countWarningByLevel(semantic, poc, "P1");
+        int p2 = countWarningByLevel(semantic, poc, "P2");
+        Map<String, Integer> summary = new HashMap<>();
+        summary.put("P0", p0);
+        summary.put("P1", p1);
+        summary.put("P2", p2);
+        result.addDetail("warningSummary", summary);
+    }
+
+    private int countWarningByLevel(List<Map<String, Object>> semantic, PocObj.Poc poc, String level) {
+        int count = 0;
+        if (semantic != null) {
+            for (Map<String, Object> warning : semantic) {
+                if (warning != null && level.equals(String.valueOf(warning.get("level")))) {
+                    count++;
+                }
+            }
+        }
+        if (poc != null) {
+            if (poc.getConversionWarnings() != null) {
+                for (Map<String, Object> warning : poc.getConversionWarnings()) {
+                    if (warning != null && level.equals(String.valueOf(warning.get("level")))) {
+                        count++;
+                    }
+                }
+            }
+            if (poc.getUnsupportedCapabilities() != null) {
+                for (Map<String, Object> warning : poc.getUnsupportedCapabilities()) {
+                    if (warning != null && level.equals(String.valueOf(warning.get("level")))) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    private void validateNonHttpMatcherTypes(PocObj.PocStep step, String protocol) {
+        if (step == null || step.getMatchers() == null) {
+            return;
+        }
+        for (PocObj.Matcher matcher : step.getMatchers()) {
+            if (matcher == null || matcher.getType() == null) {
+                continue;
+            }
+            if (!NON_HTTP_ALLOWED_MATCHERS.contains(matcher.getType())) {
+                addSemanticWarning(
+                        "NON_HTTP_MATCHER_UNSUPPORTED",
+                        "P1",
+                        protocol,
+                        "matcher.type",
+                        matcher.getType().name(),
+                        "fallback",
+                        "非HTTP协议收到不支持的 matcher 类型，当前将按不匹配处理"
+                );
+                throw new IllegalArgumentException("Unsupported matcher type for protocol " + protocol + ": " + matcher.getType());
+            }
         }
     }
 
@@ -2065,6 +2350,15 @@ public class PocExecutor {
                 }
             }
 
+            String trimmed = expression.trim();
+            if (trimmed.startsWith("{{") && trimmed.endsWith("}}")) {
+                String innerExpr = trimmed.substring(2, trimmed.length() - 2).trim();
+                String compoundResult = evaluateCompoundExpression(innerExpr, context);
+                if (compoundResult != null) {
+                    return compoundResult;
+                }
+            }
+
             // 调用 DslEvaluatorRefactored.evaluateFunctionForValue
             String result = DslEvaluatorRefactored.evaluateFunctionForValue(expression, context);
 
@@ -2074,6 +2368,286 @@ public class PocExecutor {
             System.err.println("[警告] DSL 函数计算失败: " + expression + " - " + e.getMessage());
             return expression;
         }
+    }
+
+    private String evaluateCompoundExpression(String expression, Map<String, Object> context) {
+        String arithmeticResult = evaluateArithmeticExpression(expression, context);
+        if (arithmeticResult != null) {
+            return arithmeticResult;
+        }
+
+        return evaluateCompoundPlusExpression(expression, context);
+    }
+
+    private String evaluateArithmeticExpression(String expression, Map<String, Object> context) {
+        List<String> terms = splitTopLevelArithmeticTerms(expression);
+        if (terms.size() <= 1) {
+            return null;
+        }
+
+        List<String> operators = extractTopLevelArithmeticOperators(expression);
+        if (operators.size() != terms.size() - 1) {
+            return null;
+        }
+
+        List<Double> values = new ArrayList<>();
+        for (String term : terms) {
+            String resolved = DslEvaluatorRefactored.resolveValueOrFunction(term, context);
+            if (resolved == null) {
+                return null;
+            }
+            String value = resolved.trim();
+            if (!value.matches("^-?\\d+(\\.\\d+)?$")) {
+                return null;
+            }
+            values.add(Double.parseDouble(value));
+        }
+
+        boolean hasMulDiv = false;
+        for (String op : operators) {
+            if ("*".equals(op) || "/".equals(op)) {
+                hasMulDiv = true;
+                break;
+            }
+        }
+
+        if (hasMulDiv) {
+            List<Double> reducedValues = new ArrayList<>();
+            List<String> reducedOps = new ArrayList<>();
+            double current = values.get(0);
+            for (int i = 0; i < operators.size(); i++) {
+                String op = operators.get(i);
+                double next = values.get(i + 1);
+                if ("*".equals(op)) {
+                    current *= next;
+                } else if ("/".equals(op)) {
+                    current /= next;
+                } else {
+                    reducedValues.add(current);
+                    reducedOps.add(op);
+                    current = next;
+                }
+            }
+            reducedValues.add(current);
+
+            double result = reducedValues.get(0);
+            for (int i = 0; i < reducedOps.size(); i++) {
+                String op = reducedOps.get(i);
+                double next = reducedValues.get(i + 1);
+                if ("+".equals(op)) {
+                    result += next;
+                } else {
+                    result -= next;
+                }
+            }
+            return stringifyNumberResult(result, values);
+        }
+
+        double result = values.get(0);
+        for (int i = 0; i < operators.size(); i++) {
+            String op = operators.get(i);
+            double next = values.get(i + 1);
+            if ("+".equals(op)) {
+                result += next;
+            } else {
+                result -= next;
+            }
+        }
+        return stringifyNumberResult(result, values);
+    }
+
+    private String stringifyNumberResult(double result, List<Double> sourceValues) {
+        boolean allInteger = Math.abs(result - Math.rint(result)) < 1e-9;
+        if (allInteger) {
+            for (Double value : sourceValues) {
+                if (Math.abs(value - Math.rint(value)) >= 1e-9) {
+                    allInteger = false;
+                    break;
+                }
+            }
+        }
+        if (allInteger) {
+            return String.valueOf((long) Math.rint(result));
+        }
+        return String.valueOf(result);
+    }
+
+    private List<String> splitTopLevelArithmeticTerms(String expression) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        int parenDepth = 0;
+        boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+
+            if (c == '\'' && !inDoubleQuote) {
+                inSingleQuote = !inSingleQuote;
+                current.append(c);
+                continue;
+            }
+            if (c == '"' && !inSingleQuote) {
+                inDoubleQuote = !inDoubleQuote;
+                current.append(c);
+                continue;
+            }
+
+            if (!inSingleQuote && !inDoubleQuote) {
+                if (c == '(') {
+                    parenDepth++;
+                } else if (c == ')' && parenDepth > 0) {
+                    parenDepth--;
+                } else if ((c == '+' || c == '-' || c == '*' || c == '/') && parenDepth == 0) {
+                    if ((c == '+' || c == '-') && isUnaryOperator(expression, i)) {
+                        current.append(c);
+                        continue;
+                    }
+                    parts.add(current.toString().trim());
+                    current.setLength(0);
+                    continue;
+                }
+            }
+
+            current.append(c);
+        }
+
+        if (current.length() > 0) {
+            parts.add(current.toString().trim());
+        }
+        return parts;
+    }
+
+    private List<String> extractTopLevelArithmeticOperators(String expression) {
+        List<String> operators = new ArrayList<>();
+        int parenDepth = 0;
+        boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+
+            if (c == '\'' && !inDoubleQuote) {
+                inSingleQuote = !inSingleQuote;
+                continue;
+            }
+            if (c == '"' && !inSingleQuote) {
+                inDoubleQuote = !inDoubleQuote;
+                continue;
+            }
+
+            if (!inSingleQuote && !inDoubleQuote) {
+                if (c == '(') {
+                    parenDepth++;
+                } else if (c == ')' && parenDepth > 0) {
+                    parenDepth--;
+                } else if ((c == '+' || c == '-' || c == '*' || c == '/') && parenDepth == 0) {
+                    if ((c == '+' || c == '-') && isUnaryOperator(expression, i)) {
+                        continue;
+                    }
+                    operators.add(String.valueOf(c));
+                }
+            }
+        }
+
+        return operators;
+    }
+
+    private boolean isUnaryOperator(String expression, int index) {
+        for (int i = index - 1; i >= 0; i--) {
+            char prev = expression.charAt(i);
+            if (Character.isWhitespace(prev)) {
+                continue;
+            }
+            return prev == '(' || prev == '+' || prev == '-' || prev == '*' || prev == '/';
+        }
+        return true;
+    }
+
+    private String evaluateCompoundPlusExpression(String expression, Map<String, Object> context) {
+        List<String> parts = splitByTopLevelPlus(expression);
+        if (parts.size() <= 1) {
+            return null;
+        }
+
+        List<String> values = new ArrayList<>();
+        boolean allNumeric = true;
+
+        for (String part : parts) {
+            String value = DslEvaluatorRefactored.resolveValueOrFunction(part, context);
+            if (value == null) {
+                value = "";
+            }
+            value = value.trim();
+            values.add(value);
+            if (!value.matches("^-?\\d+(\\.\\d+)?$")) {
+                allNumeric = false;
+            }
+        }
+
+        if (allNumeric) {
+            double sum = 0;
+            boolean allInteger = true;
+            for (String value : values) {
+                if (value.contains(".")) {
+                    allInteger = false;
+                }
+                sum += Double.parseDouble(value);
+            }
+            if (allInteger) {
+                return String.valueOf((long) sum);
+            }
+            return String.valueOf(sum);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (String value : values) {
+            sb.append(value);
+        }
+        return sb.toString();
+    }
+
+    private List<String> splitByTopLevelPlus(String expression) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        int parenDepth = 0;
+        boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+
+            if (c == '\'' && !inDoubleQuote) {
+                inSingleQuote = !inSingleQuote;
+                current.append(c);
+                continue;
+            }
+            if (c == '"' && !inSingleQuote) {
+                inDoubleQuote = !inDoubleQuote;
+                current.append(c);
+                continue;
+            }
+
+            if (!inSingleQuote && !inDoubleQuote) {
+                if (c == '(') {
+                    parenDepth++;
+                } else if (c == ')' && parenDepth > 0) {
+                    parenDepth--;
+                } else if (c == '+' && parenDepth == 0) {
+                    parts.add(current.toString().trim());
+                    current.setLength(0);
+                    continue;
+                }
+            }
+
+            current.append(c);
+        }
+
+        if (current.length() > 0) {
+            parts.add(current.toString().trim());
+        }
+
+        return parts;
     }
 
     /**

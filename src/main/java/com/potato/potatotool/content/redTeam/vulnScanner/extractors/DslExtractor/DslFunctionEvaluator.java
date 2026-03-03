@@ -463,10 +463,13 @@ public class DslFunctionEvaluator {
 
             String target = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
             if (target == null) {
+                target = DslUtils.cleanStringValue(args[0]);
+            }
+            if (target == null) {
                 return null;
             }
 
-            int start = DslUtils.safeParseInt(args[1], 0);
+            int start = DslUtils.safeParseInt(DslEvaluatorRefactored.resolveValueOrFunction(args[1], context), 0);
             
             // 处理负数索引
             if (start < 0) {
@@ -479,7 +482,7 @@ public class DslFunctionEvaluator {
 
             String result;
             if (args.length >= 3) {
-                int length = DslUtils.safeParseInt(args[2], target.length() - start);
+                int length = DslUtils.safeParseInt(DslEvaluatorRefactored.resolveValueOrFunction(args[2], context), target.length() - start);
                 int endIndex = Math.min(start + length, target.length());
                 result = target.substring(start, endIndex);
             } else {

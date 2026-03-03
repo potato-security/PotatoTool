@@ -76,7 +76,7 @@ public class DslConstants {
             "aes_gcm",
             
             // 网络函数
-            "resolve", "ip_format",
+            "resolve", "ip_format", "public_ip", "zip", "html_unescape",
             
             // TLS指纹函数
             "jarm"  // JARM指纹（TLS指纹识别）

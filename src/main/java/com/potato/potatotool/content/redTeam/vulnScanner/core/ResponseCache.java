@@ -135,6 +135,9 @@ public class ResponseCache {
      * @return 缓存的响应，如果不存在则返回null
      */
     public CachedResponse get(String key) {
+        if (key == null) {
+            return null;
+        }
         return cache.get(key);
     }
     
@@ -145,6 +148,9 @@ public class ResponseCache {
      * @return 是否存在
      */
     public boolean contains(String key) {
+        if (key == null) {
+            return false;
+        }
         return cache.containsKey(key);
     }
     

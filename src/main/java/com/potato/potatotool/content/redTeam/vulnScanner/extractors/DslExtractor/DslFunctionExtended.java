@@ -9,6 +9,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.GCMParameterSpec;
@@ -289,14 +291,28 @@ public class DslFunctionExtended {
     }
 
     /**
-     * date_time - 格式化日期时间
+     * date_time - 格式化日期时间（当前时间）
      */
     public static String dateTime(String format) {
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat(format);
+            String javaFormat = normalizeDateFormat(format);
+            SimpleDateFormat sdf = new SimpleDateFormat(javaFormat);
             return sdf.format(new Date());
         } catch (Exception e) {
             return new Date().toString();
+        }
+    }
+
+    /**
+     * date_time - 按指定时间戳和格式输出
+     */
+    public static String dateTime(long unixSeconds, String format) {
+        try {
+            String javaFormat = normalizeDateFormat(format);
+            SimpleDateFormat sdf = new SimpleDateFormat(javaFormat);
+            return sdf.format(new Date(unixSeconds * 1000));
+        } catch (Exception e) {
+            return new Date(unixSeconds * 1000).toString();
         }
     }
 
@@ -532,6 +548,37 @@ public class DslFunctionExtended {
     }
 
     /**
+     * 归一化日期格式：支持 Go/Nuclei 常见格式与 strftime 风格
+     */
+    private static String normalizeDateFormat(String format) {
+        if (format == null || format.trim().isEmpty()) {
+            return "yyyy-MM-dd HH:mm:ss";
+        }
+
+        String normalized = format;
+
+        // 先处理 Go/Nuclei 常见时间布局（参考时间 2006-01-02 15:04:05）
+        normalized = normalized.replace("2006", "yyyy");
+        normalized = normalized.replace("06", "yy");
+        normalized = normalized.replace("01", "MM");
+        normalized = normalized.replace("02", "dd");
+        normalized = normalized.replace("15", "HH");
+        normalized = normalized.replace("04", "mm");
+        normalized = normalized.replace("05", "ss");
+
+        // 兼容 strftime 风格
+        normalized = normalized.replace("%Y", "yyyy");
+        normalized = normalized.replace("%y", "yy");
+        normalized = normalized.replace("%m", "MM");
+        normalized = normalized.replace("%d", "dd");
+        normalized = normalized.replace("%H", "HH");
+        normalized = normalized.replace("%M", "mm");
+        normalized = normalized.replace("%S", "ss");
+
+        return normalized;
+    }
+
+    /**
      * 字节数组转十六进制
      */
     private static String bytesToHex(byte[] bytes) {
@@ -712,6 +759,46 @@ public class DslFunctionExtended {
             InetAddress address = InetAddress.getByName(domain);
             return address.getHostAddress();
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * public_ip - 获取公网IP（使用占位语义，避免本地网卡/环境耦合）
+     */
+    public static String publicIp() {
+        return "{{ip}}";
+    }
+
+    /**
+     * zip - 生成单文件ZIP并返回原始字节串（ISO-8859-1）
+     */
+    public static String zip(String filename, String content) {
+        if (filename == null || filename.trim().isEmpty()) {
+            filename = "payload.bin";
+        }
+        if (content == null) {
+            content = "";
+        }
+
+        String normalizedName = filename.replace("\\", "/");
+        while (normalizedName.startsWith("/")) {
+            normalizedName = normalizedName.substring(1);
+        }
+        if (normalizedName.isEmpty()) {
+            normalizedName = "payload.bin";
+        }
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ZipOutputStream zos = new ZipOutputStream(baos);
+            zos.putNextEntry(new ZipEntry(normalizedName));
+            zos.write(content.getBytes("UTF-8"));
+            zos.closeEntry();
+            zos.close();
+            return new String(baos.toByteArray(), "ISO-8859-1");
+        } catch (Exception e) {
+            System.err.println("ZIP 生成失败: " + e.getMessage());
             return null;
         }
     }
