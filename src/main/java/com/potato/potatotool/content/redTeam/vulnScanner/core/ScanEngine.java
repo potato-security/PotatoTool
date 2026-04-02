@@ -172,6 +172,10 @@ public class ScanEngine {
      * @param pocs POC列表
      */
     public void startScan(List<String> targets, List<PocObj.Poc> pocs) {
+        startScan(targets, pocs, null);
+    }
+
+    public void startScan(List<String> targets, List<PocObj.Poc> pocs, ScanConfig runtimeConfig) {
         if (isScanning) {
             throw new IllegalStateException("扫描任务正在进行中");
         }
@@ -183,7 +187,9 @@ public class ScanEngine {
         if (pocs == null || pocs.isEmpty()) {
             throw new IllegalArgumentException("POC列表不能为空");
         }
-        
+
+        applyRuntimeConfig(runtimeConfig);
+
         // 生成扫描ID
         currentScanId = generateScanId();
         
@@ -259,7 +265,7 @@ public class ScanEngine {
             System.err.println("加载已完成任务失败: " + e.getMessage());
         }
 
-        // 修复: 恢复之前发现的漏洞结果
+        // 恢复之前发现的漏洞结果，但不重复向 UI 派发历史事件
         try {
             List<TaskState> vulnerableTasks = database.loadVulnerableTasks(currentScanId);
             ScanLogger.getInstance().info("SCAN", "从数据库加载了 " + vulnerableTasks.size() + " 个漏洞记录");
@@ -282,11 +288,6 @@ public class ScanEngine {
 
                     scanResults.add(result);
                     vulnerabilityCount.incrementAndGet();
-
-                    // 触发漏洞发现事件，让UI更新
-                    eventDispatcher.dispatchVulnerabilityFound(
-                        new VulnerabilityFoundEvent(this, currentScanId, result)
-                    );
                 } else {
                     ScanLogger.getInstance().warn("SCAN", "POC不存在: " + task.getPocId());
                 }
@@ -322,7 +323,12 @@ public class ScanEngine {
         eventDispatcher.dispatchScanStarted(
             new ScanStartedEvent(this, currentScanId, currentTargets.size(), currentPocs.size(), remainingTasks.size())
         );
-        
+
+        if (remainingTasks.isEmpty()) {
+            handleScanCompletion(currentScanId);
+            return;
+        }
+
         // 执行剩余任务
         executeScan(remainingTasks);
     }
@@ -896,9 +902,46 @@ public class ScanEngine {
         }
     }
     
-    /**
-     * 保存扫描状态
-     */
+    private void applyRuntimeConfig(ScanConfig runtimeConfig) {
+        if (runtimeConfig == null) {
+            return;
+        }
+        scanConfig.setThreads(runtimeConfig.getThreads());
+        scanConfig.setProtocol(runtimeConfig.getProtocol());
+        scanConfig.setTags(runtimeConfig.getTags());
+        scanConfig.setSeverity(runtimeConfig.getSeverity());
+        scanConfig.setDebug(runtimeConfig.isDebug());
+        scanConfig.setProxy(runtimeConfig.getProxy());
+        scanConfig.setTimeout(runtimeConfig.getTimeout());
+        scanConfig.setRetries(runtimeConfig.getRetries());
+        scanConfig.setFollowRedirects(runtimeConfig.isFollowRedirects());
+        scanConfig.setUserAgent(runtimeConfig.getUserAgent());
+        scanConfig.setHeaders(new HashMap<String, String>(runtimeConfig.getHeaders()));
+        scanConfig.setMaxResponseSize(runtimeConfig.getMaxResponseSize());
+        scanConfig.setInputType(runtimeConfig.getInputType());
+        scanConfig.setAutoDetectInputType(runtimeConfig.isAutoDetectInputType());
+        scanConfig.setScanMode(runtimeConfig.getScanMode());
+        scanConfig.setEnabledPocFormats(new HashSet<String>(runtimeConfig.getEnabledPocFormats()));
+        scanConfig.setEnabledCategories(new HashSet<PocObj.PocCategory>(runtimeConfig.getEnabledCategories()));
+        scanConfig.setExcludedCategories(new HashSet<PocObj.PocCategory>(runtimeConfig.getExcludedCategories()));
+        scanConfig.setSkipFingerprint(runtimeConfig.isSkipFingerprint());
+        scanConfig.setFingerprintTimeout(runtimeConfig.getFingerprintTimeout());
+        scanConfig.setEnableHoneypotDetection(runtimeConfig.isEnableHoneypotDetection());
+        scanConfig.setStopOnHoneypot(runtimeConfig.isStopOnHoneypot());
+        scanConfig.setEnableConfigAudit(runtimeConfig.isEnableConfigAudit());
+        scanConfig.setMinSeverity(runtimeConfig.getMinSeverity());
+        scanConfig.setEnableHeadless(runtimeConfig.isEnableHeadless());
+        scanConfig.setEnableCode(runtimeConfig.isEnableCode());
+        scanConfig.setEnableFuzz(runtimeConfig.isEnableFuzz());
+        scanConfig.setEnableDeduplication(runtimeConfig.isEnableDeduplication());
+        scanConfig.setEnableResponseCache(runtimeConfig.isEnableResponseCache());
+        scanConfig.setResponseCacheTtlMs(runtimeConfig.getResponseCacheTtlMs());
+        scanConfig.setEnableClustering(runtimeConfig.isEnableClustering());
+        scanConfig.setLocalTargetPath(runtimeConfig.getLocalTargetPath());
+        scanConfig.setTargetProtocol(runtimeConfig.getTargetProtocol());
+        scanConfig.setFileExtensions(new ArrayList<String>(runtimeConfig.getFileExtensions()));
+    }
+
     private void saveScanState() {
         try {
             ScanState state = new ScanState();

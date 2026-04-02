@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("PocExecutor 流程与步骤语义测试")
@@ -284,6 +285,50 @@ public class PocExecutorFlowExecutionTest {
         assertEquals("flow", result.getDetails().get("flowExecutionMode"));
     }
 
+    @Test
+    @DisplayName("stepsCondition=OR 时失败步骤提取变量不应污染后续步骤")
+    void testOrStepsShouldNotLeakVariablesAcrossFailedBranches() throws Exception {
+        PocObj.Poc poc = new PocObj.Poc();
+        poc.setId("or-variable-isolation-test");
+        poc.setName("or-variable-isolation-test");
+        poc.setProtocol("http");
+        poc.setStepsCondition(PocObj.MatchersCondition.OR);
+
+        PocObj.PocStep failStep = step("http_1", "/or/1/fail", statusMatcher(200));
+        failStep.setExtractors(Collections.singletonList(regexExtractor("token", "fail")));
+
+        PocObj.PocStep passStep = step("http_2", "/or/1/pass", wordMatcher("{{token}}"));
+        poc.setVerifySteps(Arrays.asList(failStep, passStep));
+
+        PocExecutor executor = new PocExecutor(new ScanConfig());
+        ScanResult result = executor.execute(baseUrl, poc);
+
+        assertFalse(result.isVulnerable(), "失败分支提取的变量不应泄漏到后续 OR 步骤");
+        assertEquals("stepsCondition", result.getDetails().get("flowExecutionMode"));
+    }
+
+    @Test
+    @DisplayName("flow OR 失败组提取变量不应污染后续组")
+    void testFlowOrGroupsShouldNotLeakVariablesAcrossFailedGroups() throws Exception {
+        PocObj.Poc poc = new PocObj.Poc();
+        poc.setId("flow-group-variable-isolation-test");
+        poc.setName("flow-group-variable-isolation-test");
+        poc.setProtocol("http");
+        poc.setFlow("http(1) && http(2) || http(3)");
+
+        PocObj.PocStep s1 = step("http_1", "/or/1/pass", statusMatcher(200));
+        s1.setExtractors(Collections.singletonList(regexExtractor("token", "pass")));
+        PocObj.PocStep s2 = step("http_2", "/or/1/fail", statusMatcher(200));
+        PocObj.PocStep s3 = step("http_3", "/or/1/pass", wordMatcher("{{token}}"));
+        poc.setVerifySteps(Arrays.asList(s1, s2, s3));
+
+        PocExecutor executor = new PocExecutor(new ScanConfig());
+        ScanResult result = executor.execute(baseUrl, poc);
+
+        assertFalse(result.isVulnerable(), "失败 flow 组提取的变量不应泄漏到后续 OR 组");
+        assertEquals("flow", result.getDetails().get("flowExecutionMode"));
+    }
+
     private static PocObj.PocStep step(String stepId, String path, PocObj.Matcher matcher) {
         PocObj.PocStep step = new PocObj.PocStep();
         step.setStepId(stepId);
@@ -298,6 +343,24 @@ public class PocExecutorFlowExecutionTest {
         PocObj.Matcher matcher = new PocObj.Matcher();
         matcher.setType(PocObj.MatcherType.STATUS);
         matcher.setValues(Collections.singletonList(String.valueOf(code)));
+        return matcher;
+    }
+
+    private static PocObj.Matcher wordMatcher(String value) {
+        PocObj.Matcher matcher = new PocObj.Matcher();
+        matcher.setType(PocObj.MatcherType.WORD);
+        matcher.setPart("body");
+        matcher.setValues(Collections.singletonList(value));
+        return matcher;
+    }
+
+    private static PocObj.Matcher regexExtractor(String name, String regex) {
+        PocObj.Matcher matcher = new PocObj.Matcher();
+        matcher.setName(name);
+        matcher.setType(PocObj.MatcherType.REGEX);
+        matcher.setPart("body");
+        matcher.setValues(Collections.singletonList(regex));
+        matcher.setGroup(0);
         return matcher;
     }
 

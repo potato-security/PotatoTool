@@ -184,9 +184,20 @@
     -fx-background-color: derive(-main-cell-color, 5%);
 }
 
-/* ========================================
-   6. 进度 & 统计
-   ======================================== */
+#promptPane.vulscan-prompt-info {
+    -fx-background-color: -main-btnContent-color;
+}
+
+#promptPane.vulscan-prompt-error {
+    -fx-background-color: rgba(255, 76, 63, 0.18);
+    -fx-border-color: #ff4c3f;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+#promptPane.vulscan-prompt-error .label {
+    -fx-text-fill: #ffd8d6;
+}
 
 .scan-progress {
     -fx-background-radius: 9999;

@@ -343,7 +343,8 @@
     <!-- 5. 全局提示框 -->
     <StackPane fx:id="promptPane" visible="false" managed="false"
                StackPane.alignment="CENTER"
-               maxHeight="-Infinity" maxWidth="-Infinity">
+               maxHeight="-Infinity" maxWidth="-Infinity"
+               onMouseClicked="#closePromptPane">
         <Label fx:id="promptLabel" text="提示信息"
                wrapText="true" textAlignment="CENTER" alignment="CENTER" maxWidth="600"/>
     </StackPane>

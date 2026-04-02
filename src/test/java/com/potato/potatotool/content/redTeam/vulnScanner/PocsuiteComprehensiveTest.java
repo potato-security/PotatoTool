@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocsuiteJsonObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.converter.PocsuitePocConverter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,7 +27,7 @@ public class PocsuiteComprehensiveTest {
     private Gson gson;
     private PocsuitePocConverter converter;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         gson = new Gson();
         converter = new PocsuitePocConverter();

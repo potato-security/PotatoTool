@@ -191,19 +191,7 @@ public class HttpHandler {
             requestObj.setPostData(bodyContent);
         }
 
-        // 根据Content-Type设置postMethod
-        if (headers != null) {
-            String contentType = headers.get("Content-Type");
-            if (contentType != null) {
-                if (contentType.contains("application/json")) {
-                    requestObj.setPostMethod("JSON");
-                } else if (contentType.contains("multipart/form-data")) {
-                    requestObj.setPostMethod("FORM");
-                } else {
-                    requestObj.setPostMethod("RAW");
-                }
-            }
-        }
+        // postMethod 统一在 RequestUtils.setRequestBody 阶段决策，避免业务层重复覆盖
     }
 
     /**
@@ -248,13 +236,16 @@ public class HttpHandler {
         String result = input;
         
         // ========== 懒加载处理 ==========
-        // 1. Interactsh URL：只有实际使用时才注册
+        // 1. Interactsh URL：仅在当前变量上下文内复用，避免全局串扰
         if (result.contains("{{interactsh-url}}") || result.contains("{{LAZY_INTERACTSH}}")) {
-            String interactshUrl = getOrCreateInteractshUrl();
-            result = result.replace("{{LAZY_INTERACTSH}}", interactshUrl);
-            if (variables != null) {
-                variables.put("interactsh-url", interactshUrl);
+            String interactshUrl = variables == null ? null : variables.get("interactsh-url");
+            if (interactshUrl == null || interactshUrl.trim().isEmpty()) {
+                interactshUrl = getOrCreateInteractshUrl();
+                if (variables != null) {
+                    variables.put("interactsh-url", interactshUrl);
+                }
             }
+            result = result.replace("{{LAZY_INTERACTSH}}", interactshUrl);
         }
         
         // 2. IP 地址：只有实际使用时才 DNS 解析
@@ -658,27 +649,24 @@ public class HttpHandler {
     }
     
     // ========== 懒加载缓存 ==========
-    private static volatile String cachedInteractshUrl = null;
     private static final Pattern LAZY_IP_PATTERN = Pattern.compile("\\{\\{LAZY_IP:([^}]+)\\}\\}");
     private static final Map<String, String> ipCache = new HashMap<>();
-    
+
     /**
-     * 懒加载获取 Interactsh URL
-     * 只有首次调用时才会注册，后续调用返回缓存值
+     * 获取 Interactsh URL
+     * 每次按需生成，避免不同扫描上下文共享全局 URL
      */
-    private static synchronized String getOrCreateInteractshUrl() {
-        if (cachedInteractshUrl == null) {
-            try {
-                cachedInteractshUrl = HttpLogService.generateHttpLogUrl();
-                if (cachedInteractshUrl == null || cachedInteractshUrl.trim().isEmpty()) {
-                    cachedInteractshUrl = "http://placeholder.oast.invalid";
-                }
-            } catch (Exception e) {
-                System.err.println("[Interactsh] 初始化失败: " + e.getMessage());
-                cachedInteractshUrl = "http://placeholder.oast.invalid";
+    private static String getOrCreateInteractshUrl() {
+        try {
+            String interactshUrl = HttpLogService.generateHttpLogUrl();
+            if (interactshUrl == null || interactshUrl.trim().isEmpty()) {
+                return "http://placeholder.oast.invalid";
             }
+            return interactshUrl;
+        } catch (Exception e) {
+            System.err.println("[Interactsh] 初始化失败: " + e.getMessage());
+            return "http://placeholder.oast.invalid";
         }
-        return cachedInteractshUrl;
     }
     
     /**

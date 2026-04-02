@@ -119,17 +119,17 @@ public class XrayCelEvaluator {
         if (expression == null || expression.trim().isEmpty()) {
             return null;
         }
-        
+
         try {
             // 创建上下文
             Map<String, Object> context = XrayCelContext.createContext(response, request);
-            
+
             // 标准化表达式
             String normalizedExpression = normalizeExpression(expression);
-            
+
             // 评估并返回值
             return evaluateForValueInternal(normalizedExpression, context);
-            
+
         } catch (Exception e) {
             System.err.println("Xray CEL 值提取失败: " + expression);
             System.err.println("错误: " + e.getMessage());

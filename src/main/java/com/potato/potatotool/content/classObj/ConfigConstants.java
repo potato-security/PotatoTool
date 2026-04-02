@@ -21,14 +21,20 @@ public interface ConfigConstants {
     String PROXY_SERVICES = "services";  // 代理服务配置对象
 
     // ========== AI 配置相关 ==========
-    String AI_API_BASE = "AI_API_Base";
-    String AI_API_KEY = "AI_API_Key";
-    String AI_MODEL = "AI_Model";
-    
+    String AI_PROVIDER = "provider";
+    String AI_BASE_URL = "base_url";
+    String AI_API_KEY = "api_key";
+    String AI_MODEL_NAME = "model_name";
+    String AI_TIMEOUT_MS = "timeout_ms";
+
+    String AI_THINKING = "thinking";
+    String AI_THINKING_ENABLED = "enabled";
+    String AI_THINKING_BUDGET_TOKENS = "budget_tokens";
+
     // 本地默认 AI 配置（加密存储）
-    String LOCAL_AI_API_BASE = "Local_AI_API_Base";
-    String LOCAL_AI_API_KEY = "Local_AI_API_Key";
-    String LOCAL_AI_MODEL = "Local_AI_Model";
+    String AI_LOCAL_BASE_URL = "local_base_url";
+    String AI_LOCAL_API_KEY = "local_api_key";
+    String AI_LOCAL_MODEL_NAME = "local_model_name";
 
     // ========== Decompile 反编译配置相关 ==========
     String DECOMPILE_MODE = "decompileMode";
@@ -52,6 +58,7 @@ public interface ConfigConstants {
     
     // ========== VulnScan 漏洞扫描配置相关 ==========
     String VULNSCAN = "VulnScan";
+    String VULNSCAN_SERVICE = "VulnScan";                 // Proxy.services 下漏洞扫描服务键
     String VULNSCAN_POC_DIR = "pocDir";
     String VULNSCAN_REPORT_DIR = "reportDir";
     String VULNSCAN_THREADS = "threads";
@@ -61,7 +68,6 @@ public interface ConfigConstants {
     String VULNSCAN_USER_AGENT = "userAgent";
     String VULNSCAN_DEBUG = "debug";
     String VULNSCAN_VERBOSE = "verbose";
-    String VULNSCAN_PROXY_ENABLED = "proxyEnabled";
     String VULNSCAN_MAX_CONNECTIONS = "maxConnections";
     String VULNSCAN_CONNECTION_TIMEOUT = "connectionTimeout";
     String VULNSCAN_MAX_PAYLOAD_COMBINATIONS = "maxPayloadCombinations";  // Payload 组合数限制
@@ -95,7 +101,26 @@ public interface ConfigConstants {
     String VULNSCAN_DB_PATH = "dbPath";                     // 数据库路径（可选配置）
     String VULNSCAN_POC_DB_VERSION = "pocDatabaseVersion";  // POC 数据库版本
     
-    // ========== VulnScan 代理服务标识 ==========
-    String VULNSCAN_SERVICE = "VulnScan";                   // 代理服务标识（用于Proxy.services）
+    // ========== VulnScan Headless 配置 ==========
+    String VULNSCAN_HEADLESS = "headless";                 // Headless 配置对象
+    String VULNSCAN_HEADLESS_BROWSER_PATH = "browserPath"; // 浏览器可执行文件路径（为空则自动探测）
+
+    // ========== OOB 配置相关 ==========
+    String OOB = "OOB";
+    String OOB_HTTP = "http";
+    String OOB_DNS = "dns";
+
+    // HTTP OOB
+    String OOB_HTTP_PLATFORM = "platform";
+    String OOB_HTTP_INTERACTSH_SERVER = "interactshServer";
+    String OOB_HTTP_INTERACTSH_TOKEN = "interactshToken";
+    String OOB_HTTP_CUSTOM_SERVER = "customServer";
+    String OOB_HTTP_CUSTOM_TOKEN = "customToken";
+    String OOB_HTTP_CACHE_TTL_SECONDS = "cacheTtlSeconds";
+
+    // DNS OOB
+    String OOB_DNS_PLATFORM = "platform";
+    String OOB_DNS_CEYE_IDENTIFIER = "ceyeIdentifier";
+    String OOB_DNS_CEYE_TOKEN = "ceyeToken";
 
 }

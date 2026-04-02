@@ -167,6 +167,34 @@ public class SmartPocSelector {
                 continue;
             }
 
+            // 4. 按标签筛选
+            if (config.getTags() != null && !config.getTags().trim().isEmpty()) {
+                if (poc.getTags() == null || poc.getTags().isEmpty()) {
+                    filteredByCategory++;
+                    continue;
+                }
+                String[] expectedTags = config.getTags().toLowerCase().split("\\s*,\\s*");
+                boolean matchedTag = false;
+                for (String expectedTag : expectedTags) {
+                    if (expectedTag == null || expectedTag.trim().isEmpty()) {
+                        continue;
+                    }
+                    for (String pocTag : poc.getTags()) {
+                        if (pocTag != null && pocTag.equalsIgnoreCase(expectedTag.trim())) {
+                            matchedTag = true;
+                            break;
+                        }
+                    }
+                    if (matchedTag) {
+                        break;
+                    }
+                }
+                if (!matchedTag) {
+                    filteredByCategory++;
+                    continue;
+                }
+            }
+
             // 5. 按严重程度筛选
             if (config.getMinSeverity() != null && poc.getSeverity() != null) {
                 if (!isAboveSeverityThreshold(poc.getSeverity(), config.getMinSeverity())) {

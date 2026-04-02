@@ -7,7 +7,7 @@ import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstan
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
-import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.ProxyUtils;
 
 import java.util.*;
 
@@ -79,7 +79,7 @@ public class QuakeSearch {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetConstants.QUAKE_KEY)) {
             Quake_Key_Set.add(element.getAsString());
         }
-        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.QUAKE_KEY);
+        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.QUAKE_KEY);
         QuakeSearch quakeSearch = new QuakeSearch(Quake_Key_Set, Proxy);
         String qInfo = "ip:\"8.8.8.8\"";
         if (quakeSearch.search_Quake(qInfo).isEmpty()){
@@ -128,7 +128,7 @@ public class QuakeSearch {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetConstants.QUAKE_KEY)) {
             Quake_Key_Set.add(element.getAsString());
         }
-        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.QUAKE_KEY);
+        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.QUAKE_KEY);
         QuakeSearch quakeSearch = new QuakeSearch(Quake_Key_Set, Proxy);
         System.out.println(quakeSearch.getInfoByCompanyOrDomain_Quake("360.net"));
     }

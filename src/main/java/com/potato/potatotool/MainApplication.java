@@ -4,11 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.redTeam.vulnScanner.storage.PocDatabaseInitializer;
 import com.potato.potatotool.controller.publicPane.PaneLoad;
 import com.potato.potatotool.controller.publicPane.PanePasswd;
 import com.potato.potatotool.controller.publicPane.PaneUpdateDialog;
 import com.potato.potatotool.content.classObj.ConfigConstants;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpLogService;
+import com.potato.potatotool.content.redTeam.vulnScanner.storage.PocDatabaseInitializer;
 import com.potato.potatotool.storage.PathManager;
 import com.potato.potatotool.update.ResourceUpdate;
 import com.potato.potatotool.update.UpdateInfo;
@@ -19,6 +21,7 @@ import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.crypto.SecurityInitializer;
 import com.potato.potatotool.utils.data.GzipUtils;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.application.HostServices;
@@ -49,6 +52,7 @@ import static com.potato.potatotool.utils.core.Constants.*;
 
 public class MainApplication extends Application {
     private static final ExecutorService executor = Executors.newCachedThreadPool();
+    private static volatile String startupProxyWarningMessage;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -65,21 +69,20 @@ public class MainApplication extends Application {
             @Override
             protected Void call() throws Exception {
                 initEnvFile();
+                ProxyUtils.ProxyReachabilityResult proxyResult = ProxyUtils.ensureMainProxyAvailability();
+                if (!proxyResult.isReachable()) {
+                    startupProxyWarningMessage = ProxyUtils.buildUnavailableMessage(proxyResult);
+                    if (debugMode) {
+                        System.out.println("启动阶段检测到代理不可用，已自动关闭主代理: " + I18nUtils.getString(ProxyUtils.getReasonKey(proxyResult)));
+                    }
+                }
+                applyOobSettings();
+                checkForUpdatesOnStartup();
                 return null;
             }
         };
 
         executor.submit(taskInit);
-        
-        // 启动时检查更新（异步，不阻塞启动）
-        // 优化：立即开始检查，不延迟等待
-        executor.submit(() -> {
-            try {
-                checkForUpdatesOnStartup();
-            } catch (Exception e) {
-                System.err.println("启动时检查更新失败: " + e.getMessage());
-            }
-        });
 
         //  输入密码界面stage
         Stage passwdStage = new Stage();
@@ -408,6 +411,12 @@ public class MainApplication extends Application {
         return hostServices;
     }
 
+    public static String consumeStartupProxyWarningMessage() {
+        String message = startupProxyWarningMessage;
+        startupProxyWarningMessage = null;
+        return message;
+    }
+
     /**
      * 启动时检查更新
      */
@@ -592,6 +601,82 @@ public class MainApplication extends Application {
         }
     }
     
+    private void applyOobSettings() {
+        try {
+            JsonObject root = (JsonObject) Constants.getOutsideConfig(null);
+            if (root == null || !root.has(ConfigConstants.OOB)) {
+                return;
+            }
+
+            JsonObject oob = root.getAsJsonObject(ConfigConstants.OOB);
+            if (oob.has(ConfigConstants.OOB_HTTP)) {
+                JsonObject http = oob.getAsJsonObject(ConfigConstants.OOB_HTTP);
+
+                String platform = http.has(ConfigConstants.OOB_HTTP_PLATFORM)
+                        ? http.get(ConfigConstants.OOB_HTTP_PLATFORM).getAsString()
+                        : HttpLogService.Platform.INTERACTSH.name();
+
+                String interactshServer = http.has(ConfigConstants.OOB_HTTP_INTERACTSH_SERVER)
+                        ? http.get(ConfigConstants.OOB_HTTP_INTERACTSH_SERVER).getAsString()
+                        : "oast.pro";
+                String interactshToken = http.has(ConfigConstants.OOB_HTTP_INTERACTSH_TOKEN)
+                        ? http.get(ConfigConstants.OOB_HTTP_INTERACTSH_TOKEN).getAsString()
+                        : null;
+                HttpLogService.configureInteractsh(interactshServer, interactshToken);
+
+                String customServer = http.has(ConfigConstants.OOB_HTTP_CUSTOM_SERVER)
+                        ? http.get(ConfigConstants.OOB_HTTP_CUSTOM_SERVER).getAsString()
+                        : null;
+                String customToken = http.has(ConfigConstants.OOB_HTTP_CUSTOM_TOKEN)
+                        ? http.get(ConfigConstants.OOB_HTTP_CUSTOM_TOKEN).getAsString()
+                        : null;
+                if (customServer != null && !customServer.trim().isEmpty()) {
+                    HttpLogService.configureCustom(customServer, customToken);
+                }
+
+                long cacheTtlSeconds = http.has(ConfigConstants.OOB_HTTP_CACHE_TTL_SECONDS)
+                        ? http.get(ConfigConstants.OOB_HTTP_CACHE_TTL_SECONDS).getAsLong()
+                        : 3600L;
+                HttpLogService.setCacheDurationSeconds(cacheTtlSeconds);
+
+                HttpLogService.Platform httpPlatform;
+                try {
+                    httpPlatform = HttpLogService.Platform.valueOf(platform.toUpperCase());
+                } catch (IllegalArgumentException ex) {
+                    httpPlatform = HttpLogService.Platform.INTERACTSH;
+                }
+                HttpLogService.setPlatform(httpPlatform);
+            }
+
+            if (oob.has(ConfigConstants.OOB_DNS)) {
+                JsonObject dns = oob.getAsJsonObject(ConfigConstants.OOB_DNS);
+                String dnsPlatform = dns.has(ConfigConstants.OOB_DNS_PLATFORM)
+                        ? dns.get(ConfigConstants.OOB_DNS_PLATFORM).getAsString()
+                        : DnsLogService.Platform.DNSLOG_CN.name();
+                try {
+                    DnsLogService.setPlatform(DnsLogService.Platform.valueOf(dnsPlatform.toUpperCase()));
+                } catch (IllegalArgumentException ex) {
+                    DnsLogService.setPlatform(DnsLogService.Platform.DNSLOG_CN);
+                }
+
+                String ceyeIdentifier = dns.has(ConfigConstants.OOB_DNS_CEYE_IDENTIFIER)
+                        ? dns.get(ConfigConstants.OOB_DNS_CEYE_IDENTIFIER).getAsString()
+                        : null;
+                String ceyeToken = dns.has(ConfigConstants.OOB_DNS_CEYE_TOKEN)
+                        ? dns.get(ConfigConstants.OOB_DNS_CEYE_TOKEN).getAsString()
+                        : null;
+                if (ceyeIdentifier != null && !ceyeIdentifier.trim().isEmpty()) {
+                    DnsLogService.configureCeye(ceyeIdentifier, ceyeToken);
+                }
+            }
+        } catch (Exception e) {
+            if (debugMode) {
+                System.err.println("应用 OOB 配置失败: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static void main(String[] args) {
         launch();
     }

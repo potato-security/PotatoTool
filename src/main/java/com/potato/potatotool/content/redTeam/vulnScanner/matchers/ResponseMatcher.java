@@ -6,7 +6,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtra
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.JsonExtractor;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.VariableExtractor;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
-import com.potato.potatotool.content.redTeam.vulnScanner.http.InteractshClient;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpLogService;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 
@@ -188,7 +188,7 @@ public class ResponseMatcher {
                 // 特殊处理：DNSLog 验证 ($reserver)
                 if (matcher.getPart() != null &&
                    ("$reserver".equalsIgnoreCase(matcher.getPart()) || "reserver".equalsIgnoreCase(matcher.getPart()))) {
-                    matched = checkDnsLog(values);
+                    matched = checkDnsLog(values, pocVariables);
                 } else {
                     matched = matchContentBased(type, matcher, response, pocVariables);
                 }
@@ -408,38 +408,43 @@ public class ResponseMatcher {
     }
 
 
-    private static boolean checkDnsLog(List<String> values) {
+    private static boolean checkDnsLog(List<String> values, Map<String, Object> pocVariables) {
         if (values == null || values.isEmpty()) {
             return false;
         }
 
-        for (String value : values) {
-            if (value == null || value.isEmpty()) continue;
+        List<String> resolvedValues = values;
+        if (pocVariables != null && !pocVariables.isEmpty()) {
+            resolvedValues = substituteGobyVariables(values, pocVariables);
+        }
 
-            // 1. 尝试 Interactsh 验证（Nuclei OOB）
-            try {
-                if (value.contains("oast.") || value.contains("interactsh.")) {
-                    InteractshClient client = InteractshClient.getDefaultInstance();
-                    if (client != null && client.hasInteraction(value)) {
-                        return true;
-                    }
-                }
-            } catch (Exception e) {
-                // Interactsh 查询失败，继续尝试其他方式
+        for (String value : resolvedValues) {
+            if (value == null || value.isEmpty()) {
+                continue;
             }
 
-            // 2. 尝试 DnsLogService 验证（dnslog.cn / ceye.io）
             try {
-                String records = DnsLogService.queryDnsLogRecords(value);
-                if (records != null && !records.isEmpty() && !records.equals("[]")) {
+                if (isHttpOobTarget(value) && HttpLogService.hasInteraction(value)) {
                     return true;
                 }
             } catch (Exception e) {
-                // DnsLog 查询失败
+                // HTTP OOB 查询失败，继续尝试 DNS OOB
+            }
+
+            try {
+                if (DnsLogService.hasDnsResolution(value)) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // DNS OOB 查询失败
             }
         }
 
         return false;
+    }
+
+    private static boolean isHttpOobTarget(String value) {
+        return value.contains("oast.") || value.contains("interactsh.");
     }
 
     /**

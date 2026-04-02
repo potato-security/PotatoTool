@@ -86,7 +86,7 @@ public class RuntimeExpressionEvaluator {
         if (pocVariables == null || pocVariables.isEmpty()) {
             return result;
         }
-        
+
         // 第一阶段：处理对象创建表达式
         for (Map.Entry<String, List<String>> entry : pocVariables.entrySet()) {
             if (entry.getValue() == null || entry.getValue().isEmpty()) {
@@ -99,16 +99,11 @@ public class RuntimeExpressionEvaluator {
                     Object evalResult = XrayCelEvaluator.evaluateForValue(expr, null, null);
                     result.put(entry.getKey(), evalResult != null ? evalResult : val);
                 }
-            } else if (isGobyFunction(val)) {
-                // 处理 Goby 函数格式: @@functionName(args)
-                String processedValue = com.potato.potatotool.content.redTeam.vulnScanner.http.GobyFunctionProcessor
-                    .processGobyFunctions(val, null);
-                result.put(entry.getKey(), processedValue);
             } else {
                 result.put(entry.getKey(), val);
             }
         }
-        
+
         // 第二阶段：处理属性访问表达式
         for (Map.Entry<String, List<String>> entry : pocVariables.entrySet()) {
             if (result.containsKey(entry.getKey())) {
@@ -129,7 +124,52 @@ public class RuntimeExpressionEvaluator {
                 }
             }
         }
-        
+
+        return result;
+    }
+
+    public static Map<String, Object> evaluateRuntimeExpressions(Map<String, List<String>> pocVariables) {
+        Map<String, Object> result = new HashMap<>();
+        if (pocVariables == null || pocVariables.isEmpty()) {
+            return result;
+        }
+
+        for (Map.Entry<String, List<String>> entry : pocVariables.entrySet()) {
+            if (entry.getValue() == null || entry.getValue().isEmpty()) {
+                continue;
+            }
+            String val = entry.getValue().get(0);
+            if (isRuntimeExpression(val)) {
+                String expr = getExpressionContent(val);
+                if (isObjectCreationExpression(expr)) {
+                    Object evalResult = XrayCelEvaluator.evaluateForValue(expr, null, null);
+                    result.put(entry.getKey(), evalResult != null ? evalResult : val);
+                }
+            } else {
+                result.put(entry.getKey(), val);
+            }
+        }
+
+        for (Map.Entry<String, List<String>> entry : pocVariables.entrySet()) {
+            if (result.containsKey(entry.getKey())) {
+                continue;
+            }
+            if (entry.getValue() == null || entry.getValue().isEmpty()) {
+                continue;
+            }
+            String val = entry.getValue().get(0);
+            if (isRuntimeExpression(val)) {
+                String expr = getExpressionContent(val);
+                if (isPropertyAccessExpression(expr)) {
+                    Object propValue = evaluatePropertyAccess(expr, result);
+                    result.put(entry.getKey(), propValue != null ? propValue : expr);
+                } else {
+                    Object evalResult = XrayCelEvaluator.evaluateForValue(expr, null, null);
+                    result.put(entry.getKey(), evalResult != null ? evalResult : val);
+                }
+            }
+        }
+
         return result;
     }
     

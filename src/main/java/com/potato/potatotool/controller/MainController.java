@@ -1,5 +1,6 @@
 package com.potato.potatotool.controller;
 
+import com.potato.potatotool.MainApplication;
 import com.leewyatt.rxcontrols.animation.carousel.*;
 import com.leewyatt.rxcontrols.controls.RXCarousel;
 import com.leewyatt.rxcontrols.pane.RXCarouselPane;
@@ -274,7 +275,18 @@ public class MainController {
         });
         
         // 绑定国际化
-        Platform.runLater(() -> I18nUtils.bindComponents(root));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(root);
+            String startupProxyWarning = MainApplication.consumeStartupProxyWarningMessage();
+            if (startupProxyWarning != null && !startupProxyWarning.trim().isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("PotatoTool");
+                alert.setHeaderText(null);
+                alert.setContentText(startupProxyWarning);
+                alert.initOwner(root.getScene().getWindow());
+                alert.show();
+            }
+        });
     }
 
     private boolean isChangeModePaneRight = false;  // 是否向右移动

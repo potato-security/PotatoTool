@@ -1,5 +1,6 @@
 package com.potato.potatotool.utils.ai;
 
+import com.potato.potatotool.utils.ai.service.AiChatService;
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 import org.fxmisc.richtext.CodeArea;
@@ -12,10 +13,23 @@ import org.fxmisc.richtext.CodeArea;
 public class CodeAnalyzerUtils {
 
     public static void evilCodeAnalysis(String evilCode , String encodeModes, Object node) throws Exception {
-        AIUtil aiObj=new AIUtil();
+        String result = buildEvilCodeAnalysisResult(evilCode, encodeModes);
+        setNodeContent(node, result);
+    }
 
-        aiObj.isFirstResponse = true;
 
+    //  优化代码，如反编译后的代码
+    public static void optimizedCode(String code, Object node) throws Exception {
+        AiChatService aiService = new AiChatService();
+        String result = aiService.askNoStream("这是反编译后得到的代码，当前可读性较差。请帮我对其进行结构优化，提高可读性，并为关键部分添加详细注释，以便理解其逻辑和功能。以下是需要优化的代码：```" + code + "```");
+        setNodeContent(node, result);
+    }
+
+    static String buildEvilCodeAnalysisResult(String evilCode, String encodeModes) {
+        return buildEvilCodeAnalysisResult(evilCode, encodeModes, new AiChatService());
+    }
+
+    static String buildEvilCodeAnalysisResult(String evilCode, String encodeModes, AiChatService aiService) {
         String analysisPrompt = String.format(
                 "你是具备丰富经验的安全代码分析专家，请使用中文对以下代码或可疑片段进行全面的安全分析：\n\n" +
                         "【编码/混淆特征】：%s\n" +
@@ -36,18 +50,9 @@ public class CodeAnalyzerUtils {
                 , encodeModes, evilCode
         );
 
-        aiObj.askAi(analysisPrompt, node);
-
-        if (node instanceof TextArea) {
-            TextArea textArea = (TextArea) node;
-            Platform.runLater(() -> {
-                textArea.appendText("\n\n");
-            });
-        } else {
-            CodeArea textArea = (CodeArea) node;
-            Platform.runLater(() -> {
-                textArea.appendText("\n\n");
-            });
+        String analysisResult = safeText(aiService.askNoStream(analysisPrompt));
+        if (isLikelyAiError(analysisResult)) {
+            return analysisResult;
         }
 
         String responsePrompt =
@@ -62,25 +67,42 @@ public class CodeAnalyzerUtils {
                         "   - 安全监控和告警策略建议\n" +
                         "   - 审计过程中应重点关注的风险要素"
                 ;
-        aiObj.askAi(responsePrompt, node);
 
+        String responseResult = safeText(aiService.askNoStream(responsePrompt));
+        if (responseResult.isEmpty()) {
+            return analysisResult;
+        }
+        return analysisResult + "\n\n" + responseResult;
     }
 
+    private static String safeText(String content) {
+        return content == null ? "" : content.trim();
+    }
 
-    //  优化代码，如反编译后的代码
-    public static void optimizedCode(String code, Object node) throws Exception {
-        AIUtil aiObj=new AIUtil();
-
-        aiObj.isFirstResponse = true;
-
-        aiObj.askAi("这是反编译后得到的代码，当前可读性较差。请帮我对其进行结构优化，提高可读性，并为关键部分添加详细注释，以便理解其逻辑和功能。以下是需要优化的代码：```" + code + "```", node);
-
+    private static boolean isLikelyAiError(String content) {
+        if (content == null || content.trim().isEmpty()) {
+            return true;
+        }
+        String text = content.trim();
+        return text.startsWith("AI ") || text.startsWith("AI请求") || text.startsWith("AI配置") || text.startsWith("AI连接");
     }
 
     public static void main(String[] args) {
-        AIUtil aiObj=new AIUtil();
-
-        aiObj.askAi("请告诉我关于```获取当前系统用户```的命令", null);
+        AiChatService aiService = new AiChatService();
+        System.out.println(aiService.askNoStream("请告诉我关于```获取当前系统用户```的命令"));
     }
 
+    private static void setNodeContent(Object node, String content) {
+        if (content == null) {
+            content = "";
+        }
+        String finalContent = content;
+        if (node instanceof TextArea) {
+            TextArea textArea = (TextArea) node;
+            Platform.runLater(() -> textArea.setText(finalContent));
+        } else if (node instanceof CodeArea) {
+            CodeArea codeArea = (CodeArea) node;
+            Platform.runLater(() -> codeArea.replaceText(finalContent));
+        }
+    }
 }

@@ -132,3 +132,56 @@
     -fx-text-fill: -main-border-color;
     -fx-border-color: -main-border-color;
 }
+
+#promptPane.setting-prompt-info {
+    -fx-background-color: -main-btnContent-color;
+}
+
+#promptPane.setting-prompt-error {
+    -fx-background-color: rgba(255, 76, 63, 0.18);
+    -fx-border-color: #ff4c3f;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+#promptPane.setting-prompt-error .label {
+    -fx-text-fill: #ffd8d6;
+}
+
+.setting-page-title {
+    -fx-padding: 0 0 0 30;
+    -fx-font-size: 23;
+    -fx-font-weight: bold;
+}
+
+.setting-section-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -main-border-color;
+}
+
+.setting-field-label {
+    -fx-font-size: 12px;
+}
+
+.setting-field-input {
+    -fx-font-size: 12px;
+}
+
+.setting-action-button {
+    -fx-font-size: 12px;
+}
+
+.setting-note-text {
+    -fx-font-size: 11px;
+    -fx-text-fill: #888888;
+}
+
+.setting-code-input {
+    -fx-font-family: 'Consolas', monospace;
+    -fx-font-size: 11px;
+}
+
+.setting-font-12 {
+    -fx-font-size: 12px;
+}

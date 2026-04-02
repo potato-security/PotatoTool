@@ -20,6 +20,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.concurrent.Semaphore;
+import java.util.regex.Pattern;
 
 import static com.potato.potatotool.ToStart.debugMode;
 
@@ -29,6 +30,26 @@ import static com.potato.potatotool.ToStart.debugMode;
  * @date 2024/12/19
  */
 public class RequestUtils {
+
+    private static final Pattern URL_PATTERN = Pattern.compile("(?i)https?://[^\\s,，;；)]+");
+    private static final Pattern LEADING_HOST_PORT_PATTERN = Pattern.compile("(?i)/[^\\s/:]+:\\d+");
+    private static final Pattern IP_PORT_PATTERN = Pattern.compile("(?i)(?<![a-z0-9_.-])(?:\\d{1,3}\\.){3}\\d{1,3}:\\d+");
+    private static final Pattern DOMAIN_PORT_PATTERN = Pattern.compile("(?i)(?<![a-z0-9_.-])[a-z0-9.-]+\\.[a-z]{2,}:\\d+");
+
+    private static String maskInternalAiAddress(String value, boolean internalAiRequest) {
+        if (value == null || value.trim().isEmpty()) {
+            return value;
+        }
+        if (!internalAiRequest) {
+            return value;
+        }
+
+        String result = URL_PATTERN.matcher(value).replaceAll("内置AI服务地址");
+        result = LEADING_HOST_PORT_PATTERN.matcher(result).replaceAll("/内置AI服务主机");
+        result = IP_PORT_PATTERN.matcher(result).replaceAll("内置AI服务主机");
+        result = DOMAIN_PORT_PATTERN.matcher(result).replaceAll("内置AI服务主机");
+        return result;
+    }
 
     /**
      * 创建信任所有证书的TrustManager
@@ -162,7 +183,9 @@ public class RequestUtils {
         public Response intercept(Chain chain) throws IOException {
             Request originalRequest = chain.request();
             String originalScheme = originalRequest.url().scheme();
-            
+            String requestUrl = String.valueOf(originalRequest.url());
+            boolean internalAiRequest = requestObj != null && requestObj.isInternalAiRequest();
+
             // 使用完整的请求信息作为key，确保唯一性
             String requestKey = originalRequest.method() + ":" + 
                     originalRequest.url().toString() + ":" +
@@ -179,7 +202,7 @@ public class RequestUtils {
                 // 检查是否需要协议升级（HTTP 426状态码）
                 if ("http".equalsIgnoreCase(originalScheme) && response.code() == 426 && !state.protocolSwitched) {
                     if (debugMode) {
-                        System.err.println("收到426状态码，尝试升级到HTTPS: " + originalRequest.url());
+                        System.err.println("收到426状态码，尝试升级到HTTPS: " + maskInternalAiAddress(requestUrl, internalAiRequest));
                     }
                     response.close();
                     state.protocolSwitched = true;
@@ -196,7 +219,8 @@ public class RequestUtils {
                     }
 
                     if (debugMode) {
-                        System.err.println("服务器错误 (" + response.code() + "), 重试 " + (state.retryCount + 1) + "/" + maxRetries + ": " + originalRequest.url());
+                        System.err.println("服务器错误 (" + response.code() + "), 重试 " + (state.retryCount + 1) + "/" + maxRetries + ": "
+                                + maskInternalAiAddress(requestUrl, internalAiRequest));
                     }
                     response.close();
 
@@ -221,16 +245,11 @@ public class RequestUtils {
                 // 检查是否需要协议降级（HTTPS SSL异常）
                 if ("https".equalsIgnoreCase(originalScheme) && isSslOrProtocolException(e) && !state.protocolSwitched) {
                     if (debugMode) {
-                        System.err.println("SSL异常，尝试降级到HTTP: " + originalRequest.url() + " - " + e.getMessage());
+                        System.err.println("SSL异常，尝试降级到HTTP: " + maskInternalAiAddress(requestUrl, internalAiRequest)
+                                + " - " + maskInternalAiAddress(e.getMessage(), internalAiRequest));
                     }
                     state.protocolSwitched = true;
                     Request newRequest = downgradeToHttp(originalRequest);
-                    
-                    // 更新原始请求对象的URL
-                    if (requestObj != null) {
-                        requestObj.setUrl(newRequest.url().toString());
-                    }
-                    
                     return chain.proceed(newRequest);
                 }
                 
@@ -243,7 +262,9 @@ public class RequestUtils {
                     }
 
                     if (debugMode) {
-                        System.err.println("网络异常，重试 " + (state.retryCount + 1) + "/" + maxRetries + ": " + originalRequest.url() + " - " + e.getMessage());
+                        System.err.println("网络异常，重试 " + (state.retryCount + 1) + "/" + maxRetries + ": "
+                                + maskInternalAiAddress(requestUrl, internalAiRequest)
+                                + " - " + maskInternalAiAddress(e.getMessage(), internalAiRequest));
                     }
 
                     // 重试前等待
@@ -272,12 +293,6 @@ public class RequestUtils {
                     .port(request.url().port() == 80 ? 443 : request.url().port())
                     .build();
             Request newRequest = request.newBuilder().url(newUrl).build();
-            
-            // 更新原始请求对象的URL
-            if (requestObj != null) {
-                requestObj.setUrl(newUrl.toString());
-            }
-            
             return chain.proceed(newRequest);
         }
         
@@ -333,9 +348,10 @@ public class RequestUtils {
      */
     public static CustomHttpResponse requests(RequestObj requestObj, OkHttpClient client) throws Exception {
         int maxResponseSize = requestObj.getMaxResponseSize();
+        boolean internalAiRequest = requestObj != null && requestObj.isInternalAiRequest();
         Response response = null;
         CustomHttpResponse customResponse = null;
-        
+
         try {
             // 如果没有传入客户端，则创建新的
             if (client == null) {
@@ -371,7 +387,7 @@ public class RequestUtils {
                 response = null;
             }
             
-            throw new Exception("[×] 内存不足，无法完成请求: " + requestObj.getUrl(), oom);
+            throw new Exception("[×] 内存不足，无法完成请求: " + maskInternalAiAddress(requestObj.getUrl(), internalAiRequest), oom);
         } catch (IOException e) {
             // 确保在异常情况下释放响应资源
             if (customResponse != null) {
@@ -384,12 +400,13 @@ public class RequestUtils {
             // 检查是否是FileNotFoundException（通常是404错误）
             if (e instanceof FileNotFoundException) {
                 if (debugMode) {
-                    System.err.println("资源未找到 (404): " + requestObj.getUrl());
+                    System.err.println("资源未找到 (404): " + maskInternalAiAddress(requestObj.getUrl(), internalAiRequest));
                 }
-                throw new Exception("[×] 资源未找到: " + requestObj.getUrl(), e);
+                throw new Exception("[×] 资源未找到: " + maskInternalAiAddress(requestObj.getUrl(), internalAiRequest), e);
             }
             
-            throw new Exception("[×] 请求失败: " + requestObj.getUrl() + ", 错误: " + e.getMessage(), e);
+            throw new Exception("[×] 请求失败: " + maskInternalAiAddress(requestObj.getUrl(), internalAiRequest)
+                    + ", 错误: " + maskInternalAiAddress(e.getMessage(), internalAiRequest), e);
         } catch (Exception e) {
             // 确保在异常情况下释放响应资源
             if (customResponse != null) {
@@ -643,12 +660,54 @@ public class RequestUtils {
         }
     }
 
+    private static String getHeaderIgnoreCase(Map<String, String> headers, String headerName) {
+        if (headers == null || headers.isEmpty() || headerName == null || headerName.isEmpty()) {
+            return null;
+        }
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            if (entry.getKey() != null && headerName.equalsIgnoreCase(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    private static String resolveEffectivePostMethod(RequestObj requestObj) {
+        if (requestObj == null) {
+            return "RAW";
+        }
+
+        String configuredPostMethod = requestObj.getPostMethod();
+        if (requestObj.isPostMethodExplicit()) {
+            return configuredPostMethod == null ? "RAW" : configuredPostMethod.toUpperCase();
+        }
+
+        Map<String, Object> formParameters = requestObj.getFormParameters();
+        if (formParameters != null && !formParameters.isEmpty()) {
+            return "FORM";
+        }
+
+        byte[] postData = requestObj.getPostData();
+        boolean hasPostData = postData != null && postData.length > 0;
+        if (hasPostData) {
+            String contentType = getHeaderIgnoreCase(requestObj.getHeaders(), "Content-Type");
+            if (contentType != null) {
+                String normalizedContentType = contentType.toLowerCase(Locale.ROOT);
+                if (normalizedContentType.contains("application/json") || normalizedContentType.contains("+json")) {
+                    return "JSON";
+                }
+            }
+        }
+
+        return "RAW";
+    }
+
     /**
      * 设置请求体
      */
     private static void setRequestBody(Request.Builder builder, RequestObj requestObj) throws Exception {
         String method = requestObj.getMethod();
-        String postMethod = requestObj.getPostMethod();
+        String postMethod = resolveEffectivePostMethod(requestObj);
         
         // GET、HEAD、OPTIONS、TRACE等方法不应包含请求体
         if (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("HEAD") ||

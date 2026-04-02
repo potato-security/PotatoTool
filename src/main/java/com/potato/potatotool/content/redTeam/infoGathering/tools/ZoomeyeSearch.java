@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.data.StrUtils;
-import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
 
@@ -68,7 +68,7 @@ public class ZoomeyeSearch {
     public static String getError_Zoomeye() {
         isEffectiveKey = true;
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
-        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.ZOOMEYE_KEY);
+        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.ZOOMEYE_KEY);
         ZoomeyeSearch zoomeyeSearch = new ZoomeyeSearch(tmpJsonObj.getAsJsonPrimitive(AssetConstants.ZOOMEYE_KEY).getAsString(), Proxy);
         String qInfo = "ip:\"8.8.8.8\"";
         if (zoomeyeSearch.search_Zoomeye(qInfo).isEmpty()){
@@ -108,7 +108,7 @@ public class ZoomeyeSearch {
 
     public static void main(String[] args) {
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
-        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.ZOOMEYE_KEY);
+        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.ZOOMEYE_KEY);
         ZoomeyeSearch zoomeyeSearch = new ZoomeyeSearch(tmpJsonObj.getAsJsonPrimitive(AssetConstants.ZOOMEYE_KEY).getAsString(), Proxy);
         System.out.println(zoomeyeSearch.getInfoByCompanyOrDomain_Zoomeye("360.net"));
     }

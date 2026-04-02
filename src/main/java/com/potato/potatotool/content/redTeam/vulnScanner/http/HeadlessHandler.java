@@ -1,5 +1,6 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.http;
 
+import com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -7,8 +8,14 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +32,124 @@ import java.util.regex.Pattern;
  * @date 2025-11-02
  */
 public class HeadlessHandler {
-    
+
+    private static final String SUPPORT_POLICY = "Chrome 稳定版与 N-1 主版本（按主版本号匹配）";
+    private static final String SUPPORT_POLICY_UPDATED_AT = "2026-03-05";
+    private static final String HEADLESS_DOWNLOAD_GUIDE = "https://googlechromelabs.github.io/chrome-for-testing/";
+
+    private static final List<String> MAC_BROWSER_PATHS = Arrays.asList(
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/Applications/Chromium.app/Contents/MacOS/Chromium",
+            "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
+    );
+    private static final List<String> LINUX_BROWSER_PATHS = Arrays.asList(
+            "/usr/bin/google-chrome",
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/chromium",
+            "/usr/bin/chromium-browser",
+            "/snap/bin/chromium"
+    );
+    private static final List<String> WINDOWS_BROWSER_PATHS = Arrays.asList(
+            "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+            "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+            "C:\\Program Files\\Chromium\\Application\\chrome.exe"
+    );
+
+    public enum CompatibilityStatus {
+        COMPATIBLE,
+        INCOMPATIBLE,
+        NOT_FOUND
+    }
+
+    public static class HeadlessCompatibilityResult {
+        private CompatibilityStatus status;
+        private String browserPath;
+        private String browserVersion;
+        private Integer browserMajor;
+        private String driverPath;
+        private String driverVersion;
+        private Integer driverMajor;
+        private String message;
+
+        public CompatibilityStatus getStatus() {
+            return status;
+        }
+
+        public void setStatus(CompatibilityStatus status) {
+            this.status = status;
+        }
+
+        public String getBrowserPath() {
+            return browserPath;
+        }
+
+        public void setBrowserPath(String browserPath) {
+            this.browserPath = browserPath;
+        }
+
+        public String getBrowserVersion() {
+            return browserVersion;
+        }
+
+        public void setBrowserVersion(String browserVersion) {
+            this.browserVersion = browserVersion;
+        }
+
+        public Integer getBrowserMajor() {
+            return browserMajor;
+        }
+
+        public void setBrowserMajor(Integer browserMajor) {
+            this.browserMajor = browserMajor;
+        }
+
+        public String getDriverPath() {
+            return driverPath;
+        }
+
+        public void setDriverPath(String driverPath) {
+            this.driverPath = driverPath;
+        }
+
+        public String getDriverVersion() {
+            return driverVersion;
+        }
+
+        public void setDriverVersion(String driverVersion) {
+            this.driverVersion = driverVersion;
+        }
+
+        public Integer getDriverMajor() {
+            return driverMajor;
+        }
+
+        public void setDriverMajor(Integer driverMajor) {
+            this.driverMajor = driverMajor;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public boolean isCompatible() {
+            return status == CompatibilityStatus.COMPATIBLE;
+        }
+
+        public String buildDisplayMessage() {
+            String browserInfo = browserVersion == null ? "未检测到" : browserVersion;
+            String driverInfo = driverVersion == null ? "未检测到" : driverVersion;
+            return "[Headless 预检] 结果=" + status +
+                    "\n浏览器版本: " + browserInfo +
+                    "\nDriver版本: " + driverInfo +
+                    "\n策略: " + SUPPORT_POLICY + "（更新于 " + SUPPORT_POLICY_UPDATED_AT + "）" +
+                    "\n" + (message == null ? "" : message);
+        }
+    }
+
     /**
      * Headless 操作结果
      */
@@ -106,16 +230,178 @@ public class HeadlessHandler {
         public Map<String, String> getArgs() { return args; }
     }
     
-    /**
-     * 执行 Headless 浏览器操作
-     * 
-     * @param url 起始 URL
-     * @param steps 操作步骤列表
-     * @return Headless 响应
-     */
-    public static HeadlessResponse execute(String url, List<BrowserStep> steps) {
-        return execute(url, steps, 30);
+    public static HeadlessCompatibilityResult checkCompatibility() {
+        String configuredBrowserPath = VulnScanConfig.getInstance().getHeadlessBrowserPath();
+        return checkCompatibility(configuredBrowserPath);
     }
+
+    public static HeadlessCompatibilityResult checkCompatibility(String configuredBrowserPath) {
+        HeadlessCompatibilityResult result = new HeadlessCompatibilityResult();
+
+        String browserPath = resolveBrowserPath(configuredBrowserPath);
+        result.setBrowserPath(browserPath);
+        if (browserPath == null) {
+            result.setStatus(CompatibilityStatus.NOT_FOUND);
+            result.setMessage("未检测到 Chrome/Chromium 浏览器，请在设置页配置浏览器路径。\n下载: " + HEADLESS_DOWNLOAD_GUIDE);
+            return result;
+        }
+
+        String browserVersion = readCommandVersion(browserPath, "--version");
+        Integer browserMajor = parseMajorVersion(browserVersion);
+        result.setBrowserVersion(browserVersion);
+        result.setBrowserMajor(browserMajor);
+        if (browserMajor == null) {
+            result.setStatus(CompatibilityStatus.NOT_FOUND);
+            result.setMessage("浏览器版本解析失败，请检查浏览器路径是否正确。\n当前路径: " + browserPath);
+            return result;
+        }
+
+        String targetBrowserVersion = String.valueOf(browserMajor);
+        String driverPath;
+        String driverVersion;
+        Integer driverMajor;
+        try {
+            WebDriverManager.chromedriver().version(targetBrowserVersion).setup();
+            driverPath = System.getProperty("webdriver.chrome.driver");
+            driverVersion = readCommandVersion(driverPath, "--version");
+            driverMajor = parseMajorVersion(driverVersion);
+        } catch (Exception e) {
+            result.setStatus(CompatibilityStatus.NOT_FOUND);
+            result.setMessage("ChromeDriver 准备失败: " + e.getMessage() + "\n请检查网络或手动安装后重试。\n下载: " + HEADLESS_DOWNLOAD_GUIDE);
+            return result;
+        }
+
+        result.setDriverPath(driverPath);
+        result.setDriverVersion(driverVersion);
+        result.setDriverMajor(driverMajor);
+
+        if (driverMajor == null) {
+            result.setStatus(CompatibilityStatus.NOT_FOUND);
+            result.setMessage("ChromeDriver 版本解析失败，请检查驱动文件是否可执行。\n当前路径: " + driverPath);
+            return result;
+        }
+
+        if (browserMajor.equals(driverMajor)) {
+            result.setStatus(CompatibilityStatus.COMPATIBLE);
+            result.setMessage("版本匹配，可执行 Headless 扫描。\n下载: " + HEADLESS_DOWNLOAD_GUIDE);
+            return result;
+        }
+
+        result.setStatus(CompatibilityStatus.INCOMPATIBLE);
+        result.setMessage("Chrome 主版本与 ChromeDriver 主版本不匹配，请调整浏览器版本或清理驱动缓存后重试。\n下载: " + HEADLESS_DOWNLOAD_GUIDE);
+        return result;
+    }
+
+    public static String buildCompatibilityErrorMessage(HeadlessCompatibilityResult result) {
+        if (result == null) {
+            return "Headless 兼容性检测失败：未获取到检测结果。";
+        }
+        return result.buildDisplayMessage() + "\n设置入口：设置 -> 漏洞扫描配置 -> Headless 浏览器路径";
+    }
+
+    public static String getSupportPolicySummary() {
+        return SUPPORT_POLICY + "（更新于 " + SUPPORT_POLICY_UPDATED_AT + "）";
+    }
+
+    private static String resolveBrowserPath(String configuredBrowserPath) {
+        if (configuredBrowserPath != null && !configuredBrowserPath.trim().isEmpty()) {
+            String trimmed = configuredBrowserPath.trim();
+            File configured = new File(trimmed);
+            if (configured.exists() && configured.isFile()) {
+                return configured.getAbsolutePath();
+            }
+        }
+
+        for (String candidate : getOsBrowserCandidates()) {
+            File file = new File(candidate);
+            if (file.exists() && file.isFile()) {
+                return file.getAbsolutePath();
+            }
+        }
+
+        List<String> commandCandidates = Arrays.asList("google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome");
+        for (String command : commandCandidates) {
+            String path = findCommandPath(command);
+            if (path != null) {
+                return path;
+            }
+        }
+
+        return null;
+    }
+
+    private static List<String> getOsBrowserCandidates() {
+        String osName = System.getProperty("os.name", "").toLowerCase();
+        if (osName.contains("win")) {
+            return WINDOWS_BROWSER_PATHS;
+        }
+        if (osName.contains("mac") || osName.contains("darwin")) {
+            return MAC_BROWSER_PATHS;
+        }
+        return LINUX_BROWSER_PATHS;
+    }
+
+    private static String findCommandPath(String command) {
+        String osName = System.getProperty("os.name", "").toLowerCase();
+        List<String> locateCommand = osName.contains("win")
+                ? Arrays.asList("where", command)
+                : Arrays.asList("which", command);
+        String output = runProcessAndReadLine(locateCommand, 4);
+        if (output == null || output.trim().isEmpty()) {
+            return null;
+        }
+        String path = output.trim();
+        File file = new File(path);
+        return file.exists() ? file.getAbsolutePath() : null;
+    }
+
+    private static String readCommandVersion(String executablePath, String versionArg) {
+        if (executablePath == null || executablePath.trim().isEmpty()) {
+            return null;
+        }
+        List<String> command = new ArrayList<String>();
+        command.add(executablePath);
+        command.add(versionArg);
+        return runProcessAndReadLine(command, 5);
+    }
+
+    private static String runProcessAndReadLine(List<String> command, int timeoutSeconds) {
+        Process process = null;
+        try {
+            ProcessBuilder builder = new ProcessBuilder(command);
+            builder.redirectErrorStream(true);
+            process = builder.start();
+            String line;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                line = reader.readLine();
+            }
+            process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
+            return line;
+        } catch (Exception e) {
+            return null;
+        } finally {
+            if (process != null) {
+                process.destroy();
+            }
+        }
+    }
+
+    private static Integer parseMajorVersion(String versionText) {
+        if (versionText == null || versionText.trim().isEmpty()) {
+            return null;
+        }
+
+        Matcher matcher = Pattern.compile("(\\d+)\\.").matcher(versionText);
+        if (matcher.find()) {
+            try {
+                return Integer.parseInt(matcher.group(1));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        return null;
+    }
+
     
     /**
      * 执行 Headless 浏览器操作（完整参数）
@@ -133,9 +419,18 @@ public class HeadlessHandler {
         WebDriver driver = null;
         
         try {
+            HeadlessCompatibilityResult compatibilityResult = checkCompatibility();
+            if (!compatibilityResult.isCompatible()) {
+                String message = buildCompatibilityErrorMessage(compatibilityResult);
+                response.setSuccess(false);
+                response.setError(message);
+                response.addLog("✗ " + message);
+                return response;
+            }
+
             // 初始化无头 Chrome 浏览器
             response.addLog("初始化无头浏览器...");
-            driver = initHeadlessChrome();
+            driver = initHeadlessChrome(compatibilityResult);
             response.addLog("✓ 浏览器初始化成功");
             
             // 设置隐式等待（Java 8兼容）
@@ -221,10 +516,16 @@ public class HeadlessHandler {
     /**
      * 初始化无头 Chrome 浏览器
      */
-    private static WebDriver initHeadlessChrome() {
-        // 使用 WebDriverManager 自动管理 ChromeDriver
-        WebDriverManager.chromedriver().setup();
-        
+    private static WebDriver initHeadlessChrome(HeadlessCompatibilityResult compatibilityResult) {
+        String targetBrowserVersion = compatibilityResult != null && compatibilityResult.getBrowserMajor() != null
+                ? String.valueOf(compatibilityResult.getBrowserMajor())
+                : null;
+        if (targetBrowserVersion != null) {
+            WebDriverManager.chromedriver().version(targetBrowserVersion).setup();
+        } else {
+            WebDriverManager.chromedriver().setup();
+        }
+
         // 配置 Chrome 选项
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless");                 // 无头模式
@@ -234,7 +535,13 @@ public class HeadlessHandler {
         options.addArguments("--window-size=1920,1080");    // 窗口大小
         options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"); // UA
         options.addArguments("--disable-blink-features=AutomationControlled"); // 禁用自动化检测
-        
+
+        String configuredBrowserPath = VulnScanConfig.getInstance().getHeadlessBrowserPath();
+        String browserPath = resolveBrowserPath(configuredBrowserPath);
+        if (browserPath != null) {
+            options.setBinary(browserPath);
+        }
+
         return new ChromeDriver(options);
     }
     

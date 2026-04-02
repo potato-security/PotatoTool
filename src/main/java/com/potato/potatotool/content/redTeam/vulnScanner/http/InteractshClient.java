@@ -61,6 +61,7 @@ public class InteractshClient {
     
     // 客户端状态
     private String serverUrl;
+    private String authToken;
     private String correlationId;
     private String secretKey;
     private KeyPair rsaKeyPair;
@@ -68,6 +69,7 @@ public class InteractshClient {
     
     // 交互记录缓存
     private final List<Interaction> interactions = Collections.synchronizedList(new ArrayList<>());
+    private static final long INTERACTION_RETENTION_MS = 60 * 60 * 1000L;
     
     // 后台轮询
     private ScheduledExecutorService pollExecutor;
@@ -139,7 +141,18 @@ public class InteractshClient {
      * @param server 服务器地址（不含协议前缀）
      */
     public InteractshClient(String server) {
+        this(server, null);
+    }
+
+    /**
+     * 创建指定服务器和鉴权 Token 的 Interactsh 客户端
+     *
+     * @param server 服务器地址（不含协议前缀）
+     * @param token Bearer Token（可选）
+     */
+    public InteractshClient(String server, String token) {
         this.serverUrl = server.startsWith("http") ? server : "https://" + server;
+        this.authToken = token == null ? null : token.trim();
     }
     
     /**
@@ -197,35 +210,60 @@ public class InteractshClient {
             .setPostData(registerRequest)
             .setTimeOut(15)
             .setReadTimeout(15);
+        applyAuthToken(requestObj);
         
         try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
             int statusCode = response.getResponseCode();
             String responseBody = response.getTextStr();
-            
+
             if (statusCode == 200 || statusCode == 201) {
                 // 解析响应
                 JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
-                
+
                 // 检查是否返回了新的 correlation-id
                 if (jsonResponse.has("correlation-id")) {
                     correlationId = jsonResponse.get("correlation-id").getAsString();
                 }
-                
+
                 registered = true;
                 System.out.println("[Interactsh] 注册成功: " + getInteractionUrl());
                 return getInteractionUrl();
-                
+
             } else {
-                throw new Exception("注册失败: HTTP " + statusCode + " - " + responseBody);
+                throw new Exception(buildHttpError("注册", registerUrl, statusCode, responseBody));
             }
         }
     }
     
-    /**
-     * 获取交互 URL
-     * 
-     * @return 完整的交互 URL
-     */
+    private static final int RESPONSE_BODY_PREVIEW_LIMIT = 300;
+
+    private void applyAuthToken(RequestObj requestObj) {
+        if (authToken != null && !authToken.isEmpty()) {
+            requestObj.setBearerToken(authToken);
+        }
+    }
+
+    private String buildHttpError(String action, String requestUrl, int statusCode, String responseBody) {
+        return action + "失败: HTTP " + statusCode
+                + ", url=" + requestUrl
+                + ", token=" + (authToken != null && !authToken.isEmpty() ? "configured" : "none")
+                + ", body=" + previewBody(responseBody);
+    }
+
+    private String previewBody(String body) {
+        if (body == null) {
+            return "<empty>";
+        }
+        String normalized = body.replace("\r", " ").replace("\n", " ").trim();
+        if (normalized.isEmpty()) {
+            return "<empty>";
+        }
+        if (normalized.length() <= RESPONSE_BODY_PREVIEW_LIMIT) {
+            return normalized;
+        }
+        return normalized.substring(0, RESPONSE_BODY_PREVIEW_LIMIT) + "...";
+    }
+
     public String getInteractionUrl() {
         if (correlationId == null) {
             return null;
@@ -271,25 +309,27 @@ public class InteractshClient {
                 .setMethod("GET")
                 .setTimeOut(10)
                 .setReadTimeout(10);
+            applyAuthToken(requestObj);
             
             try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
-                if (response.getResponseCode() == 200) {
-                    String responseBody = response.getTextStr();
-                    
+                int statusCode = response.getResponseCode();
+                String responseBody = response.getTextStr();
+
+                if (statusCode == 200) {
                     if (responseBody != null && !responseBody.trim().isEmpty()) {
                         JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
-                        
+
                         if (jsonResponse.has("data") && jsonResponse.has("aes_key")) {
                             // 解密数据
                             String encryptedData = jsonResponse.get("data").getAsString();
                             String encryptedAesKey = jsonResponse.get("aes_key").getAsString();
-                            
+
                             // 使用 RSA 私钥解密 AES 密钥
                             byte[] aesKey = decryptAesKey(encryptedAesKey);
-                            
+
                             // 使用 AES 密钥解密数据
                             String decryptedData = decryptData(encryptedData, aesKey);
-                            
+
                             // 解析交互记录
                             JsonArray interactionsArray = JsonParser.parseString(decryptedData).getAsJsonArray();
                             for (JsonElement element : interactionsArray) {
@@ -297,7 +337,7 @@ public class InteractshClient {
                                 if (interaction != null) {
                                     newInteractions.add(interaction);
                                     interactions.add(interaction);
-                                    
+
                                     // 触发回调
                                     if (callback != null) {
                                         callback.onInteraction(interaction);
@@ -312,13 +352,19 @@ public class InteractshClient {
                                 if (interaction != null) {
                                     newInteractions.add(interaction);
                                     interactions.add(interaction);
-                                    
+
                                     if (callback != null) {
                                         callback.onInteraction(interaction);
                                     }
                                 }
                             }
                         }
+                    }
+                } else {
+                    String pollError = buildHttpError("轮询", pollUrl, statusCode, responseBody);
+                    System.err.println("[Interactsh] " + pollError);
+                    if (callback != null) {
+                        callback.onError(pollError);
                     }
                 }
             }
@@ -328,7 +374,9 @@ public class InteractshClient {
                 callback.onError("轮询失败: " + e.getMessage());
             }
         }
-        
+
+        removeExpiredInteractions();
+
         return newInteractions;
     }
     
@@ -406,10 +454,15 @@ public class InteractshClient {
                 .setPostData(deregisterRequest)
                 .setTimeOut(10)
                 .setReadTimeout(10);
+            applyAuthToken(requestObj);
             
             try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
-                if (response.getResponseCode() == 200) {
+                int statusCode = response.getResponseCode();
+                String responseBody = response.getTextStr();
+                if (statusCode == 200) {
                     System.out.println("[Interactsh] 注销成功");
+                } else {
+                    System.err.println("[Interactsh] " + buildHttpError("注销", deregisterUrl, statusCode, responseBody));
                 }
             }
         } catch (Exception e) {
@@ -481,9 +534,19 @@ public class InteractshClient {
      * 获取所有交互记录
      */
     public List<Interaction> getInteractions() {
+        removeExpiredInteractions();
         return new ArrayList<>(interactions);
     }
-    
+
+    private void removeExpiredInteractions() {
+        long now = System.currentTimeMillis();
+        synchronized (interactions) {
+            interactions.removeIf(interaction -> interaction == null
+                    || interaction.getTimestamp() <= 0
+                    || now - interaction.getTimestamp() > INTERACTION_RETENTION_MS);
+        }
+    }
+
     /**
      * 清除交互记录缓存
      */

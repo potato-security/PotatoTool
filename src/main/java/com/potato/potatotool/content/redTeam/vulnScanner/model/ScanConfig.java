@@ -13,6 +13,7 @@ public class ScanConfig {
     // ========== 基础配置 ==========
     private int threads = 20; // 默认线程数
     private String protocol; // 协议类型过滤
+    private String tags; // 标签过滤
     private PocObj.Severity severity; // 严重程度过滤
     private boolean debug = false; // 是否开启调试模式
     private String proxy; // 全局代理
@@ -261,6 +262,14 @@ public class ScanConfig {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
     }
 
     public PocObj.Severity getSeverity() {

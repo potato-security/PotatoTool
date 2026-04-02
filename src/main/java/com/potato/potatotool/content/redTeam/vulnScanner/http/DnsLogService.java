@@ -112,11 +112,19 @@ public class DnsLogService {
      * @param token ceye.io 的 API Token
      */
     public static void configureCeye(String identifier, String token) {
-        if (identifier != null && !identifier.isEmpty() && token != null && !token.isEmpty()) {
-            ceyeIdentifier = identifier;
-            ceyeToken = token;
-            System.out.println("已配置 ceye.io: " + identifier);
+        String normalizedIdentifier = identifier == null ? null : identifier.trim();
+        String normalizedToken = token == null ? null : token.trim();
+
+        if (normalizedIdentifier == null || normalizedIdentifier.isEmpty()
+                || normalizedToken == null || normalizedToken.isEmpty()) {
+            ceyeIdentifier = null;
+            ceyeToken = null;
+            return;
         }
+
+        ceyeIdentifier = normalizedIdentifier;
+        ceyeToken = normalizedToken;
+        System.out.println("已配置 ceye.io: " + ceyeIdentifier);
     }
     
     /**
@@ -200,21 +208,23 @@ public class DnsLogService {
         try {
             // 如果缓存的域名还在有效期内，直接返回子域名（无需网络请求）
             if (dnslogCnInfo != null && !dnslogCnInfo.isExpired()) {
+                cacheDnslogDomain(dnslogCnInfo, dnslogCnInfo.getDomain());
                 String subDomain = generateSubDomain(dnslogCnInfo.getDomain());
                 // 缓存子域名和session的关联
-                DNSLOG_CACHE.put(subDomain, dnslogCnInfo);
+                cacheDnslogDomain(dnslogCnInfo, subDomain);
                 // 成功使用缓存，重置失败计数
                 dnslogCnFailCount.set(0);
                 return subDomain;
             }
-            
+
             // 尝试获取新域名和session
             DnsLogInfo newInfo = getDomainFromDnslogCn();
             if (newInfo != null && newInfo.getDomain() != null) {
                 dnslogCnInfo = newInfo;
+                cacheDnslogDomain(newInfo, newInfo.getDomain());
                 String subDomain = generateSubDomain(newInfo.getDomain());
                 // 缓存子域名和session的关联
-                DNSLOG_CACHE.put(subDomain, newInfo);
+                cacheDnslogDomain(newInfo, subDomain);
                 // 成功获取，重置失败计数
                 dnslogCnFailCount.set(0);
                 return subDomain;
@@ -331,6 +341,44 @@ public class DnsLogService {
         String uniqueId = StrUtils.generateRandomString(8, 8).toLowerCase();
         return uniqueId + "." + baseDomain;
     }
+
+    private static void cacheDnslogDomain(DnsLogInfo info, String domain) {
+        if (info == null || domain == null || domain.trim().isEmpty()) {
+            return;
+        }
+        DNSLOG_CACHE.put(normalizeDomain(domain), info);
+    }
+
+    private static DnsLogInfo findDnsLogInfo(String domain) {
+        if (domain == null || domain.trim().isEmpty()) {
+            return null;
+        }
+
+        String normalizedDomain = normalizeDomain(domain);
+        DnsLogInfo info = DNSLOG_CACHE.get(normalizedDomain);
+        if (info == null) {
+            return null;
+        }
+        if (info.isExpired()) {
+            removeDnsLogInfoMappings(info);
+            return null;
+        }
+        return info;
+    }
+
+    private static void removeDnsLogInfoMappings(DnsLogInfo info) {
+        if (info == null) {
+            return;
+        }
+        DNSLOG_CACHE.entrySet().removeIf(entry -> entry.getValue() == info);
+        if (dnslogCnInfo == info) {
+            dnslogCnInfo = null;
+        }
+    }
+
+    private static String normalizeDomain(String domain) {
+        return domain.trim().toLowerCase();
+    }
     
     /**
      * 生成回退域名（当无法连接到DNSLog平台时）
@@ -340,7 +388,24 @@ public class DnsLogService {
         String uniqueId = StrUtils.generateRandomString(12, 12).toLowerCase();
         return uniqueId + ".dnslog.example.com";
     }
-    
+
+    /**
+     * 判断是否为 fallback 占位域名
+     */
+    public static boolean isFallbackDomain(String domain) {
+        if (domain == null || domain.trim().isEmpty()) {
+            return false;
+        }
+        return domain.trim().toLowerCase().endsWith(".dnslog.example.com");
+    }
+
+    /**
+     * 判断是否为真实可用的 DNSLog 域名
+     */
+    public static boolean isRealDnsLogDomain(String domain) {
+        return domain != null && !domain.trim().isEmpty() && !isFallbackDomain(domain);
+    }
+
     /**
      * 查询指定DNSLog域名的解析记录
      * 自动识别平台并调用对应的查询方法
@@ -349,8 +414,6 @@ public class DnsLogService {
      */
     public static String queryDnsLogRecords(String domain) {
         if (mockMode) {
-            // 模拟模式下，假设只要查询就返回成功记录
-            // 返回符合 dnslog.cn 或 ceye.io 格式的 JSON 记录
             long now = System.currentTimeMillis() / 1000;
             return String.format("[{\"domain\":\"%s\",\"ip\":\"127.0.0.1\",\"time\":\"%d\"}]", domain, now);
         }
@@ -358,47 +421,46 @@ public class DnsLogService {
         if (domain == null || domain.isEmpty()) {
             return null;
         }
-        
-        // 判断是哪个平台的域名
-        if (domain.contains("ceye.io")) {
-            return queryCeyeRecords(domain);
-        } else if (domain.contains("dnslog.cn") || domain.contains("dnslog.io")) {
-            return queryDnslogCnRecords(domain);
+
+        String normalizedDomain = normalizeDomain(domain);
+
+        if (normalizedDomain.contains("ceye.io")) {
+            return queryCeyeRecords(normalizedDomain);
         }
-        
+        if (normalizedDomain.contains("dnslog.cn") || normalizedDomain.contains("dnslog.io")) {
+            DnsLogInfo info = findDnsLogInfo(normalizedDomain);
+            if (info == null) {
+                return null;
+            }
+            return queryDnslogCnRecords(info, normalizedDomain);
+        }
+
         return null;
     }
-    
+
     /**
      * 查询 dnslog.cn 的DNS记录
      */
-    private static String queryDnslogCnRecords(String domain) {
+    private static String queryDnslogCnRecords(DnsLogInfo info, String domain) {
         try {
-            // 从缓存中查找对应的 DnsLogInfo
-            DnsLogInfo info = DNSLOG_CACHE.get(domain);
-            if (info == null) {
-                // 如果缓存中没有，尝试使用当前的 dnslogCnInfo
-                info = dnslogCnInfo;
+            if (info == null || info.getSessionId() == null || info.getSessionId().trim().isEmpty()) {
+                return null;
             }
-            
+
             RequestObj requestObj = new RequestObj()
                     .setUrl("http://www.dnslog.cn/getrecords.php")
                     .setMethod("GET")
                     .setTimeOut(5)
                     .setReadTimeout(5);
-            
-            // 如果有 session，添加 Cookie 到 headers
-            if (info != null && info.getSessionId() != null) {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Cookie", "PHPSESSID=" + info.getSessionId());
-                requestObj.setHeaders(headers);
-            }
-            
+
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Cookie", "PHPSESSID=" + info.getSessionId());
+            requestObj.setHeaders(headers);
+
             try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
                 if (response.getResponseCode() == 200) {
                     String records = response.getTextStr();
                     if (records != null && !records.trim().isEmpty() && !records.equals("[]")) {
-                        // 过滤出与当前域名相关的记录
                         return filterRecordsByDomain(records, domain);
                     }
                 }
@@ -466,6 +528,8 @@ public class DnsLogService {
     public static synchronized void clearCache() {
         dnslogCnInfo = null;
         DNSLOG_CACHE.clear();
+        dnslogCnFailCount.set(0);
+        lastFailTime = 0;
         System.out.println("DNSLog缓存已清除");
     }
     
@@ -502,7 +566,7 @@ public class DnsLogService {
             result.domain = info.getDomain();
             
             // 2. 测试查询记录（应该返回空或成功响应）
-            queryDnslogCnRecords(info.getDomain());
+            queryDnslogCnRecords(info, info.getDomain());
             // 能查询到结果或返回空数组都算成功
             
             result.success = true;

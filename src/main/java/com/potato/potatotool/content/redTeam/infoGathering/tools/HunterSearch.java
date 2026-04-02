@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.data.StrUtils;
-import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
 
@@ -108,7 +108,7 @@ public class HunterSearch {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetConstants.HUNTER_KEY)) {
             Hunter_Key_Set.add(element.getAsString());
         }
-        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.HUNTER_KEY);
+        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.HUNTER_KEY);
         HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set, Proxy);
         String qInfo = "ip=\"8.8.8.8\"";
         if (hunterSearch.search_Hunter(qInfo).isEmpty()){
@@ -168,7 +168,7 @@ public class HunterSearch {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetConstants.HUNTER_KEY)) {
             Hunter_Key_Set.add(element.getAsString());
         }
-        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.HUNTER_KEY);
+        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.HUNTER_KEY);
         HunterSearch hunterSearch = new HunterSearch(Hunter_Key_Set, Proxy);
         System.out.println(hunterSearch.getInfoByCompanyOrDomain_Hunter("深圳湾科技发展有限公司"));
     }

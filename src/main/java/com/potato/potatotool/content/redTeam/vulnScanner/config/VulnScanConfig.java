@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.network.ProxyUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -236,46 +237,18 @@ public class VulnScanConfig {
     // ==================== 代理相关配置 ====================
     
     /**
-     * 是否启用代理（读取全局代理配置）
+     * 是否启用代理（主代理与漏洞扫描服务代理需同时开启）
      */
     public boolean isProxyEnabled() {
-        // 优先使用漏洞扫描专用代理配置
-        boolean vulnScanProxy = getBooleanValue(ConfigConstants.VULNSCAN_PROXY_ENABLED, false);
-        if (vulnScanProxy) {
-            return true;
-        }
-        
-        // 否则使用全局代理配置
-        try {
-            JsonElement proxyElement = (JsonElement) Constants.getOutsideConfig(ConfigConstants.PROXY);
-            if (proxyElement != null && proxyElement.isJsonObject()) {
-                JsonObject proxyConfig = proxyElement.getAsJsonObject();
-                if (proxyConfig.has(ConfigConstants.PROXY_ENABLE)) {
-                    return proxyConfig.get(ConfigConstants.PROXY_ENABLE).getAsBoolean();
-                }
-            }
-        } catch (Exception e) {
-            // 读取失败，返回false
-        }
-        return false;
+        return ProxyUtils.isMainProxyEnabled()
+                && ProxyUtils.isServiceProxyEnabled(ConfigConstants.VULNSCAN_SERVICE);
     }
-    
+
     /**
      * 获取代理地址（读取全局代理配置）
      */
     public String getProxyAddress() {
-        try {
-            JsonElement proxyElement = (JsonElement) Constants.getOutsideConfig(ConfigConstants.PROXY);
-            if (proxyElement != null && proxyElement.isJsonObject()) {
-                JsonObject proxyConfig = proxyElement.getAsJsonObject();
-                if (proxyConfig.has(ConfigConstants.PROXY_ADDRESS)) {
-                    return proxyConfig.get(ConfigConstants.PROXY_ADDRESS).getAsString();
-                }
-            }
-        } catch (Exception e) {
-            // 读取失败，返回null
-        }
-        return null;
+        return ProxyUtils.getMainProxyAddress();
     }
     
     /**
@@ -876,6 +849,35 @@ public class VulnScanConfig {
             return dbPath;
         }
         // 默认路径将由 VulnScanDatabase 根据 PathManager 计算
+        return null;
+    }
+
+    /**
+     * 获取 Headless 配置对象
+     */
+    private JsonObject getHeadlessConfig() {
+        try {
+            JsonObject vulnScanConfig = getVulnScanConfig();
+            if (vulnScanConfig.has(ConfigConstants.VULNSCAN_HEADLESS) &&
+                    vulnScanConfig.get(ConfigConstants.VULNSCAN_HEADLESS).isJsonObject()) {
+                return vulnScanConfig.getAsJsonObject(ConfigConstants.VULNSCAN_HEADLESS);
+            }
+        } catch (Exception e) {
+            // 配置不存在或读取失败
+        }
+        return new JsonObject();
+    }
+
+    /**
+     * 获取 Headless 浏览器路径配置
+     * @return 浏览器可执行文件路径，未配置返回 null（自动探测）
+     */
+    public String getHeadlessBrowserPath() {
+        JsonObject headlessConfig = getHeadlessConfig();
+        if (headlessConfig.has(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH)) {
+            String path = headlessConfig.get(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH).getAsString();
+            return path == null || path.trim().isEmpty() ? null : path.trim();
+        }
         return null;
     }
 

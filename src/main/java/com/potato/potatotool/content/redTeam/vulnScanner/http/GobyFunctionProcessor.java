@@ -233,7 +233,11 @@ public class GobyFunctionProcessor {
      */
     private static String executeDnslog() {
         // 调用DNSLog服务生成唯一域名
-        return DnsLogService.generateDnsLogDomain();
+        String domain = DnsLogService.generateDnsLogDomain();
+        if (DnsLogService.isFallbackDomain(domain)) {
+            System.err.println("dnslog函数返回fallback域名，DNS OOB当前不可用: " + domain);
+        }
+        return domain;
     }
     
     /**

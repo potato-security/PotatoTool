@@ -30,16 +30,16 @@ import java.util.Map;
  * @date 2025-10-28
  */
 public class VulnScanService {
-    
+
     private static VulnScanService instance;
-    
+
     // 核心组件
     private final PocRepository pocRepository;
     private final ScanEngine scanEngine;
     private final ScanConfig scanConfig;
     private final VulnScanConfig vulnConfig;
     private final SmartPocSelector smartPocSelector;
-    
+
     // 目标列表
     private final List<String> targetList = new ArrayList<>();
     
@@ -224,7 +224,7 @@ public class VulnScanService {
             targetList.addAll(targets);
         }
     }
-    
+
     /**
      * 添加目标
      */
@@ -250,7 +250,7 @@ public class VulnScanService {
     public void clearTargets() {
         targetList.clear();
     }
-    
+
     /**
      * 获取目标数量
      */
@@ -294,7 +294,54 @@ public class VulnScanService {
     public ScanConfig getScanConfig() {
         return scanConfig;
     }
-    
+
+    public ScanConfig getScanConfigSnapshot() {
+        return cloneScanConfig(scanConfig);
+    }
+
+    public List<String> getTargetsSnapshot() {
+        return new ArrayList<>(targetList);
+    }
+
+    private ScanConfig cloneScanConfig(ScanConfig source) {
+        ScanConfig target = new ScanConfig();
+        target.setThreads(source.getThreads());
+        target.setProtocol(source.getProtocol());
+        target.setTags(source.getTags());
+        target.setSeverity(source.getSeverity());
+        target.setDebug(source.isDebug());
+        target.setProxy(source.getProxy());
+        target.setTimeout(source.getTimeout());
+        target.setRetries(source.getRetries());
+        target.setFollowRedirects(source.isFollowRedirects());
+        target.setUserAgent(source.getUserAgent());
+        target.setHeaders(new java.util.HashMap<>(source.getHeaders()));
+        target.setMaxResponseSize(source.getMaxResponseSize());
+        target.setInputType(source.getInputType());
+        target.setAutoDetectInputType(source.isAutoDetectInputType());
+        target.setScanMode(source.getScanMode());
+        target.setEnabledPocFormats(new java.util.HashSet<>(source.getEnabledPocFormats()));
+        target.setEnabledCategories(new java.util.HashSet<>(source.getEnabledCategories()));
+        target.setExcludedCategories(new java.util.HashSet<>(source.getExcludedCategories()));
+        target.setSkipFingerprint(source.isSkipFingerprint());
+        target.setFingerprintTimeout(source.getFingerprintTimeout());
+        target.setEnableHoneypotDetection(source.isEnableHoneypotDetection());
+        target.setStopOnHoneypot(source.isStopOnHoneypot());
+        target.setEnableConfigAudit(source.isEnableConfigAudit());
+        target.setMinSeverity(source.getMinSeverity());
+        target.setEnableHeadless(source.isEnableHeadless());
+        target.setEnableCode(source.isEnableCode());
+        target.setEnableFuzz(source.isEnableFuzz());
+        target.setEnableDeduplication(source.isEnableDeduplication());
+        target.setEnableResponseCache(source.isEnableResponseCache());
+        target.setResponseCacheTtlMs(source.getResponseCacheTtlMs());
+        target.setEnableClustering(source.isEnableClustering());
+        target.setLocalTargetPath(source.getLocalTargetPath());
+        target.setTargetProtocol(source.getTargetProtocol());
+        target.setFileExtensions(new ArrayList<>(source.getFileExtensions()));
+        return target;
+    }
+
     // ==================== 扫描控制 ====================
     
     /**
@@ -302,16 +349,26 @@ public class VulnScanService {
      */
     public void startScan() {
         List<PocObj.Poc> pocs = pocRepository.getAllPocs();
+        startScan(getTargetsSnapshot(), pocs);
+    }
+
+    public void startScan(List<String> targets, List<PocObj.Poc> pocs) {
         scanEngine.setFingerprintResult(null);
-        scanEngine.startScan(new ArrayList<>(targetList), pocs);
+        scanEngine.setFingerprintResultMap(null);
+        scanEngine.startScan(new ArrayList<>(targets), pocs, getScanConfigSnapshot());
     }
 
     /**
      * 开始扫描（使用指定POC）
      */
     public void startScan(List<PocObj.Poc> pocs) {
-        scanEngine.setFingerprintResult(null);
-        scanEngine.startScan(new ArrayList<>(targetList), pocs);
+        startScan(getTargetsSnapshot(), pocs);
+    }
+
+    public void startScan(List<String> targets, List<PocObj.Poc> pocs, FingerprintResult fingerprint) {
+        scanEngine.setFingerprintResult(fingerprint);
+        scanEngine.setFingerprintResultMap(null);
+        scanEngine.startScan(new ArrayList<>(targets), pocs, getScanConfigSnapshot());
     }
 
     /**
@@ -325,8 +382,7 @@ public class VulnScanService {
      * 开始扫描（使用指定POC + 指纹结果 + UI配置同步）
      */
     public void startScan(List<PocObj.Poc> pocs, FingerprintResult fingerprint) {
-        scanEngine.setFingerprintResult(fingerprint);
-        scanEngine.startScan(new ArrayList<>(targetList), pocs);
+        startScan(getTargetsSnapshot(), pocs, fingerprint);
     }
 
     /**
@@ -340,8 +396,13 @@ public class VulnScanService {
      * 开始扫描（使用指定POC + 多目标指纹映射）
      */
     public void startScan(List<PocObj.Poc> pocs, Map<String, FingerprintResult> fingerprintMap) {
+        startScan(getTargetsSnapshot(), pocs, fingerprintMap);
+    }
+
+    public void startScan(List<String> targets, List<PocObj.Poc> pocs, Map<String, FingerprintResult> fingerprintMap) {
+        scanEngine.setFingerprintResult(null);
         scanEngine.setFingerprintResultMap(fingerprintMap);
-        scanEngine.startScan(new ArrayList<>(targetList), pocs);
+        scanEngine.startScan(new ArrayList<>(targets), pocs, getScanConfigSnapshot());
     }
 
     /**
@@ -356,6 +417,9 @@ public class VulnScanService {
         scanConfig.setEnableClustering(uiConfig.isEnableClustering());
         scanConfig.setEnableResponseCache(uiConfig.isEnableResponseCache());
         scanConfig.setRetries(uiConfig.getRetries());
+        scanConfig.setEnableHeadless(uiConfig.isEnableHeadless());
+        scanConfig.setEnableCode(uiConfig.isEnableCode());
+        scanConfig.setEnableFuzz(uiConfig.isEnableFuzz());
     }
     
     /**
@@ -378,24 +442,12 @@ public class VulnScanService {
                 pocs.add(poc);
             }
         }
-        
+
         if (pocs.isEmpty()) {
             throw new IllegalStateException("无法加载POC，可能已被删除");
         }
-        
-        // 临时保存目标列表
-        List<String> oldTargets = new ArrayList<>(targetList);
-        
-        // 设置恢复的目标
-        targetList.clear();
-        targetList.addAll(state.getTargets());
-        
-        // 使用扫描引擎恢复扫描，传入POC列表
+
         scanEngine.resumeScan(state, pocs);
-        
-        // 恢复原目标列表
-        targetList.clear();
-        targetList.addAll(oldTargets);
     }
     
     /**

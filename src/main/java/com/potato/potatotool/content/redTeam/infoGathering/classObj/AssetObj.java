@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.network.ProxyUtils;
 
 import java.util.*;
 
@@ -72,23 +73,15 @@ public class AssetObj {
         this.setGitHub_Token(tmpJsonObj.getAsJsonArray(AssetConstants.GITHUB_TOKEN));
 
         // 从 Proxy.services 读取各服务的代理配置
-        JsonObject proxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
-        if (proxyConfig.has(ConfigConstants.PROXY_SERVICES) &&
-            proxyConfig.get(ConfigConstants.PROXY_SERVICES).isJsonObject()) {
-            JsonObject services = proxyConfig.getAsJsonObject(ConfigConstants.PROXY_SERVICES);
-            
-            if (services != null) {
-                setFofaProxy(services.has(AssetConstants.FOFA_KEY) && services.get(AssetConstants.FOFA_KEY).getAsBoolean());
-                setHunterProxy(services.has(AssetConstants.HUNTER_KEY) && services.get(AssetConstants.HUNTER_KEY).getAsBoolean());
-                setQuakeProxy(services.has(AssetConstants.QUAKE_KEY) && services.get(AssetConstants.QUAKE_KEY).getAsBoolean());
-                setShodanProxy(services.has(AssetConstants.SHODAN_KEY) && services.get(AssetConstants.SHODAN_KEY).getAsBoolean());
-                setZoomeyeProxy(services.has(AssetConstants.ZOOMEYE_KEY) && services.get(AssetConstants.ZOOMEYE_KEY).getAsBoolean());
-                setGoogleProxy(services.has(AssetConstants.GOOGLE_API) && services.get(AssetConstants.GOOGLE_API).getAsBoolean());
-                setGithubProxy(services.has(AssetConstants.GITHUB_TOKEN) && services.get(AssetConstants.GITHUB_TOKEN).getAsBoolean());
-                setSslProxy(services.has(AssetConstants.SSL) && services.get(AssetConstants.SSL).getAsBoolean());
-                setCrawlProxy(services.has(AssetConstants.CRAWL) && services.get(AssetConstants.CRAWL).getAsBoolean());
-            }
-        }
+        setFofaProxy(ProxyUtils.isServiceProxyEnabled(AssetConstants.FOFA_KEY));
+        setHunterProxy(ProxyUtils.isServiceProxyEnabled(AssetConstants.HUNTER_KEY));
+        setQuakeProxy(ProxyUtils.isServiceProxyEnabled(AssetConstants.QUAKE_KEY));
+        setShodanProxy(ProxyUtils.isServiceProxyEnabled(AssetConstants.SHODAN_KEY));
+        setZoomeyeProxy(ProxyUtils.isServiceProxyEnabled(AssetConstants.ZOOMEYE_KEY));
+        setGoogleProxy(ProxyUtils.isServiceProxyEnabled(AssetConstants.GOOGLE_API));
+        setGithubProxy(ProxyUtils.isServiceProxyEnabled(AssetConstants.GITHUB_TOKEN));
+        setSslProxy(ProxyUtils.isServiceProxyEnabled(AssetConstants.SSL));
+        setCrawlProxy(ProxyUtils.isServiceProxyEnabled(AssetConstants.CRAWL));
     }
 
     public static boolean hasSetKey(String key){

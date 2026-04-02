@@ -7,7 +7,7 @@ import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstan
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.data.StrUtils;
-import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
 
@@ -109,7 +109,7 @@ public class GitHubLeakage {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetConstants.GITHUB_TOKEN)) {
             GitHub_Token_Set.add(element.getAsString());
         }
-        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.GITHUB_TOKEN);
+        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.GITHUB_TOKEN);
         GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set, Proxy);
         String domain = "HotBoy-java/PotatoTool";
         if (gitHubLeakage.getRepo(null, domain, 1).isEmpty()){
@@ -173,7 +173,7 @@ public class GitHubLeakage {
         for (JsonElement element : tmpJsonObj.getAsJsonArray(AssetConstants.GITHUB_TOKEN)) {
             GitHub_Token_Set.add(element.getAsString());
         }
-        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.GITHUB_TOKEN);
+        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.GITHUB_TOKEN);
         GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set, Proxy);
 
 //        JsonArray xxx= new JsonArray();

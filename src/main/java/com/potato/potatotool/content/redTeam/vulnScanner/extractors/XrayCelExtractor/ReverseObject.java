@@ -43,6 +43,11 @@ public class ReverseObject {
     private final String ip;
     
     /**
+     * DNSLog 可用性
+     */
+    private final boolean available;
+
+    /**
      * 创建时间
      */
     private final long createTime;
@@ -54,11 +59,16 @@ public class ReverseObject {
     public ReverseObject() {
         // 使用已有的 DnsLogService 生成域名
         this.domain = DnsLogService.generateDnsLogDomain();
+        this.available = DnsLogService.isRealDnsLogDomain(this.domain);
         this.url = "http://" + this.domain;
         this.ip = "127.0.0.1"; // 占位
         this.createTime = System.currentTimeMillis();
-        
-        System.out.println("✓ 创建 Reverse 对象: " + this.domain);
+
+        if (this.available) {
+            System.out.println("✓ 创建 Reverse 对象: " + this.domain);
+        } else {
+            System.err.println("✗ Reverse 不可用，DNSLog 域名为 fallback: " + this.domain);
+        }
     }
     
     /**
@@ -69,37 +79,42 @@ public class ReverseObject {
      * @return 是否收到反连
      */
     public boolean waitFor(int timeout) {
+        if (!available) {
+            System.err.println("Reverse waitFor 跳过：DNSLog 不可用（fallback 域名）");
+            return false;
+        }
+
         if (timeout <= 0) {
             timeout = 10; // 默认10秒
         }
-        
+
         long endTime = System.currentTimeMillis() + (timeout * 1000L);
         int checkCount = 0;
-        
+
         System.out.println("等待反连: " + this.domain + " (超时: " + timeout + "秒)");
-        
+
         while (System.currentTimeMillis() < endTime) {
             checkCount++;
-            
+
             try {
-                // 使用已有的 DnsLogService 查询记录
-                String records = DnsLogService.queryDnsLogRecords(this.domain);
-                
-                if (records != null && !records.isEmpty()) {
+                if (DnsLogService.hasDnsResolution(this.domain)) {
                     System.out.println("✓ 检测到反连！域名: " + this.domain);
-                    System.out.println("  记录: " + records);
+                    String records = DnsLogService.queryDnsLogRecords(this.domain);
+                    if (records != null && !records.isEmpty()) {
+                        System.out.println("  记录: " + records);
+                    }
                     return true;
                 }
-                
+
                 // 每0.5秒检查一次
                 Thread.sleep(500);
-                
+
                 // 每5次检查打印一次进度
                 if (checkCount % 10 == 0) {
                     long remaining = (endTime - System.currentTimeMillis()) / 1000;
                     System.out.println("  [" + checkCount + "] 仍在等待... (剩余 " + remaining + "秒)");
                 }
-                
+
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.err.println("等待被中断");
@@ -108,7 +123,7 @@ public class ReverseObject {
                 System.err.println("查询 DNSLog 记录失败: " + e.getMessage());
             }
         }
-        
+
         System.out.println("✗ 未检测到反连（超时）");
         return false;
     }
@@ -128,6 +143,9 @@ public class ReverseObject {
      * @return 是否已收到反连
      */
     public boolean hasCallback() {
+        if (!available) {
+            return false;
+        }
         try {
             String records = DnsLogService.queryDnsLogRecords(this.domain);
             return records != null && !records.isEmpty();
@@ -179,12 +197,19 @@ public class ReverseObject {
      * @return 记录（JSON格式）
      */
     public String getRecords() {
+        if (!available) {
+            return null;
+        }
         try {
             return DnsLogService.queryDnsLogRecords(this.domain);
         } catch (Exception e) {
             System.err.println("获取 DNSLog 记录失败: " + e.getMessage());
             return null;
         }
+    }
+
+    public boolean isAvailable() {
+        return available;
     }
     
     @Override

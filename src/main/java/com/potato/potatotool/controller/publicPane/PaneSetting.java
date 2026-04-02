@@ -8,19 +8,25 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.HeadlessHandler;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpLogService;
 import com.potato.potatotool.storage.PathManager;
 import com.potato.potatotool.update.UpdateInfo;
 import com.potato.potatotool.update.UpdateManager;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.I18nManager;
 import com.potato.potatotool.utils.core.I18nUtils;
+import com.potato.potatotool.utils.data.JsonUtils;
 import com.potato.potatotool.utils.crypto.AESUtils;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import javafx.animation.FadeTransition;
 import java.util.HashMap;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -33,6 +39,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
@@ -93,6 +100,14 @@ public class PaneSetting {
     private TextField aiApiKey;
     @FXML
     private TextField aiModel;
+    @FXML
+    private ComboBox<String> aiProvider;
+    @FXML
+    private TextField aiTimeoutMs;
+    @FXML
+    private CFSwitch aiThinkingEnabled;
+    @FXML
+    private TextField aiThinkingBudgetTokens;
 
     @FXML
     private BorderPane topBar;
@@ -166,6 +181,8 @@ public class PaneSetting {
     private TitledPane vulnScanPane;
     @FXML
     private TitledPane updatePane;
+    @FXML
+    private TitledPane oobPane;
 
     // 漏洞扫描配置相关
     @FXML
@@ -185,6 +202,8 @@ public class PaneSetting {
     @FXML
     private ComboBox<String> vulnScanReportFormat;
     @FXML
+    private TextField vulnScanHeadlessBrowserPath;
+    @FXML
     private CFSwitch vulnScanAutoExport;
     
     // HTTP Headers管理
@@ -198,6 +217,32 @@ public class PaneSetting {
     // 更新设置相关
     @FXML
     private CFSwitch autoCheckUpdateSwitch;
+
+    // OOB 配置
+    @FXML
+    private ComboBox<String> oobHttpPlatform;
+    @FXML
+    private TextField oobInteractshServer;
+    @FXML
+    private TextField oobInteractshToken;
+    @FXML
+    private TextField oobCustomServer;
+    @FXML
+    private TextField oobCustomToken;
+    @FXML
+    private TextField oobCacheTtl;
+    @FXML
+    private VBox oobInteractshGroup;
+    @FXML
+    private VBox oobCustomGroup;
+    @FXML
+    private VBox oobCeyeGroup;
+    @FXML
+    private ComboBox<String> oobDnsPlatform;
+    @FXML
+    private TextField oobCeyeIdentifier;
+    @FXML
+    private TextField oobCeyeToken;
 
     // 存储位置管理相关
     @FXML
@@ -227,6 +272,10 @@ public class PaneSetting {
     
     // 国际化管理器
     private I18nManager i18n = I18nManager.getInstance();
+    private FadeTransition promptFadeIn;
+    private FadeTransition promptFadeOut;
+    private volatile boolean promptAutoCloseEnabled;
+    private boolean proxyToggleUpdating;
 
     public void initialize() {
         if(isBlueMode){
@@ -245,8 +294,15 @@ public class PaneSetting {
 
         initProxyMap();
         initData();
+        proxyButton.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            if (oldVal == null || oldVal.equals(newVal)) {
+                return;
+            }
+            handleProxyToggle(newVal);
+        });
         initVulnScanData();
         initHeadersData();
+        initOobSettings();
 
         // 默认只展开第一项
         settingAccordion.setExpandedPane(basicPane);
@@ -443,6 +499,83 @@ public class PaneSetting {
         proxyMap.forEach((checkbox, key) -> checkbox.setDisable(!mainProxyEnabled));
     }
 
+    private void persistMainProxyEnabled(boolean enabled) {
+        Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
+        proxyConfigMap.put(ConfigConstants.PROXY_ENABLE, enabled);
+        Constants.saveConfig(proxyConfigMap, ConfigConstants.PROXY);
+    }
+
+    private void setProxyButtonSelectedSilently(boolean selected) {
+        proxyToggleUpdating = true;
+        try {
+            proxyButton.setSelected(selected);
+        } finally {
+            proxyToggleUpdating = false;
+        }
+    }
+
+    private void handleProxyToggle(boolean enabled) {
+        if (proxyToggleUpdating) {
+            return;
+        }
+        if (!enabled) {
+            persistMainProxyEnabled(false);
+            syncProxyChildrenState();
+            return;
+        }
+
+        String proxyAddress = proxy.getText() == null ? "" : proxy.getText().trim();
+        if (proxyAddress.isEmpty()) {
+            setProxyButtonSelectedSilently(false);
+            persistMainProxyEnabled(false);
+            syncProxyChildrenState();
+            showTip(i18n.getString("setting.proxy.enable.address.required"), true, true);
+            return;
+        }
+
+        proxyButton.setDisable(true);
+        showTip(i18n.getString("setting.proxy.checking"), true);
+        Task<ProxyUtils.ProxyReachabilityResult> proxyCheckTask = new Task<ProxyUtils.ProxyReachabilityResult>() {
+            @Override
+            protected ProxyUtils.ProxyReachabilityResult call() {
+                return ProxyUtils.checkProxyAddressReachability(proxyAddress, 2000);
+            }
+        };
+
+        proxyCheckTask.setOnSucceeded(e -> {
+            proxyButton.setDisable(false);
+            ProxyUtils.ProxyReachabilityResult result = proxyCheckTask.getValue();
+            boolean reachable = result != null && result.isReachable();
+            if (!reachable) {
+                setProxyButtonSelectedSilently(false);
+                persistMainProxyEnabled(false);
+                syncProxyChildrenState();
+                showTip(ProxyUtils.buildUnavailableMessage(result), true, true);
+                return;
+            }
+            persistMainProxyEnabled(true);
+            syncProxyChildrenState();
+            showTip(i18n.getString("setting.proxy.available"));
+        });
+
+        proxyCheckTask.setOnFailed(e -> {
+            proxyButton.setDisable(false);
+            setProxyButtonSelectedSilently(false);
+            persistMainProxyEnabled(false);
+            syncProxyChildrenState();
+            showTip(ProxyUtils.buildUnavailableMessage(null), true, true);
+        });
+
+        Thread worker = new Thread(proxyCheckTask, "setting-proxy-check");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    @FXML
+    public void proxyBtn(MouseEvent event) {
+        handleProxyToggle(proxyButton.isSelected());
+    }
+
     private void initData() {
 
         proxy.setFocusTraversable(false);
@@ -452,7 +585,7 @@ public class PaneSetting {
         boolean isProxy = tmpJsonObj_Proxy.getAsJsonPrimitive(ConfigConstants.PROXY_ENABLE).getAsBoolean();
         String address = tmpJsonObj_Proxy.getAsJsonPrimitive(ConfigConstants.PROXY_ADDRESS).getAsString();
         proxy.setText(address);
-        proxyButton.setSelected(isProxy);
+        setProxyButtonSelectedSilently(isProxy);
 
 
         //  初始化默认反编译模式配置
@@ -460,14 +593,20 @@ public class PaneSetting {
         String decompileMode = tmpJsonObj_Decompile.getAsJsonPrimitive(ConfigConstants.DECOMPILE_MODE).getAsString();
         decompileType.setValue(decompileMode);
 
-        //  初始化默认AI配置
+        //  初始化默认AI配置（仅显示用户显式填写值，不回显内置加密默认值）
         tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig(ConfigConstants.AI);
-        String AI_API_Base = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.AI_API_BASE).getAsString());
-        String AI_API_Key = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.AI_API_KEY).getAsString());
-        String AI_Model = new AESUtils().decryptLocalConfig(tmpJsonObj_AI.getAsJsonPrimitive(ConfigConstants.AI_MODEL).getAsString());
-        aiApiBase.setText(AI_API_Base);
-        aiApiKey.setText(AI_API_Key);
-        aiModel.setText(AI_Model);
+        aiApiBase.setText(readAiPlainText(tmpJsonObj_AI, ConfigConstants.AI_BASE_URL));
+        aiApiKey.setText(readAiPlainText(tmpJsonObj_AI, ConfigConstants.AI_API_KEY));
+        aiModel.setText(readAiPlainText(tmpJsonObj_AI, ConfigConstants.AI_MODEL_NAME));
+        String provider = readAiPlainText(tmpJsonObj_AI, ConfigConstants.AI_PROVIDER);
+        aiProvider.setValue(provider.isEmpty() ? "OPENAI_COMPATIBLE" : provider);
+        aiTimeoutMs.setText(readAiNumberText(tmpJsonObj_AI, ConfigConstants.AI_TIMEOUT_MS, 60000));
+        JsonObject thinkingConfig = null;
+        if (tmpJsonObj_AI.has(ConfigConstants.AI_THINKING) && tmpJsonObj_AI.get(ConfigConstants.AI_THINKING).isJsonObject()) {
+            thinkingConfig = tmpJsonObj_AI.getAsJsonObject(ConfigConstants.AI_THINKING);
+        }
+        aiThinkingEnabled.setSelected(readAiBoolean(thinkingConfig, ConfigConstants.AI_THINKING_ENABLED, false));
+        aiThinkingBudgetTokens.setText(readAiNumberText(thinkingConfig, ConfigConstants.AI_THINKING_BUDGET_TOKENS, 1024));
 
         // 初始化资产测绘
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
@@ -491,17 +630,7 @@ public class PaneSetting {
         setTextArrayData(Google_API_List, googleVBox);
         
         // 设置各服务的代理状态 - 从 Proxy.services 读取
-        JsonObject proxyServices = new JsonObject();
-        if (tmpJsonObj_Proxy.has(ConfigConstants.PROXY_SERVICES) &&
-            tmpJsonObj_Proxy.get(ConfigConstants.PROXY_SERVICES).isJsonObject()) {
-            proxyServices = tmpJsonObj_Proxy.getAsJsonObject(ConfigConstants.PROXY_SERVICES);
-        }
-        
-        JsonObject finalProxyServices = proxyServices;
-        proxyMap.forEach((checkbox, key) -> {
-            boolean proxyEnabled = finalProxyServices.has(key) && finalProxyServices.get(key).getAsBoolean();
-            checkbox.setSelected(proxyEnabled);
-        });
+        proxyMap.forEach((checkbox, key) -> checkbox.setSelected(ProxyUtils.isServiceProxyEnabled(key)));
         syncProxyChildrenState();
 
     }
@@ -577,8 +706,84 @@ public class PaneSetting {
     }
 
 
+    private String readAiPlainText(JsonObject aiConfig, String key) {
+        if (aiConfig == null || !aiConfig.has(key) || aiConfig.get(key).isJsonNull()) {
+            return "";
+        }
+        String value = aiConfig.get(key).getAsString();
+        return value == null ? "" : value.trim();
+    }
+
+    private String readAiNumberText(JsonObject config, String key, int defaultValue) {
+        if (config == null || !config.has(key) || config.get(key).isJsonNull()) {
+            return String.valueOf(defaultValue);
+        }
+        try {
+            return String.valueOf(config.get(key).getAsInt());
+        } catch (Exception ignored) {
+            return String.valueOf(defaultValue);
+        }
+    }
+
+    private boolean readAiBoolean(JsonObject config, String key, boolean defaultValue) {
+        if (config == null || !config.has(key) || config.get(key).isJsonNull()) {
+            return defaultValue;
+        }
+        try {
+            return config.get(key).getAsBoolean();
+        } catch (Exception ignored) {
+            return defaultValue;
+        }
+    }
+
+    static void fillAiConfigMap(Map<String, Object> aiMap,
+                                        String providerValue,
+                                        String plainBaseUrl,
+                                        String plainApiKey,
+                                        String plainModelName,
+                                        int timeoutMs,
+                                        boolean thinkingEnabled,
+                                        int thinkingBudgetTokens) {
+        aiMap.put(ConfigConstants.AI_PROVIDER, providerValue);
+        aiMap.put(ConfigConstants.AI_BASE_URL, plainBaseUrl);
+        aiMap.put(ConfigConstants.AI_API_KEY, plainApiKey);
+        aiMap.put(ConfigConstants.AI_MODEL_NAME, plainModelName);
+        aiMap.put(ConfigConstants.AI_TIMEOUT_MS, timeoutMs);
+
+        Map<String, Object> thinkingMap = new LinkedHashMap<>();
+        thinkingMap.put(ConfigConstants.AI_THINKING_ENABLED, thinkingEnabled);
+        thinkingMap.put(ConfigConstants.AI_THINKING_BUDGET_TOKENS, thinkingBudgetTokens);
+        aiMap.put(ConfigConstants.AI_THINKING, thinkingMap);
+    }
+
+    static boolean shouldBlockSaveForMainProxy(boolean proxyEnabled, String proxyAddress, ProxyUtils.ProxyReachabilityResult result) {
+        if (!proxyEnabled) {
+            return false;
+        }
+        return result == null || !result.isReachable();
+    }
+
+    private boolean validateMainProxyBeforeSave() {
+        if (!proxyButton.isSelected()) {
+            return true;
+        }
+        String proxyAddress = proxy.getText() == null ? "" : proxy.getText().trim();
+        ProxyUtils.ProxyReachabilityResult result = ProxyUtils.checkProxyAddressReachability(proxyAddress, 2000);
+        if (!shouldBlockSaveForMainProxy(true, proxyAddress, result)) {
+            return true;
+        }
+        setProxyButtonSelectedSilently(false);
+        persistMainProxyEnabled(false);
+        syncProxyChildrenState();
+        showTip(ProxyUtils.buildUnavailableMessage(result), true, true);
+        return false;
+    }
+
     @FXML
     void save(){
+        if (!validateMainProxyBeforeSave()) {
+            return;
+        }
         // 检查语言是否发生变化
         String selectedLanguage = languageComboBox != null ? languageComboBox.getValue() : null;
         String currentLanguageDisplay = "zh_CN".equals(i18n.getCurrentLanguageCode()) ? "简体中文" : "English";
@@ -603,12 +808,62 @@ public class PaneSetting {
         configMap.put(ConfigConstants.DECOMPILE, decompileMap);
 
         Map<String, Object> aiMap = convertToMap(tmpJsonObj_AI);
-        aiMap.put(ConfigConstants.AI_API_BASE, new AESUtils().encryptLocalConfig(aiApiBase.getText()));
-        aiMap.put(ConfigConstants.AI_API_KEY, new AESUtils().encryptLocalConfig(aiApiKey.getText()));
-        aiMap.put(ConfigConstants.AI_MODEL, new AESUtils().encryptLocalConfig(aiModel.getText()));
+        String plainBaseUrl = aiApiBase.getText().trim();
+        String plainApiKey = aiApiKey.getText().trim();
+        String plainModelName = aiModel.getText().trim();
+        String providerValue = aiProvider.getValue() == null ? "OPENAI_COMPATIBLE" : aiProvider.getValue().trim();
+        if (providerValue.isEmpty()) {
+            providerValue = "OPENAI_COMPATIBLE";
+        }
+
+        int timeoutMs;
+        try {
+            timeoutMs = Integer.parseInt(aiTimeoutMs.getText().trim());
+            if (timeoutMs <= 0) {
+                showTip(i18n.getString("setting.ai.timeout.invalid"), false, true);
+                return;
+            }
+        } catch (Exception e) {
+            showTip(i18n.getString("setting.ai.timeout.invalid"), false, true);
+            return;
+        }
+
+        int thinkingBudgetTokens;
+        try {
+            thinkingBudgetTokens = Integer.parseInt(aiThinkingBudgetTokens.getText().trim());
+            if (thinkingBudgetTokens <= 0) {
+                showTip(i18n.getString("setting.ai.thinking.budget.invalid"), false, true);
+                return;
+            }
+        } catch (Exception e) {
+            showTip(i18n.getString("setting.ai.thinking.budget.invalid"), false, true);
+            return;
+        }
+
+        fillAiConfigMap(
+                aiMap,
+                providerValue,
+                plainBaseUrl,
+                plainApiKey,
+                plainModelName,
+                timeoutMs,
+                aiThinkingEnabled.isSelected(),
+                thinkingBudgetTokens
+        );
+
+        if (!plainBaseUrl.isEmpty()) {
+            aiMap.put(ConfigConstants.AI_LOCAL_BASE_URL, new AESUtils().encryptLocalConfig(plainBaseUrl));
+        }
+        if (!plainApiKey.isEmpty()) {
+            aiMap.put(ConfigConstants.AI_LOCAL_API_KEY, new AESUtils().encryptLocalConfig(plainApiKey));
+        }
+        if (!plainModelName.isEmpty()) {
+            aiMap.put(ConfigConstants.AI_LOCAL_MODEL_NAME, new AESUtils().encryptLocalConfig(plainModelName));
+        }
         configMap.put(ConfigConstants.AI, aiMap);
 
         if(Constants.saveConfig(configMap)){
+            syncProxyChildrenState();
             // 更新设置现在有独立的保存按钮，这里不再保存（避免重复）
             if (languageChanged && selectedLanguage != null) {
                 // 如果语言发生了变化，则切换语言
@@ -616,7 +871,7 @@ public class PaneSetting {
             }
             showTip(i18n.getString("setting.save.success"));
         }else {
-            showTip(i18n.getString("setting.save.failed"));
+            showTip(i18n.getString("setting.save.failed"), false, true);
         }
     }
 
@@ -704,6 +959,9 @@ public class PaneSetting {
 
     @FXML
     public void saveAsset(ActionEvent event) {
+        if (!validateMainProxyBeforeSave()) {
+            return;
+        }
         // 检查语言是否发生变化
         String selectedLanguage = languageComboBox != null ? languageComboBox.getValue() : null;
         String currentLanguageDisplay = "zh_CN".equals(i18n.getCurrentLanguageCode()) ? "简体中文" : "English";
@@ -754,7 +1012,7 @@ public class PaneSetting {
                 showTip(i18n.getString("setting.save.success"));
             }
         }else {
-            showTip(i18n.getString("setting.save.failed"));
+            showTip(i18n.getString("setting.save.failed"), false, true);
         }
     }
 
@@ -800,41 +1058,76 @@ public class PaneSetting {
     }
 
     public void showTip(String tip){
-        prompt.setText(tip);
-        copyAnimation();
+        showTip(tip, false, false);
     }
 
-    public void copyAnimation() {
-        // 显示提示组件
-        promptPane.setVisible(true);
-        promptPane.setManaged(true);
+    public void showTip(String tip, boolean keepVisible){
+        showTip(tip, keepVisible, false);
+    }
 
-        // 创建渐入动画
-        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-
-        // 创建渐出动画
-        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        fadeOut.setDelay(Duration.seconds(1)); // 延迟1秒执行渐出动画
-
-        // 播放渐入动画，完成后播放渐出动画
-        fadeIn.setOnFinished(event -> fadeOut.play());
-        fadeIn.play();
-
-        fadeOut.setOnFinished(event -> {
-            promptPane.setVisible(false);
-            promptPane.setManaged(false);
+    public void showTip(String tip, boolean keepVisible, boolean isError){
+        Platform.runLater(() -> {
+            prompt.setText(tip);
+            applyPromptStyle(isError);
+            playPromptAnimation(!keepVisible);
         });
     }
 
-    @FXML
-    public void proxyBtn(MouseEvent event) {
-        proxyButton.setSelected(!proxyButton.isSelected());
-        syncProxyChildrenState();
+    private void applyPromptStyle(boolean isError) {
+        if (promptPane == null) {
+            return;
+        }
+        promptPane.getStyleClass().removeAll("setting-prompt-info", "setting-prompt-error");
+        promptPane.getStyleClass().add(isError ? "setting-prompt-error" : "setting-prompt-info");
     }
+
+    private void playPromptAnimation(boolean autoClose) {
+        promptAutoCloseEnabled = autoClose;
+
+        if (promptFadeIn == null) {
+            promptFadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
+            promptFadeIn.setFromValue(0);
+            promptFadeIn.setToValue(1);
+            promptFadeIn.setOnFinished(event -> {
+                if (promptAutoCloseEnabled && promptFadeOut != null) {
+                    promptFadeOut.playFromStart();
+                }
+            });
+        }
+
+        if (promptFadeOut == null) {
+            promptFadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
+            promptFadeOut.setFromValue(1);
+            promptFadeOut.setToValue(0);
+            promptFadeOut.setDelay(Duration.seconds(1));
+            promptFadeOut.setOnFinished(event -> {
+                promptPane.setVisible(false);
+                promptPane.setManaged(false);
+            });
+        }
+
+        promptFadeIn.stop();
+        promptFadeOut.stop();
+        promptPane.setOpacity(0);
+        promptPane.setVisible(true);
+        promptPane.setManaged(true);
+        promptFadeIn.playFromStart();
+    }
+
+    @FXML
+    public void closePromptPane(MouseEvent event) {
+        if (promptPane != null) {
+            if (promptFadeIn != null) {
+                promptFadeIn.stop();
+            }
+            if (promptFadeOut != null) {
+                promptFadeOut.stop();
+            }
+            promptPane.setVisible(false);
+            promptPane.setManaged(false);
+        }
+    }
+
     
     /**
      * 浏览资源路径
@@ -878,7 +1171,7 @@ public class PaneSetting {
         } catch (Exception e) {
             System.err.println("保存更新设置失败: " + e.getMessage());
             e.printStackTrace();
-            showTip(i18n.getString("setting.save.failed"));
+            showTip(i18n.getString("setting.save.failed"), false, true);
         }
     }
     
@@ -895,7 +1188,7 @@ public class PaneSetting {
         
         // 检查新路径是否为空
         if (newPath == null || newPath.trim().isEmpty()) {
-            showTip(i18n.getString("update.storage.path.empty"));
+            showTip(i18n.getString("update.storage.path.empty"), false, true);
             return;
         }
         
@@ -946,7 +1239,7 @@ public class PaneSetting {
                                 @Override
                                 public void onError(String error) {
                                     Platform.runLater(() -> {
-                                        showTip(I18nUtils.getString("update.storage.migrate.failed", error));
+                                        showTip(I18nUtils.getString("update.storage.migrate.failed", error), false, true);
                                         migrateButton.setDisable(false);
                                     });
                                 }
@@ -954,7 +1247,7 @@ public class PaneSetting {
                         );
                     } catch (Exception e) {
                         Platform.runLater(() -> {
-                            showTip(I18nUtils.getString("update.storage.migrate.failed", e.getMessage()));
+                            showTip(I18nUtils.getString("update.storage.migrate.failed", e.getMessage()), false, true);
                             migrateButton.setDisable(false);
                         });
                     }
@@ -1009,7 +1302,7 @@ public class PaneSetting {
                 Platform.runLater(() -> {
                     checkAppUpdateButton.setDisable(false);
                     checkAppUpdateButton.setText(originalText);
-                    showTip(i18n.getString("update.check.failed") + ": " + e.getMessage());
+                    showTip(i18n.getString("update.check.failed") + ": " + e.getMessage(), false, true);
                     e.printStackTrace();
                 });
             }
@@ -1046,7 +1339,296 @@ public class PaneSetting {
         }
     }
 
-    // ==================== 漏洞扫描配置 ====================
+    private void initOobSettings() {
+        if (oobHttpPlatform != null) {
+            oobHttpPlatform.getItems().setAll(
+                    HttpLogService.Platform.INTERACTSH.name(),
+                    HttpLogService.Platform.CUSTOM.name()
+            );
+        }
+        if (oobDnsPlatform != null) {
+            oobDnsPlatform.getItems().setAll(
+                    DnsLogService.Platform.DNSLOG_CN.name(),
+                    DnsLogService.Platform.CEYE_IO.name()
+            );
+        }
+
+        JsonObject root = (JsonObject) Constants.getOutsideConfig(null);
+        JsonObject oobConfig = root != null && root.has(ConfigConstants.OOB)
+                ? root.getAsJsonObject(ConfigConstants.OOB)
+                : new JsonObject();
+
+        JsonObject httpConfig = oobConfig.has(ConfigConstants.OOB_HTTP)
+                ? oobConfig.getAsJsonObject(ConfigConstants.OOB_HTTP)
+                : new JsonObject();
+        JsonObject dnsConfig = oobConfig.has(ConfigConstants.OOB_DNS)
+                ? oobConfig.getAsJsonObject(ConfigConstants.OOB_DNS)
+                : new JsonObject();
+
+        String httpPlatform = httpConfig.has(ConfigConstants.OOB_HTTP_PLATFORM)
+                ? httpConfig.get(ConfigConstants.OOB_HTTP_PLATFORM).getAsString()
+                : HttpLogService.Platform.INTERACTSH.name();
+
+        if (oobHttpPlatform != null) {
+            oobHttpPlatform.setValue(httpPlatform);
+        }
+        if (oobInteractshServer != null) {
+            oobInteractshServer.setText(httpConfig.has(ConfigConstants.OOB_HTTP_INTERACTSH_SERVER)
+                    ? httpConfig.get(ConfigConstants.OOB_HTTP_INTERACTSH_SERVER).getAsString()
+                    : "oast.pro");
+        }
+        if (oobInteractshToken != null) {
+            oobInteractshToken.setText(httpConfig.has(ConfigConstants.OOB_HTTP_INTERACTSH_TOKEN)
+                    ? httpConfig.get(ConfigConstants.OOB_HTTP_INTERACTSH_TOKEN).getAsString()
+                    : "");
+        }
+        if (oobCustomServer != null) {
+            oobCustomServer.setText(httpConfig.has(ConfigConstants.OOB_HTTP_CUSTOM_SERVER)
+                    ? httpConfig.get(ConfigConstants.OOB_HTTP_CUSTOM_SERVER).getAsString()
+                    : "");
+        }
+        if (oobCustomToken != null) {
+            oobCustomToken.setText(httpConfig.has(ConfigConstants.OOB_HTTP_CUSTOM_TOKEN)
+                    ? httpConfig.get(ConfigConstants.OOB_HTTP_CUSTOM_TOKEN).getAsString()
+                    : "");
+        }
+        if (oobCacheTtl != null) {
+            oobCacheTtl.setText(httpConfig.has(ConfigConstants.OOB_HTTP_CACHE_TTL_SECONDS)
+                    ? String.valueOf(httpConfig.get(ConfigConstants.OOB_HTTP_CACHE_TTL_SECONDS).getAsLong())
+                    : "3600");
+        }
+
+        String dnsPlatform = dnsConfig.has(ConfigConstants.OOB_DNS_PLATFORM)
+                ? dnsConfig.get(ConfigConstants.OOB_DNS_PLATFORM).getAsString()
+                : DnsLogService.Platform.DNSLOG_CN.name();
+        if (oobDnsPlatform != null) {
+            oobDnsPlatform.setValue(dnsPlatform);
+        }
+        if (oobCeyeIdentifier != null) {
+            oobCeyeIdentifier.setText(dnsConfig.has(ConfigConstants.OOB_DNS_CEYE_IDENTIFIER)
+                    ? dnsConfig.get(ConfigConstants.OOB_DNS_CEYE_IDENTIFIER).getAsString()
+                    : "");
+        }
+        if (oobCeyeToken != null) {
+            oobCeyeToken.setText(dnsConfig.has(ConfigConstants.OOB_DNS_CEYE_TOKEN)
+                    ? dnsConfig.get(ConfigConstants.OOB_DNS_CEYE_TOKEN).getAsString()
+                    : "");
+        }
+
+        updateOobFieldState();
+        if (oobHttpPlatform != null) {
+            oobHttpPlatform.valueProperty().addListener((obs, oldVal, newVal) -> updateOobFieldState());
+        }
+        if (oobDnsPlatform != null) {
+            oobDnsPlatform.valueProperty().addListener((obs, oldVal, newVal) -> updateOobFieldState());
+        }
+    }
+
+    private void updateOobFieldState() {
+        boolean httpCustom = oobHttpPlatform != null
+                && HttpLogService.Platform.CUSTOM.name().equalsIgnoreCase(oobHttpPlatform.getValue());
+
+        if (oobInteractshServer != null) {
+            oobInteractshServer.setDisable(httpCustom);
+        }
+        if (oobInteractshToken != null) {
+            oobInteractshToken.setDisable(httpCustom);
+        }
+        if (oobCustomServer != null) {
+            oobCustomServer.setDisable(!httpCustom);
+        }
+        if (oobCustomToken != null) {
+            oobCustomToken.setDisable(!httpCustom);
+        }
+        if (oobInteractshGroup != null) {
+            oobInteractshGroup.setVisible(!httpCustom);
+            oobInteractshGroup.setManaged(!httpCustom);
+        }
+        if (oobCustomGroup != null) {
+            oobCustomGroup.setVisible(httpCustom);
+            oobCustomGroup.setManaged(httpCustom);
+        }
+
+        boolean dnsCeye = oobDnsPlatform != null
+                && DnsLogService.Platform.CEYE_IO.name().equalsIgnoreCase(oobDnsPlatform.getValue());
+        if (oobCeyeIdentifier != null) {
+            oobCeyeIdentifier.setDisable(!dnsCeye);
+        }
+        if (oobCeyeToken != null) {
+            oobCeyeToken.setDisable(!dnsCeye);
+        }
+        if (oobCeyeGroup != null) {
+            oobCeyeGroup.setVisible(dnsCeye);
+            oobCeyeGroup.setManaged(dnsCeye);
+        }
+    }
+
+    @FXML
+    public void saveOobSettings(ActionEvent event) {
+        try {
+            String selectedHttpPlatform = oobHttpPlatform == null || oobHttpPlatform.getValue() == null
+                    ? HttpLogService.Platform.INTERACTSH.name()
+                    : oobHttpPlatform.getValue().trim();
+            String interactshServerValue = oobInteractshServer == null ? "" : oobInteractshServer.getText().trim();
+            String interactshTokenValue = oobInteractshToken == null ? "" : oobInteractshToken.getText().trim();
+            String customServerValue = oobCustomServer == null ? "" : oobCustomServer.getText().trim();
+            String customTokenValue = oobCustomToken == null ? "" : oobCustomToken.getText().trim();
+
+            long cacheTtlSeconds = 3600L;
+            if (oobCacheTtl != null && !oobCacheTtl.getText().trim().isEmpty()) {
+                try {
+                    cacheTtlSeconds = Long.parseLong(oobCacheTtl.getText().trim());
+                    if (cacheTtlSeconds <= 0) {
+                        showTip(i18n.getString("setting.oob.http.cache.ttl.invalid"), false, true);
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    showTip(i18n.getString("setting.oob.http.cache.ttl.invalid"), false, true);
+                    return;
+                }
+            }
+
+            String selectedDnsPlatform = oobDnsPlatform == null || oobDnsPlatform.getValue() == null
+                    ? DnsLogService.Platform.DNSLOG_CN.name()
+                    : oobDnsPlatform.getValue().trim();
+            String ceyeIdentifierValue = oobCeyeIdentifier == null ? "" : oobCeyeIdentifier.getText().trim();
+            String ceyeTokenValue = oobCeyeToken == null ? "" : oobCeyeToken.getText().trim();
+
+            if (HttpLogService.Platform.CUSTOM.name().equalsIgnoreCase(selectedHttpPlatform)
+                    && customServerValue.isEmpty()) {
+                showTip(i18n.getString("setting.oob.http.custom.server.required"), false, true);
+                return;
+            }
+            String dnsValidationKey = validateDnsCeye(selectedDnsPlatform, ceyeIdentifierValue, ceyeTokenValue, false);
+            if (dnsValidationKey != null) {
+                showTip(i18n.getString(dnsValidationKey));
+                return;
+            }
+
+            Map<String, Object> httpMap = new LinkedHashMap<>();
+            httpMap.put(ConfigConstants.OOB_HTTP_PLATFORM, selectedHttpPlatform);
+            httpMap.put(ConfigConstants.OOB_HTTP_INTERACTSH_SERVER, interactshServerValue.isEmpty() ? "oast.pro" : interactshServerValue);
+            httpMap.put(ConfigConstants.OOB_HTTP_INTERACTSH_TOKEN, interactshTokenValue);
+            httpMap.put(ConfigConstants.OOB_HTTP_CUSTOM_SERVER, customServerValue);
+            httpMap.put(ConfigConstants.OOB_HTTP_CUSTOM_TOKEN, customTokenValue);
+            httpMap.put(ConfigConstants.OOB_HTTP_CACHE_TTL_SECONDS, cacheTtlSeconds);
+
+            Map<String, Object> dnsMap = new LinkedHashMap<>();
+            dnsMap.put(ConfigConstants.OOB_DNS_PLATFORM, selectedDnsPlatform);
+            dnsMap.put(ConfigConstants.OOB_DNS_CEYE_IDENTIFIER, ceyeIdentifierValue);
+            dnsMap.put(ConfigConstants.OOB_DNS_CEYE_TOKEN, ceyeTokenValue);
+
+            Map<String, Object> oobMap = new LinkedHashMap<>();
+            oobMap.put(ConfigConstants.OOB_HTTP, httpMap);
+            oobMap.put(ConfigConstants.OOB_DNS, dnsMap);
+
+            Map<String, Object> configMap = new LinkedHashMap<>();
+            configMap.put(ConfigConstants.OOB, oobMap);
+
+            if (!Constants.saveConfig(configMap)) {
+                showTip(i18n.getString("setting.save.failed"), false, true);
+                return;
+            }
+
+            HttpLogService.configureInteractsh((String) httpMap.get(ConfigConstants.OOB_HTTP_INTERACTSH_SERVER), interactshTokenValue);
+            HttpLogService.configureCustom(customServerValue, customTokenValue);
+            HttpLogService.setCacheDurationSeconds(cacheTtlSeconds);
+            try {
+                HttpLogService.setPlatform(HttpLogService.Platform.valueOf(selectedHttpPlatform.toUpperCase()));
+            } catch (IllegalArgumentException ex) {
+                HttpLogService.setPlatform(HttpLogService.Platform.INTERACTSH);
+            }
+
+            try {
+                DnsLogService.setPlatform(DnsLogService.Platform.valueOf(selectedDnsPlatform.toUpperCase()));
+            } catch (IllegalArgumentException ex) {
+                DnsLogService.setPlatform(DnsLogService.Platform.DNSLOG_CN);
+            }
+            DnsLogService.configureCeye(ceyeIdentifierValue, ceyeTokenValue);
+
+            showTip(i18n.getString("setting.save.success"));
+        } catch (Exception e) {
+            if (debugMode) {
+                e.printStackTrace();
+            }
+            showTip(i18n.getString("setting.save.failed"), false, true);
+        }
+    }
+
+    static String validateDnsCeye(String selectedDnsPlatform,
+                                  String ceyeIdentifierValue,
+                                  String ceyeTokenValue,
+                                  boolean forConnectivityTest) {
+        if (!DnsLogService.Platform.CEYE_IO.name().equalsIgnoreCase(selectedDnsPlatform)) {
+            return null;
+        }
+        if (ceyeIdentifierValue == null || ceyeIdentifierValue.trim().isEmpty()) {
+            return forConnectivityTest
+                    ? "setting.oob.dns.test.ceye.missing"
+                    : "setting.oob.dns.ceye.identifier.required";
+        }
+        if (ceyeTokenValue == null || ceyeTokenValue.trim().isEmpty()) {
+            return forConnectivityTest
+                    ? "setting.oob.dns.test.ceye.missing"
+                    : "setting.oob.dns.ceye.token.required";
+        }
+        return null;
+    }
+
+    static boolean shouldBlockDnsCeyeTest(String selectedDnsPlatform,
+                                           String ceyeIdentifierValue,
+                                           String ceyeTokenValue) {
+        return validateDnsCeye(selectedDnsPlatform, ceyeIdentifierValue, ceyeTokenValue, true) != null;
+    }
+
+    @FXML
+    public void testOobHttpConnectivity(ActionEvent event) {
+        try {
+            HttpLogService.TestResult result;
+            if (oobHttpPlatform != null && HttpLogService.Platform.CUSTOM.name().equalsIgnoreCase(oobHttpPlatform.getValue())) {
+                result = HttpLogService.testCustomConnectivity();
+            } else {
+                result = HttpLogService.testInteractshConnectivity();
+            }
+            showTip(result.message + " (" + result.responseTime + "ms)");
+        } catch (Exception e) {
+            showTip(i18n.getString("setting.oob.test.failed") + ": " + e.getMessage(), false, true);
+        }
+    }
+
+    @FXML
+    public void testOobDnsConnectivity(ActionEvent event) {
+        try {
+            String ceyeIdentifierValue = oobCeyeIdentifier == null ? "" : oobCeyeIdentifier.getText().trim();
+            String ceyeTokenValue = oobCeyeToken == null ? "" : oobCeyeToken.getText().trim();
+            String dnsValidationKey = validateDnsCeye(
+                    oobDnsPlatform == null ? null : oobDnsPlatform.getValue(),
+                    ceyeIdentifierValue,
+                    ceyeTokenValue,
+                    true
+            );
+            if (dnsValidationKey != null) {
+                showTip(i18n.getString(dnsValidationKey));
+                return;
+            }
+
+            String domain = DnsLogService.generateDnsLogDomain();
+            if (DnsLogService.isRealDnsLogDomain(domain)) {
+                showTip(i18n.getString("setting.oob.test.success") + ": " + domain);
+            } else {
+                showTip(i18n.getString("setting.oob.test.failed"), false, true);
+            }
+        } catch (Exception e) {
+            showTip(i18n.getString("setting.oob.test.failed") + ": " + e.getMessage(), false, true);
+        }
+    }
+
+    @FXML
+    public void clearOobHttpCache(ActionEvent event) {
+        HttpLogService.clearCache();
+        showTip(i18n.getString("setting.oob.http.cache.cleared"));
+    }
+
     
     /**
      * 恢复漏洞扫描配置为默认值
@@ -1063,8 +1645,11 @@ public class PaneSetting {
         vulnScanReportDir.setText("reports");
         vulnScanReportFormat.setValue("HTML");
         vulnScanAutoExport.setSelected(false);
-        
-        showTip("已恢复默认配置，请点击保存生效");
+        if (vulnScanHeadlessBrowserPath != null) {
+            vulnScanHeadlessBrowserPath.setText("");
+        }
+
+        showTip(i18n.getString("setting.vulnscan.reset.done"));
     }
     
     /**
@@ -1099,9 +1684,7 @@ public class PaneSetting {
             if (vulnScanConfig.has(ConfigConstants.VULNSCAN_RETRIES)) {
                 vulnScanRetries.setText(String.valueOf(vulnScanConfig.get(ConfigConstants.VULNSCAN_RETRIES).getAsInt()));
             }
-            if (vulnScanConfig.has(ConfigConstants.VULNSCAN_PROXY_ENABLED)) {
-                vulnScanProxySwitch.setSelected(vulnScanConfig.get(ConfigConstants.VULNSCAN_PROXY_ENABLED).getAsBoolean());
-            }
+            vulnScanProxySwitch.setSelected(ProxyUtils.isServiceProxyEnabled(ConfigConstants.VULNSCAN_SERVICE));
             
             // 报告配置
             JsonObject reportConfig = vulnScanConfig.has(ConfigConstants.VULNSCAN_REPORT) ?
@@ -1119,7 +1702,13 @@ public class PaneSetting {
             if (reportConfig.has(ConfigConstants.VULNSCAN_REPORT_AUTO_EXPORT)) {
                 vulnScanAutoExport.setSelected(reportConfig.get(ConfigConstants.VULNSCAN_REPORT_AUTO_EXPORT).getAsBoolean());
             }
-            
+
+            JsonObject headlessConfig = vulnScanConfig.has(ConfigConstants.VULNSCAN_HEADLESS)
+                    ? vulnScanConfig.getAsJsonObject(ConfigConstants.VULNSCAN_HEADLESS) : new JsonObject();
+            if (headlessConfig.has(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH) && vulnScanHeadlessBrowserPath != null) {
+                vulnScanHeadlessBrowserPath.setText(headlessConfig.get(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH).getAsString());
+            }
+
         } catch (Exception e) {
             if (debugMode) {
                 System.err.println("初始化漏洞扫描配置失败: " + e.getMessage());
@@ -1133,6 +1722,9 @@ public class PaneSetting {
      */
     @FXML
     public void saveVulnScan(ActionEvent event) {
+        if (!validateMainProxyBeforeSave()) {
+            return;
+        }
         try {
             // 获取当前完整的VulnScan配置
             JsonObject currentVulnScan = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
@@ -1142,6 +1734,7 @@ public class PaneSetting {
             
             Map<String, Object> configMap = new LinkedHashMap<>();
             Map<String, Object> vulnScanMap = new LinkedHashMap<>();
+            Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
             
             // 保留原有配置项
             if (currentVulnScan.has(ConfigConstants.VULNSCAN_POC_DIR)) {
@@ -1188,7 +1781,7 @@ public class PaneSetting {
                 try {
                     vulnScanMap.put(ConfigConstants.VULNSCAN_TIMEOUT, Integer.parseInt(timeoutText));
                 } catch (NumberFormatException e) {
-                    showTip("超时时间必须是数字");
+                    showTip(i18n.getString("setting.vulnscan.timeout.invalid"), false, true);
                     return;
                 }
             }
@@ -1198,13 +1791,31 @@ public class PaneSetting {
                 try {
                     vulnScanMap.put(ConfigConstants.VULNSCAN_RETRIES, Integer.parseInt(retriesText));
                 } catch (NumberFormatException e) {
-                    showTip("重试次数必须是数字");
+                    showTip(i18n.getString("setting.vulnscan.retries.invalid"), false, true);
                     return;
                 }
             }
             
-            // 代理配置
-            vulnScanMap.put(ConfigConstants.VULNSCAN_PROXY_ENABLED, vulnScanProxySwitch.isSelected());
+            // 代理配置（统一以 Proxy.services.VulnScan 为准）
+            JsonObject currentProxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
+            if (currentProxyConfig != null) {
+                if (currentProxyConfig.has(ConfigConstants.PROXY_ENABLE)) {
+                    proxyConfigMap.put(ConfigConstants.PROXY_ENABLE, currentProxyConfig.get(ConfigConstants.PROXY_ENABLE).getAsBoolean());
+                }
+                if (currentProxyConfig.has(ConfigConstants.PROXY_ADDRESS)) {
+                    proxyConfigMap.put(ConfigConstants.PROXY_ADDRESS, currentProxyConfig.get(ConfigConstants.PROXY_ADDRESS).getAsString());
+                }
+                JsonObject currentServices = currentProxyConfig.has(ConfigConstants.PROXY_SERVICES)
+                        && currentProxyConfig.get(ConfigConstants.PROXY_SERVICES).isJsonObject()
+                        ? currentProxyConfig.getAsJsonObject(ConfigConstants.PROXY_SERVICES)
+                        : new JsonObject();
+                Map<String, Object> servicesMap = new LinkedHashMap<>();
+                for (String key : currentServices.keySet()) {
+                    servicesMap.put(key, currentServices.get(key).getAsBoolean());
+                }
+                servicesMap.put(ConfigConstants.VULNSCAN_SERVICE, vulnScanProxySwitch.isSelected());
+                proxyConfigMap.put(ConfigConstants.PROXY_SERVICES, servicesMap);
+            }
             
             // 线程池配置
             Map<String, Object> threadPoolMap = new LinkedHashMap<>();
@@ -1213,7 +1824,7 @@ public class PaneSetting {
                 try {
                     threadPoolMap.put(ConfigConstants.VULNSCAN_CORE_THREADS, Integer.parseInt(coreThreadsText));
                 } catch (NumberFormatException e) {
-                    showTip("核心线程数必须是数字");
+                    showTip(i18n.getString("setting.vulnscan.core.threads.invalid"), false, true);
                     return;
                 }
             }
@@ -1223,7 +1834,7 @@ public class PaneSetting {
                 try {
                     threadPoolMap.put(ConfigConstants.VULNSCAN_MAX_THREADS, Integer.parseInt(maxThreadsText));
                 } catch (NumberFormatException e) {
-                    showTip("最大线程数必须是数字");
+                    showTip(i18n.getString("setting.vulnscan.max.threads.invalid"), false, true);
                     return;
                 }
             }
@@ -1233,7 +1844,7 @@ public class PaneSetting {
                 try {
                     threadPoolMap.put(ConfigConstants.VULNSCAN_QUEUE_SIZE, Integer.parseInt(queueSizeText));
                 } catch (NumberFormatException e) {
-                    showTip("队列大小必须是数字");
+                    showTip(i18n.getString("setting.vulnscan.queue.size.invalid"), false, true);
                     return;
                 }
             }
@@ -1261,26 +1872,72 @@ public class PaneSetting {
             if (format != null && !format.isEmpty()) {
                 reportMap.put(ConfigConstants.VULNSCAN_REPORT_DEFAULT_FORMAT, format);
             }
-            vulnScanMap.put(ConfigConstants.VULNSCAN_REPORT, reportMap);
-            
+            Map<String, Object> headlessMap = new LinkedHashMap<>();
+            if (vulnScanHeadlessBrowserPath != null) {
+                String browserPath = vulnScanHeadlessBrowserPath.getText().trim();
+                headlessMap.put(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH, browserPath);
+            }
+            vulnScanMap.put(ConfigConstants.VULNSCAN_HEADLESS, headlessMap);
+
             configMap.put(ConfigConstants.VULNSCAN, vulnScanMap);
+            if (!proxyConfigMap.isEmpty()) {
+                configMap.put(ConfigConstants.PROXY, proxyConfigMap);
+            }
             
             if (Constants.saveConfig(configMap)) {
                 showTip(i18n.getString("setting.save.success"));
                 // 刷新VulnScanConfig缓存
                 com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig.getInstance().reload();
             } else {
-                showTip(i18n.getString("setting.save.failed"));
+                showTip(i18n.getString("setting.save.failed"), false, true);
             }
             
         } catch (Exception e) {
-            showTip("保存失败: " + e.getMessage());
+            showTip(i18n.getString("setting.save.failed.detail", e.getMessage()), false, true);
             if (debugMode) {
                 e.printStackTrace();
             }
         }
     }
     
+    @FXML
+    public void testHeadlessCompatibility(ActionEvent event) {
+        String configuredPath = vulnScanHeadlessBrowserPath != null ? vulnScanHeadlessBrowserPath.getText().trim() : "";
+        showTip(i18n.getString("setting.vulnscan.headless.checking"), true);
+
+        Task<HeadlessHandler.HeadlessCompatibilityResult> task = new Task<HeadlessHandler.HeadlessCompatibilityResult>() {
+            @Override
+            protected HeadlessHandler.HeadlessCompatibilityResult call() {
+                return HeadlessHandler.checkCompatibility(configuredPath);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            HeadlessHandler.HeadlessCompatibilityResult result = task.getValue();
+            showTip(HeadlessHandler.buildCompatibilityErrorMessage(result), !result.isCompatible(), !result.isCompatible());
+        });
+
+        task.setOnFailed(e -> {
+            Throwable ex = task.getException();
+            String message = ex == null ? i18n.getString("setting.save.failed") : ex.getMessage();
+            showTip(i18n.getString("vulnscan.msg.headless.precheck.failed", message), true, true);
+        });
+
+        Thread worker = new Thread(task, "headless-compatibility-check");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    @FXML
+    public void browseHeadlessBrowserPath(ActionEvent event) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(i18n.getString("setting.vulnscan.headless.browser.path"));
+        File selected = chooser.showOpenDialog(an.getScene().getWindow());
+        if (selected != null && vulnScanHeadlessBrowserPath != null) {
+            vulnScanHeadlessBrowserPath.setText(selected.getAbsolutePath());
+        }
+    }
+
     // ==================== HTTP Headers 管理 ====================
 
     /**
@@ -1305,7 +1962,7 @@ public class PaneSetting {
                         }
                         defaultHeadersArea.setText(sb.toString().trim());
                     }
-                    showTip("已应用模板: " + templateName);
+                    showTip(i18n.getString("setting.headers.template.applied", templateName));
                 });
                 headerTemplatePane.getChildren().add(btn);
             }
@@ -1347,7 +2004,7 @@ public class PaneSetting {
         }
         // 自动持久化
         headerManager.saveCustomHeaders(builtinHeaders);
-        showTip("已重置为默认值并保存");
+        showTip(i18n.getString("setting.headers.reset.saved"));
     }
 
     @FXML
@@ -1358,12 +2015,12 @@ public class PaneSetting {
             com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager headerManager =
                 com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager.getInstance();
             if (headerManager.saveCustomHeaders(headers)) {
-                showTip("Headers 已保存（全局生效）");
+                showTip(i18n.getString("setting.headers.save.success"));
             } else {
-                showTip("保存失败");
+                showTip("保存失败", false, true);
             }
         } catch (Exception e) {
-            showTip("保存失败: " + e.getMessage());
+            showTip(i18n.getString("setting.save.failed.detail", e.getMessage()), false, true);
             if (debugMode) {
                 e.printStackTrace();
             }

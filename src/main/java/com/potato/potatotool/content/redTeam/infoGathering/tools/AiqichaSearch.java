@@ -9,7 +9,7 @@ import com.potato.potatotool.controller.redTeam.PaneInfoSearch;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.data.StrUtils;
-import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
 import javafx.application.HostServices;
@@ -42,7 +42,7 @@ public class AiqichaSearch {
     static {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
         Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.AIQICHA_COOKIE).getAsString();
-        Proxy = JsonUtils.isProxyEnabled(AssetConstants.AIQICHA_COOKIE);
+        Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.AIQICHA_COOKIE);
     }
 
     private PaneInfoSearch paneInfoSearch;
@@ -50,7 +50,7 @@ public class AiqichaSearch {
     public AiqichaSearch(List<Integer> weightThresholdList, PaneInfoSearch paneInfoSearch){
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
         Aiqicha_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.AIQICHA_COOKIE).getAsString();
-        Proxy = JsonUtils.isProxyEnabled(AssetConstants.AIQICHA_COOKIE);
+        Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.AIQICHA_COOKIE);
 
         this.weightThresholdList = weightThresholdList;
         this.headers.put("Cookie", Aiqicha_Cookie);

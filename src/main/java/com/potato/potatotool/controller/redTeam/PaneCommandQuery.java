@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
 import com.potato.potatotool.content.redTeam.CommandHelp;
-import com.potato.potatotool.utils.ai.AIUtil;
+import com.potato.potatotool.utils.ai.service.AiChatService;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.animation.FadeTransition;
@@ -394,8 +394,12 @@ public class PaneCommandQuery {
     }
 
     public void getCommandsByAi(String query, Object node) throws Exception {
-        AIUtil aiObj = new AIUtil();
-        aiObj.askAi("请告诉我关于```" + query + "```的系统命令", node);
+        AiChatService aiService = new AiChatService();
+        String response = aiService.askNoStream("请告诉我关于```" + query + "```的系统命令");
+        if (node instanceof Label) {
+            Label label = (Label) node;
+            Platform.runLater(() -> label.setText(response));
+        }
     }
 
 }

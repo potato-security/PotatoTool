@@ -1,3 +1,17 @@
+.ai-status-loading,
+.ai-status-thinking,
+.ai-status-streaming {
+    -fx-text-fill: #2f80ed;
+}
+
+.ai-status-error {
+    -fx-text-fill: #eb5757;
+}
+
+.ai-status-completed {
+    -fx-text-fill: #27ae60;
+}
+
 #question{
     -fx-padding: 0 70 0 0;
 }

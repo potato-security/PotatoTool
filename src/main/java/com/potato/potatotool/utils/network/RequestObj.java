@@ -51,6 +51,7 @@ public class RequestObj {
     private boolean randomUserAgent = true;
     private boolean followRedirects = false;
     private String postMethod = "Raw";
+    private boolean postMethodExplicit = false;
     private byte[] postData;
     private String proxiesType = "HTTP";
     private String proxies;
@@ -70,6 +71,8 @@ public class RequestObj {
     private boolean preserveRawUrl = false;
     /** 自定义 TLS SNI 主机名（用于 SSRF 检测），为 null 时使用默认行为 */
     private String tlsSni;
+    /** 是否为内置 AI 请求（用于日志/异常地址脱敏） */
+    private boolean internalAiRequest = false;
 
     public RequestObj(){
         initializeProxySettings();
@@ -212,7 +215,8 @@ public class RequestObj {
 
     public RequestObj setPostMethod(String postMethod) {
         validatePostMethod(postMethod);
-        this.postMethod = postMethod;
+        this.postMethod = postMethod.toUpperCase();
+        this.postMethodExplicit = true;
         return this;
     }
 
@@ -227,6 +231,10 @@ public class RequestObj {
 
     public String getPostMethod() {
         return this.postMethod;
+    }
+
+    public boolean isPostMethodExplicit() {
+        return postMethodExplicit;
     }
 
     public RequestObj setPostData(byte[] data) {
@@ -251,13 +259,15 @@ public class RequestObj {
     }
 
     public RequestObj setPostData(JSONObject postJsonData) {
-        this.postMethod = "Json";
+        this.postMethod = "JSON";
+        this.postMethodExplicit = true;
         this.postData = postJsonData.toString().getBytes(StandardCharsets.UTF_8);
         return this;
     }
-    
+
     public RequestObj setPostData(JsonObject postJsonData) {
-        this.postMethod = "Json";
+        this.postMethod = "JSON";
+        this.postMethodExplicit = true;
         this.postData = postJsonData.toString().getBytes(StandardCharsets.UTF_8);
         return this;
     }
@@ -271,7 +281,8 @@ public class RequestObj {
     }
 
     public RequestObj setFormParameters(Map<String, Object> formParameters) {
-        this.postMethod = "Form";
+        this.postMethod = "FORM";
+        this.postMethodExplicit = true;
         this.formParameters = formParameters;
         return this;
     }
@@ -415,6 +426,23 @@ public class RequestObj {
      */
     public Dispatcher getDispatcher() {
         return dispatcher;
+    }
+
+    /**
+     * 标记是否为内置 AI 请求
+     * @param internalAiRequest true-内置 AI 请求
+     * @return RequestObj
+     */
+    public RequestObj setInternalAiRequest(boolean internalAiRequest) {
+        this.internalAiRequest = internalAiRequest;
+        return this;
+    }
+
+    /**
+     * 是否为内置 AI 请求
+     */
+    public boolean isInternalAiRequest() {
+        return internalAiRequest;
     }
 
     /**

@@ -5,6 +5,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.exception.NetworkExcept
 import com.potato.potatotool.content.redTeam.vulnScanner.exception.ScanExecutionException;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.VariableExtractor;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslEvaluatorRefactored;
+import com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtractor.ReverseObject;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtractor.XrayCelEvaluator;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.*;
 import com.potato.potatotool.content.redTeam.vulnScanner.matchers.ResponseMatcher;
@@ -47,6 +48,8 @@ import static com.potato.potatotool.utils.network.RequestUtils.requests;
  * @date 2024-10-28
  */
 public class PocExecutor {
+
+    private static final String DNSLOG_UNAVAILABLE_SKIPPED = "DNSLOG_UNAVAILABLE_SKIPPED";
 
     private static final List<PocObj.MatcherType> NON_HTTP_ALLOWED_MATCHERS = Arrays.asList(
             PocObj.MatcherType.WORD,
@@ -301,18 +304,12 @@ public class PocExecutor {
         for (int i = 0; i < combinations.size(); i++) {
             Map<String, String> combination = combinations.get(i);
             
-            // 转换组合变量为 Object Map 并处理表达式
-            Map<String, Object> objectCombination = new HashMap<>();
+            // 转换组合变量为 Object Map，仅处理 @@expression 运行时表达式，保留 Goby 函数延迟到请求替换阶段执行
+            Map<String, List<String>> combinationVariables = new HashMap<>();
             for (Map.Entry<String, String> entry : combination.entrySet()) {
-                String val = entry.getValue();
-                if (val != null && val.startsWith("@@expression:")) {
-                    String expr = val.substring("@@expression:".length());
-                    Object evalResult = XrayCelEvaluator.evaluateForValue(expr, null, null);
-                    objectCombination.put(entry.getKey(), evalResult != null ? evalResult : val);
-                } else {
-                    objectCombination.put(entry.getKey(), val);
-                }
+                combinationVariables.put(entry.getKey(), Collections.singletonList(entry.getValue()));
             }
+            Map<String, Object> objectCombination = RuntimeExpressionEvaluator.evaluateRuntimeExpressions(combinationVariables);
 
             try {
                 // 使用当前组合执行所有步骤
@@ -366,7 +363,6 @@ public class PocExecutor {
             return executeStepsWithVariables(target, steps, globalConfig, initialVariables, fallbackCondition);
         }
 
-        Map<String, Object> extractedValues = new HashMap<>(initialVariables);
         Map<String, PocObj.PocStep> stepMap = new HashMap<>();
         for (PocObj.PocStep step : steps) {
             if (step != null && step.getStepId() != null) {
@@ -377,6 +373,7 @@ public class PocExecutor {
         if (normalizedFlow.contains("||")) {
             String[] orGroups = normalizedFlow.split("\\|\\|");
             for (String group : orGroups) {
+                Map<String, Object> groupVariables = new HashMap<>(initialVariables);
                 String[] andParts = group.split("&&");
                 boolean groupMatched = true;
 
@@ -389,7 +386,7 @@ public class PocExecutor {
                         groupMatched = false;
                         break;
                     }
-                    if (!executeSingleStep(target, step, globalConfig, extractedValues, steps)) {
+                    if (!executeAndStep(target, step, globalConfig, groupVariables, resolveStepIndex(steps, step))) {
                         groupMatched = false;
                         break;
                     }
@@ -402,6 +399,7 @@ public class PocExecutor {
             return false;
         }
 
+        Map<String, Object> extractedValues = new HashMap<>(initialVariables);
         String[] andParts = normalizedFlow.split("&&");
         for (String part : andParts) {
             String token = normalizeFlowToken(part);
@@ -411,7 +409,7 @@ public class PocExecutor {
                         token, "skip", "flow 中引用的步骤不存在");
                 return false;
             }
-            if (!executeSingleStep(target, step, globalConfig, extractedValues, steps)) {
+            if (!executeAndStep(target, step, globalConfig, extractedValues, resolveStepIndex(steps, step))) {
                 return false;
             }
         }
@@ -482,10 +480,14 @@ public class PocExecutor {
         
         // 对于 OR 条件，单独处理每个步骤
         if (isOrCondition) {
-            for (PocObj.PocStep step : steps) {
-                if (step == null) continue;
+            for (int i = 0; i < steps.size(); i++) {
+                PocObj.PocStep step = steps.get(i);
+                if (step == null) {
+                    continue;
+                }
+                Map<String, Object> stepVariables = new HashMap<>(initialVariables);
                 try {
-                    boolean stepResult = executeSingleStep(target, step, globalConfig, extractedValues, steps);
+                    boolean stepResult = executeAndStep(target, step, globalConfig, stepVariables, i + 1);
                     if (stepResult) {
                         return true; // OR 条件：任一步骤成功就返回 true
                     }
@@ -498,229 +500,16 @@ public class PocExecutor {
         }
         
         // AND 条件：原有逻辑（所有步骤都必须成功）
-        for (PocObj.PocStep step : steps) {
+        for (int i = 0; i < steps.size(); i++) {
+            PocObj.PocStep step = steps.get(i);
             if (step == null) {
                 continue; // 跳过空步骤
             }
-            
+
+            int stepIndex = i + 1;
             try {
-                // 根据步骤类型选择执行方式
-                if (step instanceof PocObj.DnsStep) {
-                    // DNS 协议执行
-                    if (!executeDnsStep((PocObj.DnsStep) step, extractedValues)) {
-                        return false;
-                    }
-                    
-                } else if (step instanceof PocObj.WebSocketStep) {
-                    // WebSocket 协议执行
-                    if (!executeWebSocketStep((PocObj.WebSocketStep) step, extractedValues)) {
-                        return false;
-                    }
-                    
-                } else if (step instanceof PocObj.SslStep) {
-                    // SSL/TLS 协议执行
-                    if (!executeSslStep((PocObj.SslStep) step, extractedValues)) {
-                        return false;
-                    }
-                    
-                } else if (step instanceof PocObj.FileStep) {
-                    // File 协议执行
-                    if (!executeFileStep((PocObj.FileStep) step, extractedValues)) {
-                        return false;
-                    }
-                    
-                } else if (step instanceof PocObj.HeadlessStep) {
-                    // Headless 协议执行
-                    if (!executeHeadlessStep((PocObj.HeadlessStep) step, extractedValues)) {
-                        return false;
-                    }
-                    
-                } else if (step instanceof PocObj.TcpStep) {
-                    // TCP/Socket 协议执行
-                    if (!executeTcpStep((PocObj.TcpStep) step, extractedValues)) {
-                        return false;
-                    }
-                    
-                } else if (step instanceof PocObj.CodeStep) {
-                    // Code 协议执行
-                    if (!executeCodeStep((PocObj.CodeStep) step, extractedValues)) {
-                        return false;
-                    }
-                    
-                } else {
-                    // HTTP/TCP 现有逻辑
-                    // 检查是否为多块raw请求（Nuclei多请求场景）
-                    if (step.getRaw() != null && step.getRaw().size() > 1) {
-                        // 多块raw请求 - 依次执行所有块并收集所有响应
-                        List<CustomHttpResponse> allResponses = new ArrayList<>();
-
-                        for (int rawIndex = 0; rawIndex < step.getRaw().size(); rawIndex++) {
-                            // 创建单块请求
-                            PocObj.PocStep singleRawStep = createSingleRawStep(step, rawIndex);
-                            RequestObj requestObj = createRequest(target, singleRawStep, globalConfig, extractedValues);
-
-                            // 发送请求
-                            long requestTime = System.currentTimeMillis();
-                            CustomHttpResponse response = requests(requestObj);
-                            long responseTime = System.currentTimeMillis();
-
-                            if (response == null) {
-                                System.err.println("警告: raw块 " + (rawIndex + 1) + " 请求失败");
-                                continue;
-                            }
-
-                            // 设置响应时间
-                            response.setResponseTime(responseTime - requestTime);
-
-                            // 缓存响应（使用索引后缀）
-                            String cacheKey = (step.getStepId() != null ? step.getStepId() : "step_" + steps.indexOf(step))
-                                            + "_" + (rawIndex + 1);
-                            responseCache.put(cacheKey, response, requestTime, responseTime);
-
-                            // 收集响应
-                            allResponses.add(response);
-
-                            // 提取变量（每个raw块都可能提取变量）
-                            if (step.getExtractors() != null && !step.getExtractors().isEmpty()) {
-                                VariableExtractor.extractVariablesObj(response, step.getExtractors(), extractedValues);
-                            }
-                        }
-
-                        // 使用最后一个响应进行匹配（matcher会从responseCache中访问所有索引响应）
-                        if (!allResponses.isEmpty()) {
-                            CustomHttpResponse lastResponse = allResponses.get(allResponses.size() - 1);
-
-                            // 将所有响应添加到缓存，供DSL matcher访问索引变量（body_1, body_2等）
-                            responseCache.putMultipleResponses(
-                                step.getStepId() != null ? step.getStepId() : "step_" + steps.indexOf(step),
-                                allResponses
-                            );
-
-                            // 匹配结果（传递stepId以支持索引变量：body_1, body_2, status_code_2等）
-                            // 同时传递extractedValues以支持Xray CEL表达式中的变量求值（如 s1, s2）
-                            boolean matched = ResponseMatcher.matchResponse(
-                                lastResponse, step.getMatchers(), step.getMatchersCondition(), responseCache,
-                                step.getStepId() != null ? step.getStepId() : "step_" + steps.indexOf(step),
-                                extractedValues
-                            );
-
-                            // 如果匹配成功，保存最后一个请求/响应数据用于报告生成
-                            if (matched) {
-                                RequestObj lastRequestObj = createRequest(target, createSingleRawStep(step, allResponses.size() - 1),
-                                                                         globalConfig, extractedValues);
-                                lastMatchedRequest.set(lastRequestObj);
-                                lastMatchedResponse.set(lastResponse);
-                                lastMatchedPath.set(lastRequestObj.getUrl());
-                                String payload = extractPayloadFromVariables(extractedValues);
-                                lastMatchedPayload.set(payload);
-                            }
-
-                            if (!matched) {
-                                return false;
-                            }
-
-                            // 处理 output 提取（Xray POC）
-                            if (step.getOutput() != null && !step.getOutput().isEmpty()) {
-                                RequestObj lastRequestObj = createRequest(target, createSingleRawStep(step, allResponses.size() - 1),
-                                                                         globalConfig, extractedValues);
-                                extractOutputVariables(step, lastResponse, lastRequestObj, extractedValues);
-                            }
-                        }
-
-                    } else {
-                        // 单块raw或普通请求
-                        RequestObj requestObj = createRequest(target, step, globalConfig, extractedValues);
-
-                        // 记录请求时间
-                        long requestTime = System.currentTimeMillis();
-
-                        // 发送请求
-                        try (CustomHttpResponse response = requests(requestObj)) {
-                        // 记录响应时间
-                        long responseTime = System.currentTimeMillis();
-
-                        // 检查响应是否为空
-                        if (response == null) {
-                            continue; // 跳过当前步骤，继续下一步
-                        }
-
-                        // 设置响应时间到 response 对象（用于时间盲注检测）
-                        response.setResponseTime(responseTime - requestTime);
-
-                        // 缓存响应（用于diff操作）
-                        String cacheKey = step.getStepId() != null ? step.getStepId() : "step_" + steps.indexOf(step);
-                        responseCache.put(cacheKey, response, requestTime, responseTime);
-
-                        // 匹配结果（传入responseCache以支持diff操作，传递stepId以支持索引变量）
-                        // 同时传递extractedValues以支持Xray CEL表达式中的变量求值（如 s1, s2）
-                        boolean matched = ResponseMatcher.matchResponse(
-                            response, step.getMatchers(), step.getMatchersCondition(), responseCache,
-                            cacheKey, extractedValues
-                        );
-
-                        // ========== 记录步骤执行详情（用于增强报告） ==========
-                        StepExecutionRecord record = new StepExecutionRecord(steps.indexOf(step) + 1, cacheKey);
-                        record.setStepType("http");
-                        record.setRequestUrl(requestObj.getUrl());
-                        record.setRequestMethod(requestObj.getMethod());
-                        if (requestObj.getHeaders() != null) {
-                            record.setRequestHeaders(new HashMap<>(requestObj.getHeaders()));
-                        }
-                        if (requestObj.getPostData() != null) {
-                            record.setRequestBody(new String(requestObj.getPostData(), StandardCharsets.UTF_8));
-                        }
-                        record.setResponseCode(response.getResponseCode());
-                        // 转换响应头格式
-                        if (response.getHeaderFields() != null) {
-                            Map<String, String> flatHeaders = new HashMap<>();
-                            for (Map.Entry<String, List<String>> entry : response.getHeaderFields().entrySet()) {
-                                if (entry.getKey() != null && entry.getValue() != null) {
-                                    flatHeaders.put(entry.getKey(), String.join(", ", entry.getValue()));
-                                }
-                            }
-                            record.setResponseHeaders(flatHeaders);
-                        }
-                        record.setResponseBodyWithLimit(response.getTextStr());
-                        record.setResponseTime(responseTime - requestTime);
-                        record.setMatched(matched);
-                        record.buildRawRequest();
-                        record.buildRawResponse();
-                        stepExecutionRecords.get().add(record);
-
-                        // 如果匹配成功，保存请求/响应数据用于报告生成
-                        if (matched) {
-                            lastMatchedRequest.set(requestObj);
-                            lastMatchedResponse.set(response);
-                            lastMatchedPath.set(requestObj.getUrl());
-                            // 提取payload（从extractedValues中获取）
-                            String payload = extractPayloadFromVariables(extractedValues);
-                            lastMatchedPayload.set(payload);
-                        }
-
-                        // 如果匹配失败且步骤是必要的，则返回失败
-                        if (!matched) {
-                            return false;
-                        }
-
-                        // 处理 output 提取（Xray POC）
-                        if (step.getOutput() != null && !step.getOutput().isEmpty()) {
-                            extractOutputVariables(step, response, requestObj, extractedValues);
-                            // 记录提取的output数据
-                            extractedOutputData.get().putAll(extractedValues);
-                        }
-
-                        // 提取变量（Nuclei POC）
-                        if (step.getExtractors() != null && !step.getExtractors().isEmpty()) {
-                            VariableExtractor.extractVariablesObj(response, step.getExtractors(), extractedValues);
-                            // 记录提取的变量到步骤记录
-                            for (PocObj.Matcher extractor : step.getExtractors()) {
-                                if (extractor.getName() != null && extractedValues.containsKey(extractor.getName())) {
-                                    record.addExtractedVariable(extractor.getName(), extractedValues.get(extractor.getName()));
-                                }
-                            }
-                        }
-                    }
-                    }
+                if (!executeAndStep(target, step, globalConfig, extractedValues, stepIndex)) {
+                    return false;
                 }
             } catch (SocketTimeoutException e) {
                 throw new NetworkException(NetworkException.NetworkErrorType.READ_TIMEOUT, 
@@ -745,13 +534,18 @@ public class PocExecutor {
      * 执行单个步骤并返回结果
      * 用于 OR 条件的步骤执行，支持所有协议类型
      */
-    private boolean executeSingleStep(String target, PocObj.PocStep step,
-                                       PocObj.GlobalConfig globalConfig,
-                                       Map<String, Object> extractedValues,
-                                       List<PocObj.PocStep> allSteps) throws Exception {
+    private boolean executeAndStep(String target, PocObj.PocStep step,
+                                   PocObj.GlobalConfig globalConfig,
+                                   Map<String, Object> extractedValues,
+                                   int stepIndex) throws Exception {
+        if (shouldSkipReverseWaitStep(step, extractedValues)) {
+            markDnsStepSkipped(stepIndex, step, DNSLOG_UNAVAILABLE_SKIPPED);
+            return false;
+        }
+
         // 根据步骤类型选择执行方式
         if (step instanceof PocObj.DnsStep) {
-            return executeDnsStep((PocObj.DnsStep) step, extractedValues);
+            return executeDnsStep((PocObj.DnsStep) step, extractedValues, stepIndex);
         } else if (step instanceof PocObj.WebSocketStep) {
             return executeWebSocketStep((PocObj.WebSocketStep) step, extractedValues);
         } else if (step instanceof PocObj.SslStep) {
@@ -766,38 +560,298 @@ public class PocExecutor {
             return executeCodeStep((PocObj.CodeStep) step, extractedValues);
         }
 
-        // HTTP 请求
+        String baseCacheKey = step.getStepId() != null ? step.getStepId() : "step_" + (stepIndex - 1);
+
+        // 检查是否为多块raw请求（Nuclei多请求场景）
+        if (step.getRaw() != null && step.getRaw().size() > 1) {
+            // 多块raw请求 - 依次执行所有块并收集所有响应
+            List<CustomHttpResponse> allResponses = new ArrayList<>();
+
+            for (int rawIndex = 0; rawIndex < step.getRaw().size(); rawIndex++) {
+                // 创建单块请求
+                PocObj.PocStep singleRawStep = createSingleRawStep(step, rawIndex);
+                RequestObj requestObj = createRequest(target, singleRawStep, globalConfig, extractedValues);
+
+                long requestTime = System.currentTimeMillis();
+                CustomHttpResponse response;
+                long responseTime;
+                try {
+                    // 发送请求
+                    response = requests(requestObj);
+                    responseTime = System.currentTimeMillis();
+                } catch (Exception e) {
+                    System.err.println("警告: raw块 " + (rawIndex + 1) + " 请求异常: " + e.getMessage());
+                    continue;
+                }
+
+                if (response == null) {
+                    System.err.println("警告: raw块 " + (rawIndex + 1) + " 请求失败");
+                    continue;
+                }
+
+                // 设置响应时间
+                response.setResponseTime(responseTime - requestTime);
+
+                // 缓存响应（使用索引后缀）
+                String cacheKey = baseCacheKey + "_" + (rawIndex + 1);
+                responseCache.put(cacheKey, response, requestTime, responseTime);
+
+                // 收集响应
+                allResponses.add(response);
+
+                // 提取变量（每个raw块都可能提取变量）
+                if (step.getExtractors() != null && !step.getExtractors().isEmpty()) {
+                    VariableExtractor.extractVariablesObj(response, step.getExtractors(), extractedValues);
+                }
+            }
+
+            // 使用最后一个响应进行匹配（matcher会从responseCache中访问所有索引响应）
+            if (!allResponses.isEmpty()) {
+                CustomHttpResponse lastResponse = allResponses.get(allResponses.size() - 1);
+
+                // 将所有响应添加到缓存，供DSL matcher访问索引变量（body_1, body_2等）
+                responseCache.putMultipleResponses(baseCacheKey, allResponses);
+
+                // 匹配结果（传递stepId以支持索引变量：body_1, body_2, status_code_2等）
+                // 同时传递extractedValues以支持Xray CEL表达式中的变量求值（如 s1, s2）
+                boolean matched = ResponseMatcher.matchResponse(
+                        lastResponse, step.getMatchers(), step.getMatchersCondition(), responseCache,
+                        baseCacheKey, extractedValues
+                );
+
+                // 如果匹配成功，保存最后一个请求/响应数据用于报告生成
+                if (matched) {
+                    RequestObj lastRequestObj = createRequest(target, createSingleRawStep(step, allResponses.size() - 1),
+                            globalConfig, extractedValues);
+                    lastMatchedRequest.set(lastRequestObj);
+                    lastMatchedResponse.set(lastResponse);
+                    lastMatchedPath.set(lastRequestObj.getUrl());
+                    String payload = extractPayloadFromVariables(extractedValues);
+                    lastMatchedPayload.set(payload);
+                }
+
+                if (!matched) {
+                    return false;
+                }
+
+                // 处理 output 提取（Xray POC）
+                if (step.getOutput() != null && !step.getOutput().isEmpty()) {
+                    RequestObj lastRequestObj = createRequest(target, createSingleRawStep(step, allResponses.size() - 1),
+                            globalConfig, extractedValues);
+                    extractOutputVariables(step, lastResponse, lastRequestObj, extractedValues);
+                    extractedOutputData.get().putAll(extractedValues);
+                }
+            }
+
+            // 所有 raw 块都执行失败时应判定当前步骤失败
+            return !allResponses.isEmpty();
+        }
+
+        // 单块raw或普通请求
         RequestObj requestObj = createRequest(target, step, globalConfig, extractedValues);
-        
-        // 发送请求
+
+        // 记录请求时间
         long requestTime = System.currentTimeMillis();
+
+        // 发送请求
         try (CustomHttpResponse response = requests(requestObj)) {
+            // 记录响应时间
             long responseTime = System.currentTimeMillis();
-            
+
+            // 检查响应是否为空
             if (response == null) {
                 return false;
             }
-            
-            // 设置响应时间
+
+            // 设置响应时间到 response 对象（用于时间盲注检测）
             response.setResponseTime(responseTime - requestTime);
-            
-            // 缓存响应
-            String cacheKey = step.getStepId() != null ? step.getStepId() : "step_" + allSteps.indexOf(step);
-            responseCache.put(cacheKey, response, requestTime, responseTime);
-            
-            // 匹配结果
+
+            // 缓存响应（用于diff操作）
+            responseCache.put(baseCacheKey, response, requestTime, responseTime);
+
+            // 匹配结果（传入responseCache以支持diff操作，传递stepId以支持索引变量）
             boolean matched = ResponseMatcher.matchResponse(
-                response, step.getMatchers(), step.getMatchersCondition(), responseCache,
-                cacheKey, extractedValues
+                    response, step.getMatchers(), step.getMatchersCondition(), responseCache,
+                    baseCacheKey, extractedValues
             );
-            
-            // 提取变量（即使不匹配也可能需要提取变量供后续步骤使用）
+
+            // ========== 记录步骤执行详情（用于增强报告） ==========
+            StepExecutionRecord record = new StepExecutionRecord(stepIndex, baseCacheKey);
+            record.setStepType("http");
+            record.setRequestUrl(requestObj.getUrl());
+            record.setRequestMethod(requestObj.getMethod());
+            if (requestObj.getHeaders() != null) {
+                record.setRequestHeaders(new HashMap<>(requestObj.getHeaders()));
+            }
+            if (requestObj.getPostData() != null) {
+                record.setRequestBody(new String(requestObj.getPostData(), StandardCharsets.UTF_8));
+            }
+            record.setResponseCode(response.getResponseCode());
+            if (response.getHeaderFields() != null) {
+                Map<String, String> flatHeaders = new HashMap<>();
+                for (Map.Entry<String, List<String>> entry : response.getHeaderFields().entrySet()) {
+                    if (entry.getKey() != null && entry.getValue() != null) {
+                        flatHeaders.put(entry.getKey(), String.join(", ", entry.getValue()));
+                    }
+                }
+                record.setResponseHeaders(flatHeaders);
+            }
+            record.setResponseBodyWithLimit(response.getTextStr());
+            record.setResponseTime(responseTime - requestTime);
+            record.setMatched(matched);
+            record.buildRawRequest();
+            record.buildRawResponse();
+            stepExecutionRecords.get().add(record);
+
+            // 如果匹配成功，保存请求/响应数据用于报告生成
+            if (matched) {
+                lastMatchedRequest.set(requestObj);
+                lastMatchedResponse.set(response);
+                lastMatchedPath.set(requestObj.getUrl());
+                String payload = extractPayloadFromVariables(extractedValues);
+                lastMatchedPayload.set(payload);
+            }
+
+            // 如果匹配失败且步骤是必要的，则返回失败
+            if (!matched) {
+                return false;
+            }
+
+            // 处理 output 提取（Xray POC）
+            if (step.getOutput() != null && !step.getOutput().isEmpty()) {
+                extractOutputVariables(step, response, requestObj, extractedValues);
+                extractedOutputData.get().putAll(extractedValues);
+            }
+
+            // 提取变量（Nuclei POC）
             if (step.getExtractors() != null && !step.getExtractors().isEmpty()) {
                 VariableExtractor.extractVariablesObj(response, step.getExtractors(), extractedValues);
+                for (PocObj.Matcher extractor : step.getExtractors()) {
+                    if (extractor.getName() != null && extractedValues.containsKey(extractor.getName())) {
+                        record.addExtractedVariable(extractor.getName(), extractedValues.get(extractor.getName()));
+                    }
+                }
             }
-            
-            return matched;
         }
+
+        return true;
+    }
+
+
+    private int resolveStepIndex(List<PocObj.PocStep> steps, PocObj.PocStep targetStep) {
+        if (steps == null || steps.isEmpty() || targetStep == null) {
+            return 1;
+        }
+        for (int i = 0; i < steps.size(); i++) {
+            if (steps.get(i) == targetStep) {
+                return i + 1;
+            }
+        }
+        return 1;
+    }
+
+    private boolean shouldSkipReverseWaitStep(PocObj.PocStep step, Map<String, Object> variables) {
+        if (step == null || variables == null || variables.isEmpty()) {
+            return false;
+        }
+
+        for (Map.Entry<String, Object> entry : variables.entrySet()) {
+            ReverseObject reverseObject = unwrapReverseObject(entry.getValue());
+            if (reverseObject == null || reverseObject.isAvailable()) {
+                continue;
+            }
+            if (containsReverseWaitReference(step, entry.getKey())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ReverseObject unwrapReverseObject(Object value) {
+        if (value instanceof ReverseObject) {
+            return (ReverseObject) value;
+        }
+        if (value instanceof List) {
+            List<?> list = (List<?>) value;
+            if (!list.isEmpty() && list.get(0) instanceof ReverseObject) {
+                return (ReverseObject) list.get(0);
+            }
+        }
+        return null;
+    }
+
+    private boolean containsReverseWaitReference(PocObj.PocStep step, String variableName) {
+        if (step == null) {
+            return false;
+        }
+        String marker = variableName == null ? "reverse.wait(" : variableName + ".wait(";
+
+        if (containsIgnoreCase(step.getPath(), marker)
+                || containsIgnoreCase(step.getBody(), marker)
+                || containsIgnoreCase(step.getPath(), "reverse.wait(")
+                || containsIgnoreCase(step.getBody(), "reverse.wait(")) {
+            return true;
+        }
+
+        if (step.getRaw() != null) {
+            for (String raw : step.getRaw()) {
+                if (containsIgnoreCase(raw, marker) || containsIgnoreCase(raw, "reverse.wait(")) {
+                    return true;
+                }
+            }
+        }
+
+        if (step.getMatchers() != null) {
+            for (PocObj.Matcher matcher : step.getMatchers()) {
+                if (matcher == null || matcher.getValues() == null) {
+                    continue;
+                }
+                for (String value : matcher.getValues()) {
+                    if (containsIgnoreCase(value, marker) || containsIgnoreCase(value, "reverse.wait(")) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if (step.getOutput() != null) {
+            for (Object outputExpr : step.getOutput().values()) {
+                if (outputExpr != null) {
+                    String expr = String.valueOf(outputExpr);
+                    if (containsIgnoreCase(expr, marker) || containsIgnoreCase(expr, "reverse.wait(")) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean containsIgnoreCase(String source, String token) {
+        if (source == null || token == null) {
+            return false;
+        }
+        return source.toLowerCase(Locale.ROOT).contains(token.toLowerCase(Locale.ROOT));
+    }
+
+    private void markDnsStepSkipped(int stepIndex, PocObj.PocStep step, String value) {
+        String stepId = step != null && step.getStepId() != null ? step.getStepId() : "step_" + (stepIndex - 1);
+        StepExecutionRecord record = new StepExecutionRecord(stepIndex, stepId);
+        record.setStepType("dns");
+        record.setMatched(false);
+        record.setErrorMessage(DNSLOG_UNAVAILABLE_SKIPPED);
+        stepExecutionRecords.get().add(record);
+
+        addSemanticWarning(
+                DNSLOG_UNAVAILABLE_SKIPPED,
+                "P1",
+                "dns",
+                "domain",
+                value,
+                "skip",
+                "DNS OOB 不可用，步骤已跳过"
+        );
     }
     
     /**
@@ -868,7 +922,7 @@ public class PocExecutor {
             }
             requestObj.setHeaders(merged);
         }
-        
+
         // 应用认证配置（Goby POC Authentication支持）
         if (globalConfig != null && globalConfig.getAuthConfig() != null && 
             !globalConfig.getAuthConfig().isEmpty()) {
@@ -1354,13 +1408,17 @@ public class PocExecutor {
     /**
      * 执行 DNS 步骤
      */
-    private boolean executeDnsStep(PocObj.DnsStep dnsStep, Map<String, Object> variables) {
+    private boolean executeDnsStep(PocObj.DnsStep dnsStep, Map<String, Object> variables, int stepIndex) {
         try {
             // 替换变量（支持嵌套变量）
             String domain = HttpHandler.replaceVariablesObj(dnsStep.getDomain(), variables);
-            
+            if (!DnsLogService.isRealDnsLogDomain(domain)) {
+                markDnsStepSkipped(stepIndex, dnsStep, domain);
+                return false;
+            }
+
             System.out.println("→ 执行 DNS 查询: " + domain);
-            
+
             // 执行 DNS 查询
             DnsHandler.DnsResponse dnsResponse = DnsHandler.query(
                 domain,
@@ -1369,12 +1427,12 @@ public class PocExecutor {
                 true,
                 2
             );
-            
+
             if (!dnsResponse.isSuccess()) {
                 System.err.println("DNS 查询失败: " + dnsResponse.getError());
                 return false;
             }
-            
+
             // 构造可匹配的响应体
             String responseBody = String.join("\n", dnsResponse.getAnswers());
 
@@ -1391,10 +1449,10 @@ public class PocExecutor {
                     return false;
                 }
             }
-            
+
             System.out.println("✓ DNS 步骤执行成功");
             return true;
-            
+
         } catch (Exception e) {
             System.err.println("DNS 步骤执行失败: " + e.getMessage());
             return false;
@@ -1553,6 +1611,12 @@ public class PocExecutor {
      */
     private boolean executeHeadlessStep(PocObj.HeadlessStep headlessStep, Map<String, Object> variables) {
         try {
+            HeadlessHandler.HeadlessCompatibilityResult compatibilityResult = HeadlessHandler.checkCompatibility();
+            if (!compatibilityResult.isCompatible()) {
+                System.err.println("[Headless 跳过] " + HeadlessHandler.buildCompatibilityErrorMessage(compatibilityResult));
+                return false;
+            }
+
             System.out.println("→ 执行 Headless 浏览器操作");
 
             // 转换操作步骤（支持嵌套变量）

@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.utils.core.Constants;
-import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
@@ -30,13 +30,13 @@ public class GetCompany {
     static {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
         Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.CHINAZ_COOKIE).getAsString();
-        Proxy = JsonUtils.isProxyEnabled(AssetConstants.CHINAZ_COOKIE);
+        Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.CHINAZ_COOKIE);
     }
 
     public static JsonArray getCompany_chinaz(String company) {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
         Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.CHINAZ_COOKIE).getAsString();
-        Proxy = JsonUtils.isProxyEnabled(AssetConstants.CHINAZ_COOKIE);
+        Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.CHINAZ_COOKIE);
 
         JsonArray companyList = new JsonArray();
         if(company.isEmpty()) return companyList;
@@ -92,7 +92,7 @@ public class GetCompany {
     public static JsonObject getCompanyDetails_chinaz(String companyId, String companyName) {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
         Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.CHINAZ_COOKIE).getAsString();
-        Proxy = JsonUtils.isProxyEnabled(AssetConstants.CHINAZ_COOKIE);
+        Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.CHINAZ_COOKIE);
 
         JsonObject companyDetailsMap = new JsonObject();
 

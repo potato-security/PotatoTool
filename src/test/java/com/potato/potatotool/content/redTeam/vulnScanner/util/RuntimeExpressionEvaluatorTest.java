@@ -77,15 +77,16 @@ public class RuntimeExpressionEvaluatorTest {
     }
 
     @Test
-    @DisplayName("测试空变量处理")
-    public void testEvaluateNullVariables() {
-        Map<String, Object> result = RuntimeExpressionEvaluator.evaluateVariables(null);
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+    @DisplayName("Goby 函数变量在运行时评估阶段不应提前求值")
+    public void testEvaluateVariablesShouldPreserveGobyFunctionForLazyResolution() {
+        Map<String, List<String>> pocVariables = new HashMap<>();
+        pocVariables.put("dns", Collections.singletonList("@@dnslog()"));
+        pocVariables.put("rand", Collections.singletonList("@@random(4)"));
 
-        result = RuntimeExpressionEvaluator.evaluateVariables(new HashMap<>());
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+        Map<String, Object> result = RuntimeExpressionEvaluator.evaluateVariables(pocVariables);
+
+        assertEquals("@@dnslog()", result.get("dns"));
+        assertEquals("@@random(4)", result.get("rand"));
     }
 
     @Test

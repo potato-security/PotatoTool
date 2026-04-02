@@ -7,7 +7,7 @@ import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstan
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AiUtils;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.data.StrUtils;
-import com.potato.potatotool.utils.data.JsonUtils;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
 
@@ -172,7 +172,7 @@ public class GoogleSearch {
             }
             google_API_List.add(map);
         }
-        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.GOOGLE_API);
+        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.GOOGLE_API);
         GoogleSearch googleSearch = new GoogleSearch(google_API_List, Proxy);
         String domain = "【Check】";
         if (googleSearch.searchLeakageByDomain(domain, true, 1).isEmpty()){
@@ -196,7 +196,7 @@ public class GoogleSearch {
             }
             google_API_List.add(map);
         }
-        boolean Proxy = JsonUtils.isProxyEnabled(AssetConstants.GOOGLE_API);
+        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.GOOGLE_API);
         GoogleSearch googleSearch = new GoogleSearch(google_API_List, Proxy);
 
 

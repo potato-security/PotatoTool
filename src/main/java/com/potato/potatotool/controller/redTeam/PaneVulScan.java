@@ -20,6 +20,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.report.ReportGenerator;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.PocDatabaseManager;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.VulnDetail;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.VulnScanDatabase;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.HeadlessHandler;
 import com.potato.potatotool.content.redTeam.vulnScanner.loader.PocLoader;
 import com.potato.potatotool.content.redTeam.vulnScanner.loader.PocUpdater;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.ScanLogger;
@@ -28,6 +29,7 @@ import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.JsonUtils;
 import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;
 import javafx.application.Platform;
@@ -194,6 +196,9 @@ public class PaneVulScan {
     private ScanEventListener scanEventListener; // 扫描事件监听器
     private ScanLogger.LogListener logListener; // 日志监听器
     private javafx.animation.Timeline scanTimer; // 扫描计时器（每秒更新时间显示）
+    private FadeTransition promptFadeIn;
+    private FadeTransition promptFadeOut;
+    private volatile boolean promptAutoCloseEnabled;
     
     // ==================== 数据 ====================
     private ObservableList<PocItem> allPocItems = FXCollections.observableArrayList();
@@ -287,6 +292,27 @@ public class PaneVulScan {
     /**
      * 从 UI 构建扫描配置
      */
+    static boolean shouldBlockScanForProxy(boolean mainProxyEnabled,
+                                           boolean vulnScanProxyEnabled,
+                                           String proxyAddress,
+                                           ProxyUtils.ProxyReachabilityResult result) {
+        if (!mainProxyEnabled || !vulnScanProxyEnabled) {
+            return false;
+        }
+        if (proxyAddress == null) {
+            return true;
+        }
+        String trimmed = proxyAddress.trim();
+        if (trimmed.isEmpty()) {
+            return true;
+        }
+        boolean hasSupportedSchema = trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("socks://");
+        if (!hasSupportedSchema) {
+            return true;
+        }
+        return result == null || !result.isReachable();
+    }
+
     private ScanConfig buildScanConfig() {
         ScanConfig config = new ScanConfig();
 
@@ -353,14 +379,19 @@ public class PaneVulScan {
         // 标签过滤
         String tags = tagsField.getText();
         if (tags != null && !tags.trim().isEmpty()) {
-            config.setProtocol(tags.trim().toLowerCase());
+            config.setTags(tags.trim().toLowerCase());
         }
 
         // 代理设置
-        boolean mainProxyEnabled = JsonUtils.isMainProxyEnabled();
+        boolean mainProxyEnabled = ProxyUtils.isMainProxyEnabled();
         boolean vulnScanProxyEnabled = enableProxyBox.isSelected();
-        String proxyAddress = JsonUtils.getMainProxyAddress();
-        if (mainProxyEnabled && vulnScanProxyEnabled && isValidProxyAddress(proxyAddress)) {
+        String proxyAddress = ProxyUtils.getMainProxyAddress();
+        if (mainProxyEnabled && vulnScanProxyEnabled) {
+            ProxyUtils.ProxyReachabilityResult proxyCheck = ProxyUtils.checkProxyAddressReachability(proxyAddress, 2000);
+            if (shouldBlockScanForProxy(true, true, proxyAddress, proxyCheck)) {
+                showPrompt(ProxyUtils.buildUnavailableMessage(proxyCheck), true, true);
+                return null;
+            }
             config.setProxy(proxyAddress.trim());
         }
 
@@ -492,6 +523,36 @@ public class PaneVulScan {
 
         // POC搜索监听
         pocSearchField.textProperty().addListener((obs, oldVal, newVal) -> filterPocs(newVal));
+
+        if (enableHeadlessBox != null) {
+            enableHeadlessBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+                if (Boolean.TRUE.equals(newVal)) {
+                    showPrompt(I18nUtils.getString("setting.vulnscan.headless.checking"), false, true);
+                    Task<HeadlessHandler.HeadlessCompatibilityResult> precheckTask = new Task<HeadlessHandler.HeadlessCompatibilityResult>() {
+                        @Override
+                        protected HeadlessHandler.HeadlessCompatibilityResult call() {
+                            return HeadlessHandler.checkCompatibility();
+                        }
+                    };
+                    precheckTask.setOnSucceeded(e -> {
+                        HeadlessHandler.HeadlessCompatibilityResult result = precheckTask.getValue();
+                        if (!result.isCompatible()) {
+                            enableHeadlessBox.setSelected(false);
+                            showPrompt(HeadlessHandler.buildCompatibilityErrorMessage(result), true, true);
+                        }
+                    });
+                    precheckTask.setOnFailed(e -> {
+                        enableHeadlessBox.setSelected(false);
+                        Throwable ex = precheckTask.getException();
+                        String message = ex == null ? I18nUtils.getString("setting.save.failed") : ex.getMessage();
+                        showPrompt(I18nUtils.getString("vulnscan.msg.headless.precheck.failed", message), true, true);
+                    });
+                    Thread worker = new Thread(precheckTask, "pane-vulscan-headless-precheck");
+                    worker.setDaemon(true);
+                    worker.start();
+                }
+            });
+        }
 
         // 日志筛选监听 - 级别过滤
         logLevelFilter.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -780,22 +841,30 @@ public class PaneVulScan {
     }
     
     private void syncProxySwitchState() {
-        JsonObject proxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
-        JsonObject vulnScanConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
+        boolean mainProxyEnabled = ProxyUtils.isMainProxyEnabled();
+        boolean vulnScanProxyEnabled = ProxyUtils.isServiceProxyEnabled(ConfigConstants.VULNSCAN_SERVICE);
 
-        boolean mainProxyEnabled = proxyConfig != null
-                && proxyConfig.has(ConfigConstants.PROXY_ENABLE)
-                && proxyConfig.get(ConfigConstants.PROXY_ENABLE).getAsBoolean();
-
-        boolean vulnScanProxyEnabled = vulnScanConfig != null
-                && vulnScanConfig.has(ConfigConstants.VULNSCAN_PROXY_ENABLED)
-                && vulnScanConfig.get(ConfigConstants.VULNSCAN_PROXY_ENABLED).getAsBoolean();
-
+        enableProxyBox.setDisable(false);
         enableProxyBox.setSelected(vulnScanProxyEnabled);
         enableProxyBox.setDisable(!mainProxyEnabled);
     }
 
-    
+    private void persistVulnScanProxySwitch(boolean enabled) {
+        try {
+            if (!ProxyUtils.saveServiceProxyEnabled(ConfigConstants.VULNSCAN_SERVICE, enabled)) {
+                syncProxySwitchState();
+                showPrompt(I18nUtils.getString("setting.save.failed"), true);
+            }
+        } catch (Exception e) {
+            syncProxySwitchState();
+            showPrompt(I18nUtils.getString("setting.save.failed.detail", e.getMessage()), true);
+            if (debugMode) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     @FXML
     public void checkNuclei(MouseEvent event) {
         nucleiCheckBox.setSelected(!nucleiCheckBox.isSelected());
@@ -821,7 +890,9 @@ public class PaneVulScan {
         if (enableProxyBox.isDisable()) {
             return;
         }
-        enableProxyBox.setSelected(!enableProxyBox.isSelected());
+        boolean selected = !enableProxyBox.isSelected();
+        enableProxyBox.setSelected(selected);
+        persistVulnScanProxySwitch(selected);
     }
     
     @FXML
@@ -930,8 +1001,56 @@ public class PaneVulScan {
     private void startScanTask(List<String> targets) {
         // 构建扫描配置（在UI线程读取UI组件状态）
         ScanConfig config = buildScanConfig();
+        if (config == null) {
+            stopScanTimer();
+            updateButtonsForStatus(ScanState.Status.STOPPED);
+            updateScanStateLabel(I18nUtils.getString("vulnscan.status.ready"));
+            return;
+        }
+        if (config.isEnableHeadless()) {
+            showPrompt(I18nUtils.getString("setting.vulnscan.headless.checking"), false, true);
+            Task<HeadlessHandler.HeadlessCompatibilityResult> precheckTask = new Task<HeadlessHandler.HeadlessCompatibilityResult>() {
+                @Override
+                protected HeadlessHandler.HeadlessCompatibilityResult call() {
+                    return HeadlessHandler.checkCompatibility();
+                }
+            };
 
-        // 移除旧的事件监听器（如果存在）
+            precheckTask.setOnSucceeded(e -> {
+                HeadlessHandler.HeadlessCompatibilityResult compatibilityResult = precheckTask.getValue();
+                if (!compatibilityResult.isCompatible()) {
+                    config.setEnableHeadless(false);
+                    if (enableHeadlessBox != null) {
+                        enableHeadlessBox.setSelected(false);
+                    }
+                    showPrompt(HeadlessHandler.buildCompatibilityErrorMessage(compatibilityResult)
+                            + "\n已自动关闭 Headless，本次扫描将跳过 Headless POC。", true, true);
+                }
+                continueStartScanTask(targets, config);
+            });
+
+            precheckTask.setOnFailed(e -> {
+                config.setEnableHeadless(false);
+                if (enableHeadlessBox != null) {
+                    enableHeadlessBox.setSelected(false);
+                }
+                Throwable ex = precheckTask.getException();
+                String message = ex == null ? I18nUtils.getString("setting.save.failed") : ex.getMessage();
+                showPrompt(I18nUtils.getString("vulnscan.msg.headless.precheck.failed", message)
+                        + "\n已自动关闭 Headless，本次扫描将跳过 Headless POC。", true, true);
+                continueStartScanTask(targets, config);
+            });
+
+            Thread worker = new Thread(precheckTask, "pane-vulscan-headless-gate");
+            worker.setDaemon(true);
+            worker.start();
+            return;
+        }
+
+        continueStartScanTask(targets, config);
+    }
+
+    private void continueStartScanTask(List<String> targets, ScanConfig config) {
         if (scanEventListener != null) {
             scanService.removeEventListener(scanEventListener);
         }
@@ -1045,7 +1164,7 @@ public class PaneVulScan {
                         Platform.runLater(() ->
                             updateResultVBox(I18nUtils.getString("vulnscan.scan.selected", selectedPocs.size()), false, null));
 
-                        scanService.startScan(selectedPocs, selection.getFingerprint());
+                        scanService.startScan(new ArrayList<>(targets), selectedPocs, selection.getFingerprint());
                     } else {
                         // 多目标：逐目标指纹识别，POC 取并集
                         MultiTargetSelectionResult selection = scanService.selectAndFilterPocsMultiTarget(targets, config);
@@ -1066,12 +1185,12 @@ public class PaneVulScan {
                         Platform.runLater(() ->
                             updateResultVBox(I18nUtils.getString("vulnscan.scan.selected", selectedPocs.size()), false, null));
 
-                        scanService.startScan(selectedPocs, selection.getFingerprintMap());
+                        scanService.startScan(new ArrayList<>(targets), selectedPocs, selection.getFingerprintMap());
                     }
                 } catch (Exception e) {
                     if (isCancelled()) return null;
                     Platform.runLater(() -> {
-                        showPrompt(I18nUtils.getString("vulnscan.msg.scan.error", e.getMessage()), true);
+                        showPrompt(I18nUtils.getString("vulnscan.msg.scan.failed", e.getMessage()), true);
                         if (debugMode) e.printStackTrace();
                     });
                 }
@@ -2070,30 +2189,76 @@ public class PaneVulScan {
     // ==================== 工具方法 ====================
     
     private void showPrompt(String message, boolean isError) {
+        showPrompt(message, isError, false);
+    }
+
+    private void showPrompt(String message, boolean isError, boolean keepVisible) {
         Platform.runLater(() -> {
             promptLabel.setText(message);
-            promptPane.setVisible(true);
-            promptPane.setManaged(true);
-            
-            FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
-            fadeIn.setFromValue(0);
-            fadeIn.setToValue(1);
-            
-            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
-            fadeOut.setFromValue(1);
-            fadeOut.setToValue(0);
-            fadeOut.setDelay(Duration.seconds(2));
-            
-            fadeIn.setOnFinished(e -> fadeOut.play());
-            fadeOut.setOnFinished(e -> {
+            applyPromptStyle(isError);
+            playPromptAnimation(!keepVisible);
+        });
+    }
+
+    private void applyPromptStyle(boolean isError) {
+        if (promptPane == null) {
+            return;
+        }
+        promptPane.getStyleClass().removeAll("vulscan-prompt-info", "vulscan-prompt-error");
+        promptPane.getStyleClass().add(isError ? "vulscan-prompt-error" : "vulscan-prompt-info");
+    }
+
+    private void playPromptAnimation(boolean autoClose) {
+        promptAutoCloseEnabled = autoClose;
+
+        if (promptFadeIn == null) {
+            promptFadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
+            promptFadeIn.setFromValue(0);
+            promptFadeIn.setToValue(1);
+            promptFadeIn.setOnFinished(event -> {
+                if (promptAutoCloseEnabled && promptFadeOut != null) {
+                    promptFadeOut.playFromStart();
+                }
+            });
+        }
+
+        if (promptFadeOut == null) {
+            promptFadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
+            promptFadeOut.setFromValue(1);
+            promptFadeOut.setToValue(0);
+            promptFadeOut.setDelay(Duration.seconds(2));
+            promptFadeOut.setOnFinished(event -> {
                 promptPane.setVisible(false);
                 promptPane.setManaged(false);
             });
-            
-            fadeIn.play();
-        });
+        }
+
+        promptFadeIn.stop();
+        promptFadeOut.stop();
+        promptPane.setOpacity(0);
+        promptPane.setVisible(true);
+        promptPane.setManaged(true);
+        promptFadeIn.playFromStart();
     }
     
+    @FXML
+    public void closePromptPane(MouseEvent event) {
+        hidePromptPane();
+    }
+
+    private void hidePromptPane() {
+        if (promptPane != null) {
+            if (promptFadeIn != null) {
+                promptFadeIn.stop();
+            }
+            if (promptFadeOut != null) {
+                promptFadeOut.stop();
+            }
+            promptPane.setVisible(false);
+            promptPane.setManaged(false);
+        }
+    }
+
     private String formatDuration(long seconds) {
         long hours = seconds / 3600;
         long minutes = (seconds % 3600) / 60;

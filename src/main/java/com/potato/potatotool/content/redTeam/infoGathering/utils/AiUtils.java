@@ -1,7 +1,7 @@
 package com.potato.potatotool.content.redTeam.infoGathering.utils;
 
 import com.potato.potatotool.content.redTeam.infoGathering.imgSimilarity.ImgSimilarity;
-import com.potato.potatotool.utils.ai.AIUtil;
+import com.potato.potatotool.utils.ai.service.AiChatService;
 
 import java.net.URL;
 import java.util.HashSet;
@@ -20,12 +20,11 @@ public class AiUtils {
         Set<String> result = new HashSet<>();
         result.add(company);
 
-        AIUtil aiObj=new AIUtil();
         try {
-            String companyNameListStr = aiObj.askAi_NoStream("用户输入的公司名为```"+company+"```，请你推测该公司的全称或其他简称(尽可能大于三个字)，尽可能全面，并使用方括号将结果括起来，以便强调。最多四个结果。例如：[[[国家能源投资集团有限责任公司]]]、[[[国家能源集团]]]、[[[国能集团]]]、[[[神华集团有限责任公司]]]");
-
-            result = aiObj.get_re_result(companyNameListStr);
-        }catch (Exception e){}
+            AiChatService aiChatService = new AiChatService();
+            String companyNameListStr = aiChatService.askNoStream("用户输入的公司名为```"+company+"```，请你推测该公司的全称或其他简称(尽可能大于三个字)，尽可能全面，并使用方括号将结果括起来，以便强调。最多四个结果。例如：[[[国家能源投资集团有限责任公司]]]、[[[国家能源集团]]]、[[[国能集团]]]、[[[神华集团有限责任公司]]]");
+            result = aiChatService.extractBracketedResult(companyNameListStr);
+        }catch (Exception ignored){}
 
         return result;
     }
@@ -49,16 +48,16 @@ public class AiUtils {
                 }
             }
 
-            AIUtil aiObj=new AIUtil();
             String url = webBaseInfoMap.getOrDefault("url", "").toString();
             String title = webBaseInfoMap.getOrDefault("title", "").toString();
             String body = webBaseInfoMap.getOrDefault("body", "").toString();
             String url_Q = url.isEmpty()? url : "网址为```" + url + "```，";
-            String title_Q = url.isEmpty()? url : "标题为```" + title + "```，";
-            String body_Q = url.isEmpty()? url : "部分内容为```" + body + "```，";
-            String companyNameListStr = aiObj.askAi_NoStream("有一个网站，" + url_Q+ title_Q + body_Q + "。请推断该网站是否与```" + company + "```相关，排除招标网，并使用方括号将结果括起来，以便强调。比如，像[[[相关]]]、[[[不相关]]]、[[[无法推断]]]");
+            String title_Q = title.isEmpty()? title : "标题为```" + title + "```，";
+            String body_Q = body.isEmpty()? body : "部分内容为```" + body + "```，";
+            AiChatService aiChatService = new AiChatService();
+            String companyNameListStr = aiChatService.askNoStream("有一个网站，" + url_Q+ title_Q + body_Q + "。请推断该网站是否与```" + company + "```相关，排除招标网，并使用方括号将结果括起来，以便强调。比如，像[[[相关]]]、[[[不相关]]]、[[[无法推断]]]");
 
-            Set<String> result = aiObj.get_re_result(companyNameListStr);
+            Set<String> result = aiChatService.extractBracketedResult(companyNameListStr);
             for(String item: result){
                 if(item.equals("相关")){
                     return true;
@@ -80,10 +79,10 @@ public class AiUtils {
         if((repoName.isEmpty() && repoDes.isEmpty()) || companyNames.isEmpty()) return false;
 
         try {
-            AIUtil aiObj=new AIUtil();
-            String companyNameListStr = aiObj.askAi_NoStream("有一个git项目，项目名为：" + repoName + "，项目描述：" + repoDes +"。请推断该网站是否与```" + companyNames + "```相关，并使用方括号将结果括起来，以便强调。比如，像[[[相关]]]、[[[不相关]]]、[[[无法推断]]]");
+            AiChatService aiChatService = new AiChatService();
+            String companyNameListStr = aiChatService.askNoStream("有一个git项目，项目名为：" + repoName + "，项目描述：" + repoDes +"。请推断该网站是否与```" + companyNames + "```相关，并使用方括号将结果括起来，以便强调。比如，像[[[相关]]]、[[[不相关]]]、[[[无法推断]]]");
 
-            Set<String> result = aiObj.get_re_result(companyNameListStr);
+            Set<String> result = aiChatService.extractBracketedResult(companyNameListStr);
             for(String item: result){
                 if(item.equals("相关")){
                     return true;
@@ -97,12 +96,12 @@ public class AiUtils {
 
     // 提取泄露的敏感信息
     public static Set<String> getLeakage_Ai(String content){
-        AIUtil aiObj=new AIUtil();
         Set<String> result = new HashSet<>();
         try {
-            String companyNameListStr = aiObj.askAi_NoStream("请判断以下文本是否存在敏感信息泄露：```"+content+"```，如果发现泄露信息，请使用方括号将结果括起来，以便强调，例如：[[[泄露账号密码admin/1433223]]]、[[[泄露数据库密码sifk@da.]]]。如果没有泄露信息，则无需强调。");
-            result = aiObj.get_re_result(companyNameListStr);
-        }catch (Exception e){}
+            AiChatService aiChatService = new AiChatService();
+            String companyNameListStr = aiChatService.askNoStream("请判断以下文本是否存在敏感信息泄露：```"+content+"```，如果发现泄露信息，请使用方括号将结果括起来，以便强调，例如：[[[泄露账号密码admin/1433223]]]、[[[泄露数据库密码sifk@da.]]]。如果没有泄露信息，则无需强调。");
+            result = aiChatService.extractBracketedResult(companyNameListStr);
+        }catch (Exception ignored){}
 
         return result;
     }

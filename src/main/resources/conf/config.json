@@ -26,6 +26,21 @@
     }
   },
   "StartPassword": "",
+  "OOB": {
+    "http": {
+      "platform": "INTERACTSH",
+      "interactshServer": "oast.pro",
+      "interactshToken": "",
+      "customServer": "",
+      "customToken": "",
+      "cacheTtlSeconds": 3600
+    },
+    "dns": {
+      "platform": "DNSLOG_CN",
+      "ceyeIdentifier": "",
+      "ceyeToken": ""
+    }
+  },
   "Proxy": {
     "enable": false,
     "address": "http://127.0.0.1:7890",
@@ -46,12 +61,19 @@
     }
   },
   "AI": {
-    "Local_AI_API_Base": "uhEfqpTkk7sSRs8YFPUSr42cWi8VrmEg15IcTk6G8r4dPZgvnAkYWwOz1qOsuI57",
-    "Local_AI_Model": "==waoapG6D1tyIYPDb3WF9wD",
-    "Local_AI_API_Key": "==ALvey9ulWS0LjsPLSHcySm",
-    "AI_API_Base": "",
-    "AI_Model": "",
-    "AI_API_Key": ""
+    "provider": "OPENAI_COMPATIBLE",
+    "base_url": "",
+    "api_key": "",
+    "model_name": "",
+    "timeout_ms": 60000,
+    "thinking": {
+      "enabled": false,
+      "budget_tokens": 1024,
+      "show_in_ui": false
+    },
+    "local_base_url": "uhEfqpTkk7sSRs8YFPUSr42cWi8VrmEg15IcTk6G8r4dPZgvnAkYWwOz1qOsuI57",
+    "local_model_name": "==waoapG6D1tyIYPDb3WF9wD",
+    "local_api_key": "==ALvey9ulWS0LjsPLSHcySm"
   },
   "VulnScan": {
     "pocDir": "pocs",
@@ -128,7 +150,9 @@
       "autoExport": false,
       "defaultFormat": "HTML"
     },
-    
+    "headless": {
+      "browserPath": ""
+    },
     "dbPath": ""
   },
   "Decompile": {

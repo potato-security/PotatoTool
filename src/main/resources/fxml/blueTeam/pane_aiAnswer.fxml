@@ -24,7 +24,7 @@
         <StackPane>
             <SmoothTextArea fx:id="question" wrapText="true" prefHeight="35" maxHeight="250"  minHeight="0" />
             <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
-                <Label layoutX="-57" onMouseClicked="#ask">
+                <Label fx:id="sendAction" layoutX="-57" onMouseClicked="#ask">
                     <graphic>
                         <Region styleClass="send"/>
                     </graphic>
@@ -37,6 +37,10 @@
                 </Label>
             </Pane>
         </StackPane>
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label fx:id="statusLabel" text="" visible="false" managed="false"/>
+            <Hyperlink fx:id="retryLink" text="重试" visible="false" managed="false" onAction="#retryLastQuestion" userData="i18n:common.retry"/>
+        </HBox>
         <Pane minHeight="20"/>
 
     </VBox>

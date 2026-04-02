@@ -270,7 +270,7 @@ public class PaneDecompile {
             isAiCD = true;
 
             aiTextArea.clear();
-            aiTextArea.appendText("AI分析中，请稍等……");
+            aiTextArea.appendText(I18nUtils.getString("decompile.ai.analyzing"));
 
             // 另起线程调用AI接口
             Task<Void> task = new Task<Void>() {
@@ -282,7 +282,16 @@ public class PaneDecompile {
             };
             task.setOnFailed(event -> {
                 Throwable error = task.getException();
-                error.printStackTrace();
+                if (debugMode && error != null) {
+                    error.printStackTrace();
+                }
+                Platform.runLater(() -> {
+                    isAiCD = false;
+                    String message = error == null || error.getMessage() == null || error.getMessage().trim().isEmpty()
+                            ? I18nUtils.getString("ai.status.error")
+                            : error.getMessage();
+                    aiTextArea.setText(message);
+                });
             });
             task.setOnSucceeded(event -> {
                 isAiCD = false;
@@ -309,7 +318,7 @@ public class PaneDecompile {
             isAiCD = true;
 
             aiTextArea.clear();
-            aiTextArea.appendText("AI分析中，请稍等……");
+            aiTextArea.appendText(I18nUtils.getString("decompile.ai.analyzing"));
 
             // 另起线程调用AI接口
             Task<Void> task = new Task<Void>() {
@@ -321,7 +330,16 @@ public class PaneDecompile {
             };
             task.setOnFailed(event -> {
                 Throwable error = task.getException();
-                error.printStackTrace();
+                if (debugMode && error != null) {
+                    error.printStackTrace();
+                }
+                Platform.runLater(() -> {
+                    isAiCD = false;
+                    String message = error == null || error.getMessage() == null || error.getMessage().trim().isEmpty()
+                            ? I18nUtils.getString("ai.status.error")
+                            : error.getMessage();
+                    aiTextArea.setText(message);
+                });
             });
             task.setOnSucceeded(event -> {
                 isAiCD = false;
