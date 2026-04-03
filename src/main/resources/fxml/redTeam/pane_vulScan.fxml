@@ -91,7 +91,6 @@
                 </HBox>
                 <FlowPane id="smartScanRightTitle" HBox.hgrow="ALWAYS" hgap="15" vgap="10" alignment="CENTER_LEFT">
                     <!-- 基础开关 -->
-                    <CFCheckBox fx:id="enableProxyBox" text="代理" selected="false" onMouseClicked="#checkProxy" userData="i18n:vulnscan.proxy"/>
                     <CFCheckBox fx:id="verboseLogBox" text="详细日志" selected="true" userData="i18n:vulnscan.verbose"/>
                     <CFCheckBox fx:id="autoSaveBox" text="自动保存" selected="true" userData="i18n:vulnscan.autosave"/>
 

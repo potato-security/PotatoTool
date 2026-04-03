@@ -10,6 +10,7 @@ import com.potato.potatotool.utils.ai.model.AiMessage;
 import com.potato.potatotool.utils.ai.model.AiRuntimeConfig;
 import com.potato.potatotool.utils.ai.model.AiStreamEvent;
 import com.potato.potatotool.utils.ai.model.AiThinkingConfig;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.RequestObj;
 
 import java.util.ArrayList;
@@ -57,9 +58,7 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
                 .setCallTimeout(timeoutSec)
                 .setInternalAiRequest(runtimeConfig.isBuiltinAi());
 
-        if (!runtimeConfig.isUseProxy()) {
-            requestObj.setProxies(null);
-        }
+        ProxyUtils.applyProxy(requestObj, runtimeConfig.isUseProxy());
         return requestObj;
     }
 

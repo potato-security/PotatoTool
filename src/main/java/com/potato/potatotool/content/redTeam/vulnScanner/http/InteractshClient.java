@@ -210,6 +210,7 @@ public class InteractshClient {
             .setPostData(registerRequest)
             .setTimeOut(15)
             .setReadTimeout(15);
+        HttpHandler.applyProxySettings(requestObj);
         applyAuthToken(requestObj);
         
         try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
@@ -309,6 +310,7 @@ public class InteractshClient {
                 .setMethod("GET")
                 .setTimeOut(10)
                 .setReadTimeout(10);
+            HttpHandler.applyProxySettings(requestObj);
             applyAuthToken(requestObj);
             
             try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
@@ -454,6 +456,7 @@ public class InteractshClient {
                 .setPostData(deregisterRequest)
                 .setTimeOut(10)
                 .setReadTimeout(10);
+            HttpHandler.applyProxySettings(requestObj);
             applyAuthToken(requestObj);
             
             try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {

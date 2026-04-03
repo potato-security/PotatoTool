@@ -5,7 +5,6 @@ import com.sun.javafx.scene.control.skin.DatePickerSkin;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.InputType;
 import com.potato.potatotool.content.redTeam.vulnScanner.core.SmartPocSelector.PocSelectionResult;
@@ -85,7 +84,6 @@ public class PaneVulScan {
     @FXML private CFCheckBox pocsuiteCheckBox;
 
     // 扫描选项
-    @FXML private CFCheckBox enableProxyBox;
     @FXML private CFCheckBox verboseLogBox;
     @FXML private CFCheckBox autoSaveBox;
 
@@ -212,7 +210,6 @@ public class PaneVulScan {
 
         // 初始化UI
         initializeUI();
-        syncProxySwitchState();
 
         // 初始化POC管理增强功能
         initPocManageEnhanced();
@@ -383,10 +380,8 @@ public class PaneVulScan {
         }
 
         // 代理设置
-        boolean mainProxyEnabled = ProxyUtils.isMainProxyEnabled();
-        boolean vulnScanProxyEnabled = enableProxyBox.isSelected();
-        String proxyAddress = ProxyUtils.getMainProxyAddress();
-        if (mainProxyEnabled && vulnScanProxyEnabled) {
+        if (vulnConfig.isProxyEnabled()) {
+            String proxyAddress = vulnConfig.getProxyAddress();
             ProxyUtils.ProxyReachabilityResult proxyCheck = ProxyUtils.checkProxyAddressReachability(proxyAddress, 2000);
             if (shouldBlockScanForProxy(true, true, proxyAddress, proxyCheck)) {
                 showPrompt(ProxyUtils.buildUnavailableMessage(proxyCheck), true, true);
@@ -840,31 +835,6 @@ public class PaneVulScan {
         pocTableView.setItems(filtered);
     }
     
-    private void syncProxySwitchState() {
-        boolean mainProxyEnabled = ProxyUtils.isMainProxyEnabled();
-        boolean vulnScanProxyEnabled = ProxyUtils.isServiceProxyEnabled(ConfigConstants.VULNSCAN_SERVICE);
-
-        enableProxyBox.setDisable(false);
-        enableProxyBox.setSelected(vulnScanProxyEnabled);
-        enableProxyBox.setDisable(!mainProxyEnabled);
-    }
-
-    private void persistVulnScanProxySwitch(boolean enabled) {
-        try {
-            if (!ProxyUtils.saveServiceProxyEnabled(ConfigConstants.VULNSCAN_SERVICE, enabled)) {
-                syncProxySwitchState();
-                showPrompt(I18nUtils.getString("setting.save.failed"), true);
-            }
-        } catch (Exception e) {
-            syncProxySwitchState();
-            showPrompt(I18nUtils.getString("setting.save.failed.detail", e.getMessage()), true);
-            if (debugMode) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
     @FXML
     public void checkNuclei(MouseEvent event) {
         nucleiCheckBox.setSelected(!nucleiCheckBox.isSelected());
@@ -883,16 +853,6 @@ public class PaneVulScan {
     @FXML
     public void checkPocsuite(MouseEvent event) {
         pocsuiteCheckBox.setSelected(!pocsuiteCheckBox.isSelected());
-    }
-    
-    @FXML
-    public void checkProxy(MouseEvent event) {
-        if (enableProxyBox.isDisable()) {
-            return;
-        }
-        boolean selected = !enableProxyBox.isSelected();
-        enableProxyBox.setSelected(selected);
-        persistVulnScanProxySwitch(selected);
     }
     
     @FXML
@@ -1501,13 +1461,7 @@ public class PaneVulScan {
                 pocsuiteCheckBox.setSelected(selectedFormats.contains("pocsuite"));
             }
 
-            // 3. 还原代理设置
-            String proxy = state.getProxy();
-            if (proxy != null && !proxy.trim().isEmpty()) {
-                enableProxyBox.setSelected(true);
-            }
-
-            // 4. 还原严重度统计
+            // 3. 还原严重度统计
             criticalCountLabel.setText(String.valueOf(state.getCriticalCount()));
             highCountLabel.setText(String.valueOf(state.getHighCount()));
             mediumCountLabel.setText(String.valueOf(state.getMediumCount()));
@@ -3016,7 +2970,6 @@ public class PaneVulScan {
                 config.put("formats", formats);
 
                 // 其他选项
-                config.put("enableProxy", enableProxyBox.isSelected());
                 config.put("verboseLog", verboseLogBox.isSelected());
                 config.put("autoSave", autoSaveBox.isSelected());
                 config.put("tags", tagsField.getText());
@@ -3066,9 +3019,6 @@ public class PaneVulScan {
                 }
 
                 // 其他选项
-                if (config.containsKey("enableProxy")) {
-                    enableProxyBox.setSelected((Boolean) config.get("enableProxy"));
-                }
                 if (config.containsKey("verboseLog")) {
                     verboseLogBox.setSelected((Boolean) config.get("verboseLog"));
                 }

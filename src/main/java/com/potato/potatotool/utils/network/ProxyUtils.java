@@ -72,6 +72,33 @@ public class ProxyUtils {
         }
     }
 
+    public static boolean isProxyActive(boolean serviceProxyEnabled) {
+        if (!serviceProxyEnabled || !isMainProxyEnabled()) {
+            return false;
+        }
+        String proxyAddress = getMainProxyAddress();
+        return proxyAddress != null && !proxyAddress.trim().isEmpty();
+    }
+
+    public static boolean isServiceProxyActive(String serviceName) {
+        return isProxyActive(isServiceProxyEnabled(serviceName));
+    }
+
+    public static void applyProxy(RequestObj requestObj, boolean serviceProxyEnabled) {
+        if (requestObj == null) {
+            return;
+        }
+        requestObj.setProxies(null);
+        if (!isProxyActive(serviceProxyEnabled)) {
+            return;
+        }
+        requestObj.setProxies(getMainProxyAddress().trim());
+    }
+
+    public static void applyServiceProxy(RequestObj requestObj, String serviceName) {
+        applyProxy(requestObj, isServiceProxyEnabled(serviceName));
+    }
+
     public static LinkedHashMap<String, Object> getServiceProxyStates() {
         LinkedHashMap<String, Object> servicesMap = new LinkedHashMap<>();
         try {

@@ -73,7 +73,6 @@ public class GetSeo {
     private static JsonObject getSeo_chinaz(String domain) {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
         String Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.CHINAZ_COOKIE).getAsString();
-        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.CHINAZ_COOKIE);
 
         JsonObject seoMap = new JsonObject();
         Map<String, String> headers = new HashMap<>();
@@ -81,7 +80,7 @@ public class GetSeo {
 
         RequestObj obj = new RequestObj().setUrl("https://seo.chinaz.com/" + domain)
         .setMethod("GET").setRetries(2).setHeaders(headers);
-        if(!Proxy) obj.setProxies(null);
+        ProxyUtils.applyServiceProxy(obj, AssetConstants.CHINAZ_COOKIE);
 
         try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();
@@ -141,6 +140,7 @@ public class GetSeo {
 
         RequestObj obj = new RequestObj().setUrl("https://www.aizhan.com/cha/" + domain + "/")
         .setMethod("GET").setRetries(2);
+        ProxyUtils.applyServiceProxy(obj, AssetConstants.CHINAZ_COOKIE);
         
         try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();
@@ -271,6 +271,7 @@ public class GetSeo {
 
         RequestObj obj = new RequestObj().setUrl(emailUrl)
         .setMethod("GET").setRetries(2);
+        ProxyUtils.applyServiceProxy(obj, AssetConstants.CHINAZ_COOKIE);
         try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();
 
@@ -292,8 +293,6 @@ public class GetSeo {
     private static JsonObject extractIcpInfo_chinaz(String domain) {
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
         String Chinaz_Cookie = tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.CHINAZ_COOKIE).getAsString();
-        boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.CHINAZ_COOKIE);
-
         JsonObject icpInfo = new JsonObject();
         icpInfo.addProperty("备案号", "-");
         icpInfo.addProperty("备案所属", "-");
@@ -304,7 +303,7 @@ public class GetSeo {
 
         RequestObj obj = new RequestObj().setUrl("https://icp.chinaz.com/" + domain)
         .setMethod("GET").setRetries(2).setHeaders(headers);
-        if(!Proxy) obj.setProxies(null);
+        ProxyUtils.applyServiceProxy(obj, AssetConstants.CHINAZ_COOKIE);
 
         try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();

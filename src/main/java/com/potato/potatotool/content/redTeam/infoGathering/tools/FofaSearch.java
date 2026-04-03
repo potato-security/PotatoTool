@@ -44,7 +44,7 @@ public class FofaSearch {
         .setUrl("https://amap.fofa.info/host/" + ipOrDomain)
         .setTimeOut(30)
         .setMethod("GET").setRetries(2);
-        if(!Proxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, Proxy);
         
         try (CustomHttpResponse con = requests(obj)) {
             int statusCode = con.getResponseCode();
@@ -76,7 +76,7 @@ public class FofaSearch {
         .setMethod("GET")
         .setTimeOut(20)
         .setRetries(2);
-        if(!Proxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, Proxy);
 
         try (CustomHttpResponse con = requests(obj)){
             int statusCode = con.getResponseCode();

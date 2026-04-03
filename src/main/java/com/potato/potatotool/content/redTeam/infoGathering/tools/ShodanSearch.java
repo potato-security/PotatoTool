@@ -36,7 +36,7 @@ public class ShodanSearch {
                 .setNoUserAgent(true)
                 .setTimeOut(20)
                 .setRetries(2);
-        if(!Proxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, Proxy);
 
         try (CustomHttpResponse con = requests(obj)) {
             int statusCode = con.getResponseCode();

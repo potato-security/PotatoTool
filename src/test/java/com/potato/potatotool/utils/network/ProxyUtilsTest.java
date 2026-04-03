@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("ProxyUtils 代理治理测试")
@@ -95,5 +96,15 @@ class ProxyUtilsTest {
 
         assertTrue(message.contains("代理不可用"));
         assertTrue(message.contains("网络异常"));
+    }
+
+    @Test
+    @DisplayName("服务代理关闭时清空请求代理")
+    void shouldClearRequestProxyWhenServiceProxyDisabled() {
+        RequestObj requestObj = new RequestObj().setProxies("http://127.0.0.1:8080");
+
+        ProxyUtils.applyProxy(requestObj, false);
+
+        assertNull(requestObj.getProxies());
     }
 }

@@ -56,7 +56,7 @@ public class GitHubLeakage {
                     .setMethod("GET")
                     .setBearerToken(GitHub_Token.get(keyIndex))
                     .setRetries(2);
-            if(!Proxy) obj.setProxies(null);
+            ProxyUtils.applyProxy(obj, Proxy);
 
             try (CustomHttpResponse con = requests(obj)){
 
@@ -138,7 +138,7 @@ public class GitHubLeakage {
                         .setMethod("GET")
                         .setBearerToken(GitHub_Token.get(keyIndex))
                         .setRetries(2);
-                if(!Proxy) obj.setProxies(null);
+                ProxyUtils.applyProxy(obj, Proxy);
 
                 try (CustomHttpResponse con = requests(obj)){
 

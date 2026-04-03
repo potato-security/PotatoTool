@@ -37,6 +37,7 @@ import static com.potato.potatotool.content.redTeam.infoGathering.tools.GetDomai
  */
 public class AssetMapper {
     private PaneInfoSearch paneInfoSearch;
+    private long searchToken;
 
     private String Fofa_Key;
     private Set<String> Hunter_Key;
@@ -58,9 +59,18 @@ public class AssetMapper {
         this.paneInfoSearch = paneInfoSearch;
     }
 
+    public void setSearchToken(long searchToken) {
+        this.searchToken = searchToken;
+    }
+
+    private boolean shouldStop() {
+        return paneInfoSearch != null && paneInfoSearch.isSearchCancelled(searchToken);
+    }
+
     public void searchInfo(String input, AssetObj assetObj) {
         input = input.trim();
         if(input.isEmpty()) return;
+        if (shouldStop()) return;
         // 网址提取域名/ip,剔除端口,剔除掩码
         input = standardFormat(input);
 
@@ -88,6 +98,7 @@ public class AssetMapper {
             handleCompanyName(input, assetObj, null, null);
         }
 
+        if (shouldStop()) return;
         paneInfoSearch.updateEchoVBox("导出报告中……", false, null);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String timeStr = sdf.format(new Date(System.currentTimeMillis()));
@@ -100,6 +111,7 @@ public class AssetMapper {
     public void searchInfo_standard(String input, AssetObj assetObj) {
         input = input.trim();
         if(input.isEmpty()) return;
+        if (shouldStop()) return;
 
         Fofa_Key = assetObj.getFofa_Key();
         Hunter_Key = assetObj.getHunter_Key();
@@ -140,6 +152,7 @@ public class AssetMapper {
         assetObj.addCompanyDomainInfoList(netAssets);
         paneInfoSearch.updateEchoVBox("查询结束", true, null);
 
+        if (shouldStop()) return;
         paneInfoSearch.updateEchoVBox("导出报告中……", false, null);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String timeStr = sdf.format(new Date(System.currentTimeMillis()));
@@ -164,6 +177,7 @@ public class AssetMapper {
 
     // 处理IP地址的逻辑
     private void handleIPAddress(String ip, AssetObj assetObj) {
+        if (shouldStop()) return;
         paneInfoSearch.updateEchoVBox("传入IP地址_" + ip + "，初始化数据", true, null);
 
         if(isCdnIp(ip)){
@@ -173,13 +187,16 @@ public class AssetMapper {
             JsonArray domainList = getDomainByIp(ip, 5);
             paneInfoSearch.updateEchoVBox("选择域名_By_User", false, null);
             paneInfoSearch.showDomainChoosePaneBox(domainList);
+            if (shouldStop()) return;
             JsonArray domainListChoose = paneInfoSearch.waitAndGetDomainSet();
             paneInfoSearch.updateEchoVBox("反查域名_Top5", true, null);
+            if (shouldStop()) return;
 
             // 相同备案公司的域名不处理
             List<String> companyNameList = new ArrayList<>();
             if (domainListChoose != null && domainListChoose.size() > 0) {
                 for (JsonElement jsonElement : domainListChoose) {
+                    if (shouldStop()) return;
                     JsonObject domainJsonObject = jsonElement.getAsJsonObject();
                     String domain = domainJsonObject.get("domain").getAsString();
                     JsonObject hasSeoMap = domainJsonObject.getAsJsonObject("seoMap");
@@ -194,6 +211,7 @@ public class AssetMapper {
 
         // 单独检索当前传入的IP
         paneInfoSearch.updateEchoVBox("平台检索原始IP：" + ip, false, null);
+        if (shouldStop()) return;
 
         // 获取不同平台的 IP 信息
         JsonArray info_Fofa = fofaSearch.getInfoByIp_Fofa(ip);
@@ -217,6 +235,7 @@ public class AssetMapper {
 
     // 处理域名的逻辑
     private void handleDomainName(String domain, AssetObj assetObj, JsonObject hasSeoMap) {
+        if (shouldStop()) return;
         if(hasSeoMap==null) paneInfoSearch.updateEchoVBox("传入域名_" + domain + "，初始化数据", true, null);
         // 初始化变量
         Set<String> icpNoSet = new HashSet<>();
@@ -244,6 +263,7 @@ public class AssetMapper {
         String icpNoStr = seoMap.getAsJsonObject("备案信息").get("备案号").getAsString();
         String companyName = seoMap.getAsJsonObject("备案信息").get("备案所属").getAsString();
         icpNoSet.add(icpNoStr);
+        if (shouldStop()) return;
         if(!icpType.isEmpty() && !icpType.equals("-") && !icpType.equals("个人") && !companyName.isEmpty() && !companyName.equals("-")){
             handleCompanyName(companyName, assetObj, icpNoSet, tmpDomainSet);
         }else {
@@ -263,6 +283,7 @@ public class AssetMapper {
      * @param icpNoSet             icp备案号
      */
     private void getData(AssetObj assetObj, NetAssets netAssets, Set<String> companyNameSet, Set<String> domainSet, Set<String> icpNoSet){
+        if (shouldStop()) return;
         // 初始化变量
         Set<String> tmpDomainSet = new HashSet<>(domainSet);
         List<DomainInfo> domainInfoList = new ArrayList<>();
@@ -298,6 +319,7 @@ public class AssetMapper {
         if(assetObj.isSearchSslSubdomainBox()){
             int totalNum = domainSet.size();
             for(String domainStr : domainSet) {
+                if (shouldStop()) return;
                 currentIndex++;
                 double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
                 String showText = String.format("正在查询子域名By_SSL [%d/%d]：%s | 进度：%.2f%%",
@@ -310,6 +332,7 @@ public class AssetMapper {
         if (assetObj.isBruteForceSubdomain()) {
             int totalNum = domainSet.size();
             for(String domainStr : domainSet) {
+                if (shouldStop()) return;
                 currentIndex++;
                 double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
                 String showText = String.format("正在爆破子域名 [%d/%d]：%s | 进度：%.2f%%",
@@ -370,6 +393,7 @@ public class AssetMapper {
             currentIndex = 0;
             int totalNum = domainSet.size();
             for (String domainStr : domainSet) {
+                if (shouldStop()) return;
                 currentIndex++;
                 double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
                 String showText = String.format("正在检索原始域名_by_平台 [%d/%d]：%s | 进度：%.2f%%",
@@ -414,6 +438,7 @@ public class AssetMapper {
             currentIndex = 0;
             totalNum = tmpIcpNoSet.size();
             for (String icpNoStr : tmpIcpNoSet) {
+                if (shouldStop()) return;
                 currentIndex++;
                 double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
                 String showText = String.format("正在检索ICP_by_平台 [%d/%d]：%s | 进度：%.2f%%",
@@ -454,6 +479,7 @@ public class AssetMapper {
             currentIndex = 0;
             totalNum = oldIpSet.size();
             for (String ip : oldIpSet) {
+                if (shouldStop()) return;
                 currentIndex++;
                 double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
                 String showText = String.format("正在检索IP_by_平台 [%d/%d]：%s | 进度：%.2f%%",
@@ -490,6 +516,7 @@ public class AssetMapper {
                 executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
                 futures = new ArrayList<>();
                 for (DomainInfo domainInfo : domainInfoList) {
+                    if (shouldStop()) break;
                     tmpIndex++;
                     if (!isHasLocalFullDetection && tmpIndex > localFullDetectionThreshold) break;
                     // 提交每个 DomainInfo 的 Web 信息获取任务
@@ -530,6 +557,7 @@ public class AssetMapper {
             if(isHasIconSearch) {
                 paneInfoSearch.showIconChoosePaneBox(domainInfoList);
                 paneInfoSearch.updateEchoVBox("用户选择企业相关icon", false, null);
+                if (shouldStop()) return;
                 chooseWebInfoMapList = paneInfoSearch.waitAndGetIconDomainInfoList();
                 paneInfoSearch.updateEchoVBox("获取企业相关icon", true, null);
 
@@ -539,6 +567,7 @@ public class AssetMapper {
                 currentIndex = 0;
                 totalNum = chooseWebInfoMapList.size();
                 for (DomainInfo domainInfo : chooseWebInfoMapList) {
+                    if (shouldStop()) return;
                     currentIndex++;
                     double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
                     String domainStr = domainInfo.getDomain();
@@ -583,6 +612,7 @@ public class AssetMapper {
                     currentIndex = 0;
                     totalNum = companyNameSet.size();
                     for (String companyNameStr : companyNameSet) {
+                        if (shouldStop()) return;
                         currentIndex++;
                         double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
                         String showText = String.format("正在泛型检索 [%d/%d]：%s | 进度：%.2f%%",
@@ -612,10 +642,10 @@ public class AssetMapper {
                                 currentIndex, totalNum, companyNameStr, progress);
                         paneInfoSearch.updateEchoVBox(showText_ai, false, null);
                         List<DomainInfo> relevantDomains = new ArrayList<>();
-                        Map<String, Object> chooseWebBaseInfoMap = chooseWebInfoMapList.size()> 0 ? chooseWebInfoMapList.get(0).getWebInfoMap() : null;
                         for (DomainInfo domainInfo : tmpMergedList) {
+                            if (shouldStop()) return;
                             String baseUrl = getBaseUrl(domainInfo);
-                            if (baseUrl != null && !baseUrl.isEmpty() && AiUtils.getContentRelevance_Ai(baseUrl, companyNamesStr, chooseWebBaseInfoMap, assetObj.isCrawlProxy())) {
+                            if (isRelevantShadowAsset(baseUrl, companyNamesStr, chooseWebInfoMapList, assetObj.isCrawlProxy())) {
                                 relevantDomains.add(domainInfo);
                             }
                         }
@@ -647,6 +677,7 @@ public class AssetMapper {
             currentIndex = 0;
             totalNum = addedIps.size();
             for (String ip : addedIps) {
+                if (shouldStop()) return;
                 currentIndex++;
                 double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
                 String showText = String.format("正在检索IP_by_平台 [%d/%d]：%s | 进度：%.2f%%",
@@ -683,6 +714,7 @@ public class AssetMapper {
                 if (getFrequentCSegments.size() > 0) {
                     paneInfoSearch.updateEchoVBox("平台检索C段", false, null);
                     for (String ip : getFrequentCSegments.keySet()) {
+                        if (shouldStop()) return;
                         // 提交每个 IP 查询任务
                         currentIndex++;
                         double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
@@ -725,7 +757,9 @@ public class AssetMapper {
             executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
             futures = new ArrayList<>();
             for (DomainInfo domainInfo : domainInfoList) {
+                if (shouldStop()) break;
                 CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
+                    if (shouldStop()) return null;
                     String domainStr = domainInfo.getDomain();
                     if (domainStr != null && !domainStr.isEmpty()) {
                         // 使用 computeIfAbsent 避免重复查询
@@ -778,7 +812,9 @@ public class AssetMapper {
             executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
             futures = new ArrayList<>();
             for (DomainInfo domainInfo : domainInfoList) {
+                if (shouldStop()) break;
                 CompletableFuture<?> future = CompletableFuture.supplyAsync(() -> {
+                    if (shouldStop()) return null;
                     String domainStr = domainInfo.getDomain();
                     if (domainStr != null && !domainStr.isEmpty()) {
                         // 使用 computeIfAbsent 避免重复查询
@@ -828,7 +864,9 @@ public class AssetMapper {
             executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
             futures = new ArrayList<>();
             for (DomainInfo domainInfo : domainInfoList) {
+                if (shouldStop()) break;
                 CompletableFuture<?> future = CompletableFuture.supplyAsync(() -> {
+                    if (shouldStop()) return null;
                     String domainStr = domainInfo.getDomain();
                     if (domainStr == null || domainStr.isEmpty()) domainStr = domainInfo.getIp();
                     int progress = completedTasks.incrementAndGet();
@@ -883,6 +921,7 @@ public class AssetMapper {
 
     // 处理公司名称的逻辑
     private void handleCompanyName(String companyName, AssetObj assetObj, Set<String> hasIcpNoSet, Set<String> hasTmpDomainSet) {
+        if (shouldStop()) return;
         if(hasIcpNoSet==null&&hasTmpDomainSet==null) paneInfoSearch.updateEchoVBox("传入公司名_" + companyName + "，初始化数据", true, null);
         Set<String> icpNoSet = new HashSet<>();
         Set<String> tmpDomainSet = new HashSet<>(); // 存储初步检索的域名
@@ -923,6 +962,7 @@ public class AssetMapper {
         int currentIndex = 0;
         int totalNum = companyDetailsInfoMap.size();
         for(JsonElement jsonElement : companyDetailsInfoMap) {
+            if (shouldStop()) return;
             currentIndex++;
             JsonObject jsonObject = jsonElement.getAsJsonObject();
             if(jsonObject!=null && !jsonObject.isJsonNull() && jsonObject.size()>0) {
@@ -965,7 +1005,9 @@ public class AssetMapper {
                         subCompanyNameSet = AiUtils.getCompanyName_Ai(subCompanyName);
                         paneInfoSearch.updateEchoVBox(showText_User, false, null);
                         paneInfoSearch.showCompanyNameChoosePaneBox(subCompanyNameSet);
+                        if (shouldStop()) return;
                         subCompanyNameSet = paneInfoSearch.waitAndGetCompanyNameSet();
+                        if (shouldStop()) return;
                         paneInfoSearch.updateEchoVBox(showText, true, null);
                     }else {
                         subCompanyNameSet.add(subCompanyName);
@@ -985,7 +1027,9 @@ public class AssetMapper {
                 companyNameSet = AiUtils.getCompanyName_Ai(companyName);
                 paneInfoSearch.updateEchoVBox("正在获取企业别名_By_User：" + companyName, false, null);
                 paneInfoSearch.showCompanyNameChoosePaneBox(companyNameSet);
+                if (shouldStop()) return;
                 companyNameSet = paneInfoSearch.waitAndGetCompanyNameSet();
+                if (shouldStop()) return;
                 paneInfoSearch.updateEchoVBox("企业别名：" + companyName, true, null);
             }else {
                 companyNameSet.add(companyName);
@@ -997,6 +1041,31 @@ public class AssetMapper {
         }
 
         if(hasIcpNoSet==null&& hasTmpDomainSet==null) paneInfoSearch.updateEchoVBox("查询结束", true, null);
+    }
+
+    private boolean isRelevantShadowAsset(String baseUrl, String companyNamesStr, List<DomainInfo> chooseWebInfoMapList, boolean isCrawlProxy) {
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            return false;
+        }
+
+        int referenceCount = 0;
+        for (DomainInfo selectedDomainInfo : chooseWebInfoMapList) {
+            if (selectedDomainInfo == null || selectedDomainInfo.getWebInfoMap() == null || selectedDomainInfo.getWebInfoMap().isEmpty()) {
+                continue;
+            }
+            referenceCount++;
+            if (AiUtils.getContentRelevance_Ai(baseUrl, companyNamesStr, selectedDomainInfo.getWebInfoMap(), isCrawlProxy)) {
+                return true;
+            }
+            if (referenceCount >= 3) {
+                break;
+            }
+        }
+
+        if (referenceCount == 0) {
+            return AiUtils.getContentRelevance_Ai(baseUrl, companyNamesStr, null, isCrawlProxy);
+        }
+        return false;
     }
 
 

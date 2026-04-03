@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.RequestObj;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -70,7 +71,7 @@ public class GetSubDomain {
 
         RequestObj obj = new RequestObj().setUrl("https://crt.sh/?q=%." + domain + "&output=json")  // ?O=公司名&output=json 不兼容公司名为中文名
                 .setMethod("GET").setRandomUserAgent(false).setRetries(2);
-        if(!isSslProxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, isSslProxy);
 
         try (CustomHttpResponse con = requests(obj)){
 
@@ -99,7 +100,7 @@ public class GetSubDomain {
 
         RequestObj obj = new RequestObj().setUrl("https://api.certspotter.com/v1/issuances?domain=" + domain + "&include_subdomains=true&expand=dns_names")
                 .setMethod("GET").setRandomUserAgent(false).setRetries(2);
-        if(!isSslProxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, isSslProxy);
 
         try (CustomHttpResponse con = requests(obj)){
 
@@ -130,7 +131,7 @@ public class GetSubDomain {
 
         RequestObj obj = new RequestObj().setUrl("https://chaziyu.com/" + domain + "/")
                 .setMethod("GET").setRandomUserAgent(false).setRetries(2);
-        if(!isSslProxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, isSslProxy);
 
         try (CustomHttpResponse con = requests(obj)){
 
@@ -187,7 +188,7 @@ public class GetSubDomain {
                 index += 1;
                 RequestObj obj = new RequestObj().setUrl("https://rapiddns.io/s/" + domain + "?page=" + index)
                         .setMethod("GET").setRandomUserAgent(false).setRetries(2);
-                if(!isSslProxy) obj.setProxies(null);
+                ProxyUtils.applyProxy(obj, isSslProxy);
 
                 try (CustomHttpResponse con = requests(obj)) {
                     int statusCode = con.getResponseCode();
@@ -220,7 +221,7 @@ public class GetSubDomain {
 
         RequestObj obj = new RequestObj().setUrl("https://otx.alienvault.com/api/v1/indicators/domain/" + domain + "/passive_dns")
                 .setMethod("GET").setRandomUserAgent(false).setRetries(2);
-        if(!isSslProxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, isSslProxy);
 
         try (CustomHttpResponse con = requests(obj)) {
 
@@ -254,7 +255,7 @@ public class GetSubDomain {
 
         RequestObj obj = new RequestObj().setUrl("https://site.ip138.com/" + domain + "/domain.htm")
                 .setMethod("GET").setRandomUserAgent(false).setRetries(2);
-        if(!isSslProxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, isSslProxy);
 
         try (CustomHttpResponse con = requests(obj)) {
             String content = con.getTextStr();

@@ -7,6 +7,7 @@ import com.google.gson.JsonPrimitive;
 import com.potato.potatotool.content.redTeam.infoGathering.cdn.CdnChecker;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
 
+import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -28,7 +29,7 @@ public class DomainInfoMerger {
                 String domain = jsonObject.get("domain").getAsString();
                 domainInfo.setIp(ip);
                 domainInfo.setDomain(domain);
-                domainInfo.setCND(CdnChecker.isCdnIp(ip) && CdnChecker.isCdnDomain(domain));
+                domainInfo.setCND(isLikelyCdn(ip, domain));
                 JsonObject portsInfo = jsonElement.getAsJsonObject();
                 domainInfo.setPort(portsInfo.get("port").getAsString());
                 domainInfo.setProtocol(portsInfo.get("protocol").getAsString());
@@ -137,7 +138,7 @@ public class DomainInfoMerger {
                 if (jsonObjectHasKey(jsonObject, "domain")) {
                     if(jsonObject.get("domain").isJsonArray()){
                         StringBuilder result = new StringBuilder();
-                        for (JsonElement element : jsonArray) {
+                        for (JsonElement element : jsonObject.getAsJsonArray("domain")) {
                             result.append(element.getAsString()).append("\n");
                         }
                         domainInfo.setDomain(result.toString().trim());
@@ -146,7 +147,7 @@ public class DomainInfoMerger {
                     }
                 }
 
-                domainInfo.setCND(CdnChecker.isCdnIp(domainInfo.getIp()) && CdnChecker.isCdnDomain(domainInfo.getDomain()));
+                domainInfo.setCND(isLikelyCdn(domainInfo.getIp(), domainInfo.getDomain()));
 
                 if (jsonObjectHasKey(jsonObject, "host")) {
                     domainInfo.setHost(jsonObject.get("host").getAsString());
@@ -285,22 +286,27 @@ public class DomainInfoMerger {
     }
 
     public static List<DomainInfo> mergeDomainInfoList(List<DomainInfo> domainInfoList) {
-        Map<String, DomainInfo> tmpMergedMap = new HashMap<>();
+        Map<String, List<DomainInfo>> groupedDomainInfoMap = new LinkedHashMap<>();
 
         for (DomainInfo domainInfo : domainInfoList) {
-            String key = domainInfo.getIp() + ":" + domainInfo.getPort();
+            String baseKey = buildBaseKey(domainInfo);
+            List<DomainInfo> bucket = groupedDomainInfoMap.get(baseKey);
+            if (bucket == null) {
+                bucket = new ArrayList<>();
+                groupedDomainInfoMap.put(baseKey, bucket);
+            }
 
-            if (tmpMergedMap.containsKey(key)) {
-                DomainInfo existingInfo = tmpMergedMap.get(key);
-                mergeDomainInfo(existingInfo, domainInfo);
+            DomainInfo existingInfo = findMergeCandidate(bucket, domainInfo);
+            if (existingInfo == null) {
+                bucket.add(domainInfo);
             } else {
-                tmpMergedMap.put(key, domainInfo);
+                mergeDomainInfo(existingInfo, domainInfo);
             }
         }
         // 外侧Obj直接使用了入参domainInfoList地址，故多此一步
         domainInfoList.clear();
-        for (DomainInfo domainInfo : new ArrayList<>(tmpMergedMap.values())) {
-            domainInfoList.add(domainInfo);
+        for (List<DomainInfo> bucket : groupedDomainInfoMap.values()) {
+            domainInfoList.addAll(bucket);
         }
 
         return domainInfoList;
@@ -320,6 +326,7 @@ public class DomainInfoMerger {
         setIfNull(target::getCountry, source.getCountry(), target::setCountry);
         setIfNull(target::getCity, source.getCity(), target::setCity);
         setIfNull(target::getResponse, source.getResponse(), target::setResponse);
+        mergeTextField(target.getDataSource(), source.getDataSource(), target::setDataSource);
 
         // Merge components and remove duplicates
         if (source.getComponents() != null) {
@@ -338,16 +345,140 @@ public class DomainInfoMerger {
         }
     }
 
+    private static void mergeTextField(String targetValue, String sourceValue, Consumer<String> setter) {
+        if (sourceValue == null || sourceValue.trim().isEmpty()) {
+            return;
+        }
+
+        if (targetValue == null || targetValue.trim().isEmpty()) {
+            setter.accept(sourceValue);
+            return;
+        }
+
+        LinkedHashSet<String> mergedValues = new LinkedHashSet<>();
+        mergedValues.addAll(splitTextValues(targetValue));
+        mergedValues.addAll(splitTextValues(sourceValue));
+        setter.accept(String.join("\n", mergedValues));
+    }
+
     // 获取List<DomainInfo> B 中 ip 在 A 中不存在的所有元素。
     public static List<DomainInfo> getUniqueDomainInfoInB(List<DomainInfo> listA, List<DomainInfo> listB) {
-        // 获取List A中的所有IP，存入Set
-        Set<String> ipSetA = listA.stream()
-                .map(DomainInfo::getIp)
-                .collect(Collectors.toSet());
+        Map<String, List<DomainInfo>> groupedA = new HashMap<>();
+        for (DomainInfo domainInfo : listA) {
+            String baseKey = buildBaseKey(domainInfo);
+            List<DomainInfo> bucket = groupedA.get(baseKey);
+            if (bucket == null) {
+                bucket = new ArrayList<>();
+                groupedA.put(baseKey, bucket);
+            }
+            bucket.add(domainInfo);
+        }
 
-        // 过滤出List B中IP不在Set A中的DomainInfo
         return listB.stream()
-                .filter(domainInfo -> !ipSetA.contains(domainInfo.getIp()))
+                .filter(domainInfo -> {
+                    List<DomainInfo> bucket = groupedA.get(buildBaseKey(domainInfo));
+                    if (bucket == null || bucket.isEmpty()) {
+                        return true;
+                    }
+                    for (DomainInfo existing : bucket) {
+                        if (isSameAsset(existing, domainInfo)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
                 .collect(Collectors.toList());
+    }
+
+    private static DomainInfo findMergeCandidate(List<DomainInfo> bucket, DomainInfo candidate) {
+        for (DomainInfo existing : bucket) {
+            if (isSameAsset(existing, candidate)) {
+                return existing;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isSameAsset(DomainInfo left, DomainInfo right) {
+        if (!buildBaseKey(left).equals(buildBaseKey(right))) {
+            return false;
+        }
+
+        Set<String> leftIdentifiers = collectIdentifiers(left);
+        Set<String> rightIdentifiers = collectIdentifiers(right);
+        if (leftIdentifiers.isEmpty() || rightIdentifiers.isEmpty()) {
+            return true;
+        }
+
+        for (String identifier : leftIdentifiers) {
+            if (rightIdentifiers.contains(identifier)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String buildBaseKey(DomainInfo domainInfo) {
+        return safeText(domainInfo.getIp()) + ":" + safeText(domainInfo.getPort());
+    }
+
+    private static Set<String> collectIdentifiers(DomainInfo domainInfo) {
+        LinkedHashSet<String> identifiers = new LinkedHashSet<>();
+        addIdentifiers(identifiers, domainInfo.getDomain());
+        addIdentifiers(identifiers, domainInfo.getHost());
+        addIdentifier(identifiers, extractHost(domainInfo.getUrl()));
+        return identifiers;
+    }
+
+    private static void addIdentifiers(Set<String> identifiers, String rawValue) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
+            return;
+        }
+        for (String item : splitTextValues(rawValue)) {
+            addIdentifier(identifiers, item);
+        }
+    }
+
+    private static void addIdentifier(Set<String> identifiers, String rawValue) {
+        if (rawValue == null) {
+            return;
+        }
+        String normalized = rawValue.trim().toLowerCase(Locale.ROOT);
+        if (normalized.isEmpty()) {
+            return;
+        }
+        if (normalized.endsWith(".")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        if (normalized.startsWith("*.")) {
+            normalized = normalized.substring(2);
+        }
+        identifiers.add(normalized);
+    }
+
+    private static List<String> splitTextValues(String rawValue) {
+        return Arrays.stream(rawValue.split("[\\n,;]+"))
+                .map(String::trim)
+                .filter(item -> !item.isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private static String extractHost(String urlValue) {
+        if (urlValue == null || urlValue.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return new URL(urlValue).getHost();
+        } catch (Exception e) {
+            return urlValue;
+        }
+    }
+
+    private static String safeText(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private static boolean isLikelyCdn(String ip, String domain) {
+        return CdnChecker.isCdnIp(ip) || CdnChecker.isCdnDomain(domain);
     }
 }

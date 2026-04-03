@@ -50,6 +50,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -172,6 +173,9 @@ public class PaneInfoSearch {
     private ScrollPane scroll;
 
     private final Object lock = new Object(); // 用于线程同步
+    private final AtomicLong searchTokenGenerator = new AtomicLong(0);
+    private volatile long activeSearchToken = 0L;
+    private volatile boolean searchCancelled = false;
 
     @FXML
     private VBox echoVbox;
@@ -248,6 +252,84 @@ public class PaneInfoSearch {
 
     private Task<Void> currentTask;
     private Thread currentThread;
+
+    private long beginSearchSession() {
+        searchCancelled = false;
+        long searchToken = searchTokenGenerator.incrementAndGet();
+        activeSearchToken = searchToken;
+        return searchToken;
+    }
+
+    private void interruptCurrentSearch() {
+        searchCancelled = true;
+        activeSearchToken = searchTokenGenerator.incrementAndGet();
+        cancelPendingSelections();
+
+        if (currentTask != null && !currentTask.isDone()) {
+            currentTask.cancel(true);
+        }
+        if (currentThread != null && currentThread.isAlive()) {
+            currentThread.interrupt();
+        }
+        ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.ASSET_ARRAY);
+    }
+
+    private void cancelPendingSelections() {
+        synchronized (lock) {
+            lock.notifyAll();
+        }
+        Platform.runLater(() -> {
+            if (countdownTimeline != null) {
+                countdownTimeline.stop();
+            }
+            if (rotateTransition != null) {
+                rotateTransition.stop();
+            }
+            currentLoadingBox = null;
+            rotateTransition = null;
+        });
+        hideCompanyNameChoosePaneBox();
+        hideIconChoosePaneBox();
+        hideDomainChoosePaneBox();
+    }
+
+    private void restoreSearchControls() {
+        Platform.runLater(() -> {
+            uploadLabel.setVisible(true);
+            sendLabel.setVisible(true);
+            sendLabel.setManaged(true);
+            stopLabel.setVisible(false);
+            stopLabel.setManaged(false);
+            stopLabel.setDisable(false);
+        });
+    }
+
+    private void bindTaskLifecycle(Task<Void> task, long searchToken) {
+        task.setOnSucceeded(event -> {
+            if (searchToken == activeSearchToken) {
+                restoreSearchControls();
+            }
+        });
+        task.setOnCancelled(event -> {
+            if (searchToken == activeSearchToken) {
+                restoreSearchControls();
+            }
+        });
+        task.setOnFailed(event -> {
+            Throwable exception = task.getException();
+            if (exception != null && debugMode) {
+                exception.printStackTrace();
+            }
+            if (searchToken == activeSearchToken) {
+                restoreSearchControls();
+            }
+        });
+    }
+
+    public boolean isSearchCancelled(long searchToken) {
+        return searchCancelled || searchToken != activeSearchToken;
+    }
+
     @FXML
     public void searchInput(MouseEvent mouseEvent) {
         echoVbox.getChildren().clear();
@@ -258,31 +340,18 @@ public class PaneInfoSearch {
         stopLabel.setManaged(true);
 
         // 初始化任务状态
-        if (currentTask != null && !currentTask.isDone()) {
-            currentThread.stop();
-        }
-        ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.ASSET_ARRAY);
+        interruptCurrentSearch();
 
         boolean isSmart = searchModeBox.getSelectionModel().getSelectedIndex() == 0;
+        final long searchToken = beginSearchSession();
         currentTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                search(question.getText(), isSmart);
-
-                Platform.runLater(() -> {
-                    uploadLabel.setVisible(true);
-                    sendLabel.setVisible(true);
-                    sendLabel.setManaged(true);
-                    stopLabel.setVisible(false);
-                    stopLabel.setManaged(false);
-                });
+                search(question.getText(), isSmart, searchToken);
                 return null;
             }
         };
-        currentTask.setOnFailed(e -> {
-            Throwable exception = currentTask.getException();
-            if (exception != null) exception.printStackTrace();
-        });
+        bindTaskLifecycle(currentTask, searchToken);
         currentThread = new Thread(currentTask);
         currentThread.start();
     }
@@ -316,13 +385,11 @@ public class PaneInfoSearch {
         stopLabel.setManaged(true);
 
         // 初始化任务状态
-        if (currentTask != null && !currentTask.isDone()) {
-            currentThread.stop();
-        }
-        ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.ASSET_ARRAY);
+        interruptCurrentSearch();
 
         String finalPath = path;
         boolean isSmart = searchModeBox.getSelectionModel().getSelectedIndex() == 0;
+        final long searchToken = beginSearchSession();
         currentTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -330,10 +397,13 @@ public class PaneInfoSearch {
                 try (BufferedReader reader = Files.newBufferedReader(Paths.get(finalPath), StandardCharsets.UTF_8)) {
                     String line;
                     while ((line = reader.readLine())!= null) {
+                        if (isCancelled() || Thread.currentThread().isInterrupted() || isSearchCancelled(searchToken)) {
+                            break;
+                        }
                         line = line.trim();
                         if (!line.isEmpty()) {
                             try {
-                                search(line, isSmart);
+                                search(line, isSmart, searchToken);
                             }catch (Exception e){
                                 if(debugMode) e.printStackTrace();
                             }
@@ -342,20 +412,10 @@ public class PaneInfoSearch {
                 } catch (IOException e) {
                     if(debugMode) e.printStackTrace();
                 }
-                Platform.runLater(() -> {
-                    uploadLabel.setVisible(true);
-                    sendLabel.setVisible(true);
-                    sendLabel.setManaged(true);
-                    stopLabel.setVisible(false);
-                    stopLabel.setManaged(false);
-                });
                 return null;
             }
         };
-        currentTask.setOnFailed(e -> {
-            Throwable exception = currentTask.getException();
-            if (exception != null) exception.printStackTrace();
-        });
+        bindTaskLifecycle(currentTask, searchToken);
         currentThread = new Thread(currentTask);
         currentThread.start();
 
@@ -363,12 +423,14 @@ public class PaneInfoSearch {
 
     AssetMapper assetMapper = null;
     AssetObj assetObj = null;
-    private void search(String questionStr, boolean isSmart){
+    private void search(String questionStr, boolean isSmart, long searchToken){
         currentLoadingBox = null;
         currentInput = questionStr;
+        if (isSearchCancelled(searchToken)) return;
 
         assetMapper = new AssetMapper();
         assetMapper.setController(PaneInfoSearch.this);
+        assetMapper.setSearchToken(searchToken);
         assetObj = new AssetObj();
         if(!fofaBox.isSelected()) assetObj.setFofa_Key(null);
         if(!hunterBox.isSelected()) assetObj.setHunter_Key(new JsonArray());
@@ -377,6 +439,7 @@ public class PaneInfoSearch {
         if(!shodanBox.isSelected()) assetObj.setShodan_Key(null);
 
         if(isSmart) {
+            boolean validInput = true;
             try {
 //                if (!googleBox.isSelected()) assetObj.setGoogle_API(new JsonArray());
 //                if (!githubBox.isSelected()) assetObj.setGitHub_Token(new JsonArray());
@@ -407,10 +470,13 @@ public class PaneInfoSearch {
             }catch (Exception e){
                 showTip(e.getMessage(), true);
                 if(debugMode) e.printStackTrace();
+                validInput = false;
             }
 
+            if (!validInput || isSearchCancelled(searchToken)) return;
             assetMapper.searchInfo(questionStr, assetObj);
         }else {
+            if (isSearchCancelled(searchToken)) return;
             assetMapper.searchInfo_standard(questionStr, assetObj);
         }
     }
@@ -833,6 +899,7 @@ public class PaneInfoSearch {
     private Set<String> companyNameSet = new HashSet<>();
     @FXML
     public void saveCompanyNameField(ActionEvent event) {
+        companyNameSet.clear();
         for (int i = 0; i < companyNameVbox.getChildren().size(); i++) {
             HBox hBox = (HBox) companyNameVbox.getChildren().get(i);
             StackPane stackPane = (StackPane) hBox.getChildren().get(1);
@@ -855,20 +922,29 @@ public class PaneInfoSearch {
     }
 
     public Set<String> waitAndGetCompanyNameSet(){
+        if (searchCancelled) {
+            return new HashSet<>();
+        }
         synchronized (lock) {
             try {
-                // 等待保存
-                lock.wait();
+                if (!searchCancelled) {
+                    lock.wait();
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.out.println("线程中断：" + e.getMessage());
             }
         }
-        return companyNameSet;
+        return searchCancelled ? new HashSet<>() : new HashSet<>(companyNameSet);
     }
 
     public void showCompanyNameChoosePaneBox(Set<String> companyNamesSet){
+        if (searchCancelled) {
+            return;
+        }
         Platform.runLater(() -> {
+            companyNameSet.clear();
+            companyNameVbox.getChildren().clear();
             int index = 0;
             for (String companyName : companyNamesSet) {
                 createCompanyNameHBox(companyName, index);
@@ -927,9 +1003,33 @@ public class PaneInfoSearch {
 
     public void showIconChoosePaneBox(List<DomainInfo> oldDomainInfoList){
         domainInfoList.clear();
-        Map<String, Integer> iconCountMap = new HashMap<>(); // 记录iconMd5和出现次数
+        if (searchCancelled) {
+            return;
+        }
+
+        Map<String, Integer> iconCountMap = new LinkedHashMap<>(); // 记录iconMd5和出现次数
+        for (DomainInfo domainInfo : oldDomainInfoList) {
+            Map<String, Object> webInfoMap = domainInfo.getWebInfoMap();
+            if (webInfoMap == null || !webInfoMap.containsKey("iconMd5") || !webInfoMap.containsKey("iconBase64")) {
+                continue;
+            }
+            String iconMd5 = webInfoMap.get("iconMd5").toString();
+            iconCountMap.put(iconMd5, iconCountMap.getOrDefault(iconMd5, 0) + 1);
+        }
+
+        String defaultIconMd5 = null;
+        int maxIconCount = 0;
+        for (Map.Entry<String, Integer> entry : iconCountMap.entrySet()) {
+            if (entry.getValue() > maxIconCount) {
+                maxIconCount = entry.getValue();
+                defaultIconMd5 = entry.getKey();
+            }
+        }
+
+        final String selectedIconMd5 = defaultIconMd5;
         Platform.runLater(() -> {
-            String firstIconMd5 = null; // 记录首个图标的MD5
+            iconFlowPane.getChildren().clear();
+            Set<String> renderedIconMd5Set = new HashSet<>();
 
             for (DomainInfo domainInfo : oldDomainInfoList) {
                 Map<String, Object> webInfoMap = domainInfo.getWebInfoMap();
@@ -937,29 +1037,7 @@ public class PaneInfoSearch {
 
                 String iconMd5 = webInfoMap.get("iconMd5").toString();
                 String iconBase64 = webInfoMap.get("iconBase64").toString();
-                iconCountMap.put(iconMd5, iconCountMap.getOrDefault(iconMd5, 0) + 1);
-
-                if (firstIconMd5 == null) {
-                    firstIconMd5 = iconMd5;
-                }
-                // 如果已经存在相同的图标，直接更新计数并跳过创建新的图标
-                if (iconCountMap.get(iconMd5) > 1) {
-                    // 查找已有的numberLabel更新计数
-                    for (Node node : iconFlowPane.getChildren()) {
-                        if (node instanceof StackPane) {
-                            StackPane stackPane = (StackPane) node;
-                            if (stackPane.getUserData() != null && stackPane.getUserData().equals(iconMd5)) {
-                                Label numberLabel = (Label) stackPane.getChildren().stream()
-                                        .filter(child -> child instanceof Label)
-                                        .findFirst()
-                                        .orElse(null);
-                                if (numberLabel != null) {
-                                    numberLabel.setText(String.valueOf(iconCountMap.get(iconMd5)));
-                                }
-                                break;
-                            }
-                        }
-                    }
+                if (!renderedIconMd5Set.add(iconMd5)) {
                     continue;
                 }
 
@@ -986,7 +1064,7 @@ public class PaneInfoSearch {
                 selectionRegion.setVisible(false); // 初始不可见
                 StackPane.setAlignment(selectionRegion, Pos.BOTTOM_RIGHT);
 
-                Label numberLabel = new Label("1");
+                Label numberLabel = new Label(String.valueOf(iconCountMap.getOrDefault(iconMd5, 1)));
                 numberLabel.setAlignment(Pos.CENTER);
                 numberLabel.setMaxSize(30, 30);
                 numberLabel.setMinSize(30, 30);
@@ -1007,8 +1085,8 @@ public class PaneInfoSearch {
                 iconPane.getChildren().addAll(imageView, selectionRegion, numberLabel);
                 iconFlowPane.getChildren().add(iconPane);
 
-                // 如果是第一个图标（计数最多），设置为选中状态
-                if (iconMd5.equals(firstIconMd5)) {
+                // 默认选中出现次数最多的图标
+                if (iconMd5.equals(selectedIconMd5)) {
                     selectionRegion.setVisible(true); // 显示选中效果
                     domainInfoList.add(domainInfo); // 添加到选中列表
                 }
@@ -1056,16 +1134,20 @@ public class PaneInfoSearch {
     }
 
     public List<DomainInfo> waitAndGetIconDomainInfoList() {
+        if (searchCancelled) {
+            return new ArrayList<>();
+        }
         synchronized (lock) {
             try {
-                // 等待保存
-                lock.wait();
+                if (!searchCancelled) {
+                    lock.wait();
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.out.println("线程中断：" + e.getMessage());
             }
         }
-        return domainInfoList;
+        return searchCancelled ? new ArrayList<>() : new ArrayList<>(domainInfoList);
     }
 
 
@@ -1081,54 +1163,56 @@ public class PaneInfoSearch {
         }
     }
     public void updateUI(String message, boolean isComplete,  Map<String, Object> dataMap) {
-        Platform.runLater(() -> {
-            if (currentLoadingBox == null) {
-                currentLoadingBox = new HBox(10);
-                currentLoadingBox.setAlignment(Pos.TOP_LEFT);
+        if (currentLoadingBox == null) {
+            currentLoadingBox = new HBox(10);
+            currentLoadingBox.setAlignment(Pos.TOP_LEFT);
 
-                Label loadingImg = new Label();
-                loadingImg.setMaxSize(20, 20);
-                loadingImg.setMinSize(20, 20);
-                loadingImg.getStyleClass().add("loaddingImg");
+            Label loadingImg = new Label();
+            loadingImg.setMaxSize(20, 20);
+            loadingImg.setMinSize(20, 20);
+            loadingImg.getStyleClass().add("loaddingImg");
 
-                rotateTransition = new RotateTransition(Duration.seconds(1), loadingImg);
-                rotateTransition.setByAngle(360);
-                rotateTransition.setCycleCount(RotateTransition.INDEFINITE);
-                rotateTransition.play();
+            rotateTransition = new RotateTransition(Duration.seconds(1), loadingImg);
+            rotateTransition.setByAngle(360);
+            rotateTransition.setCycleCount(RotateTransition.INDEFINITE);
+            rotateTransition.play();
 
-                Label textLabel = new Label(message);
-                currentLoadingBox.getChildren().addAll(loadingImg, textLabel);
-                echoVbox.getChildren().add(currentLoadingBox);
-            }
+            Label textLabel = new Label(message);
+            currentLoadingBox.getChildren().addAll(loadingImg, textLabel);
+            echoVbox.getChildren().add(currentLoadingBox);
+        }
 
-            Label loadingImg = (Label) currentLoadingBox.getChildren().get(0);
-            Node dynamicContent = currentLoadingBox.getChildren().get(1);
+        Label loadingImg = (Label) currentLoadingBox.getChildren().get(0);
+        Node dynamicContent = currentLoadingBox.getChildren().get(1);
 
-            if (isComplete) {
+        if (isComplete) {
+            if (rotateTransition != null) {
                 rotateTransition.stop();
-                loadingImg.getStyleClass().remove("loaddingImg");
-                loadingImg.getStyleClass().add("endImg");
-                loadingImg.setRotate(0);
-
-                if (dataMap != null) {
-
-                    // 替换为可点击下拉抽屉
-                    TitledPane drawer = createDrawer(message, dataMap);
-                    currentLoadingBox.getChildren().set(1, drawer);
-                } else {
-                    ((Label) dynamicContent).setText(message);
-                }
-
-                currentLoadingBox = null;
-            } else {
-                rotateTransition.play();
-
-                if (dynamicContent instanceof Label) {
-                    ((Label) dynamicContent).setText(message);
-                }
             }
-            scroll.setVvalue(1.0);
-        });
+            loadingImg.getStyleClass().remove("loaddingImg");
+            loadingImg.getStyleClass().add("endImg");
+            loadingImg.setRotate(0);
+
+            if (dataMap != null) {
+
+                // 替换为可点击下拉抽屉
+                TitledPane drawer = createDrawer(message, dataMap);
+                currentLoadingBox.getChildren().set(1, drawer);
+            } else {
+                ((Label) dynamicContent).setText(message);
+            }
+
+            currentLoadingBox = null;
+        } else {
+            if (rotateTransition != null) {
+                rotateTransition.play();
+            }
+
+            if (dynamicContent instanceof Label) {
+                ((Label) dynamicContent).setText(message);
+            }
+        }
+        scroll.setVvalue(1.0);
     }
 
     // 根据 dataMap 创建抽屉
@@ -1398,9 +1482,13 @@ public class PaneInfoSearch {
 
     private JsonArray domainListChoose = new JsonArray();
     public void showDomainChoosePaneBox(JsonArray domainList) {
+        if (searchCancelled) {
+            return;
+        }
         Platform.runLater(() -> {
             domainListChoose = new JsonArray();
             if (domainList == null || domainList.size() == 0) return;
+            domainVbox.getChildren().clear();
             HBox header = createRow(I18nUtils.getString("infosearch.domain.header.domain"), 
                                       I18nUtils.getString("infosearch.domain.header.belong"), 
                                       I18nUtils.getString("infosearch.domain.header.addtime"), 
@@ -1481,16 +1569,20 @@ public class PaneInfoSearch {
     }
 
     public JsonArray waitAndGetDomainSet() {
+        if (searchCancelled) {
+            return new JsonArray();
+        }
         synchronized (lock) {
             try {
-                // 等待保存
-                lock.wait();
+                if (!searchCancelled) {
+                    lock.wait();
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.out.println("线程中断：" + e.getMessage());
             }
         }
-        return domainListChoose;
+        return searchCancelled ? new JsonArray() : domainListChoose;
     }
 
     @FXML
@@ -1515,11 +1607,9 @@ public class PaneInfoSearch {
         stopLabel.setDisable(true);
 
         if(!generateRepIng) {
-            if (currentTask != null && !currentTask.isDone()) {
-                currentThread.stop();
-            }
-            ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.ASSET_ARRAY);
+            interruptCurrentSearch();
 
+            final long exportToken = beginSearchSession();
             currentTask = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
@@ -1531,24 +1621,15 @@ public class PaneInfoSearch {
                         String error = new AssetExcelExporter().exportToExcel(assetObj, outXlsxFile);
                         updateEchoVBox(error == null ? "报告导出至:" + outXlsxFile : "导出失败_[Error]：" + error, true, null);
                     }
-
-                    Platform.runLater(() -> {
-                        uploadLabel.setVisible(true);
-                        sendLabel.setVisible(true);
-                        sendLabel.setManaged(true);
-                        stopLabel.setVisible(false);
-                        stopLabel.setManaged(false);
-                        stopLabel.setDisable(false);
-                    });
                     return null;
                 }
             };
-            currentTask.setOnFailed(e -> {
-                Throwable exception = currentTask.getException();
-                if (exception != null) exception.printStackTrace();
-            });
+            bindTaskLifecycle(currentTask, exportToken);
             currentThread = new Thread(currentTask);
             currentThread.start();
+        } else {
+            interruptCurrentSearch();
+            restoreSearchControls();
         }
     }
 }

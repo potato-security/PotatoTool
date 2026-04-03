@@ -861,6 +861,8 @@ public class PocExecutor {
                                      PocObj.GlobalConfig globalConfig, 
                                      Map<String, Object> extractedValues) {
         RequestObj requestObj = new RequestObj();
+        // RequestObj 会默认继承总代理；漏扫链路统一改为显式代理，避免绕过 Proxy.services.VulnScan。
+        HttpHandler.applyProxySettings(requestObj);
         
         // POC扫描时保留原始URL编码，不进行归一化
         // 用于正确检测路径遍历等漏洞（如 %2e%2e、%u002e 等编码绕过）
@@ -3088,4 +3090,3 @@ public class PocExecutor {
         // 清理资源
     }
 }
-

@@ -56,7 +56,7 @@ public class HunterSearch {
             RequestObj obj = new RequestObj().setUrl("https://hunter.qianxin.com/openApi/search?api-key=" + HUNTER_KEY + "&search=" + StrUtils.base64UrlEncoder(qInfo) + "&page=" + i +"&page_size=100")//&is_web=1
                     .setTimeOut(20)
                     .setMethod("GET").setRandomUserAgent(false).setRetries(2);
-            if(!Proxy) obj.setProxies(null);
+            ProxyUtils.applyProxy(obj, Proxy);
 
             try (CustomHttpResponse con = requests(obj)) {
 
@@ -83,7 +83,10 @@ public class HunterSearch {
                 if(!json.has("data")|| json.get("data").isJsonNull()) break;
                 JsonObject jsonData = json.get("data").getAsJsonObject();
                 if(!jsonData.has("arr")|| jsonData.get("arr").isJsonNull()) break;
-                domainInfo = jsonData.get("arr").getAsJsonArray();
+                JsonArray currentPage = jsonData.get("arr").getAsJsonArray();
+                for (JsonElement element : currentPage) {
+                    domainInfo.add(element);
+                }
                 total = jsonData.get("total").getAsInt();
                 rest_quota = StrUtils.extractNumber(jsonData.get("rest_quota").getAsString());
 

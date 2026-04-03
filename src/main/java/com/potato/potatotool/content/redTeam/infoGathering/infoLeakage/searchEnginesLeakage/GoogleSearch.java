@@ -76,7 +76,7 @@ public class GoogleSearch {
             RequestObj obj = new RequestObj()
                     .setUrl("https://customsearch.googleapis.com/customsearch/v1?key=" + Google_Key + "&q=" + StrUtils.urlEncode(input) + "&cx=" + Google_Cx + "&start=" + currentIndex)
                     .setMethod("GET");
-            if(!Proxy) obj.setProxies(null);
+            ProxyUtils.applyProxy(obj, Proxy);
 
             try (CustomHttpResponse con = requests(obj)){
 

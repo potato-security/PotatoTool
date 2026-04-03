@@ -277,6 +277,7 @@ public class DnsLogService {
                     .setMethod("GET")
                     .setTimeOut(5)
                     .setReadTimeout(5);
+            HttpHandler.applyProxySettings(requestObj);
 
             try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
                 if (response.getResponseCode() == 200) {
@@ -452,6 +453,7 @@ public class DnsLogService {
                     .setMethod("GET")
                     .setTimeOut(5)
                     .setReadTimeout(5);
+            HttpHandler.applyProxySettings(requestObj);
 
             Map<String, String> headers = new HashMap<>();
             headers.put("Cookie", "PHPSESSID=" + info.getSessionId());
@@ -510,6 +512,7 @@ public class DnsLogService {
                     .setMethod("GET")
                     .setTimeOut(5)
                     .setReadTimeout(5);
+            HttpHandler.applyProxySettings(requestObj);
             
             try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
                 if (response.getResponseCode() == 200) {
@@ -611,6 +614,7 @@ public class DnsLogService {
                     .setMethod("GET")
                     .setTimeOut(5)
                     .setReadTimeout(5);
+            HttpHandler.applyProxySettings(requestObj);
             
             try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
                 int responseCode = response.getResponseCode();
@@ -674,4 +678,3 @@ public class DnsLogService {
         }
     }
 }
-

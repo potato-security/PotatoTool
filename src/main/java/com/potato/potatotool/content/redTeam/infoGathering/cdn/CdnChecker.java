@@ -11,6 +11,9 @@ import org.xbill.DNS.Type;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.potato.potatotool.ToStart.debugMode;
 
@@ -21,6 +24,8 @@ import static com.potato.potatotool.ToStart.debugMode;
 public class CdnChecker {
     private static List<String> cdnCnameList;
     private static List<String> cdnIpList;
+    private static final Map<String, Boolean> domainCdnCache = new ConcurrentHashMap<>();
+    private static final Map<String, Boolean> ipCdnCache = new ConcurrentHashMap<>();
 
     static{
         cdnCnameList = Constants.getResourceList("cdnCname");
@@ -29,6 +34,14 @@ public class CdnChecker {
 
     public static boolean isCdnDomain(String domain) {
         if(domain==null||domain.isEmpty()) return false;
+        final String normalizedDomain = domain.trim().toLowerCase(Locale.ROOT);
+        if (normalizedDomain.isEmpty()) {
+            return false;
+        }
+        return domainCdnCache.computeIfAbsent(normalizedDomain, CdnChecker::checkCdnDomain);
+    }
+
+    private static boolean checkCdnDomain(String domain) {
         try {
             // 1. 判断 CNAME
             Record[] cnameRecords = getRecord(domain, Type.CNAME);
@@ -77,7 +90,11 @@ public class CdnChecker {
     }
 
     public static boolean isCdnIp(String ip) {
-        return isIpInCidrList(ip);
+        if (ip == null || ip.trim().isEmpty()) {
+            return false;
+        }
+        final String normalizedIp = ip.trim();
+        return ipCdnCache.computeIfAbsent(normalizedIp, CdnChecker::isIpInCidrList);
     }
 
     private static Record[] getRecord(String domain, int type) throws IOException {

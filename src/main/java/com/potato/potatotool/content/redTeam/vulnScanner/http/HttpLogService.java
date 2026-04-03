@@ -324,6 +324,7 @@ public class HttpLogService {
                     .setMethod("GET")
                     .setTimeOut(10)
                     .setReadTimeout(10);
+            HttpHandler.applyProxySettings(requestObj);
 
             if (customToken != null && !customToken.isEmpty()) {
                 requestObj.setBearerToken(customToken);
@@ -446,6 +447,7 @@ public class HttpLogService {
                     .setMethod("GET")
                     .setTimeOut(8)
                     .setReadTimeout(8);
+            HttpHandler.applyProxySettings(requestObj);
 
             if (customToken != null && !customToken.isEmpty()) {
                 requestObj.setBearerToken(customToken);

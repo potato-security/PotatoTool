@@ -69,7 +69,7 @@ public class AiUtils {
     }
 
     public static boolean getContentRelevance_Ai(String url, String company, Map<String, Object> targetWebBaseInfoMap, boolean isCrawlProxy){
-        boolean hasIconUrl = false;
+        boolean hasIconUrl = true;
         Map<String, Object> webBaseInfoMap = Utils.getWebBaseInfo(url, hasIconUrl, isCrawlProxy);
 
         return getContentRelevance_Ai(webBaseInfoMap, company, targetWebBaseInfoMap);

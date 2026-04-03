@@ -276,6 +276,8 @@ public class PaneSetting {
     private FadeTransition promptFadeOut;
     private volatile boolean promptAutoCloseEnabled;
     private boolean proxyToggleUpdating;
+    private boolean proxyServiceUpdating;
+    private long proxyValidationSeq;
 
     public void initialize() {
         if(isBlueMode){
@@ -301,6 +303,7 @@ public class PaneSetting {
             handleProxyToggle(newVal);
         });
         initVulnScanData();
+        bindProxyServiceListeners();
         initHeadersData();
         initOobSettings();
 
@@ -499,10 +502,11 @@ public class PaneSetting {
         proxyMap.forEach((checkbox, key) -> checkbox.setDisable(!mainProxyEnabled));
     }
 
-    private void persistMainProxyEnabled(boolean enabled) {
+    private boolean persistMainProxyState(boolean enabled, String address) {
         Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
         proxyConfigMap.put(ConfigConstants.PROXY_ENABLE, enabled);
-        Constants.saveConfig(proxyConfigMap, ConfigConstants.PROXY);
+        proxyConfigMap.put(ConfigConstants.PROXY_ADDRESS, address == null ? "" : address.trim());
+        return Constants.saveConfig(proxyConfigMap, ConfigConstants.PROXY);
     }
 
     private void setProxyButtonSelectedSilently(boolean selected) {
@@ -514,25 +518,52 @@ public class PaneSetting {
         }
     }
 
+    private void setServiceProxySelectedSilently(CFSwitch checkbox, boolean selected) {
+        proxyServiceUpdating = true;
+        try {
+            checkbox.setSelected(selected);
+        } finally {
+            proxyServiceUpdating = false;
+        }
+    }
+
+    private void bindProxyServiceListeners() {
+        proxyMap.forEach((checkbox, key) -> checkbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            if (proxyServiceUpdating || oldVal == null || oldVal.equals(newVal)) {
+                return;
+            }
+            if (ProxyUtils.saveServiceProxyEnabled(key, newVal)) {
+                return;
+            }
+            setServiceProxySelectedSilently(checkbox, oldVal);
+            showTip(i18n.getString("setting.save.failed"), false, true);
+        }));
+    }
+
     private void handleProxyToggle(boolean enabled) {
         if (proxyToggleUpdating) {
             return;
         }
+        String proxyAddress = proxy.getText() == null ? "" : proxy.getText().trim();
         if (!enabled) {
-            persistMainProxyEnabled(false);
+            if (!persistMainProxyState(false, proxyAddress)) {
+                setProxyButtonSelectedSilently(true);
+                showTip(i18n.getString("setting.save.failed"), false, true);
+                return;
+            }
             syncProxyChildrenState();
             return;
         }
 
-        String proxyAddress = proxy.getText() == null ? "" : proxy.getText().trim();
         if (proxyAddress.isEmpty()) {
             setProxyButtonSelectedSilently(false);
-            persistMainProxyEnabled(false);
+            persistMainProxyState(false, proxyAddress);
             syncProxyChildrenState();
             showTip(i18n.getString("setting.proxy.enable.address.required"), true, true);
             return;
         }
 
+        long validationSeq = ++proxyValidationSeq;
         proxyButton.setDisable(true);
         showTip(i18n.getString("setting.proxy.checking"), true);
         Task<ProxyUtils.ProxyReachabilityResult> proxyCheckTask = new Task<ProxyUtils.ProxyReachabilityResult>() {
@@ -543,25 +574,38 @@ public class PaneSetting {
         };
 
         proxyCheckTask.setOnSucceeded(e -> {
+            if (validationSeq != proxyValidationSeq || !proxyAddress.equals(proxy.getText() == null ? "" : proxy.getText().trim())) {
+                proxyButton.setDisable(false);
+                return;
+            }
             proxyButton.setDisable(false);
             ProxyUtils.ProxyReachabilityResult result = proxyCheckTask.getValue();
             boolean reachable = result != null && result.isReachable();
             if (!reachable) {
                 setProxyButtonSelectedSilently(false);
-                persistMainProxyEnabled(false);
+                persistMainProxyState(false, proxyAddress);
                 syncProxyChildrenState();
                 showTip(ProxyUtils.buildUnavailableMessage(result), true, true);
                 return;
             }
-            persistMainProxyEnabled(true);
+            if (!persistMainProxyState(true, proxyAddress)) {
+                setProxyButtonSelectedSilently(false);
+                syncProxyChildrenState();
+                showTip(i18n.getString("setting.save.failed"), false, true);
+                return;
+            }
             syncProxyChildrenState();
             showTip(i18n.getString("setting.proxy.available"));
         });
 
         proxyCheckTask.setOnFailed(e -> {
+            if (validationSeq != proxyValidationSeq) {
+                proxyButton.setDisable(false);
+                return;
+            }
             proxyButton.setDisable(false);
             setProxyButtonSelectedSilently(false);
-            persistMainProxyEnabled(false);
+            persistMainProxyState(false, proxyAddress);
             syncProxyChildrenState();
             showTip(ProxyUtils.buildUnavailableMessage(null), true, true);
         });
@@ -773,7 +817,7 @@ public class PaneSetting {
             return true;
         }
         setProxyButtonSelectedSilently(false);
-        persistMainProxyEnabled(false);
+        persistMainProxyState(false, proxyAddress);
         syncProxyChildrenState();
         showTip(ProxyUtils.buildUnavailableMessage(result), true, true);
         return false;
@@ -793,13 +837,6 @@ public class PaneSetting {
         Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
         proxyConfigMap.put(ConfigConstants.PROXY_ENABLE, proxyButton.isSelected());
         proxyConfigMap.put(ConfigConstants.PROXY_ADDRESS, proxy.getText());
-        
-        // 保存各服务的代理状态到 Proxy.services
-        Map<String, Object> servicesMap = new LinkedHashMap<>();
-        proxyMap.forEach((checkbox, key) -> {
-            servicesMap.put(key, checkbox.isSelected());
-        });
-        proxyConfigMap.put(ConfigConstants.PROXY_SERVICES, servicesMap);
         configMap.put(ConfigConstants.PROXY, proxyConfigMap);
 
         Map<String, Object> decompileMap = new LinkedHashMap<>();
@@ -959,9 +996,6 @@ public class PaneSetting {
 
     @FXML
     public void saveAsset(ActionEvent event) {
-        if (!validateMainProxyBeforeSave()) {
-            return;
-        }
         // 检查语言是否发生变化
         String selectedLanguage = languageComboBox != null ? languageComboBox.getValue() : null;
         String currentLanguageDisplay = "zh_CN".equals(i18n.getCurrentLanguageCode()) ? "简体中文" : "English";
@@ -989,19 +1023,6 @@ public class PaneSetting {
         assetMap.put(AssetConstants.GITHUB_TOKEN, GitHub_Token);
         assetMap.put(AssetConstants.GOOGLE_API, Google_API);
         configMap.put(AssetConstants.ASSET, assetMap);
-        
-        // 保存代理配置到 Proxy.services（与 save() 方法保持一致）
-        Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
-        JsonObject currentProxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
-        proxyConfigMap.put(ConfigConstants.PROXY_ENABLE, currentProxyConfig.get(ConfigConstants.PROXY_ENABLE).getAsBoolean());
-        proxyConfigMap.put(ConfigConstants.PROXY_ADDRESS, currentProxyConfig.get(ConfigConstants.PROXY_ADDRESS).getAsString());
-        
-        Map<String, Object> servicesMap = new LinkedHashMap<>();
-        proxyMap.forEach((checkbox, key) -> {
-            servicesMap.put(key, checkbox.isSelected());
-        });
-        proxyConfigMap.put(ConfigConstants.PROXY_SERVICES, servicesMap);
-        configMap.put(ConfigConstants.PROXY, proxyConfigMap);
 
         if(Constants.saveConfig(configMap)){
             // 如果语言发生了变化，则切换语言
@@ -1722,9 +1743,6 @@ public class PaneSetting {
      */
     @FXML
     public void saveVulnScan(ActionEvent event) {
-        if (!validateMainProxyBeforeSave()) {
-            return;
-        }
         try {
             // 获取当前完整的VulnScan配置
             JsonObject currentVulnScan = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
@@ -1734,7 +1752,6 @@ public class PaneSetting {
             
             Map<String, Object> configMap = new LinkedHashMap<>();
             Map<String, Object> vulnScanMap = new LinkedHashMap<>();
-            Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
             
             // 保留原有配置项
             if (currentVulnScan.has(ConfigConstants.VULNSCAN_POC_DIR)) {
@@ -1794,27 +1811,6 @@ public class PaneSetting {
                     showTip(i18n.getString("setting.vulnscan.retries.invalid"), false, true);
                     return;
                 }
-            }
-            
-            // 代理配置（统一以 Proxy.services.VulnScan 为准）
-            JsonObject currentProxyConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
-            if (currentProxyConfig != null) {
-                if (currentProxyConfig.has(ConfigConstants.PROXY_ENABLE)) {
-                    proxyConfigMap.put(ConfigConstants.PROXY_ENABLE, currentProxyConfig.get(ConfigConstants.PROXY_ENABLE).getAsBoolean());
-                }
-                if (currentProxyConfig.has(ConfigConstants.PROXY_ADDRESS)) {
-                    proxyConfigMap.put(ConfigConstants.PROXY_ADDRESS, currentProxyConfig.get(ConfigConstants.PROXY_ADDRESS).getAsString());
-                }
-                JsonObject currentServices = currentProxyConfig.has(ConfigConstants.PROXY_SERVICES)
-                        && currentProxyConfig.get(ConfigConstants.PROXY_SERVICES).isJsonObject()
-                        ? currentProxyConfig.getAsJsonObject(ConfigConstants.PROXY_SERVICES)
-                        : new JsonObject();
-                Map<String, Object> servicesMap = new LinkedHashMap<>();
-                for (String key : currentServices.keySet()) {
-                    servicesMap.put(key, currentServices.get(key).getAsBoolean());
-                }
-                servicesMap.put(ConfigConstants.VULNSCAN_SERVICE, vulnScanProxySwitch.isSelected());
-                proxyConfigMap.put(ConfigConstants.PROXY_SERVICES, servicesMap);
             }
             
             // 线程池配置
@@ -1880,9 +1876,6 @@ public class PaneSetting {
             vulnScanMap.put(ConfigConstants.VULNSCAN_HEADLESS, headlessMap);
 
             configMap.put(ConfigConstants.VULNSCAN, vulnScanMap);
-            if (!proxyConfigMap.isEmpty()) {
-                configMap.put(ConfigConstants.PROXY, proxyConfigMap);
-            }
             
             if (Constants.saveConfig(configMap)) {
                 showTip(i18n.getString("setting.save.success"));

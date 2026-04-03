@@ -17,7 +17,6 @@ import javafx.stage.Window;
  */
 public class DialogUtils {
     private static Stage setStage;
-    private static PaneSetting setController;
 
     /**
      * 显示设置对话框
@@ -35,29 +34,36 @@ public class DialogUtils {
     public static void showSet(Window owner, String configKey) {
         Platform.runLater(() -> {
             try {
-                if (setStage == null) {
-                    setStage = new Stage();
-                    setStage.initOwner(owner);
-                    setStage.initModality(Modality.WINDOW_MODAL);
-                    setStage.initStyle(StageStyle.TRANSPARENT);
-                    setStage.setAlwaysOnTop(true);
-
-                    FXMLLoader loader = new FXMLLoader(DialogUtils.class.getResource("/fxml/publicPane/setting.fxml"));
-                    AnchorPane dialogRoot = loader.load();
-                    setController = loader.getController();  // 保存控制器引用
-                    
-                    Scene scene = new Scene(dialogRoot);
-                    scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
-                    scene.setFill(null);    //  背景透明
-                    setStage.setScene(scene);
-                    setStage.setTitle("修改配置信息");
+                if (setStage != null) {
+                    setStage.close();
                 }
-                
+
+                setStage = new Stage();
+                setStage.initOwner(owner);
+                setStage.initModality(Modality.WINDOW_MODAL);
+                setStage.initStyle(StageStyle.TRANSPARENT);
+                setStage.setAlwaysOnTop(true);
+
+                FXMLLoader loader = new FXMLLoader(DialogUtils.class.getResource("/fxml/publicPane/setting.fxml"));
+                AnchorPane dialogRoot = loader.load();
+                PaneSetting setController = loader.getController();
+
+                Scene scene = new Scene(dialogRoot);
+                scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+                scene.setFill(null);    //  背景透明
+                setStage.setScene(scene);
+                setStage.setTitle("修改配置信息");
+                setStage.setOnHidden(event -> {
+                    if (setStage != null && !setStage.isShowing()) {
+                        setStage = null;
+                    }
+                });
+
                 // 如果指定了 configKey，则定位到该配置项
                 if (configKey != null && setController != null) {
                     setController.navigateToConfig(configKey);
                 }
-                
+
                 setStage.show();
             } catch (Exception e) {
                 e.printStackTrace();

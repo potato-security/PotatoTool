@@ -203,7 +203,7 @@ public class AiqichaSearch {
                 .setMethod("GET")
                 .setHeaders(headers)
                 .setRetries(2);
-        if(!Proxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, Proxy);
 
         try (CustomHttpResponse con = requests(obj)) {
 
@@ -245,7 +245,7 @@ public class AiqichaSearch {
                 .setHeaders(headers)
                 .setRetryWaitTime(5)
                 .setRetries(2);
-        if(!Proxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, Proxy);
 
         try (CustomHttpResponse con = requests(obj)) {
 

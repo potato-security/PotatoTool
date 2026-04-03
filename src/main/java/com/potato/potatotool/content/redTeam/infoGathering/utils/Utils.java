@@ -3,6 +3,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.utils;
 import com.google.common.hash.Hashing;
 import com.potato.potatotool.utils.data.StrUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.RequestObj;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -82,7 +83,7 @@ public class Utils {
         RequestObj obj = new RequestObj().setUrl(url)
                 .setMethod("GET").setRetries(2).setFollowRedirects(true)
                 .setTimeOut(20);
-        if(!isCrawlProxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, isCrawlProxy);
 
         try (CustomHttpResponse con = requests(obj)) {
 
@@ -133,7 +134,7 @@ public class Utils {
         RequestObj obj = new RequestObj().setUrl(url)
                 .setMethod("GET").setRetries(2).setFollowRedirects(true)
                 .setTimeOut(20);
-        if(!isCrawlProxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, isCrawlProxy);
 
         try (CustomHttpResponse con = requests(obj)) {
 
@@ -198,7 +199,7 @@ public class Utils {
         RequestObj obj_icon = new RequestObj().setUrl(iconUrl)
                 .setMethod("GET").setRetries(2)
                 .setTimeOut(20);
-        if(!isCrawlProxy) obj_icon.setProxies(null);
+        ProxyUtils.applyProxy(obj_icon, isCrawlProxy);
 
         try (CustomHttpResponse con_icon = requests(obj_icon)) {
             int statusCode_icon = con_icon.getResponseCode();
@@ -328,7 +329,7 @@ public class Utils {
         RequestObj obj = new RequestObj().setUrl(url)
                 .setMethod("GET").setRetries(2).setFollowRedirects(true)
                 .setTimeOut(20);
-        if(!isCrawlProxy) obj.setProxies(null);
+        ProxyUtils.applyProxy(obj, isCrawlProxy);
 
         try (CustomHttpResponse con = requests(obj)) {
 
@@ -456,10 +457,12 @@ public class Utils {
         RequestObj obj = new RequestObj().setUrl(urlStr)
                 .setFollowRedirects(true)
                 .setMethod("HEAD")
-//                    .setMethod("GET")   // 建议使用HEAD，但是部分网站单独设置不允许HEAD请求
-//                    .setTimeOut(20)
-                .setRetries(2);
-        if(!isCrawlProxy) obj.setProxies(null);
+                .setTimeOut(3)
+                .setReadTimeout(3)
+                .setWriteTimeout(3)
+                .setCallTimeout(6)
+                .setRetries(0);
+        ProxyUtils.applyProxy(obj, isCrawlProxy);
 
         try (CustomHttpResponse con = requests(obj)) {
             int statusCode = con.getResponseCode();

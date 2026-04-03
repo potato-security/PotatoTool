@@ -610,7 +610,9 @@ public class HttpHandler {
         if (requestObj == null) {
             return;
         }
-        
+
+        // RequestObj 构造时会默认继承总代理，这里先清空，再按 VulnScan 配置显式应用。
+        requestObj.setProxies(null);
         VulnScanConfig config = VulnScanConfig.getInstance();
         
         // 检查是否启用代理
@@ -712,4 +714,4 @@ public class HttpHandler {
             return hostname;
         }
     }
-} 
+}
