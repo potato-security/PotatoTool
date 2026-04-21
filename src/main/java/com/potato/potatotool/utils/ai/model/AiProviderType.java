@@ -1,7 +1,9 @@
 package com.potato.potatotool.utils.ai.model;
 
 public enum AiProviderType {
-    OPENAI_COMPATIBLE;
+    OPENAI_COMPATIBLE,
+    ANTHROPIC,
+    GEMINI;
 
     public static AiProviderType fromString(String value) {
         if (value == null || value.trim().isEmpty()) {

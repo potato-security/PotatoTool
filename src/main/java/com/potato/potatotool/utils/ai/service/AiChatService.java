@@ -63,6 +63,14 @@ public class AiChatService {
     }
 
     public void streamChat(String question, EventListener listener) {
+        streamChat(null, question, question, listener);
+    }
+
+    public void streamChat(String systemPrompt, String question, EventListener listener) {
+        streamChat(systemPrompt, question, question, listener);
+    }
+
+    public void streamChat(String systemPrompt, String question, String historyQuestion, EventListener listener) {
         if (question == null || question.trim().isEmpty()) {
             listener.onEvent(AiStreamEvent.error("问题不能为空"));
             return;
@@ -78,7 +86,14 @@ public class AiChatService {
         }
 
         AiProviderAdapter adapter = providerRegistry.get(runtimeConfig.getProviderType());
-        AiChatRequest request = new AiChatRequest(askText, history, runtimeConfig.getThinkingConfig(), true);
+        AiChatRequest request = new AiChatRequest(
+                askText,
+                normalizeHistoryQuestion(historyQuestion, askText),
+                history,
+                runtimeConfig.getThinkingConfig(),
+                true,
+                systemPrompt
+        );
         RequestObj requestObj = adapter.buildRequest(runtimeConfig, request);
 
         final StringBuilder answerBuffer = new StringBuilder();
@@ -95,7 +110,7 @@ public class AiChatService {
             });
 
             if (answerBuffer.length() > 0) {
-                appendHistory("user", askText);
+                appendHistory("user", request.getHistoryQuestion());
                 appendHistory("assistant", answerBuffer.toString());
             }
         } catch (Exception e) {
@@ -104,6 +119,14 @@ public class AiChatService {
     }
 
     public String askNoStream(String question) {
+        return askNoStream(null, question, question);
+    }
+
+    public String askNoStream(String systemPrompt, String question) {
+        return askNoStream(systemPrompt, question, question);
+    }
+
+    public String askNoStream(String systemPrompt, String question, String historyQuestion) {
         if (question == null || question.trim().isEmpty()) {
             return "问题不能为空";
         }
@@ -117,63 +140,26 @@ public class AiChatService {
         }
 
         AiProviderAdapter adapter = providerRegistry.get(runtimeConfig.getProviderType());
-        AiChatRequest request = new AiChatRequest(askText, history, runtimeConfig.getThinkingConfig(), false);
+        AiChatRequest request = new AiChatRequest(
+                askText,
+                normalizeHistoryQuestion(historyQuestion, askText),
+                history,
+                runtimeConfig.getThinkingConfig(),
+                false,
+                systemPrompt
+        );
         RequestObj requestObj = adapter.buildRequest(runtimeConfig, request);
 
         try (CustomHttpResponse response = requests(requestObj)) {
             String body = response.getTextStr();
-            String parsed = parseNonStreamResponse(body);
+            String parsed = adapter.parseResponse(body);
             if (parsed != null) {
-                appendHistory("user", askText);
+                appendHistory("user", request.getHistoryQuestion());
                 appendHistory("assistant", parsed);
             }
             return parsed == null ? "" : parsed;
         } catch (Exception e) {
             return normalizeError(e, runtimeConfig);
-        }
-    }
-
-    static String parseNonStreamResponse(String body) {
-        if (body == null || body.trim().isEmpty()) {
-            return "";
-        }
-        try {
-            JsonObject json = JsonParser.parseString(body).getAsJsonObject();
-
-            if (json.has("error") && json.get("error").isJsonObject()) {
-                JsonObject error = json.getAsJsonObject("error");
-                String message = safeString(error, "message");
-                return message.isEmpty() ? "AI 请求失败" : message;
-            }
-
-            JsonArray choices = json.has("choices") && json.get("choices").isJsonArray()
-                    ? json.getAsJsonArray("choices") : new JsonArray();
-            if (choices.size() == 0 || !choices.get(0).isJsonObject()) {
-                return "";
-            }
-            JsonObject firstChoice = choices.get(0).getAsJsonObject();
-            if (!firstChoice.has("message") || !firstChoice.get("message").isJsonObject()) {
-                return "";
-            }
-            JsonObject message = firstChoice.getAsJsonObject("message");
-            return safeString(message, "content");
-        } catch (Exception e) {
-            return "AI 响应解析失败: " + e.getMessage();
-        }
-    }
-
-    private static String safeString(JsonObject obj, String key) {
-        if (obj == null || !obj.has(key)) {
-            return "";
-        }
-        JsonElement element = obj.get(key);
-        if (element == null || element.isJsonNull()) {
-            return "";
-        }
-        try {
-            return element.getAsString();
-        } catch (Exception ignored) {
-            return "";
         }
     }
 
@@ -269,5 +255,13 @@ public class AiChatService {
         }
         int colonIndex = hostPort.indexOf(':');
         return colonIndex > 0 ? hostPort.substring(0, colonIndex) : hostPort;
+    }
+
+    private String normalizeHistoryQuestion(String historyQuestion, String fallbackQuestion) {
+        String candidate = historyQuestion == null ? "" : historyQuestion.trim();
+        if (!candidate.isEmpty()) {
+            return candidate;
+        }
+        return fallbackQuestion == null ? "" : fallbackQuestion.trim();
     }
 }

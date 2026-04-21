@@ -12,4 +12,8 @@ public interface AiProviderAdapter {
     RequestObj buildRequest(AiRuntimeConfig runtimeConfig, AiChatRequest request);
 
     List<AiStreamEvent> parseSseLine(String line);
+
+    default String parseResponse(String body) {
+        return "";
+    }
 }

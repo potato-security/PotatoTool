@@ -10,6 +10,8 @@ public class AiProviderRegistry {
 
     public AiProviderRegistry() {
         register(AiProviderType.OPENAI_COMPATIBLE, new OpenAiCompatibleProviderAdapter());
+        register(AiProviderType.ANTHROPIC, new AnthropicProviderAdapter());
+        register(AiProviderType.GEMINI, new GeminiProviderAdapter());
     }
 
     public void register(AiProviderType type, AiProviderAdapter adapter) {

@@ -31,6 +31,9 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
         body.addProperty("stream", request.isStream());
 
         JsonArray messages = new JsonArray();
+        if (!request.getSystemPrompt().trim().isEmpty()) {
+            messages.add(createMessage("system", request.getSystemPrompt()));
+        }
         for (AiMessage item : request.getHistory()) {
             messages.add(createMessage(item.getRole(), item.getContent()));
         }
@@ -124,6 +127,36 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
             events.add(AiStreamEvent.error("流式响应解析失败: " + e.getMessage()));
         }
         return events;
+    }
+
+    @Override
+    public String parseResponse(String body) {
+        if (body == null || body.trim().isEmpty()) {
+            return "";
+        }
+        try {
+            JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+
+            if (json.has("error") && json.get("error").isJsonObject()) {
+                JsonObject error = json.getAsJsonObject("error");
+                String message = safeString(error, "message");
+                return message.isEmpty() ? "AI 请求失败" : message;
+            }
+
+            JsonArray choices = json.has("choices") && json.get("choices").isJsonArray()
+                    ? json.getAsJsonArray("choices") : new JsonArray();
+            if (choices.size() == 0 || !choices.get(0).isJsonObject()) {
+                return "";
+            }
+            JsonObject firstChoice = choices.get(0).getAsJsonObject();
+            if (!firstChoice.has("message") || !firstChoice.get("message").isJsonObject()) {
+                return "";
+            }
+            JsonObject message = firstChoice.getAsJsonObject("message");
+            return safeString(message, "content");
+        } catch (Exception e) {
+            return "AI 响应解析失败: " + e.getMessage();
+        }
     }
 
     private JsonObject createMessage(String role, String content) {

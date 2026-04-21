@@ -1,9 +1,13 @@
 package com.potato.potatotool.utils.ai;
 
 import com.potato.potatotool.utils.ai.service.AiChatService;
+import com.potato.potatotool.utils.ai.model.AiStreamEvent;
+import com.potato.potatotool.utils.core.I18nTextUtils;
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 import org.fxmisc.richtext.CodeArea;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Potato
@@ -11,18 +15,28 @@ import org.fxmisc.richtext.CodeArea;
  */
 
 public class CodeAnalyzerUtils {
-
     public static void evilCodeAnalysis(String evilCode , String encodeModes, Object node) throws Exception {
         String result = buildEvilCodeAnalysisResult(evilCode, encodeModes);
         setNodeContent(node, result);
+    }
+
+    public static void streamEvilCodeAnalysis(String evilCode, String encodeModes, Object node) {
+        streamEvilCodeAnalysis(evilCode, encodeModes, new AiChatService(), createStreamAppender(node));
     }
 
 
     //  优化代码，如反编译后的代码
     public static void optimizedCode(String code, Object node) throws Exception {
         AiChatService aiService = new AiChatService();
-        String result = aiService.askNoStream("这是反编译后得到的代码，当前可读性较差。请帮我对其进行结构优化，提高可读性，并为关键部分添加详细注释，以便理解其逻辑和功能。以下是需要优化的代码：```" + code + "```");
+        String result = aiService.askNoStream(
+                AiPromptUtils.codeOptimizationSystemPrompt(),
+                buildOptimizedCodePrompt(code)
+        );
         setNodeContent(node, result);
+    }
+
+    public static void streamOptimizedCode(String code, Object node) {
+        streamOptimizedCode(code, new AiChatService(), createStreamAppender(node));
     }
 
     static String buildEvilCodeAnalysisResult(String evilCode, String encodeModes) {
@@ -30,49 +44,112 @@ public class CodeAnalyzerUtils {
     }
 
     static String buildEvilCodeAnalysisResult(String evilCode, String encodeModes, AiChatService aiService) {
-        String analysisPrompt = String.format(
-                "你是具备丰富经验的安全代码分析专家，请使用中文对以下代码或可疑片段进行全面的安全分析：\n\n" +
-                        "【编码/混淆特征】：%s\n" +
-                        "【待分析内容】如下（可能为代码、交互流量、脚本等）：\n```%s```\n\n" +
-                        "请分析以下方面（保持客观中立）：\n" +
-                        "1. **性质初判**：\n" +
-                        "   - 是否具有恶意特征？请在“恶意 / 正常 / 可疑 / 无法判断”中给出判定，并说明依据和置信度。\n" +
-                        "2. **技术解析**：\n" +
-                        "   - 描述其功能实现细节，包括用途、行为、涉及的技术。\n" +
-                        "3. **安全风险评估**：\n" +
-                        "   - 如果存在潜在风险，请描述其威胁模型及可能的攻击场景（如WebShell交互、信息泄露、命令执行等）。\n" +
-                        "4. **若被判为恶意代码**：\n" +
-                        "   - 关联的 Mitre ATT&CK 技术编号\n" +
-                        "   - 所处攻击链环节\n" +
-                        "5. **若为正常或可疑但非恶意代码**：\n" +
-                        "   - 说明可能引发安全误报的特征\n" +
-                        "   - 提出加固建议或代码审计关注点"
-                , encodeModes, evilCode
+        return safeText(aiService.askNoStream(
+                AiPromptUtils.securityAnalysisSystemPrompt(),
+                buildUnifiedAnalysisPrompt(evilCode, encodeModes)
+        ));
+    }
+
+    static void streamEvilCodeAnalysis(String evilCode,
+                                       String encodeModes,
+                                       AiChatService aiService,
+                                       StreamAppender appender) {
+        if (appender == null) {
+            throw new IllegalArgumentException("stream appender is required");
+        }
+
+        appender.setText(I18nTextUtils.getString("webshell.ai.section.summary") + "\n");
+        StreamPhaseResult result = streamPrompt(
+                aiService,
+                AiPromptUtils.securityAnalysisSystemPrompt(),
+                buildUnifiedAnalysisPrompt(evilCode, encodeModes),
+                appender
         );
+        if (result.hasError()) {
+            if (result.hasContent()) {
+                appender.append("\n\n");
+                appender.append(I18nTextUtils.getString("webshell.ai.stream.error", result.getError()));
+            } else {
+                appender.setText(result.getError());
+            }
+            return;
+        }
+        if (!result.hasContent()) {
+            appender.setText(I18nTextUtils.getString("webshell.ai.empty"));
+        }
+    }
 
-        String analysisResult = safeText(aiService.askNoStream(analysisPrompt));
-        if (isLikelyAiError(analysisResult)) {
-            return analysisResult;
+    static void streamOptimizedCode(String code,
+                                    AiChatService aiService,
+                                    StreamAppender appender) {
+        if (appender == null) {
+            throw new IllegalArgumentException("stream appender is required");
         }
 
-        String responsePrompt =
-                "你是资深的安全响应专家，请根据前述分析结果，进一步提供响应与防护建议（请区分代码是否具有威胁）：\n\n" +
-                        "【1. 若存在安全威胁】\n" +
-                        "   - 分阶段处置策略（遏制 → 根除 → 恢复）\n" +
-                        "   - 威胁狩猎指标（IoC / IoA），用于检测类似行为\n\n" +
-                        "【2. 若为正常或低风险代码】\n" +
-                        "   - 说明可能造成误报的原因\n" +
-                        "   - 提出误报规避建议（如规则优化、白名单）\n\n" +
-                        "【3. 通用建议】\n" +
-                        "   - 安全监控和告警策略建议\n" +
-                        "   - 审计过程中应重点关注的风险要素"
-                ;
-
-        String responseResult = safeText(aiService.askNoStream(responsePrompt));
-        if (responseResult.isEmpty()) {
-            return analysisResult;
+        appender.setText("");
+        StreamPhaseResult result = streamPrompt(
+                aiService,
+                AiPromptUtils.codeOptimizationSystemPrompt(),
+                buildOptimizedCodePrompt(code),
+                appender
+        );
+        if (result.hasError()) {
+            if (result.hasContent()) {
+                appender.append("\n\n");
+                appender.append(I18nTextUtils.getString("ai.status.error"));
+                appender.append(": ");
+                appender.append(result.getError());
+            } else {
+                appender.setText(result.getError());
+            }
+            return;
         }
-        return analysisResult + "\n\n" + responseResult;
+        if (!result.hasContent()) {
+            appender.setText(I18nTextUtils.getString("decompile.ai.empty"));
+        }
+    }
+
+    private static String buildUnifiedAnalysisPrompt(String evilCode, String encodeModes) {
+        return AiPromptUtils.buildSecurityAnalysisPrompt(evilCode, encodeModes);
+    }
+
+    private static String buildOptimizedCodePrompt(String code) {
+        return AiPromptUtils.buildCodeOptimizationPrompt(code);
+    }
+
+    private static StreamPhaseResult streamPrompt(AiChatService aiService,
+                                                  String systemPrompt,
+                                                  String prompt,
+                                                  StreamAppender appender) {
+        final StringBuilder buffer = new StringBuilder();
+        final String[] errorHolder = new String[1];
+        aiService.streamChat(systemPrompt, prompt, event -> handlePhaseEvent(event, buffer, appender, errorHolder));
+        return new StreamPhaseResult(buffer.toString(), errorHolder[0]);
+    }
+
+    private static void handlePhaseEvent(AiStreamEvent event,
+                                         StringBuilder buffer,
+                                         StreamAppender appender,
+                                         String[] errorHolder) {
+        if (event == null) {
+            return;
+        }
+        switch (event.getType()) {
+            case TOKEN:
+                String content = event.getContent();
+                if (content != null && !content.isEmpty()) {
+                    buffer.append(content);
+                    appender.append(content);
+                }
+                break;
+            case ERROR:
+                errorHolder[0] = safeText(event.getContent());
+                break;
+            case THINKING_TOKEN:
+            case DONE:
+            default:
+                break;
+        }
     }
 
     private static String safeText(String content) {
@@ -103,6 +180,132 @@ public class CodeAnalyzerUtils {
         } else if (node instanceof CodeArea) {
             CodeArea codeArea = (CodeArea) node;
             Platform.runLater(() -> codeArea.replaceText(finalContent));
+        }
+    }
+
+    private static StreamAppender createStreamAppender(Object node) {
+        if (node instanceof TextArea) {
+            return new FxBufferedTextAreaAppender((TextArea) node);
+        }
+        if (node instanceof CodeArea) {
+            return new FxBufferedCodeAreaAppender((CodeArea) node);
+        }
+        throw new IllegalArgumentException("Unsupported stream node: " + node);
+    }
+
+    interface StreamAppender {
+        void setText(String text);
+
+        void append(String text);
+    }
+
+    private static final class StreamPhaseResult {
+        private final String content;
+        private final String error;
+
+        private StreamPhaseResult(String content, String error) {
+            this.content = safeText(content);
+            this.error = safeText(error);
+        }
+
+        private boolean hasContent() {
+            return !content.isEmpty();
+        }
+
+        private boolean hasError() {
+            return !error.isEmpty();
+        }
+
+        private String getError() {
+            return error;
+        }
+    }
+
+    private abstract static class FxBufferedAppenderSupport {
+        private final StringBuilder pending = new StringBuilder();
+        private final AtomicBoolean flushQueued = new AtomicBoolean(false);
+
+        public void setText(String text) {
+            final String value = text == null ? "" : text;
+            synchronized (pending) {
+                pending.setLength(0);
+            }
+            Platform.runLater(() -> applyText(value));
+        }
+
+        public void append(String text) {
+            if (text == null || text.isEmpty()) {
+                return;
+            }
+            synchronized (pending) {
+                pending.append(text);
+            }
+            scheduleFlush();
+        }
+
+        private void scheduleFlush() {
+            if (!flushQueued.compareAndSet(false, true)) {
+                return;
+            }
+            Platform.runLater(() -> {
+                String chunk;
+                synchronized (pending) {
+                    chunk = pending.toString();
+                    pending.setLength(0);
+                }
+                try {
+                    if (!chunk.isEmpty()) {
+                        appendText(chunk);
+                    }
+                } finally {
+                    flushQueued.set(false);
+                    synchronized (pending) {
+                        if (pending.length() > 0) {
+                            scheduleFlush();
+                        }
+                    }
+                }
+            });
+        }
+
+        protected abstract void applyText(String text);
+
+        protected abstract void appendText(String text);
+    }
+
+    private static final class FxBufferedTextAreaAppender extends FxBufferedAppenderSupport implements StreamAppender {
+        private final TextArea textArea;
+
+        private FxBufferedTextAreaAppender(TextArea textArea) {
+            this.textArea = textArea;
+        }
+
+        @Override
+        protected void applyText(String text) {
+            textArea.setText(text);
+        }
+
+        @Override
+        protected void appendText(String text) {
+            textArea.appendText(text);
+        }
+    }
+
+    private static final class FxBufferedCodeAreaAppender extends FxBufferedAppenderSupport implements StreamAppender {
+        private final CodeArea codeArea;
+
+        private FxBufferedCodeAreaAppender(CodeArea codeArea) {
+            this.codeArea = codeArea;
+        }
+
+        @Override
+        protected void applyText(String text) {
+            codeArea.replaceText(text);
+        }
+
+        @Override
+        protected void appendText(String text) {
+            codeArea.appendText(text);
         }
     }
 }
