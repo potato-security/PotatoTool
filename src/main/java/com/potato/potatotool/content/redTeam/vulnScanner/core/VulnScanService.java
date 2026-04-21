@@ -51,9 +51,6 @@ public class VulnScanService {
         this.smartPocSelector = new SmartPocSelector(
             pocRepository, scanEngine.getPocExecutor(), scanEngine.getEventDispatcher());
 
-        // 初始化 Python 环境（自动检测或从配置加载）
-        vulnConfig.initializePython();
-
         // 设置默认事件监听器
         setupDefaultEventListeners();
     }
@@ -565,4 +562,3 @@ public class VulnScanService {
         return pocRepository;
     }
 }
-

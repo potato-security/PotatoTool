@@ -485,13 +485,15 @@ public class RequestUtils {
             builder.sslSocketFactory(trustAllSSLSocketFactory, trustAllTrustManager);
         }
 
-        // 设置代理
+        // 显式指定代理路由，避免回退到 JVM/IDE/系统默认代理。
+        Proxy effectiveProxy = Proxy.NO_PROXY;
         if (proxies != null && !proxies.isEmpty()) {
             Proxy proxy = createProxy(proxies, proxiesType);
             if (proxy != null) {
-                builder.proxy(proxy);
+                effectiveProxy = proxy;
             }
         }
+        builder.proxy(effectiveProxy);
 
         return builder.build();
     }

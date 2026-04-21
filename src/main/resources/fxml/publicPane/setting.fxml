@@ -106,6 +106,19 @@
                                                 </ComboBox>
                                             </HBox>
 
+                                            <HBox alignment="CENTER" spacing="10">
+                                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="浏览器路径：" userData="i18n:setting.browser.path"/>
+                                                <TextField fx:id="browserRuntimePath" prefWidth="250" promptText="留空则启动后自动探测并保存 Chrome/Chromium" userData="i18n-prompt:setting.browser.path.placeholder"/>
+                                                <Button text="浏览" minHeight="28" minWidth="72" prefWidth="72" onAction="#browseBrowserRuntimePath" userData="i18n:app.browse"/>
+                                                <Button text="检测" minHeight="28" minWidth="72" prefWidth="72" onAction="#testBrowserRuntimeCompatibility" userData="i18n:setting.browser.test"/>
+                                            </HBox>
+
+                                            <HBox alignment="CENTER" spacing="10">
+                                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="Python 路径：" userData="i18n:setting.python.path"/>
+                                                <TextField fx:id="pythonRuntimePath" prefWidth="250" promptText="留空则启动后自动探测并保存 Python" userData="i18n-prompt:setting.python.path.placeholder"/>
+                                                <Button text="浏览" minHeight="28" minWidth="72" prefWidth="72" onAction="#browsePythonRuntimePath" userData="i18n:app.browse"/>
+                                            </HBox>
+
         <!--                            <HBox alignment="CENTER" spacing="10">-->
         <!--                                <Button fx:id="viewProfileButton" minHeight="38.0" minWidth="150" text="查看配置文件" onAction="#viewProfile">-->
         <!--                                    <effect>-->
@@ -172,6 +185,8 @@
                                                     <items>
                                                         <FXCollections fx:factory="observableArrayList">
                                                             <String fx:value="OPENAI_COMPATIBLE"/>
+                                                            <String fx:value="ANTHROPIC"/>
+                                                            <String fx:value="GEMINI"/>
                                                         </FXCollections>
                                                     </items>
                                                 </ComboBox>
@@ -444,25 +459,6 @@
                                                         <CFSwitch fx:id="vulnScanProxySwitch">
                                                             <tooltip><Tooltip text="需先启用主代理，开启后将使用全局代理进行扫描" userData="i18n:setting.vulnscan.proxy.tip"/></tooltip>
                                                         </CFSwitch>
-                                                    </HBox>
-                                                </FlowPane>
-                                            </VBox>
-
-                                            <Separator prefWidth="${an.width - 58}"/>
-
-                                            <!-- Headless 配置区 -->
-                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
-                                                <HBox alignment="CENTER_LEFT" spacing="8">
-                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M9 2v2H7a2 2 0 0 0-2 2v2h2V6h2V4h2V2H9zm4 2v2h2v2h2V6a2 2 0 0 0-2-2h-2zm2 8v2h-2v2h2a2 2 0 0 0 2-2v-2h-2zm-8 2H7v-2H5v2a2 2 0 0 0 2 2h2v-2zM8 7h8v8H8V7z'; -fx-background-color: -main-border-color;"/>
-                                                    <Label styleClass="setting-section-title"
-                                                          text="Headless 预检" userData="i18n:setting.vulnscan.headless"/>
-                                                </HBox>
-                                                <FlowPane hgap="15" vgap="10" alignment="CENTER_LEFT">
-                                                    <HBox alignment="CENTER_LEFT" spacing="8">
-                                                        <Label text="浏览器路径:" styleClass="setting-field-label" userData="i18n:setting.vulnscan.headless.browser.path"/>
-                                                        <TextField fx:id="vulnScanHeadlessBrowserPath" prefWidth="280" promptText="留空则自动探测 Chrome/Chromium" styleClass="setting-field-input" userData="i18n-prompt:setting.vulnscan.headless.browser.path.placeholder"/>
-                                                        <Button text="浏览" minHeight="28" onAction="#browseHeadlessBrowserPath" userData="i18n:app.browse"/>
-                                                        <Button text="检测" minHeight="28" onAction="#testHeadlessCompatibility" userData="i18n:setting.vulnscan.headless.test"/>
                                                     </HBox>
                                                 </FlowPane>
                                             </VBox>

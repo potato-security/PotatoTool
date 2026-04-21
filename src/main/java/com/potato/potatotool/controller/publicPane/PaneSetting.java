@@ -11,14 +11,18 @@ import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstan
 import com.potato.potatotool.content.redTeam.vulnScanner.http.HeadlessHandler;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpLogService;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.PythonHandler;
 import com.potato.potatotool.storage.PathManager;
 import com.potato.potatotool.update.UpdateInfo;
 import com.potato.potatotool.update.UpdateManager;
+import com.potato.potatotool.utils.browser.BrowserRuntimeConfig;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.core.EnvPathConfig;
 import com.potato.potatotool.utils.core.I18nManager;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.JsonUtils;
 import com.potato.potatotool.utils.crypto.AESUtils;
+import com.potato.potatotool.utils.network.HeaderManager;
 import com.potato.potatotool.utils.network.ProxyUtils;
 import javafx.animation.FadeTransition;
 import java.util.HashMap;
@@ -90,6 +94,10 @@ public class PaneSetting {
 
     @FXML
     private ComboBox<String> decompileType;
+    @FXML
+    private TextField browserRuntimePath;
+    @FXML
+    private TextField pythonRuntimePath;
     
     @FXML
     private ComboBox<String> languageComboBox;
@@ -201,8 +209,6 @@ public class PaneSetting {
     private TextField vulnScanReportDir;
     @FXML
     private ComboBox<String> vulnScanReportFormat;
-    @FXML
-    private TextField vulnScanHeadlessBrowserPath;
     @FXML
     private CFSwitch vulnScanAutoExport;
     
@@ -637,6 +643,18 @@ public class PaneSetting {
         String decompileMode = tmpJsonObj_Decompile.getAsJsonPrimitive(ConfigConstants.DECOMPILE_MODE).getAsString();
         decompileType.setValue(decompileMode);
 
+        if (browserRuntimePath != null) {
+            String browserPath = BrowserRuntimeConfig.getBrowserPath();
+            browserRuntimePath.setText(browserPath == null ? "" : browserPath);
+        }
+        if (pythonRuntimePath != null) {
+            String pythonPath = EnvPathConfig.getPythonPath();
+            if ((pythonPath == null || pythonPath.trim().isEmpty())) {
+                pythonPath = PythonHandler.getPythonPath();
+            }
+            pythonRuntimePath.setText(pythonPath == null ? "" : pythonPath);
+        }
+
         //  初始化默认AI配置（仅显示用户显式填写值，不回显内置加密默认值）
         tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig(ConfigConstants.AI);
         aiApiBase.setText(readAiPlainText(tmpJsonObj_AI, ConfigConstants.AI_BASE_URL));
@@ -788,23 +806,20 @@ public class PaneSetting {
                                         int timeoutMs,
                                         boolean thinkingEnabled,
                                         int thinkingBudgetTokens) {
-        aiMap.put(ConfigConstants.AI_PROVIDER, providerValue);
-        aiMap.put(ConfigConstants.AI_BASE_URL, plainBaseUrl);
-        aiMap.put(ConfigConstants.AI_API_KEY, plainApiKey);
-        aiMap.put(ConfigConstants.AI_MODEL_NAME, plainModelName);
-        aiMap.put(ConfigConstants.AI_TIMEOUT_MS, timeoutMs);
-
-        Map<String, Object> thinkingMap = new LinkedHashMap<>();
-        thinkingMap.put(ConfigConstants.AI_THINKING_ENABLED, thinkingEnabled);
-        thinkingMap.put(ConfigConstants.AI_THINKING_BUDGET_TOKENS, thinkingBudgetTokens);
-        aiMap.put(ConfigConstants.AI_THINKING, thinkingMap);
+        PaneSettingSupport.fillAiConfigMap(
+                aiMap,
+                providerValue,
+                plainBaseUrl,
+                plainApiKey,
+                plainModelName,
+                timeoutMs,
+                thinkingEnabled,
+                thinkingBudgetTokens
+        );
     }
 
     static boolean shouldBlockSaveForMainProxy(boolean proxyEnabled, String proxyAddress, ProxyUtils.ProxyReachabilityResult result) {
-        if (!proxyEnabled) {
-            return false;
-        }
-        return result == null || !result.isReachable();
+        return PaneSettingSupport.shouldBlockSaveForMainProxy(proxyEnabled, proxyAddress, result);
     }
 
     private boolean validateMainProxyBeforeSave() {
@@ -813,7 +828,7 @@ public class PaneSetting {
         }
         String proxyAddress = proxy.getText() == null ? "" : proxy.getText().trim();
         ProxyUtils.ProxyReachabilityResult result = ProxyUtils.checkProxyAddressReachability(proxyAddress, 2000);
-        if (!shouldBlockSaveForMainProxy(true, proxyAddress, result)) {
+        if (!PaneSettingSupport.shouldBlockSaveForMainProxy(true, proxyAddress, result)) {
             return true;
         }
         setProxyButtonSelectedSilently(false);
@@ -877,7 +892,7 @@ public class PaneSetting {
             return;
         }
 
-        fillAiConfigMap(
+        PaneSettingSupport.fillAiConfigMap(
                 aiMap,
                 providerValue,
                 plainBaseUrl,
@@ -899,7 +914,27 @@ public class PaneSetting {
         }
         configMap.put(ConfigConstants.AI, aiMap);
 
-        if(Constants.saveConfig(configMap)){
+        String browserPath = browserRuntimePath == null ? "" : browserRuntimePath.getText().trim();
+        String pythonPath = pythonRuntimePath == null ? "" : pythonRuntimePath.getText().trim();
+
+        JsonObject rootConfig = (JsonObject) Constants.getOutsideConfig(null);
+        if (rootConfig == null) {
+            rootConfig = new JsonObject();
+        } else {
+            rootConfig = rootConfig.deepCopy();
+        }
+        Gson gson = new Gson();
+        for (Map.Entry<String, Object> entry : configMap.entrySet()) {
+            rootConfig.add(entry.getKey(), gson.toJsonTree(entry.getValue()));
+        }
+        BrowserRuntimeConfig.applyBrowserSettings(rootConfig, browserPath);
+        EnvPathConfig.applyPythonPath(rootConfig, pythonPath);
+
+        if(Constants.saveConfig(rootConfig)){
+            PythonHandler.resetPythonPath();
+            if (!pythonPath.isEmpty()) {
+                PythonHandler.setPythonPath(pythonPath);
+            }
             syncProxyChildrenState();
             // 更新设置现在有独立的保存按钮，这里不再保存（避免重复）
             if (languageChanged && selectedLanguage != null) {
@@ -1520,7 +1555,7 @@ public class PaneSetting {
                 showTip(i18n.getString("setting.oob.http.custom.server.required"), false, true);
                 return;
             }
-            String dnsValidationKey = validateDnsCeye(selectedDnsPlatform, ceyeIdentifierValue, ceyeTokenValue, false);
+            String dnsValidationKey = PaneSettingSupport.validateDnsCeye(selectedDnsPlatform, ceyeIdentifierValue, ceyeTokenValue, false);
             if (dnsValidationKey != null) {
                 showTip(i18n.getString(dnsValidationKey));
                 return;
@@ -1580,26 +1615,22 @@ public class PaneSetting {
                                   String ceyeIdentifierValue,
                                   String ceyeTokenValue,
                                   boolean forConnectivityTest) {
-        if (!DnsLogService.Platform.CEYE_IO.name().equalsIgnoreCase(selectedDnsPlatform)) {
-            return null;
-        }
-        if (ceyeIdentifierValue == null || ceyeIdentifierValue.trim().isEmpty()) {
-            return forConnectivityTest
-                    ? "setting.oob.dns.test.ceye.missing"
-                    : "setting.oob.dns.ceye.identifier.required";
-        }
-        if (ceyeTokenValue == null || ceyeTokenValue.trim().isEmpty()) {
-            return forConnectivityTest
-                    ? "setting.oob.dns.test.ceye.missing"
-                    : "setting.oob.dns.ceye.token.required";
-        }
-        return null;
+        return PaneSettingSupport.validateDnsCeye(
+                selectedDnsPlatform,
+                ceyeIdentifierValue,
+                ceyeTokenValue,
+                forConnectivityTest
+        );
     }
 
     static boolean shouldBlockDnsCeyeTest(String selectedDnsPlatform,
                                            String ceyeIdentifierValue,
                                            String ceyeTokenValue) {
-        return validateDnsCeye(selectedDnsPlatform, ceyeIdentifierValue, ceyeTokenValue, true) != null;
+        return PaneSettingSupport.shouldBlockDnsCeyeTest(
+                selectedDnsPlatform,
+                ceyeIdentifierValue,
+                ceyeTokenValue
+        );
     }
 
     @FXML
@@ -1622,7 +1653,7 @@ public class PaneSetting {
         try {
             String ceyeIdentifierValue = oobCeyeIdentifier == null ? "" : oobCeyeIdentifier.getText().trim();
             String ceyeTokenValue = oobCeyeToken == null ? "" : oobCeyeToken.getText().trim();
-            String dnsValidationKey = validateDnsCeye(
+            String dnsValidationKey = PaneSettingSupport.validateDnsCeye(
                     oobDnsPlatform == null ? null : oobDnsPlatform.getValue(),
                     ceyeIdentifierValue,
                     ceyeTokenValue,
@@ -1666,9 +1697,6 @@ public class PaneSetting {
         vulnScanReportDir.setText("reports");
         vulnScanReportFormat.setValue("HTML");
         vulnScanAutoExport.setSelected(false);
-        if (vulnScanHeadlessBrowserPath != null) {
-            vulnScanHeadlessBrowserPath.setText("");
-        }
 
         showTip(i18n.getString("setting.vulnscan.reset.done"));
     }
@@ -1724,12 +1752,6 @@ public class PaneSetting {
                 vulnScanAutoExport.setSelected(reportConfig.get(ConfigConstants.VULNSCAN_REPORT_AUTO_EXPORT).getAsBoolean());
             }
 
-            JsonObject headlessConfig = vulnScanConfig.has(ConfigConstants.VULNSCAN_HEADLESS)
-                    ? vulnScanConfig.getAsJsonObject(ConfigConstants.VULNSCAN_HEADLESS) : new JsonObject();
-            if (headlessConfig.has(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH) && vulnScanHeadlessBrowserPath != null) {
-                vulnScanHeadlessBrowserPath.setText(headlessConfig.get(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH).getAsString());
-            }
-
         } catch (Exception e) {
             if (debugMode) {
                 System.err.println("初始化漏洞扫描配置失败: " + e.getMessage());
@@ -1782,11 +1804,7 @@ public class PaneSetting {
                 vulnScanMap.put(ConfigConstants.VULNSCAN_CONNECTION_TIMEOUT, currentVulnScan.get(ConfigConstants.VULNSCAN_CONNECTION_TIMEOUT).getAsInt());
             }
             
-            // 保留 defaultHeaders, headerTemplates, variables 配置
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_CUSTOM_HEADERS)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_CUSTOM_HEADERS,
-                    new Gson().fromJson(currentVulnScan.get(ConfigConstants.VULNSCAN_CUSTOM_HEADERS), Object.class));
-            }
+            // 保留 variables 配置
             if (currentVulnScan.has(ConfigConstants.VULNSCAN_VARIABLES)) {
                 vulnScanMap.put(ConfigConstants.VULNSCAN_VARIABLES, 
                     new Gson().fromJson(currentVulnScan.get(ConfigConstants.VULNSCAN_VARIABLES), Object.class));
@@ -1868,12 +1886,6 @@ public class PaneSetting {
             if (format != null && !format.isEmpty()) {
                 reportMap.put(ConfigConstants.VULNSCAN_REPORT_DEFAULT_FORMAT, format);
             }
-            Map<String, Object> headlessMap = new LinkedHashMap<>();
-            if (vulnScanHeadlessBrowserPath != null) {
-                String browserPath = vulnScanHeadlessBrowserPath.getText().trim();
-                headlessMap.put(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH, browserPath);
-            }
-            vulnScanMap.put(ConfigConstants.VULNSCAN_HEADLESS, headlessMap);
 
             configMap.put(ConfigConstants.VULNSCAN, vulnScanMap);
             
@@ -1894,14 +1906,16 @@ public class PaneSetting {
     }
     
     @FXML
-    public void testHeadlessCompatibility(ActionEvent event) {
-        String configuredPath = vulnScanHeadlessBrowserPath != null ? vulnScanHeadlessBrowserPath.getText().trim() : "";
-        showTip(i18n.getString("setting.vulnscan.headless.checking"), true);
+    public void testBrowserRuntimeCompatibility(ActionEvent event) {
+        String configuredPath = browserRuntimePath != null ? browserRuntimePath.getText().trim() : "";
+        showTip(i18n.getString("setting.browser.checking"), true);
 
         Task<HeadlessHandler.HeadlessCompatibilityResult> task = new Task<HeadlessHandler.HeadlessCompatibilityResult>() {
             @Override
             protected HeadlessHandler.HeadlessCompatibilityResult call() {
-                return HeadlessHandler.checkCompatibility(configuredPath);
+                return configuredPath.isEmpty()
+                        ? HeadlessHandler.checkCompatibility()
+                        : HeadlessHandler.checkCompatibility(configuredPath);
             }
         };
 
@@ -1922,12 +1936,22 @@ public class PaneSetting {
     }
 
     @FXML
-    public void browseHeadlessBrowserPath(ActionEvent event) {
+    public void browseBrowserRuntimePath(ActionEvent event) {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle(i18n.getString("setting.vulnscan.headless.browser.path"));
+        chooser.setTitle(i18n.getString("setting.browser.path"));
         File selected = chooser.showOpenDialog(an.getScene().getWindow());
-        if (selected != null && vulnScanHeadlessBrowserPath != null) {
-            vulnScanHeadlessBrowserPath.setText(selected.getAbsolutePath());
+        if (selected != null && browserRuntimePath != null) {
+            browserRuntimePath.setText(selected.getAbsolutePath());
+        }
+    }
+
+    @FXML
+    public void browsePythonRuntimePath(ActionEvent event) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(i18n.getString("setting.python.path"));
+        File selected = chooser.showOpenDialog(an.getScene().getWindow());
+        if (selected != null && pythonRuntimePath != null) {
+            pythonRuntimePath.setText(selected.getAbsolutePath());
         }
     }
 
@@ -1937,8 +1961,7 @@ public class PaneSetting {
      * 初始化Headers数据
      */
     private void initHeadersData() {
-        com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager headerManager =
-            com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager.getInstance();
+        HeaderManager headerManager = HeaderManager.getInstance();
 
         // 动态生成模板按钮
         if (headerTemplatePane != null) {
@@ -1961,20 +1984,15 @@ public class PaneSetting {
             }
         }
 
-        // 加载customHeaders到编辑区
+        // 加载 globalHeaders 到编辑区
         try {
-            JsonObject vulnScanConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
-            if (vulnScanConfig == null) return;
-
-            if (vulnScanConfig.has(ConfigConstants.VULNSCAN_CUSTOM_HEADERS)) {
-                JsonObject headers = vulnScanConfig.getAsJsonObject(ConfigConstants.VULNSCAN_CUSTOM_HEADERS);
-                StringBuilder sb = new StringBuilder();
-                for (String key : headers.keySet()) {
-                    sb.append(key).append(": ").append(headers.get(key).getAsString()).append("\n");
-                }
-                if (defaultHeadersArea != null) {
-                    defaultHeadersArea.setText(sb.toString().trim());
-                }
+            Map<String, String> headers = headerManager.getCustomHeaders();
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+            }
+            if (defaultHeadersArea != null) {
+                defaultHeadersArea.setText(sb.toString().trim());
             }
         } catch (Exception e) {
             if (debugMode) {
@@ -1985,8 +2003,7 @@ public class PaneSetting {
 
     @FXML
     public void resetHeaders(ActionEvent event) {
-        com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager headerManager =
-            com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager.getInstance();
+        HeaderManager headerManager = HeaderManager.getInstance();
         Map<String, String> builtinHeaders = headerManager.getBuiltinDefaultHeaders();
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : builtinHeaders.entrySet()) {
@@ -2005,8 +2022,7 @@ public class PaneSetting {
         try {
             Map<String, String> headers = parseHeadersText(defaultHeadersArea != null ? defaultHeadersArea.getText() : "");
 
-            com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager headerManager =
-                com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager.getInstance();
+            HeaderManager headerManager = HeaderManager.getInstance();
             if (headerManager.saveCustomHeaders(headers)) {
                 showTip(i18n.getString("setting.headers.save.success"));
             } else {

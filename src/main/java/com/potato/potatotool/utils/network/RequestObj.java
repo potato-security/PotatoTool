@@ -81,19 +81,9 @@ public class RequestObj {
 
     private void initializeHeaderSettings() {
         try {
-            JsonObject vulnScanConfig = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
-            if (vulnScanConfig != null && vulnScanConfig.has(ConfigConstants.VULNSCAN_CUSTOM_HEADERS)
-                    && vulnScanConfig.get(ConfigConstants.VULNSCAN_CUSTOM_HEADERS).isJsonObject()) {
-                JsonObject headersObj = vulnScanConfig.getAsJsonObject(ConfigConstants.VULNSCAN_CUSTOM_HEADERS);
-                if (headersObj.size() > 0) {
-                    LinkedHashMap<String, String> globalHeaders = new LinkedHashMap<>();
-                    for (String key : headersObj.keySet()) {
-                        if (!headersObj.get(key).isJsonNull()) {
-                            globalHeaders.put(key, headersObj.get(key).getAsString());
-                        }
-                    }
-                    this.headers = globalHeaders;
-                }
+            Map<String, String> globalHeaders = HeaderManager.getInstance().getCustomHeaders();
+            if (!globalHeaders.isEmpty()) {
+                this.headers = new LinkedHashMap<>(globalHeaders);
             }
         } catch (Exception ignored) {
         }

@@ -1,6 +1,5 @@
 package com.potato.potatotool.utils.network;
 
-import com.potato.potatotool.utils.core.I18nManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -91,7 +90,6 @@ class ProxyUtilsTest {
     @Test
     @DisplayName("空结果文案构造回退为通用错误")
     void shouldBuildGenericUnavailableMessageWhenResultIsNull() {
-        I18nManager.getInstance().switchLanguage("zh_CN");
         String message = ProxyUtils.buildUnavailableMessage(null);
 
         assertTrue(message.contains("代理不可用"));

@@ -11,9 +11,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,9 +35,14 @@ class RequestUtilsProxyRoutingTest {
     private HttpServer targetServer;
     private ServerSocket proxyServer;
     private Thread proxyThread;
+    private ProxySelector originalProxySelector;
 
     @AfterEach
     void tearDown() throws Exception {
+        if (originalProxySelector != null) {
+            ProxySelector.setDefault(originalProxySelector);
+            originalProxySelector = null;
+        }
         if (targetServer != null) {
             targetServer.stop(0);
             targetServer = null;
@@ -56,6 +67,45 @@ class RequestUtilsProxyRoutingTest {
         ServerSocket localProxy = startProxyServer(proxyHits, null);
 
         String url = "http://127.0.0.1:" + server.getAddress().getPort() + "/direct";
+        RequestObj requestObj = new RequestObj()
+                .setUrl(url)
+                .setMethod("GET")
+                .setProxies(null)
+                .setRetries(0);
+
+        try (CustomHttpResponse response = RequestUtils.requests(requestObj)) {
+            assertNotNull(response);
+            assertEquals(200, response.getResponseCode());
+            assertEquals("direct", response.getTextStr());
+        }
+
+        assertEquals(1, targetHits.get());
+        assertEquals(0, proxyHits.get());
+        assertFalse(localProxy.isClosed());
+    }
+
+    @Test
+    @DisplayName("即使系统代理已设置，未配置业务代理时也应直连目标服务")
+    void shouldIgnoreSystemProxyWhenBusinessProxyIsUnset() throws Exception {
+        AtomicInteger targetHits = new AtomicInteger();
+        AtomicInteger proxyHits = new AtomicInteger();
+        HttpServer server = startTargetServer(targetHits);
+        ServerSocket localProxy = startProxyServer(proxyHits, null);
+
+        originalProxySelector = ProxySelector.getDefault();
+        ProxySelector.setDefault(new ProxySelector() {
+            @Override
+            public List<Proxy> select(URI uri) {
+                return Collections.singletonList(new Proxy(Proxy.Type.HTTP,
+                        new InetSocketAddress("127.0.0.1", localProxy.getLocalPort())));
+            }
+
+            @Override
+            public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+            }
+        });
+
+        String url = "http://127.0.0.1:" + server.getAddress().getPort() + "/system-proxy";
         RequestObj requestObj = new RequestObj()
                 .setUrl(url)
                 .setMethod("GET")

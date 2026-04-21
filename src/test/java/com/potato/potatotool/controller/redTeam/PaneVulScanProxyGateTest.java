@@ -13,7 +13,7 @@ class PaneVulScanProxyGateTest {
     @Test
     @DisplayName("主代理关闭时不阻断扫描")
     void shouldNotBlockScanWhenMainProxyDisabled() {
-        boolean blocked = PaneVulScan.shouldBlockScanForProxy(
+        boolean blocked = PaneVulScanSupport.shouldBlockScanForProxy(
                 false,
                 true,
                 "http://127.0.0.1:8080",
@@ -26,7 +26,7 @@ class PaneVulScanProxyGateTest {
     @Test
     @DisplayName("漏扫代理关闭时不阻断扫描")
     void shouldNotBlockScanWhenVulnScanProxyDisabled() {
-        boolean blocked = PaneVulScan.shouldBlockScanForProxy(
+        boolean blocked = PaneVulScanSupport.shouldBlockScanForProxy(
                 true,
                 false,
                 "http://127.0.0.1:8080",
@@ -39,7 +39,7 @@ class PaneVulScanProxyGateTest {
     @Test
     @DisplayName("代理地址缺失时阻断扫描")
     void shouldBlockScanWhenProxyAddressMissing() {
-        boolean blocked = PaneVulScan.shouldBlockScanForProxy(
+        boolean blocked = PaneVulScanSupport.shouldBlockScanForProxy(
                 true,
                 true,
                 "   ",
@@ -52,7 +52,7 @@ class PaneVulScanProxyGateTest {
     @Test
     @DisplayName("代理地址协议不合法时阻断扫描")
     void shouldBlockScanWhenProxySchemaInvalid() {
-        boolean blocked = PaneVulScan.shouldBlockScanForProxy(
+        boolean blocked = PaneVulScanSupport.shouldBlockScanForProxy(
                 true,
                 true,
                 "127.0.0.1:8080",
@@ -65,7 +65,7 @@ class PaneVulScanProxyGateTest {
     @Test
     @DisplayName("代理不可达时阻断扫描")
     void shouldBlockScanWhenProxyUnreachable() {
-        boolean blocked = PaneVulScan.shouldBlockScanForProxy(
+        boolean blocked = PaneVulScanSupport.shouldBlockScanForProxy(
                 true,
                 true,
                 "http://127.0.0.1:8080",
@@ -78,7 +78,7 @@ class PaneVulScanProxyGateTest {
     @Test
     @DisplayName("代理可用时允许扫描")
     void shouldAllowScanWhenProxyReachable() {
-        boolean blocked = PaneVulScan.shouldBlockScanForProxy(
+        boolean blocked = PaneVulScanSupport.shouldBlockScanForProxy(
                 true,
                 true,
                 "http://127.0.0.1:8080",

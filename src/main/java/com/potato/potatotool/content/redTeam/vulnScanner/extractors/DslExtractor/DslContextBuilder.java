@@ -270,6 +270,12 @@ public class DslContextBuilder {
                 extractFromMap((Map<?, ?>) request, context, false);
                 return;
             }
+
+            // 特殊处理 CustomHttpResponse，避免在无头环境下反射触发 JavaFX 类加载
+            if (request instanceof CustomHttpResponse) {
+                extractRequestInfoFromCustomHttpResponse((CustomHttpResponse) request, context);
+                return;
+            }
             
             // 提取URL信息
             try {
@@ -318,6 +324,36 @@ public class DslContextBuilder {
             
         } catch (Exception e) {
             System.err.println("提取请求信息时发生错误: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 从 CustomHttpResponse 中提取与请求相关的信息。
+     */
+    private static void extractRequestInfoFromCustomHttpResponse(CustomHttpResponse response, Map<String, Object> context) {
+        try {
+            URL url = response.getURL();
+            if (url != null) {
+                String urlString = url.toString();
+                context.put("url", urlString);
+                parseUrlComponents(urlString, context);
+            }
+        } catch (Exception e) {
+            // 忽略 URL 提取失败
+        }
+
+        try {
+            okhttp3.Response rawResponse = response.getRequest();
+            if (rawResponse != null && rawResponse.request() != null) {
+                context.put("method", rawResponse.request().method());
+                context.put("request_headers", rawResponse.request().headers().toMultimap());
+                if (rawResponse.request().body() != null) {
+                    context.put("request_body", rawResponse.request().body().toString());
+                    context.put("data", rawResponse.request().body().toString());
+                }
+            }
+        } catch (Throwable ignored) {
+            // 忽略请求对象读取失败
         }
     }
 
@@ -426,7 +462,7 @@ public class DslContextBuilder {
             try {
                 Method getter = clazz.getMethod(getterName);
                 return getter.invoke(obj);
-            } catch (NoSuchMethodException e) {
+            } catch (Throwable e) {
                 // getter方法不存在
             }
             
@@ -435,11 +471,11 @@ public class DslContextBuilder {
             try {
                 Method isMethod = clazz.getMethod(isMethodName);
                 return isMethod.invoke(obj);
-            } catch (NoSuchMethodException e) {
+            } catch (Throwable e) {
                 // is方法不存在
             }
             
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // 忽略反射错误
         }
         

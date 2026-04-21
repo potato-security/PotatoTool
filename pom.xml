@@ -231,25 +231,6 @@
             <artifactId>Java-WebSocket</artifactId>
             <version>1.5.6</version>
         </dependency>
-        <!-- Selenium WebDriver - 用于 Nuclei Headless 协议支持 -->
-        <!-- 注意：使用3.141.59版本以支持Java 8，Selenium 4.x需要Java 11+ -->
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <version>3.141.59</version>
-            <exclusions>
-                <!-- 排除Selenium自带的OkHttp，使用项目的OkHttp 4.12.0 -->
-                <exclusion>
-                    <groupId>com.squareup.okhttp3</groupId>
-                    <artifactId>okhttp</artifactId>
-                </exclusion>
-                <!-- 排除旧版本的okio -->
-                <exclusion>
-                    <groupId>com.squareup.okio</groupId>
-                    <artifactId>okio</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- Apache POI - Word和Excel报告生成 (Java 8+兼容) -->
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -260,13 +241,6 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>5.3.0</version>
-        </dependency>
-        <!-- WebDriverManager - 自动管理浏览器驱动 -->
-        <!-- 注意：使用3.8.1版本以支持Java 8，WebDriverManager 4.x+需要Java 11+ -->
-        <dependency>
-            <groupId>io.github.bonigarcia</groupId>
-            <artifactId>webdrivermanager</artifactId>
-            <version>3.8.1</version>
         </dependency>
         <dependency>
             <groupId>org.pcap4j</groupId>

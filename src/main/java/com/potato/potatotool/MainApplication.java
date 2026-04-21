@@ -10,12 +10,14 @@ import com.potato.potatotool.controller.publicPane.PaneUpdateDialog;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpLogService;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.PythonHandler;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.PocDatabaseInitializer;
 import com.potato.potatotool.storage.PathManager;
 import com.potato.potatotool.update.ResourceUpdate;
 import com.potato.potatotool.update.UpdateInfo;
 import com.potato.potatotool.update.UpdateManager;
 import com.potato.potatotool.update.resource.ResourceUpdater;
+import com.potato.potatotool.utils.browser.BrowserRuntimeConfig;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.core.I18nUtils;
@@ -69,6 +71,8 @@ public class MainApplication extends Application {
             @Override
             protected Void call() throws Exception {
                 initEnvFile();
+                BrowserRuntimeConfig.initializeAtStartup();
+                PythonHandler.initializeAtStartup();
                 ProxyUtils.ProxyReachabilityResult proxyResult = ProxyUtils.ensureMainProxyAvailability();
                 if (!proxyResult.isReachable()) {
                     startupProxyWarningMessage = ProxyUtils.buildUnavailableMessage(proxyResult);

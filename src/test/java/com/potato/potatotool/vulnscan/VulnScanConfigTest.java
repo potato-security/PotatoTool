@@ -1,9 +1,9 @@
 package com.potato.potatotool.vulnscan;
 
-import com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager;
 import com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.PocDatabaseManager;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.DatabaseMigration;
+import com.potato.potatotool.utils.network.HeaderManager;
 
 import java.util.Map;
 

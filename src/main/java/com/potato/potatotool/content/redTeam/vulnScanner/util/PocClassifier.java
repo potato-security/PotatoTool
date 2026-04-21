@@ -5,6 +5,8 @@ import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.InputTy
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.PocCategory;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.FileTargetType;
 
+import java.util.List;
+
 /**
  * POC 分类器
  * 根据 POC 文件路径和协议推断 InputType 和 Category
@@ -307,14 +309,16 @@ public class PocClassifier {
      * @param poc POC 对象（会被修改）
      */
     public static void inferSpecialFlags(String filePath, PocObj.Poc poc) {
-        if (filePath == null || poc == null) {
+        if (poc == null) {
             return;
         }
-        
-        String normalizedPath = filePath.replace("\\", "/").toLowerCase();
-        
+
+        String normalizedPath = filePath == null ? "" : filePath.replace("\\", "/").toLowerCase();
+        boolean headlessByProtocol = "headless".equalsIgnoreCase(poc.getProtocol());
+        boolean headlessBySteps = containsHeadlessStep(poc.getVerifySteps()) || containsHeadlessStep(poc.getExploitSteps());
+
         // Headless flag
-        if (normalizedPath.contains("/headless/")) {
+        if (normalizedPath.contains("/headless/") || headlessByProtocol || headlessBySteps) {
             poc.setRequiresHeadless(true);
             poc.setInputType(InputType.URL);
             poc.setCategory(PocCategory.HEADLESS);
@@ -332,6 +336,19 @@ public class PocClassifier {
             poc.setRequiresFuzz(true);
             poc.setCategory(PocCategory.FUZZING);
         }
+    }
+
+    private static boolean containsHeadlessStep(List<PocObj.PocStep> steps) {
+        if (steps == null || steps.isEmpty()) {
+            return false;
+        }
+
+        for (PocObj.PocStep step : steps) {
+            if (step instanceof PocObj.HeadlessStep) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**

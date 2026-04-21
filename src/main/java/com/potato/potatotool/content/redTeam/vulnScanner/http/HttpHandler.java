@@ -1,7 +1,7 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.http;
 
-import com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager;
 import com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig;
+import com.potato.potatotool.utils.network.HeaderManager;
 import com.potato.potatotool.utils.network.RequestObj;
 
 import java.net.InetAddress;

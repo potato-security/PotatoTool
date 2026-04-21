@@ -216,7 +216,11 @@ public class VariableExtractor {
                     break;
             }
 
-            // internal=true: 仅控制最终展示，不影响变量提取链路
+            // internal=true: 仅参与内部变量链路，不进入最终输出
+            if (isInternalExtractor(extractor)) {
+                continue;
+            }
+
             if (extractedValue != null) {
                 extractedValues.put(extractor.getName(), extractedValue);
             }

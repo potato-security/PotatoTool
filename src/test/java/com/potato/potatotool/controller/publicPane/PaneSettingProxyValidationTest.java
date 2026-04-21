@@ -13,7 +13,7 @@ class PaneSettingProxyValidationTest {
     @Test
     @DisplayName("主代理关闭时不阻断保存")
     void shouldNotBlockSaveWhenProxyDisabled() {
-        boolean blocked = PaneSetting.shouldBlockSaveForMainProxy(
+        boolean blocked = PaneSettingSupport.shouldBlockSaveForMainProxy(
                 false,
                 "http://127.0.0.1:8080",
                 new ProxyUtils.ProxyReachabilityResult(false, "setting.proxy.unavailable.refused")
@@ -25,7 +25,7 @@ class PaneSettingProxyValidationTest {
     @Test
     @DisplayName("主代理开启且代理不可用时阻断保存")
     void shouldBlockSaveWhenProxyEnabledButUnavailable() {
-        boolean blocked = PaneSetting.shouldBlockSaveForMainProxy(
+        boolean blocked = PaneSettingSupport.shouldBlockSaveForMainProxy(
                 true,
                 "http://127.0.0.1:8080",
                 new ProxyUtils.ProxyReachabilityResult(false, "setting.proxy.unavailable.refused")
@@ -37,7 +37,7 @@ class PaneSettingProxyValidationTest {
     @Test
     @DisplayName("主代理开启且代理可用时允许保存")
     void shouldAllowSaveWhenProxyEnabledAndReachable() {
-        boolean blocked = PaneSetting.shouldBlockSaveForMainProxy(
+        boolean blocked = PaneSettingSupport.shouldBlockSaveForMainProxy(
                 true,
                 "http://127.0.0.1:8080",
                 new ProxyUtils.ProxyReachabilityResult(true, null)

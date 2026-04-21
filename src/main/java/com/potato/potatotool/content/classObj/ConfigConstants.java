@@ -14,6 +14,9 @@ public interface ConfigConstants {
     String UPDATE = "UpDate";  // 注意：配置文件中拼写为 UpDate
     String START_PASSWORD = "StartPassword";
     String LANGUAGE = "Language";
+    String HTTP_HEADERS = "HttpHeaders";
+    String ENV_PATH = "EnvPath";
+    String BROWSER = "Browser";
 
     // ========== Proxy 代理配置相关 ==========
     String PROXY_ENABLE = "enable";
@@ -80,9 +83,17 @@ public interface ConfigConstants {
     String VULNSCAN_VAR_PASSWORD_DICT = "passwordDict"; // {{password}} 密码字典路径（别名）
     String VULNSCAN_VAR_CUSTOM_DICTS = "customDicts";  // 自定义变量字典映射（Map<变量名, 字典路径>）
 
-    // ========== VulnScan Headers 配置 ==========
-    String VULNSCAN_CUSTOM_HEADERS = "customHeaders";      // 用户自定义 Headers 配置对象
-    String VULNSCAN_HEADER_TEMPLATES = "headerTemplates";   // Header 模板配置对象（从配置文件读取，代码不修改）
+    // ========== Global HTTP Headers 配置 ==========
+    String HTTP_HEADERS_GLOBAL = "globalHeaders";      // 全局 HTTP Headers 配置对象
+    String HTTP_HEADERS_TEMPLATES = "templates";       // Header 模板配置对象（从配置文件读取，代码不修改）
+
+    // ========== 运行时可执行路径配置 ==========
+    String ENV_PATH_BROWSER = "browser";                       // 浏览器可执行文件路径
+    String ENV_PATH_PYTHON = "python";                         // Python 可执行文件路径
+
+    // ========== Browser 运行时行为配置 ==========
+    String BROWSER_REUSE_EXISTING_SESSION = "reuseExistingSession"; // 是否优先复用已有浏览器 DevTools 会话
+    String BROWSER_EXISTING_SESSION_PORT = "existingSessionPort";   // 复用已有会话的 DevTools 端口
 
     // ========== VulnScan 线程池配置 ==========
     String VULNSCAN_THREAD_POOL = "threadPool";             // 线程池配置对象
@@ -102,8 +113,9 @@ public interface ConfigConstants {
     String VULNSCAN_POC_DB_VERSION = "pocDatabaseVersion";  // POC 数据库版本
     
     // ========== VulnScan Headless 配置 ==========
-    String VULNSCAN_HEADLESS = "headless";                 // Headless 配置对象
-    String VULNSCAN_HEADLESS_BROWSER_PATH = "browserPath"; // 浏览器可执行文件路径（为空则自动探测）
+    String VULNSCAN_HEADLESS = "headless";                 // 兼容旧配置迁移保留
+    String VULNSCAN_HEADLESS_BROWSER_PATH = "browserPath"; // 兼容旧配置迁移保留
+    String VULNSCAN_PYTHON_PATH = "pythonPath";            // 兼容旧配置迁移保留
 
     // ========== OOB 配置相关 ==========
     String OOB = "OOB";

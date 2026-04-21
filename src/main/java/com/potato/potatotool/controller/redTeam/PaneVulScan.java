@@ -293,21 +293,12 @@ public class PaneVulScan {
                                            boolean vulnScanProxyEnabled,
                                            String proxyAddress,
                                            ProxyUtils.ProxyReachabilityResult result) {
-        if (!mainProxyEnabled || !vulnScanProxyEnabled) {
-            return false;
-        }
-        if (proxyAddress == null) {
-            return true;
-        }
-        String trimmed = proxyAddress.trim();
-        if (trimmed.isEmpty()) {
-            return true;
-        }
-        boolean hasSupportedSchema = trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("socks://");
-        if (!hasSupportedSchema) {
-            return true;
-        }
-        return result == null || !result.isReachable();
+        return PaneVulScanSupport.shouldBlockScanForProxy(
+                mainProxyEnabled,
+                vulnScanProxyEnabled,
+                proxyAddress,
+                result
+        );
     }
 
     private ScanConfig buildScanConfig() {
@@ -383,7 +374,7 @@ public class PaneVulScan {
         if (vulnConfig.isProxyEnabled()) {
             String proxyAddress = vulnConfig.getProxyAddress();
             ProxyUtils.ProxyReachabilityResult proxyCheck = ProxyUtils.checkProxyAddressReachability(proxyAddress, 2000);
-            if (shouldBlockScanForProxy(true, true, proxyAddress, proxyCheck)) {
+            if (PaneVulScanSupport.shouldBlockScanForProxy(true, true, proxyAddress, proxyCheck)) {
                 showPrompt(ProxyUtils.buildUnavailableMessage(proxyCheck), true, true);
                 return null;
             }

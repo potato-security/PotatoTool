@@ -3,7 +3,9 @@ package com.potato.potatotool.content.redTeam.vulnScanner.config;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.classObj.ConfigConstants;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.PythonHandler;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.core.EnvPathConfig;
 import com.potato.potatotool.utils.network.ProxyUtils;
 
 import java.io.BufferedReader;
@@ -852,65 +854,27 @@ public class VulnScanConfig {
         return null;
     }
 
-    /**
-     * 获取 Headless 配置对象
-     */
-    private JsonObject getHeadlessConfig() {
-        try {
-            JsonObject vulnScanConfig = getVulnScanConfig();
-            if (vulnScanConfig.has(ConfigConstants.VULNSCAN_HEADLESS) &&
-                    vulnScanConfig.get(ConfigConstants.VULNSCAN_HEADLESS).isJsonObject()) {
-                return vulnScanConfig.getAsJsonObject(ConfigConstants.VULNSCAN_HEADLESS);
-            }
-        } catch (Exception e) {
-            // 配置不存在或读取失败
-        }
-        return new JsonObject();
-    }
-
-    /**
-     * 获取 Headless 浏览器路径配置
-     * @return 浏览器可执行文件路径，未配置返回 null（自动探测）
-     */
-    public String getHeadlessBrowserPath() {
-        JsonObject headlessConfig = getHeadlessConfig();
-        if (headlessConfig.has(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH)) {
-            String path = headlessConfig.get(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH).getAsString();
-            return path == null || path.trim().isEmpty() ? null : path.trim();
-        }
-        return null;
-    }
-
     // ==================== Python 配置管理 ====================
 
     /**
      * 获取 Python 路径配置
-     * 配置项: vulnScan.pythonPath
+     * 配置项: EnvPath.python
      * 
      * @return Python 可执行文件路径，如果未配置返回 null（将自动检测）
      */
     public String getPythonPath() {
-        return getStringValue("pythonPath", null);
+        String pythonPath = EnvPathConfig.getPythonPath();
+        return pythonPath == null || pythonPath.trim().isEmpty() ? null : pythonPath.trim();
     }
 
     /**
-     * 初始化 Python 环境
-     * 从配置读取 Python 路径并设置到 PythonHandler
-     * 如果未配置，则自动检测系统 Python
+     * 刷新 Python 运行时缓存
      */
     public void initializePython() {
         String configuredPath = getPythonPath();
+        PythonHandler.resetPythonPath();
         if (configuredPath != null && !configuredPath.isEmpty()) {
-            com.potato.potatotool.content.redTeam.vulnScanner.http.PythonHandler.setPythonPath(configuredPath);
-            System.out.println("[VulnScanConfig] Python 路径已从配置加载: " + configuredPath);
-        } else {
-            // 自动检测
-            String detected = com.potato.potatotool.content.redTeam.vulnScanner.http.PythonHandler.getPythonPath();
-            if (detected != null) {
-                System.out.println("[VulnScanConfig] Python 已自动检测: " + detected);
-            } else {
-                System.out.println("[VulnScanConfig] 未检测到 Python，Code 协议的 Python POC 将无法执行");
-            }
+            PythonHandler.setPythonPath(configuredPath);
         }
     }
 
@@ -920,7 +884,7 @@ public class VulnScanConfig {
      * @return Python 版本字符串
      */
     public String getPythonVersion() {
-        return com.potato.potatotool.content.redTeam.vulnScanner.http.PythonHandler.getPythonVersion();
+        return PythonHandler.getPythonVersion();
     }
 
     /**
@@ -929,7 +893,6 @@ public class VulnScanConfig {
      * @return 是否可用
      */
     public boolean isPythonAvailable() {
-        return com.potato.potatotool.content.redTeam.vulnScanner.http.PythonHandler.isPythonAvailable();
+        return PythonHandler.isPythonAvailable();
     }
 }
-

@@ -18,7 +18,7 @@ class PaneSettingAiConfigTest {
     void fillAiConfigMapIncludeProviderTimeoutThinking() {
         Map<String, Object> aiMap = new LinkedHashMap<String, Object>();
 
-        PaneSetting.fillAiConfigMap(
+        PaneSettingSupport.fillAiConfigMap(
                 aiMap,
                 "OPENAI_COMPATIBLE",
                 "https://api.example.com/v1/chat/completions",

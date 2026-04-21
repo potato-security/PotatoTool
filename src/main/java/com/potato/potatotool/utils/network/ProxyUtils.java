@@ -3,9 +3,10 @@ package com.potato.potatotool.utils.network;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
-import com.potato.potatotool.utils.core.I18nUtils;
+import com.potato.potatotool.utils.core.I18nTextUtils;
 
 import java.net.ConnectException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -173,7 +174,8 @@ public class ProxyUtils {
         }
 
         try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(host, port), timeoutMs);
+            InetAddress resolvedAddress = InetAddress.getByName(host);
+            socket.connect(new InetSocketAddress(resolvedAddress, port), timeoutMs);
             return new ProxyReachabilityResult(true, null);
         } catch (SocketTimeoutException e) {
             return new ProxyReachabilityResult(false, "setting.proxy.unavailable.timeout");
@@ -193,8 +195,10 @@ public class ProxyUtils {
     }
 
     public static String buildUnavailableMessage(ProxyReachabilityResult result) {
-        return I18nUtils.getString("setting.proxy.unavailable.disabled.reason",
-                I18nUtils.getString(getReasonKey(result)));
+        return I18nTextUtils.getString(
+                "setting.proxy.unavailable.disabled.reason",
+                I18nTextUtils.getString(getReasonKey(result))
+        );
     }
 
     public static ProxyReachabilityResult ensureMainProxyAvailability() {

@@ -2,6 +2,7 @@ package com.potato.potatotool.content.redTeam.vulnScanner.http;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.potato.potatotool.utils.core.EnvPathConfig;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -15,8 +16,8 @@ import java.util.concurrent.TimeUnit;
  * 支持执行 Nuclei Code 协议和 Pocsuite 的 Python POC
  * 
  * 特点：
- * 1. 自动检测系统 Python 路径
- * 2. 支持手动配置 Python 路径
+ * 1. 优先使用持久化配置的 Python 路径
+ * 2. 未配置时自动检测并回写 EnvPath
  * 3. 通过 JSON 传递上下文变量
  * 4. 安全的临时文件管理
  * 
@@ -89,26 +90,40 @@ public class PythonHandler {
      * 设置 Python 路径
      * @param path Python 可执行文件路径
      */
-    public static void setPythonPath(String path) {
-        if (path != null && !path.isEmpty()) {
-            // 验证路径是否有效
-            if (validatePythonPath(path)) {
-                pythonPath = path;
-                System.out.println("[PythonHandler] Python 路径已设置: " + path);
-            } else {
-                System.err.println("[PythonHandler] 无效的 Python 路径: " + path);
-            }
+    public static synchronized void setPythonPath(String path) {
+        String trimmed = path == null ? "" : path.trim();
+        if (trimmed.isEmpty()) {
+            pythonPath = null;
+            return;
         }
+        if (validatePythonPath(trimmed)) {
+            pythonPath = trimmed;
+            EnvPathConfig.savePythonPath(trimmed);
+        }
+    }
+
+    public static synchronized void resetPythonPath() {
+        pythonPath = null;
+    }
+
+    public static synchronized void initializeAtStartup() {
+        String configuredPath = EnvPathConfig.getPythonPath();
+        if (configuredPath != null && !configuredPath.trim().isEmpty() && validatePythonPath(configuredPath)) {
+            pythonPath = configuredPath.trim();
+            return;
+        }
+        pythonPath = resolvePythonPath();
     }
     
     /**
      * 获取当前 Python 路径
      * @return Python 路径，如果未设置则自动检测
      */
-    public static String getPythonPath() {
-        if (pythonPath == null) {
-            pythonPath = detectPythonPath();
+    public static synchronized String getPythonPath() {
+        if (pythonPath != null) {
+            return pythonPath;
         }
+        pythonPath = resolvePythonPath();
         return pythonPath;
     }
     
@@ -154,14 +169,12 @@ public class PythonHandler {
         // 1. 先检查环境变量
         String envPython = System.getenv("PYTHON_PATH");
         if (envPython != null && validatePythonPath(envPython)) {
-            System.out.println("[PythonHandler] 从环境变量检测到 Python: " + envPython);
             return envPython;
         }
         
         // 2. 检查常见路径
         for (String path : COMMON_PYTHON_PATHS) {
             if (validatePythonPath(path)) {
-                System.out.println("[PythonHandler] 自动检测到 Python: " + path);
                 return path;
             }
         }
@@ -169,11 +182,22 @@ public class PythonHandler {
         // 3. 尝试使用 which/where 命令
         String whichResult = tryWhichCommand();
         if (whichResult != null) {
-            System.out.println("[PythonHandler] 通过 which 命令检测到 Python: " + whichResult);
             return whichResult;
         }
-        
-        System.err.println("[PythonHandler] 未能检测到 Python，请手动设置路径");
+        return null;
+    }
+
+    private static String resolvePythonPath() {
+        String configuredPath = EnvPathConfig.getPythonPath();
+        if (configuredPath != null && !configuredPath.trim().isEmpty() && validatePythonPath(configuredPath)) {
+            return configuredPath.trim();
+        }
+
+        String detectedPath = detectPythonPath();
+        if (detectedPath != null && !detectedPath.trim().isEmpty()) {
+            EnvPathConfig.savePythonPath(detectedPath);
+            return detectedPath;
+        }
         return null;
     }
     

@@ -61,9 +61,15 @@ class RequestUtilsDebugMaskTest {
         PrintStream originalErr = System.err;
         boolean originalDebugMode = ToStart.debugMode;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream captureErr;
+        try {
+            captureErr = new PrintStream(outputStream, true, StandardCharsets.UTF_8.name());
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new AssertionError(e);
+        }
 
         try {
-            System.setErr(new PrintStream(outputStream));
+            System.setErr(captureErr);
             ToStart.debugMode = true;
             Exception exception = assertThrows(Exception.class, () -> RequestUtils.requests(requestObj, client));
             String errLog = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);

@@ -14,11 +14,11 @@ import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanConfig;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanResult;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.StepExecutionRecord;
 import com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig;
-import com.potato.potatotool.content.redTeam.vulnScanner.config.HeaderManager;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.ConnectionPoolManager;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.PayloadCombiner;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.RuntimeExpressionEvaluator;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.HeaderManager;
 import com.potato.potatotool.utils.network.RequestObj;
 
 import java.io.BufferedReader;
@@ -553,7 +553,7 @@ public class PocExecutor {
         } else if (step instanceof PocObj.FileStep) {
             return executeFileStep((PocObj.FileStep) step, extractedValues);
         } else if (step instanceof PocObj.HeadlessStep) {
-            return executeHeadlessStep((PocObj.HeadlessStep) step, extractedValues);
+            return executeHeadlessStep((PocObj.HeadlessStep) step, extractedValues, globalConfig);
         } else if (step instanceof PocObj.TcpStep) {
             return executeTcpStep((PocObj.TcpStep) step, extractedValues);
         } else if (step instanceof PocObj.CodeStep) {
@@ -1611,11 +1611,12 @@ public class PocExecutor {
     /**
      * 执行 Headless 步骤
      */
-    private boolean executeHeadlessStep(PocObj.HeadlessStep headlessStep, Map<String, Object> variables) {
+    private boolean executeHeadlessStep(PocObj.HeadlessStep headlessStep,
+                                        Map<String, Object> variables,
+                                        PocObj.GlobalConfig globalConfig) {
         try {
-            HeadlessHandler.HeadlessCompatibilityResult compatibilityResult = HeadlessHandler.checkCompatibility();
-            if (!compatibilityResult.isCompatible()) {
-                System.err.println("[Headless 跳过] " + HeadlessHandler.buildCompatibilityErrorMessage(compatibilityResult));
+            if (scanConfig != null && !scanConfig.isEnableHeadless()) {
+                System.err.println("[Headless 跳过] Headless 开关已关闭，当前扫描不会执行 Headless 步骤");
                 return false;
             }
 
@@ -1632,10 +1633,21 @@ public class PocExecutor {
                 }
                 browserSteps.add(new HeadlessHandler.BrowserStep(action.getAction(), args));
             }
-            
+
+            String startUrl = resolveHeadlessStartUrl(headlessStep, variables);
+            int timeoutSeconds = resolveHeadlessTimeout(headlessStep, globalConfig);
+
             // 执行 Headless 操作
             HeadlessHandler.HeadlessResponse headlessResponse = 
-                HeadlessHandler.execute(headlessStep.getUrl(), browserSteps, 30);
+                HeadlessHandler.execute(startUrl, browserSteps, timeoutSeconds);
+
+            if (headlessResponse.getLogs() != null) {
+                for (String log : headlessResponse.getLogs()) {
+                    if (log != null && log.startsWith("[Headless")) {
+                        System.out.println(log);
+                    }
+                }
+            }
             
             if (!headlessResponse.isSuccess()) {
                 System.err.println("Headless 操作失败: " + headlessResponse.getError());
@@ -1665,6 +1677,18 @@ public class PocExecutor {
             return false;
         }
     }
+
+    String resolveHeadlessStartUrl(PocObj.HeadlessStep headlessStep, Map<String, Object> variables) {
+        if (headlessStep == null || headlessStep.getUrl() == null) {
+            return null;
+        }
+        return HttpHandler.replaceVariablesObj(headlessStep.getUrl(), variables);
+    }
+
+    int resolveHeadlessTimeout(PocObj.HeadlessStep headlessStep, PocObj.GlobalConfig globalConfig) {
+        int timeoutSeconds = headlessStep == null ? 0 : determineTimeout(headlessStep, globalConfig);
+        return timeoutSeconds > 0 ? timeoutSeconds : 30;
+    }
     
     /**
      * 执行 Code 步骤
@@ -1685,7 +1709,8 @@ public class PocExecutor {
                 // 特殊处理 Python：提示用户配置 Python 路径
                 if (isPythonEngine(engineLower)) {
                     System.err.println("✗ Code 步骤失败: Python 引擎不可用");
-                    System.err.println("  → 请配置 Python 路径: PythonHandler.setPythonPath(\"/path/to/python\")");
+                    System.err.println("  → 请在 设置 -> 基础配置 中配置 Python 路径");
+                    System.err.println("  → 或在 config.json 的 EnvPath.python 中指定");
                     System.err.println("  → 或设置环境变量 PYTHON_PATH");
                 } else {
                     System.err.println("✗ Code 步骤失败: 不支持的引擎类型 '" + engine + "'");
