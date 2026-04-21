@@ -14,6 +14,7 @@ import com.potato.potatotool.content.redTeam.infoGathering.utils.*;
 import com.potato.potatotool.content.redTeam.infoGathering.tools.GetCompany;
 import com.potato.potatotool.controller.redTeam.PaneInfoSearch;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
+import com.potato.potatotool.utils.core.I18nTextUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 
 import java.io.File;
@@ -28,6 +29,8 @@ import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.redTeam.infoGathering.cdn.CdnChecker.isCdnIp;
 import static com.potato.potatotool.content.redTeam.infoGathering.tools.GetSeo.*;
 import static com.potato.potatotool.content.redTeam.infoGathering.tools.GetDomain.*;
+import static com.potato.potatotool.content.redTeam.infoGathering.utils.CompanyCandidateUtils.findExactCandidate;
+import static com.potato.potatotool.content.redTeam.infoGathering.utils.CompanyCandidateUtils.mergeCandidates;
 
 /**
  * @author Potato
@@ -65,6 +68,115 @@ public class AssetMapper {
 
     private boolean shouldStop() {
         return paneInfoSearch != null && paneInfoSearch.isSearchCancelled(searchToken);
+    }
+
+    private void updateProgress(String message, boolean isComplete, Map<String, Object> dataMap) {
+        if (paneInfoSearch != null) {
+            paneInfoSearch.updateEchoVBox(message, isComplete, dataMap);
+        }
+    }
+
+    protected List<CompanyCandidate> fetchChinazCompanyCandidates(String companyName) {
+        return GetCompany.searchCompanyCandidates_chinaz(companyName);
+    }
+
+    protected List<CompanyCandidate> fetchAiqichaCompanyCandidates(String companyName) {
+        if (aiqichaSearch == null) {
+            return new ArrayList<>();
+        }
+        return aiqichaSearch.searchCompanyCandidates(companyName);
+    }
+
+    protected Set<String> fetchAiFullCompanyNames(String currentQuery) {
+        return AiUtils.getCompanyFullName_Ai(currentQuery);
+    }
+
+    protected Set<String> fetchAiCompanyAliases(String companyName) {
+        return AiUtils.getCompanyName_Ai(companyName);
+    }
+
+    protected void showCompanyCandidateChoosePaneBox(List<CompanyCandidate> candidates, boolean isAiGenerated, String currentQuery) {
+        if (paneInfoSearch != null) {
+            paneInfoSearch.showCompanyCandidateChoosePaneBox(candidates, isAiGenerated, currentQuery);
+        }
+    }
+
+    protected CompanyCandidateSelectionResult waitAndGetCompanyCandidateSelection() {
+        if (paneInfoSearch == null) {
+            return new CompanyCandidateSelectionResult(CompanyCandidateSelectionResult.Action.CANCEL, null);
+        }
+        return paneInfoSearch.waitAndGetCompanyCandidateSelection();
+    }
+
+    protected void showCompanyNameChoosePaneBox(Set<String> companyNamesSet) {
+        if (paneInfoSearch != null) {
+            paneInfoSearch.showCompanyNameChoosePaneBox(companyNamesSet);
+        }
+    }
+
+    protected Set<String> waitAndGetCompanyNameSet() {
+        if (paneInfoSearch == null) {
+            return new LinkedHashSet<>();
+        }
+        return paneInfoSearch.waitAndGetCompanyNameSet();
+    }
+
+    protected void showTip(String message, boolean isSuccess) {
+        if (paneInfoSearch != null) {
+            paneInfoSearch.showTip(message, isSuccess);
+        }
+    }
+
+    protected void dispatchCollectedSeeds(AssetObj assetObj, NetAssets netAssets, Set<String> companyNameSet, Set<String> domainSet, Set<String> icpNoSet) {
+        getData(assetObj, netAssets, companyNameSet, domainSet, icpNoSet);
+    }
+
+    protected Map<String, Object> fetchInitialWebInfo(String baseUrl, int maxDepth, int maxSubPathCount, boolean crawlProxy) {
+        return Utils.getWebInfo(baseUrl, false, false, maxDepth, maxSubPathCount, crawlProxy);
+    }
+
+    protected Map<String, Object> fetchFullWebInfo(String baseUrl, boolean hasCrawlLinks, boolean hasFindSensitiveInfo,
+                                                   int maxDepth, int maxSubPathCount, boolean crawlProxy) {
+        return Utils.getWebInfo(baseUrl, hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount, crawlProxy);
+    }
+
+    protected Set<String> resolveCompanyAliasesForCollection(AssetObj assetObj,
+                                                             String currentCompanyName,
+                                                             String originalInputCompanyName,
+                                                             String confirmedCompanyName,
+                                                             boolean directCompanyInput,
+                                                             boolean manuallyConfirmed,
+                                                             String aiProgressText,
+                                                             String userProgressText,
+                                                             String doneProgressText) {
+        LinkedHashSet<String> aliases = new LinkedHashSet<>();
+        aliases.add(currentCompanyName);
+        if (!shouldCollectCompanyAliases(assetObj)) {
+            return aliases;
+        }
+
+        updateProgress(aiProgressText, false, null);
+        aliases.addAll(fetchAiCompanyAliases(currentCompanyName));
+        addOriginalInputAliasIfNeeded(aliases, originalInputCompanyName, confirmedCompanyName,
+                directCompanyInput, manuallyConfirmed, currentCompanyName);
+        aliases = normalizeCompanyAliases(aliases, currentCompanyName);
+
+        updateProgress(userProgressText, false, null);
+        showCompanyNameChoosePaneBox(aliases);
+        if (shouldStop()) {
+            return aliases;
+        }
+
+        Set<String> selectedAliases = waitAndGetCompanyNameSet();
+        if (shouldStop()) {
+            return selectedAliases;
+        }
+        if (selectedAliases != null && !selectedAliases.isEmpty()) {
+            aliases = normalizeCompanyAliases(selectedAliases, currentCompanyName);
+        }
+
+        updateProgress(doneProgressText, true, null);
+        return aliases;
     }
 
     public void searchInfo(String input, AssetObj assetObj) {
@@ -310,6 +422,8 @@ public class AssetMapper {
         int shadowAssetsThreshold = assetObj.getShadowAssetsThreshold();
         int cipThreshold = assetObj.getCipThreshold();
 
+        long workflowStartedAt = System.nanoTime();
+        InfoGatheringStageRecorder stageRecorder = new InfoGatheringStageRecorder();
         String poolName = ExecutorServiceManager.ExecutorPoolNames.ASSET;
         ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
         List<CompletableFuture<?>> futures = new ArrayList<>();
@@ -317,6 +431,8 @@ public class AssetMapper {
         // 根据主域名获取子域
         int currentIndex = 0;
         if(assetObj.isSearchSslSubdomainBox()){
+            int beforeDomainCount = tmpDomainSet.size();
+            InfoGatheringStageRecorder.StageToken stageToken = stageRecorder.start("SSL子域扩展");
             int totalNum = domainSet.size();
             for(String domainStr : domainSet) {
                 if (shouldStop()) return;
@@ -327,9 +443,13 @@ public class AssetMapper {
                 paneInfoSearch.updateEchoVBox(showText, false, null);
                 tmpDomainSet.addAll(GetSubDomain.getSubByDomainOrDomainCert(domainStr, isSslProxy));
             }
+            recordStage(stageRecorder, stageToken, Math.max(0, tmpDomainSet.size() - beforeDomainCount),
+                    "主域名数：" + totalNum);
         }
         currentIndex = 0;
         if (assetObj.isBruteForceSubdomain()) {
+            int beforeDomainCount = tmpDomainSet.size();
+            InfoGatheringStageRecorder.StageToken stageToken = stageRecorder.start("爆破子域扩展");
             int totalNum = domainSet.size();
             for(String domainStr : domainSet) {
                 if (shouldStop()) return;
@@ -340,6 +460,8 @@ public class AssetMapper {
                 paneInfoSearch.updateEchoVBox(showText, false, null);
                 tmpDomainSet.addAll((SubdomainBruteForcer.getSubDomain(domainStr)));
             }
+            recordStage(stageRecorder, stageToken, Math.max(0, tmpDomainSet.size() - beforeDomainCount),
+                    "主域名数：" + totalNum);
         }
         paneInfoSearch.updateEchoVBox("获取子域名", true, null);
 
@@ -392,6 +514,8 @@ public class AssetMapper {
 
             currentIndex = 0;
             int totalNum = domainSet.size();
+            int rawDomainResultBefore = domainInfoList.size();
+            InfoGatheringStageRecorder.StageToken rawDomainStage = stageRecorder.start("平台检索原始域名");
             for (String domainStr : domainSet) {
                 if (shouldStop()) return;
                 currentIndex++;
@@ -431,12 +555,16 @@ public class AssetMapper {
             }
 
             paneInfoSearch.updateEchoVBox("平台检索原始域名", true, null);
+            recordStage(stageRecorder, rawDomainStage, totalNum,
+                    "新增资产：" + Math.max(0, domainInfoList.size() - rawDomainResultBefore));
 
 
             // icp查询
             paneInfoSearch.updateEchoVBox("平台检索ICP", false, null);
             currentIndex = 0;
             totalNum = tmpIcpNoSet.size();
+            int icpResultBefore = domainInfoList.size();
+            InfoGatheringStageRecorder.StageToken icpStage = stageRecorder.start("平台检索ICP备案");
             for (String icpNoStr : tmpIcpNoSet) {
                 if (shouldStop()) return;
                 currentIndex++;
@@ -469,6 +597,8 @@ public class AssetMapper {
                 }
             }
             paneInfoSearch.updateEchoVBox("平台检索ICP", true, null);
+            recordStage(stageRecorder, icpStage, totalNum,
+                    "新增资产：" + Math.max(0, domainInfoList.size() - icpResultBefore));
 
             // 剔除cdnIp，对IP进行检索
             paneInfoSearch.updateEchoVBox("剔除CDN_Ip，平台检索IP", false, null);
@@ -478,6 +608,8 @@ public class AssetMapper {
                     .collect(Collectors.toSet());
             currentIndex = 0;
             totalNum = oldIpSet.size();
+            int firstIpResultBefore = domainInfoList.size();
+            InfoGatheringStageRecorder.StageToken firstIpStage = stageRecorder.start("平台检索首批IP");
             for (String ip : oldIpSet) {
                 if (shouldStop()) return;
                 currentIndex++;
@@ -501,57 +633,31 @@ public class AssetMapper {
                 domainInfoList.addAll(mergedList);  // 添加到总的域名信息列表
             }
             paneInfoSearch.updateEchoVBox("剔除CDN_Ip，平台检索IP", true, null);
+            recordStage(stageRecorder, firstIpStage, totalNum,
+                    "新增资产：" + Math.max(0, domainInfoList.size() - firstIpResultBefore));
 
 
             // 去重处理
+            int beforeFirstDedup = domainInfoList.size();
+            InfoGatheringStageRecorder.StageToken firstDedupStage = stageRecorder.start("第一波数据去重");
             paneInfoSearch.updateEchoVBox("第一波数据去重", false, null);
             domainInfoList = DomainInfoMerger.mergeDomainInfoList(domainInfoList);
             paneInfoSearch.updateEchoVBox("第一波数据去重", true, null);
+            recordStage(stageRecorder, firstDedupStage, domainInfoList.size(),
+                    "去重前：" + beforeFirstDedup + "，去重后：" + domainInfoList.size());
 
-            if(isHasLocalFullDetection || isHasIconSearch) {
-                paneInfoSearch.updateEchoVBox("第一波全量深度信息探测", false, null);
-                int totalTasks = domainInfoList.size();
-                AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
-                int tmpIndex = 0;
-                executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
-                futures = new ArrayList<>();
-                for (DomainInfo domainInfo : domainInfoList) {
-                    if (shouldStop()) break;
-                    tmpIndex++;
-                    if (!isHasLocalFullDetection && tmpIndex > localFullDetectionThreshold) break;
-                    // 提交每个 DomainInfo 的 Web 信息获取任务
-                    CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
-                        String domainStr = domainInfo.getDomain();
-                        if (domainStr == null || domainStr.isEmpty()) domainStr = domainInfo.getIp();
-
-                        String baseUrl = getBaseUrl(domainInfo);
-                        if (baseUrl != null && !baseUrl.isEmpty()) {
-                            domainInfo.setWebInfoMap(Utils.getWebInfo(baseUrl, hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount, assetObj.isCrawlProxy()));
-                        }
-                        domainInfo.setDoWebInfoMap(true);
-
-                        int progress = completedTasks.incrementAndGet();
-                        double percentage = ((progress - 0.5) * 100.0) / totalTasks;
-                        String showText = String.format("正在全量深度信息探测 [%d/%d]：%s | 进度：%.2f%%",
-                                progress, totalTasks, domainStr, percentage);
-                        paneInfoSearch.updateEchoVBox(showText, false, null);
-                        return null;
-                    }, executor);
-                    futures.add(future);
-                }
-                // 等待所有任务完成
-                for (Future<?> future : futures) {
-                    try {
-                        future.get(); // 阻塞直到任务完成
-                    } catch (CancellationException ce) {
-                    } catch (Exception e) {
-                        if (debugMode) e.printStackTrace();
-                    }
-                }
-                // 停止所有线程
-                ExecutorServiceManager.shutdownExecutor(poolName);
-
-                paneInfoSearch.updateEchoVBox("第一波全量深度信息探测", true, null);
+            List<DomainInfo> initialWebInfoTargets = getInitialWebInfoTargets(domainInfoList, isHasLocalFullDetection, localFullDetectionThreshold);
+            InfoGatheringStageRecorder.StageToken initialWebStage = initialWebInfoTargets.isEmpty()
+                    ? null
+                    : stageRecorder.start("基础网页信息探测");
+            performInitialWebInfoCollection(domainInfoList, assetObj, isHasLocalFullDetection, isHasIconSearch,
+                    hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount,
+                    localFullDetectionThreshold, poolName);
+            if (initialWebStage != null) {
+                recordStage(stageRecorder, initialWebStage, initialWebInfoTargets.size(),
+                        requiresDeferredDeepCollection(hasCrawlLinks, hasFindSensitiveInfo)
+                                ? "模式：基础探测"
+                                : "模式：基础探测即最终结果");
             }
             List<DomainInfo> chooseWebInfoMapList = new ArrayList<>();
             if(isHasIconSearch) {
@@ -563,6 +669,9 @@ public class AssetMapper {
 
                 Set<String> md5Record = ConcurrentHashMap.newKeySet();
                 paneInfoSearch.updateEchoVBox("平台检索icon", false, null);
+                InfoGatheringStageRecorder.StageToken iconStage = chooseWebInfoMapList.isEmpty()
+                        ? null
+                        : stageRecorder.start("平台检索Icon");
 
                 currentIndex = 0;
                 totalNum = chooseWebInfoMapList.size();
@@ -597,6 +706,10 @@ public class AssetMapper {
                     domainInfoList.addAll(mergedList);
                 }
                 paneInfoSearch.updateEchoVBox("平台检索icon", true, null);
+                if (iconStage != null) {
+                    recordStage(stageRecorder, iconStage, chooseWebInfoMapList.size(),
+                            "唯一Icon查询数：" + md5Record.size());
+                }
             }
             // 去重处理
             paneInfoSearch.updateEchoVBox("第二波数据去重", false, null);
@@ -605,60 +718,72 @@ public class AssetMapper {
 
             // 开始检索影子资产
             if(isSearchShadowAssets){
+                InfoGatheringStageRecorder.StageToken shadowStage = stageRecorder.start("影子资产检索");
+                int recalledShadowCount = 0;
+                int uniqueShadowCount = 0;
+                int acceptedShadowCount = 0;
                 paneInfoSearch.updateEchoVBox("检索影子资产", false, null);
                 if(companyNameSet!=null && companyNameSet.size()>0) {
-                    String companyNamesStr = String.join("、", companyNameSet);
+                    List<ShadowAssetCandidate> shadowCandidates = recallShadowAssetCandidates(companyNameSet);
+                    recalledShadowCount = shadowCandidates.size();
+                    paneInfoSearch.updateEchoVBox("影子资产召回候选：" + shadowCandidates.size(), true, null);
 
-                    currentIndex = 0;
-                    totalNum = companyNameSet.size();
-                    for (String companyNameStr : companyNameSet) {
-                        if (shouldStop()) return;
-                        currentIndex++;
-                        double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
-                        String showText = String.format("正在泛型检索 [%d/%d]：%s | 进度：%.2f%%",
-                                currentIndex, totalNum, companyNameStr, progress);
-                        paneInfoSearch.updateEchoVBox(showText, false, null);
+                    List<ShadowAssetCandidate> uniqueShadowCandidates = filterNewShadowAssetCandidates(domainInfoList, shadowCandidates);
+                    uniqueShadowCount = uniqueShadowCandidates.size();
+                    paneInfoSearch.updateEchoVBox("影子资产候选去重后：" + uniqueShadowCandidates.size(), true, null);
 
-                        // 查询各平台数据
-                        JsonArray info_Fofa = fofaSearch.getInfoByBodyFilterIcp_Fofa(companyNameStr);
-                        JsonArray info_Hunter = hunterSearch.getInfoByBodyFilterIcp_Hunter(companyNameStr);
-                        JsonArray info_Quake = quakeSearch.getInfoByBodyFilteIcp_Quake(companyNameStr);
-                        JsonArray info_Shodan = shodanSearch.getInfoByBodyFilterIcp_shodan(companyNameStr);
-                        JsonArray info_Zoomeye = zoomeyeSearch.getInfoByBodyFilterIcp_zoomeye(companyNameStr);
-
-                        // 整合影子资产并过滤非已确定的资产
-                        String showText_merge = String.format("数据整合 [%d/%d]：%s | 进度：%.2f%%",
-                                currentIndex, totalNum, companyNameStr, progress);
-                        String showText_filter = String.format("过滤非已确定的资产 [%d/%d]：%s | 进度：%.2f%%",
-                                currentIndex, totalNum, companyNameStr, progress);
-                        paneInfoSearch.updateEchoVBox(showText_merge, false, null);
-                        List<DomainInfo> tmpMergedList = DomainInfoMerger.mergeDomainInfos("泛型检索：" + companyNameStr, info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
-                        paneInfoSearch.updateEchoVBox(showText_filter, false, null);
-                        tmpMergedList = DomainInfoMerger.getUniqueDomainInfoInB(domainInfoList, tmpMergedList);
-                        tmpMergedList = tmpMergedList.subList(0, Math.min(shadowAssetsThreshold, tmpMergedList.size()));
-
-                        // 根据图标相似度和内容识别关联资产
-                        String showText_ai = String.format("根据图标相似度、内容识别过滤资产 [%d/%d]：%s | 进度：%.2f%%",
-                                currentIndex, totalNum, companyNameStr, progress);
-                        paneInfoSearch.updateEchoVBox(showText_ai, false, null);
-                        List<DomainInfo> relevantDomains = new ArrayList<>();
-                        for (DomainInfo domainInfo : tmpMergedList) {
-                            if (shouldStop()) return;
-                            String baseUrl = getBaseUrl(domainInfo);
-                            if (isRelevantShadowAsset(baseUrl, companyNamesStr, chooseWebInfoMapList, assetObj.isCrawlProxy())) {
-                                relevantDomains.add(domainInfo);
+                    if (!uniqueShadowCandidates.isEmpty()) {
+                        uniqueShadowCandidates.sort(new Comparator<ShadowAssetCandidate>() {
+                            @Override
+                            public int compare(ShadowAssetCandidate left, ShadowAssetCandidate right) {
+                                int aliasCompare = Integer.compare(right.getRecalledAliases().size(), left.getRecalledAliases().size());
+                                if (aliasCompare != 0) {
+                                    return aliasCompare;
+                                }
+                                return Integer.compare(getDataSourceCount(right.getDomainInfo().getDataSource()),
+                                        getDataSourceCount(left.getDomainInfo().getDataSource()));
                             }
-                        }
+                        });
 
-                        // 去重
-                        String showText_rem = String.format("数据去重 [%d/%d]：%s | 进度：%.2f%%",
-                                currentIndex, totalNum, companyNameStr, progress);
-                        paneInfoSearch.updateEchoVBox(showText_rem + companyNameStr, false, null);
-                        List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfoList(relevantDomains);
-                        domainInfoList.addAll(mergedList);
+                        int evaluateLimit = Math.min(getShadowAssetEvaluateLimit(shadowAssetsThreshold), uniqueShadowCandidates.size());
+                        if (evaluateLimit < uniqueShadowCandidates.size()) {
+                            uniqueShadowCandidates = new ArrayList<>(uniqueShadowCandidates.subList(0, evaluateLimit));
+                        }
+                        paneInfoSearch.updateEchoVBox("影子资产进入评估：" + uniqueShadowCandidates.size(), true, null);
+
+                        ShadowAssetContext shadowAssetContext = buildShadowAssetContext(netAssets.getCompanyName(),
+                                companyNameSet, tmpDomainSet, tmpIcpNoSet, chooseWebInfoMapList);
+                        ShadowAssetEvaluator shadowAssetEvaluator = new ShadowAssetEvaluator(assetObj.isCrawlProxy());
+                        List<DomainInfo> acceptedShadowDomains = evaluateShadowAssetCandidates(uniqueShadowCandidates, shadowAssetContext, shadowAssetEvaluator);
+                        acceptedShadowDomains.sort(new Comparator<DomainInfo>() {
+                            @Override
+                            public int compare(DomainInfo left, DomainInfo right) {
+                                Integer leftScore = left.getShadowScore() == null ? Integer.MIN_VALUE : left.getShadowScore();
+                                Integer rightScore = right.getShadowScore() == null ? Integer.MIN_VALUE : right.getShadowScore();
+                                return Integer.compare(rightScore, leftScore);
+                            }
+                        });
+
+                        if (acceptedShadowDomains.size() > shadowAssetsThreshold) {
+                            acceptedShadowDomains = new ArrayList<>(acceptedShadowDomains.subList(0, shadowAssetsThreshold));
+                        }
+                        acceptedShadowDomains = DomainInfoMerger.mergeDomainInfoList(acceptedShadowDomains);
+                        acceptedShadowCount = acceptedShadowDomains.size();
+                        Map<String, Object> shadowDataMap = null;
+                        if (!acceptedShadowDomains.isEmpty()) {
+                            shadowDataMap = new HashMap<>();
+                            shadowDataMap.put("type", DataTypeConstants.SHADOW);
+                            shadowDataMap.put("data", acceptedShadowDomains);
+                        }
+                        paneInfoSearch.updateEchoVBox("影子资产最终确认：" + acceptedShadowDomains.size(), true, shadowDataMap);
+                        domainInfoList.addAll(acceptedShadowDomains);
                     }
                 }
                 paneInfoSearch.updateEchoVBox("检索影子资产", true, null);
+                String shadowSummary = companyNameSet == null || companyNameSet.isEmpty()
+                        ? "无企业名称集合，跳过"
+                        : "召回：" + recalledShadowCount + "，去重后：" + uniqueShadowCount + "，确认：" + acceptedShadowCount;
+                recordStage(stageRecorder, shadowStage, acceptedShadowCount, shadowSummary);
             }
 
             // 新IP集合
@@ -676,6 +801,10 @@ public class AssetMapper {
 
             currentIndex = 0;
             totalNum = addedIps.size();
+            int secondIpResultBefore = domainInfoList.size();
+            InfoGatheringStageRecorder.StageToken secondIpStage = addedIps.isEmpty()
+                    ? null
+                    : stageRecorder.start("平台检索新增IP");
             for (String ip : addedIps) {
                 if (shouldStop()) return;
                 currentIndex++;
@@ -700,18 +829,25 @@ public class AssetMapper {
             }
             if(addedIps.size()>0) {
                 paneInfoSearch.updateEchoVBox("第二波平台检索IP", true, null);
+                recordStage(stageRecorder, secondIpStage, addedIps.size(),
+                        "新增资产：" + Math.max(0, domainInfoList.size() - secondIpResultBefore));
             }
 
 
             // 剔除cdnIp，进行C段聚合
             if(isHasCipAggregator) {
+                InfoGatheringStageRecorder.StageToken cipAggregateStage = stageRecorder.start("C段聚合");
                 paneInfoSearch.updateEchoVBox("剔除CDN_Ip，C段聚合", false, null);
                 Map<String, Integer> getFrequentCSegments = CipAggregator.getFrequentCSegments(newIpSet, cipThreshold);
                 paneInfoSearch.updateEchoVBox("剔除CDN_Ip，C段聚合", true, null);
+                recordStage(stageRecorder, cipAggregateStage, getFrequentCSegments.size(),
+                        "阈值：" + cipThreshold);
 
                 currentIndex = 0;
                 totalNum = getFrequentCSegments.size();
                 if (getFrequentCSegments.size() > 0) {
+                    int cipResultBefore = domainInfoList.size();
+                    InfoGatheringStageRecorder.StageToken cipSearchStage = stageRecorder.start("平台检索C段");
                     paneInfoSearch.updateEchoVBox("平台检索C段", false, null);
                     for (String ip : getFrequentCSegments.keySet()) {
                         if (shouldStop()) return;
@@ -737,18 +873,25 @@ public class AssetMapper {
                         domainInfoList.addAll(mergedList);  // 添加到总的域名信息列表
                     }
                     paneInfoSearch.updateEchoVBox("平台检索C段", true, null);
+                    recordStage(stageRecorder, cipSearchStage, getFrequentCSegments.size(),
+                            "新增资产：" + Math.max(0, domainInfoList.size() - cipResultBefore));
                 }
             }
         }
 
         // 去重
+        int beforeThirdDedup = domainInfoList.size();
+        InfoGatheringStageRecorder.StageToken thirdDedupStage = stageRecorder.start("第三波数据去重");
         paneInfoSearch.updateEchoVBox("第三波数据去重", false, null);
         domainInfoList = DomainInfoMerger.mergeDomainInfoList(domainInfoList);
         paneInfoSearch.updateEchoVBox("第三波数据去重", true, null);
+        recordStage(stageRecorder, thirdDedupStage, domainInfoList.size(),
+                "去重前：" + beforeThirdDedup + "，去重后：" + domainInfoList.size());
 
 
         // 使用线程安全的集合来存储已处理过的域名信息
         if(isUseGoogle) {
+            InfoGatheringStageRecorder.StageToken googleStage = stageRecorder.start("检索Google信息泄露");
             paneInfoSearch.updateEchoVBox("检索Google信息泄露", false, null);
             ConcurrentMap<String, DoDomainInfo> doGoogleDomainInfoMap = new ConcurrentHashMap<>();
 
@@ -800,9 +943,12 @@ public class AssetMapper {
             ExecutorServiceManager.shutdownExecutor(poolName);
 
             paneInfoSearch.updateEchoVBox("检索Google信息泄露", true, null);
+            recordStage(stageRecorder, googleStage, domainInfoList.size(),
+                    "唯一域名：" + doGoogleDomainInfoMap.size());
         }
 
         if(isUseGithub) {
+            InfoGatheringStageRecorder.StageToken githubStage = stageRecorder.start("检索Github信息泄露");
             paneInfoSearch.updateEchoVBox("检索Github信息泄露", false, null);
             // 使用线程安全的集合来存储已处理过的域名信息
             ConcurrentMap<String, DoDomainInfo> doGitDomainInfoMap = new ConcurrentHashMap<>();
@@ -855,55 +1001,25 @@ public class AssetMapper {
             ExecutorServiceManager.shutdownExecutor(poolName);
 
             paneInfoSearch.updateEchoVBox("检索Github信息泄露", true, null);
+            recordStage(stageRecorder, githubStage, domainInfoList.size(),
+                    "唯一域名：" + doGitDomainInfoMap.size());
         }
 
-        if(isHasLocalFullDetection) {
-            paneInfoSearch.updateEchoVBox("第二波全量深度信息探测", false, null);
-            int totalTasks = domainInfoList.size();
-            AtomicInteger completedTasks = new AtomicInteger(0); // 已完成任务计数器
-            executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
-            futures = new ArrayList<>();
-            for (DomainInfo domainInfo : domainInfoList) {
-                if (shouldStop()) break;
-                CompletableFuture<?> future = CompletableFuture.supplyAsync(() -> {
-                    if (shouldStop()) return null;
-                    String domainStr = domainInfo.getDomain();
-                    if (domainStr == null || domainStr.isEmpty()) domainStr = domainInfo.getIp();
-                    int progress = completedTasks.incrementAndGet();
-                    double percentage = ((progress - 0.5) * 100.0) / totalTasks;
-                    String showText = String.format("正在全量深度信息探测 [%d/%d]：%s | 进度：%.2f%%",
-                            progress, totalTasks, domainStr, percentage);
-
-                    if (!domainInfo.isDoWebInfoMap()) {
-                        // 获取网站信息
-                        String baseUrl = getBaseUrl(domainInfo);
-                        if (baseUrl != null && !baseUrl.isEmpty()) {
-                            domainInfo.setWebInfoMap(Utils.getWebInfo(baseUrl, hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount, assetObj.isCrawlProxy()));
-                        }
-                        domainInfo.setDoWebInfoMap(true);
-                    }
-
-                    paneInfoSearch.updateEchoVBox(showText, false, null);
-                    return null;
-                }, executor);
-
-                // 添加到 futures 列表，稍后等待所有任务完成
-                futures.add(future);
-            }
-            // 等待所有任务完成
-            for (Future<?> future : futures) {
-                try {
-                    future.get(); // 阻塞直到任务完成
-                } catch (CancellationException ce) {
-                } catch (Exception e) {
-                    if (debugMode) e.printStackTrace();
-                }
-            }
-            // 停止所有线程
-            ExecutorServiceManager.shutdownExecutor(poolName);
-
-            paneInfoSearch.updateEchoVBox("第二波全量深度信息探测", true, null);
+        List<DomainInfo> finalWebInfoTargets = getFinalWebInfoTargets(domainInfoList, isHasLocalFullDetection, localFullDetectionThreshold);
+        InfoGatheringStageRecorder.StageToken finalWebStage = finalWebInfoTargets.isEmpty()
+                ? null
+                : stageRecorder.start("最终深度信息探测");
+        performFinalWebInfoCollection(domainInfoList, assetObj, isHasLocalFullDetection, isHasIconSearch,
+                hasCrawlLinks, hasFindSensitiveInfo, maxDepth, maxSubPathCount,
+                localFullDetectionThreshold, poolName);
+        if (finalWebStage != null) {
+            recordStage(stageRecorder, finalWebStage, finalWebInfoTargets.size(),
+                    "模式：深度探测补齐");
         }
+
+        stageRecorder.addMetric("总流程", Math.max(0L, (System.nanoTime() - workflowStartedAt) / 1_000_000L),
+                domainInfoList.size(), "最终资产数：" + domainInfoList.size());
+        emitStageSummary(netAssets, stageRecorder);
     }
 
     public String getBaseUrl(DomainInfo domainInfo){
@@ -919,10 +1035,599 @@ public class AssetMapper {
         return baseUrl;
     }
 
+    private void performInitialWebInfoCollection(List<DomainInfo> domainInfoList, AssetObj assetObj,
+                                                 boolean isHasLocalFullDetection, boolean isHasIconSearch,
+                                                 boolean hasCrawlLinks, boolean hasFindSensitiveInfo,
+                                                 int maxDepth, int maxSubPathCount,
+                                                 int localFullDetectionThreshold, String poolName) {
+        if ((!isHasLocalFullDetection && !isHasIconSearch) || domainInfoList == null || domainInfoList.isEmpty()) {
+            return;
+        }
+
+        final boolean requiresDeferredDeepCollection = requiresDeferredDeepCollection(hasCrawlLinks, hasFindSensitiveInfo);
+        final List<DomainInfo> collectionTargets = getInitialWebInfoTargets(domainInfoList, isHasLocalFullDetection, localFullDetectionThreshold);
+        if (collectionTargets.isEmpty()) {
+            return;
+        }
+
+        updateProgress("第一波基础网页信息探测", false, null);
+        final int totalTasks = collectionTargets.size();
+        final AtomicInteger completedTasks = new AtomicInteger(0);
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<?>> futures = new ArrayList<>();
+        for (final DomainInfo domainInfo : collectionTargets) {
+            if (shouldStop()) break;
+            CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
+                String domainStr = domainInfo.getDomain();
+                if (domainStr == null || domainStr.isEmpty()) domainStr = domainInfo.getIp();
+
+                String baseUrl = getBaseUrl(domainInfo);
+                if (baseUrl != null && !baseUrl.isEmpty()) {
+                    domainInfo.setWebInfoMap(fetchInitialWebInfo(baseUrl, maxDepth, maxSubPathCount, assetObj.isCrawlProxy()));
+                }
+                domainInfo.setDoWebInfoMap(true);
+                domainInfo.setDoFullWebInfoMap(!requiresDeferredDeepCollection);
+
+                int progress = completedTasks.incrementAndGet();
+                double percentage = ((progress - 0.5) * 100.0) / totalTasks;
+                String showText = String.format("正在基础网页信息探测 [%d/%d]：%s | 进度：%.2f%%",
+                        progress, totalTasks, domainStr, percentage);
+                updateProgress(showText, false, null);
+                return null;
+            }, executor);
+            futures.add(future);
+        }
+        waitForFuturesAndShutdown(futures, poolName);
+        updateProgress("第一波基础网页信息探测", true, null);
+    }
+
+    private void performFinalWebInfoCollection(List<DomainInfo> domainInfoList, AssetObj assetObj,
+                                               boolean isHasLocalFullDetection, boolean isHasIconSearch,
+                                               boolean hasCrawlLinks, boolean hasFindSensitiveInfo,
+                                               int maxDepth, int maxSubPathCount,
+                                               int localFullDetectionThreshold, String poolName) {
+        if (!requiresDeferredDeepCollection(hasCrawlLinks, hasFindSensitiveInfo)
+                || (!isHasLocalFullDetection && !isHasIconSearch)
+                || domainInfoList == null || domainInfoList.isEmpty()) {
+            return;
+        }
+
+        final List<DomainInfo> collectionTargets = getFinalWebInfoTargets(domainInfoList, isHasLocalFullDetection, localFullDetectionThreshold);
+        if (collectionTargets.isEmpty()) {
+            return;
+        }
+
+        updateProgress("第二波最终深度信息探测", false, null);
+        final int totalTasks = collectionTargets.size();
+        final AtomicInteger completedTasks = new AtomicInteger(0);
+        ExecutorService executor = ExecutorServiceManager.getOrCreateExecutor(poolName);
+        List<CompletableFuture<?>> futures = new ArrayList<>();
+        for (final DomainInfo domainInfo : collectionTargets) {
+            if (shouldStop()) break;
+            CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
+                if (shouldStop()) return null;
+                String domainStr = domainInfo.getDomain();
+                if (domainStr == null || domainStr.isEmpty()) domainStr = domainInfo.getIp();
+
+                if (!domainInfo.isDoFullWebInfoMap()) {
+                    String baseUrl = getBaseUrl(domainInfo);
+                    if (baseUrl != null && !baseUrl.isEmpty()) {
+                        domainInfo.setWebInfoMap(fetchFullWebInfo(baseUrl, hasCrawlLinks, hasFindSensitiveInfo,
+                                maxDepth, maxSubPathCount, assetObj.isCrawlProxy()));
+                    }
+                    domainInfo.setDoWebInfoMap(true);
+                    domainInfo.setDoFullWebInfoMap(true);
+                }
+
+                int progress = completedTasks.incrementAndGet();
+                double percentage = ((progress - 0.5) * 100.0) / totalTasks;
+                String showText = String.format("正在最终深度信息探测 [%d/%d]：%s | 进度：%.2f%%",
+                        progress, totalTasks, domainStr, percentage);
+                updateProgress(showText, false, null);
+                return null;
+            }, executor);
+            futures.add(future);
+        }
+        waitForFuturesAndShutdown(futures, poolName);
+        updateProgress("第二波最终深度信息探测", true, null);
+    }
+
+    private List<DomainInfo> getInitialWebInfoTargets(List<DomainInfo> domainInfoList, boolean isHasLocalFullDetection,
+                                                      int localFullDetectionThreshold) {
+        if (isHasLocalFullDetection) {
+            return new ArrayList<>(domainInfoList);
+        }
+        return limitDomainInfoTargets(domainInfoList, localFullDetectionThreshold);
+    }
+
+    private List<DomainInfo> getFinalWebInfoTargets(List<DomainInfo> domainInfoList, boolean isHasLocalFullDetection,
+                                                    int localFullDetectionThreshold) {
+        if (isHasLocalFullDetection) {
+            return new ArrayList<>(domainInfoList);
+        }
+        return limitDomainInfoTargets(domainInfoList, localFullDetectionThreshold);
+    }
+
+    private List<DomainInfo> limitDomainInfoTargets(List<DomainInfo> domainInfoList, int limit) {
+        if (domainInfoList == null || domainInfoList.isEmpty() || limit <= 0) {
+            return new ArrayList<>();
+        }
+        int maxSize = Math.min(domainInfoList.size(), limit);
+        return new ArrayList<>(domainInfoList.subList(0, maxSize));
+    }
+
+    private boolean requiresDeferredDeepCollection(boolean hasCrawlLinks, boolean hasFindSensitiveInfo) {
+        return hasCrawlLinks || hasFindSensitiveInfo;
+    }
+
+    private void waitForFuturesAndShutdown(List<CompletableFuture<?>> futures, String poolName) {
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (CancellationException ce) {
+            } catch (Exception e) {
+                if (debugMode) e.printStackTrace();
+            }
+        }
+        ExecutorServiceManager.shutdownExecutor(poolName);
+    }
+
+    private void recordStage(InfoGatheringStageRecorder stageRecorder, InfoGatheringStageRecorder.StageToken stageToken,
+                             int itemCount, String summary) {
+        stageRecorder.finish(stageToken, itemCount, summary);
+    }
+
+    private void emitStageSummary(NetAssets netAssets, InfoGatheringStageRecorder stageRecorder) {
+        if (stageRecorder == null || stageRecorder.isEmpty()) {
+            return;
+        }
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("type", DataTypeConstants.STAGE_SUMMARY);
+        dataMap.put("data", stageRecorder.snapshot());
+        updateProgress(buildStageSummaryMessage(netAssets), true, dataMap);
+    }
+
+    private String buildStageSummaryMessage(NetAssets netAssets) {
+        String companyName = netAssets == null ? null : netAssets.getCompanyName();
+        if (companyName == null || companyName.trim().isEmpty()) {
+            companyName = "-";
+        }
+        return "信息收集阶段统计：" + companyName;
+    }
+
+    private List<ShadowAssetCandidate> recallShadowAssetCandidates(Set<String> companyNameSet) {
+        Map<String, ShadowAssetCandidate> candidateMap = new LinkedHashMap<>();
+        List<String> orderedCompanyNames = new ArrayList<>(companyNameSet);
+        orderedCompanyNames.sort(new Comparator<String>() {
+            @Override
+            public int compare(String left, String right) {
+                return Integer.compare(right.length(), left.length());
+            }
+        });
+
+        int currentIndex = 0;
+        int totalNum = orderedCompanyNames.size();
+        for (String companyNameStr : orderedCompanyNames) {
+            if (shouldStop()) {
+                return new ArrayList<>();
+            }
+            currentIndex++;
+            double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+            String showText = String.format("正在泛型检索 [%d/%d]：%s | 进度：%.2f%%",
+                    currentIndex, totalNum, companyNameStr, progress);
+            String showTextMerge = String.format("影子资产数据整合 [%d/%d]：%s | 进度：%.2f%%",
+                    currentIndex, totalNum, companyNameStr, progress);
+            updateProgress(showText, false, null);
+
+            JsonArray info_Fofa = fofaSearch.getInfoByBodyFilterIcp_Fofa(companyNameStr);
+            JsonArray info_Hunter = hunterSearch.getInfoByBodyFilterIcp_Hunter(companyNameStr);
+            JsonArray info_Quake = quakeSearch.getInfoByBodyFilteIcp_Quake(companyNameStr);
+            JsonArray info_Shodan = shodanSearch.getInfoByBodyFilterIcp_shodan(companyNameStr);
+            JsonArray info_Zoomeye = zoomeyeSearch.getInfoByBodyFilterIcp_zoomeye(companyNameStr);
+
+            updateProgress(showTextMerge, false, null);
+            List<DomainInfo> mergedList = DomainInfoMerger.mergeDomainInfos("泛型检索：" + companyNameStr,
+                    info_Fofa, info_Hunter, info_Quake, info_Shodan, info_Zoomeye);
+            mergedList = DomainInfoMerger.mergeDomainInfoList(mergedList);
+            for (DomainInfo domainInfo : mergedList) {
+                addOrMergeShadowCandidate(candidateMap, domainInfo, companyNameStr);
+            }
+        }
+        return new ArrayList<>(candidateMap.values());
+    }
+
+    private void addOrMergeShadowCandidate(Map<String, ShadowAssetCandidate> candidateMap, DomainInfo domainInfo, String recalledAlias) {
+        if (domainInfo == null) {
+            return;
+        }
+
+        Map.Entry<String, ShadowAssetCandidate> existingEntry = findExistingShadowCandidate(candidateMap, domainInfo);
+        if (existingEntry != null) {
+            List<DomainInfo> mergeList = new ArrayList<>();
+            mergeList.add(existingEntry.getValue().getDomainInfo());
+            mergeList.add(domainInfo);
+            DomainInfoMerger.mergeDomainInfoList(mergeList);
+            existingEntry.getValue().setDomainInfo(mergeList.get(0));
+            existingEntry.getValue().addRecalledAlias(recalledAlias);
+            return;
+        }
+
+        ShadowAssetCandidate candidate = new ShadowAssetCandidate(domainInfo);
+        candidate.addRecalledAlias(recalledAlias);
+        candidateMap.put(buildShadowCandidateKey(domainInfo), candidate);
+    }
+
+    private Map.Entry<String, ShadowAssetCandidate> findExistingShadowCandidate(Map<String, ShadowAssetCandidate> candidateMap, DomainInfo domainInfo) {
+        String candidateKey = buildShadowCandidateKey(domainInfo);
+        ShadowAssetCandidate directMatch = candidateMap.get(candidateKey);
+        if (directMatch != null) {
+            return new AbstractMap.SimpleEntry<>(candidateKey, directMatch);
+        }
+
+        for (Map.Entry<String, ShadowAssetCandidate> entry : candidateMap.entrySet()) {
+            if (isSameShadowCandidate(entry.getValue().getDomainInfo(), domainInfo)) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    private List<ShadowAssetCandidate> filterNewShadowAssetCandidates(List<DomainInfo> domainInfoList, List<ShadowAssetCandidate> shadowCandidates) {
+        List<ShadowAssetCandidate> result = new ArrayList<>();
+        for (ShadowAssetCandidate shadowCandidate : shadowCandidates) {
+            if (shouldStop()) {
+                return new ArrayList<>();
+            }
+            List<DomainInfo> singleton = new ArrayList<>();
+            singleton.add(shadowCandidate.getDomainInfo());
+            if (!DomainInfoMerger.getUniqueDomainInfoInB(domainInfoList, singleton).isEmpty()) {
+                result.add(shadowCandidate);
+            }
+        }
+        return result;
+    }
+
+    private List<DomainInfo> evaluateShadowAssetCandidates(List<ShadowAssetCandidate> shadowCandidates,
+                                                           ShadowAssetContext shadowAssetContext,
+                                                           ShadowAssetEvaluator shadowAssetEvaluator) {
+        List<DomainInfo> acceptedDomains = new ArrayList<>();
+        int currentIndex = 0;
+        int totalNum = shadowCandidates.size();
+        int rejectedCount = 0;
+
+        for (ShadowAssetCandidate shadowCandidate : shadowCandidates) {
+            if (shouldStop()) {
+                return new ArrayList<>();
+            }
+            currentIndex++;
+            double progress = ((currentIndex - 0.5) * 100.0) / totalNum;
+            DomainInfo domainInfo = shadowCandidate.getDomainInfo();
+            String domainStr = domainInfo.getDomain();
+            if (domainStr == null || domainStr.isEmpty()) {
+                domainStr = domainInfo.getIp();
+            }
+            String showText = String.format("正在评估影子资产 [%d/%d]：%s | 进度：%.2f%%",
+                    currentIndex, totalNum, domainStr, progress);
+            updateProgress(showText, false, null);
+
+            ShadowAssetDecision decision = shadowAssetEvaluator.evaluate(shadowCandidate, shadowAssetContext);
+            decision.applyTo(domainInfo);
+            if (decision.isAccepted()) {
+                acceptedDomains.add(domainInfo);
+            } else {
+                rejectedCount++;
+            }
+        }
+        updateProgress("影子资产评估完成：通过 " + acceptedDomains.size() + "，拒绝 " + rejectedCount, true, null);
+        return acceptedDomains;
+    }
+
+    private ShadowAssetContext buildShadowAssetContext(String rootCompanyName, Set<String> companyNameSet,
+                                                       Set<String> domainSet, Set<String> icpNoSet,
+                                                       List<DomainInfo> chooseWebInfoMapList) {
+        ShadowAssetContext context = new ShadowAssetContext();
+        context.setRootCompanyName(rootCompanyName);
+        context.setCompanyNames(companyNameSet);
+        context.setDomains(domainSet);
+        context.setIcpNos(icpNoSet);
+
+        List<Map<String, Object>> referenceWebInfoMaps = new ArrayList<>();
+        if (chooseWebInfoMapList != null) {
+            for (DomainInfo selectedDomainInfo : chooseWebInfoMapList) {
+                if (selectedDomainInfo != null && selectedDomainInfo.getWebInfoMap() != null && !selectedDomainInfo.getWebInfoMap().isEmpty()) {
+                    referenceWebInfoMaps.add(selectedDomainInfo.getWebInfoMap());
+                }
+            }
+        }
+        context.setReferenceWebInfoMaps(referenceWebInfoMaps);
+        return context;
+    }
+
+    private int getShadowAssetEvaluateLimit(int shadowAssetsThreshold) {
+        int limit = Math.max(60, shadowAssetsThreshold * 3);
+        return Math.min(limit, 200);
+    }
+
+    private int getDataSourceCount(String dataSource) {
+        if (dataSource == null || dataSource.trim().isEmpty()) {
+            return 0;
+        }
+        Set<String> sourceSet = new LinkedHashSet<>();
+        for (String item : dataSource.split("[\\n,;]+")) {
+            String trimmed = item.trim();
+            if (!trimmed.isEmpty()) {
+                sourceSet.add(trimmed);
+            }
+        }
+        return sourceSet.size();
+    }
+
+    private boolean isSameShadowCandidate(DomainInfo left, DomainInfo right) {
+        if (!buildShadowBaseKey(left).equals(buildShadowBaseKey(right))) {
+            return false;
+        }
+
+        Set<String> leftIdentifiers = collectShadowCandidateIdentifiers(left);
+        Set<String> rightIdentifiers = collectShadowCandidateIdentifiers(right);
+        if (leftIdentifiers.isEmpty() || rightIdentifiers.isEmpty()) {
+            return true;
+        }
+
+        for (String identifier : leftIdentifiers) {
+            if (rightIdentifiers.contains(identifier)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String buildShadowCandidateKey(DomainInfo domainInfo) {
+        String baseKey = buildShadowBaseKey(domainInfo);
+        Set<String> identifiers = collectShadowCandidateIdentifiers(domainInfo);
+        if (identifiers.isEmpty()) {
+            return baseKey;
+        }
+        return baseKey + "|" + String.join("|", identifiers);
+    }
+
+    private String buildShadowBaseKey(DomainInfo domainInfo) {
+        String ip = domainInfo.getIp() == null ? "" : domainInfo.getIp().trim();
+        String port = domainInfo.getPort() == null ? "" : domainInfo.getPort().trim();
+        return ip + ":" + port;
+    }
+
+    private Set<String> collectShadowCandidateIdentifiers(DomainInfo domainInfo) {
+        Set<String> identifiers = new TreeSet<>();
+        addShadowIdentifier(identifiers, domainInfo.getDomain());
+        addShadowIdentifier(identifiers, domainInfo.getHost());
+        addShadowIdentifier(identifiers, extractShadowHost(domainInfo.getUrl()));
+        return identifiers;
+    }
+
+    private void addShadowIdentifier(Set<String> identifiers, String rawValue) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
+            return;
+        }
+        for (String item : rawValue.split("[\\n,;]+")) {
+            String normalized = item.trim().toLowerCase(Locale.ROOT);
+            if (normalized.startsWith("*.")) {
+                normalized = normalized.substring(2);
+            }
+            if (normalized.endsWith(".")) {
+                normalized = normalized.substring(0, normalized.length() - 1);
+            }
+            if (!normalized.isEmpty()) {
+                identifiers.add(normalized);
+            }
+        }
+    }
+
+    private String extractShadowHost(String urlValue) {
+        if (urlValue == null || urlValue.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return new URL(urlValue).getHost();
+        } catch (Exception e) {
+            return urlValue;
+        }
+    }
+
+    private List<CompanyCandidate> searchCompanyCandidates(String companyName) {
+        List<CompanyCandidate> chinazCandidates = fetchChinazCompanyCandidates(companyName);
+        List<CompanyCandidate> aiqichaCandidates = fetchAiqichaCompanyCandidates(companyName);
+        return mergeCandidates(chinazCandidates, aiqichaCandidates);
+    }
+
+    private static class CompanyResolutionResult {
+        private final CompanyCandidate candidate;
+        private final boolean manuallyConfirmed;
+
+        private CompanyResolutionResult(CompanyCandidate candidate, boolean manuallyConfirmed) {
+            this.candidate = candidate;
+            this.manuallyConfirmed = manuallyConfirmed;
+        }
+    }
+
+    private CompanyCandidate refreshCompanyCandidate(CompanyCandidate candidate) {
+        if (candidate == null || candidate.getCompanyName() == null || candidate.getCompanyName().trim().isEmpty()) {
+            return candidate;
+        }
+
+        List<CompanyCandidate> refreshedCandidates = searchCompanyCandidates(candidate.getCompanyName());
+        CompanyCandidate exactCandidate = findExactCandidate(candidate.getCompanyName(), refreshedCandidates);
+        if (exactCandidate == null) {
+            return candidate;
+        }
+        exactCandidate.mergeFrom(candidate);
+        return exactCandidate;
+    }
+
+    private CompanyCandidate chooseAiFullCompanyName(String currentQuery) {
+        if (shouldStop()) {
+            return null;
+        }
+        updateProgress("AI生成完整公司名候选：" + currentQuery, false, null);
+        Set<String> aiCompanyNames = fetchAiFullCompanyNames(currentQuery);
+        updateProgress("AI生成完整公司名候选：" + currentQuery, true, null);
+
+        List<CompanyCandidate> aiCandidates = new ArrayList<>();
+        for (String aiCompanyName : aiCompanyNames) {
+            if (aiCompanyName != null && !aiCompanyName.trim().isEmpty()) {
+                String trimmedAiCompanyName = aiCompanyName.trim();
+                if (!trimmedAiCompanyName.equals(currentQuery)) {
+                    aiCandidates.add(CompanyCandidate.fromAiName(trimmedAiCompanyName));
+                }
+            }
+        }
+        if (aiCandidates.isEmpty()) {
+            return null;
+        }
+
+        showCompanyCandidateChoosePaneBox(aiCandidates, true, currentQuery);
+        CompanyCandidateSelectionResult aiSelection = waitAndGetCompanyCandidateSelection();
+        if (shouldStop()) {
+            return null;
+        }
+        if (aiSelection.getAction() != CompanyCandidateSelectionResult.Action.CONFIRM) {
+            return null;
+        }
+        return aiSelection.getSelectedCandidate();
+    }
+
+    private CompanyResolutionResult resolveRootCompanyCandidate(String companyName) {
+        String currentQuery = companyName == null ? "" : companyName.trim();
+        Set<String> attemptedQueries = new HashSet<>();
+        boolean manuallyConfirmed = false;
+
+        while (!currentQuery.isEmpty() && attemptedQueries.add(currentQuery)) {
+            if (shouldStop()) {
+                return null;
+            }
+
+            updateProgress("检索根公司候选：" + currentQuery, false, null);
+            List<CompanyCandidate> candidates = searchCompanyCandidates(currentQuery);
+            updateProgress("检索根公司候选：" + currentQuery, true, null);
+
+            CompanyCandidate exactCandidate = findExactCandidate(currentQuery, candidates);
+            if (exactCandidate != null) {
+                return new CompanyResolutionResult(exactCandidate, manuallyConfirmed);
+            }
+
+            if (!candidates.isEmpty()) {
+                showCompanyCandidateChoosePaneBox(candidates, false, currentQuery);
+                CompanyCandidateSelectionResult selection = waitAndGetCompanyCandidateSelection();
+                if (shouldStop()) {
+                    return null;
+                }
+                if (selection.getAction() == CompanyCandidateSelectionResult.Action.CONFIRM) {
+                    if (selection.getSelectedCandidate() == null) {
+                        return null;
+                    }
+                    manuallyConfirmed = true;
+                    return new CompanyResolutionResult(refreshCompanyCandidate(selection.getSelectedCandidate()), true);
+                }
+                if (selection.getAction() == CompanyCandidateSelectionResult.Action.TIMEOUT) {
+                    return null;
+                }
+                if (selection.getAction() == CompanyCandidateSelectionResult.Action.CANCEL) {
+                    return null;
+                }
+            }
+
+            CompanyCandidate aiCompanyCandidate = chooseAiFullCompanyName(currentQuery);
+            if (aiCompanyCandidate == null || aiCompanyCandidate.getCompanyName() == null || aiCompanyCandidate.getCompanyName().trim().isEmpty()) {
+                return null;
+            }
+            manuallyConfirmed = true;
+            currentQuery = aiCompanyCandidate.getCompanyName().trim();
+        }
+
+        return null;
+    }
+
+    private void addOriginalInputAliasIfNeeded(Set<String> companyNameSet, String originalInputCompanyName,
+                                               String confirmedCompanyName, boolean directCompanyInput,
+                                               boolean manuallyConfirmed, String currentCompanyName) {
+        if (!directCompanyInput || !manuallyConfirmed) {
+            return;
+        }
+        if (originalInputCompanyName == null || originalInputCompanyName.trim().isEmpty()) {
+            return;
+        }
+        if (confirmedCompanyName == null || confirmedCompanyName.trim().isEmpty()) {
+            return;
+        }
+        if (currentCompanyName == null || !currentCompanyName.equals(confirmedCompanyName)) {
+            return;
+        }
+
+        String trimmedOriginalInput = originalInputCompanyName.trim();
+        if (!trimmedOriginalInput.equals(confirmedCompanyName.trim())) {
+            companyNameSet.add(trimmedOriginalInput);
+        }
+    }
+
+    private boolean shouldCollectCompanyAliases(AssetObj assetObj) {
+        return assetObj != null && (assetObj.isSearchShadowAssets() || assetObj.isUseGithub());
+    }
+
+    private LinkedHashSet<String> normalizeCompanyAliases(Set<String> aliases, String currentCompanyName) {
+        LinkedHashSet<String> normalizedAliases = new LinkedHashSet<>();
+        if (aliases != null) {
+            for (String alias : aliases) {
+                if (alias == null) {
+                    continue;
+                }
+                String trimmedAlias = alias.trim();
+                if (!trimmedAlias.isEmpty()) {
+                    normalizedAliases.add(trimmedAlias);
+                }
+            }
+        }
+        if (currentCompanyName != null) {
+            String trimmedCompanyName = currentCompanyName.trim();
+            if (!trimmedCompanyName.isEmpty()) {
+                normalizedAliases.add(trimmedCompanyName);
+            }
+        }
+        return normalizedAliases;
+    }
+
+    private JsonObject getConfirmedCompanyInfoMap(CompanyCandidate rootCandidate) {
+        JsonObject companyInfoMap = new JsonObject();
+        if (rootCandidate == null || rootCandidate.getCompanyName() == null || rootCandidate.getCompanyName().trim().isEmpty()) {
+            return companyInfoMap;
+        }
+
+        if ((rootCandidate.getChinazCompanyId() == null || rootCandidate.getChinazCompanyId().isEmpty())) {
+            List<CompanyCandidate> chinazCandidates = fetchChinazCompanyCandidates(rootCandidate.getCompanyName());
+            CompanyCandidate exactChinazCandidate = findExactCandidate(rootCandidate.getCompanyName(), chinazCandidates);
+            if (exactChinazCandidate != null) {
+                rootCandidate.mergeFrom(exactChinazCandidate);
+            }
+        }
+
+        if (rootCandidate.getChinazCompanyId() == null || rootCandidate.getChinazCompanyId().isEmpty()) {
+            return companyInfoMap;
+        }
+
+        return GetCompany.getCompanyDetails_chinaz(rootCandidate.getChinazCompanyId(), rootCandidate.getCompanyName());
+    }
+
+    private JsonArray getConfirmedCompanyDetails(CompanyCandidate rootCandidate) {
+        if (rootCandidate == null || rootCandidate.getCompanyName() == null || rootCandidate.getCompanyName().trim().isEmpty()) {
+            return new JsonArray();
+        }
+        return aiqichaSearch.getCompanyInfoIteration(rootCandidate.getCompanyName(), rootCandidate.getAiqichaPid());
+    }
+
     // 处理公司名称的逻辑
     private void handleCompanyName(String companyName, AssetObj assetObj, Set<String> hasIcpNoSet, Set<String> hasTmpDomainSet) {
         if (shouldStop()) return;
-        if(hasIcpNoSet==null&&hasTmpDomainSet==null) paneInfoSearch.updateEchoVBox("传入公司名_" + companyName + "，初始化数据", true, null);
+        boolean directCompanyInput = hasIcpNoSet==null&&hasTmpDomainSet==null;
+        String originalInputCompanyName = companyName;
+        if(directCompanyInput) updateProgress("传入公司名_" + companyName + "，初始化数据", true, null);
         Set<String> icpNoSet = new HashSet<>();
         Set<String> tmpDomainSet = new HashSet<>(); // 存储初步检索的域名
         if(hasIcpNoSet!=null&& hasTmpDomainSet!=null){
@@ -930,10 +1635,33 @@ public class AssetMapper {
             tmpDomainSet = hasTmpDomainSet;
         }
 
+        CompanyResolutionResult resolutionResult = resolveRootCompanyCandidate(companyName);
+        if (shouldStop()) {
+            return;
+        }
+        CompanyCandidate rootCandidate = resolutionResult == null ? null : resolutionResult.candidate;
+        if (rootCandidate == null) {
+            String tipMessage = directCompanyInput
+                    ? I18nTextUtils.getString("infosearch.company.root.manual.retry")
+                    : I18nTextUtils.getString("infosearch.company.root.skip");
+            showTip(tipMessage, false);
+            updateProgress(tipMessage, true, null);
+            if (!tmpDomainSet.isEmpty() || !icpNoSet.isEmpty()) {
+                NetAssets netAssets = new NetAssets();
+                netAssets.setCompanyName(companyName);
+                dispatchCollectedSeeds(assetObj, netAssets, null, tmpDomainSet, icpNoSet);
+            }
+            if(hasIcpNoSet==null&& hasTmpDomainSet==null) updateProgress("查询结束", true, null);
+            return;
+        }
+
+        companyName = rootCandidate.getCompanyName();
+        boolean manuallyConfirmed = resolutionResult != null && resolutionResult.manuallyConfirmed;
+        paneInfoSearch.updateEchoVBox("已确认根公司：" + companyName, true, null);
+
         paneInfoSearch.updateEchoVBox("检索相关公司信息", false, null);
-        JsonArray companyList = GetCompany.getCompany_chinaz(companyName);
-        if(companyList.size()>0){
-            JsonObject companyInfoMap = GetCompany.getCompanyDetails_chinaz(companyList.get(0).getAsJsonObject().get("企业ID").getAsString(), companyList.get(0).getAsJsonObject().get("企业名称").getAsString());
+        JsonObject companyInfoMap = getConfirmedCompanyInfoMap(rootCandidate);
+        if(companyInfoMap.size()>0){
             assetObj.setCompanyInfoMap(companyInfoMap);
             JsonArray icpInfo = companyInfoMap.getAsJsonArray("网站备案");
 
@@ -948,10 +1676,12 @@ public class AssetMapper {
             dataMap.put("type", DataTypeConstants.ICP);
             dataMap.put("data", companyInfoMap);
             paneInfoSearch.updateEchoVBox("检索公司相关的备案号及域名信息", true, dataMap);
+        } else {
+            paneInfoSearch.updateEchoVBox("检索公司相关的备案号及域名信息", true, null);
         }
 
         paneInfoSearch.updateEchoVBox("检索公司相关的微信公众号、APP、子公司信息", false, null);
-        JsonArray companyDetailsInfoMap = aiqichaSearch.getCompanyInfoIteration(companyName);
+        JsonArray companyDetailsInfoMap = getConfirmedCompanyDetails(rootCandidate);
         assetObj.setCompanyDetailsInfoMap(companyDetailsInfoMap);
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("type", DataTypeConstants.WXAPPSUBCOM);
@@ -970,8 +1700,6 @@ public class AssetMapper {
                 if (subCompanyName != null && !subCompanyName.isEmpty()) {
                     hasSubCompanyName = true;
                     JsonArray domainAndIcp = jsonObject.getAsJsonObject(subCompanyName).getAsJsonArray("domainAndIcp");
-                    // 每家公司名（subCompanyName）
-                    // 该公司的domain列表(subComDomainSet)
                     Set<String> subComDomainSet = new HashSet<>();
                     Set<String> subIcpNoSet = new HashSet<>();
                     for (JsonElement subJsonElement : domainAndIcp) {
@@ -991,27 +1719,23 @@ public class AssetMapper {
                             currentIndex, totalNum, subCompanyName, progress);
                     paneInfoSearch.updateEchoVBox(showText_data, true, null);
 
-                    Set<String> subCompanyNameSet = new HashSet<>();
-                    if(assetObj.isSearchShadowAssets() && assetObj.isUseGithub()) {
-                        String showText_Ai = String.format("正在获取企业别名_By_Ai [%d/%d]：%s | 进度：%.2f%%",
-                                currentIndex, totalNum, subCompanyName, progress);
-                        String showText_User = String.format("正在获取企业别名_By_User [%d/%d]：%s | 进度：%.2f%%",
-                                currentIndex, totalNum, subCompanyName, progress);
-                        String showText = String.format("企业别名 [%d/%d]：%s | 进度：%.2f%%",
-                                currentIndex, totalNum, subCompanyName, progress);
-                        if (totalNum == 1) showText = "获取企业别名：" + subCompanyName;
-                        // 获取企业别名by_Ai
-                        paneInfoSearch.updateEchoVBox(showText_Ai, false, null);
-                        subCompanyNameSet = AiUtils.getCompanyName_Ai(subCompanyName);
-                        paneInfoSearch.updateEchoVBox(showText_User, false, null);
-                        paneInfoSearch.showCompanyNameChoosePaneBox(subCompanyNameSet);
-                        if (shouldStop()) return;
-                        subCompanyNameSet = paneInfoSearch.waitAndGetCompanyNameSet();
-                        if (shouldStop()) return;
-                        paneInfoSearch.updateEchoVBox(showText, true, null);
-                    }else {
-                        subCompanyNameSet.add(subCompanyName);
-                    }
+                    String showText_Ai = String.format("正在获取企业别名_By_Ai [%d/%d]：%s | 进度：%.2f%%",
+                            currentIndex, totalNum, subCompanyName, progress);
+                    String showText_User = String.format("正在获取企业别名_By_User [%d/%d]：%s | 进度：%.2f%%",
+                            currentIndex, totalNum, subCompanyName, progress);
+                    String showText = String.format("企业别名 [%d/%d]：%s | 进度：%.2f%%",
+                            currentIndex, totalNum, subCompanyName, progress);
+                    if (totalNum == 1) showText = "获取企业别名：" + subCompanyName;
+                    Set<String> subCompanyNameSet = resolveCompanyAliasesForCollection(assetObj,
+                            subCompanyName,
+                            originalInputCompanyName,
+                            companyName,
+                            directCompanyInput,
+                            manuallyConfirmed,
+                            showText_Ai,
+                            showText_User,
+                            showText);
+                    if (shouldStop()) return;
 
                     NetAssets netAssets = new NetAssets();
                     netAssets.setCompanyName(subCompanyName);
@@ -1021,19 +1745,16 @@ public class AssetMapper {
         }
 
         if(!hasSubCompanyName){
-            Set<String> companyNameSet = new HashSet<>();
-            if(assetObj.isSearchShadowAssets() && assetObj.isUseGithub()) {
-                paneInfoSearch.updateEchoVBox("正在获取企业别名_By_Ai：" + companyName, false, null);
-                companyNameSet = AiUtils.getCompanyName_Ai(companyName);
-                paneInfoSearch.updateEchoVBox("正在获取企业别名_By_User：" + companyName, false, null);
-                paneInfoSearch.showCompanyNameChoosePaneBox(companyNameSet);
-                if (shouldStop()) return;
-                companyNameSet = paneInfoSearch.waitAndGetCompanyNameSet();
-                if (shouldStop()) return;
-                paneInfoSearch.updateEchoVBox("企业别名：" + companyName, true, null);
-            }else {
-                companyNameSet.add(companyName);
-            }
+            Set<String> companyNameSet = resolveCompanyAliasesForCollection(assetObj,
+                    companyName,
+                    originalInputCompanyName,
+                    companyName,
+                    directCompanyInput,
+                    manuallyConfirmed,
+                    "正在获取企业别名_By_Ai：" + companyName,
+                    "正在获取企业别名_By_User：" + companyName,
+                    "企业别名：" + companyName);
+            if (shouldStop()) return;
 
             NetAssets netAssets = new NetAssets();
             netAssets.setCompanyName(companyName);
@@ -1042,32 +1763,6 @@ public class AssetMapper {
 
         if(hasIcpNoSet==null&& hasTmpDomainSet==null) paneInfoSearch.updateEchoVBox("查询结束", true, null);
     }
-
-    private boolean isRelevantShadowAsset(String baseUrl, String companyNamesStr, List<DomainInfo> chooseWebInfoMapList, boolean isCrawlProxy) {
-        if (baseUrl == null || baseUrl.isEmpty()) {
-            return false;
-        }
-
-        int referenceCount = 0;
-        for (DomainInfo selectedDomainInfo : chooseWebInfoMapList) {
-            if (selectedDomainInfo == null || selectedDomainInfo.getWebInfoMap() == null || selectedDomainInfo.getWebInfoMap().isEmpty()) {
-                continue;
-            }
-            referenceCount++;
-            if (AiUtils.getContentRelevance_Ai(baseUrl, companyNamesStr, selectedDomainInfo.getWebInfoMap(), isCrawlProxy)) {
-                return true;
-            }
-            if (referenceCount >= 3) {
-                break;
-            }
-        }
-
-        if (referenceCount == 0) {
-            return AiUtils.getContentRelevance_Ai(baseUrl, companyNamesStr, null, isCrawlProxy);
-        }
-        return false;
-    }
-
 
     public static void main(String[] args) {
         // 示例输入

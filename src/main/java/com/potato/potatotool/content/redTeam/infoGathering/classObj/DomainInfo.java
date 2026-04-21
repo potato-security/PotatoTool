@@ -29,10 +29,16 @@ public class DomainInfo {
     private String city;
     private String response;
     private boolean doWebInfoMap = false;
+    private boolean doFullWebInfoMap = false;
     private Map<String, Object> webInfoMap;
     private JsonArray googldLeakage;
     private JsonArray gitRepoLeakage;
     private String dataSource;
+    private boolean shadowAsset = false;
+    private Integer shadowScore;
+    private String shadowMatchedAlias;
+    private List<String> shadowReasons;
+    private String shadowDecisionSource;
 
     public DomainInfo() {
     }
@@ -51,12 +57,22 @@ public class DomainInfo {
         jsonObject.addProperty("icp", this.getIcp());
         jsonObject.addProperty("certsSubjectOrg", this.getCertsSubjectOrg());
         jsonObject.addProperty("dataSource", this.getDataSource());
+        jsonObject.addProperty("shadowAsset", this.isShadowAsset());
+        jsonObject.addProperty("shadowScore", this.getShadowScore());
+        jsonObject.addProperty("shadowMatchedAlias", this.getShadowMatchedAlias());
+        jsonObject.addProperty("shadowDecisionSource", this.getShadowDecisionSource());
 
         JsonArray componentsArray = new JsonArray();
         if (this.getComponents() != null) {
             this.getComponents().forEach(componentsArray::add);
         }
         jsonObject.add("components", componentsArray);
+
+        JsonArray shadowReasonsArray = new JsonArray();
+        if (this.getShadowReasons() != null) {
+            this.getShadowReasons().forEach(shadowReasonsArray::add);
+        }
+        jsonObject.add("shadowReasons", shadowReasonsArray);
 
         jsonObject.addProperty("os", this.getOs());
         jsonObject.addProperty("company", this.getCompany());
@@ -238,6 +254,14 @@ public class DomainInfo {
         this.doWebInfoMap = doWebInfoMap;
     }
 
+    public boolean isDoFullWebInfoMap() {
+        return doFullWebInfoMap;
+    }
+
+    public void setDoFullWebInfoMap(boolean doFullWebInfoMap) {
+        this.doFullWebInfoMap = doFullWebInfoMap;
+    }
+
 
     public String getDataSource() {
         return dataSource;
@@ -246,5 +270,45 @@ public class DomainInfo {
     public void setDataSource(String dataSource) {
         if(dataSource==null) dataSource = "";
         this.dataSource = dataSource;
+    }
+
+    public boolean isShadowAsset() {
+        return shadowAsset;
+    }
+
+    public void setShadowAsset(boolean shadowAsset) {
+        this.shadowAsset = shadowAsset;
+    }
+
+    public Integer getShadowScore() {
+        return shadowScore;
+    }
+
+    public void setShadowScore(Integer shadowScore) {
+        this.shadowScore = shadowScore;
+    }
+
+    public String getShadowMatchedAlias() {
+        return shadowMatchedAlias;
+    }
+
+    public void setShadowMatchedAlias(String shadowMatchedAlias) {
+        this.shadowMatchedAlias = shadowMatchedAlias;
+    }
+
+    public List<String> getShadowReasons() {
+        return shadowReasons;
+    }
+
+    public void setShadowReasons(List<String> shadowReasons) {
+        this.shadowReasons = shadowReasons;
+    }
+
+    public String getShadowDecisionSource() {
+        return shadowDecisionSource;
+    }
+
+    public void setShadowDecisionSource(String shadowDecisionSource) {
+        this.shadowDecisionSource = shadowDecisionSource;
     }
 }

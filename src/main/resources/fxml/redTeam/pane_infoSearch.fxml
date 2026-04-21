@@ -204,6 +204,30 @@
         </HBox>
     </VBox>
 
+    <VBox fx:id="companyCandidateChoosePaneBox" styleClass="choosePaneBox" visible="false" managed="false" alignment="CENTER">
+        <HBox alignment="CENTER" translateY="-45">
+            <effect>
+                <DropShadow/>
+            </effect>
+            <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
+                <HBox alignment="CENTER" styleClass="titleHbox">
+                    <Label fx:id="companyCandidateTitle" style="-fx-font-size: 21;-fx-font-weight: bold;" text="确认根公司"/>
+                </HBox>
+                <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
+                    <Label fx:id="companyCandidateDesc" text="请确认根公司候选，未确认前不会继续企业扩展"/>
+                    <SmoothScrollPane maxHeight="320" hbarPolicy="NEVER">
+                        <VBox fx:id="companyCandidateVbox" spacing="10" alignment="CENTER"/>
+                    </SmoothScrollPane>
+                    <HBox alignment="CENTER" spacing="10">
+                        <Button fx:id="companyCandidateSave" prefWidth="150" styleClass="buttonBox" text="确认并继续" onAction="#saveCompanyCandidateField"/>
+                        <Button fx:id="companyCandidateNone" prefWidth="120" styleClass="buttonBox" text="都不是" onAction="#chooseNoneCompanyCandidate"/>
+                        <Button fx:id="companyCandidateCancel" prefWidth="120" styleClass="buttonBox" text="取消" userData="i18n:app.cancel" onAction="#cancelCompanyCandidateField"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </HBox>
+    </VBox>
+
     <VBox fx:id="iconChoosePaneBox" styleClass="choosePaneBox" visible="false" managed="false" alignment="CENTER">
         <HBox alignment="CENTER" translateY="-45">
             <effect>

@@ -3,6 +3,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.tools;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.CompanyCandidate;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.data.StrUtils;
@@ -87,6 +88,24 @@ public class GetCompany {
         }
 
         return companyList;
+    }
+
+    public static List<CompanyCandidate> searchCompanyCandidates_chinaz(String company) {
+        List<CompanyCandidate> candidates = new ArrayList<>();
+        JsonArray companyList = getCompany_chinaz(company);
+        for (int i = 0; i < companyList.size(); i++) {
+            JsonObject companyInfo = companyList.get(i).getAsJsonObject();
+            CompanyCandidate candidate = new CompanyCandidate();
+            candidate.setCompanyName(companyInfo.get("企业名称").getAsString());
+            candidate.setChinazCompanyId(companyInfo.get("企业ID").getAsString());
+            candidate.setCompanyStatus(companyInfo.get("企业状态").getAsString());
+            candidate.setLegalRepresentative(companyInfo.get("法定代表人").getAsString());
+            candidate.setRegisteredCapital(companyInfo.get("注册资本").getAsString());
+            candidate.setRegisteredTime(companyInfo.get("注册时间").getAsString());
+            candidate.addSource(CompanyCandidate.SOURCE_CHINAZ);
+            candidates.add(candidate);
+        }
+        return candidates;
     }
 
     public static JsonObject getCompanyDetails_chinaz(String companyId, String companyName) {

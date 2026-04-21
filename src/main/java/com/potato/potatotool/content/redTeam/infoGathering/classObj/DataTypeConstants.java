@@ -7,5 +7,7 @@ package com.potato.potatotool.content.redTeam.infoGathering.classObj;
 public interface DataTypeConstants {
     String SEO = "SEO";
     String ICP = "ICP";
-     String WXAPPSUBCOM = "WXAPPSUBCOM";
+    String WXAPPSUBCOM = "WXAPPSUBCOM";
+    String SHADOW = "SHADOW";
+    String STAGE_SUMMARY = "STAGE_SUMMARY";
 }

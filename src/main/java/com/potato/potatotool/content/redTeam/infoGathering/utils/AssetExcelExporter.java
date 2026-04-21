@@ -410,7 +410,8 @@ public class AssetExcelExporter {
         // 创建标题行
         Row headerRow = sheet.createRow(0);
         String[] headers = {"域名", "数据来源", "IP", "端口", "协议", "状态码_by平台", "isCND", "标题", "ICP备案", "证书组织",
-                "组件", "操作系统", "所属公司/个人", "国家", "城市", "URL_By平台", "响应_By平台", "状态码_By本地", "URL_By本地", "标题_By本地", "响应_By本地", "图标Url", "图标Md5", "图标Mmh3", "图标Base64"};
+                "组件", "操作系统", "所属公司/个人", "影子资产", "影子分值", "命中别名", "命中原因", "判定来源",
+                "国家", "城市", "URL_By平台", "响应_By平台", "状态码_By本地", "URL_By本地", "标题_By本地", "响应_By本地", "图标Url", "图标Md5", "图标Mmh3", "图标Base64"};
 
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -439,28 +440,33 @@ public class AssetExcelExporter {
             safeSetCellValue(row.createCell(10), valueOrDefault(domain.getComponents()));
             safeSetCellValue(row.createCell(11), valueOrDefault(domain.getOs()));
             safeSetCellValue(row.createCell(12), valueOrDefault(domain.getCompany()));
-            safeSetCellValue(row.createCell(13), valueOrDefault(domain.getCountry()));
-            safeSetCellValue(row.createCell(14), valueOrDefault(domain.getCity()));
+            safeSetCellValue(row.createCell(13), valueOrDefault(domain.isShadowAsset()));
+            safeSetCellValue(row.createCell(14), valueOrDefault(domain.getShadowScore()));
+            safeSetCellValue(row.createCell(15), valueOrDefault(domain.getShadowMatchedAlias()));
+            safeSetCellValue(row.createCell(16), valueOrDefault(domain.getShadowReasons()));
+            safeSetCellValue(row.createCell(17), valueOrDefault(domain.getShadowDecisionSource()));
+            safeSetCellValue(row.createCell(18), valueOrDefault(domain.getCountry()));
+            safeSetCellValue(row.createCell(19), valueOrDefault(domain.getCity()));
             String url = valueOrDefault(domain.getUrl());
             if(url.equals("\\") && protocol.toLowerCase().contains("http")){
                 url = protocol + "://" + ip + ":" + port;
             }
-            safeSetCellValue(row.createCell(15), url);
-            safeSetCellValue(row.createCell(16), valueOrDefault(domain.getResponse()));
+            safeSetCellValue(row.createCell(20), url);
+            safeSetCellValue(row.createCell(21), valueOrDefault(domain.getResponse()));
 
             if (domain.isDoWebInfoMap() && domain.getWebInfoMap() != null) {
                 Map<String, Object> webInfo = domain.getWebInfoMap();
-                safeSetCellValue(row.createCell(17), getStringOrDefault(webInfo, "statusCode"));
-                safeSetCellValue(row.createCell(18), getStringOrDefault(webInfo, "url"));
-                safeSetCellValue(row.createCell(19), getStringOrDefault(webInfo, "title"));
-                safeSetCellValue(row.createCell(20), getStringOrDefault(webInfo, "body"));
-                safeSetCellValue(row.createCell(21), getStringOrDefault(webInfo, "iconUrl"));
-                safeSetCellValue(row.createCell(22), getStringOrDefault(webInfo, "iconMd5"));
-                safeSetCellValue(row.createCell(23), getStringOrDefault(webInfo, "iconMmh3"));
+                safeSetCellValue(row.createCell(22), getStringOrDefault(webInfo, "statusCode"));
+                safeSetCellValue(row.createCell(23), getStringOrDefault(webInfo, "url"));
+                safeSetCellValue(row.createCell(24), getStringOrDefault(webInfo, "title"));
+                safeSetCellValue(row.createCell(25), getStringOrDefault(webInfo, "body"));
+                safeSetCellValue(row.createCell(26), getStringOrDefault(webInfo, "iconUrl"));
+                safeSetCellValue(row.createCell(27), getStringOrDefault(webInfo, "iconMd5"));
+                safeSetCellValue(row.createCell(28), getStringOrDefault(webInfo, "iconMmh3"));
                 try {
-                    safeSetCellValue(row.createCell(24), getStringOrDefault(webInfo, "iconBase64"));
+                    safeSetCellValue(row.createCell(29), getStringOrDefault(webInfo, "iconBase64"));
                 }catch (Exception e){
-                    safeSetCellValue(row.createCell(24), "内容过长省略");
+                    safeSetCellValue(row.createCell(29), "内容过长省略");
                 }
             }
 

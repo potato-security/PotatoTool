@@ -7,8 +7,11 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.content.redTeam.infoGathering.AssetMapper;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetObj;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.CompanyCandidate;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.CompanyCandidateSelectionResult;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DataTypeConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.DomainInfo;
+import com.potato.potatotool.content.redTeam.infoGathering.classObj.InfoGatheringStageMetric;
 import com.potato.potatotool.content.redTeam.infoGathering.utils.AssetExcelExporter;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.core.I18nUtils;
@@ -148,6 +151,14 @@ public class PaneInfoSearch {
     @FXML
     private VBox companyNameChoosePaneBox;
     @FXML
+    private VBox companyCandidateChoosePaneBox;
+    @FXML
+    private VBox companyCandidateVbox;
+    @FXML
+    private Label companyCandidateTitle;
+    @FXML
+    private Label companyCandidateDesc;
+    @FXML
     private VBox iconChoosePaneBox;
     @FXML
     private FlowPane iconFlowPane;
@@ -157,6 +168,12 @@ public class PaneInfoSearch {
     public VBox domainVbox;
     @FXML
     private Button companyNameSave;
+    @FXML
+    private Button companyCandidateSave;
+    @FXML
+    private Button companyCandidateNone;
+    @FXML
+    private Button companyCandidateCancel;
     @FXML
     private Button domainSave;
     @FXML
@@ -172,10 +189,24 @@ public class PaneInfoSearch {
     @FXML
     private ScrollPane scroll;
 
-    private final Object lock = new Object(); // 用于线程同步
+    private final Object companyNameLock = new Object();
+    private final Object companyCandidateLock = new Object();
+    private final Object iconSelectionLock = new Object();
+    private final Object domainSelectionLock = new Object();
     private final AtomicLong searchTokenGenerator = new AtomicLong(0);
     private volatile long activeSearchToken = 0L;
     private volatile boolean searchCancelled = false;
+    private final ToggleGroup companyCandidateToggleGroup = new ToggleGroup();
+    private CompanyCandidateSelectionResult companyCandidateSelectionResult =
+            new CompanyCandidateSelectionResult(CompanyCandidateSelectionResult.Action.CANCEL, null);
+    private final List<CompanyCandidate> currentCompanyCandidates = new ArrayList<>();
+
+    private enum CompanyCandidatePaneMode {
+        ROOT,
+        AI_FULL_NAME
+    }
+
+    private CompanyCandidatePaneMode companyCandidatePaneMode = CompanyCandidatePaneMode.ROOT;
 
     @FXML
     private VBox echoVbox;
@@ -275,8 +306,17 @@ public class PaneInfoSearch {
     }
 
     private void cancelPendingSelections() {
-        synchronized (lock) {
-            lock.notifyAll();
+        synchronized (companyNameLock) {
+            companyNameLock.notifyAll();
+        }
+        synchronized (companyCandidateLock) {
+            companyCandidateLock.notifyAll();
+        }
+        synchronized (iconSelectionLock) {
+            iconSelectionLock.notifyAll();
+        }
+        synchronized (domainSelectionLock) {
+            domainSelectionLock.notifyAll();
         }
         Platform.runLater(() -> {
             if (countdownTimeline != null) {
@@ -289,6 +329,7 @@ public class PaneInfoSearch {
             rotateTransition = null;
         });
         hideCompanyNameChoosePaneBox();
+        hideCompanyCandidateChoosePaneBox();
         hideIconChoosePaneBox();
         hideDomainChoosePaneBox();
     }
@@ -328,6 +369,10 @@ public class PaneInfoSearch {
 
     public boolean isSearchCancelled(long searchToken) {
         return searchCancelled || searchToken != activeSearchToken;
+    }
+
+    public boolean isSearchCancelled() {
+        return searchCancelled;
     }
 
     @FXML
@@ -912,8 +957,8 @@ public class PaneInfoSearch {
         hideCompanyNameChoosePaneBox();
 
         // 唤醒等待的线程
-        synchronized (lock) {
-            lock.notify();
+        synchronized (companyNameLock) {
+            companyNameLock.notifyAll();
         }
 
         if (countdownTimeline != null) {
@@ -925,10 +970,10 @@ public class PaneInfoSearch {
         if (searchCancelled) {
             return new HashSet<>();
         }
-        synchronized (lock) {
+        synchronized (companyNameLock) {
             try {
                 if (!searchCancelled) {
-                    lock.wait();
+                    companyNameLock.wait();
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -955,7 +1000,7 @@ public class PaneInfoSearch {
             companyNameChoosePaneBox.setVisible(true);
             companyNameChoosePaneBox.setManaged(true);
 
-            startCountdown(companyNameSave, ()->saveCompanyNameField(null));
+            startCountdown(companyNameSave, I18nUtils.getString("infosearch.next"), ()->saveCompanyNameField(null));
         });
     }
 
@@ -963,11 +1008,15 @@ public class PaneInfoSearch {
     private int countdown = COUNTDOWN_TIME;
     private Timeline countdownTimeline;
     private void startCountdown(Button button, Runnable onCountdownComplete) {
+        startCountdown(button, I18nUtils.getString("infosearch.next"), onCountdownComplete);
+    }
+
+    private void startCountdown(Button button, String baseText, Runnable onCountdownComplete) {
         countdown = COUNTDOWN_TIME;
         countdownTimeline = new Timeline(
                 new KeyFrame(Duration.seconds(1), event -> {
                     if (countdown > 0) {
-                        button.setText(I18nUtils.getString("infosearch.next") + "(" + countdown + ")");
+                        button.setText(baseText + "(" + countdown + ")");
                         countdown--;
                     } else {
                         onCountdownComplete.run();
@@ -986,14 +1035,199 @@ public class PaneInfoSearch {
         });
     }
 
+    @FXML
+    public void saveCompanyCandidateField(ActionEvent event) {
+        finishCompanyCandidateSelection(new CompanyCandidateSelectionResult(
+                CompanyCandidateSelectionResult.Action.CONFIRM,
+                getSelectedCompanyCandidate()
+        ), null);
+    }
+
+    @FXML
+    public void chooseNoneCompanyCandidate(ActionEvent event) {
+        finishCompanyCandidateSelection(new CompanyCandidateSelectionResult(
+                CompanyCandidateSelectionResult.Action.NONE_OF_ABOVE,
+                null
+        ), null);
+    }
+
+    @FXML
+    public void cancelCompanyCandidateField(ActionEvent event) {
+        finishCompanyCandidateSelection(new CompanyCandidateSelectionResult(
+                CompanyCandidateSelectionResult.Action.CANCEL,
+                null
+        ), null);
+    }
+
+    public CompanyCandidateSelectionResult waitAndGetCompanyCandidateSelection() {
+        if (searchCancelled) {
+            return new CompanyCandidateSelectionResult(CompanyCandidateSelectionResult.Action.CANCEL, null);
+        }
+        synchronized (companyCandidateLock) {
+            try {
+                if (!searchCancelled) {
+                    companyCandidateLock.wait();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        if (searchCancelled) {
+            return new CompanyCandidateSelectionResult(CompanyCandidateSelectionResult.Action.CANCEL, null);
+        }
+        return companyCandidateSelectionResult;
+    }
+
+    public void showCompanyCandidateChoosePaneBox(List<CompanyCandidate> candidates, boolean aiFullNameMode, String currentQuery) {
+        if (searchCancelled) {
+            return;
+        }
+
+        companyCandidatePaneMode = aiFullNameMode ? CompanyCandidatePaneMode.AI_FULL_NAME : CompanyCandidatePaneMode.ROOT;
+        companyCandidateSelectionResult = new CompanyCandidateSelectionResult(CompanyCandidateSelectionResult.Action.CANCEL, null);
+        currentCompanyCandidates.clear();
+        if (candidates != null) {
+            currentCompanyCandidates.addAll(candidates);
+        }
+
+        Platform.runLater(() -> {
+            companyCandidateToggleGroup.getToggles().clear();
+            companyCandidateVbox.getChildren().clear();
+
+            String confirmTextKey = aiFullNameMode
+                    ? "infosearch.company.fullname.confirm"
+                    : "infosearch.company.candidate.confirm";
+            companyCandidateSave.setText(I18nUtils.getString(confirmTextKey) + "(" + countdown + ")");
+            companyCandidateNone.setVisible(!aiFullNameMode);
+            companyCandidateNone.setManaged(!aiFullNameMode);
+            companyCandidateCancel.setVisible(true);
+            companyCandidateCancel.setManaged(true);
+
+            if (aiFullNameMode) {
+                companyCandidateTitle.setText(I18nUtils.getString("infosearch.company.fullname.title"));
+                companyCandidateDesc.setText(I18nUtils.getString("infosearch.company.fullname.desc") + "：" + currentQuery);
+            } else {
+                companyCandidateTitle.setText(I18nUtils.getString("infosearch.company.candidate.title"));
+                companyCandidateDesc.setText(I18nUtils.getString("infosearch.company.candidate.desc") + "：" + currentQuery);
+            }
+
+            int index = 1;
+            for (CompanyCandidate candidate : currentCompanyCandidates) {
+                companyCandidateVbox.getChildren().add(createCompanyCandidateRow(candidate, index++));
+            }
+
+            companyCandidateChoosePaneBox.setVisible(true);
+            companyCandidateChoosePaneBox.setManaged(true);
+            startCountdown(companyCandidateSave, I18nUtils.getString(confirmTextKey), this::timeoutCompanyCandidateSelection);
+        });
+    }
+
+    private void timeoutCompanyCandidateSelection() {
+        String tip = companyCandidatePaneMode == CompanyCandidatePaneMode.AI_FULL_NAME
+                ? I18nUtils.getString("infosearch.company.fullname.timeout")
+                : I18nUtils.getString("infosearch.company.candidate.timeout");
+        finishCompanyCandidateSelection(new CompanyCandidateSelectionResult(
+                CompanyCandidateSelectionResult.Action.TIMEOUT,
+                null
+        ), tip);
+    }
+
+    private void finishCompanyCandidateSelection(CompanyCandidateSelectionResult selectionResult, String tip) {
+        companyCandidateSelectionResult = selectionResult;
+        hideCompanyCandidateChoosePaneBox();
+        synchronized (companyCandidateLock) {
+            companyCandidateLock.notifyAll();
+        }
+
+        if (countdownTimeline != null) {
+            countdownTimeline.stop();
+        }
+        if (tip != null && !tip.trim().isEmpty()) {
+            showTip(tip, false);
+        }
+    }
+
+    private Node createCompanyCandidateRow(CompanyCandidate candidate, int index) {
+        HBox container = new HBox();
+        container.setSpacing(12);
+        container.setAlignment(Pos.CENTER_LEFT);
+        container.setMaxWidth(620);
+
+        RadioButton radioButton = new RadioButton();
+        radioButton.setToggleGroup(companyCandidateToggleGroup);
+        radioButton.setUserData(candidate.getCompanyName());
+
+        VBox textBox = new VBox();
+        textBox.setSpacing(4);
+        textBox.setMaxWidth(560);
+
+        Label nameLabel = new Label(index + "、" + candidate.getCompanyName());
+        nameLabel.setWrapText(true);
+        nameLabel.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+
+        Label metaLabel = new Label(buildCompanyCandidateMeta(candidate));
+        metaLabel.setWrapText(true);
+        metaLabel.setTextAlignment(TextAlignment.LEFT);
+        metaLabel.getStyleClass().add("littleLabel");
+
+        textBox.getChildren().addAll(nameLabel, metaLabel);
+        container.getChildren().addAll(radioButton, textBox);
+        return container;
+    }
+
+    private String buildCompanyCandidateMeta(CompanyCandidate candidate) {
+        List<String> parts = new ArrayList<>();
+        String sourceSummary = candidate.getSourceSummary();
+        if (!sourceSummary.isEmpty()) {
+            parts.add("来源: " + sourceSummary);
+        }
+        if (candidate.getCompanyStatus() != null && !candidate.getCompanyStatus().trim().isEmpty()) {
+            parts.add("状态: " + candidate.getCompanyStatus().trim());
+        }
+        if (candidate.getLegalRepresentative() != null && !candidate.getLegalRepresentative().trim().isEmpty()) {
+            parts.add("法人: " + candidate.getLegalRepresentative().trim());
+        }
+        if (candidate.getRegisteredCapital() != null && !candidate.getRegisteredCapital().trim().isEmpty()) {
+            parts.add("资本: " + candidate.getRegisteredCapital().trim());
+        }
+        if (candidate.getRegisteredTime() != null && !candidate.getRegisteredTime().trim().isEmpty()) {
+            parts.add("注册时间: " + candidate.getRegisteredTime().trim());
+        }
+        return String.join(" | ", parts);
+    }
+
+    private CompanyCandidate getSelectedCompanyCandidate() {
+        Toggle selectedToggle = companyCandidateToggleGroup.getSelectedToggle();
+        if (selectedToggle == null || selectedToggle.getUserData() == null) {
+            return null;
+        }
+        String companyName = selectedToggle.getUserData().toString();
+        for (CompanyCandidate candidate : currentCompanyCandidates) {
+            if (candidate.getCompanyName() != null && candidate.getCompanyName().equals(companyName)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    public void hideCompanyCandidateChoosePaneBox() {
+        Platform.runLater(() -> {
+            companyCandidateChoosePaneBox.setVisible(false);
+            companyCandidateChoosePaneBox.setManaged(false);
+            companyCandidateVbox.getChildren().clear();
+            companyCandidateToggleGroup.getToggles().clear();
+            currentCompanyCandidates.clear();
+        });
+    }
+
     private List<DomainInfo> domainInfoList = new ArrayList<>();
     @FXML
     public void saveIconField(ActionEvent event) {
         hideIconChoosePaneBox();
 
         // 唤醒等待的线程
-        synchronized (lock) {
-            lock.notify();
+        synchronized (iconSelectionLock) {
+            iconSelectionLock.notifyAll();
         }
 
         if (countdownTimeline != null) {
@@ -1137,10 +1371,10 @@ public class PaneInfoSearch {
         if (searchCancelled) {
             return new ArrayList<>();
         }
-        synchronized (lock) {
+        synchronized (iconSelectionLock) {
             try {
                 if (!searchCancelled) {
-                    lock.wait();
+                    iconSelectionLock.wait();
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -1312,6 +1546,16 @@ public class PaneInfoSearch {
                     }
                 });
             });
+        } else if (DataTypeConstants.SHADOW.equals(type)) {
+            @SuppressWarnings("unchecked")
+            List<DomainInfo> shadowDomainInfoList = (List<DomainInfo>) data;
+            TableView<Map<String, String>> shadowAssetTable = createShadowAssetTable(shadowDomainInfoList);
+            contentBox.getChildren().add(shadowAssetTable);
+        } else if (DataTypeConstants.STAGE_SUMMARY.equals(type)) {
+            @SuppressWarnings("unchecked")
+            List<InfoGatheringStageMetric> stageMetrics = (List<InfoGatheringStageMetric>) data;
+            TableView<Map<String, String>> stageSummaryTable = createStageSummaryTable(stageMetrics);
+            contentBox.getChildren().add(stageSummaryTable);
         } else {
             contentBox.getChildren().add(new Label(I18nUtils.getString("infosearch.error.unknown")));
         }
@@ -1418,6 +1662,90 @@ public class PaneInfoSearch {
         return tableView;
     }
 
+    private TableView<Map<String, String>> createShadowAssetTable(List<DomainInfo> shadowDomainInfoList) {
+        TableView<Map<String, String>> tableView = new SmoothTableView<>();
+        tableView.setPrefWidth(sPane.getPrefWidth() - 100);
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        String domainHeader = I18nUtils.getString("infosearch.shadow.table.domain");
+        String ipHeader = I18nUtils.getString("infosearch.shadow.table.ip");
+        String portHeader = I18nUtils.getString("infosearch.shadow.table.port");
+        String titleHeader = I18nUtils.getString("infosearch.shadow.table.title");
+        String aliasHeader = I18nUtils.getString("infosearch.shadow.table.alias");
+        String scoreHeader = I18nUtils.getString("infosearch.shadow.table.score");
+        String reasonsHeader = I18nUtils.getString("infosearch.shadow.table.reasons");
+        String sourceHeader = I18nUtils.getString("infosearch.shadow.table.source");
+
+        String[] headers = {domainHeader, ipHeader, portHeader, titleHeader, aliasHeader, scoreHeader, reasonsHeader, sourceHeader};
+        for (String header : headers) {
+            TableColumn<Map<String, String>, String> column = createTableColumn(header, 0, false);
+            tableView.getColumns().add(column);
+        }
+
+        ObservableList<Map<String, String>> tableData = FXCollections.observableArrayList();
+        if (shadowDomainInfoList != null) {
+            for (DomainInfo domainInfo : shadowDomainInfoList) {
+                Map<String, String> row = new LinkedHashMap<>();
+                row.put(domainHeader, firstNonBlank(domainInfo.getDomain(), domainInfo.getHost(), domainInfo.getUrl(), domainInfo.getIp()));
+                row.put(ipHeader, defaultDisplayValue(domainInfo.getIp()));
+                row.put(portHeader, defaultDisplayValue(domainInfo.getPort()));
+                row.put(titleHeader, defaultDisplayValue(domainInfo.getTitle()));
+                row.put(aliasHeader, defaultDisplayValue(domainInfo.getShadowMatchedAlias()));
+                row.put(scoreHeader, domainInfo.getShadowScore() == null ? "-" : String.valueOf(domainInfo.getShadowScore()));
+                row.put(reasonsHeader, joinList(domainInfo.getShadowReasons()));
+                row.put(sourceHeader, defaultDisplayValue(domainInfo.getShadowDecisionSource()));
+                tableData.add(row);
+            }
+        }
+        tableView.setItems(tableData);
+
+        tableView.setRowFactory(tv -> {
+            TableRow<Map<String, String>> row = new TableRow<>();
+            row.setStyle("-fx-background-color: transparent;");
+            return row;
+        });
+
+        return tableView;
+    }
+
+    private TableView<Map<String, String>> createStageSummaryTable(List<InfoGatheringStageMetric> stageMetrics) {
+        TableView<Map<String, String>> tableView = new SmoothTableView<>();
+        tableView.setPrefWidth(sPane.getPrefWidth() - 100);
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        String stageHeader = I18nUtils.getString("infosearch.stage.table.stage");
+        String durationHeader = I18nUtils.getString("infosearch.stage.table.duration");
+        String countHeader = I18nUtils.getString("infosearch.stage.table.count");
+        String summaryHeader = I18nUtils.getString("infosearch.stage.table.summary");
+
+        String[] headers = {stageHeader, durationHeader, countHeader, summaryHeader};
+        for (String header : headers) {
+            TableColumn<Map<String, String>, String> column = createTableColumn(header, 0, false);
+            tableView.getColumns().add(column);
+        }
+
+        ObservableList<Map<String, String>> tableData = FXCollections.observableArrayList();
+        if (stageMetrics != null) {
+            for (InfoGatheringStageMetric stageMetric : stageMetrics) {
+                Map<String, String> row = new LinkedHashMap<>();
+                row.put(stageHeader, defaultDisplayValue(stageMetric.getStageName()));
+                row.put(durationHeader, stageMetric.getDurationMs() + " ms");
+                row.put(countHeader, stageMetric.getItemCount() == null ? "-" : String.valueOf(stageMetric.getItemCount()));
+                row.put(summaryHeader, defaultDisplayValue(stageMetric.getSummary()));
+                tableData.add(row);
+            }
+        }
+        tableView.setItems(tableData);
+
+        tableView.setRowFactory(tv -> {
+            TableRow<Map<String, String>> row = new TableRow<>();
+            row.setStyle("-fx-background-color: transparent;");
+            return row;
+        });
+
+        return tableView;
+    }
+
     private <T> TableCell<T, String> createTableCell() {
         return new TableCell<T, String>() {
             private final Text text = new Text();
@@ -1478,6 +1806,29 @@ public class PaneInfoSearch {
             return String.join("\n", elements);
         }
         return element.getAsString();
+    }
+
+    private String defaultDisplayValue(String value) {
+        return value == null || value.trim().isEmpty() ? "-" : value.trim();
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return "-";
+        }
+        for (String value : values) {
+            if (value != null && !value.trim().isEmpty()) {
+                return value.trim();
+            }
+        }
+        return "-";
+    }
+
+    private String joinList(List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return "-";
+        }
+        return String.join("\n", values);
     }
 
     private JsonArray domainListChoose = new JsonArray();
@@ -1572,10 +1923,10 @@ public class PaneInfoSearch {
         if (searchCancelled) {
             return new JsonArray();
         }
-        synchronized (lock) {
+        synchronized (domainSelectionLock) {
             try {
                 if (!searchCancelled) {
-                    lock.wait();
+                    domainSelectionLock.wait();
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -1590,8 +1941,8 @@ public class PaneInfoSearch {
         hideDomainChoosePaneBox();
 
         // 唤醒等待的线程
-        synchronized (lock) {
-            lock.notify();
+        synchronized (domainSelectionLock) {
+            domainSelectionLock.notifyAll();
         }
 
         if (countdownTimeline != null) {

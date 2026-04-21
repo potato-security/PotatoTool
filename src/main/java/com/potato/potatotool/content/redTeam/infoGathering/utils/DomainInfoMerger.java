@@ -327,6 +327,7 @@ public class DomainInfoMerger {
         setIfNull(target::getCity, source.getCity(), target::setCity);
         setIfNull(target::getResponse, source.getResponse(), target::setResponse);
         mergeTextField(target.getDataSource(), source.getDataSource(), target::setDataSource);
+        mergeShadowMetadata(target, source);
 
         // Merge components and remove duplicates
         if (source.getComponents() != null) {
@@ -336,6 +337,32 @@ public class DomainInfoMerger {
             Set<String> mergedComponents = new LinkedHashSet<>(target.getComponents());
             mergedComponents.addAll(source.getComponents());
             target.setComponents(new ArrayList<>(mergedComponents));
+        }
+    }
+
+    private static void mergeShadowMetadata(DomainInfo target, DomainInfo source) {
+        if (!target.isShadowAsset() && source.isShadowAsset()) {
+            target.setShadowAsset(true);
+        }
+
+        Integer sourceScore = source.getShadowScore();
+        Integer targetScore = target.getShadowScore();
+        if (sourceScore != null && (targetScore == null || sourceScore > targetScore)) {
+            target.setShadowScore(sourceScore);
+            target.setShadowMatchedAlias(source.getShadowMatchedAlias());
+            target.setShadowDecisionSource(source.getShadowDecisionSource());
+        } else {
+            setIfNull(target::getShadowMatchedAlias, source.getShadowMatchedAlias(), target::setShadowMatchedAlias);
+            setIfNull(target::getShadowDecisionSource, source.getShadowDecisionSource(), target::setShadowDecisionSource);
+        }
+
+        if (source.getShadowReasons() != null) {
+            if (target.getShadowReasons() == null) {
+                target.setShadowReasons(new ArrayList<String>());
+            }
+            Set<String> mergedReasons = new LinkedHashSet<>(target.getShadowReasons());
+            mergedReasons.addAll(source.getShadowReasons());
+            target.setShadowReasons(new ArrayList<>(mergedReasons));
         }
     }
 

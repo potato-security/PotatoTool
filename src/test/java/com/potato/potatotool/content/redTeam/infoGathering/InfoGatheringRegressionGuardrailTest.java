@@ -57,6 +57,9 @@ public class InfoGatheringRegressionGuardrailTest {
         String hunterSearch = readSource("src/main/java/com/potato/potatotool/content/redTeam/infoGathering/tools/HunterSearch.java");
         String subdomainBruteForcer = readSource("src/main/java/com/potato/potatotool/content/redTeam/infoGathering/subDomain/SubdomainBruteForcer.java");
         String utils = readSource("src/main/java/com/potato/potatotool/content/redTeam/infoGathering/utils/Utils.java");
+        String assetMapper = readSource("src/main/java/com/potato/potatotool/content/redTeam/infoGathering/AssetMapper.java");
+        String aiqichaSearch = readSource("src/main/java/com/potato/potatotool/content/redTeam/infoGathering/tools/AiqichaSearch.java");
+        String shadowAssetEvaluator = readSource("src/main/java/com/potato/potatotool/content/redTeam/infoGathering/utils/ShadowAssetEvaluator.java");
 
         assertFalse(paneInfoSearch.contains("currentThread.stop()"));
         assertTrue(paneInfoSearch.contains("currentTask.cancel(true);"));
@@ -66,6 +69,17 @@ public class InfoGatheringRegressionGuardrailTest {
         assertTrue(subdomainBruteForcer.contains("detectWildcardAnswers"));
         assertTrue(utils.contains(".setCallTimeout(6)"));
         assertTrue(utils.contains(".setRetries(0)"));
+        assertFalse(assetMapper.contains("companyList.get(0)"));
+        assertTrue(aiqichaSearch.contains("findExactCandidate(companyName, candidates)"));
+        assertTrue(assetMapper.contains("addOriginalInputAliasIfNeeded"));
+        assertTrue(assetMapper.contains("originalInputCompanyName"));
+        assertTrue(assetMapper.contains("ShadowAssetEvaluator"));
+        assertTrue(assetMapper.contains("DataTypeConstants.SHADOW"));
+        assertFalse(assetMapper.contains("isRelevantShadowAsset("));
+        assertTrue(shadowAssetEvaluator.contains("AI_REVIEW_MIN_SCORE"));
+        assertTrue(shadowAssetEvaluator.contains("reviewByAi"));
+        assertTrue(paneInfoSearch.contains("DataTypeConstants.SHADOW"));
+        assertTrue(paneInfoSearch.contains("createShadowAssetTable"));
     }
 
     private static String readSource(String relativePath) throws Exception {

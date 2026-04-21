@@ -13,6 +13,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DomainInfoMergerRegressionTest {
 
@@ -97,6 +98,30 @@ public class DomainInfoMergerRegressionTest {
 
         assertNotNull(unique);
         assertEquals(0, unique.size());
+    }
+
+    @Test
+    public void mergeDomainInfoList_shouldPreserveShadowMetadata() {
+        List<DomainInfo> items = new ArrayList<>();
+
+        DomainInfo first = buildDomainInfo("5.5.5.5", "443", "shadow.example.com", "shadow.example.com", "https://shadow.example.com", "fofa");
+        items.add(first);
+
+        DomainInfo second = buildDomainInfo("5.5.5.5", "443", null, "shadow.example.com", "https://shadow.example.com/login", "hunter");
+        second.setShadowAsset(true);
+        second.setShadowScore(88);
+        second.setShadowMatchedAlias("中交建");
+        second.setShadowReasons(new ArrayList<String>());
+        second.getShadowReasons().add("标题命中别名");
+        items.add(second);
+
+        DomainInfoMerger.mergeDomainInfoList(items);
+
+        assertEquals(1, items.size());
+        assertTrue(items.get(0).isShadowAsset());
+        assertEquals(Integer.valueOf(88), items.get(0).getShadowScore());
+        assertEquals("中交建", items.get(0).getShadowMatchedAlias());
+        assertTrue(items.get(0).getShadowReasons().contains("标题命中别名"));
     }
 
     private static DomainInfo buildDomainInfo(String ip, String port, String domain, String host, String url, String dataSource) {

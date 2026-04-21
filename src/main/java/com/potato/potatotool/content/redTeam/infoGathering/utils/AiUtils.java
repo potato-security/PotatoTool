@@ -23,9 +23,27 @@ public class AiUtils {
         try {
             AiChatService aiChatService = new AiChatService();
             String companyNameListStr = aiChatService.askNoStream("用户输入的公司名为```"+company+"```，请你推测该公司的全称或其他简称(尽可能大于三个字)，尽可能全面，并使用方括号将结果括起来，以便强调。最多四个结果。例如：[[[国家能源投资集团有限责任公司]]]、[[[国家能源集团]]]、[[[国能集团]]]、[[[神华集团有限责任公司]]]");
-            result = aiChatService.extractBracketedResult(companyNameListStr);
+            Set<String> extractedResult = aiChatService.extractBracketedResult(companyNameListStr);
+            if (extractedResult != null && !extractedResult.isEmpty()) {
+                result = extractedResult;
+            }
         }catch (Exception ignored){}
 
+        return result;
+    }
+
+    public static Set<String> getCompanyFullName_Ai(String company){
+        if(company==null||company.isEmpty()) return new HashSet<>();
+        Set<String> result = new HashSet<>();
+        try {
+            AiChatService aiChatService = new AiChatService();
+            String response = aiChatService.askNoStream("用户输入的公司相关名称为```"+company+"```。请只输出可能对应的公司完整名称，尽量避免简称、品牌名、集团口号或部门名称。请使用方括号将每个完整公司名括起来，最多返回四个结果。例如：[[[中国交通建设股份有限公司]]]、[[[中国交通建设集团有限公司]]]");
+            result = aiChatService.extractBracketedResult(response);
+        }catch (Exception ignored){}
+
+        if (result.isEmpty()) {
+            result.add(company);
+        }
         return result;
     }
 

@@ -24,6 +24,35 @@ import static com.potato.potatotool.utils.network.RequestUtils.requests;
  */
 public class Utils {
 
+    private static final String NULL_URL_CACHE_VALUE = "__NULL__";
+    private static final int COMPLETE_URL_CACHE_LIMIT = 1024;
+    private static final int WEB_BASE_CACHE_LIMIT = 512;
+    private static final int PAGE_SNAPSHOT_CACHE_LIMIT = 256;
+    private static final int ICON_CACHE_LIMIT = 512;
+
+    private static final int WEB_CONNECT_TIMEOUT_SECONDS = 5;
+    private static final int WEB_READ_TIMEOUT_SECONDS = 8;
+    private static final int WEB_WRITE_TIMEOUT_SECONDS = 8;
+    private static final int WEB_CALL_TIMEOUT_SECONDS = 10;
+    private static final int WEB_REQUEST_RETRIES = 0;
+
+    private static final int ICON_CONNECT_TIMEOUT_SECONDS = 4;
+    private static final int ICON_READ_TIMEOUT_SECONDS = 6;
+    private static final int ICON_WRITE_TIMEOUT_SECONDS = 6;
+    private static final int ICON_CALL_TIMEOUT_SECONDS = 8;
+    private static final int ICON_REQUEST_RETRIES = 0;
+
+    private static final int CRAWL_CONNECT_TIMEOUT_SECONDS = 4;
+    private static final int CRAWL_READ_TIMEOUT_SECONDS = 6;
+    private static final int CRAWL_WRITE_TIMEOUT_SECONDS = 6;
+    private static final int CRAWL_CALL_TIMEOUT_SECONDS = 8;
+    private static final int CRAWL_REQUEST_RETRIES = 0;
+
+    private static final Map<String, String> COMPLETE_URL_CACHE = createLruCache(COMPLETE_URL_CACHE_LIMIT);
+    private static final Map<String, Map<String, Object>> WEB_BASE_INFO_CACHE = createLruCache(WEB_BASE_CACHE_LIMIT);
+    private static final Map<String, PageSnapshot> PAGE_SNAPSHOT_CACHE = createLruCache(PAGE_SNAPSHOT_CACHE_LIMIT);
+    private static final Map<String, Map<String, String>> ICON_INFO_CACHE = createLruCache(ICON_CACHE_LIMIT);
+
     // 正则表达式匹配IP地址
     private static final Pattern IP_PATTERN = Pattern.compile(
             "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
@@ -74,42 +103,25 @@ public class Utils {
 
     public static Map<String, Object> getWebBaseInfo(String url, boolean hasIconUrl, boolean isCrawlProxy){
         Map<String, Object> webBaseInfoMap = new HashMap<>();
-
-        if(!url.startsWith("http")) {
-            url = completeUrl(url, isCrawlProxy);
-            if(url==null) return webBaseInfoMap;
+        String resolvedUrl = resolveUrl(url, isCrawlProxy);
+        if (resolvedUrl == null) {
+            return webBaseInfoMap;
         }
 
-        RequestObj obj = new RequestObj().setUrl(url)
-                .setMethod("GET").setRetries(2).setFollowRedirects(true)
-                .setTimeOut(20);
-        ProxyUtils.applyProxy(obj, isCrawlProxy);
+        Map<String, Object> cachedBaseInfo = getCachedWebBaseInfo(resolvedUrl, isCrawlProxy);
+        if (cachedBaseInfo.isEmpty()) {
+            return webBaseInfoMap;
+        }
 
-        try (CustomHttpResponse con = requests(obj)) {
+        webBaseInfoMap.putAll(cachedBaseInfo);
+        if (!hasIconUrl) {
+            webBaseInfoMap.remove("iconUrl");
+            return webBaseInfoMap;
+        }
 
-            int statusCode = con.getResponseCode();
-            if (statusCode != 200) {
-                return webBaseInfoMap;
-            }
-
-            Document doc = con.getDocument();
-
-            String bodyText = doc.body().text();
-            String preview = bodyText.length() > 500 ? bodyText.substring(0, 500) : bodyText;
-
-            if(hasIconUrl) {
-                Element iconElement = doc.select("link[rel~=(?i)^(shortcut icon|icon|apple-touch-icon)$]").first();
-                String iconUrl = (iconElement != null && iconElement.hasAttr("href")) ? iconElement.attr("href") : "/favicon.ico";
-                if (!iconUrl.startsWith("http")) iconUrl = new URL(new URL(url), iconUrl).toString();
-                webBaseInfoMap.put("iconUrl", iconUrl);
-            }
-
-            webBaseInfoMap.put("url", url);
-            webBaseInfoMap.put("statusCode", statusCode);
-            webBaseInfoMap.put("title", doc.title());
-            webBaseInfoMap.put("body", preview);
-        }catch (Exception e){
-            if(debugMode) e.printStackTrace();
+        String iconUrl = stringValue(cachedBaseInfo.get("iconUrl"));
+        if (!iconUrl.isEmpty()) {
+            webBaseInfoMap.putAll(getCachedIconInfo(iconUrl, isCrawlProxy, false));
         }
         return webBaseInfoMap;
     }
@@ -126,64 +138,56 @@ public class Utils {
         Set<String> allInternalLinks = new HashSet<>();
         Set<String> visitedLinks = new HashSet<>();
 
-        if(!url.startsWith("http")) {
-            url = completeUrl(url, isCrawlProxy);
-            if(url==null) return webInfoMap;
+        String resolvedUrl = resolveUrl(url, isCrawlProxy);
+        if (resolvedUrl == null) {
+            return webInfoMap;
         }
 
-        RequestObj obj = new RequestObj().setUrl(url)
-                .setMethod("GET").setRetries(2).setFollowRedirects(true)
-                .setTimeOut(20);
-        ProxyUtils.applyProxy(obj, isCrawlProxy);
-
-        try (CustomHttpResponse con = requests(obj)) {
-
-            int statusCode = con.getResponseCode();
-            if (statusCode != 200) {
+        if (!hasCrawlLinks && !hasFindSensitiveInfo) {
+            Map<String, Object> cachedBaseInfo = getCachedWebBaseInfo(resolvedUrl, isCrawlProxy);
+            if (cachedBaseInfo.isEmpty()) {
                 return webInfoMap;
             }
 
-            Document doc = con.getDocument();
-
-            StringBuilder sb = new StringBuilder();
-            for (Element element : doc.body().children()) {
-                String tmpStr = element.text();
-                if(!tmpStr.isEmpty()) sb.append(tmpStr).append("\n"); // 每个元素文本后添加换行符
+            webInfoMap.putAll(cachedBaseInfo);
+            String iconUrl = stringValue(cachedBaseInfo.get("iconUrl"));
+            if (!iconUrl.isEmpty()) {
+                webInfoMap.putAll(getCachedIconInfo(iconUrl, isCrawlProxy, true));
             }
-            String pageContent = sb.toString();
+            webInfoMap.put("sensitive", allSensitiveInfo);
+            webInfoMap.put("internalLinks", allInternalLinks);
+            return webInfoMap;
+        }
 
-            String bodyText = doc.body().text();
-            String preview = bodyText.length() > 500 ? bodyText.substring(0, 500) : bodyText;
-            Element iconElement = doc.select("link[rel~=(?i)^(shortcut icon|icon|apple-touch-icon)$]").first();
-            String iconUrl = (iconElement != null && iconElement.hasAttr("href")) ? iconElement.attr("href") : "/favicon.ico";
-            if (!iconUrl.startsWith("http")) iconUrl = new URL(new URL(url), iconUrl).toString();
-            webInfoMap.put("url", url);
-            webInfoMap.put("statusCode", statusCode);
-            webInfoMap.put("title", doc.title());
-            webInfoMap.put("body", preview);
-            webInfoMap.putAll(getIconInfo(iconUrl, isCrawlProxy));
+        PageSnapshot pageSnapshot = getCachedPageSnapshot(resolvedUrl, isCrawlProxy, false);
+        if (pageSnapshot == null) {
+            return webInfoMap;
+        }
 
-            // 匹配特定敏感信息
-            if(hasFindSensitiveInfo) {
-                Map<String, Object> sensitiveInfoMap = findSensitiveInformation(pageContent, con.getURL());
-                allSensitiveInfo.add(sensitiveInfoMap);
-            }
+        webInfoMap.put("url", resolvedUrl);
+        webInfoMap.put("statusCode", pageSnapshot.statusCode);
+        webInfoMap.put("title", pageSnapshot.title);
+        webInfoMap.put("body", pageSnapshot.preview);
+        if (!pageSnapshot.iconUrl.isEmpty()) {
+            webInfoMap.put("iconUrl", pageSnapshot.iconUrl);
+            webInfoMap.putAll(getCachedIconInfo(pageSnapshot.iconUrl, isCrawlProxy, true));
+        }
 
-            // 爬取网站内子链接并匹配敏感信息
-            if(hasCrawlLinks) {
-                Set<String> internalLinks = getInternalLinks(doc, con);
-                allInternalLinks.addAll(internalLinks);
+        // 匹配特定敏感信息
+        if(hasFindSensitiveInfo) {
+            allSensitiveInfo.add(buildSensitiveInfo(pageSnapshot));
+        }
 
-                for (String link : internalLinks) {
-                    if (!visitedLinks.contains(link)) { // 判断链接是否已访问
-                        visitedLinks.add(link); // 将链接添加到已访问集合
-                        crawlAndExtract(link, maxDepth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks, hasFindSensitiveInfo, isCrawlProxy);
-                    }
+        // 爬取网站内子链接并匹配敏感信息
+        if(hasCrawlLinks) {
+            List<String> internalLinks = reserveInternalLinks(pageSnapshot.internalLinks, allInternalLinks, maxSubPathCount);
+
+            for (String link : internalLinks) {
+                if (!visitedLinks.contains(link)) { // 判断链接是否已访问
+                    visitedLinks.add(link); // 将链接添加到已访问集合
+                    crawlAndExtract(link, maxDepth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks, hasFindSensitiveInfo, isCrawlProxy);
                 }
             }
-
-        } catch (Exception e) {
-            if(debugMode) e.printStackTrace();
         }
 
         webInfoMap.put("sensitive", allSensitiveInfo);
@@ -196,9 +200,15 @@ public class Utils {
     private static Map<String, String> getIconInfo(String iconUrl, boolean isCrawlProxy) {
         Map<String, String> iconInfo = new HashMap<>();
 
-        RequestObj obj_icon = new RequestObj().setUrl(iconUrl)
-                .setMethod("GET").setRetries(2)
-                .setTimeOut(20);
+        RequestObj obj_icon = new RequestObj()
+                .setUrl(iconUrl)
+                .setMethod("GET")
+                .setRetries(ICON_REQUEST_RETRIES)
+                .setFollowRedirects(true)
+                .setTimeOut(ICON_CONNECT_TIMEOUT_SECONDS)
+                .setReadTimeout(ICON_READ_TIMEOUT_SECONDS)
+                .setWriteTimeout(ICON_WRITE_TIMEOUT_SECONDS)
+                .setCallTimeout(ICON_CALL_TIMEOUT_SECONDS);
         ProxyUtils.applyProxy(obj_icon, isCrawlProxy);
 
         try (CustomHttpResponse con_icon = requests(obj_icon)) {
@@ -225,8 +235,11 @@ public class Utils {
 
     // 获取网站内的子链接
     public static Set<String> getInternalLinks(Document doc, CustomHttpResponse con) throws Exception {
-        Set<String> internalLinks = new HashSet<>();
-        URL baseUrl = con.getURL();
+        return getInternalLinks(doc, con.getURL());
+    }
+
+    private static Set<String> getInternalLinks(Document doc, URL baseUrl) throws Exception {
+        Set<String> internalLinks = new LinkedHashSet<>();
         String baseUrlStr = baseUrl.getProtocol() + "://" + baseUrl.getHost() + (baseUrl.getPort()!= -1? ":" + baseUrl.getPort() : "");
         if (baseUrl.getPath()!= null && baseUrl.getPath().length() > 0) {
             int lastIndex = baseUrl.getPath().lastIndexOf('/');
@@ -326,47 +339,28 @@ public class Utils {
 
     // 递归爬取链接并提取信息
     private static void crawlAndExtract(String url, int depth, int maxSubPathCount, List<Map<String, Object>> allSensitiveInfo, Set<String> allInternalLinks, Set<String> visitedLinks, boolean hasFindSensitiveInfo, boolean isCrawlProxy) {
-        RequestObj obj = new RequestObj().setUrl(url)
-                .setMethod("GET").setRetries(2).setFollowRedirects(true)
-                .setTimeOut(20);
-        ProxyUtils.applyProxy(obj, isCrawlProxy);
+        if (depth < 0) {
+            return;
+        }
 
-        try (CustomHttpResponse con = requests(obj)) {
+        PageSnapshot pageSnapshot = getCachedPageSnapshot(url, isCrawlProxy, true);
+        if (pageSnapshot == null) {
+            return;
+        }
 
-            int statusCode = con.getResponseCode();
-            if (statusCode != 200) {
-                return;
+        // 匹配特定敏感信息
+        if(hasFindSensitiveInfo) {
+            allSensitiveInfo.add(buildSensitiveInfo(pageSnapshot));
+        }
+
+        if (allInternalLinks.size() >= maxSubPathCount) return; // 达到最大深度，停止爬取
+        // 获取网站内的子链接并继续爬取
+        List<String> internalLinks = reserveInternalLinks(pageSnapshot.internalLinks, allInternalLinks, maxSubPathCount);
+        for (String link : internalLinks) {
+            if (!visitedLinks.contains(link)) {
+                visitedLinks.add(link);
+                crawlAndExtract(link, depth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks, hasFindSensitiveInfo, isCrawlProxy);
             }
-
-            Document doc = con.getDocument();
-            if(doc==null) return;
-
-            StringBuilder sb = new StringBuilder();
-            for (Element element : doc.body().children()) {
-                String tmpStr = element.text();
-                if(!tmpStr.isEmpty()) sb.append(tmpStr).append("\n"); // 每个元素文本后添加换行符
-            }
-            String pageContent = sb.toString();
-
-            // 匹配特定敏感信息
-            if(hasFindSensitiveInfo) {
-                Map<String, Object> sensitiveInfoMap = findSensitiveInformation(pageContent, con.getURL());
-                allSensitiveInfo.add(sensitiveInfoMap);
-            }
-
-            if (depth < 0 || allInternalLinks.size() > maxSubPathCount) return; // 达到最大深度，停止爬取
-            // 获取网站内的子链接并继续爬取
-            Set<String> internalLinks = getInternalLinks(doc, con);
-            allInternalLinks.addAll(internalLinks);
-            for (String link : internalLinks) {
-                if (!visitedLinks.contains(link)) {
-                    visitedLinks.add(link);
-                    crawlAndExtract(link, depth - 1, maxSubPathCount, allSensitiveInfo, allInternalLinks, visitedLinks, hasFindSensitiveInfo, isCrawlProxy);
-                }
-            }
-
-        } catch (Exception e) {
-            if (debugMode) e.printStackTrace();
         }
     }
 
@@ -416,12 +410,19 @@ public class Utils {
     public static String completeUrl(String host, boolean isCrawlProxy) {
         if(host.toLowerCase(Locale.ROOT).startsWith("http")) return host;
 
+        String cacheKey = buildCacheKey("resolve", host, isCrawlProxy);
+        String cachedUrl = COMPLETE_URL_CACHE.get(cacheKey);
+        if (cachedUrl != null) {
+            return NULL_URL_CACHE_VALUE.equals(cachedUrl) ? null : cachedUrl;
+        }
+
         String[] hostParts = host.split(":");
         if (!host.contains("[") && hostParts.length == 2) { // 排除了ipV6 和 没有端口的host
             try {
                 int port = Integer.parseInt(hostParts[1]);
                 // 排除明显不是 HTTP/HTTPS 的端口
                 if (isInvalidHttpPort(port)) {
+                    COMPLETE_URL_CACHE.put(cacheKey, NULL_URL_CACHE_VALUE);
                     return null;
                 }
             } catch (Exception e) {}
@@ -434,15 +435,18 @@ public class Utils {
         // 先尝试 HTTPS
         String resUrl_https = isReachableUrl(httpsUrl, isCrawlProxy, true);
         if (resUrl_https != null) {
+            COMPLETE_URL_CACHE.put(cacheKey, resUrl_https);
             return resUrl_https;
         }
         // 尝试 HTTP
         String resUrl_http = isReachableUrl(httpUrl, isCrawlProxy, true);
         if (resUrl_http != null) {
+            COMPLETE_URL_CACHE.put(cacheKey, resUrl_http);
             return resUrl_http;
         }
 
         // 都不可达
+        COMPLETE_URL_CACHE.put(cacheKey, NULL_URL_CACHE_VALUE);
         return null;
     }
 
@@ -450,7 +454,7 @@ public class Utils {
     private static boolean isInvalidHttpPort(int port) {
         // 常见 HTTP/HTTPS 默认端口：80 和 443
         // 如果有明确的无效端口规则可以在这里补充
-        return port != 80 && port != 443 && (port < 1024 || port > 49151);
+        return port <= 0 || port > 65535 || (port < 1024 && port != 80 && port != 443);
     }
 
     private static String isReachableUrl(String urlStr, boolean isCrawlProxy, boolean isHttps) {
@@ -482,6 +486,205 @@ public class Utils {
         return String.join("\n", list);
     }
 
+    static void clearCachesForTest() {
+        COMPLETE_URL_CACHE.clear();
+        WEB_BASE_INFO_CACHE.clear();
+        PAGE_SNAPSHOT_CACHE.clear();
+        ICON_INFO_CACHE.clear();
+    }
+
+    private static String resolveUrl(String url, boolean isCrawlProxy) {
+        if (url == null || url.trim().isEmpty()) {
+            return null;
+        }
+        if (url.startsWith("http")) {
+            return url;
+        }
+        return completeUrl(url, isCrawlProxy);
+    }
+
+    private static Map<String, Object> getCachedWebBaseInfo(String resolvedUrl, boolean isCrawlProxy) {
+        String cacheKey = buildCacheKey("base", resolvedUrl, isCrawlProxy);
+        Map<String, Object> cached = WEB_BASE_INFO_CACHE.get(cacheKey);
+        if (cached != null) {
+            return new HashMap<>(cached);
+        }
+
+        Map<String, Object> fetched = fetchWebBaseInfo(resolvedUrl, isCrawlProxy);
+        WEB_BASE_INFO_CACHE.put(cacheKey, new HashMap<>(fetched));
+        return new HashMap<>(fetched);
+    }
+
+    private static Map<String, Object> fetchWebBaseInfo(String resolvedUrl, boolean isCrawlProxy) {
+        Map<String, Object> webBaseInfoMap = new HashMap<>();
+
+        PageSnapshot pageSnapshot = getCachedPageSnapshot(resolvedUrl, isCrawlProxy, false);
+        if (pageSnapshot == null) {
+            return webBaseInfoMap;
+        }
+
+        cacheResolvedWebBaseInfo(resolvedUrl, isCrawlProxy, pageSnapshot.statusCode, pageSnapshot.title, pageSnapshot.preview, pageSnapshot.iconUrl);
+        webBaseInfoMap.put("url", resolvedUrl);
+        webBaseInfoMap.put("statusCode", pageSnapshot.statusCode);
+        webBaseInfoMap.put("title", pageSnapshot.title);
+        webBaseInfoMap.put("body", pageSnapshot.preview);
+        if (!pageSnapshot.iconUrl.isEmpty()) {
+            webBaseInfoMap.put("iconUrl", pageSnapshot.iconUrl);
+        }
+
+        return webBaseInfoMap;
+    }
+
+    private static PageSnapshot getCachedPageSnapshot(String resolvedUrl, boolean isCrawlProxy, boolean useCrawlRequest) {
+        String cacheKey = buildCacheKey("page", resolvedUrl, isCrawlProxy);
+        PageSnapshot cached = PAGE_SNAPSHOT_CACHE.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+
+        PageSnapshot snapshot = fetchPageSnapshot(resolvedUrl, isCrawlProxy, useCrawlRequest);
+        if (snapshot != null) {
+            PAGE_SNAPSHOT_CACHE.put(cacheKey, snapshot);
+            return snapshot;
+        }
+        return null;
+    }
+
+    private static PageSnapshot fetchPageSnapshot(String resolvedUrl, boolean isCrawlProxy, boolean useCrawlRequest) {
+        RequestObj obj = useCrawlRequest ? createCrawlRequest(resolvedUrl, isCrawlProxy) : createWebRequest(resolvedUrl, isCrawlProxy);
+
+        try (CustomHttpResponse con = requests(obj)) {
+            int statusCode = con.getResponseCode();
+            if (statusCode != 200) {
+                return null;
+            }
+
+            Document doc = con.getDocument();
+            if (doc == null || doc.body() == null) {
+                return null;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            for (Element element : doc.body().children()) {
+                String tmpStr = element.text();
+                if (!tmpStr.isEmpty()) {
+                    sb.append(tmpStr).append("\n");
+                }
+            }
+
+            String bodyText = doc.body().text();
+            String preview = bodyText.length() > 500 ? bodyText.substring(0, 500) : bodyText;
+            String iconUrl = extractIconUrl(doc, resolvedUrl);
+            Set<String> internalLinks = getInternalLinks(doc, con.getURL());
+            return new PageSnapshot(statusCode, doc.title(), preview, sb.toString(), iconUrl, con.getURL(), internalLinks);
+        } catch (Exception e) {
+            if(debugMode) e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static void cacheResolvedWebBaseInfo(String resolvedUrl, boolean isCrawlProxy, int statusCode, String title, String preview, String iconUrl) {
+        Map<String, Object> baseInfo = new HashMap<>();
+        baseInfo.put("url", resolvedUrl);
+        baseInfo.put("statusCode", statusCode);
+        baseInfo.put("title", title);
+        baseInfo.put("body", preview);
+        if (iconUrl != null && !iconUrl.isEmpty()) {
+            baseInfo.put("iconUrl", iconUrl);
+        }
+        WEB_BASE_INFO_CACHE.put(buildCacheKey("base", resolvedUrl, isCrawlProxy), new HashMap<>(baseInfo));
+    }
+
+    private static Map<String, String> getCachedIconInfo(String iconUrl, boolean isCrawlProxy, boolean includeBase64) {
+        String cacheKey = buildCacheKey("icon", iconUrl, isCrawlProxy);
+        Map<String, String> cached = ICON_INFO_CACHE.get(cacheKey);
+        if (cached == null) {
+            cached = getIconInfo(iconUrl, isCrawlProxy);
+            ICON_INFO_CACHE.put(cacheKey, new HashMap<>(cached));
+        }
+
+        Map<String, String> result = new HashMap<>(cached);
+        if (!includeBase64) {
+            result.remove("iconBase64");
+        }
+        return result;
+    }
+
+    private static Map<String, Object> buildSensitiveInfo(PageSnapshot pageSnapshot) {
+        return findSensitiveInformation(pageSnapshot.pageContent, pageSnapshot.responseUrl);
+    }
+
+    private static List<String> reserveInternalLinks(Collection<String> links, Set<String> allInternalLinks, int maxSubPathCount) {
+        List<String> reservedLinks = new ArrayList<>();
+        if (links == null || links.isEmpty() || maxSubPathCount <= 0) {
+            return reservedLinks;
+        }
+
+        for (String link : links) {
+            if (allInternalLinks.size() >= maxSubPathCount) {
+                break;
+            }
+            if (allInternalLinks.add(link)) {
+                reservedLinks.add(link);
+            }
+        }
+        return reservedLinks;
+    }
+
+    private static RequestObj createWebRequest(String url, boolean isCrawlProxy) {
+        RequestObj obj = new RequestObj()
+                .setUrl(url)
+                .setMethod("GET")
+                .setRetries(WEB_REQUEST_RETRIES)
+                .setFollowRedirects(true)
+                .setTimeOut(WEB_CONNECT_TIMEOUT_SECONDS)
+                .setReadTimeout(WEB_READ_TIMEOUT_SECONDS)
+                .setWriteTimeout(WEB_WRITE_TIMEOUT_SECONDS)
+                .setCallTimeout(WEB_CALL_TIMEOUT_SECONDS);
+        ProxyUtils.applyProxy(obj, isCrawlProxy);
+        return obj;
+    }
+
+    private static RequestObj createCrawlRequest(String url, boolean isCrawlProxy) {
+        RequestObj obj = new RequestObj()
+                .setUrl(url)
+                .setMethod("GET")
+                .setRetries(CRAWL_REQUEST_RETRIES)
+                .setFollowRedirects(true)
+                .setTimeOut(CRAWL_CONNECT_TIMEOUT_SECONDS)
+                .setReadTimeout(CRAWL_READ_TIMEOUT_SECONDS)
+                .setWriteTimeout(CRAWL_WRITE_TIMEOUT_SECONDS)
+                .setCallTimeout(CRAWL_CALL_TIMEOUT_SECONDS);
+        ProxyUtils.applyProxy(obj, isCrawlProxy);
+        return obj;
+    }
+
+    private static String extractIconUrl(Document doc, String url) throws Exception {
+        Element iconElement = doc.select("link[rel~=(?i)^(shortcut icon|icon|apple-touch-icon)$]").first();
+        String iconUrl = (iconElement != null && iconElement.hasAttr("href")) ? iconElement.attr("href") : "/favicon.ico";
+        if (!iconUrl.startsWith("http")) {
+            iconUrl = new URL(new URL(url), iconUrl).toString();
+        }
+        return iconUrl;
+    }
+
+    private static String buildCacheKey(String prefix, String value, boolean isCrawlProxy) {
+        return prefix + "|" + (isCrawlProxy ? "1|" : "0|") + value;
+    }
+
+    private static String stringValue(Object value) {
+        return value == null ? "" : value.toString();
+    }
+
+    private static <K, V> Map<K, V> createLruCache(final int maxSize) {
+        return Collections.synchronizedMap(new LinkedHashMap<K, V>(16, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+                return size() > maxSize;
+            }
+        });
+    }
+
     private static boolean isEmpty(String... values) {
         for (String value : values) {
             if (!value.isEmpty()) {
@@ -489,6 +692,32 @@ public class Utils {
             }
         }
         return true;
+    }
+
+    private static final class PageSnapshot {
+        private final int statusCode;
+        private final String title;
+        private final String preview;
+        private final String pageContent;
+        private final String iconUrl;
+        private final URL responseUrl;
+        private final Set<String> internalLinks;
+
+        private PageSnapshot(int statusCode,
+                             String title,
+                             String preview,
+                             String pageContent,
+                             String iconUrl,
+                             URL responseUrl,
+                             Set<String> internalLinks) {
+            this.statusCode = statusCode;
+            this.title = title == null ? "" : title;
+            this.preview = preview == null ? "" : preview;
+            this.pageContent = pageContent == null ? "" : pageContent;
+            this.iconUrl = iconUrl == null ? "" : iconUrl;
+            this.responseUrl = responseUrl;
+            this.internalLinks = internalLinks == null ? Collections.<String>emptySet() : new LinkedHashSet<>(internalLinks);
+        }
     }
 
     public static void main(String[] args) throws Exception {

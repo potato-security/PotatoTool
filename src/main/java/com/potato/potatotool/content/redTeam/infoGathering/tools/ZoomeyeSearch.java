@@ -82,7 +82,7 @@ public class ZoomeyeSearch {
         if(companyOrDomain==null || companyOrDomain.isEmpty()) return new JsonArray();
         String qInfo = "ssl:\"" + companyOrDomain + "\" org:\"" + companyOrDomain + "\"";
         if(isDomainName(companyOrDomain)){
-            qInfo += " hostname:\"" + companyOrDomain + "\" site:\"" + companyOrDomain;
+            qInfo += " hostname:\"" + companyOrDomain + "\" site:\"" + companyOrDomain + "\"";
         }
         return search_Zoomeye(qInfo);
     }
