@@ -103,13 +103,13 @@ public class ReportEnhancementTest {
         assertTrue(result.length() > 0, "HTML报告文件不应该为空");
 
         // 读取文件内容验证关键元素
-        String content = new String(java.nio.file.Files.readAllBytes(result.toPath()));
+        String content = new String(java.nio.file.Files.readAllBytes(result.toPath()), java.nio.charset.StandardCharsets.UTF_8);
 
         // 验证包含增强的字段
         assertTrue(content.contains("检测路径"), "应包含检测路径标题");
         assertTrue(content.contains("检测Payload"), "应包含Payload标题");
         assertTrue(content.contains("HTTP请求"), "应包含HTTP请求标题");
-        assertTrue(content.contains("HTTP响应"), "应包含HTTP响应标题");
+        assertTrue(content.contains("HTTP响应片段"), "应包含HTTP响应标题");
 
         // 验证实际数据
         assertTrue(content.contains("/api/login"), "应包含检测路径数据");

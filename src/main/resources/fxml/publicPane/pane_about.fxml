@@ -64,7 +64,7 @@
 
         <Text fx:id="notice" text="公告" userData="i18n:about.notice.title" styleClass="titleText"/>
         <HBox alignment="CENTER" style="-fx-padding: 10">
-            <Label id="tipTitle" text="目前本项目由本人独立维护，持续招募维护人员，宁缺毋滥，严格选拔" userData="i18n:about.notice.content"/>
+            <Label id="tipTitle" text="目前本项目由本人独立维护，持续招募维护人员，宁缺毋滥" userData="i18n:about.notice.content"/>
         </HBox>
         <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 0 120"  prefWidth="${sPane.width - 270}">
             <Label id="tipTitle"  text="招募要求" userData="i18n:about.recruit"/>
