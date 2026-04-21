@@ -270,8 +270,8 @@ public class PaneWebshellDecode {
             // 另起线程调用AI接口
             Task<Void> task = new Task<Void>() {
                 @Override
-                protected Void call() throws Exception {
-                    CodeAnalyzerUtils.evilCodeAnalysis(resultStr, res.get("encodeModeList").toString(), aiTextArea);
+                protected Void call() {
+                    CodeAnalyzerUtils.streamEvilCodeAnalysis(resultStr, res.get("encodeModeList").toString(), aiTextArea);
                     return null;
                 }
             };
@@ -327,8 +327,8 @@ public class PaneWebshellDecode {
             // 另起线程调用AI接口
             Task<Void> task = new Task<Void>() {
                 @Override
-                protected Void call() throws Exception {
-                    CodeAnalyzerUtils.evilCodeAnalysis(resultStr, res.get("encodeModeList").toString(), aiTextArea);
+                protected Void call() {
+                    CodeAnalyzerUtils.streamEvilCodeAnalysis(resultStr, res.get("encodeModeList").toString(), aiTextArea);
                     return null;
                 }
             };

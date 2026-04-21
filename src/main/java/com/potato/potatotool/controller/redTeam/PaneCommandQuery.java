@@ -394,11 +394,52 @@ public class PaneCommandQuery {
     }
 
     public void getCommandsByAi(String query, Object node) throws Exception {
+        if (!(node instanceof Label)) {
+            return;
+        }
+
+        Label label = (Label) node;
+        Platform.runLater(() -> label.setText(I18nUtils.getString("cmdquery.ai.analyzing")));
+
         AiChatService aiService = new AiChatService();
-        String response = aiService.askNoStream("请告诉我关于```" + query + "```的系统命令");
-        if (node instanceof Label) {
-            Label label = (Label) node;
-            Platform.runLater(() -> label.setText(response));
+        final StringBuilder buffer = new StringBuilder();
+        final String[] errorHolder = new String[1];
+        aiService.streamChat("请告诉我关于```" + query + "```的系统命令，并按系统分类给出常用命令、参数说明和适用场景。", event -> {
+            if (event == null) {
+                return;
+            }
+            switch (event.getType()) {
+                case TOKEN:
+                    String content = event.getContent();
+                    if (content != null && !content.isEmpty()) {
+                        buffer.append(content);
+                        String text = buffer.toString();
+                        Platform.runLater(() -> label.setText(text));
+                    }
+                    break;
+                case ERROR:
+                    errorHolder[0] = event.getContent();
+                    break;
+                case THINKING_TOKEN:
+                case DONE:
+                default:
+                    break;
+            }
+        });
+
+        if (buffer.length() == 0) {
+            String message = errorHolder[0];
+            if (message == null || message.trim().isEmpty()) {
+                message = I18nUtils.getString("cmdquery.ai.empty");
+            }
+            final String finalMessage = message;
+            Platform.runLater(() -> label.setText(finalMessage));
+            return;
+        }
+
+        if (errorHolder[0] != null && !errorHolder[0].trim().isEmpty()) {
+            final String finalText = buffer.toString() + "\n\n" + errorHolder[0];
+            Platform.runLater(() -> label.setText(finalText));
         }
     }
 

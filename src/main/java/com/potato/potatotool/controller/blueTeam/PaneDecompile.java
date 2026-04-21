@@ -276,7 +276,7 @@ public class PaneDecompile {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    CodeAnalyzerUtils.optimizedCode(resultStr, aiTextArea);
+                    CodeAnalyzerUtils.streamOptimizedCode(resultStr, aiTextArea);
                     return null;
                 }
             };
@@ -324,7 +324,7 @@ public class PaneDecompile {
             Task<Void> task = new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    CodeAnalyzerUtils.optimizedCode(resultStr, aiTextArea);
+                    CodeAnalyzerUtils.streamOptimizedCode(resultStr, aiTextArea);
                     return null;
                 }
             };
