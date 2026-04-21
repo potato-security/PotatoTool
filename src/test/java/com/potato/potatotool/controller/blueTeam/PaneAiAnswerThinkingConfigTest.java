@@ -17,13 +17,12 @@ class PaneAiAnswerThinkingConfigTest {
     @DisplayName("每次读取最新 thinking 配置")
     void readLatestThinkingConfigEachTime() {
         ToggleConfigReader reader = new ToggleConfigReader();
-        PaneAiAnswer paneAiAnswer = new PaneAiAnswer(null, reader);
 
         reader.setThinkingEnabled(false);
-        assertFalse(paneAiAnswer.isThinkingEnabled());
+        assertFalse(PaneAiAnswerSupport.isThinkingEnabled(reader));
 
         reader.setThinkingEnabled(true);
-        assertTrue(paneAiAnswer.isThinkingEnabled());
+        assertTrue(PaneAiAnswerSupport.isThinkingEnabled(reader));
     }
 
     private static class ToggleConfigReader extends AiConfigReader {

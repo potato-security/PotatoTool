@@ -1,15 +1,33 @@
 .ai-status-loading,
 .ai-status-thinking,
+.ai-status-streaming,
+.ai-status-error,
+.ai-status-completed {
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 999;
+    -fx-font-size: 12px;
+}
+
+.ai-status-loading,
+.ai-status-thinking,
 .ai-status-streaming {
     -fx-text-fill: #2f80ed;
+    -fx-background-color: rgba(47, 128, 237, 0.12);
 }
 
 .ai-status-error {
     -fx-text-fill: #eb5757;
+    -fx-background-color: rgba(235, 87, 87, 0.12);
 }
 
 .ai-status-completed {
     -fx-text-fill: #27ae60;
+    -fx-background-color: rgba(39, 174, 96, 0.14);
+}
+
+.ai-attachment-summary {
+    -fx-text-fill: derive(-main-border-color, 12%);
+    -fx-font-size: 12px;
 }
 
 #question{

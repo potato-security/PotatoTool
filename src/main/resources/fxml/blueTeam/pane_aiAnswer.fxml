@@ -13,14 +13,22 @@
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
     <VBox>
-        <StackPane alignment="TOP_CENTER">
+        <StackPane alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
             <Label id="tipTitle" text=" 为保留算力，暂留5轮会话记忆 " userData="i18n:ai.note"/>
             <SmoothScrollPane fx:id="scrollPane" vvalue="1.0" hbarPolicy="NEVER">
                 <VBox spacing="10" prefWidth="${sPane.width}" fx:id="msgBox"/>
             </SmoothScrollPane>
         </StackPane>
 
-        <Pane minHeight="20"/>
+        <Pane minHeight="12"/>
+        <HBox fx:id="attachmentBar" spacing="8" alignment="CENTER_LEFT">
+            <Button fx:id="attachButton" text="上传文件" userData="i18n:ai.attach" onAction="#chooseAttachments"/>
+            <Hyperlink fx:id="clearAttachmentLink" text="清空附件" userData="i18n:ai.attach.clear"
+                       visible="false" managed="false" onAction="#clearAttachments"/>
+            <Label fx:id="attachmentLabel" text="未附加文件" userData="i18n:ai.attach.none"
+                   wrapText="true" maxWidth="${sPane.width - 180}" styleClass="ai-attachment-summary"/>
+        </HBox>
+        <Pane minHeight="8"/>
         <StackPane>
             <SmoothTextArea fx:id="question" wrapText="true" prefHeight="35" maxHeight="250"  minHeight="0" />
             <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
@@ -37,7 +45,7 @@
                 </Label>
             </Pane>
         </StackPane>
-        <HBox spacing="8" alignment="CENTER_LEFT">
+        <HBox fx:id="statusBar" spacing="8" alignment="CENTER_LEFT">
             <Label fx:id="statusLabel" text="" visible="false" managed="false"/>
             <Hyperlink fx:id="retryLink" text="重试" visible="false" managed="false" onAction="#retryLastQuestion" userData="i18n:common.retry"/>
         </HBox>
