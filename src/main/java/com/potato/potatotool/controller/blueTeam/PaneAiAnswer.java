@@ -70,10 +70,8 @@ import java.util.Locale;
 public class PaneAiAnswer {
     private static final double AUTO_SCROLL_BOTTOM_THRESHOLD = 0.02;
     private static final double QUESTION_MIN_HEIGHT = 44;
-    private static final double QUESTION_HEIGHT_EPSILON = 0.5;
     private static final double QUESTION_HEIGHT_UPDATE_THRESHOLD = 2.0;
     private static final double MESSAGE_BUBBLE_MAX_WIDTH = 620;
-    private static final double COMPOSER_MENU_ITEM_WIDTH = 188;
     private static final double COMPOSER_MENU_VERTICAL_GAP = 8;
 
     @FXML
@@ -612,16 +610,10 @@ public class PaneAiAnswer {
         composerAttachMenuLabel = new Label();
         composerAttachMenuLabel.getStyleClass().add("ai-composer-menu-title");
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
         HBox content = new HBox();
         content.setAlignment(Pos.CENTER_LEFT);
-        content.setSpacing(10);
-        content.setMinWidth(COMPOSER_MENU_ITEM_WIDTH);
-        content.setPrefWidth(COMPOSER_MENU_ITEM_WIDTH);
         content.getStyleClass().add("ai-composer-menu-item");
-        content.getChildren().addAll(icon, composerAttachMenuLabel, spacer);
+        content.getChildren().addAll(icon, composerAttachMenuLabel);
 
         CustomMenuItem item = new CustomMenuItem(content, true);
         item.setOnAction(event -> chooseAttachments());
@@ -635,16 +627,10 @@ public class PaneAiAnswer {
         composerThinkingMenuLabel = new Label();
         composerThinkingMenuLabel.getStyleClass().add("ai-composer-menu-title");
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
         composerThinkingMenuItemContainer = new HBox();
         composerThinkingMenuItemContainer.setAlignment(Pos.CENTER_LEFT);
-        composerThinkingMenuItemContainer.setSpacing(10);
-        composerThinkingMenuItemContainer.setMinWidth(COMPOSER_MENU_ITEM_WIDTH);
-        composerThinkingMenuItemContainer.setPrefWidth(COMPOSER_MENU_ITEM_WIDTH);
         composerThinkingMenuItemContainer.getStyleClass().add("ai-composer-menu-item");
-        composerThinkingMenuItemContainer.getChildren().addAll(icon, composerThinkingMenuLabel, spacer);
+        composerThinkingMenuItemContainer.getChildren().addAll(icon, composerThinkingMenuLabel);
 
         CustomMenuItem item = new CustomMenuItem(composerThinkingMenuItemContainer, true);
         item.setOnAction(event -> toggleThinkingModeFromMenu());
