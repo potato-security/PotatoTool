@@ -59,6 +59,7 @@ public class MainApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         hostServices = getHostServices();
+        final boolean skipStartupPages = ToStart.isStartupPageTestEnabled();
 
 //        double screenWidth = Screen.getPrimary().getVisualBounds().getWidth();
 //        double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
@@ -88,47 +89,60 @@ public class MainApplication extends Application {
 
         executor.submit(taskInit);
 
-        //  输入密码界面stage
-        Stage passwdStage = new Stage();
-        passwdStage.setAlwaysOnTop(true);
-        passwdStage.initStyle(StageStyle.TRANSPARENT);
-        FXMLLoader passwdLoader = new FXMLLoader(getClass().getResource("/fxml/publicPane/passwd.fxml"));
-        Scene passwdScene = new Scene(passwdLoader.load());
-        passwdScene.setCamera(new PerspectiveCamera());
-        passwdScene.setFill(null);
-        passwdStage.setScene(passwdScene);
-        String iconPath = "/img/logo.png";
-        try {
-            // 为 JavaFX 窗口设置图标（这会影响 Windows 任务栏和 Linux 的dock）
-            InputStream iconStream = getClass().getResourceAsStream(iconPath);
-            if (iconStream != null) {
-                Image image = new Image(iconStream);
-                passwdStage.getIcons().add(image);
-                passwdStage.setTitle("PotatoTool");
-                stage.getIcons().add(image);
-                stage.setTitle("PotatoTool");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        passwdStage.show();
-
         BooleanProperty preload = new SimpleBooleanProperty(false);
         AtomicReference<FadeTransition> fadeTransition1 = new AtomicReference<FadeTransition>();
+        if (!skipStartupPages) {
+            //  输入密码界面stage
+            Stage passwdStage = new Stage();
+            passwdStage.setAlwaysOnTop(true);
+            passwdStage.initStyle(StageStyle.TRANSPARENT);
+            FXMLLoader passwdLoader = new FXMLLoader(getClass().getResource("/fxml/publicPane/passwd.fxml"));
+            Scene passwdScene = new Scene(passwdLoader.load());
+            passwdScene.setCamera(new PerspectiveCamera());
+            passwdScene.setFill(null);
+            passwdStage.setScene(passwdScene);
+            String iconPath = "/img/logo.png";
+            try {
+                // 为 JavaFX 窗口设置图标（这会影响 Windows 任务栏和 Linux 的dock）
+                InputStream iconStream = getClass().getResourceAsStream(iconPath);
+                if (iconStream != null) {
+                    Image image = new Image(iconStream);
+                    passwdStage.getIcons().add(image);
+                    passwdStage.setTitle("PotatoTool");
+                    stage.getIcons().add(image);
+                    stage.setTitle("PotatoTool");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            passwdStage.show();
 
-        PanePasswd pwdController = passwdLoader.getController();
-        pwdController.passwdProperty().addListener((obs_x, oldValue_x, newValue_x) -> {
-            // 提前隐藏展示，防止动画卡顿
-            if(preload.get()) {
-                stage.show();
-                loadMainStage(passwdStage, fadeTransition1);
-            }else {
-                preload.addListener((observable_y, oldValue_y, newValue_y) -> {
+            PanePasswd pwdController = passwdLoader.getController();
+            pwdController.passwdProperty().addListener((obs_x, oldValue_x, newValue_x) -> {
+                // 提前隐藏展示，防止动画卡顿
+                if(preload.get()) {
                     stage.show();
                     loadMainStage(passwdStage, fadeTransition1);
-                });
+                }else {
+                    preload.addListener((observable_y, oldValue_y, newValue_y) -> {
+                        stage.show();
+                        loadMainStage(passwdStage, fadeTransition1);
+                    });
+                }
+            });
+        } else {
+            String iconPath = "/img/logo.png";
+            try {
+                InputStream iconStream = getClass().getResourceAsStream(iconPath);
+                if (iconStream != null) {
+                    Image image = new Image(iconStream);
+                    stage.getIcons().add(image);
+                    stage.setTitle("PotatoTool");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
+        }
 
 
         // 提前加载主界面
@@ -170,9 +184,27 @@ public class MainApplication extends Application {
             System.exit(0);
         });
         task.setOnSucceeded(e -> {
-            preload.set(true);
+            if (skipStartupPages) {
+                Platform.runLater(() -> showMainStage(stage, fadeTransition1));
+            } else {
+                preload.set(true);
+            }
         });
         executor.submit(task);
+    }
+
+    private void showMainStage(Stage stage, AtomicReference<FadeTransition> fadeTransition1) {
+        if (stage.getScene() == null) {
+            Platform.runLater(() -> showMainStage(stage, fadeTransition1));
+            return;
+        }
+        stage.show();
+        FadeTransition fadeTransition = fadeTransition1.get();
+        if (fadeTransition != null) {
+            fadeTransition.play();
+        } else if (stage.getScene() != null && stage.getScene().getRoot() != null) {
+            stage.getScene().getRoot().setOpacity(1);
+        }
     }
 
     private void loadMainStage(Stage passwdStage, AtomicReference<FadeTransition> fadeTransition1) {

@@ -52,7 +52,7 @@
                                  <Rectangle translateX="25" height="9999" width="200" style="-fx-background-color: red"/>
                               </clip>
                               <HBox fx:id="topBarLeft">
-                                 <Label alignment="CENTER" prefHeight="${topBar.height}" prefWidth="200" styleClass="log-label" text=" BlueTeam" textFill="WHITE">
+                                 <Label alignment="CENTER" prefHeight="${topBar.height}" prefWidth="2000" styleClass="log-label" text=" BlueTeam" textFill="WHITE">
                                     <graphic>
                                        <Region styleClass="blueImg"/>
                                     </graphic>

@@ -1,5 +1,6 @@
 package com.potato.potatotool.controller;
 
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.MainApplication;
 import com.leewyatt.rxcontrols.animation.carousel.*;
 import com.leewyatt.rxcontrols.controls.RXCarousel;
@@ -232,36 +233,11 @@ public class MainController {
 
 
         navGroup.selectedToggleProperty().addListener((ob, ov, nv) -> {
+            if (nv == null) {
+                return;
+            }
             int index = navGroup.getToggles().indexOf(nv);
-            mainCarousel.setSelectedIndex(index);
-
-            // 懒同步：当切换到 Extension 面板时才真正同步数据
-            RXCarouselPane currentPane = mainCarousel.getPaneList().get(index);
-            if(currentPane == extensionPane || currentPane == extensionPane_1) {
-                // 懒同步机制：只在切换到面板时才同步
-                // 如果有待更新的数据，这时才会真正执行同步
-                // 注：实际同步在 PaneExtension.initialize() 中已经处理
-            }
-
-            // 点击关于界面时 触发滚动信息
-            if(currentPane == aboutPane || currentPane == aboutPane_1){
-                // 启动当前面板的滚动，停止其他面板的滚动
-                PaneFactory.stopAllAboutScrolling();
-                if(currentPane == aboutPane){
-                    PaneAbout.startScrolling();
-                } else {
-                    PaneAbout_1.startScrolling();
-                }
-            } else {
-                // 停止所有关于面板的滚动
-                PaneFactory.stopAllAboutScrolling();
-            }
-
-            if (isBlueMode) {
-                selectedBlueIndex = index;
-            } else {
-                selectedRedIndex = index;
-            }
+            applySelectedIndex(index, extensionPane, extensionPane_1, aboutPane, aboutPane_1, PaneAbout, PaneAbout_1);
         });
 
         topBar.widthProperty().addListener((observable, oldValue, newValue) -> {
@@ -276,6 +252,7 @@ public class MainController {
         
         // 绑定国际化
         Platform.runLater(() -> {
+            applyStartupTestPage(extensionPane, extensionPane_1, aboutPane, aboutPane_1, PaneAbout, PaneAbout_1);
             I18nUtils.bindComponents(root);
             String startupProxyWarning = MainApplication.consumeStartupProxyWarningMessage();
             if (startupProxyWarning != null && !startupProxyWarning.trim().isEmpty()) {
@@ -287,6 +264,95 @@ public class MainController {
                 alert.show();
             }
         });
+    }
+
+    private void applySelectedIndex(int index, RXCarouselPane extensionPane, RXCarouselPane extensionPane_1,
+                                    RXCarouselPane aboutPane, RXCarouselPane aboutPane_1,
+                                    PaneAbout paneAbout, PaneAbout paneAbout_1) {
+        if (index < 0 || index >= mainCarousel.getPaneList().size()) {
+            return;
+        }
+
+        mainCarousel.setSelectedIndex(index);
+
+        // 懒同步：当切换到 Extension 面板时才真正同步数据
+        RXCarouselPane currentPane = mainCarousel.getPaneList().get(index);
+        if(currentPane == extensionPane || currentPane == extensionPane_1) {
+            // 懒同步机制：只在切换到面板时才同步
+            // 如果有待更新的数据，这时才会真正执行同步
+            // 注：实际同步在 PaneExtension.initialize() 中已经处理
+        }
+
+        // 点击关于界面时 触发滚动信息
+        if(currentPane == aboutPane || currentPane == aboutPane_1){
+            // 启动当前面板的滚动，停止其他面板的滚动
+            PaneFactory.stopAllAboutScrolling();
+            if(currentPane == aboutPane){
+                paneAbout.startScrolling();
+            } else {
+                paneAbout_1.startScrolling();
+            }
+        } else {
+            // 停止所有关于面板的滚动
+            PaneFactory.stopAllAboutScrolling();
+        }
+
+        if (isBlueMode) {
+            selectedBlueIndex = index;
+        } else {
+            selectedRedIndex = index;
+        }
+    }
+
+    private void applyStartupTestPage(RXCarouselPane extensionPane, RXCarouselPane extensionPane_1,
+                                      RXCarouselPane aboutPane, RXCarouselPane aboutPane_1,
+                                      PaneAbout paneAbout, PaneAbout paneAbout_1) {
+        ToStart.StartupPage startupPage = ToStart.getStartupTestPage();
+        if (startupPage == null) {
+            return;
+        }
+
+        applyModeState(startupPage.isBlueMode());
+
+        int index = startupPage.getNavIndex();
+        if (index < 0 || index >= navGroup.getToggles().size()) {
+            return;
+        }
+
+        Toggle targetToggle = navGroup.getToggles().get(index);
+        if (navGroup.getSelectedToggle() != targetToggle) {
+            targetToggle.setSelected(true);
+        } else {
+            applySelectedIndex(index, extensionPane, extensionPane_1, aboutPane, aboutPane_1, paneAbout, paneAbout_1);
+        }
+    }
+
+    private void applyModeState(boolean blueMode) {
+        isBlueMode = blueMode;
+        double barWidthDistance = Math.max(topBar.getWidth() - 320, 0);
+
+        topBar.getStyleClass().removeAll("blueStyle", "redStyle");
+        changeBtn.getStyleClass().removeAll("blueStyle", "redStyle");
+
+        if (blueMode) {
+            blueModePane.setTranslateX(0);
+            redModePane.setTranslateX(-55);
+            blueBar.setTranslateX(0);
+            redBar.setTranslateX(barWidthDistance);
+            topBarLeft.setTranslateX(0);
+            topBar.getStyleClass().add("blueStyle");
+            changeBtn.getStyleClass().add("blueStyle");
+            isChangeModePaneRight = false;
+        } else {
+            blueModePane.setTranslateX(55);
+            redModePane.setTranslateX(0);
+            blueBar.setTranslateX(-barWidthDistance);
+            redBar.setTranslateX(0);
+            topBarLeft.setTranslateX(-200);
+            topBar.getStyleClass().add("redStyle");
+            changeBtn.getStyleClass().add("redStyle");
+            isChangeModePaneRight = true;
+        }
     }
 
     private boolean isChangeModePaneRight = false;  // 是否向右移动
