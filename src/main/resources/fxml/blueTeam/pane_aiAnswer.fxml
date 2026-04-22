@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
-
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.Cursor?>
+<?import javafx.scene.shape.SVGPath?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../../css/aiAnswer.css"
@@ -12,46 +12,106 @@
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneAiAnswer"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox>
+    <VBox fx:id="rootContainer" spacing="18" styleClass="ai-answer-root">
         <StackPane alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
-            <Label id="tipTitle" text=" 为保留算力，暂留5轮会话记忆 " userData="i18n:ai.note"/>
-            <SmoothScrollPane fx:id="scrollPane" vvalue="1.0" hbarPolicy="NEVER">
-                <VBox spacing="10" prefWidth="${sPane.width}" fx:id="msgBox"/>
-            </SmoothScrollPane>
+            <VBox fx:id="chatColumn" spacing="16" maxWidth="780" fillWidth="true">
+                <HBox alignment="CENTER">
+                    <Label fx:id="tipTitleLabel" id="tipTitle" text=" 为保留算力，暂留5轮会话记忆 " userData="i18n:ai.note"/>
+                </HBox>
+                <SmoothScrollPane fx:id="scrollPane"
+                                  fitToWidth="true"
+                                  vvalue="1.0"
+                                  hbarPolicy="NEVER"
+                                  styleClass="ai-chat-scroll"
+                                  VBox.vgrow="ALWAYS">
+                    <StackPane alignment="TOP_CENTER">
+                        <VBox spacing="20" fx:id="msgBox" maxWidth="760" fillWidth="true"/>
+                    </StackPane>
+                </SmoothScrollPane>
+            </VBox>
         </StackPane>
 
-        <Pane minHeight="12"/>
-        <HBox fx:id="attachmentBar" spacing="8" alignment="CENTER_LEFT">
-            <Button fx:id="attachButton" text="上传文件" userData="i18n:ai.attach" onAction="#chooseAttachments"/>
-            <Hyperlink fx:id="clearAttachmentLink" text="清空附件" userData="i18n:ai.attach.clear"
-                       visible="false" managed="false" onAction="#clearAttachments"/>
-            <Label fx:id="attachmentLabel" text="未附加文件" userData="i18n:ai.attach.none"
-                   wrapText="true" maxWidth="${sPane.width - 180}" styleClass="ai-attachment-summary"/>
-        </HBox>
-        <Pane minHeight="8"/>
-        <StackPane>
-            <SmoothTextArea fx:id="question" wrapText="true" prefHeight="35" maxHeight="250"  minHeight="0" />
-            <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
-                <Label fx:id="sendAction" layoutX="-57" onMouseClicked="#ask">
-                    <graphic>
-                        <Region styleClass="send"/>
-                    </graphic>
-                    <cursor>
-                        <Cursor fx:constant="HAND" />
-                    </cursor>
-                    <tooltip>
-                        <Tooltip text="发送" userData="i18n:ai.send"/>
-                    </tooltip>
-                </Label>
-            </Pane>
-        </StackPane>
-        <HBox fx:id="statusBar" spacing="8" alignment="CENTER_LEFT">
-            <Label fx:id="statusLabel" text="" visible="false" managed="false"/>
-            <Hyperlink fx:id="retryLink" text="重试" visible="false" managed="false" onAction="#retryLastQuestion" userData="i18n:common.retry"/>
-        </HBox>
-        <Pane minHeight="20"/>
+        <StackPane alignment="CENTER">
+            <StackPane fx:id="composerCard" maxWidth="780" styleClass="ai-composer-card">
+                <VBox spacing="10" maxWidth="748" fillWidth="true">
+                    <FlowPane fx:id="attachmentPreviewPane"
+                              hgap="8"
+                              vgap="8"
+                              visible="false"
+                              managed="false"
+                              styleClass="ai-attachment-pane"/>
 
+                    <HBox fx:id="attachmentBar" spacing="8" alignment="CENTER_LEFT" styleClass="ai-composer-footer">
+                        <Button fx:id="attachButton" onAction="#toggleComposerMenu" styleClass="ai-plus-button">
+                            <graphic>
+                                <SVGPath content="M6 1.5h2v4.5h4.5v2H8v4.5H6V8H1.5V6H6z"
+                                         styleClass="ai-plus-button-glyph"/>
+                            </graphic>
+                            <cursor>
+                                <Cursor fx:constant="HAND" />
+                            </cursor>
+                        </Button>
+
+                        <SmoothTextArea fx:id="question"
+                                        wrapText="true"
+                                        prefHeight="44"
+                                        minHeight="44"
+                                        maxHeight="220"
+                                        HBox.hgrow="ALWAYS"
+                                        promptText="输入分析目标，或直接粘贴文件后提问"
+                                        userData="i18n-prompt:ai.input.prompt"/>
+
+                        <Button fx:id="sendAction" onAction="#handlePrimaryAction" styleClass="ai-send-button">
+                            <graphic>
+                                <Region fx:id="sendActionIcon" styleClass="send"/>
+                            </graphic>
+                            <cursor>
+                                <Cursor fx:constant="HAND" />
+                            </cursor>
+                        </Button>
+                    </HBox>
+
+                    <HBox fx:id="composerMetaRow"
+                          spacing="8"
+                          alignment="CENTER_LEFT"
+                          visible="false"
+                          managed="false"
+                          styleClass="ai-composer-meta-row">
+                        <Label fx:id="thinkingBadge"
+                               text="思考"
+                               visible="false"
+                               managed="false"
+                               styleClass="ai-thinking-badge"/>
+                        <Pane HBox.hgrow="ALWAYS"/>
+                        <Hyperlink fx:id="clearAttachmentLink"
+                                   text="清空附件"
+                                   userData="i18n:ai.attach.clear"
+                                   visible="false"
+                                   managed="false"
+                                   onAction="#clearAttachments"
+                                   styleClass="ai-clear-link"/>
+                        <Label fx:id="statusLabel" text="" visible="false" managed="false"/>
+                        <Hyperlink fx:id="retryLink"
+                                   text="重试"
+                                   visible="false"
+                                   managed="false"
+                                   onAction="#retryLastQuestion"
+                                   userData="i18n:common.retry"/>
+                    </HBox>
+                </VBox>
+
+                <VBox fx:id="dropHintBox"
+                      visible="false"
+                      managed="false"
+                      mouseTransparent="true"
+                      spacing="6"
+                      alignment="CENTER"
+                      styleClass="ai-drop-overlay">
+                    <Label fx:id="dropHintTitle" text="拖拽文件到这里" styleClass="ai-drop-title"/>
+                    <Label fx:id="dropHintText" text="松手即可把文件加入当前消息，最多 5 个文件" styleClass="ai-drop-text"/>
+                </VBox>
+            </StackPane>
+        </StackPane>
     </VBox>
-
 
 </StackPane>

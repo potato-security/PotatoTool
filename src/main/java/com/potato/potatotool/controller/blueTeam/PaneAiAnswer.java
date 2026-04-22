@@ -1,41 +1,63 @@
 package com.potato.potatotool.controller.blueTeam;
 
+import com.potato.potatotool.utils.ai.AiAttachmentDispatchPlanner;
+import com.potato.potatotool.utils.ai.AiAttachmentUtils;
 import com.potato.potatotool.utils.ai.AiPromptUtils;
 import com.potato.potatotool.utils.ai.config.AiConfigReader;
+import com.potato.potatotool.utils.ai.model.AiAttachment;
+import com.potato.potatotool.utils.ai.model.AiAttachmentDispatchPlan;
+import com.potato.potatotool.utils.ai.model.AiAttachmentSupportResult;
+import com.potato.potatotool.utils.ai.model.AiProviderType;
+import com.potato.potatotool.utils.ai.model.AiRuntimeConfig;
 import com.potato.potatotool.utils.ai.model.AiStreamEvent;
+import com.potato.potatotool.utils.ai.model.AiThinkingConfig;
 import com.potato.potatotool.utils.ai.model.AiUiState;
+import com.potato.potatotool.utils.ai.provider.AiProviderAdapter;
+import com.potato.potatotool.utils.ai.provider.AiProviderRegistry;
 import com.potato.potatotool.utils.ai.service.AiChatService;
 import com.potato.potatotool.utils.core.I18nUtils;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
+import javafx.geometry.Side;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Control;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.Labeled;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,10 +68,13 @@ import java.util.Locale;
  * @date 2023/10/24 16:51
  */
 public class PaneAiAnswer {
-    private static final int MAX_ATTACHMENT_COUNT = 5;
-    private static final int MAX_ATTACHMENT_READ_BYTES = 96 * 1024;
-    private static final int MAX_TEXT_ATTACHMENT_CHARS = 24_000;
-    private static final int MAX_BINARY_PREVIEW_BYTES = 4096;
+    private static final double AUTO_SCROLL_BOTTOM_THRESHOLD = 0.02;
+    private static final double QUESTION_MIN_HEIGHT = 44;
+    private static final double QUESTION_HEIGHT_EPSILON = 0.5;
+    private static final double QUESTION_HEIGHT_UPDATE_THRESHOLD = 2.0;
+    private static final double MESSAGE_BUBBLE_MAX_WIDTH = 620;
+    private static final double COMPOSER_MENU_ITEM_WIDTH = 188;
+    private static final double COMPOSER_MENU_VERTICAL_GAP = 8;
 
     @FXML
     private StackPane sPane;
@@ -58,13 +83,28 @@ public class PaneAiAnswer {
     private ScrollPane scrollPane;
 
     @FXML
+    private StackPane composerCard;
+
+    @FXML
+    private VBox dropHintBox;
+
+    @FXML
+    private Label dropHintTitle;
+
+    @FXML
+    private Label dropHintText;
+
+    @FXML
     private TextArea question;
 
     @FXML
     private VBox msgBox;
 
     @FXML
-    private Label sendAction;
+    private Button sendAction;
+
+    @FXML
+    private Region sendActionIcon;
 
     @FXML
     private HBox attachmentBar;
@@ -73,13 +113,16 @@ public class PaneAiAnswer {
     private Button attachButton;
 
     @FXML
-    private Label attachmentLabel;
+    private HBox composerMetaRow;
+
+    @FXML
+    private Label thinkingBadge;
 
     @FXML
     private Hyperlink clearAttachmentLink;
 
     @FXML
-    private HBox statusBar;
+    private FlowPane attachmentPreviewPane;
 
     @FXML
     private Label statusLabel;
@@ -89,83 +132,81 @@ public class PaneAiAnswer {
 
     private final AiChatService aiChatService;
     private final AiConfigReader aiConfigReader;
-    private final List<AiPromptUtils.AttachmentContext> attachmentContexts =
-            new ArrayList<AiPromptUtils.AttachmentContext>();
+    private final AiProviderRegistry aiProviderRegistry;
+    private final List<AiAttachment> attachmentContexts = new ArrayList<AiAttachment>();
+    private final List<AiAttachment> lastRequestAttachments = new ArrayList<AiAttachment>();
+    private final StringBuilder pendingAiText = new StringBuilder();
+    private final StringBuilder pendingThinkingText = new StringBuilder();
 
     private AiUiState uiState = AiUiState.IDLE;
     private Task<Void> runningTask;
     private Timeline statusAnimation;
     private String lastQuestion;
+    private boolean localeListenerRegistered;
+    private boolean followStreamToBottom = true;
+    private boolean programmaticScrollUpdate;
+    private boolean stopRequested;
+    private boolean questionHeightRefreshScheduled;
+    private boolean streamFlushScheduled;
+    private boolean forceScrollToBottomPending;
+    private boolean scrollToBottomScheduled;
+    private long chatScrollLayoutVersion;
+    private AiThinkingConfig sessionThinkingConfig = new AiThinkingConfig(false, 1024);
+    private ContextMenu composerMenu;
+    private Label composerAttachMenuLabel;
+    private Label composerThinkingMenuLabel;
+    private HBox composerThinkingMenuItemContainer;
+    private ScrollPane questionScrollPane;
+    private Region questionContentRegion;
+    private ScrollBar questionVerticalScrollBar;
+    private Label bufferedAiLabel;
+    private Label bufferedThinkingLabel;
 
     public PaneAiAnswer() {
-        this(new AiChatService(), new AiConfigReader());
+        this(new AiChatService(), new AiConfigReader(), new AiProviderRegistry());
     }
 
     PaneAiAnswer(AiChatService aiChatService, AiConfigReader aiConfigReader) {
+        this(aiChatService, aiConfigReader, new AiProviderRegistry());
+    }
+
+    PaneAiAnswer(AiChatService aiChatService, AiConfigReader aiConfigReader, AiProviderRegistry aiProviderRegistry) {
         this.aiChatService = aiChatService;
         this.aiConfigReader = aiConfigReader;
+        this.aiProviderRegistry = aiProviderRegistry;
     }
 
     public void initialize() {
-        question.skinProperty().addListener((ob, ov, nv) -> {
-            ScrollPane lookup = (ScrollPane) question.lookup(".scroll-pane");
-            if (lookup == null) {
-                return;
-            }
-            lookup.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-            Text t = (Text) ((Group) ((Region) lookup.getContent()).getChildrenUnmodifiable().get(1))
-                    .getChildren().get(0);
-            t.layoutBoundsProperty().addListener((o, n, v) -> {
-                if (v.getHeight() == 0) {
-                    return;
-                }
-                double newHeight = v.getHeight() == 23 ? 35 : v.getHeight() + 35;
-                if (newHeight >= question.getMaxHeight()) {
-                    lookup.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-                    newHeight = question.getMaxHeight();
-                } else {
-                    lookup.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-                }
-                double finalNewHeight = newHeight;
-                Platform.runLater(() -> {
-                    question.setPrefHeight(finalNewHeight);
-                    question.requestLayout();
-                    refreshScrollPaneHeight();
-                });
-            });
-        });
-
-        msgBox.heightProperty().addListener((observable, oldValue, newValue) -> scrollPane.setVvalue(1.0));
-        sPane.heightProperty().addListener((observable, oldValue, newValue) -> refreshScrollPaneHeight());
-        attachmentBar.heightProperty().addListener((observable, oldValue, newValue) -> refreshScrollPaneHeight());
-        statusBar.heightProperty().addListener((observable, oldValue, newValue) -> refreshScrollPaneHeight());
-
-        question.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER
-                    && !event.isShiftDown()
-                    && !event.isControlDown()
-                    && !event.isAltDown()) {
-                ask();
-                event.consume();
-            } else if (event.getCode() == KeyCode.ENTER) {
-                question.appendText(System.getProperty("line.separator"));
-            }
-        });
+        registerLocaleRefresh();
+        initializeSessionThinking();
+        configureQuestionInput();
+        configureAttachmentInteractions();
+        configureChatScrollBehavior();
+        configureComposerMenu();
 
         refreshAttachmentSummary();
+        refreshThinkingToggle();
+        refreshPrimaryActionButton();
+        refreshDropHintText();
         setState(AiUiState.IDLE, "");
 
         Platform.runLater(() -> {
             I18nUtils.bindComponents(sPane);
+            refreshQuestionHeight();
             refreshAttachmentSummary();
-            refreshScrollPaneHeight();
+            refreshThinkingToggle();
+            refreshPrimaryActionButton();
+            refreshDropHintText();
         });
     }
 
     @FXML
     void ask() {
-        if (runningTask != null && runningTask.isRunning()) {
+        if (isBusy()) {
             return;
+        }
+        if (composerMenu != null) {
+            composerMenu.hide();
         }
 
         String rawQuestion = question.getText().trim();
@@ -173,80 +214,90 @@ public class PaneAiAnswer {
             return;
         }
 
+        String attachmentSupportError = validateAttachmentApiSupport(attachmentContexts);
+        if (attachmentSupportError != null && !attachmentSupportError.trim().isEmpty()) {
+            setState(AiUiState.ERROR, attachmentSupportError, false);
+            return;
+        }
+
+        List<AiAttachment> currentAttachments = new ArrayList<AiAttachment>(attachmentContexts);
+
         lastQuestion = rawQuestion;
+        lastRequestAttachments.clear();
+        lastRequestAttachments.addAll(currentAttachments);
+
         question.clear();
+        attachmentContexts.clear();
+        refreshQuestionHeight();
+        refreshAttachmentSummary();
 
         String visibleQuestion = rawQuestion.isEmpty()
                 ? I18nUtils.getString("ai.attach.default.question")
                 : rawQuestion;
-        String requestPrompt = AiPromptUtils.buildConversationPrompt(rawQuestion, attachmentContexts);
-        String historyPrompt = AiPromptUtils.buildConversationHistoryLabel(rawQuestion, attachmentContexts);
+        String requestPrompt = AiPromptUtils.buildConversationPrompt(rawQuestion, currentAttachments);
+        String historyPrompt = AiPromptUtils.buildConversationHistoryLabel(rawQuestion, currentAttachments);
+        followStreamToBottom = true;
 
-        TextArea myTextArea = createBubbleTextArea("myMsg");
-        myTextArea.setText(buildUserBubbleText(visibleQuestion));
-        adaptiveSize(myTextArea);
+        Label myLabel = createBubbleLabel("myMsg");
+        myLabel.setText(buildUserBubbleText(visibleQuestion, currentAttachments));
 
-        Region myRegion = new Region();
-        myRegion.getStyleClass().add("myAvatarImg");
+        Region myAvatar = new Region();
+        myAvatar.getStyleClass().add("myAvatarImg");
+
         Pane mySpacer = new Pane();
-        mySpacer.setMinWidth(17);
+        HBox.setHgrow(mySpacer, Priority.ALWAYS);
 
         HBox myHBox = new HBox();
         myHBox.setSpacing(10);
         myHBox.setAlignment(Pos.TOP_RIGHT);
-        myHBox.getChildren().addAll(myTextArea, myRegion, mySpacer);
-        myHBox.setMaxWidth(sPane.getWidth() - 20);
+        myHBox.getChildren().addAll(mySpacer, myLabel, myAvatar);
         msgBox.getChildren().add(myHBox);
 
-        TextArea aiTextArea = createBubbleTextArea("aiMsg");
-        adaptiveSize(aiTextArea);
+        Label aiLabel = createBubbleLabel("aiMsg");
+        Label thinkingLabel = createBubbleLabel("aiThinkingMsg");
+        thinkingLabel.setVisible(false);
+        thinkingLabel.setManaged(false);
 
         VBox aiContent = new VBox();
-        aiContent.setSpacing(6);
-
-        TextArea thinkingTextArea = createBubbleTextArea("aiMsg");
-        thinkingTextArea.setVisible(false);
-        thinkingTextArea.setManaged(false);
-        thinkingTextArea.setEditable(false);
-        thinkingTextArea.setWrapText(true);
-        adaptiveSize(thinkingTextArea);
-
-        aiContent.getChildren().addAll(thinkingTextArea, aiTextArea);
+        aiContent.setSpacing(8);
+        aiContent.getChildren().addAll(thinkingLabel, aiLabel);
 
         Pane aiSpacer = new Pane();
-        aiSpacer.setMinWidth(20);
-        Region aiRegion = new Region();
-        aiRegion.getStyleClass().add("aiAvatarImg");
+        HBox.setHgrow(aiSpacer, Priority.ALWAYS);
+
+        Region aiAvatar = new Region();
+        aiAvatar.getStyleClass().add("aiAvatarImg");
 
         HBox aiHBox = new HBox();
         aiHBox.setSpacing(10);
         aiHBox.setAlignment(Pos.TOP_LEFT);
-        aiHBox.getChildren().addAll(aiSpacer, aiRegion, aiContent);
-        aiHBox.setMaxWidth(sPane.getWidth() - 20);
+        aiHBox.getChildren().addAll(aiAvatar, aiContent, aiSpacer);
         msgBox.getChildren().add(aiHBox);
+        forceScrollToBottom();
 
-        startAskTask(requestPrompt, historyPrompt, aiTextArea, thinkingTextArea);
+        startAskTask(requestPrompt, historyPrompt, currentAttachments, aiLabel, thinkingLabel);
     }
 
     @FXML
     void retryLastQuestion() {
-        if (runningTask != null && runningTask.isRunning()) {
+        if (isBusy()) {
             return;
         }
         question.setText(lastQuestion == null ? "" : lastQuestion);
+        attachmentContexts.clear();
+        attachmentContexts.addAll(lastRequestAttachments);
+        refreshQuestionHeight();
+        refreshAttachmentSummary();
         ask();
     }
 
     @FXML
     void chooseAttachments() {
-        if (runningTask != null && runningTask.isRunning()) {
+        if (isBusy()) {
             return;
         }
-
-        int remaining = MAX_ATTACHMENT_COUNT - attachmentContexts.size();
-        if (remaining <= 0) {
-            setState(AiUiState.ERROR, I18nUtils.getString("ai.attach.limit", MAX_ATTACHMENT_COUNT), false);
-            return;
+        if (composerMenu != null) {
+            composerMenu.hide();
         }
 
         Window owner = sPane == null || sPane.getScene() == null ? null : sPane.getScene().getWindow();
@@ -258,66 +309,386 @@ public class PaneAiAnswer {
         chooser.setTitle(I18nUtils.getString("ai.attach"));
         chooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter(
-                        I18nUtils.getString("ai.attach.filter.text"),
-                        "*.txt", "*.log", "*.md", "*.json", "*.xml", "*.yml", "*.yaml",
-                        "*.ini", "*.conf", "*.config", "*.csv", "*.java", "*.js", "*.ts",
-                        "*.py", "*.php", "*.jsp", "*.html", "*.htm", "*.css", "*.sql",
-                        "*.sh", "*.bat", "*.ps1", "*.properties", "*.class"
+                        I18nUtils.getString("ai.attach.filter.supported"),
+                        AiAttachmentUtils.buildSupportedChooserPatterns()
                 ),
                 new FileChooser.ExtensionFilter(I18nUtils.getString("ai.attach.filter.all"), "*.*")
         );
 
-        List<File> files = chooser.showOpenMultipleDialog(owner);
-        if (files == null || files.isEmpty()) {
-            return;
-        }
-
-        String errorMessage = null;
-        int processed = 0;
-        for (File file : files) {
-            if (file == null || processed >= remaining) {
-                break;
-            }
-            try {
-                attachmentContexts.add(loadAttachmentContext(file));
-                processed++;
-            } catch (Exception e) {
-                errorMessage = e.getMessage() == null ? file.getName() : e.getMessage();
-                break;
-            }
-        }
-
-        refreshAttachmentSummary();
-        refreshScrollPaneHeight();
-
-        if (errorMessage != null && !errorMessage.trim().isEmpty()) {
-            setState(AiUiState.ERROR, I18nUtils.getString("ai.attach.read.failed", errorMessage), false);
-            return;
-        }
-        if (files.size() > remaining) {
-            setState(AiUiState.ERROR, I18nUtils.getString("ai.attach.limit", MAX_ATTACHMENT_COUNT), false);
-            return;
-        }
-        setState(AiUiState.IDLE, "");
+        addAttachments(chooser.showOpenMultipleDialog(owner));
     }
 
     @FXML
     void clearAttachments() {
-        if (runningTask != null && runningTask.isRunning()) {
+        if (isBusy()) {
             return;
         }
         attachmentContexts.clear();
         refreshAttachmentSummary();
-        refreshScrollPaneHeight();
         if (uiState == AiUiState.ERROR) {
             setState(AiUiState.IDLE, "");
         }
     }
 
+    @FXML
+    void toggleComposerMenu() {
+        if (isBusy()) {
+            return;
+        }
+        if (composerMenu == null || attachButton == null) {
+            return;
+        }
+        if (composerMenu.isShowing()) {
+            composerMenu.hide();
+            return;
+        }
+        refreshThinkingToggle();
+        composerMenu.show(attachButton, Side.TOP, 0, COMPOSER_MENU_VERTICAL_GAP);
+        relocateComposerMenu();
+        Platform.runLater(this::relocateComposerMenu);
+    }
+
+    @FXML
+    void handlePrimaryAction() {
+        if (isBusy()) {
+            stopGenerating();
+            return;
+        }
+        ask();
+    }
+
+    private void configureQuestionInput() {
+        question.textProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+        question.fontProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+        question.paddingProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+        question.maxHeightProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+        attachmentBar.widthProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+        attachButton.widthProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+        sendAction.widthProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+        question.focusedProperty().addListener((observable, oldValue, newValue) -> updateComposerFocusState(Boolean.TRUE.equals(newValue)));
+        question.skinProperty().addListener((observable, oldValue, newValue) -> Platform.runLater(() -> {
+            questionScrollPane = null;
+            questionContentRegion = null;
+            questionVerticalScrollBar = null;
+            updateQuestionScrollPolicy(false);
+            refreshQuestionHeight();
+        }));
+
+        question.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() != KeyCode.ENTER) {
+                return;
+            }
+            if (event.isShiftDown()
+                    && !event.isControlDown()
+                    && !event.isMetaDown()
+                    && !event.isAltDown()) {
+                question.replaceSelection("\n");
+                event.consume();
+                return;
+            }
+            if (!event.isShiftDown()
+                    && !event.isControlDown()
+                    && !event.isMetaDown()
+                    && !event.isAltDown()) {
+                ask();
+                event.consume();
+            }
+        });
+
+        sPane.addEventFilter(KeyEvent.KEY_PRESSED, this::handlePasteShortcut);
+    }
+
+    private void scheduleQuestionHeightRefresh() {
+        if (questionHeightRefreshScheduled) {
+            return;
+        }
+        questionHeightRefreshScheduled = true;
+        Platform.runLater(() -> {
+            questionHeightRefreshScheduled = false;
+            refreshQuestionHeight();
+        });
+    }
+
+    private void refreshQuestionHeight() {
+        if (question == null) {
+            return;
+        }
+        ensureQuestionSkinNodes();
+
+        double wrappingWidth = resolveQuestionWrappingWidth();
+        if (wrappingWidth <= 0) {
+            return;
+        }
+
+        double chromeHeight = resolveQuestionVerticalChromeHeight();
+        double maxHeight = question.getMaxHeight() > 0 ? question.getMaxHeight() : QUESTION_MIN_HEIGHT;
+        double roundedDesiredHeight = Math.ceil(chromeHeight + PaneAiAnswerTextMetricsSupport.computeTextHeight(
+                question.getFont(),
+                question.getText(),
+                wrappingWidth
+        ));
+        boolean allowVerticalScroll = roundedDesiredHeight > maxHeight;
+        if (allowVerticalScroll) {
+            double scrollbarBreadth = resolveQuestionVerticalScrollBarBreadth();
+            if (scrollbarBreadth > 0) {
+                double scrollingWrappingWidth = Math.max(0, wrappingWidth - scrollbarBreadth);
+                roundedDesiredHeight = Math.ceil(chromeHeight + PaneAiAnswerTextMetricsSupport.computeTextHeight(
+                        question.getFont(),
+                        question.getText(),
+                        scrollingWrappingWidth
+                ));
+            }
+        }
+        double targetHeight = PaneAiAnswerTextMetricsSupport.clampHeight(
+                roundedDesiredHeight,
+                QUESTION_MIN_HEIGHT,
+                maxHeight
+        );
+        if (Math.abs(question.getPrefHeight() - targetHeight) >= QUESTION_HEIGHT_UPDATE_THRESHOLD) {
+            question.setPrefHeight(targetHeight);
+            question.requestLayout();
+        }
+        updateQuestionScrollPolicy(allowVerticalScroll);
+    }
+
+    private double resolveQuestionVerticalChromeHeight() {
+        return snappedVerticalInsets(question)
+                + snappedVerticalInsets(questionScrollPane)
+                + snappedVerticalInsets(questionContentRegion);
+    }
+
+    private double resolveQuestionWrappingWidth() {
+        return Math.max(0, resolveQuestionControlWidth()
+                - snappedHorizontalInsets(question)
+                - snappedHorizontalInsets(questionScrollPane)
+                - snappedHorizontalInsets(questionContentRegion));
+    }
+
+    private double resolveQuestionControlWidth() {
+        if (attachmentBar != null && attachmentBar.getWidth() > 0) {
+            double spacingTotal = attachmentBar.getSpacing() * Math.max(0, attachmentBar.getChildren().size() - 1);
+            double controlWidth = attachmentBar.getWidth()
+                    - snappedHorizontalInsets(attachmentBar)
+                    - resolveStableRegionWidth(attachButton)
+                    - resolveStableRegionWidth(sendAction)
+                    - spacingTotal;
+            if (controlWidth > 0) {
+                return controlWidth;
+            }
+        }
+        return question.getWidth();
+    }
+
+    private double resolveQuestionVerticalScrollBarBreadth() {
+        ensureQuestionSkinNodes();
+        if (questionVerticalScrollBar == null) {
+            return 0;
+        }
+        double prefWidth = questionVerticalScrollBar.prefWidth(-1);
+        if (prefWidth > 0) {
+            return prefWidth;
+        }
+        double width = questionVerticalScrollBar.getWidth();
+        return width > 0 ? width : 0;
+    }
+
+    private void ensureQuestionSkinNodes() {
+        if (question == null) {
+            return;
+        }
+        Node scrollPaneNode = question.lookup(".scroll-pane");
+        if (scrollPaneNode instanceof ScrollPane) {
+            ScrollPane resolvedScrollPane = (ScrollPane) scrollPaneNode;
+            if (questionScrollPane != resolvedScrollPane) {
+                questionScrollPane = resolvedScrollPane;
+                questionScrollPane.paddingProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+            }
+        }
+        Node contentNode = question.lookup(".content");
+        if (contentNode instanceof Region) {
+            Region resolvedContentRegion = (Region) contentNode;
+            if (questionContentRegion != resolvedContentRegion) {
+                questionContentRegion = resolvedContentRegion;
+                questionContentRegion.paddingProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+            }
+        }
+        Node verticalScrollBarNode = question.lookup(".scroll-bar:vertical");
+        if (verticalScrollBarNode instanceof ScrollBar) {
+            questionVerticalScrollBar = (ScrollBar) verticalScrollBarNode;
+        }
+    }
+
+    private void updateQuestionScrollPolicy(boolean allowVerticalScroll) {
+        if (question == null) {
+            return;
+        }
+        ensureQuestionSkinNodes();
+        if (questionScrollPane == null) {
+            return;
+        }
+        questionScrollPane.setFitToWidth(true);
+        questionScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        ScrollPane.ScrollBarPolicy targetPolicy = allowVerticalScroll
+                ? ScrollPane.ScrollBarPolicy.AS_NEEDED
+                : ScrollPane.ScrollBarPolicy.NEVER;
+        if (questionScrollPane.getVbarPolicy() != targetPolicy) {
+            questionScrollPane.setVbarPolicy(targetPolicy);
+        }
+    }
+
+    private void updateComposerFocusState(boolean focused) {
+        if (composerCard == null) {
+            return;
+        }
+        toggleStyleClass(composerCard, "ai-composer-card-focused", focused);
+    }
+
+    private void configureAttachmentInteractions() {
+        sPane.setOnDragEntered(this::handleDragEntered);
+        sPane.setOnDragExited(this::handleDragExited);
+        sPane.setOnDragOver(this::handleDragOver);
+        sPane.setOnDragDropped(this::handleDragDropped);
+    }
+
+    private void configureChatScrollBehavior() {
+        scrollPane.vvalueProperty().addListener((observable, oldValue, newValue) -> {
+            if (programmaticScrollUpdate || forceScrollToBottomPending || newValue == null) {
+                return;
+            }
+            followStreamToBottom = isNearBottom(newValue.doubleValue());
+        });
+        msgBox.heightProperty().addListener((observable, oldValue, newValue) -> {
+            chatScrollLayoutVersion++;
+            requestScrollToBottom();
+        });
+        scrollPane.viewportBoundsProperty().addListener((observable, oldValue, newValue) -> {
+            chatScrollLayoutVersion++;
+            requestScrollToBottom();
+        });
+    }
+
+    private void initializeSessionThinking() {
+        AiThinkingConfig currentThinkingConfig = PaneAiAnswerSupport.readThinkingConfig(aiConfigReader);
+        sessionThinkingConfig = new AiThinkingConfig(
+                currentThinkingConfig.isEnabled(),
+                currentThinkingConfig.getBudgetTokens()
+        );
+    }
+
+    private void configureComposerMenu() {
+        composerMenu = new ContextMenu();
+        composerMenu.getStyleClass().add("ai-composer-menu");
+        composerMenu.getItems().add(createAttachMenuItem());
+        composerMenu.getItems().add(createThinkingMenuItem());
+        composerMenu.setOnShowing(event -> updateComposerTriggerState(true));
+        composerMenu.setOnShown(event -> relocateComposerMenu());
+        composerMenu.setOnHidden(event -> updateComposerTriggerState(false));
+        refreshAttachButtonTooltip();
+    }
+
+    private void relocateComposerMenu() {
+        if (composerMenu == null || !composerMenu.isShowing() || attachButton == null) {
+            return;
+        }
+        Bounds anchorBounds = attachButton.localToScreen(attachButton.getBoundsInLocal());
+        if (anchorBounds == null) {
+            return;
+        }
+        double menuHeight = composerMenu.getHeight();
+        if (menuHeight <= 0) {
+            return;
+        }
+        composerMenu.setY(anchorBounds.getMinY() - menuHeight - COMPOSER_MENU_VERTICAL_GAP);
+    }
+
+    private void updateComposerTriggerState(boolean open) {
+        toggleStyleClass(attachButton, "ai-plus-button-open", open);
+    }
+
+    private CustomMenuItem createAttachMenuItem() {
+        Region icon = new Region();
+        icon.getStyleClass().addAll("ai-composer-menu-icon", "ai-composer-menu-icon-attach");
+
+        composerAttachMenuLabel = new Label();
+        composerAttachMenuLabel.getStyleClass().add("ai-composer-menu-title");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox content = new HBox();
+        content.setAlignment(Pos.CENTER_LEFT);
+        content.setSpacing(10);
+        content.setMinWidth(COMPOSER_MENU_ITEM_WIDTH);
+        content.setPrefWidth(COMPOSER_MENU_ITEM_WIDTH);
+        content.getStyleClass().add("ai-composer-menu-item");
+        content.getChildren().addAll(icon, composerAttachMenuLabel, spacer);
+
+        CustomMenuItem item = new CustomMenuItem(content, true);
+        item.setOnAction(event -> chooseAttachments());
+        return item;
+    }
+
+    private CustomMenuItem createThinkingMenuItem() {
+        Region icon = new Region();
+        icon.getStyleClass().addAll("ai-composer-menu-icon", "ai-composer-menu-icon-thinking");
+
+        composerThinkingMenuLabel = new Label();
+        composerThinkingMenuLabel.getStyleClass().add("ai-composer-menu-title");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        composerThinkingMenuItemContainer = new HBox();
+        composerThinkingMenuItemContainer.setAlignment(Pos.CENTER_LEFT);
+        composerThinkingMenuItemContainer.setSpacing(10);
+        composerThinkingMenuItemContainer.setMinWidth(COMPOSER_MENU_ITEM_WIDTH);
+        composerThinkingMenuItemContainer.setPrefWidth(COMPOSER_MENU_ITEM_WIDTH);
+        composerThinkingMenuItemContainer.getStyleClass().add("ai-composer-menu-item");
+        composerThinkingMenuItemContainer.getChildren().addAll(icon, composerThinkingMenuLabel, spacer);
+
+        CustomMenuItem item = new CustomMenuItem(composerThinkingMenuItemContainer, true);
+        item.setOnAction(event -> toggleThinkingModeFromMenu());
+        return item;
+    }
+
+    private void toggleThinkingModeFromMenu() {
+        if (isBusy()) {
+            refreshThinkingToggle();
+            return;
+        }
+        boolean enabled = sessionThinkingConfig != null && sessionThinkingConfig.isEnabled();
+        int budgetTokens = sessionThinkingConfig == null ? 1024 : sessionThinkingConfig.getBudgetTokens();
+        sessionThinkingConfig = new AiThinkingConfig(!enabled, budgetTokens);
+        refreshThinkingToggle();
+        refreshAttachmentSummary();
+    }
+
+    private void stopGenerating() {
+        if (!isBusy() || stopRequested) {
+            return;
+        }
+        stopRequested = true;
+        setState(AiUiState.STREAMING, I18nUtils.getString("ai.status.stopping"), false);
+        aiChatService.cancelActiveStream();
+        if (runningTask != null) {
+            runningTask.cancel();
+        }
+    }
+
     private void startAskTask(String requestPrompt,
                               String historyPrompt,
-                              TextArea aiTextArea,
-                              TextArea thinkingTextArea) {
+                              List<AiAttachment> attachments,
+                              Label aiLabel,
+                              Label thinkingLabel) {
+        final AiThinkingConfig requestThinkingConfig = new AiThinkingConfig(
+                sessionThinkingConfig.isEnabled(),
+                sessionThinkingConfig.getBudgetTokens()
+        );
+        final boolean requestThinkingEnabled = requestThinkingConfig.isEnabled();
+        stopRequested = false;
+        resetStreamBuffer(aiLabel, thinkingLabel);
+        refreshPrimaryActionButton();
+
         runningTask = new Task<Void>() {
             @Override
             protected Void call() {
@@ -326,21 +697,48 @@ public class PaneAiAnswer {
                         AiPromptUtils.generalAssistantSystemPrompt(),
                         requestPrompt,
                         historyPrompt,
-                        event -> handleStreamEvent(event, aiTextArea, thinkingTextArea)
+                        attachments,
+                        requestThinkingConfig,
+                        event -> handleStreamEvent(event, aiLabel, thinkingLabel, requestThinkingEnabled)
                 );
                 return null;
             }
         };
 
         runningTask.setOnFailed(event -> {
-            Throwable error = runningTask.getException();
+            stopRequested = false;
+            Task<Void> task = runningTask;
+            runningTask = null;
+            flushPendingStreamContent();
+            stopStreamFlush();
+            Throwable error = task == null ? null : task.getException();
+            if (task != null && task.isCancelled()) {
+                setState(AiUiState.STOPPED, I18nUtils.getString("ai.status.stopped"), false);
+                Platform.runLater(() -> setState(AiUiState.IDLE, ""));
+                return;
+            }
             String message = error == null ? I18nUtils.getString("ai.status.error") : error.getMessage();
             setState(AiUiState.ERROR, message == null ? I18nUtils.getString("ai.status.error") : message);
         });
 
         runningTask.setOnSucceeded(event -> {
+            stopRequested = false;
+            runningTask = null;
+            flushPendingStreamContent();
+            stopStreamFlush();
             if (uiState != AiUiState.ERROR) {
                 setState(AiUiState.COMPLETED, I18nUtils.getString("ai.status.completed"));
+                Platform.runLater(() -> setState(AiUiState.IDLE, ""));
+            }
+        });
+
+        runningTask.setOnCancelled(event -> {
+            stopRequested = false;
+            runningTask = null;
+            flushPendingStreamContent();
+            stopStreamFlush();
+            if (uiState != AiUiState.ERROR) {
+                setState(AiUiState.STOPPED, I18nUtils.getString("ai.status.stopped"), false);
                 Platform.runLater(() -> setState(AiUiState.IDLE, ""));
             }
         });
@@ -351,55 +749,187 @@ public class PaneAiAnswer {
     }
 
     private void handleStreamEvent(AiStreamEvent event,
-                                   TextArea aiTextArea,
-                                   TextArea thinkingTextArea) {
+                                   Label aiLabel,
+                                   Label thinkingLabel,
+                                   boolean requestThinkingEnabled) {
+        if (stopRequested && event.getType() != AiStreamEvent.Type.ERROR) {
+            return;
+        }
         switch (event.getType()) {
             case THINKING_TOKEN:
-                Platform.runLater(() -> {
-                    if (!isThinkingEnabled()) {
-                        return;
-                    }
-                    if (!thinkingTextArea.isManaged()) {
-                        thinkingTextArea.setManaged(true);
-                        thinkingTextArea.setVisible(true);
-                    }
-                    if (uiState == AiUiState.LOADING || uiState == AiUiState.IDLE) {
-                        setState(AiUiState.THINKING, I18nUtils.getString("ai.status.thinking"));
-                    }
-                    thinkingTextArea.appendText(event.getContent());
-                });
+                if (!requestThinkingEnabled || stopRequested) {
+                    return;
+                }
+                queueStreamText(thinkingLabel, event.getContent(), true);
                 break;
             case TOKEN:
-                Platform.runLater(() -> {
-                    if (uiState != AiUiState.STREAMING) {
-                        setState(AiUiState.STREAMING, I18nUtils.getString("ai.status.streaming"));
-                    }
-                    aiTextArea.appendText(event.getContent());
-                });
+                queueStreamText(aiLabel, event.getContent(), false);
                 break;
             case ERROR:
-                setState(AiUiState.ERROR, event.getContent());
+                stopRequested = false;
+                aiChatService.cancelActiveStream();
+                Platform.runLater(() -> {
+                    flushPendingStreamContent();
+                    stopStreamFlush();
+                    setState(AiUiState.ERROR, event.getContent());
+                });
                 break;
             case DONE:
-                if (uiState != AiUiState.ERROR) {
-                    setState(AiUiState.COMPLETED, I18nUtils.getString("ai.status.completed"));
-                }
+                Platform.runLater(() -> {
+                    flushPendingStreamContent();
+                    stopStreamFlush();
+                    if (uiState != AiUiState.ERROR) {
+                        setState(AiUiState.COMPLETED, I18nUtils.getString("ai.status.completed"));
+                    }
+                });
                 break;
             default:
                 break;
         }
     }
 
-    private TextArea createBubbleTextArea(String styleClass) {
-        TextArea textArea = new TextArea();
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-        textArea.setPrefHeight(0);
-        textArea.setPrefWidth(0);
-        textArea.setMinSize(40, 44);
-        textArea.setMaxSize(sPane.getWidth() - 170, 500);
-        textArea.getStyleClass().add(styleClass);
-        return textArea;
+    private Label createBubbleLabel(String styleClass) {
+        Label label = new Label();
+        label.setWrapText(true);
+        label.setMinHeight(Region.USE_PREF_SIZE);
+        label.setAlignment(Pos.TOP_LEFT);
+        label.maxWidthProperty().bind(Bindings.createDoubleBinding(
+                () -> Math.max(
+                        260.0,
+                        Math.min(
+                                MESSAGE_BUBBLE_MAX_WIDTH,
+                                sPane == null ? MESSAGE_BUBBLE_MAX_WIDTH : sPane.getWidth() - 280.0
+                        )
+                ),
+                sPane.widthProperty()
+        ));
+        label.getStyleClass().add(styleClass);
+        label.setContextMenu(createBubbleContextMenu(label));
+        return label;
+    }
+
+    private ContextMenu createBubbleContextMenu(Label label) {
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem copyItem = new MenuItem(I18nUtils.getString("contextmenu.copy"));
+        copyItem.setOnAction(event -> copyTextToClipboard(label == null ? "" : label.getText()));
+        contextMenu.getItems().add(copyItem);
+        return contextMenu;
+    }
+
+    private void copyTextToClipboard(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return;
+        }
+        ClipboardContent clipboardContent = new ClipboardContent();
+        clipboardContent.putString(text);
+        Clipboard.getSystemClipboard().setContent(clipboardContent);
+    }
+
+    private void queueStreamText(Label label, String text, boolean thinking) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+        synchronized (this) {
+            if (thinking) {
+                bufferedThinkingLabel = label;
+                pendingThinkingText.append(text);
+            } else {
+                bufferedAiLabel = label;
+                pendingAiText.append(text);
+            }
+        }
+        scheduleStreamFlush();
+    }
+
+    private void scheduleStreamFlush() {
+        if (Platform.isFxApplicationThread()) {
+            scheduleStreamFlushOnFxThread();
+            return;
+        }
+        Platform.runLater(this::scheduleStreamFlushOnFxThread);
+    }
+
+    private void scheduleStreamFlushOnFxThread() {
+        if (streamFlushScheduled) {
+            return;
+        }
+        streamFlushScheduled = true;
+        Platform.runLater(this::flushPendingStreamContent);
+    }
+
+    private void flushPendingStreamContent() {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(this::flushPendingStreamContent);
+            return;
+        }
+
+        String aiChunk;
+        String thinkingChunk;
+        Label aiLabel;
+        Label thinkingLabel;
+        synchronized (this) {
+            aiChunk = pendingAiText.toString();
+            pendingAiText.setLength(0);
+            thinkingChunk = pendingThinkingText.toString();
+            pendingThinkingText.setLength(0);
+            aiLabel = bufferedAiLabel;
+            thinkingLabel = bufferedThinkingLabel;
+            streamFlushScheduled = false;
+        }
+
+        if (thinkingChunk.isEmpty() && aiChunk.isEmpty()) {
+            return;
+        }
+
+        if (thinkingLabel != null && !thinkingChunk.isEmpty()) {
+            if (!thinkingLabel.isManaged()) {
+                thinkingLabel.setManaged(true);
+                thinkingLabel.setVisible(true);
+            }
+            if (uiState == AiUiState.LOADING || uiState == AiUiState.IDLE) {
+                setState(AiUiState.THINKING, I18nUtils.getString("ai.status.thinking"));
+            }
+            thinkingLabel.setText(thinkingLabel.getText() + thinkingChunk);
+        }
+
+        if (aiLabel != null && !aiChunk.isEmpty()) {
+            if (uiState != AiUiState.STREAMING) {
+                setState(AiUiState.STREAMING, I18nUtils.getString("ai.status.streaming"));
+            }
+            aiLabel.setText(aiLabel.getText() + aiChunk);
+        }
+
+        requestScrollToBottom();
+        synchronized (this) {
+            if ((pendingAiText.length() > 0 || pendingThinkingText.length() > 0) && !streamFlushScheduled) {
+                streamFlushScheduled = true;
+                Platform.runLater(this::flushPendingStreamContent);
+            }
+        }
+    }
+
+    private void resetStreamBuffer(Label aiLabel, Label thinkingLabel) {
+        stopStreamFlush();
+        synchronized (this) {
+            pendingAiText.setLength(0);
+            pendingThinkingText.setLength(0);
+            bufferedAiLabel = aiLabel;
+            bufferedThinkingLabel = thinkingLabel;
+        }
+    }
+
+    private void stopStreamFlush() {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(this::stopStreamFlush);
+            return;
+        }
+        synchronized (this) {
+            pendingAiText.setLength(0);
+            pendingThinkingText.setLength(0);
+            bufferedAiLabel = null;
+            bufferedThinkingLabel = null;
+            streamFlushScheduled = false;
+        }
     }
 
     private void setState(AiUiState newState, String message) {
@@ -407,20 +937,17 @@ public class PaneAiAnswer {
     }
 
     private void setState(AiUiState newState, String message, boolean showRetry) {
+        uiState = newState;
         Platform.runLater(() -> {
-            uiState = newState;
             boolean busy = newState == AiUiState.LOADING
                     || newState == AiUiState.THINKING
                     || newState == AiUiState.STREAMING;
 
             question.setDisable(busy);
-            sendAction.setDisable(busy);
-            if (attachButton != null) {
-                attachButton.setDisable(busy);
-            }
-            if (clearAttachmentLink != null) {
-                clearAttachmentLink.setDisable(busy || attachmentContexts.isEmpty());
-            }
+            attachButton.setDisable(busy);
+            sendAction.setDisable(stopRequested);
+            clearAttachmentLink.setDisable(busy || attachmentContexts.isEmpty());
+            refreshPrimaryActionButton();
 
             boolean showStatus = message != null && !message.trim().isEmpty();
             statusLabel.setManaged(showStatus);
@@ -430,6 +957,7 @@ public class PaneAiAnswer {
                     "ai-status-loading",
                     "ai-status-thinking",
                     "ai-status-streaming",
+                    "ai-status-stopped",
                     "ai-status-error",
                     "ai-status-completed"
             ));
@@ -442,6 +970,9 @@ public class PaneAiAnswer {
                     break;
                 case STREAMING:
                     statusLabel.getStyleClass().add("ai-status-streaming");
+                    break;
+                case STOPPED:
+                    statusLabel.getStyleClass().add("ai-status-stopped");
                     break;
                 case ERROR:
                     statusLabel.getStyleClass().add("ai-status-error");
@@ -457,6 +988,7 @@ public class PaneAiAnswer {
 
             retryLink.setManaged(showRetry);
             retryLink.setVisible(showRetry);
+            refreshComposerMetaRow();
         });
     }
 
@@ -472,7 +1004,7 @@ public class PaneAiAnswer {
             return;
         }
 
-        final String baseText = stripTrailingDots(message);
+        String baseText = stripTrailingDots(message);
         if (baseText.isEmpty()) {
             stopStatusAnimation();
             statusLabel.setText(message);
@@ -507,196 +1039,589 @@ public class PaneAiAnswer {
         if (message == null) {
             return "";
         }
-        return message.trim().replaceAll("[.。…]+$", "");
-    }
-
-    boolean isThinkingEnabled() {
-        return PaneAiAnswerSupport.isThinkingEnabled(aiConfigReader);
-    }
-
-    void adaptiveSize(TextArea textArea) {
-        Text tmpText = new Text();
-        textArea.skinProperty().addListener((ob, ov, nv) -> {
-            double maxWidth = sPane.getWidth() - 170;
-
-            ScrollPane lookup1 = (ScrollPane) textArea.lookup(".scroll-pane");
-            if (lookup1 == null) {
-                return;
-            }
-            lookup1.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-            lookup1.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-            Text t = (Text) ((Group) ((Region) lookup1.getContent()).getChildrenUnmodifiable().get(1))
-                    .getChildren().get(0);
-            lookup1.getContent().setStyle("-fx-padding: 0");
-
-            tmpText.setText(t.getText());
-            tmpText.setFont(t.getFont());
-
-            double initWidth = tmpText.getLayoutBounds().getWidth() + 22 + 24;
-            initWidth = initWidth > maxWidth ? maxWidth : initWidth;
-            textArea.setMaxWidth(initWidth);
-            textArea.setPrefWidth(initWidth);
-            textArea.setPrefHeight(tmpText.getLayoutBounds().getHeight() + 22);
-
-            textArea.textProperty().addListener((observable, oldValue, newValue) -> {
-                tmpText.setText(t.getText());
-                tmpText.setFont(t.getFont());
-
-                double finalHeight = t.getLayoutBounds().getHeight() + 22;
-                double finalWidth = tmpText.getLayoutBounds().getWidth() + 22 + 24;
-                finalWidth = finalWidth > maxWidth ? maxWidth : finalWidth;
-
-                textArea.setPrefHeight(finalHeight);
-                textArea.setMaxWidth(finalWidth);
-                textArea.setPrefWidth(finalWidth);
-            });
-        });
+        return message.trim().replaceAll("[.。]+$", "");
     }
 
     private void refreshAttachmentSummary() {
         boolean hasAttachments = !attachmentContexts.isEmpty();
-        attachmentLabel.setText(hasAttachments
-                ? I18nUtils.getString("ai.attach.summary", attachmentContexts.size(), summarizeAttachmentNames())
-                : I18nUtils.getString("ai.attach.none"));
+        refreshAttachmentPreview();
+        boolean thinkingEnabled = sessionThinkingConfig != null && sessionThinkingConfig.isEnabled();
+
+        thinkingBadge.setManaged(thinkingEnabled);
+        thinkingBadge.setVisible(thinkingEnabled);
+
         clearAttachmentLink.setManaged(hasAttachments);
         clearAttachmentLink.setVisible(hasAttachments);
-        clearAttachmentLink.setDisable((runningTask != null && runningTask.isRunning()) || !hasAttachments);
+        clearAttachmentLink.setDisable(isBusy() || !hasAttachments);
+        refreshComposerMetaRow();
     }
 
-    private void refreshScrollPaneHeight() {
-        if (scrollPane == null || sPane == null || question == null) {
+    private void refreshAttachmentPreview() {
+        boolean hasAttachments = !attachmentContexts.isEmpty();
+        attachmentPreviewPane.getChildren().clear();
+        attachmentPreviewPane.setManaged(hasAttachments);
+        attachmentPreviewPane.setVisible(hasAttachments);
+        if (!hasAttachments) {
             return;
         }
-        double reservedHeight = question.getPrefHeight() + safeHeight(attachmentBar) + safeHeight(statusBar) + 48;
-        double targetHeight = sPane.getHeight() - reservedHeight;
-        if (targetHeight > 120) {
-            scrollPane.setPrefHeight(targetHeight);
+
+        for (AiAttachment attachmentContext : attachmentContexts) {
+            attachmentPreviewPane.getChildren().add(createAttachmentChip(attachmentContext));
         }
     }
 
-    private double safeHeight(Region region) {
+    private HBox createAttachmentChip(AiAttachment attachmentContext) {
+        Region fileIcon = new Region();
+        fileIcon.getStyleClass().add("ai-attachment-chip-icon");
+
+        Label nameLabel = new Label(attachmentContext.getFileName());
+        nameLabel.getStyleClass().add("ai-attachment-chip-name");
+        nameLabel.setMaxWidth(220);
+        nameLabel.setWrapText(false);
+
+        Label metaLabel = new Label(buildAttachmentMeta(attachmentContext));
+        metaLabel.getStyleClass().add("ai-attachment-chip-meta");
+
+        VBox textBox = new VBox();
+        textBox.setSpacing(2);
+        textBox.getChildren().addAll(nameLabel, metaLabel);
+
+        Region removeIcon = new Region();
+        removeIcon.getStyleClass().add("ai-attachment-chip-remove-icon");
+
+        Button removeButton = new Button();
+        removeButton.setGraphic(removeIcon);
+        removeButton.getStyleClass().add("ai-attachment-chip-remove");
+        removeButton.setDisable(isBusy());
+        removeButton.setOnAction(event -> removeAttachment(attachmentContext));
+        removeButton.setTooltip(new Tooltip(I18nUtils.getString("ai.attach.remove.tooltip")));
+
+        HBox chip = new HBox();
+        chip.getStyleClass().add("ai-attachment-chip");
+        chip.getChildren().addAll(fileIcon, textBox, removeButton);
+
+        Tooltip.install(chip, new Tooltip(attachmentContext.getAbsolutePath()));
+        return chip;
+    }
+
+    private void removeAttachment(AiAttachment attachmentContext) {
+        if (isBusy()) {
+            return;
+        }
+        attachmentContexts.remove(attachmentContext);
+        refreshAttachmentSummary();
+        if (uiState == AiUiState.ERROR) {
+            setState(AiUiState.IDLE, "");
+        }
+    }
+
+    private String buildAttachmentMeta(AiAttachment attachmentContext) {
+        return formatFileSize(attachmentContext.getFileSize());
+    }
+
+    private String formatFileSize(long bytes) {
+        if (bytes < 1024) {
+            return bytes + " B";
+        }
+        double value = bytes;
+        String[] units = new String[]{"KB", "MB", "GB"};
+        int unitIndex = -1;
+        while (value >= 1024 && unitIndex < units.length - 1) {
+            value = value / 1024;
+            unitIndex++;
+        }
+        if (unitIndex < 0) {
+            return bytes + " B";
+        }
+        return String.format(Locale.ROOT, "%.1f %s", value, units[unitIndex]);
+    }
+
+    private void registerLocaleRefresh() {
+        if (localeListenerRegistered) {
+            return;
+        }
+        localeListenerRegistered = true;
+        I18nUtils.localeProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                Platform.runLater(() -> {
+                    refreshAttachmentSummary();
+                    refreshThinkingToggle();
+                    refreshPrimaryActionButton();
+                    refreshDropHintText();
+                });
+            }
+        });
+    }
+
+    private void refreshThinkingToggle() {
+        boolean enabled = sessionThinkingConfig != null && sessionThinkingConfig.isEnabled();
+        String thinkingTooltip = buildThinkingTooltip(enabled);
+        if (composerThinkingMenuLabel != null) {
+            composerThinkingMenuLabel.setText(I18nUtils.getString(
+                    enabled ? "ai.compose.menu.thinking.disable" : "ai.compose.menu.thinking.enable"
+            ));
+            setTooltipText(composerThinkingMenuLabel, thinkingTooltip);
+        }
+        if (composerThinkingMenuItemContainer != null) {
+            toggleStyleClass(composerThinkingMenuItemContainer, "ai-composer-menu-item-active", enabled);
+            setTooltipText(composerThinkingMenuItemContainer, thinkingTooltip);
+        }
+        refreshAttachButtonTooltip();
+    }
+
+    private void refreshPrimaryActionButton() {
+        if (sendAction == null || sendActionIcon == null) {
+            return;
+        }
+        boolean busy = isBusy();
+        sendActionIcon.getStyleClass().removeAll("send", "ai-icon-stop");
+        sendActionIcon.getStyleClass().add(busy ? "ai-icon-stop" : "send");
+
+        sendAction.getStyleClass().remove("ai-send-button-stop");
+        if (busy) {
+            sendAction.getStyleClass().add("ai-send-button-stop");
+        }
+
+        setTooltipText(sendAction, I18nUtils.getString(busy ? "ai.stop.tooltip" : "ai.send"));
+    }
+
+    private void refreshAttachButtonTooltip() {
+        if (attachButton == null) {
+            return;
+        }
+        setTooltipText(attachButton, I18nUtils.getString("ai.compose.menu.tooltip"));
+        if (composerAttachMenuLabel != null) {
+            composerAttachMenuLabel.setText(I18nUtils.getString("ai.attach"));
+        }
+        if (thinkingBadge != null) {
+            thinkingBadge.setText(I18nUtils.getString("ai.thinking.badge"));
+            setTooltipText(thinkingBadge, buildThinkingTooltip(sessionThinkingConfig != null && sessionThinkingConfig.isEnabled()));
+        }
+    }
+
+    private String buildThinkingTooltip(boolean enabled) {
+        int budgetTokens = sessionThinkingConfig == null ? 1024 : sessionThinkingConfig.getBudgetTokens();
+        return I18nUtils.getString(
+                enabled ? "ai.thinking.tooltip.on" : "ai.thinking.tooltip.off",
+                budgetTokens
+        );
+    }
+
+    private void setTooltipText(Control control, String text) {
+        if (control == null) {
+            return;
+        }
+        if (text == null || text.trim().isEmpty()) {
+            control.setTooltip(null);
+            return;
+        }
+        if (control.getTooltip() == null) {
+            control.setTooltip(new Tooltip(text));
+        } else {
+            control.getTooltip().setText(text);
+        }
+    }
+
+    private void setTooltipText(HBox box, String text) {
+        if (box == null) {
+            return;
+        }
+        Tooltip tooltip = (Tooltip) box.getProperties().get("tooltip");
+        if (text == null || text.trim().isEmpty()) {
+            if (tooltip != null) {
+                Tooltip.uninstall(box, tooltip);
+                box.getProperties().remove("tooltip");
+            }
+            return;
+        }
+        if (tooltip == null) {
+            tooltip = new Tooltip(text);
+            box.getProperties().put("tooltip", tooltip);
+            Tooltip.install(box, tooltip);
+        } else {
+            tooltip.setText(text);
+        }
+    }
+
+    private void refreshComposerMetaRow() {
+        if (composerMetaRow == null) {
+            return;
+        }
+        boolean visible = isNodeVisible(thinkingBadge)
+                || isNodeVisible(clearAttachmentLink)
+                || isNodeVisible(statusLabel)
+                || isNodeVisible(retryLink);
+        composerMetaRow.setManaged(visible);
+        composerMetaRow.setVisible(visible);
+    }
+
+    private boolean isNodeVisible(Region region) {
+        return region != null && region.isManaged() && region.isVisible();
+    }
+
+    private boolean isNodeVisible(Label label) {
+        return label != null && label.isManaged() && label.isVisible();
+    }
+
+    private boolean isNodeVisible(Hyperlink hyperlink) {
+        return hyperlink != null && hyperlink.isManaged() && hyperlink.isVisible();
+    }
+
+    private void toggleStyleClass(Region region, String styleClass, boolean enabled) {
+        if (region == null || styleClass == null || styleClass.isEmpty()) {
+            return;
+        }
+        if (enabled) {
+            if (!region.getStyleClass().contains(styleClass)) {
+                region.getStyleClass().add(styleClass);
+            }
+        } else {
+            region.getStyleClass().remove(styleClass);
+        }
+    }
+
+    private void toggleStyleClass(HBox box, String styleClass, boolean enabled) {
+        if (box == null || styleClass == null || styleClass.isEmpty()) {
+            return;
+        }
+        if (enabled) {
+            if (!box.getStyleClass().contains(styleClass)) {
+                box.getStyleClass().add(styleClass);
+            }
+        } else {
+            box.getStyleClass().remove(styleClass);
+        }
+    }
+
+    private void refreshDropHintText() {
+        setLabeledText(dropHintTitle, I18nUtils.getString("ai.attach.drop.title"));
+        setLabeledText(dropHintText, I18nUtils.getString("ai.attach.drop.desc", AiAttachmentUtils.MAX_ATTACHMENT_COUNT));
+    }
+
+    private boolean isNearBottom(double vvalue) {
+        return vvalue >= 1.0 - AUTO_SCROLL_BOTTOM_THRESHOLD;
+    }
+
+    private void requestScrollToBottom() {
+        if (!followStreamToBottom && !forceScrollToBottomPending) {
+            return;
+        }
+        if (scrollToBottomScheduled) {
+            return;
+        }
+        scrollToBottomScheduled = true;
+        programmaticScrollUpdate = true;
+        Platform.runLater(this::scrollToBottom);
+    }
+
+    private void forceScrollToBottom() {
+        followStreamToBottom = true;
+        forceScrollToBottomPending = true;
+        requestScrollToBottom();
+    }
+
+    private void scrollToBottom() {
+        scrollToBottomScheduled = false;
+        if (scrollPane == null || (!followStreamToBottom && !forceScrollToBottomPending)) {
+            finishScrollToBottomSequence(-1L);
+            return;
+        }
+        long layoutVersion = chatScrollLayoutVersion;
+        scrollPane.setVvalue(1.0);
+        Platform.runLater(() -> finishScrollToBottomSequence(layoutVersion));
+    }
+
+    private void finishScrollToBottomSequence(long layoutVersion) {
+        if (forceScrollToBottomPending && layoutVersion >= 0 && chatScrollLayoutVersion != layoutVersion) {
+            requestScrollToBottom();
+            return;
+        }
+        if (forceScrollToBottomPending) {
+            forceScrollToBottomPending = false;
+        }
+        if (!scrollToBottomScheduled) {
+            programmaticScrollUpdate = false;
+        }
+    }
+
+    private void setLabeledText(Labeled labeled, String text) {
+        if (labeled == null) {
+            return;
+        }
+        if (labeled.textProperty().isBound()) {
+            labeled.textProperty().unbind();
+        }
+        labeled.setText(text == null ? "" : text);
+    }
+
+    private double snappedHorizontalInsets(Region region) {
+        if (region == null) {
+            return 0;
+        }
+        return region.snappedLeftInset() + region.snappedRightInset();
+    }
+
+    private double resolveStableRegionWidth(Region region) {
         if (region == null || !region.isManaged()) {
             return 0;
         }
-        double height = region.getHeight();
-        if (height > 0) {
-            return height;
+        double width = region.getWidth();
+        if (width > 0) {
+            return width;
         }
-        double prefHeight = region.prefHeight(-1);
-        return prefHeight > 0 ? prefHeight : 0;
+        double prefWidth = region.prefWidth(-1);
+        return prefWidth > 0 ? prefWidth : 0;
     }
 
-    private String buildUserBubbleText(String visibleQuestion) {
-        if (attachmentContexts.isEmpty()) {
+    private double snappedVerticalInsets(Region region) {
+        if (region == null) {
+            return 0;
+        }
+        return region.snappedTopInset() + region.snappedBottomInset();
+    }
+
+    private String buildUserBubbleText(String visibleQuestion,
+                                       List<AiAttachment> attachments) {
+        if (attachments == null || attachments.isEmpty()) {
             return visibleQuestion;
         }
         return visibleQuestion + "\n\n" + I18nUtils.getString(
                 "ai.attach.summary",
-                attachmentContexts.size(),
-                summarizeAttachmentNames()
+                attachments.size(),
+                summarizeAttachmentNames(attachments)
         );
     }
 
-    private String summarizeAttachmentNames() {
+    private String summarizeAttachmentNames(List<AiAttachment> attachments) {
         StringBuilder builder = new StringBuilder();
-        int displayCount = Math.min(attachmentContexts.size(), 3);
+        int displayCount = Math.min(attachments.size(), 3);
         for (int i = 0; i < displayCount; i++) {
             if (i > 0) {
                 builder.append(", ");
             }
-            builder.append(attachmentContexts.get(i).getFileName());
+            builder.append(attachments.get(i).getFileName());
         }
-        if (attachmentContexts.size() > displayCount) {
+        if (attachments.size() > displayCount) {
             builder.append(" ...");
         }
         return builder.toString();
     }
 
-    private AiPromptUtils.AttachmentContext loadAttachmentContext(File file) throws IOException {
-        byte[] previewBytes = readPreviewBytes(file, MAX_ATTACHMENT_READ_BYTES + 1);
-        boolean truncated = previewBytes.length > MAX_ATTACHMENT_READ_BYTES;
-        if (truncated) {
-            previewBytes = Arrays.copyOf(previewBytes, MAX_ATTACHMENT_READ_BYTES);
+    private void addAttachments(List<File> files) {
+        if (isBusy() || files == null || files.isEmpty()) {
+            return;
         }
 
-        boolean binary = looksLikeBinary(previewBytes);
-        String content;
-        if (binary) {
-            int length = Math.min(previewBytes.length, MAX_BINARY_PREVIEW_BYTES);
-            if (previewBytes.length > length) {
-                truncated = true;
+        String attachmentSupportError = validateAttachmentApiSupport();
+        if (attachmentSupportError != null && !attachmentSupportError.trim().isEmpty()) {
+            setState(AiUiState.ERROR, attachmentSupportError, false);
+            return;
+        }
+
+        AiRuntimeConfig runtimeConfig = PaneAiAnswerSupport.readRuntimeConfig(aiConfigReader);
+        AiAttachmentSupportResult currentSupport = resolveAttachmentSupport(runtimeConfig, attachmentContexts);
+        int maxAttachmentCount = currentSupport.getMaxAttachmentCount() <= 0
+                ? AiAttachmentUtils.MAX_ATTACHMENT_COUNT
+                : currentSupport.getMaxAttachmentCount();
+        int remaining = maxAttachmentCount - attachmentContexts.size();
+        if (remaining <= 0) {
+            setState(AiUiState.ERROR, I18nUtils.getString("ai.attach.limit", maxAttachmentCount), false);
+            return;
+        }
+
+        String errorMessage = null;
+        int processed = 0;
+        int duplicateCount = 0;
+        int overflowCount = 0;
+        for (File file : files) {
+            if (file == null) {
+                continue;
             }
-            content = toHexPreview(previewBytes, length);
-        } else {
-            content = new String(previewBytes, StandardCharsets.UTF_8).replace("\u0000", "");
-            if (content.length() > MAX_TEXT_ATTACHMENT_CHARS) {
-                content = content.substring(0, MAX_TEXT_ATTACHMENT_CHARS);
-                truncated = true;
+            if (!file.exists() || !file.isFile()) {
+                errorMessage = I18nUtils.getString("ai.attach.invalid", file == null ? "" : file.getName());
+                break;
             }
-        }
-
-        if (content.trim().isEmpty()) {
-            content = "[文件内容为空]";
-        }
-
-        return new AiPromptUtils.AttachmentContext(
-                file.getName(),
-                file.getAbsolutePath(),
-                Math.max(file.length(), 0L),
-                content,
-                binary,
-                truncated
-        );
-    }
-
-    private byte[] readPreviewBytes(File file, int maxBytes) throws IOException {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        int remaining = Math.max(1, maxBytes);
-        try (InputStream inputStream = new FileInputStream(file)) {
-            while (remaining > 0) {
-                int read = inputStream.read(buffer, 0, Math.min(buffer.length, remaining));
-                if (read < 0) {
+            if (isAttachmentDuplicate(file)) {
+                duplicateCount++;
+                continue;
+            }
+            if (processed >= remaining) {
+                overflowCount++;
+                continue;
+            }
+            try {
+                AiAttachment attachment = AiAttachmentUtils.createAttachment(file);
+                String validationMessage = validateAttachment(attachment, runtimeConfig);
+                if (validationMessage != null && !validationMessage.trim().isEmpty()) {
+                    errorMessage = validationMessage;
                     break;
                 }
-                output.write(buffer, 0, read);
-                remaining -= read;
+                attachmentContexts.add(attachment);
+                processed++;
+            } catch (Exception e) {
+                errorMessage = I18nUtils.getString(
+                        "ai.attach.read.failed",
+                        e.getMessage() == null ? file.getName() : e.getMessage()
+                );
+                break;
             }
         }
-        return output.toByteArray();
+
+        refreshAttachmentSummary();
+
+        if (errorMessage != null && !errorMessage.trim().isEmpty()) {
+            setState(AiUiState.ERROR, errorMessage, false);
+            return;
+        }
+        if (overflowCount > 0) {
+            setState(AiUiState.ERROR, I18nUtils.getString("ai.attach.limit", maxAttachmentCount), false);
+            return;
+        }
+        if (duplicateCount > 0) {
+            String duplicateMessage = processed > 0
+                    ? I18nUtils.getString("ai.attach.duplicate.skipped", duplicateCount)
+                    : I18nUtils.getString("ai.attach.duplicate");
+            setState(AiUiState.IDLE, duplicateMessage, false);
+            return;
+        }
+        setState(AiUiState.IDLE, "");
     }
 
-    private boolean looksLikeBinary(byte[] bytes) {
-        if (bytes == null || bytes.length == 0) {
+    private boolean isAttachmentDuplicate(File file) {
+        if (file == null) {
             return false;
         }
-        int sampleSize = Math.min(bytes.length, 1024);
-        int controlCount = 0;
-        for (int i = 0; i < sampleSize; i++) {
-            int value = bytes[i] & 0xFF;
-            if (value == 0) {
+        String absolutePath = file.getAbsolutePath();
+        for (AiAttachment attachmentContext : attachmentContexts) {
+            if (absolutePath.equals(attachmentContext.getAbsolutePath())) {
                 return true;
             }
-            if (value < 0x09 || (value > 0x0D && value < 0x20)) {
-                controlCount++;
-            }
         }
-        return controlCount > sampleSize / 8;
+        return false;
     }
 
-    private String toHexPreview(byte[] bytes, int length) {
-        int safeLength = Math.min(bytes == null ? 0 : bytes.length, Math.max(0, length));
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < safeLength; i++) {
-            if (i > 0) {
-                builder.append(i % 16 == 0 ? "\n" : " ");
-            }
-            String hex = Integer.toHexString(bytes[i] & 0xFF).toUpperCase(Locale.ROOT);
-            if (hex.length() < 2) {
-                builder.append('0');
-            }
-            builder.append(hex);
+    private String validateAttachment(AiAttachment attachment, AiRuntimeConfig runtimeConfig) {
+        if (attachment == null) {
+            return I18nUtils.getString("ai.attach.invalid", "");
         }
-        return builder.toString();
+        List<AiAttachment> candidateAttachments = new ArrayList<AiAttachment>(attachmentContexts);
+        candidateAttachments.add(attachment);
+        AiAttachmentDispatchPlan dispatchPlan = resolveAttachmentDispatchPlan(runtimeConfig, candidateAttachments);
+        return dispatchPlan.isSupported() ? null : dispatchPlan.getMessage();
+    }
+
+    private long calculateTotalAttachmentSize() {
+        long totalSize = 0L;
+        for (AiAttachment attachment : attachmentContexts) {
+            if (attachment != null) {
+                totalSize += Math.max(0L, attachment.getFileSize());
+            }
+        }
+        return totalSize;
+    }
+
+    private String validateAttachmentApiSupport(List<AiAttachment> attachments) {
+        List<AiAttachment> targetAttachments = attachments == null ? attachmentContexts : attachments;
+        if (targetAttachments == null || targetAttachments.isEmpty()) {
+            return null;
+        }
+        AiRuntimeConfig runtimeConfig = PaneAiAnswerSupport.readRuntimeConfig(aiConfigReader);
+        if (runtimeConfig == null) {
+            return null;
+        }
+
+        AiAttachmentDispatchPlan dispatchPlan = resolveAttachmentDispatchPlan(runtimeConfig, targetAttachments);
+        return dispatchPlan.isSupported() ? null : dispatchPlan.getMessage();
+    }
+
+    private String validateAttachmentApiSupport() {
+
+        AiRuntimeConfig runtimeConfig = PaneAiAnswerSupport.readRuntimeConfig(aiConfigReader);
+        if (runtimeConfig == null) {
+            return null;
+        }
+
+        AiAttachmentDispatchPlan dispatchPlan = resolveAttachmentDispatchPlan(runtimeConfig, attachmentContexts);
+        if (dispatchPlan.isSupported()) {
+            return null;
+        }
+        return dispatchPlan.getMessage();
+    }
+
+    private AiAttachmentSupportResult resolveAttachmentSupport(AiRuntimeConfig runtimeConfig, List<AiAttachment> attachments) {
+        AiProviderType providerType = runtimeConfig == null ? PaneAiAnswerSupport.readProviderType(aiConfigReader) : runtimeConfig.getProviderType();
+        AiProviderAdapter providerAdapter = aiProviderRegistry.get(providerType);
+        return providerAdapter.resolveAttachmentSupport(runtimeConfig, attachments);
+    }
+
+    private AiAttachmentDispatchPlan resolveAttachmentDispatchPlan(AiRuntimeConfig runtimeConfig, List<AiAttachment> attachments) {
+        AiProviderType providerType = runtimeConfig == null ? PaneAiAnswerSupport.readProviderType(aiConfigReader) : runtimeConfig.getProviderType();
+        AiProviderAdapter providerAdapter = aiProviderRegistry.get(providerType);
+        return AiAttachmentDispatchPlanner.plan(runtimeConfig, providerAdapter, attachments);
+    }
+
+    private void handlePasteShortcut(KeyEvent event) {
+        if (event.getCode() != KeyCode.V || !event.isShortcutDown()) {
+            return;
+        }
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        if (clipboard == null || !clipboard.hasFiles()) {
+            return;
+        }
+        List<File> files = clipboard.getFiles();
+        if (files == null || files.isEmpty()) {
+            return;
+        }
+        addAttachments(files);
+        event.consume();
+    }
+
+    private void handleDragEntered(DragEvent event) {
+        Dragboard dragboard = event.getDragboard();
+        if (dragboard != null && dragboard.hasFiles() && !isBusy()) {
+            setDragActive(true);
+        }
+    }
+
+    private void handleDragExited(DragEvent event) {
+        setDragActive(false);
+    }
+
+    private void handleDragOver(DragEvent event) {
+        Dragboard dragboard = event.getDragboard();
+        if (dragboard != null && dragboard.hasFiles() && !isBusy()) {
+            event.acceptTransferModes(TransferMode.COPY);
+            setDragActive(true);
+        } else {
+            setDragActive(false);
+        }
+        event.consume();
+    }
+
+    private void handleDragDropped(DragEvent event) {
+        boolean success = false;
+        Dragboard dragboard = event.getDragboard();
+        if (dragboard != null && dragboard.hasFiles() && !isBusy()) {
+            addAttachments(dragboard.getFiles());
+            success = true;
+        }
+        setDragActive(false);
+        event.setDropCompleted(success);
+        event.consume();
+    }
+
+    private void setDragActive(boolean active) {
+        if (composerCard == null || dropHintBox == null) {
+            return;
+        }
+        toggleStyleClass(composerCard, "ai-composer-card-drag", active);
+        dropHintBox.setManaged(active);
+        dropHintBox.setVisible(active);
+    }
+
+    private boolean isBusy() {
+        return uiState == AiUiState.LOADING
+                || uiState == AiUiState.THINKING
+                || uiState == AiUiState.STREAMING;
     }
 }
