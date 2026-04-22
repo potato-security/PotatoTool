@@ -7,11 +7,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("RequestUtils 请求体模式端到端测试")
 class RequestUtilsRequestBodyResolutionTest {
@@ -70,6 +75,35 @@ class RequestUtilsRequestBodyResolutionTest {
         assertEquals("{\"name\":\"potato\"}", payload);
         assertNotNull(mediaType);
         assertEquals("application/octet-stream", mediaType.toString());
+    }
+
+    @Test
+    @DisplayName("FORM 文件 part 保留显式文件名和 MIME")
+    void customFormFilePartShouldKeepExplicitFileNameAndMime() throws Exception {
+        Path tempFile = Files.createTempFile("potatotool-request-body", ".tmp");
+        Files.write(tempFile, "hello-file".getBytes(StandardCharsets.UTF_8));
+        try {
+            Map<String, Object> formParameters = new LinkedHashMap<String, Object>();
+            formParameters.put("purpose", "user_data");
+            formParameters.put("file", new RequestObj.FormFilePart(tempFile.toFile(), "evidence.log", "text/plain"));
+
+            RequestObj requestObj = new RequestObj()
+                    .setMethod("POST")
+                    .setUrl("http://example.com/upload")
+                    .setFormParameters(formParameters);
+
+            Request request = RequestUtils.buildRequest(requestObj);
+            String payload = readBody(request);
+
+            assertEquals("POST", request.method());
+            assertTrue(payload.contains("name=\"purpose\""));
+            assertTrue(payload.contains("user_data"));
+            assertTrue(payload.contains("name=\"file\"; filename=\"evidence.log\""));
+            assertTrue(payload.contains("Content-Type: text/plain"));
+            assertTrue(payload.contains("hello-file"));
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
     }
 
     private String readBody(Request request) throws Exception {

@@ -1,5 +1,8 @@
 package com.potato.potatotool.utils.ai.provider;
 
+import com.potato.potatotool.utils.ai.model.AiAttachment;
+import com.potato.potatotool.utils.ai.model.AiAttachmentMode;
+import com.potato.potatotool.utils.ai.model.AiAttachmentSupportResult;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.potato.potatotool.utils.ai.model.AiChatRequest;
@@ -12,8 +15,11 @@ import com.potato.potatotool.utils.network.RequestObj;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -82,6 +88,37 @@ class OpenAiCompatibleProviderAdapterTest {
     }
 
     @Test
+    @DisplayName("OpenAI-compatible 请求会把常见 base_url 归一化为聊天端点")
+    void buildRequestNormalizesCommonBaseUrls() {
+        AiRuntimeConfig deepSeekConfig = new AiRuntimeConfig(
+                AiProviderType.OPENAI_COMPATIBLE,
+                "https://api.deepseek.com",
+                "key",
+                "deepseek-chat",
+                60000,
+                false,
+                new AiThinkingConfig(false, 1024),
+                false
+        );
+        AiRuntimeConfig gatewayConfig = new AiRuntimeConfig(
+                AiProviderType.OPENAI_COMPATIBLE,
+                "https://gateway.example.com/v1",
+                "key",
+                "gpt-4.1",
+                60000,
+                false,
+                new AiThinkingConfig(false, 1024),
+                false
+        );
+
+        RequestObj deepSeekRequest = adapter.buildRequest(deepSeekConfig, new AiChatRequest("test", null, new AiThinkingConfig(false, 1024), true));
+        RequestObj gatewayRequest = adapter.buildRequest(gatewayConfig, new AiChatRequest("test", null, new AiThinkingConfig(false, 1024), true));
+
+        assertEquals("https://api.deepseek.com/chat/completions", deepSeekRequest.getUrl());
+        assertEquals("https://gateway.example.com/v1/chat/completions", gatewayRequest.getUrl());
+    }
+
+    @Test
     @DisplayName("解析 SSE token thinking done error")
     void parseSseLineCoversMainCases() {
         List<AiStreamEvent> thinkingEvents = adapter.parseSseLine("data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"思考\"},\"finish_reason\":null}]}");
@@ -100,5 +137,85 @@ class OpenAiCompatibleProviderAdapterTest {
         assertEquals(1, errorEvents.size());
         assertEquals(AiStreamEvent.Type.ERROR, errorEvents.get(0).getType());
         assertTrue(errorEvents.get(0).getContent().contains("bad request"));
+    }
+
+    @Test
+    @DisplayName("只有官方 OpenAI Host 才允许附件上传")
+    void resolveAttachmentSupportForOfficialAndRelay() {
+        AiRuntimeConfig officialConfig = new AiRuntimeConfig(
+                AiProviderType.OPENAI_COMPATIBLE,
+                "https://api.openai.com/v1/chat/completions",
+                "key",
+                "gpt-4.1",
+                60000,
+                false,
+                new AiThinkingConfig(false, 1024),
+                false
+        );
+        AiRuntimeConfig customGatewayConfig = new AiRuntimeConfig(
+                AiProviderType.OPENAI_COMPATIBLE,
+                "https://gateway.example.com/v1/chat/completions",
+                "key",
+                "gpt-4.1",
+                60000,
+                false,
+                new AiThinkingConfig(false, 1024),
+                false
+        );
+        AiAttachment imageAttachment = new AiAttachment("screen.png", "/tmp/screen.png", 1024L, "image/png");
+        AiAttachment pdfAttachment = new AiAttachment("report.pdf", "/tmp/report.pdf", 1024L, "application/pdf");
+
+        AiAttachmentSupportResult officialSupport = adapter.resolveAttachmentSupport(officialConfig, Collections.singletonList(pdfAttachment));
+        AiAttachmentSupportResult relayImageSupport = adapter.resolveAttachmentSupport(customGatewayConfig, Collections.singletonList(imageAttachment));
+        AiAttachmentSupportResult relayPdfSupport = adapter.resolveAttachmentSupport(customGatewayConfig, Collections.singletonList(pdfAttachment));
+
+        assertTrue(officialSupport.isSupported());
+        assertEquals(AiAttachmentMode.REMOTE_UPLOAD_REFERENCE, officialSupport.getMode());
+        assertTrue(relayImageSupport.isSupported());
+        assertEquals(AiAttachmentMode.INLINE_IMAGE, relayImageSupport.getMode());
+        assertFalse(relayPdfSupport.isSupported());
+    }
+
+    @Test
+    @DisplayName("非官方 OpenAI 中转会把图片转成 inline image_url")
+    void prepareRequestForRelayUsesInlineImageUrl() throws Exception {
+        File imageFile = File.createTempFile("openai-inline-", ".png");
+        imageFile.deleteOnExit();
+        Files.write(imageFile.toPath(), new byte[]{1, 2, 3, 4});
+
+        AiRuntimeConfig config = new AiRuntimeConfig(
+                AiProviderType.OPENAI_COMPATIBLE,
+                "https://gateway.example.com/api/v1/chat/completions",
+                "key",
+                "gpt-4.1",
+                60000,
+                false,
+                new AiThinkingConfig(false, 1024),
+                false
+        );
+        AiChatRequest request = new AiChatRequest(
+                "看图分析",
+                "看图分析",
+                null,
+                Collections.singletonList(new AiAttachment(imageFile.getName(), imageFile.getAbsolutePath(), imageFile.length(), "image/png")),
+                new AiThinkingConfig(false, 1024),
+                true,
+                ""
+        );
+
+        AiProviderAdapter.PreparedRequest preparedRequest = adapter.prepareRequest(config, request);
+        String body = new String(preparedRequest.getRequestObj().getPostData(), StandardCharsets.UTF_8);
+        JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+
+        assertEquals("image_url",
+                json.getAsJsonArray("messages")
+                        .get(0)
+                        .getAsJsonObject()
+                        .getAsJsonArray("content")
+                        .get(1)
+                        .getAsJsonObject()
+                        .get("type")
+                        .getAsString());
+        assertTrue(body.contains("data:image/png;base64,"));
     }
 }

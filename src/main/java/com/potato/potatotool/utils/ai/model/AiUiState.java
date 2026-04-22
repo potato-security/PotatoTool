@@ -5,6 +5,7 @@ public enum AiUiState {
     LOADING,
     THINKING,
     STREAMING,
+    STOPPED,
     ERROR,
     COMPLETED
 }

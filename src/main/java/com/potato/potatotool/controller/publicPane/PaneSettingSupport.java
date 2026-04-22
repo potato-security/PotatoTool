@@ -4,6 +4,7 @@ import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
 import com.potato.potatotool.utils.network.ProxyUtils;
 
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -59,6 +60,26 @@ final class PaneSettingSupport {
                     : "setting.oob.dns.ceye.token.required";
         }
         return null;
+    }
+
+    static String validateAiBaseUrl(String baseUrl) {
+        if (baseUrl == null || baseUrl.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            URI uri = URI.create(baseUrl.trim());
+            String scheme = uri.getScheme();
+            String host = uri.getHost();
+            if (scheme == null || host == null) {
+                return "setting.ai.api.base.invalid";
+            }
+            if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+                return "setting.ai.api.base.invalid";
+            }
+            return null;
+        } catch (Exception ignored) {
+            return "setting.ai.api.base.invalid";
+        }
     }
 
     static boolean shouldBlockDnsCeyeTest(String selectedDnsPlatform,

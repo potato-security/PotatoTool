@@ -867,6 +867,11 @@ public class PaneSetting {
         if (providerValue.isEmpty()) {
             providerValue = "OPENAI_COMPATIBLE";
         }
+        String aiBaseUrlValidationKey = PaneSettingSupport.validateAiBaseUrl(plainBaseUrl);
+        if (aiBaseUrlValidationKey != null) {
+            showTip(i18n.getString(aiBaseUrlValidationKey), false, true);
+            return;
+        }
 
         int timeoutMs;
         try {

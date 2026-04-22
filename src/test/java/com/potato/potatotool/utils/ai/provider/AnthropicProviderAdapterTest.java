@@ -1,5 +1,8 @@
 package com.potato.potatotool.utils.ai.provider;
 
+import com.potato.potatotool.utils.ai.model.AiAttachment;
+import com.potato.potatotool.utils.ai.model.AiAttachmentMode;
+import com.potato.potatotool.utils.ai.model.AiAttachmentSupportResult;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.potato.potatotool.utils.ai.model.AiChatRequest;
@@ -12,11 +15,15 @@ import com.potato.potatotool.utils.network.RequestObj;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("AnthropicProviderAdapter 测试")
@@ -78,5 +85,85 @@ class AnthropicProviderAdapterTest {
 
         String error = adapter.parseResponse("{\"type\":\"error\",\"error\":{\"message\":\"bad request\"}}");
         assertEquals("bad request", error);
+    }
+
+    @Test
+    @DisplayName("只有官方 Anthropic Host 才允许附件上传")
+    void resolveAttachmentSupportForOfficialAndRelay() {
+        AiRuntimeConfig officialConfig = new AiRuntimeConfig(
+                AiProviderType.ANTHROPIC,
+                "https://api.anthropic.com/v1/messages",
+                "key",
+                "claude-3-7-sonnet-latest",
+                60000,
+                false,
+                new AiThinkingConfig(false, 1024),
+                false
+        );
+        AiRuntimeConfig customGatewayConfig = new AiRuntimeConfig(
+                AiProviderType.ANTHROPIC,
+                "https://gateway.example.com/v1/messages",
+                "key",
+                "claude-3-7-sonnet-latest",
+                60000,
+                false,
+                new AiThinkingConfig(false, 1024),
+                false
+        );
+        AiAttachment imageAttachment = new AiAttachment("screen.png", "/tmp/screen.png", 1024L, "image/png");
+        AiAttachment pdfAttachment = new AiAttachment("report.pdf", "/tmp/report.pdf", 1024L, "application/pdf");
+
+        AiAttachmentSupportResult officialSupport = adapter.resolveAttachmentSupport(officialConfig, Collections.singletonList(pdfAttachment));
+        AiAttachmentSupportResult relayImageSupport = adapter.resolveAttachmentSupport(customGatewayConfig, Collections.singletonList(imageAttachment));
+        AiAttachmentSupportResult relayPdfSupport = adapter.resolveAttachmentSupport(customGatewayConfig, Collections.singletonList(pdfAttachment));
+
+        assertTrue(officialSupport.isSupported());
+        assertEquals(AiAttachmentMode.REMOTE_UPLOAD_REFERENCE, officialSupport.getMode());
+        assertTrue(relayImageSupport.isSupported());
+        assertEquals(AiAttachmentMode.INLINE_IMAGE, relayImageSupport.getMode());
+        assertFalse(relayPdfSupport.isSupported());
+    }
+
+    @Test
+    @DisplayName("非官方 Anthropic 中转会把图片转成 base64 image block")
+    void prepareRequestForRelayUsesInlineImageBlock() throws Exception {
+        File imageFile = File.createTempFile("anthropic-inline-", ".png");
+        imageFile.deleteOnExit();
+        Files.write(imageFile.toPath(), new byte[]{1, 2, 3, 4});
+
+        AiRuntimeConfig config = new AiRuntimeConfig(
+                AiProviderType.ANTHROPIC,
+                "https://gateway.example.com/api/v1/messages",
+                "key",
+                "claude-3-7-sonnet-latest",
+                60000,
+                false,
+                new AiThinkingConfig(false, 1024),
+                false
+        );
+        AiChatRequest request = new AiChatRequest(
+                "看图分析",
+                "看图分析",
+                null,
+                Collections.singletonList(new AiAttachment(imageFile.getName(), imageFile.getAbsolutePath(), imageFile.length(), "image/png")),
+                new AiThinkingConfig(false, 1024),
+                true,
+                ""
+        );
+
+        AiProviderAdapter.PreparedRequest preparedRequest = adapter.prepareRequest(config, request);
+        String body = new String(preparedRequest.getRequestObj().getPostData(), StandardCharsets.UTF_8);
+        JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+
+        assertEquals("image",
+                json.getAsJsonArray("messages")
+                        .get(0)
+                        .getAsJsonObject()
+                        .getAsJsonArray("content")
+                        .get(1)
+                        .getAsJsonObject()
+                        .get("type")
+                        .getAsString());
+        assertTrue(body.contains("\"type\":\"base64\""));
     }
 }

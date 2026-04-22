@@ -1,10 +1,14 @@
 package com.potato.potatotool.utils.ai.service;
 
+import com.potato.potatotool.utils.ai.AiAttachmentDispatchPlanner;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.potato.potatotool.utils.ai.model.AiAttachmentSupportResult;
 import com.potato.potatotool.utils.ai.config.AiConfigReader;
+import com.potato.potatotool.utils.ai.model.AiAttachment;
+import com.potato.potatotool.utils.ai.model.AiAttachmentDispatchPlan;
 import com.potato.potatotool.utils.ai.model.AiChatRequest;
 import com.potato.potatotool.utils.ai.model.AiMessage;
 import com.potato.potatotool.utils.ai.model.AiRuntimeConfig;
@@ -31,8 +35,14 @@ public class AiChatService {
         void onEvent(AiStreamEvent event);
     }
 
+    public interface StreamSession {
+        void cancel();
+
+        boolean isCancelled();
+    }
+
     interface StreamTransport {
-        void stream(RequestObj requestObj, Consumer<String> lineConsumer) throws Exception;
+        void stream(RequestObj requestObj, StreamSession streamSession, Consumer<String> lineConsumer) throws Exception;
     }
 
     private static final int MAX_HISTORY_MESSAGES = 10;
@@ -41,15 +51,29 @@ public class AiChatService {
     private final AiProviderRegistry providerRegistry;
     private final StreamTransport streamTransport;
     private final List<AiMessage> history = new ArrayList<AiMessage>();
+    private final Object streamSessionLock = new Object();
+    private StreamController activeStreamSession;
 
     public AiChatService() {
         this(new AiConfigReader(), new AiProviderRegistry());
     }
 
     public AiChatService(AiConfigReader configReader, AiProviderRegistry providerRegistry) {
-        this(configReader, providerRegistry, (requestObj, lineConsumer) -> {
+        this(configReader, providerRegistry, (requestObj, streamSession, lineConsumer) -> {
             try (CustomHttpResponse response = requests(requestObj)) {
-                response.getSSEStreamingJson(lineConsumer::accept);
+                StreamController.bind(streamSession, response);
+                if (streamSession.isCancelled()) {
+                    return;
+                }
+                response.getSSEStreamingJson(line -> {
+                    if (streamSession.isCancelled()) {
+                        response.disconnect();
+                        return;
+                    }
+                    lineConsumer.accept(line);
+                });
+            } finally {
+                StreamController.clear(streamSession);
             }
         });
     }
@@ -71,6 +95,31 @@ public class AiChatService {
     }
 
     public void streamChat(String systemPrompt, String question, String historyQuestion, EventListener listener) {
+        streamChat(systemPrompt, question, historyQuestion, null, null, listener);
+    }
+
+    public void streamChat(String systemPrompt,
+                           String question,
+                           String historyQuestion,
+                           List<AiAttachment> attachments,
+                           EventListener listener) {
+        streamChat(systemPrompt, question, historyQuestion, attachments, null, listener);
+    }
+
+    public void streamChat(String systemPrompt,
+                           String question,
+                           String historyQuestion,
+                           com.potato.potatotool.utils.ai.model.AiThinkingConfig thinkingOverride,
+                           EventListener listener) {
+        streamChat(systemPrompt, question, historyQuestion, null, thinkingOverride, listener);
+    }
+
+    public void streamChat(String systemPrompt,
+                           String question,
+                           String historyQuestion,
+                           List<AiAttachment> attachments,
+                           com.potato.potatotool.utils.ai.model.AiThinkingConfig thinkingOverride,
+                           EventListener listener) {
         if (question == null || question.trim().isEmpty()) {
             listener.onEvent(AiStreamEvent.error("问题不能为空"));
             return;
@@ -86,22 +135,43 @@ public class AiChatService {
         }
 
         AiProviderAdapter adapter = providerRegistry.get(runtimeConfig.getProviderType());
+        AiAttachmentDispatchPlan attachmentPlan = AiAttachmentDispatchPlanner.plan(runtimeConfig, adapter, attachments);
+        if (!attachmentPlan.isSupported()) {
+            listener.onEvent(AiStreamEvent.error(attachmentPlan.getMessage()));
+            return;
+        }
+        String requestQuestion = mergeQuestionWithAttachmentContext(askText, attachmentPlan.getQuestionSuffix());
         AiChatRequest request = new AiChatRequest(
-                askText,
+                requestQuestion,
                 normalizeHistoryQuestion(historyQuestion, askText),
                 history,
-                runtimeConfig.getThinkingConfig(),
+                attachmentPlan.getRequestAttachments(),
+                thinkingOverride == null ? runtimeConfig.getThinkingConfig() : thinkingOverride,
                 true,
                 systemPrompt
         );
-        RequestObj requestObj = adapter.buildRequest(runtimeConfig, request);
+        AiProviderAdapter.PreparedRequest preparedRequest;
+        try {
+            preparedRequest = adapter.prepareRequest(runtimeConfig, request);
+        } catch (Exception e) {
+            listener.onEvent(AiStreamEvent.error(normalizeError(e, runtimeConfig)));
+            return;
+        }
+        RequestObj requestObj = preparedRequest.getRequestObj();
 
         final StringBuilder answerBuffer = new StringBuilder();
+        final StreamController streamSession = beginStreamSession();
 
         try {
-            streamTransport.stream(requestObj, line -> {
+            streamTransport.stream(requestObj, streamSession, line -> {
+                if (streamSession.isCancelled()) {
+                    return;
+                }
                 List<AiStreamEvent> events = adapter.parseSseLine(line);
                 for (AiStreamEvent event : events) {
+                    if (streamSession.isCancelled() && event.getType() != AiStreamEvent.Type.ERROR) {
+                        return;
+                    }
                     if (event.getType() == AiStreamEvent.Type.TOKEN) {
                         answerBuffer.append(event.getContent());
                     }
@@ -114,7 +184,22 @@ public class AiChatService {
                 appendHistory("assistant", answerBuffer.toString());
             }
         } catch (Exception e) {
-            listener.onEvent(AiStreamEvent.error(normalizeError(e, runtimeConfig)));
+            if (!streamSession.isCancelled()) {
+                listener.onEvent(AiStreamEvent.error(normalizeError(e, runtimeConfig)));
+            }
+        } finally {
+            clearActiveStream(streamSession);
+            preparedRequest.cleanup();
+        }
+    }
+
+    public void cancelActiveStream() {
+        StreamController currentSession;
+        synchronized (streamSessionLock) {
+            currentSession = activeStreamSession;
+        }
+        if (currentSession != null) {
+            currentSession.cancel();
         }
     }
 
@@ -127,6 +212,13 @@ public class AiChatService {
     }
 
     public String askNoStream(String systemPrompt, String question, String historyQuestion) {
+        return askNoStream(systemPrompt, question, historyQuestion, null);
+    }
+
+    public String askNoStream(String systemPrompt,
+                              String question,
+                              String historyQuestion,
+                              List<AiAttachment> attachments) {
         if (question == null || question.trim().isEmpty()) {
             return "问题不能为空";
         }
@@ -140,15 +232,27 @@ public class AiChatService {
         }
 
         AiProviderAdapter adapter = providerRegistry.get(runtimeConfig.getProviderType());
+        AiAttachmentDispatchPlan attachmentPlan = AiAttachmentDispatchPlanner.plan(runtimeConfig, adapter, attachments);
+        if (!attachmentPlan.isSupported()) {
+            return attachmentPlan.getMessage();
+        }
+        String requestQuestion = mergeQuestionWithAttachmentContext(askText, attachmentPlan.getQuestionSuffix());
         AiChatRequest request = new AiChatRequest(
-                askText,
+                requestQuestion,
                 normalizeHistoryQuestion(historyQuestion, askText),
                 history,
+                attachmentPlan.getRequestAttachments(),
                 runtimeConfig.getThinkingConfig(),
                 false,
                 systemPrompt
         );
-        RequestObj requestObj = adapter.buildRequest(runtimeConfig, request);
+        AiProviderAdapter.PreparedRequest preparedRequest;
+        try {
+            preparedRequest = adapter.prepareRequest(runtimeConfig, request);
+        } catch (Exception e) {
+            return normalizeError(e, runtimeConfig);
+        }
+        RequestObj requestObj = preparedRequest.getRequestObj();
 
         try (CustomHttpResponse response = requests(requestObj)) {
             String body = response.getTextStr();
@@ -160,6 +264,8 @@ public class AiChatService {
             return parsed == null ? "" : parsed;
         } catch (Exception e) {
             return normalizeError(e, runtimeConfig);
+        } finally {
+            preparedRequest.cleanup();
         }
     }
 
@@ -179,6 +285,18 @@ public class AiChatService {
 
     public void clearHistory() {
         history.clear();
+    }
+
+    private String mergeQuestionWithAttachmentContext(String question, String questionSuffix) {
+        String baseQuestion = question == null ? "" : question.trim();
+        String suffix = questionSuffix == null ? "" : questionSuffix.trim();
+        if (suffix.isEmpty()) {
+            return baseQuestion;
+        }
+        if (baseQuestion.isEmpty()) {
+            return suffix;
+        }
+        return baseQuestion + "\n\n" + suffix;
     }
 
     private void appendHistory(String role, String content) {
@@ -263,5 +381,71 @@ public class AiChatService {
             return candidate;
         }
         return fallbackQuestion == null ? "" : fallbackQuestion.trim();
+    }
+
+    private StreamController beginStreamSession() {
+        synchronized (streamSessionLock) {
+            if (activeStreamSession != null) {
+                activeStreamSession.cancel();
+            }
+            activeStreamSession = new StreamController();
+            return activeStreamSession;
+        }
+    }
+
+    private void clearActiveStream(StreamController streamSession) {
+        synchronized (streamSessionLock) {
+            if (activeStreamSession == streamSession) {
+                activeStreamSession = null;
+            }
+        }
+    }
+
+    private static final class StreamController implements StreamSession {
+        private boolean cancelled;
+        private CustomHttpResponse response;
+
+        @Override
+        public synchronized void cancel() {
+            if (cancelled) {
+                return;
+            }
+            cancelled = true;
+            if (response != null) {
+                response.disconnect();
+                response = null;
+            }
+        }
+
+        @Override
+        public synchronized boolean isCancelled() {
+            return cancelled;
+        }
+
+        private synchronized void bindResponse(CustomHttpResponse response) {
+            if (cancelled) {
+                if (response != null) {
+                    response.disconnect();
+                }
+                return;
+            }
+            this.response = response;
+        }
+
+        private synchronized void clearResponse() {
+            response = null;
+        }
+
+        private static void bind(StreamSession streamSession, CustomHttpResponse response) {
+            if (streamSession instanceof StreamController) {
+                ((StreamController) streamSession).bindResponse(response);
+            }
+        }
+
+        private static void clear(StreamSession streamSession) {
+            if (streamSession instanceof StreamController) {
+                ((StreamController) streamSession).clearResponse();
+            }
+        }
     }
 }

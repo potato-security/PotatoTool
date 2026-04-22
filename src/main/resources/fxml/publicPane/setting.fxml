@@ -180,7 +180,7 @@
                                             </HBox>
 
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label  minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="Provider：" userData="i18n:setting.ai.provider"/>
+                                                <Label  minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="接口协议：" userData="i18n:setting.ai.provider"/>
                                                 <ComboBox fx:id="aiProvider" prefWidth="250">
                                                     <items>
                                                         <FXCollections fx:factory="observableArrayList">

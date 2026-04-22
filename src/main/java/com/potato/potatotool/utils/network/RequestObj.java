@@ -44,6 +44,30 @@ import java.util.Map;
  * dispatcher        调度器-用于控制线程池
  */
 public class RequestObj {
+    public static final class FormFilePart {
+        private final File file;
+        private final String fileName;
+        private final String contentType;
+
+        public FormFilePart(File file, String fileName, String contentType) {
+            this.file = file;
+            this.fileName = fileName == null ? "" : fileName;
+            this.contentType = contentType == null ? "" : contentType;
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public String getContentType() {
+            return contentType;
+        }
+    }
+
     private String method = "GET";
     private String url;
     private Map<String, String> headers;

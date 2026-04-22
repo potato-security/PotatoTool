@@ -10,6 +10,8 @@ import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.crypto.AESUtils;
 import com.potato.potatotool.utils.network.ProxyUtils;
 
+import java.net.URI;
+
 public class AiConfigReader {
 
     public AiRuntimeConfig read() {
@@ -57,6 +59,7 @@ public class AiConfigReader {
         validateRequired("AI.base_url", baseUrl);
         validateRequired("AI.api_key", apiKey);
         validateRequired("AI.model_name", modelName);
+        validateHttpUrl("AI.base_url", baseUrl);
 
         int timeoutMs = readInt(aiConfig, ConfigConstants.AI_TIMEOUT_MS, 60000);
         if (timeoutMs <= 0) {
@@ -168,6 +171,27 @@ public class AiConfigReader {
     private void validateRequired(String field, String value) {
         if (isBlank(value)) {
             throw new IllegalArgumentException(field + " 不能为空");
+        }
+    }
+
+    private void validateHttpUrl(String field, String value) {
+        if (isBlank(value)) {
+            return;
+        }
+        try {
+            URI uri = URI.create(value.trim());
+            String scheme = uri.getScheme();
+            String host = uri.getHost();
+            if (scheme == null || host == null) {
+                throw new IllegalArgumentException(field + " 必须是完整的 HTTP/HTTPS 地址");
+            }
+            if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+                throw new IllegalArgumentException(field + " 必须是完整的 HTTP/HTTPS 地址");
+            }
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IllegalArgumentException(field + " 必须是完整的 HTTP/HTTPS 地址");
         }
     }
 

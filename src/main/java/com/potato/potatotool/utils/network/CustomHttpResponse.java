@@ -16,6 +16,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +35,7 @@ public class CustomHttpResponse implements AutoCloseable {
     private long responseTime;
     private byte[] dataBuffer; // 添加数据缓冲区
     private int maxResponseSize; // 最大响应大小限制
+    private volatile boolean disconnectedByClient;
 
     public CustomHttpResponse(Response response) {
         this.response = response;
@@ -176,6 +178,7 @@ public class CustomHttpResponse implements AutoCloseable {
     }
 
     public void disconnect() {
+        disconnectedByClient = true;
         if (response != null) {
             clearBuffer();
             response.close();
@@ -188,15 +191,39 @@ public class CustomHttpResponse implements AutoCloseable {
     }
     
     private void handleException(Exception e, ResponseCallback callback) {
+        if (shouldSuppressStreamingException(e)) {
+            return;
+        }
         String message = e.getMessage();
-        if (message.contains("Premature EOF")) {
+        if (message != null && message.contains("Premature EOF")) {
             callback.onResponse("[[Premature EOF]]");
-        } else if (message.contains("Server returned HTTP response code: 502")) {
+        } else if (message != null && message.contains("Server returned HTTP response code: 502")) {
             callback.onResponse("[[Response code 502]]");
-        } else if (message.contains("Read timed out")) {
+        } else if (message != null && message.contains("Read timed out")) {
             callback.onResponse("[[Read timed out]]");
         }
         e.printStackTrace();
+    }
+
+    boolean shouldSuppressStreamingException(Exception e) {
+        if (!disconnectedByClient || e == null) {
+            return false;
+        }
+        Throwable current = e;
+        while (current != null) {
+            String message = current.getMessage();
+            if (message != null) {
+                String normalized = message.toLowerCase(Locale.ROOT);
+                if (normalized.contains("stream closed")
+                        || normalized.contains("socket closed")
+                        || normalized.contains("canceled")
+                        || normalized.contains("cancelled")) {
+                    return true;
+                }
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     public JsonElement getJson() {

@@ -1,5 +1,7 @@
 package com.potato.potatotool.utils.ai;
 
+import com.potato.potatotool.utils.ai.model.AiAttachment;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,19 +14,19 @@ public final class AiPromptUtils {
     }
 
     public static String generalAssistantSystemPrompt() {
-        return "你是 PotatoTool 内置的中文安全分析助手。\n"
+        return "你是 PotatoTool 内置的安全分析助手。\n"
                 + "请遵守以下规则：\n"
                 + "1. 直接回答用户目标，先给结论，再补充依据。\n"
                 + "2. 若用户提供了代码、日志、配置、流量或样本片段，优先围绕这些内容分析，不要泛泛而谈。\n"
                 + "3. 涉及安全判断时，明确区分“已确认 / 高度疑似 / 需要更多信息”，不要编造未观察到的事实。\n"
-                + "4. 如内容存在截断、脱敏或二进制摘录，需明确说明分析边界。\n"
+                + "4. 如附件不可读取、格式不受支持或上下文不足，需明确说明分析边界。\n"
                 + "5. 默认使用中文，结构清晰，适度使用小标题或列表。";
     }
 
-    public static String buildConversationPrompt(String userQuestion, List<AttachmentContext> attachments) {
+    public static String buildConversationPrompt(String userQuestion, List<AiAttachment> attachments) {
         String normalizedQuestion = trimToEmpty(userQuestion);
-        List<AttachmentContext> safeAttachments = attachments == null
-                ? Collections.<AttachmentContext>emptyList()
+        List<AiAttachment> safeAttachments = attachments == null
+                ? Collections.<AiAttachment>emptyList()
                 : attachments;
         if (safeAttachments.isEmpty()) {
             return normalizedQuestion;
@@ -34,12 +36,12 @@ public final class AiPromptUtils {
         builder.append("【用户目标】\n")
                 .append(normalizedQuestion.isEmpty() ? DEFAULT_ATTACHMENT_ANALYSIS_REQUEST : normalizedQuestion)
                 .append("\n\n")
-                .append("【本地附件上下文】\n")
-                .append("以下内容由桌面工具从用户本地文件读取后注入，仅作为分析上下文。")
-                .append("若内容被截断、为二进制摘录或缺少上下文，请在结论中明确说明边界。\n\n");
+                .append("【附件说明】\n")
+                .append("本次请求可能同时包含可直接传输的原始文件，以及因当前接口不支持直传而以内联纯文本方式补充的文件内容。")
+                .append("如果附件暂不可读取、当前模型不支持该格式，或证据不足，请明确说明原因与边界。\n\n");
 
         for (int i = 0; i < safeAttachments.size(); i++) {
-            AttachmentContext attachment = safeAttachments.get(i);
+            AiAttachment attachment = safeAttachments.get(i);
             if (attachment == null) {
                 continue;
             }
@@ -49,34 +51,26 @@ public final class AiPromptUtils {
                     .append("文件名: ")
                     .append(trimToEmpty(attachment.getFileName()))
                     .append("\n")
-                    .append("路径: ")
-                    .append(trimToEmpty(attachment.getAbsolutePath()))
-                    .append("\n")
                     .append("大小: ")
                     .append(attachment.getFileSize())
                     .append(" bytes\n")
-                    .append("内容类型: ")
-                    .append(attachment.isBinarySnippet() ? "二进制摘录" : "文本内容");
-            if (attachment.isTruncated()) {
-                builder.append("（已截断）");
-            }
-            builder.append("\n内容如下:\n<attachment-content>\n")
-                    .append(trimToEmpty(attachment.getContent()))
-                    .append("\n</attachment-content>\n\n");
+                    .append("MIME: ")
+                    .append(trimToEmpty(attachment.getMimeType()))
+                    .append("\n\n");
         }
 
         builder.append("请优先围绕上述附件完成分析；如果用户问题与附件不完全一致，请同时覆盖两者。");
         return builder.toString().trim();
     }
 
-    public static String buildConversationHistoryLabel(String userQuestion, List<AttachmentContext> attachments) {
+    public static String buildConversationHistoryLabel(String userQuestion, List<AiAttachment> attachments) {
         String normalizedQuestion = trimToEmpty(userQuestion);
         if (attachments == null || attachments.isEmpty()) {
             return normalizedQuestion;
         }
 
         List<String> fileNames = new ArrayList<String>();
-        for (AttachmentContext attachment : attachments) {
+        for (AiAttachment attachment : attachments) {
             if (attachment == null) {
                 continue;
             }
@@ -155,52 +149,5 @@ public final class AiPromptUtils {
 
     private static String trimToEmpty(String value) {
         return value == null ? "" : value.trim();
-    }
-
-    public static final class AttachmentContext {
-        private final String fileName;
-        private final String absolutePath;
-        private final long fileSize;
-        private final String content;
-        private final boolean binarySnippet;
-        private final boolean truncated;
-
-        public AttachmentContext(String fileName,
-                                 String absolutePath,
-                                 long fileSize,
-                                 String content,
-                                 boolean binarySnippet,
-                                 boolean truncated) {
-            this.fileName = fileName == null ? "" : fileName;
-            this.absolutePath = absolutePath == null ? "" : absolutePath;
-            this.fileSize = Math.max(0L, fileSize);
-            this.content = content == null ? "" : content;
-            this.binarySnippet = binarySnippet;
-            this.truncated = truncated;
-        }
-
-        public String getFileName() {
-            return fileName;
-        }
-
-        public String getAbsolutePath() {
-            return absolutePath;
-        }
-
-        public long getFileSize() {
-            return fileSize;
-        }
-
-        public String getContent() {
-            return content;
-        }
-
-        public boolean isBinarySnippet() {
-            return binarySnippet;
-        }
-
-        public boolean isTruncated() {
-            return truncated;
-        }
     }
 }

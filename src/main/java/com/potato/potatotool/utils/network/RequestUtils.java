@@ -765,6 +765,18 @@ public class RequestUtils {
             
             if (paramValue instanceof String) {
                 multipartBuilder.addFormDataPart(paramName, (String) paramValue);
+            } else if (paramValue instanceof RequestObj.FormFilePart) {
+                RequestObj.FormFilePart filePart = (RequestObj.FormFilePart) paramValue;
+                File fileData = filePart.getFile();
+                if (fileData == null) {
+                    continue;
+                }
+                String contentType = filePart.getContentType();
+                if (contentType == null || contentType.trim().isEmpty()) {
+                    contentType = guessContentType(filePart.getFileName());
+                }
+                RequestBody fileBody = RequestBody.create(fileData, MediaType.parse(contentType));
+                multipartBuilder.addFormDataPart(paramName, filePart.getFileName(), fileBody);
             } else if (paramValue instanceof File) {
                 File fileData = (File) paramValue;
                 String contentType = guessContentType(fileData.getName());
@@ -871,20 +883,72 @@ public class RequestUtils {
             return "image/png";
         } else if (lowerName.endsWith(".gif")) {
             return "image/gif";
+        } else if (lowerName.endsWith(".webp")) {
+            return "image/webp";
+        } else if (lowerName.endsWith(".bmp")) {
+            return "image/bmp";
+        } else if (lowerName.endsWith(".svg")) {
+            return "image/svg+xml";
         } else if (lowerName.endsWith(".txt")) {
             return "text/plain";
+        } else if (lowerName.endsWith(".log")) {
+            return "text/plain";
+        } else if (lowerName.endsWith(".md")) {
+            return "text/markdown";
+        } else if (lowerName.endsWith(".csv")) {
+            return "text/csv";
         } else if (lowerName.endsWith(".json")) {
             return "application/json";
         } else if (lowerName.endsWith(".xml")) {
             return "application/xml";
+        } else if (lowerName.endsWith(".yaml") || lowerName.endsWith(".yml")) {
+            return "application/x-yaml";
         } else if (lowerName.endsWith(".pdf")) {
             return "application/pdf";
+        } else if (lowerName.endsWith(".doc")) {
+            return "application/msword";
+        } else if (lowerName.endsWith(".docx")) {
+            return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        } else if (lowerName.endsWith(".xls")) {
+            return "application/vnd.ms-excel";
+        } else if (lowerName.endsWith(".xlsx")) {
+            return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        } else if (lowerName.endsWith(".ppt")) {
+            return "application/vnd.ms-powerpoint";
+        } else if (lowerName.endsWith(".pptx")) {
+            return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
         } else if (lowerName.endsWith(".html") || lowerName.endsWith(".htm")) {
             return "text/html";
         } else if (lowerName.endsWith(".css")) {
             return "text/css";
         } else if (lowerName.endsWith(".js")) {
             return "application/javascript";
+        } else if (lowerName.endsWith(".java")) {
+            return "text/x-java-source";
+        } else if (lowerName.endsWith(".ts")) {
+            return "text/plain";
+        } else if (lowerName.endsWith(".py")) {
+            return "text/x-python";
+        } else if (lowerName.endsWith(".go")) {
+            return "text/x-go";
+        } else if (lowerName.endsWith(".php")) {
+            return "application/x-httpd-php";
+        } else if (lowerName.endsWith(".rb")) {
+            return "application/x-ruby";
+        } else if (lowerName.endsWith(".c") || lowerName.endsWith(".h")) {
+            return "text/x-c";
+        } else if (lowerName.endsWith(".cpp") || lowerName.endsWith(".hpp")) {
+            return "text/x-c++";
+        } else if (lowerName.endsWith(".sh")) {
+            return "application/x-sh";
+        } else if (lowerName.endsWith(".bat") || lowerName.endsWith(".ps1")) {
+            return "text/plain";
+        } else if (lowerName.endsWith(".sql")) {
+            return "application/sql";
+        } else if (lowerName.endsWith(".properties") || lowerName.endsWith(".ini") || lowerName.endsWith(".conf")) {
+            return "text/plain";
+        } else if (lowerName.endsWith(".zip")) {
+            return "application/zip";
         } else {
             return "application/octet-stream";
         }

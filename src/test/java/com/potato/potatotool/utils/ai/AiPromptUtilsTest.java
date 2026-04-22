@@ -1,5 +1,6 @@
 package com.potato.potatotool.utils.ai;
 
+import com.potato.potatotool.utils.ai.model.AiAttachment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -13,21 +14,19 @@ class AiPromptUtilsTest {
     @Test
     @DisplayName("附件会被编排进对话提示词")
     void buildConversationPromptIncludeAttachmentContext() {
-        AiPromptUtils.AttachmentContext attachment = new AiPromptUtils.AttachmentContext(
+        AiAttachment attachment = new AiAttachment(
                 "sample.log",
                 "/tmp/sample.log",
                 321L,
-                "POST /shell.jsp",
-                false,
-                true
+                "text/plain"
         );
 
         String prompt = AiPromptUtils.buildConversationPrompt("帮我判断是否存在风险", Collections.singletonList(attachment));
 
         assertTrue(prompt.contains("用户目标"));
         assertTrue(prompt.contains("sample.log"));
-        assertTrue(prompt.contains("已截断"));
-        assertTrue(prompt.contains("POST /shell.jsp"));
+        assertTrue(prompt.contains("已随本次请求附上原始文件"));
+        assertTrue(prompt.contains("text/plain"));
     }
 
     @Test
