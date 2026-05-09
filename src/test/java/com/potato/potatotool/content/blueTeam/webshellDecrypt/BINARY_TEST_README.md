@@ -45,7 +45,7 @@
 
 ```bash
 # 方式1：直接运行主类
-cd /Users/a/Desktop/项目开发/PotatoTool
+cd /Users/potato/Desktop/projectDevelopment/PotatoTool
 java -cp target/classes:target/test-classes \
   com.potato.potatotool.content.blueTeam.webshellDecrypt.BinaryDeserializationTest
 

@@ -117,6 +117,14 @@
             </Button>
             <Pane fx:id="aiPane" visible="false" maxWidth="0">
                <SmoothTextArea fx:id="aiTextArea" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height * 0.43 + 12}" maxHeight="${sPane.height * 0.43 + 12}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:webshell.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
+               <Button fx:id="downloadAI" layoutX="-88" layoutY="6" mnemonicParsing="false" onAction="#downloadAIReport" disable="true">
+                  <cursor>
+                     <Cursor fx:constant="HAND" />
+                  </cursor>
+                  <tooltip>
+                     <Tooltip text="下载分析报告" userData="i18n:webshell.ai.download"/>
+                  </tooltip>
+               </Button>
                <Button fx:id="refreshAI" layoutX="-60" layoutY="6"  mnemonicParsing="false" onAction="#refreshAI">
                   <graphic>
                      <ImageView fitHeight="17.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
@@ -153,6 +161,6 @@
    </VBox>
 
    <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
-      <Label fx:id="prompt" text="复制成功" userData="i18n:webshell.copied" maxWidth="600"/>
+      <Label fx:id="prompt" text="复制成功" wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="600"/>
    </StackPane>
 </StackPane>
