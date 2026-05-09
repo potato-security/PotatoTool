@@ -124,3 +124,227 @@
     -fx-border-color: -main-linenoText-color;
     -fx-padding: 0;
 }
+
+.tableListView .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+}
+
+.sampleGallery {
+    -fx-padding: 4 0 18 0;
+}
+
+.sampleIntro {
+    -fx-padding: 4 4 8 4;
+}
+
+.sampleTitle {
+    -fx-text-fill: -main-font-color;
+    -fx-font-size: 20;
+    -fx-font-weight: bold;
+}
+
+.sampleSubtitle {
+    -fx-text-fill: -main-linenoText-color;
+    -fx-font-size: 13;
+    -fx-line-spacing: 3;
+}
+
+.sampleCard {
+    -fx-padding: 14 16 14 16;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-border-color: -main-linenoText-color;
+}
+
+.sampleCard:hover {
+    -fx-background-color: -main-menuBg-color;
+    -fx-border-color: -main-border-color;
+}
+
+.sampleCardTitle {
+    -fx-text-fill: -main-font-color;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+}
+
+.sampleBadge {
+    -fx-text-fill: -main-border-color;
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+    -fx-padding: 3 8 3 8;
+    -fx-background-color: derive(-main-menuBg-color, 8%);
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-border-color: -main-linenoText-color;
+}
+
+.sampleDescription {
+    -fx-text-fill: -main-font-color;
+    -fx-font-size: 13;
+    -fx-line-spacing: 3;
+}
+
+.sampleCapability {
+    -fx-text-fill: -main-border-color;
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+}
+
+.sampleMeta {
+    -fx-text-fill: -main-linenoText-color;
+    -fx-font-size: 12;
+}
+
+.sampleTarget {
+    -fx-text-fill: -main-font-color;
+    -fx-font-family: Consolas, "Courier New", monospace;
+    -fx-font-size: 12;
+}
+
+.sampleRunHint {
+    -fx-text-fill: -main-linenoText-color;
+    -fx-font-size: 12;
+}
+
+.analysisSection {
+    -fx-background-color: -main-cell-color;
+    -fx-background-radius: 8;
+    -fx-padding: 12 14 14 14;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+}
+
+.analysisSection .label {
+    -fx-text-fill: -main-font-color;
+}
+
+.analysisLabel {
+    -fx-padding: 3 0 3 0;
+    -fx-line-spacing: 3;
+}
+
+.analysisHeadline {
+    -fx-font-size: 16;
+    -fx-font-weight: bold;
+    -fx-text-fill: -main-border-color;
+}
+
+.analysisRow {
+    -fx-padding: 4 0 4 0;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: linear-gradient(to right,transparent 0%, -main-linenoText-color 20%, -main-linenoText-color 80%, transparent 100%);
+}
+
+.analysisKey {
+    -fx-text-fill: -main-border-color;
+    -fx-font-weight: bold;
+}
+
+.analysisValue {
+    -fx-text-fill: -main-font-color;
+}
+
+.analysisWarningBox {
+    -fx-padding: 8 10 8 10;
+    -fx-background-color: derive(-main-menuBg-color, 6%);
+    -fx-background-radius: 6;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-border-color: -main-linenoText-color;
+}
+
+.analysisWarningBox .label {
+    -fx-wrap-text: true;
+}
+
+.analysisDrawer > .title {
+    -fx-background-color: -main-menuBg-color;
+}
+
+.analysisDrawer > .content {
+    -fx-background-color: -main-cell-color;
+    -fx-padding: 10;
+}
+
+.analysisRawText {
+    -fx-font-family: Consolas, "Courier New", monospace;
+    -fx-font-size: 12;
+}
+
+#exportReportButton{
+    -fx-alignment: center;
+    -fx-min-width: 38;
+    -fx-min-height: 38;
+    -fx-max-width: 38;
+    -fx-max-height: 38;
+    -fx-background-color: -main-borderHover-color;
+    -fx-background-radius: 38;
+    -fx-border-width: 1;
+    -fx-border-radius: 38;
+    -fx-border-color: -main-border-color;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.26), 10, 0.22, 0, 2);
+    -fx-cursor: hand;
+}
+
+#exportReportButton:hover{
+    -fx-background-color: derive(-main-borderHover-color, 12%);
+    -fx-background-radius: 38;
+}
+
+#exportReportButton:pressed{
+    -fx-background-color: -main-smallbtnBg-color;
+    -fx-background-radius: 38;
+}
+
+#exportReportButton:disabled{
+    -fx-opacity: 0.28;
+    -fx-effect: none;
+}
+
+#promptPane{
+    -fx-background-color: rgba(17, 22, 28, 0.94), rgba(255, 255, 255, 0.035);
+    -fx-background-radius: 14, 13;
+    -fx-background-insets: 0, 1;
+    -fx-border-color: rgba(255, 255, 255, 0.16);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.58), 24, 0, 0, 6);
+}
+
+#promptPane .label{
+    -fx-text-fill: #f8fafc;
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+    -fx-padding: 14 28 14 28;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 2, 0, 0, 1);
+}
+
+#promptPane.prompt-info {
+    -fx-background-color: rgba(17, 22, 28, 0.94), rgba(62, 206, 227, 0.08);
+    -fx-border-color: rgba(62, 206, 227, 0.46);
+}
+
+#promptPane.prompt-success {
+    -fx-background-color: rgba(15, 35, 24, 0.94), rgba(51, 198, 81, 0.12);
+    -fx-border-color: rgba(83, 224, 115, 0.58);
+}
+
+#promptPane.prompt-success .label {
+    -fx-text-fill: #e8fff0;
+}
+
+#promptPane.prompt-error {
+    -fx-background-color: rgba(44, 16, 18, 0.95), rgba(255, 76, 63, 0.16);
+    -fx-border-color: rgba(255, 118, 108, 0.72);
+}
+
+#promptPane.prompt-error .label {
+    -fx-text-fill: #ffe6e2;
+}

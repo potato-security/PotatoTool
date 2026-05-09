@@ -1,7 +1,11 @@
 package com.potato.potatotool.content.blueTeam;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.RequestObj;
 import com.potato.potatotool.utils.data.StrUtils;
 
@@ -24,7 +28,46 @@ public class BlockchainTraceability {
     }
 
     private static RequestObj createRequestObj() {
-        return new RequestObj().setMethod("GET").setHeaders(headers);
+        RequestObj obj = new RequestObj()
+                .setMethod("GET")
+                .setHeaders(headers)
+                .setRandomUserAgent(false)
+                .setTimeOut(5)
+                .setReadTimeout(45)
+                .setCallTimeout(55)
+                .setRetries(0);
+        ProxyUtils.applyServiceProxy(obj, ConfigConstants.BLOCKCHAIN_SERVICE);
+        return obj;
+    }
+
+    private static JsonObject requestJson(RequestObj obj) throws Exception {
+        try (CustomHttpResponse con = requests(obj)){
+            JsonElement json = con.getJson();
+            if (json == null || !json.isJsonObject()) {
+                JsonObject fallback = new JsonObject();
+                fallback.addProperty("code", 0);
+                if (con.getResponseCode() == 404) {
+                    fallback.addProperty("msg", "区块链服务接口未部署或路径不存在");
+                } else if (con.getResponseCode() == 401 || con.getResponseCode() == 403) {
+                    fallback.addProperty("msg", "区块链服务认证失败，请检查服务端 AuthToken 配置");
+                } else {
+                    fallback.addProperty("msg", "区块链服务响应异常，HTTP " + con.getResponseCode());
+                }
+                fallback.add("data", JsonNull.INSTANCE);
+                return fallback;
+            }
+            JsonObject res = json.getAsJsonObject();
+            if (!res.has("code")) {
+                res.addProperty("code", con.getResponseCode() == 200 ? 1 : 0);
+            }
+            if (!res.has("msg")) {
+                res.addProperty("msg", con.getResponseCode() == 200 ? "成功" : "区块链服务响应异常，HTTP " + con.getResponseCode());
+            }
+            if (!res.has("data")) {
+                res.add("data", JsonNull.INSTANCE);
+            }
+            return res;
+        }
     }
 
 
@@ -32,10 +75,8 @@ public class BlockchainTraceability {
     public static JsonObject search(String arg){
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/search?arg=" + StrUtils.urlEncode(arg));
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -47,10 +88,8 @@ public class BlockchainTraceability {
     public static JsonObject address(String network, String address){
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/address?address=" + address + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -62,10 +101,8 @@ public class BlockchainTraceability {
     public static JsonObject tokenbalance(String network, String address){
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/tokenbalance?address=" + address + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -77,10 +114,8 @@ public class BlockchainTraceability {
     public static JsonObject tokentrans(String network, String address, String to, String sumNum){ // 预知总数
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/tokentrans?address=" + address + "&to=" + to + "&sumNum=" + sumNum + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -89,10 +124,8 @@ public class BlockchainTraceability {
     public static JsonObject tokentrans(String network, String address, String to, String index, String size){ // 指定页数及条数
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/tokentrans?address=" + address + "&to=" + to + "&index=" + index + "&size=" + size + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -104,10 +137,8 @@ public class BlockchainTraceability {
     public static JsonObject balancetrend(String network, String address){
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/balancetrend?address=" + address + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -119,10 +150,8 @@ public class BlockchainTraceability {
     public static JsonObject addressTransaction(String network, String address, String sumNum){ // 预知总数
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/addressTransaction?address=" + address + "&sumNum=" + sumNum + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -131,10 +160,8 @@ public class BlockchainTraceability {
     public static JsonObject addressTransaction(String network, String address, String index, String size){ // 指定页数及条数
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/addressTransaction?address=" + address + "&index=" + index + "&size=" + size + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -146,10 +173,8 @@ public class BlockchainTraceability {
     public static JsonObject tokenClassification(String network, String address, String type){
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/tokenClassification?address=" + address + "&network=" + network + "&type=" + type );
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -161,10 +186,8 @@ public class BlockchainTraceability {
     public static JsonObject block(String network, String block){
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/block?block=" + block + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -176,10 +199,8 @@ public class BlockchainTraceability {
     public static JsonObject getInternalData(String network, String block, String sumNum){ // 预知总数
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/getInternalData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -188,10 +209,8 @@ public class BlockchainTraceability {
     public static JsonObject getInternalData(String network, String block, String index, String size){ // 指定页数及条数
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/getInternalData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -203,10 +222,8 @@ public class BlockchainTraceability {
     public static JsonObject getTokentransferData(String network, String block, String sumNum){ // 预知总数
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/getTokentransferData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -215,10 +232,8 @@ public class BlockchainTraceability {
     public static JsonObject getTokentransferData(String network, String block, String index, String size){ // 指定页数及条数
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/getTokentransferData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -230,10 +245,8 @@ public class BlockchainTraceability {
     public static JsonObject getTxData(String network, String block, String sumNum){ // 预知总数
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/getTxData?block=" + block + "&sumNum=" + sumNum + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }
@@ -242,10 +255,148 @@ public class BlockchainTraceability {
     public static JsonObject getTxData(String network, String block, String index, String size){ // 指定页数及条数
         RequestObj obj = createRequestObj().setUrl(blockUrl + "/getTxData?block=" + block + "&index=" + index + "&size=" + size + "&network=" + network);
 
-        try (CustomHttpResponse con = requests(obj)){
-            JsonObject res = con.getJson().getAsJsonObject();
-            if((con.getResponseCode()==200 && res.has("code") && res.get("code").getAsString().equals("0") || (con.getResponseCode()==200 && !res.has("code") ))) throw new Exception();
-            return res;
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    // 免费行情聚合
+    public static JsonObject marketAggregate(String base, String quote){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/market/aggregate?base=" + StrUtils.urlEncode(base) + "&quote=" + StrUtils.urlEncode(quote));
+
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    // 币种详情
+    public static JsonObject coinProfile(String symbol, String quote){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/coin/profile?symbol=" + StrUtils.urlEncode(symbol) + "&quote=" + StrUtils.urlEncode(quote));
+
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    // 行情健康检查
+    public static JsonObject marketHealth(){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/health/market");
+
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    //  交易分析报告
+    public static JsonObject reportTransaction(String network, String txid){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/report/transaction?network="
+                + StrUtils.urlEncode(network) + "&txid=" + StrUtils.urlEncode(txid));
+
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    //  交易详情
+    public static JsonObject txDetail(String network, String txid){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/tx/detail?network="
+                + StrUtils.urlEncode(network) + "&txid=" + StrUtils.urlEncode(txid));
+
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    //  交易事件
+    public static JsonObject txEvents(String network, String txid){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/tx/events?network="
+                + StrUtils.urlEncode(network) + "&txid=" + StrUtils.urlEncode(txid));
+
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    //  地址分析报告
+    public static JsonObject reportAddress(String network, String address){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/report/address?network="
+                + StrUtils.urlEncode(network) + "&address=" + StrUtils.urlEncode(address));
+
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    //  合约信息
+    public static JsonObject contractInfo(String network, String address){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/contract/info?network="
+                + StrUtils.urlEncode(network) + "&address=" + StrUtils.urlEncode(address));
+
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    //  Token 信息
+    public static JsonObject tokenInfo(String network, String address){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/token/info?network="
+                + StrUtils.urlEncode(network) + "&address=" + StrUtils.urlEncode(address));
+
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    //  地址资产
+    public static JsonObject addressPortfolio(String network, String address){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/address/portfolio?network="
+                + StrUtils.urlEncode(network) + "&address=" + StrUtils.urlEncode(address));
+
+        try {
+            return requestJson(obj);
+        } catch (Exception e) {
+            if(debugMode)e.printStackTrace();
+        }
+        return null;
+    }
+
+    //  地址追踪
+    public static JsonObject traceAddress(String network, String address){
+        RequestObj obj = createRequestObj().setUrl(blockUrl + "/trace/address?network="
+                + StrUtils.urlEncode(network) + "&address=" + StrUtils.urlEncode(address));
+
+        try {
+            return requestJson(obj);
         } catch (Exception e) {
             if(debugMode)e.printStackTrace();
         }

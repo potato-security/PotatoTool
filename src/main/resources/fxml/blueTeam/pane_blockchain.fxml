@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Label?>
@@ -17,7 +18,7 @@
            fx:id="sPane"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <SmoothScrollPane maxHeight="${sPane.height - 10}"  translateX="-210" hbarPolicy="NEVER" StackPane.alignment="TOP_LEFT">
+    <SmoothScrollPane maxHeight="${sPane.height - 10}" maxWidth="210" translateX="-210" hbarPolicy="NEVER" StackPane.alignment="TOP_LEFT">
         <VBox fx:id="vBoxBar">
             <Accordion fx:id="accordionPane"/>
         </VBox>
@@ -68,8 +69,22 @@
                         <Tooltip text="返回" userData="i18n:blockchain.back"/>
                     </tooltip>
                 </Label>
+                <Button fx:id="exportReportButton" layoutX="${-49}" layoutY="5"
+                        mnemonicParsing="false" disable="true" onAction="#exportCurrentReport">
+                    <cursor>
+                        <Cursor fx:constant="HAND" />
+                    </cursor>
+                    <tooltip>
+                        <Tooltip text="导出分析报告" userData="i18n:blockchain.export.button"/>
+                    </tooltip>
+                </Button>
             </Pane>
         </StackPane>
     </VBox>
+
+    <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity"
+               alignment="CENTER" StackPane.alignment="CENTER">
+        <Label fx:id="prompt" wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="620"/>
+    </StackPane>
 
 </StackPane>
