@@ -233,6 +233,13 @@
                <RXCarousel fx:id="mainCarousel" arrowDisplayMode="HIDE" autoSwitch="false" hoverPause="false" navDisplayMode="HIDE" prefHeight="${(root.height - 18) - topBar.height - 120}" prefWidth="${root.width - 18}" styleClass="main-pane" BorderPane.alignment="CENTER"/>
             </center>
          </BorderPane>
+         <StackPane fx:id="promptPane" visible="false" managed="false"
+                    maxHeight="-Infinity" maxWidth="-Infinity"
+                    alignment="CENTER" StackPane.alignment="CENTER"
+                    onMouseClicked="#closePromptPane">
+            <Label fx:id="promptLabel" wrapText="true" textAlignment="CENTER"
+                   alignment="CENTER" maxWidth="720"/>
+         </StackPane>
       </StackPane>
    </children>
 </AnchorPane>

@@ -11,6 +11,7 @@ import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.ui.DialogUtils;
+import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -86,6 +87,10 @@ public class MainController {
     private Button fullScreen;
     @FXML
     private ImageView fullScreenImgView;
+    @FXML
+    private StackPane promptPane;
+    @FXML
+    private Label promptLabel;
 
     private double offsetX,offsetY;
 
@@ -93,6 +98,8 @@ public class MainController {
     private int selectedRedIndex = 10;
 
     private boolean isFullScreen = false;
+    private FadeTransition promptFadeIn;
+    private FadeTransition promptFadeOut;
 
     @FXML
     void initialize() throws IOException {
@@ -256,14 +263,59 @@ public class MainController {
             I18nUtils.bindComponents(root);
             String startupProxyWarning = MainApplication.consumeStartupProxyWarningMessage();
             if (startupProxyWarning != null && !startupProxyWarning.trim().isEmpty()) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("PotatoTool");
-                alert.setHeaderText(null);
-                alert.setContentText(startupProxyWarning);
-                alert.initOwner(root.getScene().getWindow());
-                alert.show();
+                showPrompt(startupProxyWarning, true);
             }
         });
+    }
+
+    private void showPrompt(String message, boolean keepVisible) {
+        if (promptPane == null || promptLabel == null) {
+            return;
+        }
+        promptLabel.setText(message);
+        promptPane.toFront();
+        promptPane.setOpacity(0);
+        promptPane.setVisible(true);
+        promptPane.setManaged(true);
+
+        if (promptFadeIn == null) {
+            promptFadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
+            promptFadeIn.setFromValue(0);
+            promptFadeIn.setToValue(1);
+        }
+        if (promptFadeOut == null) {
+            promptFadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
+            promptFadeOut.setFromValue(1);
+            promptFadeOut.setToValue(0);
+            promptFadeOut.setDelay(Duration.seconds(3));
+            promptFadeOut.setOnFinished(event -> {
+                promptPane.setVisible(false);
+                promptPane.setManaged(false);
+            });
+        }
+
+        promptFadeIn.stop();
+        promptFadeOut.stop();
+        promptFadeIn.setOnFinished(event -> {
+            if (!keepVisible) {
+                promptFadeOut.playFromStart();
+            }
+        });
+        promptFadeIn.playFromStart();
+    }
+
+    @FXML
+    public void closePromptPane(MouseEvent event) {
+        if (promptFadeIn != null) {
+            promptFadeIn.stop();
+        }
+        if (promptFadeOut != null) {
+            promptFadeOut.stop();
+        }
+        if (promptPane != null) {
+            promptPane.setVisible(false);
+            promptPane.setManaged(false);
+        }
     }
 
     private void applySelectedIndex(int index, RXCarouselPane extensionPane, RXCarouselPane extensionPane_1,

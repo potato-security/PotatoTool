@@ -1,5 +1,6 @@
 package com.potato.potatotool;
 
+import javafx.fxml.FXMLLoader;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 
@@ -86,6 +87,9 @@ public class ToStart {
         System.setProperty("prism.lcdtext", "false");// 关闭字体锯齿效果
         System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");// 关闭Polyglot告警
         System.setProperty("http.keepAlive", "false");   // 禁用 Keep-Alive
+        ClassLoader appClassLoader = ToStart.class.getClassLoader();
+        Thread.currentThread().setContextClassLoader(appClassLoader);
+        FXMLLoader.setDefaultClassLoader(appClassLoader);
         // 为 macOS dock 设置图标
         setMacDockIcon();
         // 关闭Optional.or告警
