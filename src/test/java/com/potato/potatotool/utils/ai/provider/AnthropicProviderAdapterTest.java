@@ -65,6 +65,29 @@ class AnthropicProviderAdapterTest {
     }
 
     @Test
+    @DisplayName("thinking 开启时按 Anthropic 协议注入")
+    void buildRequestWithThinking() {
+        AiRuntimeConfig config = new AiRuntimeConfig(
+                AiProviderType.ANTHROPIC,
+                "https://api.anthropic.com",
+                "key",
+                "claude-3-7-sonnet-latest",
+                60000,
+                false,
+                new AiThinkingConfig(true, 2048),
+                false
+        );
+        AiChatRequest request = new AiChatRequest("你好", null, new AiThinkingConfig(true, 2048), true);
+
+        RequestObj requestObj = adapter.buildRequest(config, request);
+        JsonObject json = JsonParser.parseString(new String(requestObj.getPostData(), StandardCharsets.UTF_8)).getAsJsonObject();
+
+        assertTrue(adapter.supportsThinking(config));
+        assertEquals("enabled", json.getAsJsonObject("thinking").get("type").getAsString());
+        assertEquals(2048, json.getAsJsonObject("thinking").get("budget_tokens").getAsInt());
+    }
+
+    @Test
     @DisplayName("解析流式 text delta 和结束事件")
     void parseSseLineTextDeltaAndDone() {
         List<AiStreamEvent> tokenEvents = adapter.parseSseLine("data: {\"type\":\"content_block_delta\",\"delta\":{\"type\":\"text_delta\",\"text\":\"你好\"}}");
@@ -75,6 +98,11 @@ class AnthropicProviderAdapterTest {
         List<AiStreamEvent> doneEvents = adapter.parseSseLine("data: {\"type\":\"message_stop\"}");
         assertEquals(1, doneEvents.size());
         assertEquals(AiStreamEvent.Type.DONE, doneEvents.get(0).getType());
+
+        List<AiStreamEvent> thinkingEvents = adapter.parseSseLine("data: {\"type\":\"content_block_delta\",\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"思考\"}}");
+        assertEquals(1, thinkingEvents.size());
+        assertEquals(AiStreamEvent.Type.THINKING_TOKEN, thinkingEvents.get(0).getType());
+        assertEquals("思考", thinkingEvents.get(0).getContent());
     }
 
     @Test

@@ -1,26 +1,18 @@
 package com.potato.potatotool.utils.ai;
 
 import com.potato.potatotool.utils.ai.model.AiAttachment;
+import com.potato.potatotool.utils.core.I18nTextUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public final class AiPromptUtils {
-    private static final String DEFAULT_ATTACHMENT_ANALYSIS_REQUEST =
-            "请结合我上传的文件进行分析，概述主要内容，指出安全风险、异常点或值得关注的线索，并给出后续建议。";
-
     private AiPromptUtils() {
     }
 
     public static String generalAssistantSystemPrompt() {
-        return "你是 PotatoTool 内置的安全分析助手。\n"
-                + "请遵守以下规则：\n"
-                + "1. 直接回答用户目标，先给结论，再补充依据。\n"
-                + "2. 若用户提供了代码、日志、配置、流量或样本片段，优先围绕这些内容分析，不要泛泛而谈。\n"
-                + "3. 涉及安全判断时，明确区分“已确认 / 高度疑似 / 需要更多信息”，不要编造未观察到的事实。\n"
-                + "4. 如附件不可读取、格式不受支持或上下文不足，需明确说明分析边界。\n"
-                + "5. 默认使用中文，结构清晰，适度使用小标题或列表。";
+        return I18nTextUtils.getString("ai.prompt.general.system");
     }
 
     public static String buildConversationPrompt(String userQuestion, List<AiAttachment> attachments) {
@@ -33,25 +25,30 @@ public final class AiPromptUtils {
         }
 
         StringBuilder builder = new StringBuilder();
-        builder.append("【用户目标】\n")
-                .append(normalizedQuestion.isEmpty() ? DEFAULT_ATTACHMENT_ANALYSIS_REQUEST : normalizedQuestion)
+        builder.append(I18nTextUtils.getString("ai.prompt.section.user.goal"))
+                .append("\n")
+                .append(normalizedQuestion.isEmpty() ? defaultAttachmentAnalysisRequest() : normalizedQuestion)
                 .append("\n\n")
-                .append("【附件说明】\n")
-                .append("本次请求可能同时包含可直接传输的原始文件，以及因当前接口不支持直传而以内联纯文本方式补充的文件内容。")
-                .append("如果附件暂不可读取、当前模型不支持该格式，或证据不足，请明确说明原因与边界。\n\n");
+                .append(I18nTextUtils.getString("ai.prompt.section.attachment.notes"))
+                .append("\n")
+                .append(I18nTextUtils.getString("ai.prompt.conversation.attachment.notes"))
+                .append("\n\n");
 
         for (int i = 0; i < safeAttachments.size(); i++) {
             AiAttachment attachment = safeAttachments.get(i);
             if (attachment == null) {
                 continue;
             }
-            builder.append("### 附件")
+            builder.append("### ")
+                    .append(I18nTextUtils.getString("ai.prompt.attachment.label"))
                     .append(i + 1)
                     .append("\n")
-                    .append("文件名: ")
+                    .append(I18nTextUtils.getString("ai.prompt.file.name"))
+                    .append(": ")
                     .append(trimToEmpty(attachment.getFileName()))
                     .append("\n")
-                    .append("大小: ")
+                    .append(I18nTextUtils.getString("ai.prompt.file.size"))
+                    .append(": ")
                     .append(attachment.getFileSize())
                     .append(" bytes\n")
                     .append("MIME: ")
@@ -59,7 +56,7 @@ public final class AiPromptUtils {
                     .append("\n\n");
         }
 
-        builder.append("请优先围绕上述附件完成分析；如果用户问题与附件不完全一致，请同时覆盖两者。");
+        builder.append(I18nTextUtils.getString("ai.prompt.conversation.final.instruction"));
         return builder.toString().trim();
     }
 
@@ -81,9 +78,11 @@ public final class AiPromptUtils {
         }
 
         StringBuilder builder = new StringBuilder();
-        builder.append(normalizedQuestion.isEmpty() ? DEFAULT_ATTACHMENT_ANALYSIS_REQUEST : normalizedQuestion);
+        builder.append(normalizedQuestion.isEmpty() ? defaultAttachmentAnalysisRequest() : normalizedQuestion);
         if (!fileNames.isEmpty()) {
-            builder.append("\n[附件: ");
+            builder.append("\n[")
+                    .append(I18nTextUtils.getString("ai.prompt.attachment.summary.label"))
+                    .append(": ");
             for (int i = 0; i < fileNames.size(); i++) {
                 if (i > 0) {
                     builder.append(", ");
@@ -96,58 +95,34 @@ public final class AiPromptUtils {
     }
 
     public static String attachmentAnalysisRequest() {
-        return DEFAULT_ATTACHMENT_ANALYSIS_REQUEST;
+        return defaultAttachmentAnalysisRequest();
     }
 
     public static String codeOptimizationSystemPrompt() {
-        return "你是资深代码审阅与逆向可读性优化助手，擅长整理反编译结果。\n"
-                + "请遵守以下规则：\n"
-                + "1. 以提升可读性和理解效率为目标，不要杜撰不存在的业务背景或方法体。\n"
-                + "2. 保留原始逻辑语义，无法确定含义的部分要明确标注不确定点。\n"
-                + "3. 优先解释核心流程、关键分支、外部依赖、异常处理与潜在风险。\n"
-                + "4. 默认使用中文，输出结果应可直接给安全研究人员阅读。";
+        return I18nTextUtils.getString("ai.prompt.code.optimize.system");
     }
 
     public static String buildCodeOptimizationPrompt(String code) {
-        return "请整理下面的反编译代码，并输出更易读的结果：\n"
-                + "1. 尽量把明显无语义的变量、字段和中间值解释清楚。\n"
-                + "2. 为关键逻辑补充简洁中文注释，重点说明入口、核心处理流程、重要条件判断和副作用。\n"
-                + "3. 如果局部语义无法确定，请保留原状并指出原因。\n\n"
-                + "【待整理代码】\n"
-                + "<decompiled-code>\n"
-                + trimToEmpty(code)
-                + "\n</decompiled-code>";
+        return I18nTextUtils.getString("ai.prompt.code.optimize.user", trimToEmpty(code));
     }
 
     public static String securityAnalysisSystemPrompt() {
-        return "你是资深蓝队安全分析与应急响应专家，擅长研判脚本、代码、流量和样本片段。\n"
-                + "请遵守以下规则：\n"
-                + "1. 先给结论，再给依据；不要输出空泛套话。\n"
-                + "2. 若证据不足，必须明确说明为什么暂时无法定性，以及还需要哪些上下文。\n"
-                + "3. 对恶意或高风险内容，要说明攻击目的、关键能力、触发条件、影响面和检测线索。\n"
-                + "4. 对正常或灰色内容，也要解释为何容易误报，并给出审计关注点。\n"
-                + "5. 默认使用中文，保持结论可直接用于研判或处置。";
+        return I18nTextUtils.getString("ai.prompt.security.system");
     }
 
     public static String buildSecurityAnalysisPrompt(String evilCode, String encodeModes) {
-        return "请对以下内容进行一次完整安全研判，并直接输出最终结果。\n\n"
-                + "【编码/混淆特征】\n"
-                + trimToEmpty(encodeModes)
-                + "\n\n【待分析内容】\n"
-                + "<analysis-content>\n"
-                + trimToEmpty(evilCode)
-                + "\n</analysis-content>\n\n"
-                + "请按以下结构输出：\n"
-                + "1. 性质初判：在“恶意 / 可疑 / 正常 / 无法判断”中给出结论，并给出置信度。\n"
-                + "2. 关键依据：列出支撑结论的核心迹象、行为或语义特征。\n"
-                + "3. 行为与技术解析：说明主要功能、执行链路、利用方式或依赖条件。\n"
-                + "4. 风险与影响面：说明可能造成的安全后果、受影响资产或攻击阶段；如判定为恶意，补充相关 ATT&CK 技术或攻击链位置。\n"
-                + "5. 检测与审计线索：给出可观察的 IoC / IoA、日志点、配置项、进程或网络线索。\n"
-                + "6. 处置建议：按“遏制 -> 排查 -> 根除 -> 恢复/加固”组织建议。\n"
-                + "7. 不确定点：说明当前结论的边界，以及建议补充的样本、日志或运行上下文。";
+        return I18nTextUtils.getString(
+                "ai.prompt.security.analysis.user",
+                trimToEmpty(encodeModes),
+                trimToEmpty(evilCode)
+        );
     }
 
     private static String trimToEmpty(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private static String defaultAttachmentAnalysisRequest() {
+        return I18nTextUtils.getString("ai.prompt.attachment.default.request");
     }
 }

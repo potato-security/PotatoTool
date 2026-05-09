@@ -7,6 +7,7 @@ import com.potato.potatotool.utils.ai.model.AiProviderType;
 import com.potato.potatotool.utils.ai.model.AiRuntimeConfig;
 import com.potato.potatotool.utils.ai.model.AiThinkingConfig;
 import com.potato.potatotool.utils.core.Constants;
+import com.potato.potatotool.utils.core.I18nTextUtils;
 import com.potato.potatotool.utils.crypto.AESUtils;
 import com.potato.potatotool.utils.network.ProxyUtils;
 
@@ -22,38 +23,29 @@ public class AiConfigReader {
 
     protected AiRuntimeConfig read(JsonObject aiConfig, boolean useProxy) {
         if (aiConfig == null) {
-            throw new IllegalStateException("AI 配置不存在");
+            throw new IllegalStateException(I18nTextUtils.getString("ai.attach.error.config.missing"));
         }
-        String provider = readString(aiConfig, ConfigConstants.AI_PROVIDER, "OPENAI_COMPATIBLE");
+        String provider = readString(aiConfig, ConfigConstants.AI_PROVIDER, "OPENAI");
 
         String plainBaseUrl = readString(aiConfig, ConfigConstants.AI_BASE_URL, "");
         String plainApiKey = readString(aiConfig, ConfigConstants.AI_API_KEY, "");
         String plainModelName = readString(aiConfig, ConfigConstants.AI_MODEL_NAME, "");
 
         boolean hasPlainAiConfig = !isBlank(plainBaseUrl) || !isBlank(plainApiKey) || !isBlank(plainModelName);
+        boolean useBuiltinGateway = readBoolean(aiConfig, ConfigConstants.AI_USE_BUILTIN_GATEWAY, !hasPlainAiConfig);
 
-        String baseUrl = plainBaseUrl;
-        String apiKey = plainApiKey;
-        String modelName = plainModelName;
-
-        if (isBlank(baseUrl)) {
+        String baseUrl;
+        String apiKey;
+        String modelName;
+        if (useBuiltinGateway) {
             baseUrl = decryptConfig(aiConfig, ConfigConstants.AI_LOCAL_BASE_URL);
-        }
-        if (isBlank(apiKey)) {
             apiKey = decryptConfig(aiConfig, ConfigConstants.AI_LOCAL_API_KEY);
-        }
-        if (isBlank(modelName)) {
             modelName = decryptConfig(aiConfig, ConfigConstants.AI_LOCAL_MODEL_NAME);
-        }
-
-        if (isBlank(baseUrl)) {
-            baseUrl = readString(aiConfig, "AI_API_Base", "");
-        }
-        if (isBlank(apiKey)) {
-            apiKey = readString(aiConfig, "AI_API_Key", "");
-        }
-        if (isBlank(modelName)) {
-            modelName = readString(aiConfig, "AI_Model", "");
+            provider = "OPENAI";
+        } else {
+            baseUrl = plainBaseUrl;
+            apiKey = plainApiKey;
+            modelName = plainModelName;
         }
 
         validateRequired("AI.base_url", baseUrl);
@@ -63,11 +55,10 @@ public class AiConfigReader {
 
         int timeoutMs = readInt(aiConfig, ConfigConstants.AI_TIMEOUT_MS, 60000);
         if (timeoutMs <= 0) {
-            throw new IllegalArgumentException("AI.timeout_ms 必须大于 0");
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.error.config.positive", "AI.timeout_ms"));
         }
 
         AiThinkingConfig thinkingConfig = readThinkingConfig(aiConfig);
-        boolean isBuiltinAi = !hasPlainAiConfig;
 
         return new AiRuntimeConfig(
                 AiProviderType.fromString(provider),
@@ -77,7 +68,7 @@ public class AiConfigReader {
                 timeoutMs,
                 useProxy,
                 thinkingConfig,
-                isBuiltinAi
+                useBuiltinGateway
         );
     }
 
@@ -87,43 +78,26 @@ public class AiConfigReader {
                 : new JsonObject();
 
         boolean enabled = readBoolean(thinking, ConfigConstants.AI_THINKING_ENABLED, false);
-        int budgetTokens = readInt(thinking, ConfigConstants.AI_THINKING_BUDGET_TOKENS, 1024);
+        int budgetTokens = readInt(
+                thinking,
+                ConfigConstants.AI_THINKING_BUDGET_TOKENS,
+                AiThinkingConfig.DEFAULT_BUDGET_TOKENS
+        );
 
         if (budgetTokens <= 0) {
-            throw new IllegalArgumentException("AI.thinking.budget_tokens 必须大于 0");
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.error.config.positive", "AI.thinking.budget_tokens"));
         }
 
         return new AiThinkingConfig(enabled, budgetTokens);
     }
 
     private String decryptConfig(JsonObject aiConfig, String key) {
-        String encrypted = resolveEncryptedValue(aiConfig, key);
+        String encrypted = readString(aiConfig, key, "");
         if (isBlank(encrypted)) {
             return "";
         }
         String decrypted = AESUtils.decryptLocalConfig(encrypted);
         return decrypted == null ? "" : decrypted.trim();
-    }
-
-    private String resolveEncryptedValue(JsonObject aiConfig, String key) {
-        String encrypted = readString(aiConfig, key, "");
-        if (!isBlank(encrypted)) {
-            return encrypted;
-        }
-
-        String legacyKey = null;
-        if (ConfigConstants.AI_LOCAL_BASE_URL.equals(key)) {
-            legacyKey = "Local_AI_API_Base";
-        } else if (ConfigConstants.AI_LOCAL_API_KEY.equals(key)) {
-            legacyKey = "Local_AI_API_Key";
-        } else if (ConfigConstants.AI_LOCAL_MODEL_NAME.equals(key)) {
-            legacyKey = "Local_AI_Model";
-        }
-
-        if (legacyKey == null) {
-            return "";
-        }
-        return readString(aiConfig, legacyKey, "");
     }
 
     private String readString(JsonObject obj, String key, String defaultValue) {
@@ -170,7 +144,7 @@ public class AiConfigReader {
 
     private void validateRequired(String field, String value) {
         if (isBlank(value)) {
-            throw new IllegalArgumentException(field + " 不能为空");
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.error.config.required", field));
         }
     }
 
@@ -183,15 +157,15 @@ public class AiConfigReader {
             String scheme = uri.getScheme();
             String host = uri.getHost();
             if (scheme == null || host == null) {
-                throw new IllegalArgumentException(field + " 必须是完整的 HTTP/HTTPS 地址");
+                throw new IllegalArgumentException(I18nTextUtils.getString("ai.error.config.http.url", field));
             }
             if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
-                throw new IllegalArgumentException(field + " 必须是完整的 HTTP/HTTPS 地址");
+                throw new IllegalArgumentException(I18nTextUtils.getString("ai.error.config.http.url", field));
             }
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalArgumentException(field + " 必须是完整的 HTTP/HTTPS 地址");
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.error.config.http.url", field));
         }
     }
 

@@ -41,7 +41,7 @@ class AiAttachmentUtilsTest {
             assertFalse(AiAttachmentUtils.isSupportedByProvider(AiProviderType.ANTHROPIC, zipAttachment));
             assertTrue(AiAttachmentUtils.isSupportedByProvider(AiProviderType.ANTHROPIC, pdfAttachment));
             assertTrue(AiAttachmentUtils.isSupportedByProvider(AiProviderType.ANTHROPIC, codeAttachment));
-            assertTrue(AiAttachmentUtils.isSupportedByProvider(AiProviderType.OPENAI_COMPATIBLE, zipAttachment));
+            assertTrue(AiAttachmentUtils.isSupportedByProvider(AiProviderType.OPENAI, zipAttachment));
             assertTrue(AiAttachmentUtils.isSupportedByProvider(AiProviderType.GEMINI, zipAttachment));
         } finally {
             codeFile.delete();
@@ -75,8 +75,8 @@ class AiAttachmentUtilsTest {
         AiAttachment pdfAttachment = new AiAttachment("report.pdf", "/tmp/report.pdf", 10L, "application/pdf");
         AiAttachment codeAttachment = new AiAttachment("analysis.java", "/tmp/analysis.java", 10L, "text/x-java-source");
 
-        assertTrue(AiAttachmentUtils.supportsRelayInline(AiProviderType.OPENAI_COMPATIBLE, imageAttachment));
-        assertFalse(AiAttachmentUtils.supportsRelayInline(AiProviderType.OPENAI_COMPATIBLE, pdfAttachment));
+        assertTrue(AiAttachmentUtils.supportsRelayInline(AiProviderType.OPENAI, imageAttachment));
+        assertFalse(AiAttachmentUtils.supportsRelayInline(AiProviderType.OPENAI, pdfAttachment));
         assertTrue(AiAttachmentUtils.supportsRelayInline(AiProviderType.GEMINI, pdfAttachment));
         assertFalse(AiAttachmentUtils.supportsRelayInline(AiProviderType.ANTHROPIC, codeAttachment));
     }

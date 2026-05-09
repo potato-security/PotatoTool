@@ -79,6 +79,7 @@
                           styleClass="ai-composer-meta-row">
                         <Label fx:id="thinkingBadge"
                                text="思考"
+                               userData="i18n:ai.thinking.badge"
                                visible="false"
                                managed="false"
                                styleClass="ai-thinking-badge"/>
@@ -107,8 +108,8 @@
                       spacing="6"
                       alignment="CENTER"
                       styleClass="ai-drop-overlay">
-                    <Label fx:id="dropHintTitle" text="拖拽文件到这里" styleClass="ai-drop-title"/>
-                    <Label fx:id="dropHintText" text="松手即可把文件加入当前消息，最多 5 个文件" styleClass="ai-drop-text"/>
+                    <Label fx:id="dropHintTitle" text="拖拽文件到这里" userData="i18n:ai.attach.drop.title" styleClass="ai-drop-title"/>
+                    <Label fx:id="dropHintText" text="松手即可把文件加入当前消息，最多 5 个文件" userData="i18n:ai.attach.drop.desc" styleClass="ai-drop-text"/>
                 </VBox>
             </StackPane>
         </StackPane>

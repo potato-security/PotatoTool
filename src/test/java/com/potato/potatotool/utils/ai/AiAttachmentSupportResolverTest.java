@@ -25,15 +25,15 @@ class AiAttachmentSupportResolverTest {
         AiAttachment pdfAttachment = new AiAttachment("report.pdf", "/tmp/report.pdf", 1024L, "application/pdf");
 
         AiAttachmentSupportResult officialImage = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://api.openai.com/v1/chat/completions"),
+                runtime(AiProviderType.OPENAI, "https://api.openai.com/v1/chat/completions"),
                 Collections.singletonList(imageAttachment)
         );
         AiAttachmentSupportResult relayImage = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://gateway.example.com/api/v1/chat/completions"),
+                runtime(AiProviderType.OPENAI, "https://gateway.example.com/api/v1/chat/completions"),
                 Collections.singletonList(imageAttachment)
         );
         AiAttachmentSupportResult relayPdf = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://gateway.example.com/api/v1/chat/completions"),
+                runtime(AiProviderType.OPENAI, "https://gateway.example.com/api/v1/chat/completions"),
                 Collections.singletonList(pdfAttachment)
         );
 
@@ -82,7 +82,7 @@ class AiAttachmentSupportResolverTest {
         AiAttachment zipAttachment = new AiAttachment("sample.zip", "/tmp/sample.zip", 1024L, "application/zip");
 
         AiAttachmentSupportResult openAiRelayDocx = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://gateway.example.com/api/v1/chat/completions"),
+                runtime(AiProviderType.OPENAI, "https://gateway.example.com/api/v1/chat/completions"),
                 Collections.singletonList(docxAttachment)
         );
         AiAttachmentSupportResult anthropicRelayDocx = AiAttachmentSupportResolver.resolve(
@@ -108,23 +108,23 @@ class AiAttachmentSupportResolverTest {
         AiAttachment imageAttachment = new AiAttachment("screen.png", "/tmp/screen.png", 1024L, "image/png");
 
         AiAttachmentSupportResult glmVision = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://open.bigmodel.cn/api/paas/v4/chat/completions", "glm-4.6v-flash"),
+                runtime(AiProviderType.OPENAI, "https://open.bigmodel.cn/api/paas/v4/chat/completions", "glm-4.6v-flash"),
                 Collections.singletonList(imageAttachment)
         );
         AiAttachmentSupportResult glmText = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://open.bigmodel.cn/api/paas/v4/chat/completions", "glm-4.6"),
+                runtime(AiProviderType.OPENAI, "https://open.bigmodel.cn/api/paas/v4/chat/completions", "glm-4.6"),
                 Collections.singletonList(imageAttachment)
         );
         AiAttachmentSupportResult qwenVision = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", "qwen3.5-plus"),
+                runtime(AiProviderType.OPENAI, "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", "qwen3.5-plus"),
                 Collections.singletonList(imageAttachment)
         );
         AiAttachmentSupportResult qwenText = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", "qwen-turbo"),
+                runtime(AiProviderType.OPENAI, "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", "qwen-turbo"),
                 Collections.singletonList(imageAttachment)
         );
         AiAttachmentSupportResult deepSeek = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://api.deepseek.com/chat/completions", "deepseek-chat"),
+                runtime(AiProviderType.OPENAI, "https://api.deepseek.com/chat/completions", "deepseek-chat"),
                 Collections.singletonList(imageAttachment)
         );
 
@@ -148,15 +148,15 @@ class AiAttachmentSupportResolverTest {
         AiAttachment imageAttachment = new AiAttachment("screen.png", "/tmp/screen.png", 1024L, "image/png");
 
         AiAttachmentSupportResult glmRelayText = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://gateway.example.com/api/v1/chat/completions", "glm-4.6"),
+                runtime(AiProviderType.OPENAI, "https://gateway.example.com/api/v1/chat/completions", "glm-4.6"),
                 Collections.singletonList(imageAttachment)
         );
         AiAttachmentSupportResult qwenRelayText = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://gateway.example.com/api/v1/chat/completions", "qwen3-max-2026-01-23"),
+                runtime(AiProviderType.OPENAI, "https://gateway.example.com/api/v1/chat/completions", "qwen3-max-2026-01-23"),
                 Collections.singletonList(imageAttachment)
         );
         AiAttachmentSupportResult deepSeekRelayText = AiAttachmentSupportResolver.resolve(
-                runtime(AiProviderType.OPENAI_COMPATIBLE, "https://gateway.example.com/api/v1/chat/completions", "deepseek-chat"),
+                runtime(AiProviderType.OPENAI, "https://gateway.example.com/api/v1/chat/completions", "deepseek-chat"),
                 Collections.singletonList(imageAttachment)
         );
 

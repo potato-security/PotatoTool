@@ -97,33 +97,10 @@ public final class AiAttachmentDispatchPlanner {
             return AiAttachmentDispatchPlan.unsupported(requestSupport.getMessage());
         }
 
-        return AiAttachmentDispatchPlan.supported(requestAttachments, buildTextContextSuffix(textContexts));
-    }
-
-    private static String buildTextContextSuffix(List<AiAttachmentUtils.TextContextResult> textContexts) {
-        if (textContexts == null || textContexts.isEmpty()) {
-            return "";
-        }
-
-        StringBuilder builder = new StringBuilder();
-        builder.append("\n\n【纯文本附件上下文】\n")
-                .append("以下文件因当前接口不支持原始文件直传，但已被高置信判定为纯文本，现以内联文本形式补充到上下文中。")
-                .append("请将它们视为附件原文，而不是普通说明文字。\n\n");
-
-        for (int i = 0; i < textContexts.size(); i++) {
-            AiAttachmentUtils.TextContextResult textContext = textContexts.get(i);
-            if (textContext == null || !textContext.isSupported()) {
-                continue;
-            }
-            builder.append("### 文本附件").append(i + 1).append("\n")
-                    .append("文件名: ").append(textContext.getFileName()).append("\n")
-                    .append("编码: ").append(textContext.getCharsetName()).append("\n")
-                    .append("<file-content>\n")
-                    .append(textContext.getText())
-                    .append("\n</file-content>\n\n");
-        }
-
-        return builder.toString().trim();
+        return AiAttachmentDispatchPlan.supported(
+                requestAttachments,
+                AiAttachmentFallbackSupport.buildTextContextSuffix(textContexts)
+        );
     }
 
     private static List<AiAttachment> normalizeAttachments(List<AiAttachment> attachments) {

@@ -162,14 +162,36 @@ public class CustomHttpResponse implements AutoCloseable {
     }
 
     public void getSSEStreamingJson(ResponseCallback callback) { // 获取服务器发送事件(SSE)流式响应json
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.body().byteStream(), StandardCharsets.UTF_8))) {
+        ResponseBody responseBody = response == null ? null : response.body();
+        if (responseBody == null) {
+            callback.onResponse("[[STREAM_ERROR]]");
+            disconnect();
+            return;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(responseBody.byteStream(), StandardCharsets.UTF_8))) {
             String line;
+            StringBuilder eventData = new StringBuilder();
             while ((line = reader.readLine()) != null) {
-                if (!line.trim().isEmpty()) {
-                    callback.onResponse(line);
+                String trimmedLine = line.trim();
+                if (trimmedLine.isEmpty()) {
+                    flushSseEvent(callback, eventData);
+                    continue;
                 }
-                // 回调处理每次响应
+                if (trimmedLine.startsWith(":")) {
+                    continue;
+                }
+                if (line.startsWith("data:")) {
+                    if (eventData.length() > 0) {
+                        eventData.append('\n');
+                    }
+                    eventData.append(line.substring(5).trim());
+                    continue;
+                }
+                flushSseEvent(callback, eventData);
+                callback.onResponse(line);
             }
+            flushSseEvent(callback, eventData);
         } catch (Exception e) {
             handleException(e, callback);
         } finally {
@@ -189,18 +211,22 @@ public class CustomHttpResponse implements AutoCloseable {
     public interface ResponseCallback {
         void onResponse(String line);
     }
+
+    private void flushSseEvent(ResponseCallback callback, StringBuilder eventData) {
+        if (callback == null || eventData == null || eventData.length() == 0) {
+            return;
+        }
+        callback.onResponse("data: " + eventData.toString());
+        eventData.setLength(0);
+    }
     
     private void handleException(Exception e, ResponseCallback callback) {
         if (shouldSuppressStreamingException(e)) {
             return;
         }
-        String message = e.getMessage();
-        if (message != null && message.contains("Premature EOF")) {
-            callback.onResponse("[[Premature EOF]]");
-        } else if (message != null && message.contains("Server returned HTTP response code: 502")) {
-            callback.onResponse("[[Response code 502]]");
-        } else if (message != null && message.contains("Read timed out")) {
-            callback.onResponse("[[Read timed out]]");
+        String marker = resolveStreamingErrorMarker(e);
+        if (marker != null && !marker.isEmpty()) {
+            callback.onResponse(marker);
         }
         e.printStackTrace();
     }
@@ -216,14 +242,74 @@ public class CustomHttpResponse implements AutoCloseable {
                 String normalized = message.toLowerCase(Locale.ROOT);
                 if (normalized.contains("stream closed")
                         || normalized.contains("socket closed")
+                        || normalized.contains("cancel")
                         || normalized.contains("canceled")
-                        || normalized.contains("cancelled")) {
+                        || normalized.contains("cancelled")
+                        || normalized.contains("broken pipe")) {
                     return true;
                 }
             }
             current = current.getCause();
         }
         return false;
+    }
+
+    private String resolveStreamingErrorMarker(Throwable throwable) {
+        boolean connectTimeout = false;
+        boolean timeout = false;
+        boolean badGateway = false;
+        boolean prematureEof = false;
+        boolean streamReset = false;
+
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof InterruptedIOException) {
+                timeout = true;
+            }
+            String message = current.getMessage();
+            if (message != null) {
+                String normalized = message.toLowerCase(Locale.ROOT);
+                if (normalized.contains("connect timed out")) {
+                    connectTimeout = true;
+                }
+                if ("timeout".equals(normalized)
+                        || normalized.contains(" timed out")
+                        || normalized.contains("timeout")) {
+                    timeout = true;
+                }
+                if (normalized.contains("response code: 502")
+                        || normalized.contains("http response code: 502")) {
+                    badGateway = true;
+                }
+                if (normalized.contains("premature eof")) {
+                    prematureEof = true;
+                }
+                if (normalized.contains("stream was reset")
+                        || normalized.contains("cancel")
+                        || normalized.contains("canceled")
+                        || normalized.contains("cancelled")) {
+                    streamReset = true;
+                }
+            }
+            current = current.getCause();
+        }
+
+        if (connectTimeout) {
+            return "[[CONNECT_TIMEOUT]]";
+        }
+        if (timeout) {
+            return "[[STREAM_TIMEOUT]]";
+        }
+        if (badGateway) {
+            return "[[HTTP_502]]";
+        }
+        if (prematureEof) {
+            return "[[PREMATURE_EOF]]";
+        }
+        if (streamReset) {
+            return "[[STREAM_RESET]]";
+        }
+        return "[[STREAM_ERROR]]";
     }
 
     public JsonElement getJson() {

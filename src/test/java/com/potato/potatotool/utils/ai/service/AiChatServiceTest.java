@@ -38,7 +38,7 @@ class AiChatServiceTest {
     void streamEventOrderAndHistoryLimit() {
         AiConfigReader reader = new StubConfigReader(false, "https://api.example.com/v1/chat/completions");
         AiProviderRegistry registry = new AiProviderRegistry();
-        registry.register(AiProviderType.OPENAI_COMPATIBLE, new StubProviderAdapter());
+        registry.register(AiProviderType.OPENAI, new StubProviderAdapter());
 
         AiChatService.StreamTransport transport = (requestObj, streamSession, lineConsumer) -> {
             lineConsumer.accept("thinking");
@@ -115,7 +115,7 @@ class AiChatServiceTest {
         AiConfigReader reader = new StubConfigReader(false, "https://api.example.com/v1/chat/completions");
         AiProviderRegistry registry = new AiProviderRegistry();
         CapturingProviderAdapter adapter = new CapturingProviderAdapter();
-        registry.register(AiProviderType.OPENAI_COMPATIBLE, adapter);
+        registry.register(AiProviderType.OPENAI, adapter);
 
         AiChatService service = new AiChatService(reader, registry, (requestObj, streamSession, lineConsumer) -> lineConsumer.accept("done"));
         service.streamChat(null, "hello", "hello", new AiThinkingConfig(true, 4096), event -> { });
@@ -130,7 +130,7 @@ class AiChatServiceTest {
     void cancelActiveStreamStopsStreaming() throws Exception {
         AiConfigReader reader = new StubConfigReader(false, "https://api.example.com/v1/chat/completions");
         AiProviderRegistry registry = new AiProviderRegistry();
-        registry.register(AiProviderType.OPENAI_COMPATIBLE, new StubProviderAdapter());
+        registry.register(AiProviderType.OPENAI, new StubProviderAdapter());
 
         CountDownLatch firstTokenSeen = new CountDownLatch(1);
         CountDownLatch cancelObserved = new CountDownLatch(1);
@@ -181,7 +181,7 @@ class AiChatServiceTest {
         AiConfigReader reader = new StubConfigReader(false, "https://api.example.com/v1/chat/completions");
         AiProviderRegistry registry = new AiProviderRegistry();
         PreparedRequestCapturingAdapter adapter = new PreparedRequestCapturingAdapter();
-        registry.register(AiProviderType.OPENAI_COMPATIBLE, adapter);
+        registry.register(AiProviderType.OPENAI, adapter);
 
         AiChatService service = new AiChatService(reader, registry, (requestObj, streamSession, lineConsumer) -> {
             lineConsumer.accept("token:OK");
@@ -206,7 +206,7 @@ class AiChatServiceTest {
         AiConfigReader reader = new StubConfigReader(false, "https://api.example.com/v1/chat/completions");
         AiProviderRegistry registry = new AiProviderRegistry();
         FailingPrepareAdapter adapter = new FailingPrepareAdapter();
-        registry.register(AiProviderType.OPENAI_COMPATIBLE, adapter);
+        registry.register(AiProviderType.OPENAI, adapter);
 
         final boolean[] transportCalled = new boolean[]{false};
         AiChatService service = new AiChatService(reader, registry, (requestObj, streamSession, lineConsumer) -> transportCalled[0] = true);
@@ -233,7 +233,7 @@ class AiChatServiceTest {
         AiConfigReader reader = new StubConfigReader(false, "https://api.example.com/v1/chat/completions");
         AiProviderRegistry registry = new AiProviderRegistry();
         PreparedRequestCapturingAdapter adapter = new PreparedRequestCapturingAdapter();
-        registry.register(AiProviderType.OPENAI_COMPATIBLE, adapter);
+        registry.register(AiProviderType.OPENAI, adapter);
 
         AiChatService service = new AiChatService(reader, registry, (requestObj, streamSession, lineConsumer) -> {
             throw new RuntimeException("network down");
@@ -258,7 +258,7 @@ class AiChatServiceTest {
             AiConfigReader reader = new StubConfigReader(false, "https://api.example.com/v1/chat/completions");
             AiProviderRegistry registry = new AiProviderRegistry();
             UnsupportedAttachmentAdapter adapter = new UnsupportedAttachmentAdapter();
-            registry.register(AiProviderType.OPENAI_COMPATIBLE, adapter);
+            registry.register(AiProviderType.OPENAI, adapter);
 
             final boolean[] transportCalled = new boolean[]{false};
             AiChatService service = new AiChatService(reader, registry, (requestObj, streamSession, lineConsumer) -> transportCalled[0] = true);
@@ -292,7 +292,7 @@ class AiChatServiceTest {
             AiConfigReader reader = new StubConfigReader(false, "https://gateway.example.com/v1");
             AiProviderRegistry registry = new AiProviderRegistry();
             CapturingQuestionAdapter adapter = new CapturingQuestionAdapter();
-            registry.register(AiProviderType.OPENAI_COMPATIBLE, adapter);
+            registry.register(AiProviderType.OPENAI, adapter);
 
             AiChatService service = new AiChatService(reader, registry, (requestObj, streamSession, lineConsumer) -> lineConsumer.accept("done"));
             service.streamChat(
@@ -325,7 +325,7 @@ class AiChatServiceTest {
             AiConfigReader reader = new StubConfigReader(false, "https://gateway.example.com/v1");
             AiProviderRegistry registry = new AiProviderRegistry();
             CapturingQuestionAdapter adapter = new CapturingQuestionAdapter();
-            registry.register(AiProviderType.OPENAI_COMPATIBLE, adapter);
+            registry.register(AiProviderType.OPENAI, adapter);
 
             List<AiStreamEvent> events = new ArrayList<AiStreamEvent>();
             AiChatService service = new AiChatService(reader, registry, (requestObj, streamSession, lineConsumer) -> lineConsumer.accept("done"));
@@ -350,7 +350,7 @@ class AiChatServiceTest {
     private AiChatService createServiceWithError(boolean builtinAi, String baseUrl, String errorMessage) {
         AiConfigReader reader = new StubConfigReader(builtinAi, baseUrl);
         AiProviderRegistry registry = new AiProviderRegistry();
-        registry.register(AiProviderType.OPENAI_COMPATIBLE, new StubProviderAdapter());
+        registry.register(AiProviderType.OPENAI, new StubProviderAdapter());
         AiChatService.StreamTransport transport = (requestObj, streamSession, lineConsumer) -> {
             throw new RuntimeException(errorMessage);
         };
@@ -369,7 +369,7 @@ class AiChatServiceTest {
         @Override
         public AiRuntimeConfig read() {
             JsonObject ai = new JsonObject();
-            ai.addProperty(ConfigConstants.AI_PROVIDER, "OPENAI_COMPATIBLE");
+            ai.addProperty(ConfigConstants.AI_PROVIDER, "OPENAI");
             ai.addProperty(ConfigConstants.AI_BASE_URL, baseUrl);
             ai.addProperty(ConfigConstants.AI_API_KEY, "test-key");
             ai.addProperty(ConfigConstants.AI_MODEL_NAME, "test-model");

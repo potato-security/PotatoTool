@@ -252,11 +252,11 @@
 }
 
 .ai-composer-menu-icon {
-    -fx-min-width: 16;
+    -fx-min-width: 12;
     -fx-min-height: 16;
-    -fx-pref-width: 15;
+    -fx-pref-width: 11;
     -fx-pref-height: 15;
-    -fx-max-width: 16;
+    -fx-max-width: 12;
     -fx-max-height: 16;
     -fx-background-color: rgba(248, 250, 252, 0.82);
 }
@@ -436,6 +436,42 @@
 .aiThinkingMsg {
     -fx-font-size: 13px;
     -fx-line-spacing: 2px;
+}
+
+.chatBubbleTextArea,
+.chatBubbleTextArea .scroll-pane,
+.chatBubbleTextArea .scroll-pane .viewport,
+.chatBubbleTextArea .scroll-pane .content {
+    -fx-background-insets: 0;
+}
+
+.chatBubbleTextArea {
+    -fx-background-insets: 0;
+    -fx-cursor: text;
+    -fx-highlight-fill: rgba(62, 206, 227, 0.32);
+    -fx-highlight-text-fill: white;
+}
+
+.chatBubbleTextArea .scroll-pane,
+.chatBubbleTextArea .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.chatBubbleTextArea .scroll-pane .content {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.chatBubbleTextArea .scroll-bar:vertical,
+.chatBubbleTextArea .scroll-bar:horizontal,
+.chatBubbleTextArea .scroll-bar:vertical .increment-button,
+.chatBubbleTextArea .scroll-bar:vertical .decrement-button,
+.chatBubbleTextArea .scroll-bar:horizontal .increment-button,
+.chatBubbleTextArea .scroll-bar:horizontal .decrement-button {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-padding: 0;
 }
 
 .aiMsg {

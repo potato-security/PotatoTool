@@ -2,6 +2,7 @@ package com.potato.potatotool.utils.ai;
 
 import com.potato.potatotool.utils.ai.model.AiAttachment;
 import com.potato.potatotool.utils.ai.model.AiProviderType;
+import com.potato.potatotool.utils.core.I18nTextUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -478,11 +479,11 @@ public final class AiAttachmentUtils {
 
     private static File requireFile(AiAttachment attachment) {
         if (attachment == null) {
-            throw new IllegalArgumentException("附件不能为空");
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.attach.error.empty"));
         }
         File file = attachment.toFile();
         if (file == null || !file.exists() || !file.isFile()) {
-            throw new IllegalArgumentException("附件不存在: " + attachment.getFileName());
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.attach.error.not.exists", attachment.getFileName()));
         }
         return file;
     }

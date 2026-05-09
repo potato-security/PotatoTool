@@ -1,7 +1,9 @@
 package com.potato.potatotool.utils.ai.provider;
 
+import com.potato.potatotool.utils.ai.AiAttachmentFallbackSupport;
 import com.potato.potatotool.utils.ai.AiAttachmentSupportResolver;
 import com.potato.potatotool.utils.ai.AiAttachmentUtils;
+import com.potato.potatotool.utils.ai.AiRequestTimeouts;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -14,7 +16,10 @@ import com.potato.potatotool.utils.ai.model.AiRuntimeConfig;
 import com.potato.potatotool.utils.ai.model.AiStreamEvent;
 import com.potato.potatotool.utils.ai.model.AiAttachmentMode;
 import com.potato.potatotool.utils.ai.model.AiAttachmentSupportResult;
+import com.potato.potatotool.utils.ai.model.AiProviderType;
 import com.potato.potatotool.utils.ai.model.AiThinkingConfig;
+import com.potato.potatotool.utils.ai.transport.AiHttpExecutor;
+import com.potato.potatotool.utils.core.I18nTextUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.RequestObj;
@@ -24,12 +29,18 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-
-import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
     private static final String OPENAI_USER_DATA_PURPOSE = "user_data";
+    private static final String MODEL_ALIAS_HEADER = "X-Potato-Model-Alias";
+    private static final String ACCEPT_SSE = "text/event-stream";
+    private static final String DEFAULT_REASONING_EFFORT = "medium";
+    private static final String LOW_REASONING_EFFORT = "low";
+    private static final String DEEPSEEK_REASONING_EFFORT = "high";
+    private static final int SILICONFLOW_MIN_THINKING_BUDGET = 128;
+    private static final int SILICONFLOW_MAX_THINKING_BUDGET = 32768;
 
     @Override
     public PreparedRequest prepareRequest(AiRuntimeConfig runtimeConfig, AiChatRequest request) throws Exception {
@@ -55,6 +66,10 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
             return PreparedRequest.of(requestObj, () -> deleteUploadedFiles(runtimeConfig, uploadedFiles));
         } catch (Exception e) {
             deleteUploadedFiles(runtimeConfig, uploadedFiles);
+            PreparedRequest fallbackRequest = buildUploadFallbackRequest(runtimeConfig, request, attachments, e);
+            if (fallbackRequest != null) {
+                return fallbackRequest;
+            }
             throw e;
         }
     }
@@ -71,6 +86,9 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Content-Type", "application/json");
         headers.put("Authorization", "Bearer " + runtimeConfig.getApiKey());
+        if (request.isStream()) {
+            headers.put("Accept", ACCEPT_SSE);
+        }
 
         JsonObject body = new JsonObject();
         body.addProperty("model", runtimeConfig.getModelName());
@@ -85,30 +103,28 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
         }
         messages.add(createUserMessage(request.getQuestion(), uploadedFiles, inlineImageAttachments));
         body.add("messages", messages);
+        applyThinkingConfig(runtimeConfig, request, body);
 
-        AiThinkingConfig thinkingConfig = request.getThinkingConfig();
-        if (thinkingConfig != null && thinkingConfig.isEnabled()) {
-            JsonObject thinking = new JsonObject();
-            thinking.addProperty("enabled", true);
-            thinking.addProperty("budget_tokens", thinkingConfig.getBudgetTokens());
-            body.add("thinking", thinking);
-        }
-
-        int timeoutSec = Math.max(1, runtimeConfig.getTimeoutMs() / 1000);
-        RequestObj requestObj = new RequestObj()
+        RequestObj requestObj = AiRequestTimeouts.apply(new RequestObj()
                 .setMethod("POST")
                 .setPostMethod("JSON")
                 .setUrl(resolveRequestUrl(runtimeConfig.getBaseUrl()))
                 .setHeaders(headers)
                 .setPostData(new Gson().toJson(body))
-                .setTimeOut(timeoutSec)
-                .setReadTimeout(timeoutSec)
-                .setWriteTimeout(timeoutSec)
-                .setCallTimeout(timeoutSec)
-                .setInternalAiRequest(runtimeConfig.isBuiltinAi());
+                .setInternalAiRequest(runtimeConfig.isBuiltinAi()), runtimeConfig, request.isStream());
 
         ProxyUtils.applyProxy(requestObj, runtimeConfig.isUseProxy());
         return requestObj;
+    }
+
+    @Override
+    public boolean supportsThinking(AiRuntimeConfig runtimeConfig) {
+        return resolveThinkingDialect(runtimeConfig) != ThinkingDialect.NONE;
+    }
+
+    @Override
+    public boolean supportsThinkingBudget(AiRuntimeConfig runtimeConfig) {
+        return resolveThinkingDialect(runtimeConfig).supportsBudget();
     }
 
     @Override
@@ -118,12 +134,16 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
             return events;
         }
 
-        if (line.startsWith("[[")) {
-            events.add(AiStreamEvent.error("流式连接异常: " + line));
+        String transportError = resolveTransportErrorMessage(line);
+        if (!transportError.isEmpty()) {
+            events.add(AiStreamEvent.error(transportError));
             return events;
         }
 
         String payload = line;
+        if (payload.startsWith(":") || payload.startsWith("event:")) {
+            return events;
+        }
         if (payload.startsWith("data:")) {
             payload = payload.substring(5).trim();
         }
@@ -139,7 +159,7 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
                 JsonObject error = json.getAsJsonObject("error");
                 String message = safeString(error, "message");
                 if (message.isEmpty()) {
-                    message = "AI 请求失败";
+                    message = I18nTextUtils.getString("ai.status.error");
                 }
                 events.add(AiStreamEvent.error(message));
                 return events;
@@ -170,7 +190,7 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
                 events.add(AiStreamEvent.done());
             }
         } catch (Exception e) {
-            events.add(AiStreamEvent.error("流式响应解析失败: " + e.getMessage()));
+            events.add(AiStreamEvent.error(I18nTextUtils.getString("ai.error.stream.parse", e.getMessage())));
         }
         return events;
     }
@@ -186,7 +206,7 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
             if (json.has("error") && json.get("error").isJsonObject()) {
                 JsonObject error = json.getAsJsonObject("error");
                 String message = safeString(error, "message");
-                return message.isEmpty() ? "AI 请求失败" : message;
+                return message.isEmpty() ? I18nTextUtils.getString("ai.status.error") : message;
             }
 
             JsonArray choices = json.has("choices") && json.get("choices").isJsonArray()
@@ -201,7 +221,7 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
             JsonObject message = firstChoice.getAsJsonObject("message");
             return extractMessageText(message);
         } catch (Exception e) {
-            return "AI 响应解析失败: " + e.getMessage();
+            return I18nTextUtils.getString("ai.error.response.parse", e.getMessage());
         }
     }
 
@@ -254,7 +274,10 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
                 try {
                     imageUrl.addProperty("url", AiAttachmentUtils.readDataUrl(attachment));
                 } catch (Exception e) {
-                    throw new IllegalStateException("读取附件失败: " + attachment.getFileName(), e);
+                    throw new IllegalStateException(
+                            I18nTextUtils.getString("ai.attach.read.failed", attachment.getFileName()),
+                            e
+                    );
                 }
                 imagePart.add("image_url", imageUrl);
                 content.add(imagePart);
@@ -265,38 +288,410 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
         return message;
     }
 
+    private void applyThinkingConfig(AiRuntimeConfig runtimeConfig, AiChatRequest request, JsonObject body) {
+        AiThinkingConfig thinkingConfig = request == null ? null : request.getThinkingConfig();
+        if (thinkingConfig == null) {
+            return;
+        }
+
+        ThinkingDialect dialect = resolveThinkingDialect(runtimeConfig);
+        switch (dialect) {
+            case OPENAI_REASONING_EFFORT:
+                body.addProperty("reasoning_effort", resolveOpenAiReasoningEffort(runtimeConfig, thinkingConfig));
+                break;
+            case REASONING_EFFORT_NONE:
+                body.addProperty("reasoning_effort", thinkingConfig.isEnabled()
+                        ? DEFAULT_REASONING_EFFORT
+                        : "none");
+                break;
+            case REASONING_EFFORT_LOW:
+                body.addProperty("reasoning_effort", thinkingConfig.isEnabled()
+                        ? DEFAULT_REASONING_EFFORT
+                        : LOW_REASONING_EFFORT);
+                break;
+            case GROQ_QWEN_REASONING_EFFORT:
+                body.addProperty("reasoning_effort", thinkingConfig.isEnabled() ? "default" : "none");
+                break;
+            case OPENROUTER_REASONING:
+                JsonObject reasoning = new JsonObject();
+                if (thinkingConfig.isEnabled()) {
+                    if (thinkingConfig.getBudgetTokens() > 0) {
+                        reasoning.addProperty("max_tokens", thinkingConfig.getBudgetTokens());
+                    } else {
+                        reasoning.addProperty("effort", DEFAULT_REASONING_EFFORT);
+                    }
+                } else {
+                    reasoning.addProperty("enabled", false);
+                }
+                body.add("reasoning", reasoning);
+                break;
+            case REASONING_ENABLED:
+                JsonObject reasoningEnabled = new JsonObject();
+                reasoningEnabled.addProperty("enabled", thinkingConfig.isEnabled());
+                body.add("reasoning", reasoningEnabled);
+                break;
+            case QWEN_CLOUD:
+                body.addProperty("enable_thinking", thinkingConfig.isEnabled());
+                if (thinkingConfig.isEnabled() && thinkingConfig.getBudgetTokens() > 0) {
+                    body.addProperty("thinking_budget", thinkingConfig.getBudgetTokens());
+                }
+                break;
+            case SILICONFLOW:
+                body.addProperty("enable_thinking", thinkingConfig.isEnabled());
+                if (thinkingConfig.isEnabled() && thinkingConfig.getBudgetTokens() > 0) {
+                    body.addProperty("thinking_budget", clamp(
+                            thinkingConfig.getBudgetTokens(),
+                            SILICONFLOW_MIN_THINKING_BUDGET,
+                            SILICONFLOW_MAX_THINKING_BUDGET
+                    ));
+                }
+                break;
+            case DEEPSEEK_THINKING:
+                addThinkingType(body, thinkingConfig.isEnabled());
+                if (thinkingConfig.isEnabled()) {
+                    body.addProperty("reasoning_effort", DEEPSEEK_REASONING_EFFORT);
+                }
+                break;
+            case GLM_THINKING:
+                addThinkingType(body, thinkingConfig.isEnabled());
+                break;
+            case QWEN_CHAT_TEMPLATE:
+                addChatTemplateThinking(body, "enable_thinking", thinkingConfig, true);
+                break;
+            case CHAT_TEMPLATE_THINKING:
+                addChatTemplateThinking(body, "thinking", thinkingConfig, true);
+                break;
+            case NONE:
+            default:
+                break;
+        }
+    }
+
+    private void addThinkingType(JsonObject body, boolean enabled) {
+        JsonObject thinking = new JsonObject();
+        thinking.addProperty("type", enabled ? "enabled" : "disabled");
+        body.add("thinking", thinking);
+    }
+
+    private void addChatTemplateThinking(JsonObject body,
+                                         String key,
+                                         AiThinkingConfig thinkingConfig,
+                                         boolean supportsBudget) {
+        JsonObject chatTemplateKwargs = new JsonObject();
+        chatTemplateKwargs.addProperty(key, thinkingConfig.isEnabled());
+        if (thinkingConfig.isEnabled() && supportsBudget && thinkingConfig.getBudgetTokens() > 0) {
+            chatTemplateKwargs.addProperty("thinking_budget", thinkingConfig.getBudgetTokens());
+        }
+        body.add("chat_template_kwargs", chatTemplateKwargs);
+    }
+
+    private String resolveOpenAiReasoningEffort(AiRuntimeConfig runtimeConfig, AiThinkingConfig thinkingConfig) {
+        if (thinkingConfig.isEnabled()) {
+            return DEFAULT_REASONING_EFFORT;
+        }
+        return supportsOpenAiNoneReasoning(runtimeConfig == null ? "" : runtimeConfig.getModelName())
+                ? "none"
+                : LOW_REASONING_EFFORT;
+    }
+
+    private ThinkingDialect resolveThinkingDialect(AiRuntimeConfig runtimeConfig) {
+        String host = normalizeHost(runtimeConfig == null ? "" : runtimeConfig.getBaseUrl());
+        String model = normalizeModel(runtimeConfig == null ? "" : runtimeConfig.getModelName());
+
+        if (runtimeConfig != null && runtimeConfig.isBuiltinAi()) {
+            return ThinkingDialect.QWEN_CHAT_TEMPLATE;
+        }
+        if (hostMatches(host, "openrouter.ai")) {
+            return ThinkingDialect.OPENROUTER_REASONING;
+        }
+        if (hostContains(host, "aihubmix")) {
+            return ThinkingDialect.REASONING_EFFORT_NONE;
+        }
+        if (hostContains(host, "fireworks.ai")) {
+            return isKnownFireworksReasoningModel(model) ? ThinkingDialect.REASONING_EFFORT_LOW : ThinkingDialect.NONE;
+        }
+        if (hostContains(host, "groq.com")) {
+            if (isQwenModel(model)) {
+                return ThinkingDialect.GROQ_QWEN_REASONING_EFFORT;
+            }
+            if (isGptOssModel(model)) {
+                return ThinkingDialect.OPENAI_REASONING_EFFORT;
+            }
+            return ThinkingDialect.NONE;
+        }
+        if (hostContains(host, "together.ai") || hostContains(host, "together.xyz")) {
+            if (isGptOssModel(model) || isDeepSeekV4ProModel(model)) {
+                return ThinkingDialect.OPENAI_REASONING_EFFORT;
+            }
+            return isTogetherHybridReasoningModel(model) ? ThinkingDialect.REASONING_ENABLED : ThinkingDialect.NONE;
+        }
+        if (hostMatches(host, "api.x.ai")) {
+            return ThinkingDialect.OPENAI_REASONING_EFFORT;
+        }
+        if (hostContains(host, "siliconflow")) {
+            return ThinkingDialect.SILICONFLOW;
+        }
+        if (hostContains(host, "dashscope") || hostContains(host, "qwencloud")) {
+            return ThinkingDialect.QWEN_CLOUD;
+        }
+        if (hostContains(host, "modelscope") && isQwenModel(model)) {
+            return ThinkingDialect.QWEN_CLOUD;
+        }
+        if (hostContains(host, "deepseek")) {
+            return ThinkingDialect.DEEPSEEK_THINKING;
+        }
+        if (hostMatches(host, "api.z.ai")
+                || hostContains(host, "bigmodel")
+                || hostContains(host, "zhipuai")) {
+            return ThinkingDialect.GLM_THINKING;
+        }
+        if (hostMatches(host, "api.openai.com")
+                || hostMatches(host, "openai.azure.com")
+                || hostMatches(host, "cognitiveservices.azure.com")) {
+            return isOpenAiReasoningModel(model) ? ThinkingDialect.OPENAI_REASONING_EFFORT : ThinkingDialect.NONE;
+        }
+
+        if (isQwenModel(model)) {
+            return ThinkingDialect.QWEN_CHAT_TEMPLATE;
+        }
+        if (isGlmModel(model)) {
+            return isLocalHost(host) ? ThinkingDialect.CHAT_TEMPLATE_THINKING : ThinkingDialect.GLM_THINKING;
+        }
+        if (isDeepSeekModel(model)) {
+            return isLocalHost(host) ? ThinkingDialect.CHAT_TEMPLATE_THINKING : ThinkingDialect.DEEPSEEK_THINKING;
+        }
+        if (isOpenAiReasoningModel(model)) {
+            return ThinkingDialect.OPENAI_REASONING_EFFORT;
+        }
+
+        return ThinkingDialect.NONE;
+    }
+
+    private boolean isQwenModel(String model) {
+        return modelMatchesFamily(model, "qwen") || modelMatchesFamily(model, "qwq");
+    }
+
+    private boolean isGlmModel(String model) {
+        return modelMatchesFamily(model, "glm")
+                || modelMatchesFamily(model, "chatglm")
+                || modelContainsFamily(model, "thudm")
+                || modelContainsFamily(model, "zai-org");
+    }
+
+    private boolean isDeepSeekModel(String model) {
+        return modelMatchesFamily(model, "deepseek") || modelContainsFamily(model, "deepseek-ai");
+    }
+
+    private boolean isMiniMaxModel(String model) {
+        return modelMatchesFamily(model, "minimax") || modelContainsFamily(model, "minimaxai");
+    }
+
+    private boolean isKimiModel(String model) {
+        return modelMatchesFamily(model, "kimi")
+                || modelContainsFamily(model, "moonshot")
+                || modelContainsFamily(model, "moonshotai");
+    }
+
+    private boolean isGemmaModel(String model) {
+        return modelMatchesFamily(model, "gemma") || modelContainsFamily(model, "google/gemma");
+    }
+
+    private boolean isDeepSeekV4ProModel(String model) {
+        String leaf = modelLeaf(model);
+        return leaf.startsWith("deepseek-v4") && leaf.indexOf("pro") >= 0;
+    }
+
+    private boolean isKnownFireworksReasoningModel(String model) {
+        return isGptOssModel(model)
+                || isMiniMaxModel(model)
+                || isKimiModel(model)
+                || isQwenModel(model)
+                || isDeepSeekModel(model);
+    }
+
+    private boolean isTogetherHybridReasoningModel(String model) {
+        return isQwenModel(model)
+                || isKimiModel(model)
+                || isGlmModel(model)
+                || isGemmaModel(model)
+                || (isDeepSeekModel(model) && !isDeepSeekV4ProModel(model));
+    }
+
+    private boolean isGptOssModel(String model) {
+        return modelMatchesFamily(model, "gpt-oss") || modelContainsFamily(model, "openai/gpt-oss");
+    }
+
+    private boolean isOpenAiReasoningModel(String model) {
+        return isGptOssModel(model) || modelMatchesOpenAiOFamily(model) || modelMatchesOpenAiGptReasoningFamily(model);
+    }
+
+    private boolean modelMatchesOpenAiOFamily(String model) {
+        String leaf = modelLeaf(model);
+        return leaf.length() >= 2 && leaf.charAt(0) == 'o' && Character.isDigit(leaf.charAt(1));
+    }
+
+    private boolean modelMatchesOpenAiGptReasoningFamily(String model) {
+        String leaf = modelLeaf(model);
+        if (!leaf.startsWith("gpt-") || leaf.length() <= 4 || !Character.isDigit(leaf.charAt(4))) {
+            return false;
+        }
+        int index = 4;
+        int major = 0;
+        while (index < leaf.length() && Character.isDigit(leaf.charAt(index))) {
+            major = major * 10 + Character.digit(leaf.charAt(index), 10);
+            index++;
+        }
+        return major >= 5;
+    }
+
+    private boolean supportsOpenAiNoneReasoning(String model) {
+        String leaf = modelLeaf(model);
+        if (!leaf.startsWith("gpt-") || leaf.length() <= 4 || !Character.isDigit(leaf.charAt(4))) {
+            return false;
+        }
+        int index = 4;
+        int major = 0;
+        while (index < leaf.length() && Character.isDigit(leaf.charAt(index))) {
+            major = major * 10 + Character.digit(leaf.charAt(index), 10);
+            index++;
+        }
+        if (major > 5) {
+            return true;
+        }
+        if (major < 5 || index >= leaf.length() || leaf.charAt(index) != '.') {
+            return false;
+        }
+        index++;
+        int minor = 0;
+        boolean hasMinor = false;
+        while (index < leaf.length() && Character.isDigit(leaf.charAt(index))) {
+            minor = minor * 10 + Character.digit(leaf.charAt(index), 10);
+            hasMinor = true;
+            index++;
+        }
+        return hasMinor && minor >= 1;
+    }
+
+    private boolean modelMatchesFamily(String model, String family) {
+        String leaf = modelLeaf(model);
+        return startsWithFamily(leaf, family) || startsWithFamily(model, family);
+    }
+
+    private boolean modelContainsFamily(String model, String family) {
+        if (model == null || model.trim().isEmpty()) {
+            return false;
+        }
+        String normalized = normalizeModel(model);
+        String normalizedFamily = normalizeModel(family);
+        return normalized.equals(normalizedFamily)
+                || normalized.indexOf("/" + normalizedFamily) >= 0
+                || normalized.indexOf(normalizedFamily + "/") >= 0
+                || normalized.indexOf("-" + normalizedFamily + "-") >= 0;
+    }
+
+    private boolean startsWithFamily(String value, String family) {
+        if (value == null || family == null) {
+            return false;
+        }
+        if (value.equals(family)) {
+            return true;
+        }
+        if (!value.startsWith(family) || value.length() == family.length()) {
+            return false;
+        }
+        char next = value.charAt(family.length());
+        return !Character.isLetter(next);
+    }
+
+    private String modelLeaf(String model) {
+        String normalized = normalizeModel(model);
+        int slashIndex = normalized.lastIndexOf('/');
+        return slashIndex >= 0 ? normalized.substring(slashIndex + 1) : normalized;
+    }
+
+    private String normalizeModel(String model) {
+        return model == null ? "" : model.trim().toLowerCase(Locale.ROOT).replace('_', '-');
+    }
+
+    private String normalizeHost(String url) {
+        String host = resolveHost(url);
+        return host == null ? "" : host.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private boolean hostMatches(String host, String domain) {
+        if (host == null || domain == null) {
+            return false;
+        }
+        String normalizedDomain = domain.toLowerCase(Locale.ROOT);
+        return host.equals(normalizedDomain) || host.endsWith("." + normalizedDomain);
+    }
+
+    private boolean hostContains(String host, String needle) {
+        return host != null && needle != null && host.indexOf(needle.toLowerCase(Locale.ROOT)) >= 0;
+    }
+
+    private boolean isLocalHost(String host) {
+        if (host == null || host.trim().isEmpty()) {
+            return false;
+        }
+        return "localhost".equals(host)
+                || "127.0.0.1".equals(host)
+                || "0.0.0.0".equals(host)
+                || "::1".equals(host)
+                || "host.docker.internal".equals(host)
+                || host.endsWith(".local")
+                || host.startsWith("10.")
+                || host.startsWith("192.168.")
+                || host.startsWith("172.16.")
+                || host.startsWith("172.17.")
+                || host.startsWith("172.18.")
+                || host.startsWith("172.19.")
+                || host.startsWith("172.20.")
+                || host.startsWith("172.21.")
+                || host.startsWith("172.22.")
+                || host.startsWith("172.23.")
+                || host.startsWith("172.24.")
+                || host.startsWith("172.25.")
+                || host.startsWith("172.26.")
+                || host.startsWith("172.27.")
+                || host.startsWith("172.28.")
+                || host.startsWith("172.29.")
+                || host.startsWith("172.30.")
+                || host.startsWith("172.31.");
+    }
+
+    private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
     private UploadedOpenAiFile uploadAttachment(AiRuntimeConfig runtimeConfig, AiAttachment attachment) throws Exception {
         if (attachment == null) {
-            throw new IllegalArgumentException("附件不能为空");
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.attach.error.empty"));
         }
         File file = attachment.toFile();
         if (file == null || !file.exists() || !file.isFile()) {
-            throw new IllegalArgumentException("附件不存在: " + attachment.getFileName());
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.attach.error.not.exists", attachment.getFileName()));
         }
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Authorization", "Bearer " + runtimeConfig.getApiKey());
+        applyBuiltinGatewayHeaders(headers, runtimeConfig);
 
         Map<String, Object> formParameters = new HashMap<String, Object>();
         formParameters.put("purpose", OPENAI_USER_DATA_PURPOSE);
         formParameters.put("file", new RequestObj.FormFilePart(file, attachment.getFileName(), attachment.getMimeType()));
 
-        int timeoutSec = Math.max(1, runtimeConfig.getTimeoutMs() / 1000);
-        RequestObj requestObj = new RequestObj()
+        RequestObj requestObj = AiRequestTimeouts.applyStandard(new RequestObj()
                 .setMethod("POST")
                 .setPostMethod("FORM")
                 .setUrl(resolveFilesEndpoint(runtimeConfig.getBaseUrl()))
                 .setHeaders(headers)
                 .setFormParameters(formParameters)
-                .setTimeOut(timeoutSec)
-                .setReadTimeout(timeoutSec)
-                .setWriteTimeout(timeoutSec)
-                .setCallTimeout(timeoutSec)
-                .setInternalAiRequest(runtimeConfig.isBuiltinAi());
+                .setInternalAiRequest(runtimeConfig.isBuiltinAi()), runtimeConfig);
 
         ProxyUtils.applyProxy(requestObj, runtimeConfig.isUseProxy());
 
-        try (CustomHttpResponse response = requests(requestObj)) {
+        try (CustomHttpResponse response = AiHttpExecutor.requests(requestObj)) {
             JsonObject json = JsonParser.parseString(response.getTextStr()).getAsJsonObject();
             String errorMessage = readErrorMessage(json);
             if (!errorMessage.isEmpty()) {
@@ -304,7 +699,7 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
             }
             String fileId = safeString(json, "id");
             if (fileId.isEmpty()) {
-                throw new IllegalStateException("OpenAI 附件上传失败: 未返回 file id");
+                throw new IllegalStateException(I18nTextUtils.getString("ai.attach.error.openai.upload.no.file.id"));
             }
             return new UploadedOpenAiFile(fileId);
         }
@@ -321,22 +716,53 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
             try {
                 Map<String, String> headers = new HashMap<String, String>();
                 headers.put("Authorization", "Bearer " + runtimeConfig.getApiKey());
+                applyBuiltinGatewayHeaders(headers, runtimeConfig);
 
-                int timeoutSec = Math.max(1, runtimeConfig.getTimeoutMs() / 1000);
-                RequestObj requestObj = new RequestObj()
+                RequestObj requestObj = AiRequestTimeouts.applyStandard(new RequestObj()
                         .setMethod("DELETE")
                         .setUrl(resolveFilesEndpoint(runtimeConfig.getBaseUrl()) + "/" + uploadedFile.getFileId())
                         .setHeaders(headers)
-                        .setTimeOut(timeoutSec)
-                        .setReadTimeout(timeoutSec)
-                        .setWriteTimeout(timeoutSec)
-                        .setCallTimeout(timeoutSec)
-                        .setInternalAiRequest(runtimeConfig.isBuiltinAi());
+                        .setInternalAiRequest(runtimeConfig.isBuiltinAi()), runtimeConfig);
                 ProxyUtils.applyProxy(requestObj, runtimeConfig.isUseProxy());
-                requests(requestObj).close();
+                AiHttpExecutor.requests(requestObj).close();
             } catch (Exception ignored) {
             }
         }
+    }
+
+    private PreparedRequest buildUploadFallbackRequest(AiRuntimeConfig runtimeConfig,
+                                                       AiChatRequest request,
+                                                       List<AiAttachment> attachments,
+                                                       Exception uploadException) throws Exception {
+        if (!AiAttachmentFallbackSupport.shouldFallbackAfterUploadFailure(uploadException)) {
+            return null;
+        }
+        AiAttachmentFallbackSupport.FallbackPlan fallbackPlan = AiAttachmentFallbackSupport.buildFallbackPlan(
+                AiProviderType.OPENAI,
+                request,
+                attachments
+        );
+        if (fallbackPlan == null) {
+            return null;
+        }
+        RequestObj requestObj = buildRequest(
+                runtimeConfig,
+                fallbackPlan.getRequest(),
+                null,
+                fallbackPlan.getInlineAttachments()
+        );
+        return PreparedRequest.of(requestObj);
+    }
+
+    private void applyBuiltinGatewayHeaders(Map<String, String> headers, AiRuntimeConfig runtimeConfig) {
+        if (headers == null || runtimeConfig == null || !runtimeConfig.isBuiltinAi()) {
+            return;
+        }
+        String modelAlias = runtimeConfig.getModelName();
+        if (modelAlias == null || modelAlias.trim().isEmpty()) {
+            return;
+        }
+        headers.put(MODEL_ALIAS_HEADER, modelAlias.trim());
     }
 
     private String resolveFilesEndpoint(String baseUrl) {
@@ -460,7 +886,7 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
         }
         JsonObject error = json.getAsJsonObject("error");
         String message = safeString(error, "message");
-        return message.isEmpty() ? "AI 请求失败" : message;
+        return message.isEmpty() ? I18nTextUtils.getString("ai.status.error") : message;
     }
 
     private String safeString(JsonObject obj, String key) {
@@ -487,7 +913,85 @@ public class OpenAiCompatibleProviderAdapter implements AiProviderAdapter {
         if (!reasoningContent.isEmpty()) {
             return reasoningContent;
         }
+        String reasoning = safeString(delta, "reasoning");
+        if (!reasoning.isEmpty()) {
+            return reasoning;
+        }
+        String reasoningDetails = readReasoningDetails(delta);
+        if (!reasoningDetails.isEmpty()) {
+            return reasoningDetails;
+        }
         return "";
+    }
+
+    private String readReasoningDetails(JsonObject delta) {
+        if (delta == null || !delta.has("reasoning_details")) {
+            return "";
+        }
+        JsonElement reasoningDetails = delta.get("reasoning_details");
+        if (reasoningDetails == null || reasoningDetails.isJsonNull()) {
+            return "";
+        }
+        if (reasoningDetails.isJsonObject()) {
+            return readReasoningDetailObject(reasoningDetails.getAsJsonObject());
+        }
+        if (!reasoningDetails.isJsonArray()) {
+            return "";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (JsonElement item : reasoningDetails.getAsJsonArray()) {
+            if (!item.isJsonObject()) {
+                continue;
+            }
+            String text = readReasoningDetailObject(item.getAsJsonObject());
+            if (!text.isEmpty()) {
+                builder.append(text);
+            }
+        }
+        return builder.toString();
+    }
+
+    private String readReasoningDetailObject(JsonObject detail) {
+        String text = safeString(detail, "text");
+        if (!text.isEmpty()) {
+            return text;
+        }
+        text = safeString(detail, "thinking");
+        if (!text.isEmpty()) {
+            return text;
+        }
+        text = safeString(detail, "summary");
+        if (!text.isEmpty()) {
+            return text;
+        }
+        return safeString(detail, "reasoning");
+    }
+
+    private enum ThinkingDialect {
+        NONE(false),
+        OPENAI_REASONING_EFFORT(false),
+        REASONING_EFFORT_NONE(false),
+        REASONING_EFFORT_LOW(false),
+        GROQ_QWEN_REASONING_EFFORT(false),
+        OPENROUTER_REASONING(true),
+        REASONING_ENABLED(false),
+        QWEN_CLOUD(true),
+        SILICONFLOW(true),
+        DEEPSEEK_THINKING(false),
+        GLM_THINKING(false),
+        QWEN_CHAT_TEMPLATE(true),
+        CHAT_TEMPLATE_THINKING(true);
+
+        private final boolean supportsBudget;
+
+        ThinkingDialect(boolean supportsBudget) {
+            this.supportsBudget = supportsBudget;
+        }
+
+        private boolean supportsBudget() {
+            return supportsBudget;
+        }
     }
 
     private static final class UploadedOpenAiFile {

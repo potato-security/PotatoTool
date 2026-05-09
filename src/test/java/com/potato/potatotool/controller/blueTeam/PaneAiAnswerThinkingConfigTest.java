@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.ai.config.AiConfigReader;
 import com.potato.potatotool.utils.ai.model.AiRuntimeConfig;
+import com.potato.potatotool.utils.ai.model.AiThinkingConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -36,10 +37,10 @@ class PaneAiAnswerThinkingConfigTest {
         public AiRuntimeConfig read() {
             JsonObject thinking = new JsonObject();
             thinking.addProperty(ConfigConstants.AI_THINKING_ENABLED, thinkingEnabled);
-            thinking.addProperty(ConfigConstants.AI_THINKING_BUDGET_TOKENS, 1024);
+            thinking.addProperty(ConfigConstants.AI_THINKING_BUDGET_TOKENS, AiThinkingConfig.DEFAULT_BUDGET_TOKENS);
 
             JsonObject ai = new JsonObject();
-            ai.addProperty(ConfigConstants.AI_PROVIDER, "OPENAI_COMPATIBLE");
+            ai.addProperty(ConfigConstants.AI_PROVIDER, "OPENAI");
             ai.addProperty(ConfigConstants.AI_BASE_URL, "https://api.example.com/v1/chat/completions");
             ai.addProperty(ConfigConstants.AI_API_KEY, "test-key");
             ai.addProperty(ConfigConstants.AI_MODEL_NAME, "test-model");

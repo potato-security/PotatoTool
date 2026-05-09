@@ -15,10 +15,11 @@ import com.potato.potatotool.utils.ai.model.AiRuntimeConfig;
 import com.potato.potatotool.utils.ai.model.AiStreamEvent;
 import com.potato.potatotool.utils.ai.provider.AiProviderAdapter;
 import com.potato.potatotool.utils.ai.provider.AiProviderRegistry;
+import com.potato.potatotool.utils.ai.transport.AiHttpExecutor;
+import com.potato.potatotool.utils.core.I18nTextUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,8 +27,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 public class AiChatService {
 
@@ -60,7 +59,7 @@ public class AiChatService {
 
     public AiChatService(AiConfigReader configReader, AiProviderRegistry providerRegistry) {
         this(configReader, providerRegistry, (requestObj, streamSession, lineConsumer) -> {
-            try (CustomHttpResponse response = requests(requestObj)) {
+            try (CustomHttpResponse response = AiHttpExecutor.requests(requestObj)) {
                 StreamController.bind(streamSession, response);
                 if (streamSession.isCancelled()) {
                     return;
@@ -121,7 +120,7 @@ public class AiChatService {
                            com.potato.potatotool.utils.ai.model.AiThinkingConfig thinkingOverride,
                            EventListener listener) {
         if (question == null || question.trim().isEmpty()) {
-            listener.onEvent(AiStreamEvent.error("问题不能为空"));
+            listener.onEvent(AiStreamEvent.error(I18nTextUtils.getString("ai.error.question.empty")));
             return;
         }
 
@@ -130,7 +129,7 @@ public class AiChatService {
         try {
             runtimeConfig = configReader.read();
         } catch (Exception e) {
-            listener.onEvent(AiStreamEvent.error("AI 配置错误: " + e.getMessage()));
+            listener.onEvent(AiStreamEvent.error(I18nTextUtils.getString("ai.error.config", e.getMessage())));
             return;
         }
 
@@ -154,7 +153,7 @@ public class AiChatService {
         try {
             preparedRequest = adapter.prepareRequest(runtimeConfig, request);
         } catch (Exception e) {
-            listener.onEvent(AiStreamEvent.error(normalizeError(e, runtimeConfig)));
+            listener.onEvent(AiStreamEvent.error(normalizeError(e)));
             return;
         }
         RequestObj requestObj = preparedRequest.getRequestObj();
@@ -185,7 +184,7 @@ public class AiChatService {
             }
         } catch (Exception e) {
             if (!streamSession.isCancelled()) {
-                listener.onEvent(AiStreamEvent.error(normalizeError(e, runtimeConfig)));
+                listener.onEvent(AiStreamEvent.error(normalizeError(e)));
             }
         } finally {
             clearActiveStream(streamSession);
@@ -220,7 +219,7 @@ public class AiChatService {
                               String historyQuestion,
                               List<AiAttachment> attachments) {
         if (question == null || question.trim().isEmpty()) {
-            return "问题不能为空";
+            return I18nTextUtils.getString("ai.error.question.empty");
         }
 
         String askText = question.trim();
@@ -228,7 +227,7 @@ public class AiChatService {
         try {
             runtimeConfig = configReader.read();
         } catch (Exception e) {
-            return "AI 配置错误: " + e.getMessage();
+            return I18nTextUtils.getString("ai.error.config", e.getMessage());
         }
 
         AiProviderAdapter adapter = providerRegistry.get(runtimeConfig.getProviderType());
@@ -250,11 +249,11 @@ public class AiChatService {
         try {
             preparedRequest = adapter.prepareRequest(runtimeConfig, request);
         } catch (Exception e) {
-            return normalizeError(e, runtimeConfig);
+            return normalizeError(e);
         }
         RequestObj requestObj = preparedRequest.getRequestObj();
 
-        try (CustomHttpResponse response = requests(requestObj)) {
+        try (CustomHttpResponse response = AiHttpExecutor.requests(requestObj)) {
             String body = response.getTextStr();
             String parsed = adapter.parseResponse(body);
             if (parsed != null) {
@@ -263,7 +262,7 @@ public class AiChatService {
             }
             return parsed == null ? "" : parsed;
         } catch (Exception e) {
-            return normalizeError(e, runtimeConfig);
+            return normalizeError(e);
         } finally {
             preparedRequest.cleanup();
         }
@@ -309,70 +308,40 @@ public class AiChatService {
         }
     }
 
-    private String normalizeError(Exception e, AiRuntimeConfig runtimeConfig) {
+    private String normalizeError(Exception e) {
         String message = e.getMessage();
         if (message == null || message.trim().isEmpty()) {
-            return "AI 请求失败";
+            return I18nTextUtils.getString("ai.status.error");
         }
-        if (message.contains("Connect timed out")) {
-            return "AI 连接超时，请检查网络或代理";
+        if (containsIgnoreCase(message, "connect timed out")) {
+            return I18nTextUtils.getString("ai.error.connect.timeout");
         }
-        if (!runtimeConfig.isBuiltinAi()) {
-            return message;
+        if (containsIgnoreCase(message, "read timed out")
+                || containsIgnoreCase(message, " timeout")
+                || "timeout".equalsIgnoreCase(message.trim())) {
+            return I18nTextUtils.getString("ai.error.stream.timeout");
         }
-        return sanitizeEndpointMessage(message, runtimeConfig);
+        if (containsIgnoreCase(message, "stream was reset")
+                || containsIgnoreCase(message, "canceled")
+                || containsIgnoreCase(message, "cancelled")
+                || containsIgnoreCase(message, "cancel")) {
+            return I18nTextUtils.getString("ai.error.stream.reset");
+        }
+        if (containsIgnoreCase(message, "response code: 502")
+                || containsIgnoreCase(message, "http response code: 502")) {
+            return I18nTextUtils.getString("ai.error.bad.gateway");
+        }
+        if (containsIgnoreCase(message, "premature eof")) {
+            return I18nTextUtils.getString("ai.error.premature.eof");
+        }
+        return message;
     }
 
-    private String sanitizeEndpointMessage(String message, AiRuntimeConfig runtimeConfig) {
-        if (message == null || message.trim().isEmpty()) {
-            return "AI 请求失败";
+    private boolean containsIgnoreCase(String source, String target) {
+        if (source == null || target == null) {
+            return false;
         }
-
-        String result = message;
-        result = result.replaceAll("(?i)https?://[^\\s,，;；)]+", "内置AI服务地址");
-
-        String host = resolveConfiguredHost(runtimeConfig.getBaseUrl());
-        if (!host.isEmpty()) {
-            String ipPortPattern = "(?i)/" + Pattern.quote(host) + ":\\d+";
-            result = result.replaceAll(ipPortPattern, "/内置AI服务主机");
-
-            String hostPortPattern = "(?i)(?<![a-z0-9_.-])" + Pattern.quote(host) + ":\\d+";
-            result = result.replaceAll(hostPortPattern, "内置AI服务主机");
-
-            String bareHostPattern = "(?i)(?<![a-z0-9_.-])" + Pattern.quote(host) + "(?![a-z0-9_.-])";
-            result = result.replaceAll(bareHostPattern, "内置AI服务主机");
-        }
-
-        result = result.replaceAll("(?i)/(?:\\d{1,3}\\.){3}\\d{1,3}:\\d+", "/内置AI服务主机");
-        result = result.replaceAll("(?i)(?<![a-z0-9_.-])(?:\\d{1,3}\\.){3}\\d{1,3}:\\d+", "内置AI服务主机");
-        result = result.replaceAll("(?i)/[a-z0-9.-]+\\.[a-z]{2,}:\\d+", "/内置AI服务主机");
-        result = result.replaceAll("(?i)(?<![a-z0-9_.-])[a-z0-9.-]+\\.[a-z]{2,}:\\d+", "内置AI服务主机");
-
-        return result;
-    }
-
-    private String resolveConfiguredHost(String baseUrl) {
-        if (baseUrl == null || baseUrl.trim().isEmpty()) {
-            return "";
-        }
-        try {
-            URI uri = URI.create(baseUrl.trim());
-            String host = uri.getHost();
-            if (host != null && !host.trim().isEmpty()) {
-                return host.trim();
-            }
-        } catch (Exception ignored) {
-        }
-
-        String raw = baseUrl.trim();
-        String noScheme = raw.replaceFirst("(?i)^https?://", "");
-        int slashIndex = noScheme.indexOf('/');
-        String hostPort = slashIndex > 0 ? noScheme.substring(0, slashIndex) : noScheme;
-        if (hostPort.startsWith("/")) {
-            hostPort = hostPort.substring(1);
-        }
-        int colonIndex = hostPort.indexOf(':');
-        return colonIndex > 0 ? hostPort.substring(0, colonIndex) : hostPort;
+        return source.toLowerCase().contains(target.toLowerCase());
     }
 
     private String normalizeHistoryQuestion(String historyQuestion, String fallbackQuestion) {

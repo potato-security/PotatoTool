@@ -53,6 +53,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextBoundsType;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import javafx.util.Duration;
@@ -73,6 +75,10 @@ public class PaneAiAnswer {
     private static final double QUESTION_HEIGHT_UPDATE_THRESHOLD = 2.0;
     private static final double MESSAGE_BUBBLE_MAX_WIDTH = 620;
     private static final double COMPOSER_MENU_VERTICAL_GAP = 8;
+    private static final double MESSAGE_BUBBLE_MIN_WIDTH = 72;
+    private static final double THINKING_BUBBLE_MIN_WIDTH = 140;
+    private static final double BUBBLE_WIDTH_SAFETY = 10;
+    private static final double BUBBLE_HEIGHT_SAFETY = 6;
 
     @FXML
     private StackPane sPane;
@@ -149,7 +155,7 @@ public class PaneAiAnswer {
     private boolean forceScrollToBottomPending;
     private boolean scrollToBottomScheduled;
     private long chatScrollLayoutVersion;
-    private AiThinkingConfig sessionThinkingConfig = new AiThinkingConfig(false, 1024);
+    private AiThinkingConfig sessionThinkingConfig = new AiThinkingConfig(false, AiThinkingConfig.DEFAULT_BUDGET_TOKENS);
     private ContextMenu composerMenu;
     private Label composerAttachMenuLabel;
     private Label composerThinkingMenuLabel;
@@ -157,8 +163,9 @@ public class PaneAiAnswer {
     private ScrollPane questionScrollPane;
     private Region questionContentRegion;
     private ScrollBar questionVerticalScrollBar;
-    private Label bufferedAiLabel;
-    private Label bufferedThinkingLabel;
+    private Text questionTextNode;
+    private TextArea bufferedAiLabel;
+    private TextArea bufferedThinkingLabel;
 
     public PaneAiAnswer() {
         this(new AiChatService(), new AiConfigReader(), new AiProviderRegistry());
@@ -236,7 +243,7 @@ public class PaneAiAnswer {
         String historyPrompt = AiPromptUtils.buildConversationHistoryLabel(rawQuestion, currentAttachments);
         followStreamToBottom = true;
 
-        Label myLabel = createBubbleLabel("myMsg");
+        TextArea myLabel = createBubbleTextArea("myMsg");
         myLabel.setText(buildUserBubbleText(visibleQuestion, currentAttachments));
 
         Region myAvatar = new Region();
@@ -251,8 +258,8 @@ public class PaneAiAnswer {
         myHBox.getChildren().addAll(mySpacer, myLabel, myAvatar);
         msgBox.getChildren().add(myHBox);
 
-        Label aiLabel = createBubbleLabel("aiMsg");
-        Label thinkingLabel = createBubbleLabel("aiThinkingMsg");
+        TextArea aiLabel = createBubbleTextArea("aiMsg");
+        TextArea thinkingLabel = createBubbleTextArea("aiThinkingMsg");
         thinkingLabel.setVisible(false);
         thinkingLabel.setManaged(false);
 
@@ -357,6 +364,7 @@ public class PaneAiAnswer {
 
     private void configureQuestionInput() {
         question.textProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+        question.promptTextProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
         question.fontProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
         question.paddingProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
         question.maxHeightProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
@@ -368,6 +376,7 @@ public class PaneAiAnswer {
             questionScrollPane = null;
             questionContentRegion = null;
             questionVerticalScrollBar = null;
+            questionTextNode = null;
             updateQuestionScrollPolicy(false);
             refreshQuestionHeight();
         }));
@@ -418,12 +427,15 @@ public class PaneAiAnswer {
             return;
         }
 
+        String displayedQuestionText = resolveQuestionDisplayedText();
         double chromeHeight = resolveQuestionVerticalChromeHeight();
         double maxHeight = question.getMaxHeight() > 0 ? question.getMaxHeight() : QUESTION_MIN_HEIGHT;
         double roundedDesiredHeight = Math.ceil(chromeHeight + PaneAiAnswerTextMetricsSupport.computeTextHeight(
                 question.getFont(),
-                question.getText(),
-                wrappingWidth
+                displayedQuestionText,
+                wrappingWidth,
+                resolveQuestionLineSpacing(),
+                resolveQuestionBoundsType()
         ));
         boolean allowVerticalScroll = roundedDesiredHeight > maxHeight;
         if (allowVerticalScroll) {
@@ -432,8 +444,10 @@ public class PaneAiAnswer {
                 double scrollingWrappingWidth = Math.max(0, wrappingWidth - scrollbarBreadth);
                 roundedDesiredHeight = Math.ceil(chromeHeight + PaneAiAnswerTextMetricsSupport.computeTextHeight(
                         question.getFont(),
-                        question.getText(),
-                        scrollingWrappingWidth
+                        displayedQuestionText,
+                        scrollingWrappingWidth,
+                        resolveQuestionLineSpacing(),
+                        resolveQuestionBoundsType()
                 ));
             }
         }
@@ -463,6 +477,9 @@ public class PaneAiAnswer {
     }
 
     private double resolveQuestionControlWidth() {
+        if (question != null && question.getWidth() > 0) {
+            return question.getWidth();
+        }
         if (attachmentBar != null && attachmentBar.getWidth() > 0) {
             double spacingTotal = attachmentBar.getSpacing() * Math.max(0, attachmentBar.getChildren().size() - 1);
             double controlWidth = attachmentBar.getWidth()
@@ -474,7 +491,7 @@ public class PaneAiAnswer {
                 return controlWidth;
             }
         }
-        return question.getWidth();
+        return question == null ? 0 : question.prefWidth(-1);
     }
 
     private double resolveQuestionVerticalScrollBarBreadth() {
@@ -514,6 +531,15 @@ public class PaneAiAnswer {
         if (verticalScrollBarNode instanceof ScrollBar) {
             questionVerticalScrollBar = (ScrollBar) verticalScrollBarNode;
         }
+        Node textNode = question.lookup(".text");
+        if (textNode instanceof Text) {
+            Text resolvedTextNode = (Text) textNode;
+            if (questionTextNode != resolvedTextNode) {
+                questionTextNode = resolvedTextNode;
+                questionTextNode.boundsTypeProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+                questionTextNode.lineSpacingProperty().addListener((observable, oldValue, newValue) -> scheduleQuestionHeightRefresh());
+            }
+        }
     }
 
     private void updateQuestionScrollPolicy(boolean allowVerticalScroll) {
@@ -532,6 +558,18 @@ public class PaneAiAnswer {
         if (questionScrollPane.getVbarPolicy() != targetPolicy) {
             questionScrollPane.setVbarPolicy(targetPolicy);
         }
+    }
+
+    private String resolveQuestionDisplayedText() {
+        if (question == null) {
+            return "";
+        }
+        String text = question.getText();
+        if (text != null && !text.isEmpty()) {
+            return text;
+        }
+        String promptText = question.getPromptText();
+        return promptText == null ? "" : promptText;
     }
 
     private void updateComposerFocusState(boolean focused) {
@@ -567,8 +605,9 @@ public class PaneAiAnswer {
 
     private void initializeSessionThinking() {
         AiThinkingConfig currentThinkingConfig = PaneAiAnswerSupport.readThinkingConfig(aiConfigReader);
+        boolean supported = PaneAiAnswerSupport.supportsThinking(aiProviderRegistry, aiConfigReader);
         sessionThinkingConfig = new AiThinkingConfig(
-                currentThinkingConfig.isEnabled(),
+                supported && currentThinkingConfig.isEnabled(),
                 currentThinkingConfig.getBudgetTokens()
         );
     }
@@ -642,9 +681,14 @@ public class PaneAiAnswer {
             refreshThinkingToggle();
             return;
         }
+        if (!supportsThinkingMode()) {
+            sessionThinkingConfig = new AiThinkingConfig(false, readCurrentThinkingBudgetTokens());
+            refreshThinkingToggle();
+            refreshAttachmentSummary();
+            return;
+        }
         boolean enabled = sessionThinkingConfig != null && sessionThinkingConfig.isEnabled();
-        int budgetTokens = sessionThinkingConfig == null ? 1024 : sessionThinkingConfig.getBudgetTokens();
-        sessionThinkingConfig = new AiThinkingConfig(!enabled, budgetTokens);
+        sessionThinkingConfig = new AiThinkingConfig(!enabled, readCurrentThinkingBudgetTokens());
         refreshThinkingToggle();
         refreshAttachmentSummary();
     }
@@ -664,12 +708,9 @@ public class PaneAiAnswer {
     private void startAskTask(String requestPrompt,
                               String historyPrompt,
                               List<AiAttachment> attachments,
-                              Label aiLabel,
-                              Label thinkingLabel) {
-        final AiThinkingConfig requestThinkingConfig = new AiThinkingConfig(
-                sessionThinkingConfig.isEnabled(),
-                sessionThinkingConfig.getBudgetTokens()
-        );
+                              TextArea aiLabel,
+                              TextArea thinkingLabel) {
+        final AiThinkingConfig requestThinkingConfig = buildRequestThinkingConfig();
         final boolean requestThinkingEnabled = requestThinkingConfig.isEnabled();
         stopRequested = false;
         resetStreamBuffer(aiLabel, thinkingLabel);
@@ -734,9 +775,24 @@ public class PaneAiAnswer {
         thread.start();
     }
 
+    private AiThinkingConfig buildRequestThinkingConfig() {
+        boolean enabled = supportsThinkingMode() && sessionThinkingConfig != null && sessionThinkingConfig.isEnabled();
+        int budgetTokens = readCurrentThinkingBudgetTokens();
+        sessionThinkingConfig = new AiThinkingConfig(enabled, budgetTokens);
+        return sessionThinkingConfig;
+    }
+
+    private int readCurrentThinkingBudgetTokens() {
+        AiThinkingConfig currentThinkingConfig = PaneAiAnswerSupport.readThinkingConfig(aiConfigReader);
+        if (currentThinkingConfig != null && currentThinkingConfig.getBudgetTokens() > 0) {
+            return currentThinkingConfig.getBudgetTokens();
+        }
+        return sessionThinkingConfig == null ? AiThinkingConfig.DEFAULT_BUDGET_TOKENS : sessionThinkingConfig.getBudgetTokens();
+    }
+
     private void handleStreamEvent(AiStreamEvent event,
-                                   Label aiLabel,
-                                   Label thinkingLabel,
+                                   TextArea aiLabel,
+                                   TextArea thinkingLabel,
                                    boolean requestThinkingEnabled) {
         if (stopRequested && event.getType() != AiStreamEvent.Type.ERROR) {
             return;
@@ -774,32 +830,105 @@ public class PaneAiAnswer {
         }
     }
 
-    private Label createBubbleLabel(String styleClass) {
-        Label label = new Label();
-        label.setWrapText(true);
-        label.setMinHeight(Region.USE_PREF_SIZE);
-        label.setAlignment(Pos.TOP_LEFT);
-        label.maxWidthProperty().bind(Bindings.createDoubleBinding(
-                () -> Math.max(
-                        260.0,
-                        Math.min(
-                                MESSAGE_BUBBLE_MAX_WIDTH,
-                                sPane == null ? MESSAGE_BUBBLE_MAX_WIDTH : sPane.getWidth() - 280.0
-                        )
-                ),
+    private TextArea createBubbleTextArea(String styleClass) {
+        TextArea textArea = new TextArea();
+        final double minBubbleWidth = resolveBubbleMinWidth(styleClass);
+        textArea.setWrapText(true);
+        textArea.setEditable(false);
+        textArea.setFocusTraversable(true);
+        textArea.setMinWidth(Region.USE_PREF_SIZE);
+        textArea.setPrefWidth(minBubbleWidth);
+        textArea.setMinHeight(Region.USE_PREF_SIZE);
+        textArea.setPrefRowCount(1);
+        textArea.getStyleClass().addAll("chatBubbleTextArea", styleClass);
+        textArea.maxWidthProperty().bind(Bindings.createDoubleBinding(
+                () -> Math.max(minBubbleWidth, Math.min(
+                        MESSAGE_BUBBLE_MAX_WIDTH,
+                        sPane == null ? MESSAGE_BUBBLE_MAX_WIDTH : sPane.getWidth() - 280.0
+                )),
                 sPane.widthProperty()
         ));
-        label.getStyleClass().add(styleClass);
-        label.setContextMenu(createBubbleContextMenu(label));
-        return label;
+        textArea.textProperty().addListener((observable, oldValue, newValue) -> refreshBubbleSize(textArea));
+        textArea.widthProperty().addListener((observable, oldValue, newValue) -> refreshBubbleSize(textArea));
+        textArea.maxWidthProperty().addListener((observable, oldValue, newValue) -> refreshBubbleSize(textArea));
+        textArea.fontProperty().addListener((observable, oldValue, newValue) -> refreshBubbleSize(textArea));
+        textArea.paddingProperty().addListener((observable, oldValue, newValue) -> refreshBubbleSize(textArea));
+        textArea.skinProperty().addListener((observable, oldValue, newValue) -> Platform.runLater(() -> refreshBubbleSize(textArea)));
+        textArea.setContextMenu(createBubbleContextMenu(textArea));
+        Platform.runLater(() -> refreshBubbleSize(textArea));
+        return textArea;
     }
 
-    private ContextMenu createBubbleContextMenu(Label label) {
+    private void refreshBubbleSize(TextArea textArea) {
+        if (textArea == null) {
+            return;
+        }
+        double maxWidth = textArea.getMaxWidth();
+        if (maxWidth <= 0) {
+            Platform.runLater(() -> refreshBubbleSize(textArea));
+            return;
+        }
+
+        TextAreaSkinMetrics metrics = resolveTextAreaSkinMetrics(textArea);
+        boolean skinMetricsReady = isTextAreaSkinMetricsReady(metrics);
+        if (skinMetricsReady) {
+            applyBubbleViewportPolicy(metrics);
+        }
+        double horizontalPadding = resolveBubbleHorizontalChrome(textArea, metrics);
+        double verticalPadding = resolveBubbleVerticalChrome(textArea, metrics);
+
+        double minWidth = resolveBubbleMinWidth(textArea);
+        double baseDesiredWidth = PaneAiAnswerTextMetricsSupport.computeTextWidth(textArea.getFont(), textArea.getText())
+                + horizontalPadding;
+        double widthSafety = baseDesiredWidth > minWidth && baseDesiredWidth < maxWidth
+                ? BUBBLE_WIDTH_SAFETY
+                : 0;
+        double targetWidth = Math.max(minWidth, Math.min(maxWidth, Math.ceil(baseDesiredWidth + widthSafety)));
+        if (Math.abs(textArea.getPrefWidth() - targetWidth) >= QUESTION_HEIGHT_UPDATE_THRESHOLD) {
+            textArea.setPrefWidth(targetWidth);
+            textArea.requestLayout();
+        }
+
+        double wrappingWidth = Math.max(0, targetWidth - horizontalPadding);
+        double textHeight = PaneAiAnswerTextMetricsSupport.computeTextHeight(
+                textArea.getFont(),
+                textArea.getText(),
+                wrappingWidth,
+                skinMetricsReady ? resolveTextAreaLineSpacing(metrics) : 0,
+                skinMetricsReady ? resolveTextAreaBoundsType(metrics) : TextBoundsType.LOGICAL
+        );
+        double minHeight = textArea.getStyleClass().contains("aiThinkingMsg") ? 36 : 44;
+        double baseDesiredHeight = Math.ceil(textHeight + verticalPadding);
+        double heightSafety = baseDesiredHeight > minHeight
+                ? BUBBLE_HEIGHT_SAFETY
+                : 0;
+        double targetHeight = Math.max(minHeight, Math.ceil(baseDesiredHeight + heightSafety));
+        if (Math.abs(textArea.getPrefHeight() - targetHeight) >= QUESTION_HEIGHT_UPDATE_THRESHOLD) {
+            textArea.setPrefHeight(targetHeight);
+            textArea.requestLayout();
+        }
+        textArea.setScrollLeft(0);
+        textArea.setScrollTop(0);
+    }
+
+    private ContextMenu createBubbleContextMenu(TextArea textArea) {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem copyItem = new MenuItem(I18nUtils.getString("contextmenu.copy"));
-        copyItem.setOnAction(event -> copyTextToClipboard(label == null ? "" : label.getText()));
+        copyItem.textProperty().bind(I18nUtils.createBinding("contextmenu.copy"));
+        copyItem.setOnAction(event -> copyTextToClipboard(resolveBubbleCopyText(textArea)));
         contextMenu.getItems().add(copyItem);
         return contextMenu;
+    }
+
+    private String resolveBubbleCopyText(TextArea textArea) {
+        if (textArea == null) {
+            return "";
+        }
+        String selectedText = textArea.getSelectedText();
+        if (selectedText != null && !selectedText.trim().isEmpty()) {
+            return selectedText;
+        }
+        return textArea.getText();
     }
 
     private void copyTextToClipboard(String text) {
@@ -811,7 +940,7 @@ public class PaneAiAnswer {
         Clipboard.getSystemClipboard().setContent(clipboardContent);
     }
 
-    private void queueStreamText(Label label, String text, boolean thinking) {
+    private void queueStreamText(TextArea label, String text, boolean thinking) {
         if (text == null || text.isEmpty()) {
             return;
         }
@@ -851,8 +980,8 @@ public class PaneAiAnswer {
 
         String aiChunk;
         String thinkingChunk;
-        Label aiLabel;
-        Label thinkingLabel;
+        TextArea aiLabel;
+        TextArea thinkingLabel;
         synchronized (this) {
             aiChunk = pendingAiText.toString();
             pendingAiText.setLength(0);
@@ -894,7 +1023,7 @@ public class PaneAiAnswer {
         }
     }
 
-    private void resetStreamBuffer(Label aiLabel, Label thinkingLabel) {
+    private void resetStreamBuffer(TextArea aiLabel, TextArea thinkingLabel) {
         stopStreamFlush();
         synchronized (this) {
             pendingAiText.setLength(0);
@@ -1031,7 +1160,7 @@ public class PaneAiAnswer {
     private void refreshAttachmentSummary() {
         boolean hasAttachments = !attachmentContexts.isEmpty();
         refreshAttachmentPreview();
-        boolean thinkingEnabled = sessionThinkingConfig != null && sessionThinkingConfig.isEnabled();
+        boolean thinkingEnabled = supportsThinkingMode() && sessionThinkingConfig != null && sessionThinkingConfig.isEnabled();
 
         thinkingBadge.setManaged(thinkingEnabled);
         thinkingBadge.setVisible(thinkingEnabled);
@@ -1140,16 +1269,19 @@ public class PaneAiAnswer {
     }
 
     private void refreshThinkingToggle() {
-        boolean enabled = sessionThinkingConfig != null && sessionThinkingConfig.isEnabled();
+        boolean supported = supportsThinkingMode();
+        boolean enabled = supported && sessionThinkingConfig != null && sessionThinkingConfig.isEnabled();
         String thinkingTooltip = buildThinkingTooltip(enabled);
         if (composerThinkingMenuLabel != null) {
             composerThinkingMenuLabel.setText(I18nUtils.getString(
-                    enabled ? "ai.compose.menu.thinking.disable" : "ai.compose.menu.thinking.enable"
+                    !supported ? "ai.compose.menu.thinking.unsupported"
+                            : enabled ? "ai.compose.menu.thinking.disable" : "ai.compose.menu.thinking.enable"
             ));
             setTooltipText(composerThinkingMenuLabel, thinkingTooltip);
         }
         if (composerThinkingMenuItemContainer != null) {
             toggleStyleClass(composerThinkingMenuItemContainer, "ai-composer-menu-item-active", enabled);
+            composerThinkingMenuItemContainer.setDisable(!supported);
             setTooltipText(composerThinkingMenuItemContainer, thinkingTooltip);
         }
         refreshAttachButtonTooltip();
@@ -1180,17 +1312,33 @@ public class PaneAiAnswer {
             composerAttachMenuLabel.setText(I18nUtils.getString("ai.attach"));
         }
         if (thinkingBadge != null) {
-            thinkingBadge.setText(I18nUtils.getString("ai.thinking.badge"));
-            setTooltipText(thinkingBadge, buildThinkingTooltip(sessionThinkingConfig != null && sessionThinkingConfig.isEnabled()));
+            setLabeledText(thinkingBadge, I18nUtils.getString("ai.thinking.badge"));
+            setTooltipText(thinkingBadge, buildThinkingTooltip(supportsThinkingMode() && sessionThinkingConfig != null && sessionThinkingConfig.isEnabled()));
         }
     }
 
     private String buildThinkingTooltip(boolean enabled) {
-        int budgetTokens = sessionThinkingConfig == null ? 1024 : sessionThinkingConfig.getBudgetTokens();
+        if (!supportsThinkingMode()) {
+            return I18nUtils.getString("ai.thinking.tooltip.unsupported");
+        }
+        int budgetTokens = readCurrentThinkingBudgetTokens();
+        if (!supportsThinkingBudget()) {
+            return I18nUtils.getString(
+                    enabled ? "ai.thinking.tooltip.on.no_budget" : "ai.thinking.tooltip.off.no_budget"
+            );
+        }
         return I18nUtils.getString(
                 enabled ? "ai.thinking.tooltip.on" : "ai.thinking.tooltip.off",
                 budgetTokens
         );
+    }
+
+    private boolean supportsThinkingMode() {
+        return PaneAiAnswerSupport.supportsThinking(aiProviderRegistry, aiConfigReader);
+    }
+
+    private boolean supportsThinkingBudget() {
+        return PaneAiAnswerSupport.supportsThinkingBudget(aiProviderRegistry, aiConfigReader);
     }
 
     private void setTooltipText(Control control, String text) {
@@ -1364,6 +1512,142 @@ public class PaneAiAnswer {
             return 0;
         }
         return region.snappedTopInset() + region.snappedBottomInset();
+    }
+
+    private double resolveQuestionLineSpacing() {
+        ensureQuestionSkinNodes();
+        return questionTextNode == null ? 0 : questionTextNode.getLineSpacing();
+    }
+
+    private TextBoundsType resolveQuestionBoundsType() {
+        ensureQuestionSkinNodes();
+        return questionTextNode == null ? TextBoundsType.LOGICAL : questionTextNode.getBoundsType();
+    }
+
+    private TextAreaSkinMetrics resolveTextAreaSkinMetrics(TextArea textArea) {
+        if (textArea == null) {
+            return TextAreaSkinMetrics.EMPTY;
+        }
+
+        ScrollPane internalScrollPane = null;
+        Region contentRegion = null;
+        Text textNode = null;
+
+        Node scrollPaneNode = textArea.lookup(".scroll-pane");
+        if (scrollPaneNode instanceof ScrollPane) {
+            internalScrollPane = (ScrollPane) scrollPaneNode;
+        }
+
+        Node contentNode = textArea.lookup(".content");
+        if (contentNode instanceof Region) {
+            contentRegion = (Region) contentNode;
+        }
+
+        Node paragraphTextNode = textArea.lookup(".text");
+        if (paragraphTextNode instanceof Text) {
+            textNode = (Text) paragraphTextNode;
+        }
+
+        return new TextAreaSkinMetrics(internalScrollPane, contentRegion, textNode);
+    }
+
+    private double resolveTextAreaHorizontalChrome(TextArea textArea, TextAreaSkinMetrics metrics) {
+        return snappedHorizontalInsets(textArea)
+                + snappedHorizontalInsets(metrics.getScrollPane())
+                + snappedHorizontalInsets(metrics.getContentRegion());
+    }
+
+    private double resolveTextAreaVerticalChrome(TextArea textArea, TextAreaSkinMetrics metrics) {
+        return snappedVerticalInsets(textArea)
+                + snappedVerticalInsets(metrics.getScrollPane())
+                + snappedVerticalInsets(metrics.getContentRegion());
+    }
+
+    private double resolveBubbleHorizontalChrome(TextArea textArea, TextAreaSkinMetrics metrics) {
+        double chrome = resolveTextAreaHorizontalChrome(textArea, metrics);
+        return chrome > 0 ? chrome : resolveFallbackBubbleHorizontalChrome(textArea);
+    }
+
+    private double resolveBubbleVerticalChrome(TextArea textArea, TextAreaSkinMetrics metrics) {
+        double chrome = resolveTextAreaVerticalChrome(textArea, metrics);
+        return chrome > 0 ? chrome : resolveFallbackBubbleVerticalChrome(textArea);
+    }
+
+    private double resolveFallbackBubbleHorizontalChrome(TextArea textArea) {
+        return textArea != null && textArea.getStyleClass().contains("aiThinkingMsg") ? 20 : 28;
+    }
+
+    private double resolveFallbackBubbleVerticalChrome(TextArea textArea) {
+        return textArea != null && textArea.getStyleClass().contains("aiThinkingMsg") ? 16 : 24;
+    }
+
+    private double resolveTextAreaLineSpacing(TextAreaSkinMetrics metrics) {
+        return metrics.getTextNode() == null ? 0 : metrics.getTextNode().getLineSpacing();
+    }
+
+    private TextBoundsType resolveTextAreaBoundsType(TextAreaSkinMetrics metrics) {
+        return metrics.getTextNode() == null ? TextBoundsType.LOGICAL : metrics.getTextNode().getBoundsType();
+    }
+
+    private boolean isTextAreaSkinMetricsReady(TextAreaSkinMetrics metrics) {
+        return metrics != null
+                && metrics.getScrollPane() != null
+                && metrics.getContentRegion() != null
+                && metrics.getTextNode() != null;
+    }
+
+    private void applyBubbleViewportPolicy(TextAreaSkinMetrics metrics) {
+        if (metrics == null || metrics.getScrollPane() == null) {
+            return;
+        }
+        ScrollPane internalScrollPane = metrics.getScrollPane();
+        internalScrollPane.setFitToWidth(true);
+        if (internalScrollPane.getHbarPolicy() != ScrollPane.ScrollBarPolicy.NEVER) {
+            internalScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        }
+        if (internalScrollPane.getVbarPolicy() != ScrollPane.ScrollBarPolicy.NEVER) {
+            internalScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        }
+    }
+
+    private double resolveBubbleMinWidth(TextArea textArea) {
+        return textArea != null && textArea.getStyleClass().contains("aiThinkingMsg")
+                ? THINKING_BUBBLE_MIN_WIDTH
+                : MESSAGE_BUBBLE_MIN_WIDTH;
+    }
+
+    private double resolveBubbleMinWidth(String styleClass) {
+        return "aiThinkingMsg".equals(styleClass)
+                ? THINKING_BUBBLE_MIN_WIDTH
+                : MESSAGE_BUBBLE_MIN_WIDTH;
+    }
+
+    private static final class TextAreaSkinMetrics {
+        private static final TextAreaSkinMetrics EMPTY = new TextAreaSkinMetrics(null, null, null);
+
+        private final ScrollPane scrollPane;
+        private final Region contentRegion;
+        private final Text textNode;
+
+        private TextAreaSkinMetrics(ScrollPane scrollPane,
+                                    Region contentRegion,
+                                    Text textNode) {
+            this.scrollPane = scrollPane;
+            this.contentRegion = contentRegion;
+            this.textNode = textNode;
+        }
+
+        private ScrollPane getScrollPane() {
+            return scrollPane;
+        }
+
+        private Region getContentRegion() {
+            return contentRegion;
+        }
+
+        private Text getTextNode() {
+            return textNode;
+        }
     }
 
     private String buildUserBubbleText(String visibleQuestion,

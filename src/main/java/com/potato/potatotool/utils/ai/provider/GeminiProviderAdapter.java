@@ -5,14 +5,20 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.potato.potatotool.utils.ai.AiAttachmentFallbackSupport;
 import com.potato.potatotool.utils.ai.AiAttachmentUtils;
+import com.potato.potatotool.utils.ai.AiRequestTimeouts;
 import com.potato.potatotool.utils.ai.model.AiAttachment;
 import com.potato.potatotool.utils.ai.model.AiChatRequest;
 import com.potato.potatotool.utils.ai.model.AiMessage;
 import com.potato.potatotool.utils.ai.model.AiAttachmentMode;
 import com.potato.potatotool.utils.ai.model.AiAttachmentSupportResult;
+import com.potato.potatotool.utils.ai.model.AiProviderType;
 import com.potato.potatotool.utils.ai.model.AiRuntimeConfig;
 import com.potato.potatotool.utils.ai.model.AiStreamEvent;
+import com.potato.potatotool.utils.ai.model.AiThinkingConfig;
+import com.potato.potatotool.utils.ai.transport.AiHttpExecutor;
+import com.potato.potatotool.utils.core.I18nTextUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.RequestObj;
@@ -22,8 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 public class GeminiProviderAdapter implements AiProviderAdapter {
     @Override
@@ -50,6 +54,10 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
             return PreparedRequest.of(requestObj, () -> deleteUploadedFiles(runtimeConfig, uploadedFiles));
         } catch (Exception e) {
             deleteUploadedFiles(runtimeConfig, uploadedFiles);
+            PreparedRequest fallbackRequest = buildUploadFallbackRequest(runtimeConfig, request, attachments, e);
+            if (fallbackRequest != null) {
+                return fallbackRequest;
+            }
             throw e;
         }
     }
@@ -83,22 +91,38 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
         }
         contents.add(createUserContent(request.getQuestion(), uploadedFiles, inlineAttachments));
         body.add("contents", contents);
+        AiThinkingConfig thinkingConfig = request.getThinkingConfig();
+        if (thinkingConfig != null && thinkingConfig.isEnabled() && supportsThinking(runtimeConfig)) {
+            JsonObject generationConfig = new JsonObject();
+            JsonObject thinkingConfigJson = new JsonObject();
+            thinkingConfigJson.addProperty("includeThoughts", true);
+            if (supportsThinkingBudget(runtimeConfig)) {
+                thinkingConfigJson.addProperty("thinkingBudget", thinkingConfig.getBudgetTokens());
+            }
+            generationConfig.add("thinkingConfig", thinkingConfigJson);
+            body.add("generationConfig", generationConfig);
+        }
 
-        int timeoutSec = Math.max(1, runtimeConfig.getTimeoutMs() / 1000);
-        RequestObj requestObj = new RequestObj()
+        RequestObj requestObj = AiRequestTimeouts.apply(new RequestObj()
                 .setMethod("POST")
                 .setPostMethod("JSON")
                 .setUrl(resolveRequestUrl(runtimeConfig.getBaseUrl(), request.isStream()))
                 .setHeaders(headers)
                 .setPostData(new Gson().toJson(body))
-                .setTimeOut(timeoutSec)
-                .setReadTimeout(timeoutSec)
-                .setWriteTimeout(timeoutSec)
-                .setCallTimeout(timeoutSec)
-                .setInternalAiRequest(runtimeConfig.isBuiltinAi());
+                .setInternalAiRequest(runtimeConfig.isBuiltinAi()), runtimeConfig, request.isStream());
 
         ProxyUtils.applyProxy(requestObj, runtimeConfig.isUseProxy());
         return requestObj;
+    }
+
+    @Override
+    public boolean supportsThinking(AiRuntimeConfig runtimeConfig) {
+        return true;
+    }
+
+    @Override
+    public boolean supportsThinkingBudget(AiRuntimeConfig runtimeConfig) {
+        return false;
     }
 
     @Override
@@ -108,7 +132,12 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
             return events;
         }
         String payload = line.trim();
-        if (payload.isEmpty() || payload.startsWith("event:")) {
+        if (payload.isEmpty() || payload.startsWith("event:") || payload.startsWith(":")) {
+            return events;
+        }
+        String transportError = resolveTransportErrorMessage(payload);
+        if (!transportError.isEmpty()) {
+            events.add(AiStreamEvent.error(transportError));
             return events;
         }
         if (payload.startsWith("data:")) {
@@ -130,7 +159,7 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
                 appendResponseEvents(events, parsed);
             }
         } catch (Exception e) {
-            events.add(AiStreamEvent.error("流式响应解析失败: " + e.getMessage()));
+            events.add(AiStreamEvent.error(I18nTextUtils.getString("ai.error.stream.parse", e.getMessage())));
         }
         return events;
     }
@@ -151,7 +180,7 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
             }
             return extractText(parsed.getAsJsonObject());
         } catch (Exception e) {
-            return "AI 响应解析失败: " + e.getMessage();
+            return I18nTextUtils.getString("ai.error.response.parse", e.getMessage());
         }
     }
 
@@ -205,7 +234,10 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
                 try {
                     inlineData.addProperty("data", AiAttachmentUtils.readBase64(attachment));
                 } catch (Exception e) {
-                    throw new IllegalStateException("读取附件失败: " + attachment.getFileName(), e);
+                    throw new IllegalStateException(
+                            I18nTextUtils.getString("ai.attach.read.failed", attachment.getFileName()),
+                            e
+                    );
                 }
                 inlinePart.add("inlineData", inlineData);
                 parts.add(inlinePart);
@@ -217,14 +249,12 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
 
     private UploadedGeminiFile uploadAttachment(AiRuntimeConfig runtimeConfig, AiAttachment attachment) throws Exception {
         if (attachment == null) {
-            throw new IllegalArgumentException("附件不能为空");
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.attach.error.empty"));
         }
         File file = attachment.toFile();
         if (file == null || !file.exists() || !file.isFile()) {
-            throw new IllegalArgumentException("附件不存在: " + attachment.getFileName());
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.attach.error.not.exists", attachment.getFileName()));
         }
-
-        int timeoutSec = Math.max(1, runtimeConfig.getTimeoutMs() / 1000);
 
         Map<String, String> startHeaders = new HashMap<String, String>();
         startHeaders.put("Content-Type", "application/json");
@@ -239,25 +269,21 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
         fileMetadata.addProperty("display_name", attachment.getFileName());
         metadata.add("file", fileMetadata);
 
-        RequestObj startRequest = new RequestObj()
+        RequestObj startRequest = AiRequestTimeouts.applyStandard(new RequestObj()
                 .setMethod("POST")
                 .setPostMethod("JSON")
                 .setUrl(resolveUploadEndpoint(runtimeConfig.getBaseUrl()))
                 .setHeaders(startHeaders)
                 .setPostData(new Gson().toJson(metadata))
-                .setTimeOut(timeoutSec)
-                .setReadTimeout(timeoutSec)
-                .setWriteTimeout(timeoutSec)
-                .setCallTimeout(timeoutSec)
-                .setInternalAiRequest(runtimeConfig.isBuiltinAi());
+                .setInternalAiRequest(runtimeConfig.isBuiltinAi()), runtimeConfig);
         ProxyUtils.applyProxy(startRequest, runtimeConfig.isUseProxy());
 
         String uploadUrl;
-        try (CustomHttpResponse response = requests(startRequest)) {
+        try (CustomHttpResponse response = AiHttpExecutor.requests(startRequest)) {
             List<String> uploadUrls = response.getHeaderField("X-Goog-Upload-URL");
             uploadUrl = uploadUrls == null || uploadUrls.isEmpty() ? "" : uploadUrls.get(0);
             if (uploadUrl == null || uploadUrl.trim().isEmpty()) {
-                throw new IllegalStateException("Gemini 附件上传失败: 未返回上传地址");
+                throw new IllegalStateException(I18nTextUtils.getString("ai.attach.error.gemini.upload.no.url"));
             }
         }
 
@@ -265,20 +291,16 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
         uploadHeaders.put("X-Goog-Upload-Offset", "0");
         uploadHeaders.put("X-Goog-Upload-Command", "upload, finalize");
 
-        RequestObj uploadRequest = new RequestObj()
+        RequestObj uploadRequest = AiRequestTimeouts.applyStandard(new RequestObj()
                 .setMethod("POST")
                 .setPostMethod("RAW")
                 .setUrl(uploadUrl)
                 .setHeaders(uploadHeaders)
                 .setPostData(file)
-                .setTimeOut(timeoutSec)
-                .setReadTimeout(timeoutSec)
-                .setWriteTimeout(timeoutSec)
-                .setCallTimeout(timeoutSec)
-                .setInternalAiRequest(runtimeConfig.isBuiltinAi());
+                .setInternalAiRequest(runtimeConfig.isBuiltinAi()), runtimeConfig);
         ProxyUtils.applyProxy(uploadRequest, runtimeConfig.isUseProxy());
 
-        try (CustomHttpResponse response = requests(uploadRequest)) {
+        try (CustomHttpResponse response = AiHttpExecutor.requests(uploadRequest)) {
             JsonObject json = JsonParser.parseString(response.getTextStr()).getAsJsonObject();
             String errorMessage = readErrorMessage(json);
             if (!errorMessage.isEmpty()) {
@@ -289,7 +311,7 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
             String fileUri = safeString(fileObj, "uri");
             String mimeType = safeString(fileObj, "mimeType");
             if (fileName.isEmpty() || fileUri.isEmpty()) {
-                throw new IllegalStateException("Gemini 附件上传失败: 未返回文件引用");
+                throw new IllegalStateException(I18nTextUtils.getString("ai.attach.error.gemini.upload.no.reference"));
             }
             return new UploadedGeminiFile(fileName, fileUri, mimeType.isEmpty() ? attachment.getMimeType() : mimeType);
         }
@@ -307,21 +329,40 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
                 Map<String, String> headers = new HashMap<String, String>();
                 headers.put("x-goog-api-key", runtimeConfig.getApiKey());
 
-                int timeoutSec = Math.max(1, runtimeConfig.getTimeoutMs() / 1000);
-                RequestObj requestObj = new RequestObj()
+                RequestObj requestObj = AiRequestTimeouts.applyStandard(new RequestObj()
                         .setMethod("DELETE")
                         .setUrl(resolveApiBase(runtimeConfig.getBaseUrl()) + "/" + uploadedFile.getName())
                         .setHeaders(headers)
-                        .setTimeOut(timeoutSec)
-                        .setReadTimeout(timeoutSec)
-                        .setWriteTimeout(timeoutSec)
-                        .setCallTimeout(timeoutSec)
-                        .setInternalAiRequest(runtimeConfig.isBuiltinAi());
+                        .setInternalAiRequest(runtimeConfig.isBuiltinAi()), runtimeConfig);
                 ProxyUtils.applyProxy(requestObj, runtimeConfig.isUseProxy());
-                requests(requestObj).close();
+                AiHttpExecutor.requests(requestObj).close();
             } catch (Exception ignored) {
             }
         }
+    }
+
+    private PreparedRequest buildUploadFallbackRequest(AiRuntimeConfig runtimeConfig,
+                                                       AiChatRequest request,
+                                                       List<AiAttachment> attachments,
+                                                       Exception uploadException) throws Exception {
+        if (!AiAttachmentFallbackSupport.shouldFallbackAfterUploadFailure(uploadException)) {
+            return null;
+        }
+        AiAttachmentFallbackSupport.FallbackPlan fallbackPlan = AiAttachmentFallbackSupport.buildFallbackPlan(
+                AiProviderType.GEMINI,
+                request,
+                attachments
+        );
+        if (fallbackPlan == null) {
+            return null;
+        }
+        RequestObj requestObj = buildRequest(
+                runtimeConfig,
+                fallbackPlan.getRequest(),
+                null,
+                fallbackPlan.getInlineAttachments()
+        );
+        return PreparedRequest.of(requestObj);
     }
 
     private String resolveUploadEndpoint(String baseUrl) {
@@ -373,6 +414,10 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
             events.add(AiStreamEvent.error(errorMessage));
             return;
         }
+        String thinking = extractCandidateThinking(json);
+        if (!thinking.isEmpty()) {
+            events.add(AiStreamEvent.thinkingToken(thinking));
+        }
         String text = extractCandidateText(json);
         if (!text.isEmpty()) {
             events.add(AiStreamEvent.token(text));
@@ -387,10 +432,27 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
         if (!errorMessage.isEmpty()) {
             return errorMessage;
         }
-        return extractCandidateText(json);
+        StringBuilder builder = new StringBuilder();
+        String thinking = extractCandidateThinking(json);
+        if (!thinking.isEmpty()) {
+            builder.append(thinking);
+        }
+        String text = extractCandidateText(json);
+        if (!text.isEmpty()) {
+            builder.append(text);
+        }
+        return builder.toString();
     }
 
     private String extractCandidateText(JsonObject json) {
+        return extractCandidatePartText(json, false);
+    }
+
+    private String extractCandidateThinking(JsonObject json) {
+        return extractCandidatePartText(json, true);
+    }
+
+    private String extractCandidatePartText(JsonObject json, boolean thinking) {
         JsonArray candidates = safeArray(json, "candidates");
         if (candidates.size() == 0 || !candidates.get(0).isJsonObject()) {
             return "";
@@ -403,7 +465,12 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
             if (!partElement.isJsonObject()) {
                 continue;
             }
-            String text = safeString(partElement.getAsJsonObject(), "text");
+            JsonObject part = partElement.getAsJsonObject();
+            boolean thought = safeBoolean(part, "thought", false);
+            if (thought != thinking) {
+                continue;
+            }
+            String text = safeString(part, "text");
             if (!text.isEmpty()) {
                 builder.append(text);
             }
@@ -442,6 +509,21 @@ public class GeminiProviderAdapter implements AiProviderAdapter {
             return element.getAsString();
         } catch (Exception ignored) {
             return "";
+        }
+    }
+
+    private boolean safeBoolean(JsonObject obj, String key, boolean defaultValue) {
+        if (obj == null || !obj.has(key)) {
+            return defaultValue;
+        }
+        JsonElement element = obj.get(key);
+        if (element == null || element.isJsonNull()) {
+            return defaultValue;
+        }
+        try {
+            return element.getAsBoolean();
+        } catch (Exception ignored) {
+            return defaultValue;
         }
     }
 

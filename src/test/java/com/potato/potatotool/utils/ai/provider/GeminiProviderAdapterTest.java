@@ -69,6 +69,56 @@ class GeminiProviderAdapterTest {
     }
 
     @Test
+    @DisplayName("thinking 开启时按 Gemini 协议注入跨模型稳定参数")
+    void buildRequestWithThinking() {
+        AiRuntimeConfig config = new AiRuntimeConfig(
+                AiProviderType.GEMINI,
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-future-pro",
+                "key",
+                "gemini-future-pro",
+                60000,
+                false,
+                new AiThinkingConfig(true, 1024),
+                false
+        );
+        AiChatRequest request = new AiChatRequest("你好", null, new AiThinkingConfig(true, 1024), true);
+
+        RequestObj requestObj = adapter.buildRequest(config, request);
+        JsonObject json = JsonParser.parseString(new String(requestObj.getPostData(), StandardCharsets.UTF_8)).getAsJsonObject();
+
+        JsonObject thinkingConfig = json.getAsJsonObject("generationConfig").getAsJsonObject("thinkingConfig");
+        assertTrue(adapter.supportsThinking(config));
+        assertFalse(adapter.supportsThinkingBudget(config));
+        assertTrue(thinkingConfig.get("includeThoughts").getAsBoolean());
+        assertFalse(thinkingConfig.has("thinkingBudget"));
+    }
+
+    @Test
+    @DisplayName("Gemini 思考能力不依赖模型版本命名")
+    void buildGeminiRequestWithoutModelVersionHeuristics() {
+        AiRuntimeConfig config = new AiRuntimeConfig(
+                AiProviderType.GEMINI,
+                "https://generativelanguage.googleapis.com/v1beta/models/custom-thinking-model",
+                "key",
+                "custom-thinking-model",
+                60000,
+                false,
+                new AiThinkingConfig(true, 1024),
+                false
+        );
+        AiChatRequest request = new AiChatRequest("你好", null, new AiThinkingConfig(true, 1024), true);
+
+        RequestObj requestObj = adapter.buildRequest(config, request);
+        JsonObject json = JsonParser.parseString(new String(requestObj.getPostData(), StandardCharsets.UTF_8)).getAsJsonObject();
+        JsonObject thinkingConfig = json.getAsJsonObject("generationConfig").getAsJsonObject("thinkingConfig");
+
+        assertTrue(adapter.supportsThinking(config));
+        assertFalse(adapter.supportsThinkingBudget(config));
+        assertTrue(thinkingConfig.get("includeThoughts").getAsBoolean());
+        assertFalse(thinkingConfig.has("thinkingBudget"));
+    }
+
+    @Test
     @DisplayName("解析流式和非流式 Gemini 文本")
     void parseStreamAndNonStreamResponse() {
         List<AiStreamEvent> tokenEvents = adapter.parseSseLine("data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"你好\"}]}}]}");
@@ -78,6 +128,11 @@ class GeminiProviderAdapterTest {
 
         String text = adapter.parseResponse("{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"综合结果\"}]}}]}");
         assertEquals("综合结果", text);
+
+        List<AiStreamEvent> thinkingEvents = adapter.parseSseLine("data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"思考\",\"thought\":true}]}}]}");
+        assertEquals(1, thinkingEvents.size());
+        assertEquals(AiStreamEvent.Type.THINKING_TOKEN, thinkingEvents.get(0).getType());
+        assertEquals("思考", thinkingEvents.get(0).getContent());
     }
 
     @Test

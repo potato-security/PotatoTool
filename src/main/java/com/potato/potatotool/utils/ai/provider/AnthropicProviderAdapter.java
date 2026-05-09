@@ -5,7 +5,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.potato.potatotool.utils.ai.AiAttachmentFallbackSupport;
 import com.potato.potatotool.utils.ai.AiAttachmentUtils;
+import com.potato.potatotool.utils.ai.AiRequestTimeouts;
 import com.potato.potatotool.utils.ai.model.AiAttachment;
 import com.potato.potatotool.utils.ai.model.AiChatRequest;
 import com.potato.potatotool.utils.ai.model.AiMessage;
@@ -14,6 +16,9 @@ import com.potato.potatotool.utils.ai.model.AiAttachmentSupportResult;
 import com.potato.potatotool.utils.ai.model.AiProviderType;
 import com.potato.potatotool.utils.ai.model.AiRuntimeConfig;
 import com.potato.potatotool.utils.ai.model.AiStreamEvent;
+import com.potato.potatotool.utils.ai.model.AiThinkingConfig;
+import com.potato.potatotool.utils.ai.transport.AiHttpExecutor;
+import com.potato.potatotool.utils.core.I18nTextUtils;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.RequestObj;
@@ -24,8 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.potato.potatotool.utils.network.RequestUtils.requests;
 
 public class AnthropicProviderAdapter implements AiProviderAdapter {
     private static final String ANTHROPIC_VERSION = "2023-06-01";
@@ -51,7 +54,9 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
         try {
             for (AiAttachment attachment : attachments) {
                 if (!AiAttachmentUtils.isSupportedByProvider(AiProviderType.ANTHROPIC, attachment)) {
-                    throw new IllegalArgumentException("Anthropic 当前仅支持图片、PDF 和文本类附件: " + attachment.getFileName());
+                    throw new IllegalArgumentException(
+                            I18nTextUtils.getString("ai.attach.error.anthropic.unsupported", attachment.getFileName())
+                    );
                 }
                 uploadedFiles.add(uploadAttachment(runtimeConfig, attachment));
             }
@@ -59,6 +64,10 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
             return PreparedRequest.of(requestObj, () -> deleteUploadedFiles(runtimeConfig, uploadedFiles));
         } catch (Exception e) {
             deleteUploadedFiles(runtimeConfig, uploadedFiles);
+            PreparedRequest fallbackRequest = buildUploadFallbackRequest(runtimeConfig, request, attachments, e);
+            if (fallbackRequest != null) {
+                return fallbackRequest;
+            }
             throw e;
         }
     }
@@ -87,6 +96,13 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
         if (!request.getSystemPrompt().trim().isEmpty()) {
             body.addProperty("system", request.getSystemPrompt());
         }
+        AiThinkingConfig thinkingConfig = request.getThinkingConfig();
+        if (thinkingConfig != null && thinkingConfig.isEnabled()) {
+            JsonObject thinking = new JsonObject();
+            thinking.addProperty("type", "enabled");
+            thinking.addProperty("budget_tokens", thinkingConfig.getBudgetTokens());
+            body.add("thinking", thinking);
+        }
 
         JsonArray messages = new JsonArray();
         for (AiMessage item : request.getHistory()) {
@@ -95,21 +111,26 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
         messages.add(createUserMessage(request.getQuestion(), uploadedFiles, inlineImageAttachments));
         body.add("messages", messages);
 
-        int timeoutSec = Math.max(1, runtimeConfig.getTimeoutMs() / 1000);
-        RequestObj requestObj = new RequestObj()
+        RequestObj requestObj = AiRequestTimeouts.apply(new RequestObj()
                 .setMethod("POST")
                 .setPostMethod("JSON")
                 .setUrl(resolveRequestUrl(runtimeConfig.getBaseUrl()))
                 .setHeaders(headers)
                 .setPostData(new Gson().toJson(body))
-                .setTimeOut(timeoutSec)
-                .setReadTimeout(timeoutSec)
-                .setWriteTimeout(timeoutSec)
-                .setCallTimeout(timeoutSec)
-                .setInternalAiRequest(runtimeConfig.isBuiltinAi());
+                .setInternalAiRequest(runtimeConfig.isBuiltinAi()), runtimeConfig, request.isStream());
 
         ProxyUtils.applyProxy(requestObj, runtimeConfig.isUseProxy());
         return requestObj;
+    }
+
+    @Override
+    public boolean supportsThinking(AiRuntimeConfig runtimeConfig) {
+        return true;
+    }
+
+    @Override
+    public boolean supportsThinkingBudget(AiRuntimeConfig runtimeConfig) {
+        return true;
     }
 
     @Override
@@ -119,7 +140,12 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
             return events;
         }
         String payload = line.trim();
-        if (payload.isEmpty() || payload.startsWith("event:")) {
+        if (payload.isEmpty() || payload.startsWith("event:") || payload.startsWith(":")) {
+            return events;
+        }
+        String transportError = resolveTransportErrorMessage(payload);
+        if (!transportError.isEmpty()) {
+            events.add(AiStreamEvent.error(transportError));
             return events;
         }
         if (payload.startsWith("data:")) {
@@ -133,7 +159,7 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
             JsonObject json = JsonParser.parseString(payload).getAsJsonObject();
             if ("error".equals(safeString(json, "type"))) {
                 String message = readErrorMessage(json);
-                events.add(AiStreamEvent.error(message.isEmpty() ? "AI 请求失败" : message));
+                events.add(AiStreamEvent.error(message.isEmpty() ? I18nTextUtils.getString("ai.status.error") : message));
                 return events;
             }
 
@@ -141,6 +167,9 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
             if ("content_block_delta".equals(type) && json.has("delta") && json.get("delta").isJsonObject()) {
                 JsonObject delta = json.getAsJsonObject("delta");
                 String thinking = safeString(delta, "thinking");
+                if (thinking.isEmpty() && "thinking_delta".equals(safeString(delta, "type"))) {
+                    thinking = safeString(delta, "text");
+                }
                 if (!thinking.isEmpty()) {
                     events.add(AiStreamEvent.thinkingToken(thinking));
                 }
@@ -152,7 +181,7 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
                 events.add(AiStreamEvent.done());
             }
         } catch (Exception e) {
-            events.add(AiStreamEvent.error("流式响应解析失败: " + e.getMessage()));
+            events.add(AiStreamEvent.error(I18nTextUtils.getString("ai.error.stream.parse", e.getMessage())));
         }
         return events;
     }
@@ -170,7 +199,7 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
             }
             return extractTextBlocks(json.getAsJsonArray("content"));
         } catch (Exception e) {
-            return "AI 响应解析失败: " + e.getMessage();
+            return I18nTextUtils.getString("ai.error.response.parse", e.getMessage());
         }
     }
 
@@ -232,7 +261,10 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
                 try {
                     source.addProperty("data", AiAttachmentUtils.readBase64(attachment));
                 } catch (Exception e) {
-                    throw new IllegalStateException("读取附件失败: " + attachment.getFileName(), e);
+                    throw new IllegalStateException(
+                            I18nTextUtils.getString("ai.attach.read.failed", attachment.getFileName()),
+                            e
+                    );
                 }
                 block.add("source", source);
                 content.add(block);
@@ -245,11 +277,11 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
 
     private UploadedAnthropicFile uploadAttachment(AiRuntimeConfig runtimeConfig, AiAttachment attachment) throws Exception {
         if (attachment == null) {
-            throw new IllegalArgumentException("附件不能为空");
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.attach.error.empty"));
         }
         File file = attachment.toFile();
         if (file == null || !file.exists() || !file.isFile()) {
-            throw new IllegalArgumentException("附件不存在: " + attachment.getFileName());
+            throw new IllegalArgumentException(I18nTextUtils.getString("ai.attach.error.not.exists", attachment.getFileName()));
         }
 
         Map<String, String> headers = new HashMap<String, String>();
@@ -261,21 +293,16 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
         formParameters.put("purpose", "user_data");
         formParameters.put("file", new RequestObj.FormFilePart(file, attachment.getFileName(), resolveUploadMimeType(attachment)));
 
-        int timeoutSec = Math.max(1, runtimeConfig.getTimeoutMs() / 1000);
-        RequestObj requestObj = new RequestObj()
+        RequestObj requestObj = AiRequestTimeouts.applyStandard(new RequestObj()
                 .setMethod("POST")
                 .setPostMethod("FORM")
                 .setUrl(resolveFilesEndpoint(runtimeConfig.getBaseUrl()))
                 .setHeaders(headers)
                 .setFormParameters(formParameters)
-                .setTimeOut(timeoutSec)
-                .setReadTimeout(timeoutSec)
-                .setWriteTimeout(timeoutSec)
-                .setCallTimeout(timeoutSec)
-                .setInternalAiRequest(runtimeConfig.isBuiltinAi());
+                .setInternalAiRequest(runtimeConfig.isBuiltinAi()), runtimeConfig);
         ProxyUtils.applyProxy(requestObj, runtimeConfig.isUseProxy());
 
-        try (CustomHttpResponse response = requests(requestObj)) {
+        try (CustomHttpResponse response = AiHttpExecutor.requests(requestObj)) {
             JsonObject json = JsonParser.parseString(response.getTextStr()).getAsJsonObject();
             String message = readErrorMessage(json);
             if (!message.isEmpty()) {
@@ -283,7 +310,7 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
             }
             String fileId = safeString(json, "id");
             if (fileId.isEmpty()) {
-                throw new IllegalStateException("Anthropic 附件上传失败: 未返回 file id");
+                throw new IllegalStateException(I18nTextUtils.getString("ai.attach.error.anthropic.upload.no.file.id"));
             }
             return new UploadedAnthropicFile(fileId, AiAttachmentUtils.isImage(attachment));
         }
@@ -303,21 +330,40 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
                 headers.put("anthropic-version", ANTHROPIC_VERSION);
                 headers.put("anthropic-beta", ANTHROPIC_FILES_BETA);
 
-                int timeoutSec = Math.max(1, runtimeConfig.getTimeoutMs() / 1000);
-                RequestObj requestObj = new RequestObj()
+                RequestObj requestObj = AiRequestTimeouts.applyStandard(new RequestObj()
                         .setMethod("DELETE")
                         .setUrl(resolveFilesEndpoint(runtimeConfig.getBaseUrl()) + "/" + uploadedFile.getFileId())
                         .setHeaders(headers)
-                        .setTimeOut(timeoutSec)
-                        .setReadTimeout(timeoutSec)
-                        .setWriteTimeout(timeoutSec)
-                        .setCallTimeout(timeoutSec)
-                        .setInternalAiRequest(runtimeConfig.isBuiltinAi());
+                        .setInternalAiRequest(runtimeConfig.isBuiltinAi()), runtimeConfig);
                 ProxyUtils.applyProxy(requestObj, runtimeConfig.isUseProxy());
-                requests(requestObj).close();
+                AiHttpExecutor.requests(requestObj).close();
             } catch (Exception ignored) {
             }
         }
+    }
+
+    private PreparedRequest buildUploadFallbackRequest(AiRuntimeConfig runtimeConfig,
+                                                       AiChatRequest request,
+                                                       List<AiAttachment> attachments,
+                                                       Exception uploadException) throws Exception {
+        if (!AiAttachmentFallbackSupport.shouldFallbackAfterUploadFailure(uploadException)) {
+            return null;
+        }
+        AiAttachmentFallbackSupport.FallbackPlan fallbackPlan = AiAttachmentFallbackSupport.buildFallbackPlan(
+                AiProviderType.ANTHROPIC,
+                request,
+                attachments
+        );
+        if (fallbackPlan == null) {
+            return null;
+        }
+        RequestObj requestObj = buildRequest(
+                runtimeConfig,
+                fallbackPlan.getRequest(),
+                null,
+                fallbackPlan.getInlineAttachments()
+        );
+        return PreparedRequest.of(requestObj);
     }
 
     private String resolveUploadMimeType(AiAttachment attachment) {
@@ -378,10 +424,10 @@ public class AnthropicProviderAdapter implements AiProviderAdapter {
                 continue;
             }
             JsonObject block = element.getAsJsonObject();
-            if (!"text".equals(safeString(block, "type"))) {
-                continue;
-            }
-            String text = safeString(block, "text");
+            String blockType = safeString(block, "type");
+            String text = "thinking".equals(blockType)
+                    ? safeString(block, "thinking")
+                    : safeString(block, "text");
             if (!text.isEmpty()) {
                 builder.append(text);
             }

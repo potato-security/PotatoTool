@@ -38,7 +38,7 @@ public final class AiAttachmentSupportResolver {
         }
 
         AiProviderType providerType = runtimeConfig.getProviderType();
-        if (providerType == AiProviderType.OPENAI_COMPATIBLE) {
+        if (providerType == AiProviderType.OPENAI) {
             return resolveOpenAiCompatible(runtimeConfig, safeAttachments);
         }
         if (isOfficialHost(runtimeConfig)) {
@@ -53,7 +53,7 @@ public final class AiAttachmentSupportResolver {
         String modelName = normalizeModelName(runtimeConfig == null ? "" : runtimeConfig.getModelName());
 
         if ("api.openai.com".equalsIgnoreCase(host)) {
-            return resolveOfficial(AiProviderType.OPENAI_COMPATIBLE, attachments);
+            return resolveOfficial(AiProviderType.OPENAI, attachments);
         }
         if (isDeepSeekOfficialHost(host)) {
             return unsupported(
@@ -95,7 +95,7 @@ public final class AiAttachmentSupportResolver {
                     AiAttachmentUtils.MAX_INLINE_TOTAL_ATTACHMENT_SIZE_BYTES
             );
         }
-        return resolveRelay(AiProviderType.OPENAI_COMPATIBLE, attachments);
+        return resolveOfficial(AiProviderType.OPENAI, attachments);
     }
 
     private static AiAttachmentSupportResult resolveOpenAiInlineImage(List<AiAttachment> attachments) {
