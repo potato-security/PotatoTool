@@ -45,6 +45,7 @@ public class DialogUtils {
                 setStage.setAlwaysOnTop(true);
 
                 FXMLLoader loader = new FXMLLoader(DialogUtils.class.getResource("/fxml/publicPane/setting.fxml"));
+                loader.setClassLoader(DialogUtils.class.getClassLoader());
                 AnchorPane dialogRoot = loader.load();
                 PaneSetting setController = loader.getController();
 

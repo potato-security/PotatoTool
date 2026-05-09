@@ -6,7 +6,6 @@ import com.potato.potatotool.utils.ui.highlighters.MultiLanguageHighlighter;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -32,6 +31,7 @@ public class DynamicDetectionExample extends Application {
 
     private CodeArea codeArea;
     private Label languageLabel;
+    private Label promptLabel;
     private MultiLanguageHighlighter highlighter;
     
     @Override
@@ -149,10 +149,13 @@ public class DynamicDetectionExample extends Application {
     
     private HBox createStatusBar() {
         languageLabel = new Label("当前语言: 检测中...");
+        promptLabel = new Label();
+        promptLabel.setWrapText(true);
+        promptLabel.setStyle("-fx-text-fill: #d32f2f;");
         
         HBox statusBar = new HBox(10);
         statusBar.setPadding(new Insets(5));
-        statusBar.getChildren().add(languageLabel);
+        statusBar.getChildren().addAll(languageLabel, promptLabel);
         
         return statusBar;
     }
@@ -419,16 +422,17 @@ public class DynamicDetectionExample extends Application {
     }
     
     /**
-     * 显示错误提示对话框
+     * 显示页面内错误提示
      * @param title 标题
      * @param message 错误信息
      */
     private void showErrorAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        String text = title + ": " + message;
+        if (promptLabel != null) {
+            promptLabel.setText(text);
+        } else {
+            System.err.println(text);
+        }
     }
     
     @Override

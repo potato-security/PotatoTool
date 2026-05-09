@@ -93,7 +93,7 @@ public class QRCodeGenerator {
             // 定义二维码内容和保存路径
             String text = "https://www.baidu.com";
             String filePath = "二维码.png";
-            String logoPath = "/Users/a/Documents/123.jpg";
+            String logoPath = "/Users/potato/Documents/123.jpg";
             int width = 300;
             int height = 300;
             int logoWidth = 300/5;

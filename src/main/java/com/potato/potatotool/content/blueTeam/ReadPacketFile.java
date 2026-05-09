@@ -462,7 +462,7 @@ public class ReadPacketFile {
     public static void main(String[] args) {
         // 非项目启动调用，需要单独初始化安全证书套件
         SecurityInitializer.initializeSecurityProvider();
-        ReadPacketFile reader = new ReadPacketFile("/Users/a/Desktop/项目开发/PotatoTool/冰蝎3.0测试包.pcap", null, null, new ArrayList<>(), null);
+        ReadPacketFile reader = new ReadPacketFile("/Users/potato/Desktop/projectDevelopment/PotatoTool/冰蝎3.0测试包.pcap", null, null, new ArrayList<>(), null);
         reader.getPackets();
     }
 }

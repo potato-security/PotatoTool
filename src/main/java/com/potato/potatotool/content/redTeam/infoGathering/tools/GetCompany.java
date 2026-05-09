@@ -228,8 +228,8 @@ public class GetCompany {
 //        System.out.println(companyDetailsMap);
 //        System.out.println(companyDetailsMap.size());
 
-//        try (BufferedReader br = new BufferedReader(new FileReader("/Users/a/Library/Containers/com.tencent.WeWorkMac/Data/Documents/Profiles/72E3F51AB224938EF8C93E98DF173761/Caches/Files/2024-10/d45c19ed4b78299a023b215065d7995b/123.txt"));
-//            CSVWriter writer = new CSVWriter(new FileWriter("/Users/a/Library/Containers/com.tencent.WeWorkMac/Data/Documents/Profiles/72E3F51AB224938EF8C93E98DF173761/Caches/Files/2024-10/d45c19ed4b78299a023b215065d7995b/website_info.csv"));
+//        try (BufferedReader br = new BufferedReader(new FileReader("/Users/potato/Library/Containers/com.tencent.WeWorkMac/Data/Documents/Profiles/72E3F51AB224938EF8C93E98DF173761/Caches/Files/2024-10/d45c19ed4b78299a023b215065d7995b/123.txt"));
+//            CSVWriter writer = new CSVWriter(new FileWriter("/Users/potato/Library/Containers/com.tencent.WeWorkMac/Data/Documents/Profiles/72E3F51AB224938EF8C93E98DF173761/Caches/Files/2024-10/d45c19ed4b78299a023b215065d7995b/website_info.csv"));
 //        ) {
 //            String[] header = {"公司名", "网站域名"};
 //            writer.writeNext(header);

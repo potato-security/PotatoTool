@@ -140,7 +140,7 @@ public class ProcyonDecompileUtils {
         final ITextOutput output = new PlainTextOutput();
         final DecompilerSettings settings = DecompilerSettings.javaDefaults();
 
-        decompileFolder("/Users/a/Desktop/项目开发/PotatoTool/target/classes/com/potato/potatotool", "/Users/a/Desktop/项目开发/PotatoTool/target/classes/com/potato/123");
+        decompileFolder("/Users/potato/Desktop/projectDevelopment/PotatoTool/target/classes/com/potato/potatotool", "/Users/potato/Desktop/projectDevelopment/PotatoTool/target/classes/com/potato/123");
 
         String result = output.toString();
     }

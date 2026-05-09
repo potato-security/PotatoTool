@@ -1024,8 +1024,8 @@ public class AiqichaSearch {
 //        weightThresholdList.add(100);
 //        System.out.println(new AiqichaSearch(weightThresholdList).getCompanyInfoIteration("北京搜狗信息服务有限公司"));
 
-//        try (BufferedReader br = new BufferedReader(new FileReader("/Users/a/Desktop/项目开发/111/123.txt"));
-//             CSVWriter writer = new CSVWriter(new FileWriter("/Users/a/Desktop/项目开发/111/123.csv"));
+//        try (BufferedReader br = new BufferedReader(new FileReader("/Users/potato/Desktop/projectDevelopment/111/123.txt"));
+//             CSVWriter writer = new CSVWriter(new FileWriter("/Users/potato/Desktop/projectDevelopment/111/123.csv"));
 //        ) {
 //            String[] header = {"公司名", "域名", "备案号", "网站名称"};
 //            writer.writeNext(header);

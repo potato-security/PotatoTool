@@ -18,7 +18,7 @@ import static com.potato.potatotool.ToStart.debugMode;
 public class GzipUtils {
 
     public static void main(String[] args) {
-        GzipFile("/Users/a/.PotatoTool/md5_database.db","/Users/a/.PotatoTool/md5_database_gzip.db");
+        GzipFile("/Users/potato/.PotatoTool/md5_database.db","/Users/potato/.PotatoTool/md5_database_gzip.db");
     }
 
     /**

@@ -3,16 +3,14 @@ package com.potato.potatotool.utils.data;
 import com.potato.potatotool.content.blueTeam.webshellDecrypt.decoder.utils.BinaryDeserializerFactory;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.misc.ReadabilityChecker;
+import javafx.application.Platform;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.graalvm.polyglot.Value;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URLDecoder;
@@ -1842,9 +1840,16 @@ public class StrUtils {
 
     // copy剪贴板
     public static void setClipboardString(String text) {
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        Transferable trans = new StringSelection(text);
-        clipboard.setContents(trans, (ClipboardOwner)null);
+        Runnable copyAction = () -> {
+            ClipboardContent content = new ClipboardContent();
+            content.putString(text == null ? "" : text);
+            Clipboard.getSystemClipboard().setContent(content);
+        };
+        if (Platform.isFxApplicationThread()) {
+            copyAction.run();
+        } else {
+            Platform.runLater(copyAction);
+        }
     }
 
 }
