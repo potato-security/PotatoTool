@@ -10,7 +10,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -22,6 +25,7 @@ public final class CdpClient implements AutoCloseable {
     private final InputStream inputStream;
     private final OutputStream outputStream;
     private final int socketReadTimeoutMillis;
+    private final List<JsonObject> pendingEvents = new ArrayList<JsonObject>();
     private int requestId;
 
     private CdpClient(Socket socket, InputStream inputStream, OutputStream outputStream, int socketReadTimeoutMillis) {
@@ -104,7 +108,16 @@ public final class CdpClient implements AutoCloseable {
             try {
                 socket.setSoTimeout((int) Math.max(1L, Math.min(remaining, socketReadTimeoutMillis)));
                 JsonObject frame = readFrame();
-                if (frame == null || !frame.has("id") || frame.get("id").getAsInt() != id) {
+                if (frame == null) {
+                    continue;
+                }
+                if (!frame.has("id")) {
+                    if (frame.has("method")) {
+                        pendingEvents.add(frame);
+                    }
+                    continue;
+                }
+                if (frame.get("id").getAsInt() != id) {
                     continue;
                 }
                 if (frame.has("error") && frame.get("error").isJsonObject()) {
@@ -123,6 +136,46 @@ public final class CdpClient implements AutoCloseable {
         }
 
         throw CdpException.timeout("DevTools request timeout: " + method);
+    }
+
+    public synchronized JsonObject waitForEvent(String eventMethod, int timeoutMillis) throws CdpException {
+        if (eventMethod == null || eventMethod.trim().isEmpty()) {
+            throw new CdpException(CdpErrorType.INVALID_RESPONSE, "DevTools event method is empty");
+        }
+
+        JsonObject pending = pollPendingEvent(eventMethod);
+        if (pending != null) {
+            return pending;
+        }
+
+        long deadline = System.currentTimeMillis() + timeoutMillis;
+        while (System.currentTimeMillis() < deadline) {
+            long remaining = deadline - System.currentTimeMillis();
+            if (remaining <= 0) {
+                break;
+            }
+            try {
+                socket.setSoTimeout((int) Math.max(1L, Math.min(remaining, socketReadTimeoutMillis)));
+                JsonObject frame = readFrame();
+                if (frame == null) {
+                    continue;
+                }
+                if (frame.has("method")) {
+                    String method = readJsonString(frame, "method");
+                    if (eventMethod.equals(method)) {
+                        return frame;
+                    }
+                    pendingEvents.add(frame);
+                }
+            } catch (SocketTimeoutException ignored) {
+            } catch (CdpException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new CdpException(CdpErrorType.CONNECTION_CLOSED,
+                        "Failed while waiting for DevTools event: " + eventMethod, e);
+            }
+        }
+        throw CdpException.timeout("DevTools event timeout: " + eventMethod);
     }
 
     private void sendText(String text) throws CdpException {
@@ -265,5 +318,20 @@ public final class CdpClient implements AutoCloseable {
         } catch (Exception ignored) {
             return "";
         }
+    }
+
+    private JsonObject pollPendingEvent(String eventMethod) {
+        if (eventMethod == null || pendingEvents.isEmpty()) {
+            return null;
+        }
+        Iterator<JsonObject> iterator = pendingEvents.iterator();
+        while (iterator.hasNext()) {
+            JsonObject event = iterator.next();
+            if (event != null && event.has("method") && eventMethod.equals(readJsonString(event, "method"))) {
+                iterator.remove();
+                return event;
+            }
+        }
+        return null;
     }
 }

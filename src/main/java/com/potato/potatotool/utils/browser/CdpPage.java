@@ -44,6 +44,23 @@ public final class CdpPage {
         return response;
     }
 
+    public void addScriptToEvaluateOnNewDocument(String script, int timeoutMillis) throws CdpException {
+        JsonObject params = new JsonObject();
+        params.addProperty("source", script == null ? "" : script);
+        client.request("Page.addScriptToEvaluateOnNewDocument", params, timeoutMillis);
+    }
+
+    public JsonObject waitForEvent(String eventMethod, int timeoutMillis) throws CdpException {
+        return client.waitForEvent(eventMethod, timeoutMillis);
+    }
+
+    public void handleJavaScriptDialog(boolean accept, String promptText, int timeoutMillis) throws CdpException {
+        JsonObject params = new JsonObject();
+        params.addProperty("accept", accept);
+        params.addProperty("promptText", promptText == null ? "" : promptText);
+        client.request("Page.handleJavaScriptDialog", params, timeoutMillis);
+    }
+
     public JsonElement evaluateValue(String expression, int timeoutMillis) throws CdpException {
         JsonObject response = evaluate(expression, true, timeoutMillis);
         JsonObject envelope = extractEvaluationResult(response);
@@ -77,11 +94,42 @@ public final class CdpPage {
     }
 
     public String captureScreenshotBase64(int timeoutMillis) throws CdpException {
-        JsonObject response = client.request("Page.captureScreenshot", null, timeoutMillis);
+        return captureScreenshotBase64(false, timeoutMillis);
+    }
+
+    public String captureScreenshotBase64(boolean captureBeyondViewport, int timeoutMillis) throws CdpException {
+        JsonObject params = new JsonObject();
+        params.addProperty("captureBeyondViewport", captureBeyondViewport);
+        JsonObject response = client.request("Page.captureScreenshot", params, timeoutMillis);
         JsonObject result = response != null && response.has("result") && response.get("result").isJsonObject()
                 ? response.getAsJsonObject("result")
                 : null;
         return readJsonString(result, "data");
+    }
+
+    public void enableNetwork(int timeoutMillis) throws CdpException {
+        client.request("Network.enable", null, timeoutMillis);
+    }
+
+    public void setExtraHttpHeaders(Map<String, String> headers, int timeoutMillis) throws CdpException {
+        JsonObject params = new JsonObject();
+        JsonObject jsonHeaders = new JsonObject();
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                if (entry.getKey() == null) {
+                    continue;
+                }
+                jsonHeaders.addProperty(entry.getKey(), entry.getValue() == null ? "" : entry.getValue());
+            }
+        }
+        params.add("headers", jsonHeaders);
+        client.request("Network.setExtraHTTPHeaders", params, timeoutMillis);
+    }
+
+    public void setUserAgentOverride(String userAgent, int timeoutMillis) throws CdpException {
+        JsonObject params = new JsonObject();
+        params.addProperty("userAgent", userAgent == null ? "" : userAgent);
+        client.request("Network.setUserAgentOverride", params, timeoutMillis);
     }
 
     public Map<String, String> readAllCookies(int timeoutMillis) throws CdpException {

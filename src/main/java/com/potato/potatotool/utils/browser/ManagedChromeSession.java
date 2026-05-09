@@ -27,6 +27,14 @@ public class ManagedChromeSession implements AutoCloseable {
     }
 
     public static ManagedChromeSession start(String browserPath, String initialUrl, boolean directMode, long readyTimeoutMillis) throws IOException {
+        return start(browserPath, initialUrl, directMode, false, readyTimeoutMillis);
+    }
+
+    public static ManagedChromeSession start(String browserPath,
+                                             String initialUrl,
+                                             boolean directMode,
+                                             boolean headlessMode,
+                                             long readyTimeoutMillis) throws IOException {
         if (browserPath == null || browserPath.trim().isEmpty()) {
             throw new IOException("Browser path is empty");
         }
@@ -34,21 +42,7 @@ public class ManagedChromeSession implements AutoCloseable {
         int port = allocateLocalPort();
         File userDataDir = Files.createTempDirectory("potatotool-chrome-").toFile();
 
-        List<String> command = new ArrayList<String>();
-        command.add(browserPath);
-        command.add("--remote-debugging-port=" + port);
-        command.add("--user-data-dir=" + userDataDir.getAbsolutePath());
-        command.add("--no-first-run");
-        command.add("--no-default-browser-check");
-        command.add("--disable-background-networking");
-        if (directMode) {
-            command.add("--no-proxy-server");
-            command.add("--proxy-server=direct://");
-            command.add("--proxy-bypass-list=*");
-        }
-        if (initialUrl != null && !initialUrl.trim().isEmpty()) {
-            command.add(initialUrl);
-        }
+        List<String> command = buildLaunchCommand(browserPath, initialUrl, directMode, headlessMode, port, userDataDir);
 
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.redirectErrorStream(true);
@@ -61,6 +55,34 @@ public class ManagedChromeSession implements AutoCloseable {
             throw new IOException("Chrome DevTools port is not ready: " + port);
         }
         return session;
+    }
+
+    private static List<String> buildLaunchCommand(String browserPath,
+                                                   String initialUrl,
+                                                   boolean directMode,
+                                                   boolean headlessMode,
+                                                   int port,
+                                                   File userDataDir) {
+        List<String> command = new ArrayList<String>();
+        command.add(browserPath);
+        command.add("--remote-debugging-port=" + port);
+        command.add("--user-data-dir=" + userDataDir.getAbsolutePath());
+        command.add("--no-first-run");
+        command.add("--no-default-browser-check");
+        command.add("--disable-background-networking");
+        if (headlessMode) {
+            command.add("--headless=new");
+            command.add("--disable-gpu");
+        }
+        if (directMode) {
+            command.add("--no-proxy-server");
+            command.add("--proxy-server=direct://");
+            command.add("--proxy-bypass-list=*");
+        }
+        if (initialUrl != null && !initialUrl.trim().isEmpty()) {
+            command.add(initialUrl);
+        }
+        return command;
     }
 
     public int getDevToolsPort() {
