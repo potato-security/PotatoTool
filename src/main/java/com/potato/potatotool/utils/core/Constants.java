@@ -4,9 +4,11 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 import com.google.gson.*;
@@ -249,34 +251,23 @@ public class Constants {
      */
     private static final String CONFIG_FOLDER = ".PotatoTool";
     private static final String CONFIG_FILE = "config.json";
-    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    public static void saveConfig(String key, Object value) {
+    private static final Object CONFIG_LOCK = new Object();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-        try {
-            Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
-            Files.createDirectories(configFolder);
+    public static boolean saveConfig(String key, Object value) {
+        if (key == null || key.trim().isEmpty()) {
+            return false;
+        }
 
-            Path configFile = configFolder.resolve(CONFIG_FILE);
-
-            JsonObject config = new JsonObject();
-            if (Files.exists(configFile)) {
-                // 读取已有配置
-                String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
-                config = gson.fromJson(content, JsonObject.class);
+        synchronized (CONFIG_LOCK) {
+            try {
+                JsonObject config = loadConfigForWrite();
+                config.add(key, toJsonElement(value));
+                return writeConfig(config);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
             }
-
-            // 更新配置
-            config.add(key, gson.toJsonTree(value));
-
-            // 写入更新后的配置
-            String json = gson.toJson(config);
-            Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
-
-            System.out.println("配置已保存");
-            cachedConfig = null;
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -284,98 +275,58 @@ public class Constants {
      * 兼容批量修改
      */
     public static boolean saveConfig(Map<String, Object> configMap) {
-        try {
-            Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
-            Files.createDirectories(configFolder);
-
-            Path configFile = configFolder.resolve(CONFIG_FILE);
-
-            JsonObject config = new JsonObject();
-            if (Files.exists(configFile)) {
-                // 读取已有配置
-                String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
-                config = gson.fromJson(content, JsonObject.class);
+        synchronized (CONFIG_LOCK) {
+            try {
+                JsonObject config = loadConfigForWrite();
+                for (Map.Entry<String, Object> entry : configMap.entrySet()) {
+                    config.add(entry.getKey(), toJsonElement(entry.getValue()));
+                }
+                return writeConfig(config);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
             }
-
-            // 更新配置
-            for (Map.Entry<String, Object> entry : configMap.entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-                config.add(key, gson.toJsonTree(value));
-            }
-
-            // 写入更新后的配置
-            String json = gson.toJson(config);
-            Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
-
-            // 配置保存成功，不输出日志（减少日志）
-            cachedConfig = null;
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return false;
     }
+
     public static boolean saveConfig(JsonObject configJsonObj) {
-        try {
-            Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
-            Files.createDirectories(configFolder);
-            Path configFile = configFolder.resolve(CONFIG_FILE);
+        synchronized (CONFIG_LOCK) {
+            try {
+                return writeConfig(configJsonObj == null ? new JsonObject() : configJsonObj.deepCopy());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+    }
 
-            // 写入更新后的配置
-            String json = gson.toJson(configJsonObj);
-            Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
-
-            // 配置保存成功，不输出日志（减少日志）
-            cachedConfig = null;
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static boolean saveConfig(JsonElement configJsonElement) {
+        if (configJsonElement == null || !configJsonElement.isJsonObject()) {
             return false;
         }
-    }
-    public static boolean saveConfig(JsonElement configJsonElement) {
         return saveConfig(configJsonElement.getAsJsonObject());
     }
+
     public static boolean saveConfig(Map<String, Object> configMap, String topKey) {
-
-        try {
-            Path configFolder = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER);
-            Files.createDirectories(configFolder);
-
-            Path configFile = configFolder.resolve(CONFIG_FILE);
-
-            JsonObject config = new JsonObject();
-            if (Files.exists(configFile)) {
-                // 读取已有配置
-                String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
-                config = gson.fromJson(content, JsonObject.class);
-            }
-
-            // 获取或创建第一层对象
-            JsonObject topLevelObject = config.has(topKey)
-                    ? config.getAsJsonObject(topKey)
-                    : new JsonObject();
-            // 更新第二层key的内容
-            for (Map.Entry<String, Object> entry : configMap.entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-                topLevelObject.add(key, gson.toJsonTree(value));
-            }
-
-            // 将更新后的对象放回到第一层
-            config.add(topKey, topLevelObject);
-
-            // 写入更新后的配置
-            String json = gson.toJson(config);
-            Files.write(configFile, json.getBytes(StandardCharsets.UTF_8));
-
-            System.out.println("配置已保存");
-            cachedConfig = null;
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (topKey == null || topKey.trim().isEmpty()) {
             return false;
+        }
+
+        synchronized (CONFIG_LOCK) {
+            try {
+                JsonObject config = loadConfigForWrite();
+                JsonObject topLevelObject = config.has(topKey) && config.get(topKey).isJsonObject()
+                        ? config.getAsJsonObject(topKey).deepCopy()
+                        : new JsonObject();
+                for (Map.Entry<String, Object> entry : configMap.entrySet()) {
+                    topLevelObject.add(entry.getKey(), toJsonElement(entry.getValue()));
+                }
+                config.add(topKey, topLevelObject);
+                return writeConfig(config);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         }
     }
     
@@ -422,7 +373,7 @@ public class Constants {
             // 先添加现有的所有资源（保留未更新的资源）
             for (String key : existingResources.keySet()) {
                 JsonElement element = existingResources.get(key);
-                mergedResources.add(key, element);
+                mergedResources.add(key, element == null ? JsonNull.INSTANCE : element.deepCopy());
             }
             
             // 再添加或更新新资源（覆盖同名资源）
@@ -629,24 +580,79 @@ public class Constants {
         return merged;
     }
 
-    public static JsonObject cachedConfig = null;
-    public static Object getOutsideConfig(String key) {
-        try {
-            Path configFile = Paths.get(System.getProperty("user.home"), CONFIG_FOLDER, CONFIG_FILE);
+    public static volatile JsonObject cachedConfig = null;
 
-            if (Files.exists(configFile)) {
-                if(cachedConfig==null) {
-                    String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8);
-                    cachedConfig = (new Gson()).fromJson(content, JsonObject.class);
+    public static Object getOutsideConfig(String key) {
+        synchronized (CONFIG_LOCK) {
+            try {
+                Path configFile = getOutsideConfigFile();
+                if (!Files.exists(configFile)) {
+                    return null;
                 }
-                if(key==null) return cachedConfig;
-                return cachedConfig.get(key);
+                if (cachedConfig == null) {
+                    cachedConfig = readConfig(configFile);
+                }
+                JsonElement value = key == null ? cachedConfig : cachedConfig.get(key);
+                return value == null ? null : value.deepCopy();
+            } catch (Exception e) {
+                if(debugMode) e.printStackTrace();
+                System.out.println("读取配置时出错!");
+                return null;
             }
-        } catch (Exception e) {
-            if(debugMode) e.printStackTrace();
-            System.out.println("读取配置时出错!");
         }
-        return null;
+    }
+
+    private static Path getOutsideConfigFile() {
+        return Paths.get(System.getProperty("user.home"), CONFIG_FOLDER, CONFIG_FILE);
+    }
+
+    private static JsonObject loadConfigForWrite() throws IOException {
+        Path configFile = getOutsideConfigFile();
+        if (Files.exists(configFile)) {
+            return readConfig(configFile);
+        }
+        return new JsonObject();
+    }
+
+    private static JsonObject readConfig(Path configFile) throws IOException {
+        String content = new String(Files.readAllBytes(configFile), StandardCharsets.UTF_8).trim();
+        if (content.isEmpty()) {
+            return new JsonObject();
+        }
+
+        JsonElement element = JsonParser.parseString(content);
+        if (!element.isJsonObject()) {
+            throw new JsonParseException("配置文件根节点不是对象: " + configFile);
+        }
+        return element.getAsJsonObject();
+    }
+
+    private static JsonElement toJsonElement(Object value) {
+        if (value instanceof JsonElement) {
+            return ((JsonElement) value).deepCopy();
+        }
+        return gson.toJsonTree(value);
+    }
+
+    private static boolean writeConfig(JsonObject config) throws IOException {
+        Path configFile = getOutsideConfigFile();
+        Path configFolder = configFile.getParent();
+        Files.createDirectories(configFolder);
+
+        Path tempFile = Files.createTempFile(configFolder, "config", ".tmp");
+        try {
+            byte[] json = gson.toJson(config).getBytes(StandardCharsets.UTF_8);
+            Files.write(tempFile, json);
+            try {
+                Files.move(tempFile, configFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tempFile, configFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+            cachedConfig = config.deepCopy();
+            return true;
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
     }
 
     public static JsonElement findKey(JsonElement element, String searchKey) {

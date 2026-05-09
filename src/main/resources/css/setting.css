@@ -134,18 +134,94 @@
 }
 
 #promptPane.setting-prompt-info {
-    -fx-background-color: -main-btnContent-color;
+    -fx-background-color: rgba(17, 22, 28, 0.94), rgba(62, 206, 227, 0.08);
+    -fx-background-insets: 0, 1;
+    -fx-border-color: rgba(62, 206, 227, 0.46);
+    -fx-border-width: 1;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14, 13;
+}
+
+#promptPane.setting-prompt-info .label {
+    -fx-text-fill: #f8fafc;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 2, 0, 0, 1);
 }
 
 #promptPane.setting-prompt-error {
-    -fx-background-color: rgba(255, 76, 63, 0.18);
-    -fx-border-color: #ff4c3f;
+    -fx-background-color: rgba(44, 16, 18, 0.95), rgba(255, 76, 63, 0.16);
+    -fx-background-insets: 0, 1;
+    -fx-border-color: rgba(255, 118, 108, 0.72);
     -fx-border-width: 1;
-    -fx-border-radius: 12;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14, 13;
 }
 
 #promptPane.setting-prompt-error .label {
-    -fx-text-fill: #ffd8d6;
+    -fx-text-fill: #ffe6e2;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 2, 0, 0, 1);
+}
+
+#promptPane.setting-prompt-dialog {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: none;
+}
+
+#promptPane.setting-prompt-dialog .label {
+    -fx-effect: none;
+    -fx-font-weight: normal;
+    -fx-padding: 0;
+    -fx-alignment: center-left;
+    -fx-text-alignment: left;
+}
+
+.setting-confirm-dialog {
+    -fx-background-color: -main-btnContent-color;
+    -fx-background-radius: 14;
+    -fx-border-color: -main-lineno-color;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.46), 24, 0, 0, 6);
+}
+
+.setting-confirm-text {
+    -fx-text-fill: -main-font-color;
+    -fx-font-size: 13;
+    -fx-padding: 0;
+    -fx-wrap-text: true;
+    -fx-alignment: center-left;
+    -fx-text-alignment: left;
+}
+
+.setting-confirm-title {
+    -fx-font-size: 18;
+    -fx-font-weight: bold;
+    -fx-text-fill: -main-border-color;
+}
+
+.setting-confirm-content {
+    -fx-font-size: 13;
+}
+
+.setting-confirm-actions {
+    -fx-alignment: center-right;
+    -fx-padding: 8 0 0 0;
+}
+
+.setting-confirm-primary, .setting-confirm-secondary {
+    -fx-font-size: 13;
+    -fx-padding: 5 16 5 16;
+}
+
+.setting-confirm-secondary {
+    -fx-background-color: transparent;
+    -fx-border-color: -main-lineno-color;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
 }
 
 .setting-page-title {

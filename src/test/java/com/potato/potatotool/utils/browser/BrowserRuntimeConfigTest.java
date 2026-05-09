@@ -15,8 +15,8 @@ public class BrowserRuntimeConfigTest {
         JsonObject rootConfig = new JsonObject();
         JsonObject vulnScan = new JsonObject();
         JsonObject headless = new JsonObject();
-        headless.addProperty(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH, "/legacy/chrome");
-        vulnScan.add(ConfigConstants.VULNSCAN_HEADLESS, headless);
+        headless.addProperty("browserPath", "/legacy/chrome");
+        vulnScan.add("headless", headless);
         rootConfig.add(ConfigConstants.VULNSCAN, vulnScan);
 
         BrowserRuntimeConfig.applyBrowserSettings(rootConfig, "  /Applications/Google Chrome.app/Contents/MacOS/Google Chrome  ");

@@ -1,6 +1,8 @@
 package com.potato.potatotool.utils.ai.model;
 
 public class AiThinkingConfig {
+    public static final int DEFAULT_BUDGET_TOKENS = 2048;
+
     private final boolean enabled;
     private final int budgetTokens;
 

@@ -6,8 +6,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.update.ResourceUpdate;
+import com.potato.potatotool.update.UpdateChecker;
 import com.potato.potatotool.update.UpdateInfo;
 import com.potato.potatotool.update.UpdateManager;
+import com.potato.potatotool.update.manifest.Manifest;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.I18nManager;
 import com.potato.potatotool.utils.core.I18nUtils;
@@ -35,6 +37,11 @@ import java.util.Map;
  * @date 2025/10/11
  */
 public class PaneUpdateDialog {
+    private enum PromptNoticeType {
+        INFO,
+        ERROR,
+        WARNING
+    }
     
     @FXML
     private AnchorPane an;
@@ -107,6 +114,8 @@ public class PaneUpdateDialog {
     
     @FXML
     private Label prompt;
+    private FadeTransition promptFadeIn;
+    private FadeTransition promptFadeOut;
     
     private double offsetX, offsetY;
     
@@ -157,15 +166,16 @@ public class PaneUpdateDialog {
             boolean isSkipped = isAppVersionSkipped(remoteVersion);
 
             CFCheckBox appCheckBox = new CFCheckBox();
-            String appInfo = String.format("软件更新: %s → %s",
-                    localVersion, remoteVersion);
+            String appInfo = String.format("%s: %s → %s",
+                    i18n.getString("update.available.app"), localVersion, remoteVersion);
             appCheckBox.setText(appInfo);
             appCheckBox.setSelected(!isSkipped); // 如果被跳过则默认不选中
             appCheckBox.setStyle("-fx-font-size: 13px;");
 
-            UpdateItem appItem = new UpdateItem("app", null, null, remoteVersion);
+            UpdateItem appItem = new UpdateItem(
+                    "app", null, null, remoteVersion, buildAppDetailText(updateInfo.getAppVersion()));
             updateItemsMap.put(appCheckBox, appItem);
-            updateItemsContainer.getChildren().add(appCheckBox);
+            updateItemsContainer.getChildren().add(createUpdateItemNode(appCheckBox, appItem.detailText));
             
             // 显示更新日志
             if (updateInfo.getAppVersion().getChangelog() != null && 
@@ -197,12 +207,12 @@ public class PaneUpdateDialog {
                 resourceCheckBox.setText(info);
                 resourceCheckBox.setSelected(!isSkipped); // 如果被跳过则默认不选中
                 resourceCheckBox.setStyle("-fx-font-size: 13px;");
-                
-                UpdateItem resourceItem = new UpdateItem("resource", 
-                        update.getResourceName(), update.getDisplayName(), 
-                        update.getRemoteVersion());
+
+                UpdateItem resourceItem = new UpdateItem("resource",
+                        update.getResourceName(), update.getDisplayName(),
+                        update.getRemoteVersion(), buildResourceDetailText(update));
                 updateItemsMap.put(resourceCheckBox, resourceItem);
-                updateItemsContainer.getChildren().add(resourceCheckBox);
+                updateItemsContainer.getChildren().add(createUpdateItemNode(resourceCheckBox, resourceItem.detailText));
             }
         }
     }
@@ -217,7 +227,7 @@ public class PaneUpdateDialog {
         if (updateInfo.isAppNeedUpdate()) {
             String localVersion = updateInfo.getLocalAppVersion();
             String remoteVersion = updateInfo.getAppVersion().getVersion();
-            info.append(String.format("新版本 %s 可用，当前版本 %s", remoteVersion, localVersion));
+            info.append(I18nUtils.getString("update.available.message", remoteVersion, localVersion));
         }
         
         // 如果有资源更新，添加资源更新信息
@@ -226,15 +236,85 @@ public class PaneUpdateDialog {
                 info.append("\n"); // 如果前面有软件更新信息，换行
             }
             int count = updateInfo.getResourceUpdates().size();
-            info.append(String.format("发现 %d 个资源更新", count));
+            info.append(I18nUtils.getString("update.available.resources.count", count));
         }
-        
+
         // 如果没有任何更新信息（理论上不会出现，因为有更新才会显示对话框）
         if (info.length() == 0) {
-            info.append("发现可用更新");
+            info.append(i18n.getString("update.available.found"));
         }
-        
+
         versionInfoLabel.setText(info.toString());
+    }
+
+    private VBox createUpdateItemNode(CFCheckBox checkBox, String detailText) {
+        VBox container = new VBox(4);
+        container.setStyle("-fx-border-color: -main-border-color; -fx-border-radius: 6; "
+                + "-fx-background-radius: 6; -fx-padding: 8;");
+        container.getChildren().add(checkBox);
+
+        if (detailText != null && !detailText.trim().isEmpty()) {
+            Label detailLabel = new Label(detailText);
+            detailLabel.setWrapText(true);
+            detailLabel.setStyle("-fx-font-size: 11px; -fx-opacity: 0.75;");
+            container.getChildren().add(detailLabel);
+        }
+        return container;
+    }
+
+    private String buildAppDetailText(Manifest.AppVersion appVersion) {
+        List<String> details = new ArrayList<>();
+        details.add(appVersion.isRequired()
+                ? i18n.getString("update.available.required")
+                : i18n.getString("update.available.optional"));
+
+        long size = getCurrentPlatformAppSize(appVersion);
+        if (size > 0) {
+            details.add(I18nUtils.getString("update.available.size", formatSize(size)));
+        }
+        return joinDetails(details);
+    }
+
+    private long getCurrentPlatformAppSize(Manifest.AppVersion appVersion) {
+        if (appVersion == null || appVersion.getFiles() == null || appVersion.getFiles().isEmpty()) {
+            return 0;
+        }
+
+        String platform = UpdateChecker.getPlatformIdentifier();
+        Manifest.FileInfo fileInfo = appVersion.getFiles().get(platform);
+        if (fileInfo == null) {
+            fileInfo = appVersion.getFiles().values().iterator().next();
+        }
+        return fileInfo != null ? fileInfo.getSize() : 0;
+    }
+
+    private String buildResourceDetailText(ResourceUpdate update) {
+        List<String> details = new ArrayList<>();
+        details.add(update.getResource().isRequired()
+                ? i18n.getString("update.available.required")
+                : i18n.getString("update.available.optional"));
+
+        if (update.getFileSize() > 0) {
+            details.add(I18nUtils.getString("update.available.size", formatSize(update.getFileSize())));
+        }
+        if (update.getDescription() != null && !update.getDescription().trim().isEmpty()) {
+            details.add(update.getDescription().trim());
+        }
+        return joinDetails(details);
+    }
+
+    private String joinDetails(List<String> details) {
+        StringBuilder builder = new StringBuilder();
+        for (String detail : details) {
+            if (detail == null || detail.trim().isEmpty()) {
+                continue;
+            }
+            if (builder.length() > 0) {
+                builder.append("  |  ");
+            }
+            builder.append(detail.trim());
+        }
+        return builder.toString();
     }
     
     /**
@@ -245,12 +325,14 @@ public class PaneUpdateDialog {
         String resourceName; // 资源名称（如"md5"）
         String displayName; // 显示名称
         String version; // 版本号
-        
-        UpdateItem(String type, String resourceName, String displayName, String version) {
+        String detailText; // 详情文本
+
+        UpdateItem(String type, String resourceName, String displayName, String version, String detailText) {
             this.type = type;
             this.resourceName = resourceName;
             this.displayName = displayName;
             this.version = version;
+            this.detailText = detailText;
         }
     }
     
@@ -273,7 +355,7 @@ public class PaneUpdateDialog {
             showTip(i18n.getString("update.select.none"));
             return;
         }
-        
+
         if (debugMode) System.out.println("用户选中了" + selectedItems.size() + "个更新项");
         
         // 隐藏按钮，显示进度
@@ -306,7 +388,9 @@ public class PaneUpdateDialog {
         }
         
         // 执行更新
-        if (hasSelectedApp) {
+        if (hasSelectedApp && !selectedResourceUpdates.isEmpty()) {
+            startSelectedResourceUpdate(selectedResourceUpdates, false, this::startAppUpdate);
+        } else if (hasSelectedApp) {
             startAppUpdate();
         } else if (!selectedResourceUpdates.isEmpty()) {
             startSelectedResourceUpdate(selectedResourceUpdates);
@@ -347,10 +431,10 @@ public class PaneUpdateDialog {
             public void onComplete(String message) {
                 Platform.runLater(() -> {
                     // 更新完成提示，1.5秒后自动关闭
-                    showAlert(Alert.AlertType.INFORMATION, 
+                    showPromptNotice(PromptNoticeType.INFO,
                             i18n.getString("update.install.title"), 
                             message != null ? message : i18n.getString("update.install.app.success"));
-                    // showAlert内部会自动关闭
+                    // showPromptNotice 内部会自动关闭
                 });
             }
             
@@ -366,7 +450,7 @@ public class PaneUpdateDialog {
                             || error.contains("连接") || error.contains("网络"))) {
                         errorMessage = i18n.getString("update.error.network") + "\n" + error;
                     }
-                    showAlert(Alert.AlertType.ERROR, 
+                    showPromptNotice(PromptNoticeType.ERROR,
                             i18n.getString("update.error.title"), errorMessage, false);
                 });
             }
@@ -387,6 +471,12 @@ public class PaneUpdateDialog {
      * 开始更新选中的资源
      */
     private void startSelectedResourceUpdate(List<ResourceUpdate> selectedResources) {
+        startSelectedResourceUpdate(selectedResources, true, null);
+    }
+
+    private void startSelectedResourceUpdate(List<ResourceUpdate> selectedResources,
+                                            boolean showSuccessAlert,
+                                            Runnable onSuccess) {
         // 初始化进度UI
         progressLabel.setText(i18n.getString("update.download.title"));
         progressBar.setProgress(0);
@@ -479,11 +569,16 @@ public class PaneUpdateDialog {
                 @Override
                 public void onComplete(String message) {
                     Platform.runLater(() -> {
-                        // 资源更新完成提示，1.5秒后自动关闭
-                        showAlert(Alert.AlertType.INFORMATION,
-                                i18n.getString("update.install.title"),
-                                i18n.getString("update.install.resource.success"));
-                        // showAlert内部会自动关闭
+                        if (onSuccess != null) {
+                            onSuccess.run();
+                            return;
+                        }
+
+                        if (showSuccessAlert) {
+                            showPromptNotice(PromptNoticeType.INFO,
+                                    i18n.getString("update.install.title"),
+                                    i18n.getString("update.install.resource.success"));
+                        }
                     });
                 }
                 
@@ -499,7 +594,7 @@ public class PaneUpdateDialog {
                                 || error.contains("连接") || error.contains("网络"))) {
                             errorMessage = i18n.getString("update.error.network") + "\n" + error;
                         }
-                        showAlert(Alert.AlertType.ERROR,
+                        showPromptNotice(PromptNoticeType.ERROR,
                                 i18n.getString("update.error.title"), errorMessage, false);
                     });
                 }
@@ -609,10 +704,10 @@ public class PaneUpdateDialog {
                 public void onComplete(String message) {
                     Platform.runLater(() -> {
                         // 资源更新完成提示，1.5秒后自动关闭
-                        showAlert(Alert.AlertType.INFORMATION,
+                        showPromptNotice(PromptNoticeType.INFO,
                                 i18n.getString("update.install.title"),
                                 i18n.getString("update.install.resource.success"));
-                        // showAlert内部会自动关闭
+                        // showPromptNotice 内部会自动关闭
                     });
                 }
                 
@@ -628,7 +723,7 @@ public class PaneUpdateDialog {
                                 || error.contains("连接") || error.contains("网络"))) {
                             errorMessage = i18n.getString("update.error.network") + "\n" + error;
                         }
-                        showAlert(Alert.AlertType.ERROR,
+                        showPromptNotice(PromptNoticeType.ERROR,
                                 i18n.getString("update.error.title"), errorMessage, false);
                     });
                 }
@@ -661,7 +756,7 @@ public class PaneUpdateDialog {
             System.exit(0);
         } catch (Exception e) {
             // 安装失败，不自动关闭对话框
-            showAlert(Alert.AlertType.ERROR,
+            showPromptNotice(PromptNoticeType.ERROR,
                     i18n.getString("update.error.title"),
                     i18n.getString("update.error.install") + ": " + e.getMessage(), false);
         }
@@ -943,36 +1038,8 @@ public class PaneUpdateDialog {
      */
     private void showTip(String message, Runnable onFinished) {
         Platform.runLater(() -> {
-            // 设置提示文本
             prompt.setText(message);
-            
-            // 显示提示组件
-            promptPane.setVisible(true);
-            promptPane.setManaged(true);
-
-            // 创建渐入动画
-            FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
-            fadeIn.setFromValue(0);
-            fadeIn.setToValue(1);
-
-            // 创建渐出动画
-            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
-            fadeOut.setFromValue(1);
-            fadeOut.setToValue(0);
-            fadeOut.setDelay(Duration.seconds(0.8)); // 延迟0.8秒执行渐出动画
-
-            // 播放渐入动画，完成后播放渐出动画
-            fadeIn.setOnFinished(event -> fadeOut.play());
-            fadeIn.play();
-
-            fadeOut.setOnFinished(event -> {
-                promptPane.setVisible(false);
-                promptPane.setManaged(false);
-                // 如果有回调，执行回调
-                if (onFinished != null) {
-                    onFinished.run();
-                }
-            });
+            playPromptAnimation(0.8, onFinished);
         });
     }
     
@@ -1023,23 +1090,23 @@ public class PaneUpdateDialog {
     }
     
     /**
-     * 显示提示框（统一方法，消除冗余）
+     * 显示 promptPane 提示（统一方法，消除冗余）
      * @param type 提示类型
      * @param title 标题
      * @param content 内容
      */
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        showAlert(type, title, content, true);
+    private void showPromptNotice(PromptNoticeType type, String title, String content) {
+        showPromptNotice(type, title, content, true);
     }
     
     /**
-     * 显示提示框（可控制是否自动关闭）
+     * 显示 promptPane 提示（可控制是否自动关闭）
      * @param type 提示类型
      * @param title 标题
      * @param content 内容
-     * @param autoClose 是否自动关闭对话框
+     * @param autoClose 是否自动关闭当前更新弹窗
      */
-    private void showAlert(Alert.AlertType type, String title, String content, boolean autoClose) {
+    private void showPromptNotice(PromptNoticeType type, String title, String content, boolean autoClose) {
         // 组合标题和内容作为提示消息
         String message = content;
         if (title != null && !title.isEmpty() && !title.equals(content)) {
@@ -1047,17 +1114,17 @@ public class PaneUpdateDialog {
         }
         
         // 根据类型和自动关闭标志选择行为
-        if (type == Alert.AlertType.INFORMATION) {
+        if (type == PromptNoticeType.INFO) {
             // 信息提示，延长显示时间，可选自动关闭
             if (autoClose) {
                 showTipWithDelay(message, 1.5, this::closeDialog);
             } else {
                 showTipWithDelay(message, 1.5, null);
             }
-        } else if (type == Alert.AlertType.ERROR) {
+        } else if (type == PromptNoticeType.ERROR) {
             // 错误提示，显示更长时间，不自动关闭（让用户看清错误）
             showTipWithDelay(message, 3.0, null);
-        } else if (type == Alert.AlertType.WARNING) {
+        } else if (type == PromptNoticeType.WARNING) {
             // 警告提示，中等延迟
             showTipWithDelay(message, 2.0, null);
         } else {
@@ -1074,36 +1141,45 @@ public class PaneUpdateDialog {
      */
     private void showTipWithDelay(String message, double delaySeconds, Runnable onFinished) {
         Platform.runLater(() -> {
-            // 设置提示文本
             prompt.setText(message);
-            
-            // 显示提示组件
-            promptPane.setVisible(true);
-            promptPane.setManaged(true);
+            playPromptAnimation(delaySeconds, onFinished);
+        });
+    }
 
-            // 创建渐入动画
-            FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
-            fadeIn.setFromValue(0);
-            fadeIn.setToValue(1);
+    private void playPromptAnimation(double delaySeconds, Runnable onFinished) {
+        if (promptPane == null) {
+            return;
+        }
+        if (promptFadeIn != null) {
+            promptFadeIn.stop();
+        }
+        if (promptFadeOut != null) {
+            promptFadeOut.stop();
+        }
 
-            // 创建渐出动画
-            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
-            fadeOut.setFromValue(1);
-            fadeOut.setToValue(0);
-            fadeOut.setDelay(Duration.seconds(delaySeconds)); // 使用自定义延迟时间
+        promptPane.setVisible(true);
+        promptPane.setManaged(true);
+        promptPane.setOpacity(0);
+        promptPane.toFront();
 
-            // 播放渐入动画，完成后播放渐出动画
-            fadeIn.setOnFinished(event -> fadeOut.play());
-            fadeIn.play();
+        promptFadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
+        promptFadeIn.setFromValue(0);
+        promptFadeIn.setToValue(1);
 
-            fadeOut.setOnFinished(event -> {
-                promptPane.setVisible(false);
-                promptPane.setManaged(false);
-                // 如果有回调，执行回调
-                if (onFinished != null) {
-                    onFinished.run();
-                }
-            });
+        promptFadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
+        promptFadeOut.setFromValue(1);
+        promptFadeOut.setToValue(0);
+        promptFadeOut.setDelay(Duration.seconds(delaySeconds));
+
+        promptFadeIn.setOnFinished(event -> promptFadeOut.playFromStart());
+        promptFadeIn.playFromStart();
+
+        promptFadeOut.setOnFinished(event -> {
+            promptPane.setVisible(false);
+            promptPane.setManaged(false);
+            if (onFinished != null) {
+                onFinished.run();
+            }
         });
     }
     
@@ -1133,4 +1209,3 @@ public class PaneUpdateDialog {
         offsetY = event.getSceneY();
     }
 }
-

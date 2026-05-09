@@ -21,10 +21,10 @@ class PaneSettingRuntimePathConfigTest {
 
         JsonObject browserConfig = new JsonObject();
         browserConfig.addProperty("manualPath", "/legacy/browser");
-        rootConfig.add(ConfigConstants.BROWSER, browserConfig);
+        rootConfig.add("Browser", browserConfig);
 
         JsonObject vulnScan = new JsonObject();
-        vulnScan.addProperty(ConfigConstants.VULNSCAN_PYTHON_PATH, "/legacy/python");
+        vulnScan.addProperty("pythonPath", "/legacy/python");
         rootConfig.add(ConfigConstants.VULNSCAN, vulnScan);
 
         BrowserRuntimeConfig.applyBrowserSettings(rootConfig, "  /custom/browser  ");
@@ -34,7 +34,7 @@ class PaneSettingRuntimePathConfigTest {
         assertNotNull(envPath);
         assertEquals("/custom/browser", envPath.get(ConfigConstants.ENV_PATH_BROWSER).getAsString());
         assertEquals("/custom/python", envPath.get(ConfigConstants.ENV_PATH_PYTHON).getAsString());
-        assertFalse(rootConfig.getAsJsonObject(ConfigConstants.BROWSER).has("manualPath"));
+        assertFalse(rootConfig.has("Browser"));
         assertFalse(rootConfig.has(ConfigConstants.VULNSCAN));
     }
 }

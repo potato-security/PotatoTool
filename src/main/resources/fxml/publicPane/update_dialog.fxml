@@ -146,16 +146,10 @@
 
             <!-- 提示组件 -->
             <StackPane fx:id="promptPane" visible="false" managed="false"
-                      maxHeight="50" maxWidth="250" alignment="CENTER"
-                      style="-fx-background-color: transparent;">
+                      maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER">
                 <Label fx:id="prompt" text=""
-                      style="-fx-background-color: -main-btnContent-color; -fx-padding: 10 20; -fx-background-radius: 5; -fx-font-size: 14px;">
-                    <effect>
-                        <DropShadow/>
-                    </effect>
-                </Label>
+                      wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="520"/>
             </StackPane>
         </StackPane>
     </children>
 </AnchorPane>
-

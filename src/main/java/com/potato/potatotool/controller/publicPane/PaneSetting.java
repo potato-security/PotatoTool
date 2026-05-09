@@ -1,11 +1,9 @@
 package com.potato.potatotool.controller.publicPane;
 
 import com.dlsc.gemsfx.CFSwitch;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.HeadlessHandler;
@@ -15,6 +13,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.http.PythonHandler;
 import com.potato.potatotool.storage.PathManager;
 import com.potato.potatotool.update.UpdateInfo;
 import com.potato.potatotool.update.UpdateManager;
+import com.potato.potatotool.utils.ai.model.AiThinkingConfig;
 import com.potato.potatotool.utils.browser.BrowserRuntimeConfig;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.EnvPathConfig;
@@ -111,6 +110,8 @@ public class PaneSetting {
     @FXML
     private ComboBox<String> aiProvider;
     @FXML
+    private CFSwitch aiUseBuiltinGateway;
+    @FXML
     private TextField aiTimeoutMs;
     @FXML
     private CFSwitch aiThinkingEnabled;
@@ -176,6 +177,8 @@ public class PaneSetting {
     private CFSwitch crawlProxy;
     @FXML
     private CFSwitch sslProxy;
+    @FXML
+    private CFSwitch blockchainProxy;
     
     @FXML
     private Accordion settingAccordion;
@@ -223,6 +226,12 @@ public class PaneSetting {
     // 更新设置相关
     @FXML
     private CFSwitch autoCheckUpdateSwitch;
+    @FXML
+    private ComboBox<String> updateCheckIntervalComboBox;
+    @FXML
+    private Label lastCheckTimeLabel;
+    @FXML
+    private Label lastManifestSourceLabel;
 
     // OOB 配置
     @FXML
@@ -281,11 +290,14 @@ public class PaneSetting {
     private FadeTransition promptFadeIn;
     private FadeTransition promptFadeOut;
     private volatile boolean promptAutoCloseEnabled;
+    private Node promptDefaultContent;
+    private boolean promptDialogVisible;
     private boolean proxyToggleUpdating;
     private boolean proxyServiceUpdating;
     private long proxyValidationSeq;
 
     public void initialize() {
+        promptDefaultContent = prompt;
         if(isBlueMode){
             an.getStyleClass().remove("redStyle");
             an.getStyleClass().add("blueStyle");
@@ -308,6 +320,9 @@ public class PaneSetting {
             }
             handleProxyToggle(newVal);
         });
+        aiUseBuiltinGateway.selectedProperty().addListener((obs, oldVal, newVal) -> refreshAiModeState(newVal));
+        aiProvider.valueProperty().addListener((obs, oldVal, newVal) -> refreshAiThinkingState());
+        aiModel.textProperty().addListener((obs, oldVal, newVal) -> refreshAiThinkingState());
         initVulnScanData();
         bindProxyServiceListeners();
         initHeadersData();
@@ -330,14 +345,15 @@ public class PaneSetting {
      */
     private void initStorageManagement() {
         PathManager pathManager = PathManager.getInstance();
+        JsonObject updateConfig = null;
         
         // 初始化自动检查更新开关
         try {
             JsonObject config = (JsonObject) Constants.getOutsideConfig(null);
-            if (config != null && config.has("UpDate")) {
-                JsonObject updateConfig = config.getAsJsonObject("UpDate");
-                if (updateConfig.has("autoCheck")) {
-                    boolean autoCheck = updateConfig.get("autoCheck").getAsBoolean();
+            if (config != null && config.has(ConfigConstants.UPDATE)) {
+                updateConfig = config.getAsJsonObject(ConfigConstants.UPDATE);
+                if (updateConfig.has(ConfigConstants.UPDATE_AUTO_CHECK)) {
+                    boolean autoCheck = updateConfig.get(ConfigConstants.UPDATE_AUTO_CHECK).getAsBoolean();
                     autoCheckUpdateSwitch.setSelected(autoCheck);
                 } else {
                     autoCheckUpdateSwitch.setSelected(true); // 默认开启
@@ -348,6 +364,9 @@ public class PaneSetting {
         } catch (Exception e) {
             autoCheckUpdateSwitch.setSelected(true); // 默认开启
         }
+
+        initUpdateIntervalOptions(updateConfig);
+        refreshUpdateStatusLabels(updateConfig);
         
         // 显示配置文件路径
         configPathLabel.setText(pathManager.getConfigBasePath().toString());
@@ -500,6 +519,7 @@ public class PaneSetting {
         proxyMap.put(githubProxy, AssetConstants.GITHUB_TOKEN);
         proxyMap.put(sslProxy, AssetConstants.SSL);
         proxyMap.put(crawlProxy, AssetConstants.CRAWL);
+        proxyMap.put(blockchainProxy, ConfigConstants.BLOCKCHAIN_SERVICE);
         proxyMap.put(vulnScanProxySwitch, ConfigConstants.VULNSCAN_SERVICE);
     }
 
@@ -657,18 +677,27 @@ public class PaneSetting {
 
         //  初始化默认AI配置（仅显示用户显式填写值，不回显内置加密默认值）
         tmpJsonObj_AI = (JsonObject) Constants.getOutsideConfig(ConfigConstants.AI);
+        boolean useBuiltinGateway = readAiUseBuiltinGateway(tmpJsonObj_AI);
+        aiUseBuiltinGateway.setSelected(useBuiltinGateway);
         aiApiBase.setText(readAiPlainText(tmpJsonObj_AI, ConfigConstants.AI_BASE_URL));
         aiApiKey.setText(readAiPlainText(tmpJsonObj_AI, ConfigConstants.AI_API_KEY));
         aiModel.setText(readAiPlainText(tmpJsonObj_AI, ConfigConstants.AI_MODEL_NAME));
-        String provider = readAiPlainText(tmpJsonObj_AI, ConfigConstants.AI_PROVIDER);
-        aiProvider.setValue(provider.isEmpty() ? "OPENAI_COMPATIBLE" : provider);
+        String provider = useBuiltinGateway
+                ? "OPENAI"
+                : readAiPlainText(tmpJsonObj_AI, ConfigConstants.AI_PROVIDER);
+        aiProvider.setValue(PaneSettingSupport.normalizeAiProviderDisplayValue(provider));
         aiTimeoutMs.setText(readAiNumberText(tmpJsonObj_AI, ConfigConstants.AI_TIMEOUT_MS, 60000));
         JsonObject thinkingConfig = null;
         if (tmpJsonObj_AI.has(ConfigConstants.AI_THINKING) && tmpJsonObj_AI.get(ConfigConstants.AI_THINKING).isJsonObject()) {
             thinkingConfig = tmpJsonObj_AI.getAsJsonObject(ConfigConstants.AI_THINKING);
         }
         aiThinkingEnabled.setSelected(readAiBoolean(thinkingConfig, ConfigConstants.AI_THINKING_ENABLED, false));
-        aiThinkingBudgetTokens.setText(readAiNumberText(thinkingConfig, ConfigConstants.AI_THINKING_BUDGET_TOKENS, 1024));
+        aiThinkingBudgetTokens.setText(readAiNumberText(
+                thinkingConfig,
+                ConfigConstants.AI_THINKING_BUDGET_TOKENS,
+                AiThinkingConfig.DEFAULT_BUDGET_TOKENS
+        ));
+        refreshAiModeState(useBuiltinGateway);
 
         // 初始化资产测绘
         JsonObject tmpJsonObj_Asset = (JsonObject) Constants.getOutsideConfig(AssetConstants.ASSET);
@@ -799,6 +828,7 @@ public class PaneSetting {
     }
 
     static void fillAiConfigMap(Map<String, Object> aiMap,
+                                        boolean useBuiltinGateway,
                                         String providerValue,
                                         String plainBaseUrl,
                                         String plainApiKey,
@@ -808,6 +838,7 @@ public class PaneSetting {
                                         int thinkingBudgetTokens) {
         PaneSettingSupport.fillAiConfigMap(
                 aiMap,
+                useBuiltinGateway,
                 providerValue,
                 plainBaseUrl,
                 plainApiKey,
@@ -847,28 +878,41 @@ public class PaneSetting {
         String selectedLanguage = languageComboBox != null ? languageComboBox.getValue() : null;
         String currentLanguageDisplay = "zh_CN".equals(i18n.getCurrentLanguageCode()) ? "简体中文" : "English";
         boolean languageChanged = selectedLanguage != null && !selectedLanguage.equals(currentLanguageDisplay);
-        
-        Map<String, Object> configMap = new LinkedHashMap<>();
-        Map<String, Object> proxyConfigMap = new LinkedHashMap<>();
-        proxyConfigMap.put(ConfigConstants.PROXY_ENABLE, proxyButton.isSelected());
-        proxyConfigMap.put(ConfigConstants.PROXY_ADDRESS, proxy.getText());
-        configMap.put(ConfigConstants.PROXY, proxyConfigMap);
 
-        Map<String, Object> decompileMap = new LinkedHashMap<>();
-        decompileMap.put(ConfigConstants.DECOMPILE_MODE, (String)decompileType.getSelectionModel().getSelectedItem());
-        decompileMap.put(ConfigConstants.DECOMPILE_AI_OPTIMIZATION, false);
-        configMap.put(ConfigConstants.DECOMPILE, decompileMap);
+        JsonObject rootConfig = (JsonObject) Constants.getOutsideConfig(null);
+        if (rootConfig == null) {
+            rootConfig = new JsonObject();
+        }
 
-        Map<String, Object> aiMap = convertToMap(tmpJsonObj_AI);
+        JsonObject proxyConfig = new JsonObject();
+        copyFieldIfPresent(getObjectCopy(rootConfig, ConfigConstants.PROXY), proxyConfig, ConfigConstants.PROXY_SERVICES);
+        proxyConfig.addProperty(ConfigConstants.PROXY_ENABLE, proxyButton.isSelected());
+        proxyConfig.addProperty(ConfigConstants.PROXY_ADDRESS, proxy.getText() == null ? "" : proxy.getText().trim());
+        rootConfig.add(ConfigConstants.PROXY, proxyConfig);
+
+        JsonObject decompileConfig = new JsonObject();
+        Object selectedDecompileMode = decompileType.getSelectionModel().getSelectedItem();
+        decompileConfig.addProperty(
+                ConfigConstants.DECOMPILE_MODE,
+                selectedDecompileMode == null ? "" : selectedDecompileMode.toString()
+        );
+        decompileConfig.addProperty(ConfigConstants.DECOMPILE_AI_OPTIMIZATION, false);
+        rootConfig.add(ConfigConstants.DECOMPILE, decompileConfig);
+
+        boolean useBuiltinGateway = aiUseBuiltinGateway.isSelected();
         String plainBaseUrl = aiApiBase.getText().trim();
         String plainApiKey = aiApiKey.getText().trim();
         String plainModelName = aiModel.getText().trim();
-        String providerValue = aiProvider.getValue() == null ? "OPENAI_COMPATIBLE" : aiProvider.getValue().trim();
-        if (providerValue.isEmpty()) {
-            providerValue = "OPENAI_COMPATIBLE";
+        String providerValue = useBuiltinGateway
+                ? "OPENAI"
+                : PaneSettingSupport.normalizeAiProviderConfigValue(aiProvider.getValue());
+        if (!useBuiltinGateway
+                && (plainBaseUrl.isEmpty() || plainApiKey.isEmpty() || plainModelName.isEmpty())) {
+            showTip(i18n.getString("setting.ai.custom.required"), false, true);
+            return;
         }
         String aiBaseUrlValidationKey = PaneSettingSupport.validateAiBaseUrl(plainBaseUrl);
-        if (aiBaseUrlValidationKey != null) {
+        if (!useBuiltinGateway && aiBaseUrlValidationKey != null) {
             showTip(i18n.getString(aiBaseUrlValidationKey), false, true);
             return;
         }
@@ -897,49 +941,32 @@ public class PaneSetting {
             return;
         }
 
-        PaneSettingSupport.fillAiConfigMap(
-                aiMap,
-                providerValue,
-                plainBaseUrl,
-                plainApiKey,
-                plainModelName,
-                timeoutMs,
-                aiThinkingEnabled.isSelected(),
-                thinkingBudgetTokens
-        );
+        JsonObject aiConfig = new JsonObject();
+        aiConfig.addProperty(ConfigConstants.AI_USE_BUILTIN_GATEWAY, useBuiltinGateway);
+        aiConfig.addProperty(ConfigConstants.AI_PROVIDER, providerValue);
+        aiConfig.addProperty(ConfigConstants.AI_BASE_URL, useBuiltinGateway ? "" : plainBaseUrl);
+        aiConfig.addProperty(ConfigConstants.AI_API_KEY, useBuiltinGateway ? "" : plainApiKey);
+        aiConfig.addProperty(ConfigConstants.AI_MODEL_NAME, useBuiltinGateway ? "" : plainModelName);
+        aiConfig.addProperty(ConfigConstants.AI_TIMEOUT_MS, timeoutMs);
 
-        if (!plainBaseUrl.isEmpty()) {
-            aiMap.put(ConfigConstants.AI_LOCAL_BASE_URL, new AESUtils().encryptLocalConfig(plainBaseUrl));
-        }
-        if (!plainApiKey.isEmpty()) {
-            aiMap.put(ConfigConstants.AI_LOCAL_API_KEY, new AESUtils().encryptLocalConfig(plainApiKey));
-        }
-        if (!plainModelName.isEmpty()) {
-            aiMap.put(ConfigConstants.AI_LOCAL_MODEL_NAME, new AESUtils().encryptLocalConfig(plainModelName));
-        }
-        configMap.put(ConfigConstants.AI, aiMap);
+        JsonObject thinkingConfig = new JsonObject();
+        thinkingConfig.addProperty(ConfigConstants.AI_THINKING_ENABLED, aiThinkingEnabled.isSelected());
+        thinkingConfig.addProperty(ConfigConstants.AI_THINKING_BUDGET_TOKENS, thinkingBudgetTokens);
+        aiConfig.add(ConfigConstants.AI_THINKING, thinkingConfig);
+
+        aiConfig.addProperty(ConfigConstants.AI_LOCAL_BASE_URL, resolveBuiltinCipherText(ConfigConstants.AI_LOCAL_BASE_URL));
+        aiConfig.addProperty(ConfigConstants.AI_LOCAL_API_KEY, resolveBuiltinCipherText(ConfigConstants.AI_LOCAL_API_KEY));
+        aiConfig.addProperty(ConfigConstants.AI_LOCAL_MODEL_NAME, resolveBuiltinCipherText(ConfigConstants.AI_LOCAL_MODEL_NAME));
+        rootConfig.add(ConfigConstants.AI, aiConfig);
 
         String browserPath = browserRuntimePath == null ? "" : browserRuntimePath.getText().trim();
         String pythonPath = pythonRuntimePath == null ? "" : pythonRuntimePath.getText().trim();
-
-        JsonObject rootConfig = (JsonObject) Constants.getOutsideConfig(null);
-        if (rootConfig == null) {
-            rootConfig = new JsonObject();
-        } else {
-            rootConfig = rootConfig.deepCopy();
-        }
-        Gson gson = new Gson();
-        for (Map.Entry<String, Object> entry : configMap.entrySet()) {
-            rootConfig.add(entry.getKey(), gson.toJsonTree(entry.getValue()));
-        }
         BrowserRuntimeConfig.applyBrowserSettings(rootConfig, browserPath);
         EnvPathConfig.applyPythonPath(rootConfig, pythonPath);
 
         if(Constants.saveConfig(rootConfig)){
+            tmpJsonObj_AI = aiConfig.deepCopy();
             PythonHandler.resetPythonPath();
-            if (!pythonPath.isEmpty()) {
-                PythonHandler.setPythonPath(pythonPath);
-            }
             syncProxyChildrenState();
             // 更新设置现在有独立的保存按钮，这里不再保存（避免重复）
             if (languageChanged && selectedLanguage != null) {
@@ -952,11 +979,74 @@ public class PaneSetting {
         }
     }
 
-    public static Map<String, Object> convertToMap(JsonObject jsonObject) {
-        return new Gson().fromJson(
-                jsonObject,
-                new TypeToken<Map<String, Object>>(){}.getType()
+    private JsonObject getObjectCopy(JsonObject parent, String key) {
+        if (parent != null && key != null && parent.has(key) && parent.get(key).isJsonObject()) {
+            return parent.getAsJsonObject(key).deepCopy();
+        }
+        return new JsonObject();
+    }
+
+    private boolean readAiUseBuiltinGateway(JsonObject aiConfig) {
+        boolean hasPlainAiConfig = hasPlainAiConfig(aiConfig);
+        return readAiBoolean(aiConfig, ConfigConstants.AI_USE_BUILTIN_GATEWAY, !hasPlainAiConfig);
+    }
+
+    private boolean hasPlainAiConfig(JsonObject aiConfig) {
+        return !readAiPlainText(aiConfig, ConfigConstants.AI_BASE_URL).isEmpty()
+                || !readAiPlainText(aiConfig, ConfigConstants.AI_API_KEY).isEmpty()
+                || !readAiPlainText(aiConfig, ConfigConstants.AI_MODEL_NAME).isEmpty();
+    }
+
+    private void refreshAiModeState(boolean useBuiltinGateway) {
+        if (useBuiltinGateway) {
+            aiProvider.setValue("OPENAI");
+        } else if (aiProvider.getValue() == null || aiProvider.getValue().trim().isEmpty()) {
+            aiProvider.setValue("OPENAI");
+        }
+        aiApiBase.setDisable(useBuiltinGateway);
+        aiApiKey.setDisable(useBuiltinGateway);
+        aiModel.setDisable(useBuiltinGateway);
+        aiProvider.setDisable(useBuiltinGateway);
+        refreshAiThinkingState();
+    }
+
+    private void refreshAiThinkingState() {
+        boolean supported = PaneSettingSupport.supportsAiThinking(
+                aiUseBuiltinGateway != null && aiUseBuiltinGateway.isSelected() ? "OPENAI" : aiProvider.getValue(),
+                aiUseBuiltinGateway != null && aiUseBuiltinGateway.isSelected() ? "" : aiModel.getText()
         );
+        aiThinkingEnabled.setDisable(!supported);
+        aiThinkingBudgetTokens.setDisable(false);
+        if (!supported) {
+            aiThinkingEnabled.setSelected(false);
+        }
+    }
+
+    private String resolveBuiltinCipherText(String key) {
+        JsonObject resourceAiConfig = loadResourceAiConfig();
+        String cipherText = readAiPlainText(resourceAiConfig, key);
+        if (!cipherText.isEmpty()) {
+            return cipherText;
+        }
+        return readAiPlainText(tmpJsonObj_AI, key);
+    }
+
+    private JsonObject loadResourceAiConfig() {
+        try {
+            JsonObject root = com.google.gson.JsonParser.parseString(Constants.getResourceString("config")).getAsJsonObject();
+            if (root.has(ConfigConstants.AI) && root.get(ConfigConstants.AI).isJsonObject()) {
+                return root.getAsJsonObject(ConfigConstants.AI);
+            }
+        } catch (Exception ignored) {
+        }
+        return new JsonObject();
+    }
+
+    private void copyFieldIfPresent(JsonObject source, JsonObject target, String key) {
+        if (source == null || target == null || key == null || !source.has(key)) {
+            return;
+        }
+        target.add(key, source.get(key).deepCopy());
     }
 
 
@@ -1051,7 +1141,6 @@ public class PaneSetting {
         JsonArray GitHub_Token = getContentTextFieldValue(githubVBox);
         JsonArray Google_API = transformGoogleApi(getContentTextFieldValue(googleVBox));
 
-        Map<String, Object> configMap = new LinkedHashMap<>();
         Map<String, Object> assetMap = new LinkedHashMap<>();
         assetMap.put(AssetConstants.CHINAZ_COOKIE, Chinaz_Cookie);
         assetMap.put(AssetConstants.AIQICHA_COOKIE, Aiqicha_Cookie);
@@ -1062,9 +1151,8 @@ public class PaneSetting {
         assetMap.put(AssetConstants.SHODAN_KEY, Shodan_Key);
         assetMap.put(AssetConstants.GITHUB_TOKEN, GitHub_Token);
         assetMap.put(AssetConstants.GOOGLE_API, Google_API);
-        configMap.put(AssetConstants.ASSET, assetMap);
 
-        if(Constants.saveConfig(configMap)){
+        if(Constants.saveConfig(AssetConstants.ASSET, assetMap)){
             // 如果语言发生了变化，则切换语言
             if (languageChanged && selectedLanguage != null) {
                 switchLanguage(selectedLanguage);
@@ -1138,22 +1226,19 @@ public class PaneSetting {
         if (promptPane == null) {
             return;
         }
-        promptPane.getStyleClass().removeAll("setting-prompt-info", "setting-prompt-error");
+        promptPane.getStyleClass().removeAll("setting-prompt-info", "setting-prompt-error", "setting-prompt-dialog");
         promptPane.getStyleClass().add(isError ? "setting-prompt-error" : "setting-prompt-info");
     }
 
     private void playPromptAnimation(boolean autoClose) {
+        promptDialogVisible = false;
+        restorePromptDefaultContent();
         promptAutoCloseEnabled = autoClose;
 
         if (promptFadeIn == null) {
             promptFadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
             promptFadeIn.setFromValue(0);
             promptFadeIn.setToValue(1);
-            promptFadeIn.setOnFinished(event -> {
-                if (promptAutoCloseEnabled && promptFadeOut != null) {
-                    promptFadeOut.playFromStart();
-                }
-            });
         }
 
         if (promptFadeOut == null) {
@@ -1172,20 +1257,113 @@ public class PaneSetting {
         promptPane.setOpacity(0);
         promptPane.setVisible(true);
         promptPane.setManaged(true);
+        promptPane.toFront();
+        promptFadeIn.setOnFinished(event -> {
+            if (promptAutoCloseEnabled && promptFadeOut != null) {
+                promptFadeOut.playFromStart();
+            }
+        });
         promptFadeIn.playFromStart();
+    }
+
+    private void showConfirmPrompt(String title, String content, Runnable onConfirm) {
+        Platform.runLater(() -> {
+            if (promptPane == null) {
+                return;
+            }
+            stopPromptTransitions();
+            promptDialogVisible = true;
+            promptPane.getStyleClass().removeAll("setting-prompt-info", "setting-prompt-error", "setting-prompt-dialog");
+            promptPane.getStyleClass().add("setting-prompt-dialog");
+
+            VBox dialog = new VBox(12);
+            dialog.getStyleClass().add("setting-confirm-dialog");
+            dialog.setMaxWidth(640);
+            dialog.setFillWidth(true);
+            dialog.setOnMouseClicked(MouseEvent::consume);
+
+            Label titleLabel = createPromptLabel(title, 600);
+            titleLabel.getStyleClass().add("setting-confirm-title");
+            Label contentLabel = createPromptLabel(content, 600);
+            contentLabel.getStyleClass().add("setting-confirm-content");
+
+            HBox actions = new HBox(10);
+            actions.getStyleClass().add("setting-confirm-actions");
+            Button cancelButton = createPromptButton(i18n.getString("app.cancel"), false);
+            Button confirmButton = createPromptButton(i18n.getString("app.confirm"), true);
+            cancelButton.setOnAction(event -> hidePromptPane());
+            confirmButton.setOnAction(event -> {
+                hidePromptPane();
+                if (onConfirm != null) {
+                    onConfirm.run();
+                }
+            });
+            actions.getChildren().addAll(cancelButton, confirmButton);
+
+            dialog.getChildren().setAll(titleLabel, contentLabel, actions);
+            promptPane.getChildren().setAll(dialog);
+            promptPane.setOpacity(0);
+            promptPane.setVisible(true);
+            promptPane.setManaged(true);
+            promptPane.toFront();
+
+            promptFadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
+            promptFadeIn.setFromValue(0);
+            promptFadeIn.setToValue(1);
+            promptFadeIn.playFromStart();
+        });
+    }
+
+    private Label createPromptLabel(String text, double maxWidth) {
+        Label label = new Label(text == null ? "" : text);
+        label.setWrapText(true);
+        label.setMaxWidth(maxWidth);
+        label.setMinHeight(Region.USE_PREF_SIZE);
+        label.getStyleClass().add("setting-confirm-text");
+        return label;
+    }
+
+    private Button createPromptButton(String text, boolean primary) {
+        Button button = new Button(text);
+        button.getStyleClass().add(primary ? "setting-confirm-primary" : "setting-confirm-secondary");
+        button.setMinWidth(92);
+        button.setMinHeight(30);
+        return button;
     }
 
     @FXML
     public void closePromptPane(MouseEvent event) {
-        if (promptPane != null) {
-            if (promptFadeIn != null) {
-                promptFadeIn.stop();
-            }
-            if (promptFadeOut != null) {
-                promptFadeOut.stop();
-            }
-            promptPane.setVisible(false);
-            promptPane.setManaged(false);
+        if (!promptDialogVisible) {
+            hidePromptPane();
+        }
+    }
+
+    private void hidePromptPane() {
+        if (promptPane == null) {
+            return;
+        }
+        stopPromptTransitions();
+        promptDialogVisible = false;
+        promptPane.setVisible(false);
+        promptPane.setManaged(false);
+        restorePromptDefaultContent();
+    }
+
+    private void stopPromptTransitions() {
+        if (promptFadeIn != null) {
+            promptFadeIn.stop();
+        }
+        if (promptFadeOut != null) {
+            promptFadeOut.stop();
+        }
+    }
+
+    private void restorePromptDefaultContent() {
+        if (promptPane == null || promptDefaultContent == null) {
+            return;
+        }
+        if (promptPane.getChildren().size() != 1 || promptPane.getChildren().get(0) != promptDefaultContent) {
+            promptPane.getChildren().setAll(promptDefaultContent);
         }
     }
 
@@ -1220,8 +1398,12 @@ public class PaneSetting {
         try {
             Map<String, Object> updateMap = new LinkedHashMap<>();
             updateMap.put(ConfigConstants.UPDATE_AUTO_CHECK, autoCheckUpdateSwitch.isSelected());
+            updateMap.put(ConfigConstants.UPDATE_CHECK_INTERVAL, getSelectedUpdateIntervalValue());
             
-            if (debugMode) System.out.println("保存更新设置: autoCheck=" + autoCheckUpdateSwitch.isSelected());
+            if (debugMode) {
+                System.out.println("保存更新设置: autoCheck=" + autoCheckUpdateSwitch.isSelected() +
+                        ", interval=" + getSelectedUpdateIntervalValue());
+            }
             
             Constants.saveConfig(updateMap, ConfigConstants.UPDATE);
             Constants.cachedConfig = null;
@@ -1259,17 +1441,11 @@ public class PaneSetting {
             return;
         }
         
-        // 确认对话框
-        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmAlert.setTitle(i18n.getString("update.storage.migrate.title"));
-        confirmAlert.setHeaderText(null);
-        confirmAlert.setContentText(
+        showConfirmPrompt(
+            i18n.getString("update.storage.migrate.title"),
             I18nUtils.getString("update.storage.migrate.message", newPath) + "\n\n" +
-            i18n.getString("update.storage.migrate.warning")
-        );
-        
-        confirmAlert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
+            i18n.getString("update.storage.migrate.warning"),
+            () -> {
                 // 禁用按钮
                 migrateButton.setDisable(true);
                 
@@ -1314,7 +1490,7 @@ public class PaneSetting {
                     }
                 }).start();
             }
-        });
+        );
     }
     
     /**
@@ -1350,6 +1526,7 @@ public class PaneSetting {
                 Platform.runLater(() -> {
                     checkAppUpdateButton.setDisable(false);
                     checkAppUpdateButton.setText(originalText);
+                    refreshUpdateStatusLabels((JsonObject) Constants.getOutsideConfig(ConfigConstants.UPDATE));
                     
                     if (updateInfo.hasAnyUpdate()) {
                         // 显示更新对话框
@@ -1398,6 +1575,123 @@ public class PaneSetting {
             e.printStackTrace();
             showTip(I18nUtils.getString("update.storage.dialog.error", e.getMessage()));
         }
+    }
+
+    private void initUpdateIntervalOptions(JsonObject updateConfig) {
+        if (updateCheckIntervalComboBox == null) {
+            return;
+        }
+
+        updateCheckIntervalComboBox.getItems().setAll(
+                i18n.getString("update.settings.check.startup"),
+                i18n.getString("update.settings.check.daily"),
+                i18n.getString("update.settings.check.weekly"),
+                i18n.getString("update.settings.check.manual")
+        );
+        updateCheckIntervalComboBox.getSelectionModel().select(
+                getIntervalLabel(getUpdateIntervalValue(updateConfig))
+        );
+    }
+
+    private String getUpdateIntervalValue(JsonObject updateConfig) {
+        if (updateConfig != null && updateConfig.has(ConfigConstants.UPDATE_CHECK_INTERVAL)) {
+            String value = updateConfig.get(ConfigConstants.UPDATE_CHECK_INTERVAL).getAsString();
+            if (value != null && !value.trim().isEmpty()) {
+                return value;
+            }
+        }
+        return "startup";
+    }
+
+    private String getSelectedUpdateIntervalValue() {
+        if (updateCheckIntervalComboBox == null
+                || updateCheckIntervalComboBox.getSelectionModel().getSelectedItem() == null) {
+            return "startup";
+        }
+
+        String selected = updateCheckIntervalComboBox.getSelectionModel().getSelectedItem();
+        if (selected.equals(i18n.getString("update.settings.check.daily"))) {
+            return "daily";
+        }
+        if (selected.equals(i18n.getString("update.settings.check.weekly"))) {
+            return "weekly";
+        }
+        if (selected.equals(i18n.getString("update.settings.check.manual"))) {
+            return "manual";
+        }
+        return "startup";
+    }
+
+    private String getIntervalLabel(String value) {
+        if ("daily".equalsIgnoreCase(value)) {
+            return i18n.getString("update.settings.check.daily");
+        }
+        if ("weekly".equalsIgnoreCase(value)) {
+            return i18n.getString("update.settings.check.weekly");
+        }
+        if ("manual".equalsIgnoreCase(value)) {
+            return i18n.getString("update.settings.check.manual");
+        }
+        return i18n.getString("update.settings.check.startup");
+    }
+
+    private void refreshUpdateStatusLabels(JsonObject updateConfig) {
+        if (lastCheckTimeLabel != null) {
+            String lastCheck = null;
+            if (updateConfig != null && updateConfig.has(ConfigConstants.UPDATE_LAST_CHECK_TIME)) {
+                lastCheck = updateConfig.get(ConfigConstants.UPDATE_LAST_CHECK_TIME).getAsString();
+            }
+            lastCheckTimeLabel.setText(formatLastCheckTime(lastCheck));
+        }
+
+        if (lastManifestSourceLabel != null) {
+            lastManifestSourceLabel.setText(formatManifestSource(updateConfig));
+        }
+    }
+
+    private String formatLastCheckTime(String lastCheck) {
+        if (lastCheck == null || lastCheck.trim().isEmpty()) {
+            return i18n.getString("update.settings.not.checked");
+        }
+
+        try {
+            java.time.Instant instant = java.time.Instant.parse(lastCheck);
+            java.time.ZonedDateTime zonedDateTime =
+                    instant.atZone(java.time.ZoneId.systemDefault());
+            java.time.format.DateTimeFormatter formatter =
+                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            return formatter.format(zonedDateTime);
+        } catch (Exception e) {
+            return lastCheck;
+        }
+    }
+
+    private String formatManifestSource(JsonObject updateConfig) {
+        if (updateConfig == null || !updateConfig.has(ConfigConstants.UPDATE_LAST_MANIFEST_SOURCE)) {
+            return i18n.getString("update.settings.not.checked");
+        }
+
+        String source = updateConfig.get(ConfigConstants.UPDATE_LAST_MANIFEST_SOURCE).getAsString();
+        if (source == null || source.trim().isEmpty()) {
+            return i18n.getString("update.settings.not.checked");
+        }
+
+        String version = null;
+        if (updateConfig.has(ConfigConstants.UPDATE_LAST_MANIFEST_VERSION)) {
+            version = updateConfig.get(ConfigConstants.UPDATE_LAST_MANIFEST_VERSION).getAsString();
+        }
+
+        String sourceName = source;
+        if (source.contains("raw.githubusercontent.com")) {
+            sourceName = i18n.getString("update.settings.manifest.source.github") + " - " + source;
+        } else if (source.contains("potato.gold")) {
+            sourceName = i18n.getString("update.settings.manifest.source.mirror") + " - " + source;
+        }
+
+        if (version != null && !version.trim().isEmpty()) {
+            return sourceName + " / v" + version;
+        }
+        return sourceName;
     }
 
     private void initOobSettings() {
@@ -1583,10 +1877,7 @@ public class PaneSetting {
             oobMap.put(ConfigConstants.OOB_HTTP, httpMap);
             oobMap.put(ConfigConstants.OOB_DNS, dnsMap);
 
-            Map<String, Object> configMap = new LinkedHashMap<>();
-            configMap.put(ConfigConstants.OOB, oobMap);
-
-            if (!Constants.saveConfig(configMap)) {
+            if (!Constants.saveConfig(ConfigConstants.OOB, oobMap)) {
                 showTip(i18n.getString("setting.save.failed"), false, true);
                 return;
             }
@@ -1771,130 +2062,106 @@ public class PaneSetting {
     @FXML
     public void saveVulnScan(ActionEvent event) {
         try {
-            // 获取当前完整的VulnScan配置
             JsonObject currentVulnScan = (JsonObject) Constants.getOutsideConfig(ConfigConstants.VULNSCAN);
             if (currentVulnScan == null) {
                 currentVulnScan = new JsonObject();
             }
-            
-            Map<String, Object> configMap = new LinkedHashMap<>();
-            Map<String, Object> vulnScanMap = new LinkedHashMap<>();
-            
-            // 保留原有配置项
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_POC_DIR)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_POC_DIR, currentVulnScan.get(ConfigConstants.VULNSCAN_POC_DIR).getAsString());
-            }
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_REPORT_DIR)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_REPORT_DIR, currentVulnScan.get(ConfigConstants.VULNSCAN_REPORT_DIR).getAsString());
-            }
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_THREADS)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_THREADS, currentVulnScan.get(ConfigConstants.VULNSCAN_THREADS).getAsInt());
-            }
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_USER_AGENT)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_USER_AGENT, currentVulnScan.get(ConfigConstants.VULNSCAN_USER_AGENT).getAsString());
-            }
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_DEBUG)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_DEBUG, currentVulnScan.get(ConfigConstants.VULNSCAN_DEBUG).getAsBoolean());
-            }
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_VERBOSE)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_VERBOSE, currentVulnScan.get(ConfigConstants.VULNSCAN_VERBOSE).getAsBoolean());
-            }
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_MAX_RESPONSE_SIZE)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_MAX_RESPONSE_SIZE, currentVulnScan.get(ConfigConstants.VULNSCAN_MAX_RESPONSE_SIZE).getAsInt());
-            }
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_MAX_CONNECTIONS)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_MAX_CONNECTIONS, currentVulnScan.get(ConfigConstants.VULNSCAN_MAX_CONNECTIONS).getAsInt());
-            }
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_CONNECTION_TIMEOUT)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_CONNECTION_TIMEOUT, currentVulnScan.get(ConfigConstants.VULNSCAN_CONNECTION_TIMEOUT).getAsInt());
-            }
-            
-            // 保留 variables 配置
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_VARIABLES)) {
-                vulnScanMap.put(ConfigConstants.VULNSCAN_VARIABLES, 
-                    new Gson().fromJson(currentVulnScan.get(ConfigConstants.VULNSCAN_VARIABLES), Object.class));
-            }
-            
-            // 更新超时和重试配置
+
+            JsonObject vulnScanConfig = new JsonObject();
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_POC_DIR);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_REPORT_DIR);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_THREADS);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_USER_AGENT);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_DEBUG);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_VERBOSE);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_TIMEOUT);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_RETRIES);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_MAX_RESPONSE_SIZE);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_MAX_CONNECTIONS);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_CONNECTION_TIMEOUT);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_MAX_PAYLOAD_COMBINATIONS);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_DB_PATH);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_POC_DB_VERSION);
+            copyFieldIfPresent(currentVulnScan, vulnScanConfig, ConfigConstants.VULNSCAN_VARIABLES);
+
             String timeoutText = vulnScanTimeout.getText().trim();
             if (!timeoutText.isEmpty()) {
                 try {
-                    vulnScanMap.put(ConfigConstants.VULNSCAN_TIMEOUT, Integer.parseInt(timeoutText));
+                    vulnScanConfig.addProperty(ConfigConstants.VULNSCAN_TIMEOUT, Integer.parseInt(timeoutText));
                 } catch (NumberFormatException e) {
                     showTip(i18n.getString("setting.vulnscan.timeout.invalid"), false, true);
                     return;
                 }
             }
-            
+
             String retriesText = vulnScanRetries.getText().trim();
             if (!retriesText.isEmpty()) {
                 try {
-                    vulnScanMap.put(ConfigConstants.VULNSCAN_RETRIES, Integer.parseInt(retriesText));
+                    vulnScanConfig.addProperty(ConfigConstants.VULNSCAN_RETRIES, Integer.parseInt(retriesText));
                 } catch (NumberFormatException e) {
                     showTip(i18n.getString("setting.vulnscan.retries.invalid"), false, true);
                     return;
                 }
             }
-            
-            // 线程池配置
-            Map<String, Object> threadPoolMap = new LinkedHashMap<>();
+
+            JsonObject threadPoolConfig = getObjectCopy(currentVulnScan, ConfigConstants.VULNSCAN_THREAD_POOL);
+            JsonObject cleanThreadPoolConfig = new JsonObject();
+            copyFieldIfPresent(threadPoolConfig, cleanThreadPoolConfig, ConfigConstants.VULNSCAN_CORE_THREADS);
+            copyFieldIfPresent(threadPoolConfig, cleanThreadPoolConfig, ConfigConstants.VULNSCAN_MAX_THREADS);
+            copyFieldIfPresent(threadPoolConfig, cleanThreadPoolConfig, ConfigConstants.VULNSCAN_QUEUE_SIZE);
+
             String coreThreadsText = vulnScanCoreThreads.getText().trim();
             if (!coreThreadsText.isEmpty()) {
                 try {
-                    threadPoolMap.put(ConfigConstants.VULNSCAN_CORE_THREADS, Integer.parseInt(coreThreadsText));
+                    cleanThreadPoolConfig.addProperty(ConfigConstants.VULNSCAN_CORE_THREADS, Integer.parseInt(coreThreadsText));
                 } catch (NumberFormatException e) {
                     showTip(i18n.getString("setting.vulnscan.core.threads.invalid"), false, true);
                     return;
                 }
             }
-            
+
             String maxThreadsText = vulnScanMaxThreads.getText().trim();
             if (!maxThreadsText.isEmpty()) {
                 try {
-                    threadPoolMap.put(ConfigConstants.VULNSCAN_MAX_THREADS, Integer.parseInt(maxThreadsText));
+                    cleanThreadPoolConfig.addProperty(ConfigConstants.VULNSCAN_MAX_THREADS, Integer.parseInt(maxThreadsText));
                 } catch (NumberFormatException e) {
                     showTip(i18n.getString("setting.vulnscan.max.threads.invalid"), false, true);
                     return;
                 }
             }
-            
+
             String queueSizeText = vulnScanQueueSize.getText().trim();
             if (!queueSizeText.isEmpty()) {
                 try {
-                    threadPoolMap.put(ConfigConstants.VULNSCAN_QUEUE_SIZE, Integer.parseInt(queueSizeText));
+                    cleanThreadPoolConfig.addProperty(ConfigConstants.VULNSCAN_QUEUE_SIZE, Integer.parseInt(queueSizeText));
                 } catch (NumberFormatException e) {
                     showTip(i18n.getString("setting.vulnscan.queue.size.invalid"), false, true);
                     return;
                 }
             }
-            vulnScanMap.put(ConfigConstants.VULNSCAN_THREAD_POOL, threadPoolMap);
-            
-            // 报告配置
-            Map<String, Object> reportMap = new LinkedHashMap<>();
+            vulnScanConfig.add(ConfigConstants.VULNSCAN_THREAD_POOL, cleanThreadPoolConfig);
+
+            JsonObject reportConfig = getObjectCopy(currentVulnScan, ConfigConstants.VULNSCAN_REPORT);
+            JsonObject cleanReportConfig = new JsonObject();
+            copyFieldIfPresent(reportConfig, cleanReportConfig, ConfigConstants.VULNSCAN_REPORT_DEFAULT_DIR);
+            copyFieldIfPresent(reportConfig, cleanReportConfig, ConfigConstants.VULNSCAN_REPORT_NAME_TEMPLATE);
+            copyFieldIfPresent(reportConfig, cleanReportConfig, ConfigConstants.VULNSCAN_REPORT_AUTO_EXPORT);
+            copyFieldIfPresent(reportConfig, cleanReportConfig, ConfigConstants.VULNSCAN_REPORT_DEFAULT_FORMAT);
+
             String reportDir = vulnScanReportDir.getText().trim();
             if (!reportDir.isEmpty()) {
-                reportMap.put(ConfigConstants.VULNSCAN_REPORT_DEFAULT_DIR, reportDir);
+                vulnScanConfig.addProperty(ConfigConstants.VULNSCAN_REPORT_DIR, reportDir);
+                cleanReportConfig.addProperty(ConfigConstants.VULNSCAN_REPORT_DEFAULT_DIR, reportDir);
             }
-            
-            // 保留原有的命名模板
-            if (currentVulnScan.has(ConfigConstants.VULNSCAN_REPORT)) {
-                JsonObject currentReport = currentVulnScan.getAsJsonObject(ConfigConstants.VULNSCAN_REPORT);
-                if (currentReport.has(ConfigConstants.VULNSCAN_REPORT_NAME_TEMPLATE)) {
-                    reportMap.put(ConfigConstants.VULNSCAN_REPORT_NAME_TEMPLATE, 
-                        currentReport.get(ConfigConstants.VULNSCAN_REPORT_NAME_TEMPLATE).getAsString());
-                }
-            }
-            
-            reportMap.put(ConfigConstants.VULNSCAN_REPORT_AUTO_EXPORT, vulnScanAutoExport.isSelected());
-            
+            cleanReportConfig.addProperty(ConfigConstants.VULNSCAN_REPORT_AUTO_EXPORT, vulnScanAutoExport.isSelected());
+
             String format = vulnScanReportFormat.getValue();
             if (format != null && !format.isEmpty()) {
-                reportMap.put(ConfigConstants.VULNSCAN_REPORT_DEFAULT_FORMAT, format);
+                cleanReportConfig.addProperty(ConfigConstants.VULNSCAN_REPORT_DEFAULT_FORMAT, format);
             }
+            vulnScanConfig.add(ConfigConstants.VULNSCAN_REPORT, cleanReportConfig);
 
-            configMap.put(ConfigConstants.VULNSCAN, vulnScanMap);
-            
-            if (Constants.saveConfig(configMap)) {
+            if (Constants.saveConfig(ConfigConstants.VULNSCAN, vulnScanConfig)) {
                 showTip(i18n.getString("setting.save.success"));
                 // 刷新VulnScanConfig缓存
                 com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig.getInstance().reload();

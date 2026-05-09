@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 import static com.potato.potatotool.ToStart.debugMode;
 
@@ -241,6 +245,7 @@ public class PathManager {
             
             // 保存到配置文件顶层
             Constants.saveConfig(ConfigConstants.UPDATE_RESOURCE_PATH, newPath);
+            this.resourcePath = path;
             
             // 成功保存，不输出日志（减少日志）
             return true;
@@ -328,29 +333,35 @@ public class PathManager {
                 return false;
             }
             
-            // 获取所有文件
-            File[] files = resourcePath.toFile().listFiles();
-            if (files == null || files.length == 0) {
+            List<Path> fileList = new ArrayList<Path>();
+            try (Stream<Path> stream = Files.walk(resourcePath)) {
+                stream.filter(Files::isRegularFile).forEach(fileList::add);
+            }
+
+            if (fileList.isEmpty()) {
+                changeResourcePath(newPath.toString());
                 callback.onProgress(0, 0, I18nUtils.getString("update.exception.no.files"));
+                callback.onComplete();
                 return true;
             }
-            
-            int total = files.length;
+
+            int total = fileList.size();
             int current = 0;
-            
-            // 复制文件
-            for (File file : files) {
-                if (file.isFile()) {
-                    Path source = file.toPath();
-                    Path target = newPath.resolve(file.getName());
-                    
-                    callback.onProgress(current, total, file.getName());
-                    
-                    Files.copy(source, target, 
-                              java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                    
-                    current++;
+
+            for (Path source : fileList) {
+                Path relativePath = resourcePath.relativize(source);
+                Path target = newPath.resolve(relativePath);
+
+                callback.onProgress(current, total, relativePath.toString());
+
+                if (target.getParent() != null) {
+                    Files.createDirectories(target.getParent());
                 }
+                Files.copy(source, target,
+                        StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.COPY_ATTRIBUTES);
+
+                current++;
             }
             
             // 更新配置
@@ -374,4 +385,3 @@ public class PathManager {
         void onError(String error);
     }
 }
-

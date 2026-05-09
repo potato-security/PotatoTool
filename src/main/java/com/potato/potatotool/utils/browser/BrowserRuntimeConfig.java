@@ -13,7 +13,6 @@ public final class BrowserRuntimeConfig {
     }
 
     public static synchronized void initializeAtStartup() {
-        EnvPathConfig.migrateLegacyConfigIfNeeded();
         preloadResolvedBrowserPath();
     }
 
@@ -30,8 +29,6 @@ public final class BrowserRuntimeConfig {
     }
 
     public static synchronized String resolveBrowserPath() {
-        EnvPathConfig.migrateLegacyConfigIfNeeded();
-
         String configuredPath = BrowserRuntimeResolver.resolveConfiguredBrowserPath(EnvPathConfig.getBrowserPath());
         if (configuredPath != null) {
             return configuredPath;

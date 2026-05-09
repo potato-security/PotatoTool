@@ -20,7 +20,8 @@ class PaneSettingAiConfigTest {
 
         PaneSettingSupport.fillAiConfigMap(
                 aiMap,
-                "OPENAI_COMPATIBLE",
+                false,
+                "OPENAI",
                 "https://api.example.com/v1/chat/completions",
                 "test-key",
                 "glm-4.6",
@@ -29,7 +30,8 @@ class PaneSettingAiConfigTest {
                 2048
         );
 
-        assertEquals("OPENAI_COMPATIBLE", aiMap.get(ConfigConstants.AI_PROVIDER));
+        assertEquals(false, aiMap.get(ConfigConstants.AI_USE_BUILTIN_GATEWAY));
+        assertEquals("OPENAI", aiMap.get(ConfigConstants.AI_PROVIDER));
         assertEquals("https://api.example.com/v1/chat/completions", aiMap.get(ConfigConstants.AI_BASE_URL));
         assertEquals("test-key", aiMap.get(ConfigConstants.AI_API_KEY));
         assertEquals("glm-4.6", aiMap.get(ConfigConstants.AI_MODEL_NAME));

@@ -14,6 +14,7 @@ final class PaneSettingSupport {
     }
 
     static void fillAiConfigMap(Map<String, Object> aiMap,
+                                boolean useBuiltinGateway,
                                 String providerValue,
                                 String plainBaseUrl,
                                 String plainApiKey,
@@ -21,6 +22,7 @@ final class PaneSettingSupport {
                                 int timeoutMs,
                                 boolean thinkingEnabled,
                                 int thinkingBudgetTokens) {
+        aiMap.put(ConfigConstants.AI_USE_BUILTIN_GATEWAY, useBuiltinGateway);
         aiMap.put(ConfigConstants.AI_PROVIDER, providerValue);
         aiMap.put(ConfigConstants.AI_BASE_URL, plainBaseUrl);
         aiMap.put(ConfigConstants.AI_API_KEY, plainApiKey);
@@ -31,6 +33,37 @@ final class PaneSettingSupport {
         thinkingMap.put(ConfigConstants.AI_THINKING_ENABLED, thinkingEnabled);
         thinkingMap.put(ConfigConstants.AI_THINKING_BUDGET_TOKENS, thinkingBudgetTokens);
         aiMap.put(ConfigConstants.AI_THINKING, thinkingMap);
+    }
+
+    static String normalizeAiProviderDisplayValue(String providerValue) {
+        String normalized = providerValue == null ? "" : providerValue.trim();
+        if (normalized.isEmpty() || "OPENAI".equalsIgnoreCase(normalized)) {
+            return "OPENAI";
+        }
+        return normalized.toUpperCase();
+    }
+
+    static String normalizeAiProviderConfigValue(String providerValue) {
+        String normalized = providerValue == null ? "" : providerValue.trim();
+        if (normalized.isEmpty()) {
+            return "OPENAI";
+        }
+        if ("OPENAI".equalsIgnoreCase(normalized)) {
+            return "OPENAI";
+        }
+        return normalized.toUpperCase();
+    }
+
+    static boolean supportsAiThinking(String providerValue, String modelName) {
+        String provider = normalizeAiProviderConfigValue(providerValue);
+        return "OPENAI".equals(provider)
+                || "ANTHROPIC".equals(provider)
+                || "GEMINI".equals(provider);
+    }
+
+    static boolean supportsAiThinkingBudget(String providerValue, String modelName) {
+        String provider = normalizeAiProviderConfigValue(providerValue);
+        return "ANTHROPIC".equals(provider);
     }
 
     static boolean shouldBlockSaveForMainProxy(boolean proxyEnabled,

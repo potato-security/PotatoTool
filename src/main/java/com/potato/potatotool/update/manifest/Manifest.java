@@ -22,6 +22,8 @@ public class Manifest {
     
     @SerializedName("resources")
     private List<ResourceItem> resources;
+
+    private transient String sourceUrl;
     
     public String getVersion() {
         return version;
@@ -53,6 +55,14 @@ public class Manifest {
     
     public void setResources(List<ResourceItem> resources) {
         this.resources = resources;
+    }
+
+    public String getSourceUrl() {
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl) {
+        this.sourceUrl = sourceUrl;
     }
     
     /**
@@ -385,4 +395,3 @@ public class Manifest {
         }
     }
 }
-

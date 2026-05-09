@@ -141,14 +141,25 @@
                                     <TitledPane fx:id="aiPane" text="AI配置" userData="i18n:setting.ai.title">
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="AI Base URL：" userData="i18n:setting.ai.api.base">
+                                                <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="内置 AI 网关：" userData="i18n:setting.ai.mode">
                                                     <tooltip>
-                                                        <Tooltip text="请输入API接口。 不输入则使用本工具默认免费接口" userData="i18n:setting.ai.api.base.tooltip"/>
+                                                        <Tooltip text="开启后使用 PotatoTool 内置 AI 网关与客户端证书；关闭后按自定义 AI 配置直连。" userData="i18n:setting.ai.mode.tooltip"/>
                                                     </tooltip>
                                                 </Label>
-                                                <TextField fx:id="aiApiBase" promptText="不输入则使用默认接口" prefWidth="250" userData="i18n-prompt:setting.ai.api.base.placeholder">
+                                                <HBox prefWidth="250">
+                                                    <CFSwitch fx:id="aiUseBuiltinGateway"/>
+                                                </HBox>
+                                            </HBox>
+
+                                            <HBox alignment="CENTER" spacing="10">
+                                                <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="AI Base URL：" userData="i18n:setting.ai.api.base">
                                                     <tooltip>
-                                                        <Tooltip text="请输入API接口。 不输入则使用本工具默认免费接口" userData="i18n:setting.ai.api.base.tooltip"/>
+                                                        <Tooltip text="自定义模式下填写完整 API Base；启用内置 AI 网关时此项无需填写。" userData="i18n:setting.ai.api.base.tooltip"/>
+                                                    </tooltip>
+                                                </Label>
+                                                <TextField fx:id="aiApiBase" promptText="自定义模式下填写" prefWidth="250" userData="i18n-prompt:setting.ai.api.base.placeholder">
+                                                    <tooltip>
+                                                        <Tooltip text="自定义模式下填写完整 API Base；启用内置 AI 网关时此项无需填写。" userData="i18n:setting.ai.api.base.tooltip"/>
                                                     </tooltip>
                                                 </TextField>
                                             </HBox>
@@ -156,12 +167,12 @@
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="AI API Key：" userData="i18n:setting.ai.api.key">
                                                     <tooltip>
-                                                        <Tooltip text="请输入API密钥。 不输入则使用本工具默认免费接口" userData="i18n:setting.ai.api.key.tooltip"/>
+                                                        <Tooltip text="自定义模式下填写 API Key；启用内置 AI 网关时此项无需填写。" userData="i18n:setting.ai.api.key.tooltip"/>
                                                     </tooltip>
                                                 </Label>
-                                                <TextField fx:id="aiApiKey" promptText="不输入则使用默认接口" prefWidth="250" userData="i18n-prompt:setting.ai.api.key.placeholder">
+                                                <TextField fx:id="aiApiKey" promptText="自定义模式下填写" prefWidth="250" userData="i18n-prompt:setting.ai.api.key.placeholder">
                                                     <tooltip>
-                                                        <Tooltip text="请输入API密钥。 不输入则使用本工具默认免费接口" userData="i18n:setting.ai.api.key.tooltip"/>
+                                                        <Tooltip text="自定义模式下填写 API Key；启用内置 AI 网关时此项无需填写。" userData="i18n:setting.ai.api.key.tooltip"/>
                                                     </tooltip>
                                                 </TextField>
                                             </HBox>
@@ -169,12 +180,12 @@
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label  minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="AI Model：" userData="i18n:setting.ai.model">
                                                     <tooltip>
-                                                        <Tooltip text="请输入模型版本，（请和Key对应）如：gpt-5、gpt-4o-mini、gpt-4o、gpt-4-0314、gpt-3.5-turbo-16k-0613" userData="i18n:setting.ai.model.tooltip"/>
+                                                        <Tooltip text="自定义模式下填写模型名；启用内置 AI 网关时使用内置 alias，无需填写。" userData="i18n:setting.ai.model.tooltip"/>
                                                     </tooltip>
                                                 </Label>
-                                                <TextField fx:id="aiModel" promptText="不输入则使用默认模型" prefWidth="250" userData="i18n-prompt:setting.ai.model.placeholder">
+                                                <TextField fx:id="aiModel" promptText="自定义模式下填写" prefWidth="250" userData="i18n-prompt:setting.ai.model.placeholder">
                                                     <tooltip>
-                                                        <Tooltip text="请输入模型版本。 不输入则使用本工具默认模型" userData="i18n:setting.ai.model.tooltip"/>
+                                                        <Tooltip text="自定义模式下填写模型名；启用内置 AI 网关时使用内置 alias，无需填写。" userData="i18n:setting.ai.model.tooltip"/>
                                                     </tooltip>
                                                 </TextField>
                                             </HBox>
@@ -184,7 +195,7 @@
                                                 <ComboBox fx:id="aiProvider" prefWidth="250">
                                                     <items>
                                                         <FXCollections fx:factory="observableArrayList">
-                                                            <String fx:value="OPENAI_COMPATIBLE"/>
+                                                            <String fx:value="OPENAI"/>
                                                             <String fx:value="ANTHROPIC"/>
                                                             <String fx:value="GEMINI"/>
                                                         </FXCollections>
@@ -198,7 +209,7 @@
                                             </HBox>
 
                                             <HBox alignment="CENTER" spacing="10">
-                                                <Label  minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="Thinking 启用：" userData="i18n:setting.ai.thinking.enabled"/>
+                                                <Label  minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="默认开启 Thinking：" userData="i18n:setting.ai.thinking.enabled"/>
                                                 <HBox prefWidth="250">
                                                     <CFSwitch fx:id="aiThinkingEnabled"/>
                                                 </HBox>
@@ -386,6 +397,16 @@
                                                 <CFSwitch fx:id="crawlProxy">
                                                     <tooltip>
                                                         <Tooltip text="多为中国资产,建议关闭代理" userData="i18n:setting.asset.crawl.proxy.tooltip"/>
+                                                    </tooltip>
+                                                </CFSwitch>
+                                            </HBox>
+                                            <HBox alignment="TOP_CENTER" spacing="10">
+                                                <Label minWidth="${newMaxWidthlabel.width}"/>
+                                                <Label minWidth="250" alignment="CENTER" text="区块链溯源服务" userData="i18n:setting.asset.blockchain"/>
+                                                <Label minWidth="20"/>
+                                                <CFSwitch fx:id="blockchainProxy">
+                                                    <tooltip>
+                                                        <Tooltip text="默认建议直连，仅在区块链服务必须经代理访问时开启" userData="i18n:setting.asset.blockchain.proxy.tooltip"/>
                                                     </tooltip>
                                                 </CFSwitch>
                                             </HBox>
@@ -677,6 +698,24 @@
                                                         </effect>
                                                     </Button>
                                                 </HBox>
+                                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                                    <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT"
+                                                          text="检查间隔："
+                                                          userData="i18n:update.settings.check.interval"/>
+                                                    <ComboBox fx:id="updateCheckIntervalComboBox" prefWidth="180"/>
+                                                </HBox>
+                                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                                    <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT"
+                                                          text="最近检查时间："
+                                                          userData="i18n:update.settings.last.check"/>
+                                                    <Label fx:id="lastCheckTimeLabel" text="未检查" wrapText="true" maxWidth="430"/>
+                                                </HBox>
+                                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                                    <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT"
+                                                          text="最近清单来源："
+                                                          userData="i18n:update.settings.manifest.source"/>
+                                                    <Label fx:id="lastManifestSourceLabel" text="未检查" wrapText="true" maxWidth="430"/>
+                                                </HBox>
                                             </VBox>
 
                                             <Separator prefWidth="${an.width - 58}"/>
@@ -747,7 +786,7 @@
                 </SmoothScrollPane>
             </VBox>
             <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER" onMouseClicked="#closePromptPane">
-                <Label fx:id="prompt" maxWidth="600"/>
+                <Label fx:id="prompt" wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="600"/>
             </StackPane>
         </StackPane>
     </children>

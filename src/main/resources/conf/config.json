@@ -57,23 +57,24 @@
       "GitHub_Token": true,
       "SSL": true,
       "Crawl": false,
+      "Blockchain": false,
       "VulnScan": false
     }
   },
   "AI": {
-    "provider": "OPENAI_COMPATIBLE",
+    "provider": "OPENAI",
+    "use_builtin_gateway": true,
     "base_url": "",
     "api_key": "",
     "model_name": "",
     "timeout_ms": 60000,
     "thinking": {
       "enabled": false,
-      "budget_tokens": 1024,
-      "show_in_ui": false
+      "budget_tokens": 2048
     },
-    "local_base_url": "uhEfqpTkk7sSRs8YFPUSr42cWi8VrmEg15IcTk6G8r4dPZgvnAkYWwOz1qOsuI57",
-    "local_model_name": "==waoapG6D1tyIYPDb3WF9wD",
-    "local_api_key": "==ALvey9ulWS0LjsPLSHcySm"
+    "local_base_url": "=At/ger2GwQ+5r3X5KEb26eVxFCjEA/ENlOoGTH6oCpo",
+    "local_model_name": "==QxHE/MXFGY5sZaj6WsnHlt",
+    "local_api_key": "==gGqA1nBlvccWL8CHdCAQw3"
   },
   "HttpHeaders": {
     "globalHeaders": {
@@ -137,7 +138,6 @@
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "debug": false,
     "verbose": false,
-    "proxyEnabled": false,
     "maxConnections": 100,
     "connectionTimeout": 30000,
     "maxPayloadCombinations": 1000,
@@ -176,21 +176,21 @@
         {
           "title": "Burp",
           "describe": "[Mac示例]启动BurpSuite",
-          "content": "/Users/a/Desktop/渗透测试/bp/start.sh",
+          "content": "/Users/potato/Desktop/渗透测试/bp/start.sh",
           "type": "cmd",
           "icon": ""
         },
         {
           "title": "cd Sqlmap",
           "describe": "[Mac示例]命令行进入Sqlmap文件夹",
-          "content": "open -a iTerm -n /Users/a/Desktop/渗透测试/sqlmap",
+          "content": "open -a iTerm -n /Users/potato/Desktop/渗透测试/sqlmap",
           "type": "cmd",
           "icon": ""
         },
         {
           "title": "打开Sqlmap",
           "describe": "[Mac示例]打开Sqlmap文件夹",
-          "content": "open /Users/a/Desktop/渗透测试/sqlmap",
+          "content": "open /Users/potato/Desktop/渗透测试/sqlmap",
           "type": "cmd",
           "icon": ""
         }

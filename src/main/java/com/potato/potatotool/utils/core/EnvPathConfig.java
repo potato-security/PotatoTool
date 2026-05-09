@@ -7,61 +7,18 @@ import com.potato.potatotool.content.classObj.ConfigConstants;
  * Stores external runtime executable paths shared across modules.
  */
 public final class EnvPathConfig {
+    private static final String LEGACY_BROWSER_ROOT = "Browser";
+    private static final String LEGACY_VULNSCAN_HEADLESS = "headless";
+    private static final String LEGACY_VULNSCAN_PYTHON_PATH = "pythonPath";
+
     private EnvPathConfig() {
     }
 
-    public static synchronized void migrateLegacyConfigIfNeeded() {
-        JsonObject rootConfig = getRootConfigCopy();
-        JsonObject envPathConfig = getOrCreateObject(rootConfig, ConfigConstants.ENV_PATH);
-        boolean changed = false;
-
-        if (!envPathConfig.has(ConfigConstants.ENV_PATH_BROWSER)) {
-            envPathConfig.addProperty(ConfigConstants.ENV_PATH_BROWSER, "");
-            changed = true;
-        }
-        if (!envPathConfig.has(ConfigConstants.ENV_PATH_PYTHON)) {
-            envPathConfig.addProperty(ConfigConstants.ENV_PATH_PYTHON, "");
-            changed = true;
-        }
-
-        String browserPath = readString(envPathConfig, ConfigConstants.ENV_PATH_BROWSER);
-        if (browserPath.isEmpty()) {
-            String legacyBrowserPath = readLegacyBrowserPath(rootConfig);
-            if (!legacyBrowserPath.isEmpty()) {
-                envPathConfig.addProperty(ConfigConstants.ENV_PATH_BROWSER, legacyBrowserPath);
-                changed = true;
-            }
-        }
-
-        String pythonPath = readString(envPathConfig, ConfigConstants.ENV_PATH_PYTHON);
-        if (pythonPath.isEmpty()) {
-            String legacyPythonPath = readLegacyPythonPath(rootConfig);
-            if (!legacyPythonPath.isEmpty()) {
-                envPathConfig.addProperty(ConfigConstants.ENV_PATH_PYTHON, legacyPythonPath);
-                changed = true;
-            }
-        }
-
-        if (clearLegacyBrowserPath(rootConfig)) {
-            changed = true;
-        }
-        if (clearLegacyPythonPath(rootConfig)) {
-            changed = true;
-        }
-
-        if (changed) {
-            rootConfig.add(ConfigConstants.ENV_PATH, envPathConfig);
-            Constants.saveConfig(rootConfig);
-        }
-    }
-
     public static synchronized String getBrowserPath() {
-        migrateLegacyConfigIfNeeded();
         return readString(getEnvPathSnapshot(), ConfigConstants.ENV_PATH_BROWSER);
     }
 
     public static synchronized String getPythonPath() {
-        migrateLegacyConfigIfNeeded();
         return readString(getEnvPathSnapshot(), ConfigConstants.ENV_PATH_PYTHON);
     }
 
@@ -78,19 +35,48 @@ public final class EnvPathConfig {
     }
 
     public static synchronized void applyBrowserPath(JsonObject rootConfig, String browserPath) {
-        JsonObject envPathConfig = getOrCreateObject(rootConfig, ConfigConstants.ENV_PATH);
-        ensureDefaults(envPathConfig);
+        JsonObject envPathConfig = getOrCreateEnvPathObject(rootConfig);
         envPathConfig.addProperty(ConfigConstants.ENV_PATH_BROWSER, safeTrim(browserPath));
+        ensureDefaults(envPathConfig);
         rootConfig.add(ConfigConstants.ENV_PATH, envPathConfig);
-        clearLegacyBrowserPath(rootConfig);
+        removeLegacyRuntimePathKeys(rootConfig);
     }
 
     public static synchronized void applyPythonPath(JsonObject rootConfig, String pythonPath) {
-        JsonObject envPathConfig = getOrCreateObject(rootConfig, ConfigConstants.ENV_PATH);
-        ensureDefaults(envPathConfig);
+        JsonObject envPathConfig = getOrCreateEnvPathObject(rootConfig);
         envPathConfig.addProperty(ConfigConstants.ENV_PATH_PYTHON, safeTrim(pythonPath));
+        ensureDefaults(envPathConfig);
         rootConfig.add(ConfigConstants.ENV_PATH, envPathConfig);
-        clearLegacyPythonPath(rootConfig);
+        removeLegacyRuntimePathKeys(rootConfig);
+    }
+
+    private static JsonObject getEnvPathSnapshot() {
+        Object configObject = Constants.getOutsideConfig(ConfigConstants.ENV_PATH);
+        if (configObject instanceof JsonObject) {
+            JsonObject envPathConfig = (JsonObject) configObject;
+            ensureDefaults(envPathConfig);
+            return envPathConfig;
+        }
+        JsonObject envPathConfig = new JsonObject();
+        ensureDefaults(envPathConfig);
+        return envPathConfig;
+    }
+
+    private static JsonObject getRootConfigCopy() {
+        Object configObject = Constants.getOutsideConfig(null);
+        if (configObject instanceof JsonObject) {
+            return (JsonObject) configObject;
+        }
+        return new JsonObject();
+    }
+
+    private static JsonObject getOrCreateEnvPathObject(JsonObject rootConfig) {
+        if (rootConfig != null
+                && rootConfig.has(ConfigConstants.ENV_PATH)
+                && rootConfig.get(ConfigConstants.ENV_PATH).isJsonObject()) {
+            return rootConfig.getAsJsonObject(ConfigConstants.ENV_PATH);
+        }
+        return new JsonObject();
     }
 
     private static void ensureDefaults(JsonObject envPathConfig) {
@@ -102,104 +88,27 @@ public final class EnvPathConfig {
         }
     }
 
-    private static JsonObject getEnvPathSnapshot() {
-        JsonObject rootConfig = getRootConfigCopy();
-        JsonObject envPathConfig = getObject(rootConfig, ConfigConstants.ENV_PATH);
-        return envPathConfig == null ? new JsonObject() : envPathConfig;
-    }
-
-    private static String readLegacyBrowserPath(JsonObject rootConfig) {
-        JsonObject browserConfig = getObject(rootConfig, ConfigConstants.BROWSER);
-        String browserPath = readString(browserConfig, "manualPath");
-        if (!browserPath.isEmpty()) {
-            return browserPath;
-        }
-        browserPath = readString(browserConfig, "autoDetectedPath");
-        if (!browserPath.isEmpty()) {
-            return browserPath;
-        }
-        JsonObject vulnScanConfig = getObject(rootConfig, ConfigConstants.VULNSCAN);
-        JsonObject headlessConfig = getObject(vulnScanConfig, ConfigConstants.VULNSCAN_HEADLESS);
-        return readString(headlessConfig, ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH);
-    }
-
-    private static String readLegacyPythonPath(JsonObject rootConfig) {
-        JsonObject vulnScanConfig = getObject(rootConfig, ConfigConstants.VULNSCAN);
-        return readString(vulnScanConfig, ConfigConstants.VULNSCAN_PYTHON_PATH);
-    }
-
-    private static boolean clearLegacyBrowserPath(JsonObject rootConfig) {
-        boolean changed = false;
-
-        JsonObject browserConfig = getObject(rootConfig, ConfigConstants.BROWSER);
-        if (browserConfig != null) {
-            if (browserConfig.has("manualPath")) {
-                browserConfig.remove("manualPath");
-                changed = true;
-            }
-            if (browserConfig.has("autoDetectedPath")) {
-                browserConfig.remove("autoDetectedPath");
-                changed = true;
-            }
-            if (browserConfig.has("autoDetectedAt")) {
-                browserConfig.remove("autoDetectedAt");
-                changed = true;
-            }
-            rootConfig.add(ConfigConstants.BROWSER, browserConfig);
+    private static void removeLegacyRuntimePathKeys(JsonObject rootConfig) {
+        if (rootConfig == null) {
+            return;
         }
 
-        JsonObject vulnScanConfig = getObject(rootConfig, ConfigConstants.VULNSCAN);
-        JsonObject headlessConfig = getObject(vulnScanConfig, ConfigConstants.VULNSCAN_HEADLESS);
-        if (headlessConfig != null && headlessConfig.has(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH)) {
-            headlessConfig.remove(ConfigConstants.VULNSCAN_HEADLESS_BROWSER_PATH);
-            changed = true;
-            if (headlessConfig.entrySet().isEmpty()) {
-                vulnScanConfig.remove(ConfigConstants.VULNSCAN_HEADLESS);
-            } else {
-                vulnScanConfig.add(ConfigConstants.VULNSCAN_HEADLESS, headlessConfig);
-            }
-            if (vulnScanConfig.entrySet().isEmpty()) {
-                rootConfig.remove(ConfigConstants.VULNSCAN);
-            } else {
-                rootConfig.add(ConfigConstants.VULNSCAN, vulnScanConfig);
-            }
+        rootConfig.remove(LEGACY_BROWSER_ROOT);
+
+        if (!rootConfig.has(ConfigConstants.VULNSCAN)
+                || !rootConfig.get(ConfigConstants.VULNSCAN).isJsonObject()) {
+            return;
         }
 
-        return changed;
-    }
+        JsonObject vulnScanConfig = rootConfig.getAsJsonObject(ConfigConstants.VULNSCAN);
+        vulnScanConfig.remove(LEGACY_VULNSCAN_HEADLESS);
+        vulnScanConfig.remove(LEGACY_VULNSCAN_PYTHON_PATH);
 
-    private static boolean clearLegacyPythonPath(JsonObject rootConfig) {
-        JsonObject vulnScanConfig = getObject(rootConfig, ConfigConstants.VULNSCAN);
-        if (vulnScanConfig == null || !vulnScanConfig.has(ConfigConstants.VULNSCAN_PYTHON_PATH)) {
-            return false;
-        }
-        vulnScanConfig.remove(ConfigConstants.VULNSCAN_PYTHON_PATH);
         if (vulnScanConfig.entrySet().isEmpty()) {
             rootConfig.remove(ConfigConstants.VULNSCAN);
-        } else {
-            rootConfig.add(ConfigConstants.VULNSCAN, vulnScanConfig);
+            return;
         }
-        return true;
-    }
-
-    private static JsonObject getRootConfigCopy() {
-        Object configObject = Constants.getOutsideConfig(null);
-        if (configObject instanceof JsonObject) {
-            return ((JsonObject) configObject).deepCopy();
-        }
-        return new JsonObject();
-    }
-
-    private static JsonObject getObject(JsonObject parent, String key) {
-        if (parent == null || key == null || !parent.has(key) || !parent.get(key).isJsonObject()) {
-            return null;
-        }
-        return parent.getAsJsonObject(key);
-    }
-
-    private static JsonObject getOrCreateObject(JsonObject parent, String key) {
-        JsonObject existing = getObject(parent, key);
-        return existing == null ? new JsonObject() : existing;
+        rootConfig.add(ConfigConstants.VULNSCAN, vulnScanConfig);
     }
 
     private static String readString(JsonObject jsonObject, String key) {

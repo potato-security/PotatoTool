@@ -106,7 +106,7 @@ public class UpdateChecker {
         }
         
         // 5. 更新最后检查时间
-        updateLastCheckTime();
+        updateLastCheckMetadata(manifest);
         
         return new UpdateInfo(
             appNeedUpdate,
@@ -175,13 +175,21 @@ public class UpdateChecker {
     /**
      * 更新最后检查时间
      */
-    private void updateLastCheckTime() {
+    private void updateLastCheckMetadata(Manifest manifest) {
         try {
             String currentTime = java.time.Instant.now().toString();
             
             // 直接保存到UpDate节点下
             Map<String, Object> updateMap = new LinkedHashMap<>();
             updateMap.put(ConfigConstants.UPDATE_LAST_CHECK_TIME, currentTime);
+            if (manifest != null) {
+                if (manifest.getSourceUrl() != null && !manifest.getSourceUrl().isEmpty()) {
+                    updateMap.put(ConfigConstants.UPDATE_LAST_MANIFEST_SOURCE, manifest.getSourceUrl());
+                }
+                if (manifest.getVersion() != null && !manifest.getVersion().isEmpty()) {
+                    updateMap.put(ConfigConstants.UPDATE_LAST_MANIFEST_VERSION, manifest.getVersion());
+                }
+            }
             
             Constants.saveConfig(updateMap, ConfigConstants.UPDATE);
             
@@ -331,7 +339,11 @@ public class UpdateChecker {
             
             // 保存配置（合并模式，不覆盖已存在的其他资源）
             if (needSave && !updateMap.isEmpty()) {
-                saveResourceConfigMerge(updateMap);
+                @SuppressWarnings("unchecked")
+                Map<String, Object> resourcesMap = (Map<String, Object>) updateMap.get(ConfigConstants.UPDATE_RESOURCES);
+                if (resourcesMap != null && !resourcesMap.isEmpty()) {
+                    Constants.saveResourceConfigMerge(resourcesMap);
+                }
                 if (debugMode) System.out.println("本地资源配置已同步");
                 // 清除缓存，强制重新读取
                 Constants.cachedConfig = null;
@@ -379,31 +391,6 @@ public class UpdateChecker {
                     return pathManager.getResourcePath(resource.getDisplayName());
                 }
                 return pathManager.getResourcePath(resourceName);
-        }
-    }
-    
-    /**
-     * 合并保存资源配置（不覆盖其他资源）
-     * 已迁移到 Constants.saveResourceConfigMerge，此方法保留用于内部调用兼容
-     * 
-     * @param updateMap 包含 UPDATE_RESOURCES 键的map
-     */
-    private void saveResourceConfigMerge(Map<String, Object> updateMap) {
-        try {
-            // 获取要更新的资源
-            @SuppressWarnings("unchecked")
-            Map<String, Object> resourcesMap = (Map<String, Object>) updateMap.get(ConfigConstants.UPDATE_RESOURCES);
-            
-            if (resourcesMap == null || resourcesMap.isEmpty()) {
-                return;
-            }
-            
-            // 调用统一的合并保存方法
-            Constants.saveResourceConfigMerge(resourcesMap);
-            
-        } catch (Exception e) {
-            System.err.println("合并保存资源配置失败: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -471,4 +458,3 @@ public class UpdateChecker {
         return jdkVersion;
     }
 }
-

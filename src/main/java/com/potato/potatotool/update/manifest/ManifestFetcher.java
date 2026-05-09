@@ -28,28 +28,12 @@ public class ManifestFetcher {
     
     public ManifestFetcher() {
         this.manifestSources = new ArrayList<>();
-        
-        // 从配置文件读取清单源
-        try {
-            String githubUrl = Constants.getConfigInfo("manifestUrlGithub");
-            String mirrorUrl = Constants.getConfigInfo("manifestUrlMirror");
-            
-            if (githubUrl != null && !githubUrl.isEmpty()) {
-                manifestSources.add(githubUrl);
-            }
-            if (mirrorUrl != null && !mirrorUrl.isEmpty()) {
-                manifestSources.add(mirrorUrl);
-            }
-            
-            if (manifestSources.isEmpty()) {
-                throw new RuntimeException("未配置清单源URL");
-            }
-            
-        } catch (Exception e) {
-            System.err.println("初始化清单源失败: " + e.getMessage());
-            // 使用硬编码的默认值
-            manifestSources.add("https://raw.githubusercontent.com/HotBoy-java/Resource/main/manifest.json");
-            manifestSources.add("https://potato.gold/data/uploads/PotatoTool/manifest.json");
+
+        addConfiguredSource("manifestUrlGithub");
+        addConfiguredSource("manifestUrlMirror");
+
+        if (manifestSources.isEmpty()) {
+            throw new IllegalStateException("未配置有效的清单源URL");
         }
     }
     
@@ -69,6 +53,8 @@ public class ManifestFetcher {
                 if (debugMode) System.out.println("尝试从源 " + (i + 1) + "/" + manifestSources.size() + " 获取清单...");
                 
                 Manifest manifest = fetchFromSource(source);
+                manifest.setSourceUrl(source);
+                sanitizeManifest(manifest);
                 
                 if (debugMode) System.out.println("成功获取更新清单");
                 return manifest;
@@ -125,6 +111,74 @@ public class ManifestFetcher {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    private void sanitizeManifest(Manifest manifest) {
+        if (manifest == null) {
+            return;
+        }
+
+        if (manifest.getApp() != null && manifest.getApp().getFiles() != null) {
+            for (Manifest.FileInfo fileInfo : manifest.getApp().getFiles().values()) {
+                if (fileInfo != null) {
+                    sanitizeUrlInfo(fileInfo.getUrl());
+                }
+            }
+        }
+
+        if (manifest.getResources() != null) {
+            for (Manifest.ResourceItem resource : manifest.getResources()) {
+                if (resource != null && resource.getFiles() != null) {
+                    sanitizeUrlInfo(resource.getFiles().getUrl());
+                }
+            }
+        }
+    }
+
+    private void sanitizeUrlInfo(Manifest.UrlInfo urlInfo) {
+        if (urlInfo == null) {
+            return;
+        }
+
+        String normalizedGithub = normalizeUrl(urlInfo.getGithub());
+        if (normalizedGithub != null && !normalizedGithub.equals(urlInfo.getGithub())) {
+            urlInfo.setGithub(normalizedGithub);
+        }
+
+        String normalizedMirror = normalizeUrl(urlInfo.getMirror());
+        if (normalizedMirror == null) {
+            urlInfo.setMirror(null);
+            return;
+        }
+        urlInfo.setMirror(normalizedMirror);
+    }
+
+    private void addConfiguredSource(String configKey) {
+        String configuredUrl = normalizeUrl(Constants.getConfigInfo(configKey));
+        if (configuredUrl != null && !manifestSources.contains(configuredUrl)) {
+            manifestSources.add(configuredUrl);
+        }
+    }
+
+    private String normalizeUrl(String url) {
+        if (url == null) {
+            return null;
+        }
+
+        String normalized = url.trim();
+        if (normalized.isEmpty()) {
+            return null;
+        }
+
+        if (normalized.startsWith("hhttps://")) {
+            normalized = normalized.substring(1);
+        }
+
+        if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
+            return null;
+        }
+
+        return normalized;
     }
     
     /**
@@ -186,6 +240,7 @@ public class ManifestFetcher {
             RequestObj requestObj = new RequestObj()
                     .setUrl(urlString)
                     .setMethod("HEAD")
+                    .setFollowRedirects(true)
                     .setTimeOut(3)
                     .setReadTimeout(3);
             
@@ -203,5 +258,5 @@ public class ManifestFetcher {
             return -1;
         }
     }
-}
 
+}

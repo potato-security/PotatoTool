@@ -45,6 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,6 +59,9 @@ public class MainApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        ClassLoader appClassLoader = MainApplication.class.getClassLoader();
+        Thread.currentThread().setContextClassLoader(appClassLoader);
+        FXMLLoader.setDefaultClassLoader(appClassLoader);
         hostServices = getHostServices();
         final boolean skipStartupPages = ToStart.isStartupPageTestEnabled();
 
@@ -278,16 +282,17 @@ public class MainApplication extends Application {
                     JsonObject resourceConfig = com.google.gson.JsonParser.parseString(getResourceString("config")).getAsJsonObject();
                     // 合并配置（保留本地值，添加新字段）
                     JsonElement merged = mergeJsonElements(localConfig, resourceConfig);
+                    JsonElement normalized = normalizeAiConfigAfterMerge(localConfig, merged, resourceConfig);
                     
                     // 只有在配置真正发生变化时才保存（避免每次启动都重写文件）
                     // 使用 JSON 字符串比较，忽略格式差异
                     Gson gson = new Gson();
                     String localJson = gson.toJson(localConfig);
-                    String mergedJson = gson.toJson(merged);
+                    String mergedJson = gson.toJson(normalized);
                     
                     if (!localJson.equals(mergedJson)) {
                         if (debugMode) System.out.println("检测到配置结构变化，正在更新本地配置文件...");
-                        saveConfig(merged);
+                        saveConfig(normalized);
                         Constants.cachedConfig = null;
                         if (debugMode) System.out.println("本地配置文件已更新");
                     }
@@ -438,6 +443,104 @@ public class MainApplication extends Application {
         });
     }
 
+    private JsonElement normalizeAiConfigAfterMerge(JsonElement localConfig,
+                                                    JsonElement mergedConfig,
+                                                    JsonObject resourceConfig) {
+        if (mergedConfig == null || !mergedConfig.isJsonObject()) {
+            return mergedConfig;
+        }
+
+        JsonObject mergedRoot = mergedConfig.getAsJsonObject().deepCopy();
+        JsonObject mergedAi = getAiConfig(mergedRoot);
+        JsonObject resourceAi = getAiConfig(resourceConfig);
+        JsonObject localAi = localConfig != null && localConfig.isJsonObject()
+                ? getAiConfig(localConfig.getAsJsonObject())
+                : null;
+        if (mergedAi == null || resourceAi == null) {
+            return mergedRoot;
+        }
+
+        boolean localHasBuiltinMode = localAi != null
+                && localAi.has(ConfigConstants.AI_USE_BUILTIN_GATEWAY)
+                && !localAi.get(ConfigConstants.AI_USE_BUILTIN_GATEWAY).isJsonNull();
+        boolean useBuiltinGateway;
+        if (!localHasBuiltinMode) {
+            useBuiltinGateway = !hasPlainAiConfig(localAi);
+            mergedAi.addProperty(ConfigConstants.AI_USE_BUILTIN_GATEWAY, useBuiltinGateway);
+            if (useBuiltinGateway) {
+                copyAiField(mergedAi, resourceAi, ConfigConstants.AI_LOCAL_BASE_URL);
+                copyAiField(mergedAi, resourceAi, ConfigConstants.AI_LOCAL_API_KEY);
+                copyAiField(mergedAi, resourceAi, ConfigConstants.AI_LOCAL_MODEL_NAME);
+            }
+        } else {
+            useBuiltinGateway = readBoolean(mergedAi, ConfigConstants.AI_USE_BUILTIN_GATEWAY, true);
+        }
+
+        copyAiFieldIfMissing(mergedAi, resourceAi, ConfigConstants.AI_LOCAL_BASE_URL);
+        copyAiFieldIfMissing(mergedAi, resourceAi, ConfigConstants.AI_LOCAL_API_KEY);
+        copyAiFieldIfMissing(mergedAi, resourceAi, ConfigConstants.AI_LOCAL_MODEL_NAME);
+
+        if (useBuiltinGateway) {
+            mergedAi.addProperty(ConfigConstants.AI_PROVIDER, "OPENAI");
+            mergedAi.addProperty(ConfigConstants.AI_BASE_URL, "");
+            mergedAi.addProperty(ConfigConstants.AI_API_KEY, "");
+            mergedAi.addProperty(ConfigConstants.AI_MODEL_NAME, "");
+        }
+
+        return mergedRoot;
+    }
+
+    private JsonObject getAiConfig(JsonObject root) {
+        if (root == null || !root.has(ConfigConstants.AI) || !root.get(ConfigConstants.AI).isJsonObject()) {
+            return null;
+        }
+        return root.getAsJsonObject(ConfigConstants.AI);
+    }
+
+    private boolean hasPlainAiConfig(JsonObject aiConfig) {
+        if (aiConfig == null) {
+            return false;
+        }
+        return hasText(aiConfig, ConfigConstants.AI_BASE_URL)
+                || hasText(aiConfig, ConfigConstants.AI_API_KEY)
+                || hasText(aiConfig, ConfigConstants.AI_MODEL_NAME);
+    }
+
+    private boolean hasText(JsonObject aiConfig, String key) {
+        if (aiConfig == null || !aiConfig.has(key) || aiConfig.get(key).isJsonNull()) {
+            return false;
+        }
+        String value = aiConfig.get(key).getAsString();
+        return value != null && !value.trim().isEmpty();
+    }
+
+    private boolean readBoolean(JsonObject config, String key, boolean defaultValue) {
+        if (config == null || !config.has(key) || config.get(key).isJsonNull()) {
+            return defaultValue;
+        }
+        try {
+            return config.get(key).getAsBoolean();
+        } catch (Exception ignored) {
+            return defaultValue;
+        }
+    }
+
+    private void copyAiFieldIfMissing(JsonObject targetAi, JsonObject sourceAi, String key) {
+        if (targetAi == null || sourceAi == null || !sourceAi.has(key)) {
+            return;
+        }
+        if (!hasText(targetAi, key)) {
+            targetAi.add(key, sourceAi.get(key).deepCopy());
+        }
+    }
+
+    private void copyAiField(JsonObject targetAi, JsonObject sourceAi, String key) {
+        if (targetAi == null || sourceAi == null || !sourceAi.has(key)) {
+            return;
+        }
+        targetAi.add(key, sourceAi.get(key).deepCopy());
+    }
+
     private static HostServices hostServices;
 
     public static void setHostServices(HostServices services) {
@@ -462,8 +565,8 @@ public class MainApplication extends Application {
             JsonObject config = (JsonObject) Constants.getOutsideConfig(null);
             if (config != null && config.has("UpDate")) {
                 JsonObject updateConfig = config.getAsJsonObject("UpDate");
-                if (updateConfig.has("autoCheck") && !updateConfig.get("autoCheck").getAsBoolean()) {
-                    if (debugMode) System.out.println("自动检查更新已关闭");
+                if (!shouldCheckForUpdatesOnStartup(updateConfig)) {
+                    if (debugMode) System.out.println("当前启动条件下跳过自动检查更新");
                     return;
                 }
             }
@@ -535,6 +638,51 @@ public class MainApplication extends Application {
                 e.printStackTrace();
             }
         }
+    }
+
+    private boolean shouldCheckForUpdatesOnStartup(JsonObject updateConfig) {
+        if (updateConfig == null) {
+            return true;
+        }
+
+        if (updateConfig.has(ConfigConstants.UPDATE_AUTO_CHECK)
+                && !updateConfig.get(ConfigConstants.UPDATE_AUTO_CHECK).getAsBoolean()) {
+            return false;
+        }
+
+        String interval = "startup";
+        if (updateConfig.has(ConfigConstants.UPDATE_CHECK_INTERVAL)) {
+            interval = updateConfig.get(ConfigConstants.UPDATE_CHECK_INTERVAL).getAsString();
+        }
+
+        if ("manual".equalsIgnoreCase(interval)) {
+            return false;
+        }
+        if ("startup".equalsIgnoreCase(interval)) {
+            return true;
+        }
+        if (!updateConfig.has(ConfigConstants.UPDATE_LAST_CHECK_TIME)) {
+            return true;
+        }
+
+        try {
+            Instant lastCheckTime = Instant.parse(
+                    updateConfig.get(ConfigConstants.UPDATE_LAST_CHECK_TIME).getAsString());
+            java.time.Duration elapsed = java.time.Duration.between(lastCheckTime, Instant.now());
+            if ("daily".equalsIgnoreCase(interval)) {
+                return elapsed.toHours() >= 24;
+            }
+            if ("weekly".equalsIgnoreCase(interval)) {
+                return elapsed.toDays() >= 7;
+            }
+        } catch (Exception e) {
+            if (debugMode) {
+                System.err.println("解析更新时间失败，按需要检查处理: " + e.getMessage());
+            }
+            return true;
+        }
+
+        return true;
     }
     
     /**

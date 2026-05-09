@@ -16,7 +16,6 @@ public interface ConfigConstants {
     String LANGUAGE = "Language";
     String HTTP_HEADERS = "HttpHeaders";
     String ENV_PATH = "EnvPath";
-    String BROWSER = "Browser";
 
     // ========== Proxy 代理配置相关 ==========
     String PROXY_ENABLE = "enable";
@@ -29,6 +28,7 @@ public interface ConfigConstants {
     String AI_API_KEY = "api_key";
     String AI_MODEL_NAME = "model_name";
     String AI_TIMEOUT_MS = "timeout_ms";
+    String AI_USE_BUILTIN_GATEWAY = "use_builtin_gateway";
 
     String AI_THINKING = "thinking";
     String AI_THINKING_ENABLED = "enabled";
@@ -50,7 +50,10 @@ public interface ConfigConstants {
     String UPDATE_RESOURCE_PATH = "ResourcePath";      // 自定义资源路径（顶层配置）
     String UPDATE_LAST_CHECK_TIME = "lastCheckTime";   // 上次检查更新时间
     String UPDATE_AUTO_CHECK = "autoCheck";            // 自动检查更新
+    String UPDATE_CHECK_INTERVAL = "checkInterval";    // 更新检查间隔
     String UPDATE_AUTO_DOWNLOAD = "autoDownload";      // 自动下载更新
+    String UPDATE_LAST_MANIFEST_SOURCE = "lastManifestSource";    // 上次成功使用的manifest来源
+    String UPDATE_LAST_MANIFEST_VERSION = "lastManifestVersion";  // 上次成功读取的manifest版本
     String UPDATE_RESOURCES = "resources";             // 资源更新信息
     String UPDATE_VERSION = "version";                 // 版本号
     String UPDATE_FILE_NAME = "fileName";              // 资源文件名（不包含路径）
@@ -62,6 +65,7 @@ public interface ConfigConstants {
     // ========== VulnScan 漏洞扫描配置相关 ==========
     String VULNSCAN = "VulnScan";
     String VULNSCAN_SERVICE = "VulnScan";                 // Proxy.services 下漏洞扫描服务键
+    String BLOCKCHAIN_SERVICE = "Blockchain";             // Proxy.services 下区块链溯源服务键
     String VULNSCAN_POC_DIR = "pocDir";
     String VULNSCAN_REPORT_DIR = "reportDir";
     String VULNSCAN_THREADS = "threads";
@@ -91,10 +95,6 @@ public interface ConfigConstants {
     String ENV_PATH_BROWSER = "browser";                       // 浏览器可执行文件路径
     String ENV_PATH_PYTHON = "python";                         // Python 可执行文件路径
 
-    // ========== Browser 运行时行为配置 ==========
-    String BROWSER_REUSE_EXISTING_SESSION = "reuseExistingSession"; // 是否优先复用已有浏览器 DevTools 会话
-    String BROWSER_EXISTING_SESSION_PORT = "existingSessionPort";   // 复用已有会话的 DevTools 端口
-
     // ========== VulnScan 线程池配置 ==========
     String VULNSCAN_THREAD_POOL = "threadPool";             // 线程池配置对象
     String VULNSCAN_CORE_THREADS = "coreThreads";           // 核心线程数
@@ -111,11 +111,6 @@ public interface ConfigConstants {
     // ========== VulnScan 数据库配置 ==========
     String VULNSCAN_DB_PATH = "dbPath";                     // 数据库路径（可选配置）
     String VULNSCAN_POC_DB_VERSION = "pocDatabaseVersion";  // POC 数据库版本
-    
-    // ========== VulnScan Headless 配置 ==========
-    String VULNSCAN_HEADLESS = "headless";                 // 兼容旧配置迁移保留
-    String VULNSCAN_HEADLESS_BROWSER_PATH = "browserPath"; // 兼容旧配置迁移保留
-    String VULNSCAN_PYTHON_PATH = "pythonPath";            // 兼容旧配置迁移保留
 
     // ========== OOB 配置相关 ==========
     String OOB = "OOB";
