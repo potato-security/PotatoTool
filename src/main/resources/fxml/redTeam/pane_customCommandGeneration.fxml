@@ -59,7 +59,7 @@
 
 
     <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
-        <Label fx:id="prompt" text="复制成功" userData="i18n:cmdgen.copied" maxWidth="600"/>
+        <Label fx:id="prompt" text="复制成功" wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="600"/>
     </StackPane>
 
 </StackPane>

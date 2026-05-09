@@ -57,6 +57,8 @@ public class PaneCustomCommandGeneration {
 
     @FXML
     private Pane promptPane;
+    private FadeTransition promptFadeIn;
+    private FadeTransition promptFadeOut;
 
     public JsonObject reverseShellCommands = new JsonObject();
     public JsonArray listenerCommands = new JsonArray();
@@ -312,26 +314,34 @@ public class PaneCustomCommandGeneration {
     }
 
     void copyAnimation() {
-        // 显示提示组件
+        if (promptPane == null) {
+            return;
+        }
+        if (promptFadeIn != null) {
+            promptFadeIn.stop();
+        }
+        if (promptFadeOut != null) {
+            promptFadeOut.stop();
+        }
+
         promptPane.setVisible(true);
         promptPane.setManaged(true);
+        promptPane.setOpacity(0);
+        promptPane.toFront();
 
-        // 创建渐入动画
-        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
+        promptFadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
+        promptFadeIn.setFromValue(0);
+        promptFadeIn.setToValue(1);
 
-        // 创建渐出动画
-        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-        fadeOut.setDelay(Duration.seconds(0.5)); // 延迟1秒执行渐出动画
+        promptFadeOut = new FadeTransition(Duration.seconds(0.2), promptPane);
+        promptFadeOut.setFromValue(1);
+        promptFadeOut.setToValue(0);
+        promptFadeOut.setDelay(Duration.seconds(0.5));
 
-        // 播放渐入动画，完成后播放渐出动画
-        fadeIn.setOnFinished(event -> fadeOut.play());
-        fadeIn.play();
+        promptFadeIn.setOnFinished(event -> promptFadeOut.playFromStart());
+        promptFadeIn.playFromStart();
 
-        fadeOut.setOnFinished(event -> {
+        promptFadeOut.setOnFinished(event -> {
             promptPane.setVisible(false);
             promptPane.setManaged(false);
         });

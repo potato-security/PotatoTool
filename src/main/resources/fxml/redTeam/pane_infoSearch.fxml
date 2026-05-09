@@ -183,7 +183,7 @@
     </VBox>
 
     <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
-        <Label fx:id="prompt" maxWidth="600"/>
+        <Label fx:id="prompt" wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="600"/>
     </StackPane>
 
     <VBox fx:id="companyNameChoosePaneBox" styleClass="choosePaneBox" visible="false" managed="false" alignment="CENTER">

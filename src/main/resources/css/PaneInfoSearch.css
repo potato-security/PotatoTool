@@ -106,6 +106,29 @@
     -fx-pref-width: 30;
     -fx-pref-height: 30;
 }
+
+#promptPane{
+    -fx-background-color: rgba(17, 22, 28, 0.94), rgba(255, 255, 255, 0.035);
+    -fx-background-radius: 14, 13;
+    -fx-background-insets: 0, 1;
+    -fx-border-color: rgba(255, 255, 255, 0.16);
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.58), 24, 0, 0, 6);
+}
+
+#promptPane .label{
+    -fx-text-fill: #f8fafc;
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+    -fx-padding: 14 28 14 28;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 2, 0, 0, 1);
+}
+
 .delIcon{
     -fx-pref-width: 20;
     -fx-pref-height: 20;

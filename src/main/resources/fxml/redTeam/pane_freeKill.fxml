@@ -16,7 +16,7 @@
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
     <HBox alignment="CENTER" prefWidth="${sPane.width - 15}" prefHeight="${sPane.height}">
-        <SmoothScrollPane maxHeight="${sPane.height}" hbarPolicy="NEVER">
+        <SmoothScrollPane maxHeight="${sPane.height}" maxWidth="210" hbarPolicy="NEVER">
             <VBox fx:id="vBoxBar">
                 <Accordion fx:id="accordionPane">
                     <panes>
