@@ -97,6 +97,7 @@ public class NucleiYamlObj {
 
     @Data
     public static class Http {
+        private String id;
         private boolean global_matchers;
         private Map<String, Object> payloads;   // Map<String, List<String>> Or Map<String, String>
         private PocObj.VariablesType attack;
@@ -123,6 +124,7 @@ public class NucleiYamlObj {
 
     @Data
     public static class Request {
+        private String id;
         private boolean global_matchers;
         private Map<String, Object> payloads;   // Map<String, List<String>> Or Map<String, String>
         private PocObj.VariablesType attack;
@@ -237,6 +239,7 @@ public class NucleiYamlObj {
         private String type = "dsl";
         private List<String> dsl;
         private Condition condition;
+        private boolean internal;
         private String name;
     }
 
@@ -268,6 +271,8 @@ public class NucleiYamlObj {
         private List<String> json;
         private Condition condition;
         private boolean negative;
+        private int group = 1;
+        private boolean internal;
         private String name;
     }
 
@@ -278,6 +283,7 @@ public class NucleiYamlObj {
         private String part = "all";
         private Condition condition;
         private boolean negative;
+        private boolean internal;
         private String name;
     }
 
@@ -289,6 +295,7 @@ public class NucleiYamlObj {
         private String attribute;
         private Condition condition;
         private boolean negative;
+        private boolean internal;
         private String name;
     }
 
@@ -371,12 +378,14 @@ public class NucleiYamlObj {
      * Headless 操作类型枚举
      */
     public enum HeadlessAction {
-        navigate, waitload, script, click, input, screenshot, sleep, waitvisible
+        navigate, waitload, script, click, input, screenshot, sleep, waitvisible,
+        waitdialog, setheader, text, waitdom
     }
 
     @Data
     public static class HeadlessStep {
         private String action;
+        private String name;
         private Map<String, String> args;
     }
 
@@ -387,6 +396,8 @@ public class NucleiYamlObj {
     @Data
     public static class Code {
         private List<String> engine;
+        private Object args;
+        private List<String> pattern;
         private String source;
         private MatchersCondition matchers_condition;
         private List<TemplateMatcher> matchers;

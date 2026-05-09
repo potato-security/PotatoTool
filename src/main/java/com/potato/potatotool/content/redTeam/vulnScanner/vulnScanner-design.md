@@ -230,7 +230,7 @@ vulnScanner/
 │                                                                      │
 │  第四步：后台任务                                                      │
 │  └── 4.1 检查 POC 更新 (异步)                                         │
-│      ├── 请求云端清单 (potato.gold/poc/poc.json)                     │
+│      ├── 请求云端清单 (potato.gold/data/uploads/PotatoTool/poc/poc.json) │
 │      ├── 对比本地数据库 content_hash                                  │
 │      ├── 发现新版本 → 显示更新提示                                     │
 │      └── 用户确认后下载更新                                            │
@@ -682,7 +682,7 @@ POC 按执行阶段分为三类（PocCategory 枚举方法）：
 │  说明：不再保存本地清单文件，热更新基于 DB 中 content_hash 判断          │
 │                                                                      │
 │  云端存储（potato.gold/GitHub）：                                     │
-│  https://potato.gold/poc/                                            │
+│  https://potato.gold/data/uploads/PotatoTool/poc/                    │
 │  ├── poc.json          # 云端清单（包含所有 POC 元数据）              │
 │  ├── nucleiPoc/        # 保持与内置目录结构一致                       │
 │  │   ├── cves/2024/                                                  │
@@ -700,7 +700,7 @@ POC 按执行阶段分为三类（PocCategory 枚举方法）：
 ```json
 {
   "version": "2025.01.15",
-  "baseUrl": "https://potato.gold/poc/",
+  "baseUrl": "https://potato.gold/data/uploads/PotatoTool/poc/",
   "lastUpdate": "2025-01-15T10:30:00Z",
   "directories": [
     {
@@ -772,7 +772,7 @@ POC 按执行阶段分为三类（PocCategory 枚举方法）：
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  1. 拉取云端清单                                                      │
-│     └── GET https://potato.gold/poc/poc.json (~5KB)                 │
+│     └── GET https://potato.gold/data/uploads/PotatoTool/poc/poc.json │
 │                                                                      │
 │  2. 获取本地数据库中已有的 content_hash (MD5) 集合                    │
 │                                                                      │
@@ -782,7 +782,7 @@ POC 按执行阶段分为三类（PocCategory 枚举方法）：
 │     └── toDelete: 只根据云端 deleted 字段                             │
 │                                                                      │
 │  3. 只下载变化的 POC 文件                                             │
-│     └── GET https://potato.gold/poc/nuclei/cves/2024/CVE-xxx.yaml   │
+│     └── GET https://potato.gold/data/uploads/PotatoTool/poc/nuclei/cves/2024/CVE-xxx.yaml │
 │                                                                      │
 │  4. 应用更新                                                          │
 │     ├── 删除：从数据库移除                                            │
@@ -1168,7 +1168,7 @@ POC 按执行阶段分为三类（PocCategory 枚举方法）：
 │ └───────────────────────────────────────────────────────────┘  │
 │                                                                  │
 │ ┌─ 保存路径 ────────────────────────────────────────────────┐  │
-│ │ 保存到: [/Users/a/Desktop/reports/]          [浏览...]    │  │
+│ │ 保存到: [/Users/potato/Desktop/reports/]          [浏览...]    │  │
 │ │ 文件名: [扫描报告_2026-01-06_103015.docx]                 │  │
 │ └───────────────────────────────────────────────────────────┘  │
 │                                                                  │
@@ -1229,7 +1229,7 @@ POC 按执行阶段分为三类（PocCategory 枚举方法）：
 │                                                      │
 │ 文件名: 扫描报告_2026-01-06_103015.docx             │
 │ 大小:   2.5 MB                                      │
-│ 路径:   /Users/a/Desktop/reports/                   │
+│ 路径:   /Users/potato/Desktop/reports/                   │
 │                                                      │
 │ 包含内容:                                            │
 │ • 扫描概览                                           │
@@ -1673,7 +1673,7 @@ POC 按执行阶段分为三类（PocCategory 枚举方法）：
 │ [☐] 包含堆栈跟踪                                     │
 │                                                      │
 │ 保存路径:                                            │
-│ [/Users/a/Desktop/logs/______]  [浏览...]           │
+│ [/Users/potato/Desktop/logs/______]  [浏览...]           │
 │                                                      │
 │            [开始导出] [取消]                         │
 └─────────────────────────────────────────────────────┘

@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.potato.potatotool.content.redTeam.vulnScanner.event.ScanErrorEvent.logUnrecognizedExpression;
 
@@ -29,6 +31,8 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             "status", "size", "word", "regex", "binary", "dsl", "time", "xpath", "json", "kval"
     ));
     private static final String PROTOCOL_INFO_PREFIX = "协议检测结果: ";
+    private static final Pattern INDEXED_RESPONSE_PART_PATTERN =
+            Pattern.compile("(?i)^(body|header|status|status_code|all|raw|content_length)_(\\d+)$");
 
     private List<Map<String, Object>> conversionWarnings = new ArrayList<>();
     private List<Map<String, Object>> unsupportedCapabilities = new ArrayList<>();
@@ -355,48 +359,215 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
      * @param poc 通用POC对象
      */
     private void setProtocolAndProcessRequests(NucleiYamlObj.Poc nucleiPoc, PocObj.Poc poc) {
-        // 根据请求类型动态设置协议
-        if (nucleiPoc.getHttp() != null && !nucleiPoc.getHttp().isEmpty()) {
-            poc.setProtocol("http");
-            processHttpRequests(nucleiPoc.getHttp(), poc);
-        } else if (nucleiPoc.getRequests() != null && !nucleiPoc.getRequests().isEmpty()) {
-            poc.setProtocol("http");
-            // 处理requests请求
-            processRequestsField(nucleiPoc.getRequests(), poc);
-        } else if (nucleiPoc.getTcp() != null && !nucleiPoc.getTcp().isEmpty()) {
-            poc.setProtocol("tcp");
+        List<String> detectedProtocols = new ArrayList<>();
+
+        // 根据请求类型动态设置主协议；多协议模板必须保留所有协议步骤，不能只处理第一个命中的协议块。
+        // 没有 flow 的 Nuclei 多协议模板常用 code/dns/ssl 结果驱动后续 HTTP，请先追加前置协议。
+        if (nucleiPoc.getTcp() != null && !nucleiPoc.getTcp().isEmpty()) {
+            detectedProtocols.add("tcp");
             processTcpRequests(nucleiPoc.getTcp(), poc);
-        } else if (nucleiPoc.getNetwork() != null && !nucleiPoc.getNetwork().isEmpty()) {
-            poc.setProtocol("tcp");
+        }
+        if (nucleiPoc.getNetwork() != null && !nucleiPoc.getNetwork().isEmpty()) {
+            detectedProtocols.add("tcp");
             processTcpRequests(nucleiPoc.getNetwork(), poc);
-        } else if (nucleiPoc.getDns() != null && !nucleiPoc.getDns().isEmpty()) {
-            poc.setProtocol("dns");
+        }
+        if (nucleiPoc.getDns() != null && !nucleiPoc.getDns().isEmpty()) {
+            detectedProtocols.add("dns");
             processDnsRequests(nucleiPoc.getDns(), poc);
-        } else if (nucleiPoc.getWebsocket() != null && !nucleiPoc.getWebsocket().isEmpty()) {
-            poc.setProtocol("websocket");
+        }
+        if (nucleiPoc.getWebsocket() != null && !nucleiPoc.getWebsocket().isEmpty()) {
+            detectedProtocols.add("websocket");
             processWebSocketRequests(nucleiPoc.getWebsocket(), poc);
-        } else if (nucleiPoc.getSsl() != null && !nucleiPoc.getSsl().isEmpty()) {
-            poc.setProtocol("ssl");
+        }
+        if (nucleiPoc.getSsl() != null && !nucleiPoc.getSsl().isEmpty()) {
+            detectedProtocols.add("ssl");
             processSslRequests(nucleiPoc.getSsl(), poc);
-        } else if (nucleiPoc.getFile() != null && !nucleiPoc.getFile().isEmpty()) {
-            poc.setProtocol("file");
+        }
+        if (nucleiPoc.getFile() != null && !nucleiPoc.getFile().isEmpty()) {
+            detectedProtocols.add("file");
             processFileRequests(nucleiPoc.getFile(), poc);
-        } else if (nucleiPoc.getHeadless() != null && !nucleiPoc.getHeadless().isEmpty()) {
-            poc.setProtocol("headless");
+        }
+        if (nucleiPoc.getCode() != null && !nucleiPoc.getCode().isEmpty()) {
+            detectedProtocols.add("code");
+            processCodeRequests(nucleiPoc.getCode(), poc, "code");
+        }
+        if (nucleiPoc.getJavascript() != null && !nucleiPoc.getJavascript().isEmpty()) {
+            detectedProtocols.add("javascript");
+            processCodeRequests(nucleiPoc.getJavascript(), poc, "javascript");
+        }
+        if (nucleiPoc.getHttp() != null && !nucleiPoc.getHttp().isEmpty()) {
+            detectedProtocols.add("http");
+            processHttpRequests(nucleiPoc.getHttp(), poc);
+        }
+        if (nucleiPoc.getRequests() != null && !nucleiPoc.getRequests().isEmpty()) {
+            detectedProtocols.add("http");
+            processRequestsField(nucleiPoc.getRequests(), poc);
+        }
+        if (nucleiPoc.getHeadless() != null && !nucleiPoc.getHeadless().isEmpty()) {
+            detectedProtocols.add("headless");
             processHeadlessRequests(nucleiPoc.getHeadless(), poc);
-        } else if (nucleiPoc.getCode() != null && !nucleiPoc.getCode().isEmpty()) {
-            poc.setProtocol("code");
-            processCodeRequests(nucleiPoc.getCode(), poc);
-        } else if (nucleiPoc.getJavascript() != null && !nucleiPoc.getJavascript().isEmpty()) {
-            poc.setProtocol("javascript");
-            processCodeRequests(nucleiPoc.getJavascript(), poc);  // 复用 code 处理逻辑
+        }
+
+        if (!detectedProtocols.isEmpty()) {
+            poc.setProtocol(determinePrimaryProtocol(detectedProtocols));
         } else {
-            // 默认使用HTTP协议
             poc.setProtocol("http");
         }
+
+        reorderStepsByFlow(nucleiPoc.getFlow(), poc);
         
         // 处理全局配置
         processGlobalConfig(nucleiPoc, poc);
+    }
+
+    private String determinePrimaryProtocol(List<String> protocols) {
+        if (protocols == null || protocols.isEmpty()) {
+            return "http";
+        }
+        if (protocols.contains("http")) {
+            return "http";
+        }
+        return protocols.get(0);
+    }
+
+    private void reorderStepsByFlow(String flow, PocObj.Poc poc) {
+        if (flow == null || flow.trim().isEmpty() || poc == null
+                || poc.getVerifySteps() == null || poc.getVerifySteps().isEmpty()) {
+            return;
+        }
+
+        List<String> orderedStepIds = extractFlowStepIds(flow);
+        if (orderedStepIds.isEmpty()) {
+            return;
+        }
+
+        Map<String, PocObj.PocStep> stepById = new HashMap<>();
+        Map<String, List<PocObj.PocStep>> stepsByProtocol = new HashMap<>();
+        Map<String, PocObj.PocStep> stepByNucleiId = new HashMap<>();
+
+        for (PocObj.PocStep step : poc.getVerifySteps()) {
+            if (step == null || step.getStepId() == null) {
+                continue;
+            }
+            String stepId = step.getStepId().toLowerCase();
+            stepById.put(stepId, step);
+
+            String protocol = inferProtocolFromStep(step);
+            List<PocObj.PocStep> protocolSteps = stepsByProtocol.get(protocol);
+            if (protocolSteps == null) {
+                protocolSteps = new ArrayList<>();
+                stepsByProtocol.put(protocol, protocolSteps);
+            }
+            protocolSteps.add(step);
+
+            Object nucleiId = step.getOutput() != null ? step.getOutput().get("_nuclei_id") : null;
+            if (nucleiId != null && String.valueOf(nucleiId).trim().length() > 0) {
+                stepByNucleiId.put(protocol + ":" + String.valueOf(nucleiId).trim().toLowerCase(), step);
+            }
+        }
+
+        List<PocObj.PocStep> orderedSteps = new ArrayList<>();
+        Set<String> added = new LinkedHashSet<>();
+        for (String token : orderedStepIds) {
+            if (token == null || token.trim().isEmpty()) {
+                continue;
+            }
+            String normalizedToken = token.trim().toLowerCase();
+            if (normalizedToken.endsWith("()")) {
+                String protocol = normalizedToken.substring(0, normalizedToken.length() - 2);
+                addProtocolSteps(protocol, stepsByProtocol, orderedSteps, added);
+                continue;
+            }
+
+            PocObj.PocStep step = stepById.get(normalizedToken);
+            if (step == null && normalizedToken.startsWith("http_")) {
+                step = stepById.get("request_" + normalizedToken.substring("http_".length()));
+            }
+            if (step == null && normalizedToken.contains(":")) {
+                step = stepByNucleiId.get(normalizedToken);
+            }
+            if (step != null && added.add(step.getStepId())) {
+                orderedSteps.add(step);
+            }
+        }
+
+        if (!orderedSteps.isEmpty()) {
+            poc.setVerifySteps(orderedSteps);
+        }
+    }
+
+    private void addProtocolSteps(String protocol, Map<String, List<PocObj.PocStep>> stepsByProtocol,
+                                  List<PocObj.PocStep> orderedSteps, Set<String> added) {
+        if (protocol == null) {
+            return;
+        }
+        List<PocObj.PocStep> protocolSteps = stepsByProtocol.get(protocol);
+        if ((protocolSteps == null || protocolSteps.isEmpty()) && "http".equals(protocol)) {
+            protocolSteps = stepsByProtocol.get("request");
+        }
+        if (protocolSteps == null || protocolSteps.isEmpty()) {
+            return;
+        }
+        for (PocObj.PocStep step : protocolSteps) {
+            if (step != null && step.getStepId() != null && added.add(step.getStepId())) {
+                orderedSteps.add(step);
+            }
+        }
+    }
+
+    private List<String> extractFlowStepIds(String flow) {
+        List<String> ordered = new ArrayList<>();
+        java.util.regex.Matcher matcher = Pattern.compile(
+                "(?i)\\b(http|requests|request|tcp|network|dns|websocket|ssl|file|headless|code|javascript)\\s*\\(([^)]*)\\)"
+        ).matcher(flow);
+
+        while (matcher.find()) {
+            String protocol = matcher.group(1).toLowerCase();
+            if ("requests".equals(protocol)) {
+                protocol = "request";
+            }
+            String args = matcher.group(2) == null ? "" : matcher.group(2).trim();
+            if (args.isEmpty()) {
+                ordered.add(protocol + "()");
+                continue;
+            }
+            for (String arg : args.split(",")) {
+                String normalizedArg = normalizeFlowArgument(arg);
+                if (normalizedArg.isEmpty()) {
+                    continue;
+                }
+                if (normalizedArg.matches("\\d+")) {
+                    ordered.add(protocol + "_" + normalizedArg);
+                } else {
+                    ordered.add(protocol + ":" + normalizedArg.toLowerCase());
+                }
+            }
+        }
+        return ordered;
+    }
+
+    private String normalizeFlowArgument(String arg) {
+        if (arg == null) {
+            return "";
+        }
+        String normalized = arg.trim();
+        if ((normalized.startsWith("\"") && normalized.endsWith("\""))
+                || (normalized.startsWith("'") && normalized.endsWith("'"))) {
+            normalized = normalized.substring(1, normalized.length() - 1);
+        }
+        return normalized.trim();
+    }
+
+    private void appendVerifySteps(PocObj.Poc poc, List<PocObj.PocStep> newSteps) {
+        if (poc == null || newSteps == null || newSteps.isEmpty()) {
+            return;
+        }
+        List<PocObj.PocStep> existingSteps = poc.getVerifySteps();
+        if (existingSteps == null) {
+            existingSteps = new ArrayList<>();
+        }
+        existingSteps.addAll(newSteps);
+        poc.setVerifySteps(existingSteps);
     }
     
     /**
@@ -411,7 +582,15 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             for (int i = 0; i < httpRequests.size(); i++) {
                 try {
                     NucleiYamlObj.Http httpRequest = httpRequests.get(i);
-                    
+
+                    if (shouldDropGlobalMatcherBlock(httpRequest, "http", i)) {
+                        continue;
+                    }
+                    if (shouldDropReadAllUnsafeBlock(httpRequest, "http", i)) {
+                        continue;
+                    }
+                    warnHttpTransportFallback(httpRequest, "http", i);
+
                     boolean hasRaw = httpRequest.getRaw() != null && !httpRequest.getRaw().isEmpty();
 
                     if (hasRaw) {
@@ -421,16 +600,9 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                             verifySteps.add(step);
                         }
                     } else if (httpRequest.getPath() != null && !httpRequest.getPath().isEmpty()) {
-                        // 如果有多个path，为每个path创建一个独立的step
-                        for (int pIdx = 0; pIdx < httpRequest.getPath().size(); pIdx++) {
-                            String path = httpRequest.getPath().get(pIdx);
-                            // 如果有多个path，添加后缀区分stepId
-                            String suffix = httpRequest.getPath().size() > 1 ? "_" + pIdx : "";
-                            
-                            PocObj.PocStep step = createHttpStep(httpRequest, i, path, suffix);
-                            if (step != null) {
-                                verifySteps.add(step);
-                            }
+                        PocObj.PocStep step = createHttpStep(httpRequest, i, null, "");
+                        if (step != null) {
+                            verifySteps.add(step);
                         }
                     } else {
                         // 既没有raw也没有path的情况（可能是异常或空请求）
@@ -445,9 +617,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 }
             }
 
-            if (!verifySteps.isEmpty()) {
-                poc.setVerifySteps(verifySteps);
-            }
+            appendVerifySteps(poc, verifySteps);
         } catch (Exception e) {
             System.out.println("处理HTTP请求列表时出错: " + e.getMessage());
             e.printStackTrace();
@@ -466,7 +636,10 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         PocObj.PocStep step = new PocObj.PocStep();
         
         // 设置步骤ID
-        step.setStepId("http_" + index + idSuffix);
+        step.setStepId("http_" + toNucleiStepIndex(index) + idSuffix);
+        if (httpRequest.getId() != null && !httpRequest.getId().trim().isEmpty()) {
+            step.getOutput().put("_nuclei_id", httpRequest.getId().trim());
+        }
         
         // 检查是否使用raw格式
         boolean hasRaw = httpRequest.getRaw() != null && !httpRequest.getRaw().isEmpty();
@@ -488,6 +661,9 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 step.setPath(specificPath);
             } else if (httpRequest.getPath() != null && !httpRequest.getPath().isEmpty()) {
                 step.setPath(httpRequest.getPath().get(0)); // Fallback
+                if (httpRequest.getPath().size() > 1) {
+                    step.setPathCandidates(new ArrayList<>(httpRequest.getPath()));
+                }
             }
             
             // 设置请求头
@@ -507,6 +683,10 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         
         // 设置是否禁用路径自动合并
         step.setDisablePathAutomerge(httpRequest.isDisable_path_automerge());
+
+        step.setStopAtFirstMatch(httpRequest.isStop_at_first_match());
+        step.setIterateAll(httpRequest.isIterate_all());
+        step.setReadAll(httpRequest.isRead_all());
         
         // 处理匹配器
         processMatchers(httpRequest.getMatchers(), httpRequest.getMatchers_condition(), step);
@@ -594,13 +774,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 }
             }
             
-            // 合并到现有的验证步骤中
-            List<PocObj.PocStep> existingSteps = poc.getVerifySteps();
-            if (existingSteps == null) {
-                existingSteps = new ArrayList<>();
-            }
-            existingSteps.addAll(verifySteps);
-            poc.setVerifySteps(existingSteps);
+            appendVerifySteps(poc, verifySteps);
         } catch (Exception e) {
             System.out.println("处理TCP请求列表时出错: " + e.getMessage());
             e.printStackTrace();
@@ -619,7 +793,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         PocObj.TcpStep step = new PocObj.TcpStep();
         
         // 设置步骤ID
-        step.setStepId("tcp_" + index + idSuffix);
+        step.setStepId("tcp_" + toNucleiStepIndex(index) + idSuffix);
         
         // 设置主机和端口
         if (specificHost != null) {
@@ -684,13 +858,10 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             return null;
         }
         
-        try {
-            Matcher matcher = new Matcher();
-            
-            // 调试: 输出实际的matcher类型
-            System.out.println("[DEBUG] Matcher类型: " + templateMatcher.getType() + ", 实际类: " + templateMatcher.getClass().getSimpleName());
-            
-            String matcherType = templateMatcher.getType();
+	        try {
+	            Matcher matcher = new Matcher();
+
+	            String matcherType = templateMatcher.getType();
             if (!SUPPORTED_MATCHER_TYPES.contains(matcherType)) {
                 addUnsupportedCapability("UNSUPPORTED_MATCHER_TYPE", "P0", "nuclei", "unknown",
                         "matcher.type", matcherType, "fallback",
@@ -701,18 +872,16 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             switch (matcherType) {
                 case "status":
                     matcher.setType(MatcherType.STATUS);
-                    if (templateMatcher instanceof NucleiYamlObj.Status) {
-                        NucleiYamlObj.Status status = (NucleiYamlObj.Status) templateMatcher;
-                        List<String> values = new ArrayList<>();
-                        // 调试: 输出 status 字段的值
-                        System.out.println("[DEBUG] Status.getStatus() = " + status.getStatus());
-                        if (status.getStatus() != null) {
-                            for (Integer statusCode : status.getStatus()) {
-                                values.add(statusCode.toString());
-                            }
-                        }
-                        System.out.println("[DEBUG] 转换后 values = " + values);
-                        matcher.setValues(values);
+	                    if (templateMatcher instanceof NucleiYamlObj.Status) {
+	                        NucleiYamlObj.Status status = (NucleiYamlObj.Status) templateMatcher;
+	                        List<String> values = new ArrayList<>();
+	                        if (status.getStatus() != null) {
+	                            for (Integer statusCode : status.getStatus()) {
+	                                values.add(statusCode.toString());
+	                            }
+	                        }
+	                        matcher.setValues(values);
+                        setMatcherValueCondition(matcher, status.getCondition());
                         // 设置名称，优先使用matcher自带的name
                         if (status.getName() != null && !status.getName().isEmpty()) {
                             matcher.setName(status.getName());
@@ -732,6 +901,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                             }
                         }
                         matcher.setValues(values);
+                        setMatcherValueCondition(matcher, size.getCondition());
                         if (size.getName() != null && !size.getName().isEmpty()) {
                             matcher.setName(size.getName());
                         } else {
@@ -745,6 +915,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                         NucleiYamlObj.Word word = (NucleiYamlObj.Word) templateMatcher;
                         matcher.setValues(word.getWords());
                         matcher.setPart(word.getPart());
+                        warnIndexedPartUsage(word.getPart(), "matcher.part", "word");
                         matcher.setNegative(word.isNegative());
                         matcher.setCaseInsensitive(word.isCase_insensitive());
                         // 设置名称，优先使用matcher自带的name
@@ -761,6 +932,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                         NucleiYamlObj.Regex regex = (NucleiYamlObj.Regex) templateMatcher;
                         matcher.setValues(regex.getRegex());
                         matcher.setPart(regex.getPart());
+                        warnIndexedPartUsage(regex.getPart(), "matcher.part", "regex");
                         matcher.setGroup(regex.getGroup());
                         matcher.setInternal(String.valueOf(regex.isInternal()));
                         // 设置名称，优先使用matcher自带的name
@@ -777,6 +949,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                         NucleiYamlObj.Binary binary = (NucleiYamlObj.Binary) templateMatcher;
                         matcher.setValues(binary.getBinary());
                         matcher.setPart(binary.getPart());
+                        warnIndexedPartUsage(binary.getPart(), "matcher.part", "binary");
                         // 设置名称，优先使用matcher自带的name
                         if (binary.getName() != null && !binary.getName().isEmpty()) {
                             matcher.setName(binary.getName());
@@ -833,6 +1006,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                         NucleiYamlObj.Xpath xpath = (NucleiYamlObj.Xpath) templateMatcher;
                         matcher.setValues(xpath.getXpath());
                         matcher.setPart(xpath.getPart());
+                        warnIndexedPartUsage(xpath.getPart(), "matcher.part", "xpath");
                         matcher.setAttribute(xpath.getAttribute());
                         matcher.setNegative(xpath.isNegative());
                         // 设置名称，优先使用matcher自带的name
@@ -849,6 +1023,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                         NucleiYamlObj.Json json = (NucleiYamlObj.Json) templateMatcher;
                         matcher.setValues(json.getJson());
                         matcher.setPart(json.getPart());
+                        warnIndexedPartUsage(json.getPart(), "matcher.part", "json");
                         matcher.setNegative(json.isNegative());
                         // 设置名称，优先使用matcher自带的name
                         if (json.getName() != null && !json.getName().isEmpty()) {
@@ -864,6 +1039,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                         NucleiYamlObj.Kval kval = (NucleiYamlObj.Kval) templateMatcher;
                         matcher.setValues(kval.getKval());
                         matcher.setPart(kval.getPart());
+                        warnIndexedPartUsage(kval.getPart(), "matcher.part", "kval");
                         matcher.setNegative(kval.isNegative());
                         // 设置名称，优先使用matcher自带的name
                         if (kval.getName() != null && !kval.getName().isEmpty()) {
@@ -878,12 +1054,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     matcher.setName("unknown_matcher");
             }
             
-            // 设置条件
-            if (templateMatcher.getCondition() == NucleiYamlObj.Condition.and) {
-                matcher.setCondition("AND");
-            } else {
-                matcher.setCondition("OR");
-            }
+            setMatcherValueCondition(matcher, templateMatcher.getCondition());
             
             return matcher;
         } catch (Exception e) {
@@ -914,6 +1085,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     if (regex.getRegex() != null && !regex.getRegex().isEmpty()) {
                         matcher.setType(PocObj.MatcherType.REGEX);
                         matcher.setPart(regex.getPart());
+                        warnIndexedPartUsage(regex.getPart(), "extractor.part", "regex");
                         matcher.setValues(regex.getRegex());
                         matcher.setOperation(PocObj.OperationType.REGEX_MATCH);
                         matcher.setGroup(regex.getGroup());
@@ -933,8 +1105,11 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     if (json.getJson() != null && !json.getJson().isEmpty()) {
                         matcher.setType(PocObj.MatcherType.JSON);
                         matcher.setPart(json.getPart());
+                        warnIndexedPartUsage(json.getPart(), "extractor.part", "json");
                         matcher.setValues(json.getJson());
                         matcher.setNegative(json.isNegative());
+                        matcher.setGroup(json.getGroup());
+                        matcher.setInternal(String.valueOf(json.isInternal()));
                         matcher.setOperation(PocObj.OperationType.DEFAULT);
 
                         // 设置名称，优先使用extractor自带的name
@@ -951,9 +1126,11 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     if (xpath.getXpath() != null && !xpath.getXpath().isEmpty()) {
                         matcher.setType(PocObj.MatcherType.XPATH);
                         matcher.setPart(xpath.getPart());
+                        warnIndexedPartUsage(xpath.getPart(), "extractor.part", "xpath");
                         matcher.setValues(xpath.getXpath());
                         matcher.setAttribute(xpath.getAttribute());
                         matcher.setNegative(xpath.isNegative());
+                        matcher.setInternal(String.valueOf(xpath.isInternal()));
                         matcher.setOperation(PocObj.OperationType.DEFAULT);
 
                         // 设置名称，优先使用extractor自带的name
@@ -970,6 +1147,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     if (dsl.getDsl() != null && !dsl.getDsl().isEmpty()) {
                         matcher.setType(PocObj.MatcherType.DSL);
                         matcher.setValues(dsl.getDsl());
+                        matcher.setInternal(String.valueOf(dsl.isInternal()));
                         
                         // 验证DSL表达式
                         for (String dslExpr : dsl.getDsl()) {
@@ -998,8 +1176,10 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                     if (kval.getKval() != null && !kval.getKval().isEmpty()) {
                         matcher.setType(PocObj.MatcherType.KVAL);
                         matcher.setPart(kval.getPart());
+                        warnIndexedPartUsage(kval.getPart(), "extractor.part", "kval");
                         matcher.setValues(kval.getKval());
                         matcher.setNegative(kval.isNegative());
+                        matcher.setInternal(String.valueOf(kval.isInternal()));
                         matcher.setOperation(PocObj.OperationType.DEFAULT);
 
                         // 设置名称，优先使用extractor自带的name
@@ -1030,6 +1210,35 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             step.setExtractors(extractorList);
         }
     }
+
+    private void setMatcherValueCondition(PocObj.Matcher matcher, NucleiYamlObj.Condition condition) {
+        if (matcher == null) {
+            return;
+        }
+        matcher.setCondition(condition == NucleiYamlObj.Condition.and ? "AND" : "OR");
+    }
+
+    private void warnIndexedPartUsage(String part, String field, String type) {
+        if (part == null || part.trim().isEmpty()) {
+            return;
+        }
+        java.util.regex.Matcher partMatcher = INDEXED_RESPONSE_PART_PATTERN.matcher(part.trim());
+        if (!partMatcher.matches()) {
+            return;
+        }
+        int index;
+        try {
+            index = Integer.parseInt(partMatcher.group(2));
+        } catch (NumberFormatException e) {
+            return;
+        }
+        if (index <= 5) {
+            return;
+        }
+        addConversionWarning("INDEXED_RESPONSE_PART_GT5", "P2", "nuclei", "http", field,
+                type + ":" + part, "supported",
+                "检测到超过 5 的索引响应 part，运行时已按动态索引支持");
+    }
         
     /**
      * 处理Nuclei requests请求（旧版本格式或通用请求格式）
@@ -1040,10 +1249,18 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         try {
             List<PocObj.PocStep> verifySteps = new ArrayList<>();
             
-            for (int i = 0; i < requests.size(); i++) {
+	            for (int i = 0; i < requests.size(); i++) {
                 try {
                     NucleiYamlObj.Request request = requests.get(i);
-                    
+
+                    if (shouldDropGlobalMatcherBlock(request, "request", i)) {
+                        continue;
+                    }
+                    if (shouldDropReadAllUnsafeBlock(request, "request", i)) {
+                        continue;
+                    }
+                    warnHttpTransportFallback(request, "request", i);
+
                     boolean hasRaw = request.getRaw() != null && !request.getRaw().isEmpty();
                     
                     if (hasRaw) {
@@ -1052,15 +1269,9 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                             verifySteps.add(step);
                         }
                     } else if (request.getPath() != null && !request.getPath().isEmpty()) {
-                        // 多路径裂变
-                        for (int pIdx = 0; pIdx < request.getPath().size(); pIdx++) {
-                            String path = request.getPath().get(pIdx);
-                            String suffix = request.getPath().size() > 1 ? "_" + pIdx : "";
-                            
-                            PocObj.PocStep step = createRequestStep(request, i, path, suffix);
-                            if (step != null) {
-                                verifySteps.add(step);
-                            }
+                        PocObj.PocStep step = createRequestStep(request, i, null, "");
+                        if (step != null) {
+                            verifySteps.add(step);
                         }
                     } else {
                         PocObj.PocStep step = createRequestStep(request, i, null, "");
@@ -1076,20 +1287,119 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             
             // request字段通常也作为verify步骤
             if (!verifySteps.isEmpty()) {
-                // 如果已经有verifySteps（比如从http字段解析的），则追加
-                List<PocObj.PocStep> existingSteps = poc.getVerifySteps();
-                if (existingSteps == null) {
-                    poc.setVerifySteps(verifySteps);
-                } else {
-                    existingSteps.addAll(verifySteps);
-                }
+                appendVerifySteps(poc, verifySteps);
             }
         } catch (Exception e) {
             System.out.println("处理Request请求列表时出错: " + e.getMessage());
             e.printStackTrace();
         }
     }
-    
+
+    private boolean shouldDropGlobalMatcherBlock(NucleiYamlObj.Http request, String protocol, int zeroBasedIndex) {
+        return request != null && request.isGlobal_matchers()
+                && markGlobalMatcherUnsupported(protocol, zeroBasedIndex);
+    }
+
+    private boolean shouldDropGlobalMatcherBlock(NucleiYamlObj.Request request, String protocol, int zeroBasedIndex) {
+        return request != null && request.isGlobal_matchers()
+                && markGlobalMatcherUnsupported(protocol, zeroBasedIndex);
+    }
+
+    private boolean markGlobalMatcherUnsupported(String protocol, int zeroBasedIndex) {
+        addUnsupportedCapability(
+                "UNSUPPORTED_GLOBAL_MATCHERS",
+                "P0",
+                "nuclei",
+                "http",
+                protocol + "[" + toNucleiStepIndex(zeroBasedIndex) + "].global-matchers",
+                "true",
+                "drop",
+                "Nuclei global-matchers 是被动全局响应匹配能力，当前主动扫描链路没有等价旁路响应监听，已跳过该请求块"
+        );
+        return true;
+    }
+
+    private boolean shouldDropReadAllUnsafeBlock(NucleiYamlObj.Http request, String protocol, int zeroBasedIndex) {
+        return request != null && request.isRead_all() && request.isUnsafe()
+                && markReadAllUnsafeUnsupported(protocol, zeroBasedIndex, request.getRaw());
+    }
+
+    private boolean shouldDropReadAllUnsafeBlock(NucleiYamlObj.Request request, String protocol, int zeroBasedIndex) {
+        return request != null && request.isRead_all() && request.isUnsafe()
+                && markReadAllUnsafeUnsupported(protocol, zeroBasedIndex, request.getRaw());
+    }
+
+    private boolean markReadAllUnsafeUnsupported(String protocol, int zeroBasedIndex, List<String> raw) {
+        addUnsupportedCapability(
+                "UNSUPPORTED_READ_ALL_UNSAFE_HTTP",
+                "P0",
+                "nuclei",
+                "http",
+                protocol + "[" + toNucleiStepIndex(zeroBasedIndex) + "].read-all",
+                summarizeRawBlocks(raw),
+                "drop",
+                "read-all 与 unsafe 需要原始 socket HTTP/多响应读取语义，当前 OkHttp 执行链不能等价发送或读取，已跳过该请求块"
+        );
+        return true;
+    }
+
+    private void warnHttpTransportFallback(NucleiYamlObj.Http request, String protocol, int zeroBasedIndex) {
+        if (request != null && request.isUnsafe()) {
+            warnUnsafeHttpFallback(protocol, zeroBasedIndex, request.getRaw());
+        }
+        if (request != null && request.isRead_all()) {
+            warnReadAllFallback(protocol, zeroBasedIndex);
+        }
+    }
+
+    private void warnHttpTransportFallback(NucleiYamlObj.Request request, String protocol, int zeroBasedIndex) {
+        if (request != null && request.isUnsafe()) {
+            warnUnsafeHttpFallback(protocol, zeroBasedIndex, request.getRaw());
+        }
+        if (request != null && request.isRead_all()) {
+            warnReadAllFallback(protocol, zeroBasedIndex);
+        }
+    }
+
+    private void warnUnsafeHttpFallback(String protocol, int zeroBasedIndex, List<String> raw) {
+        addConversionWarning(
+                "UNSAFE_HTTP_TRANSPORT_FALLBACK",
+                "P2",
+                "nuclei",
+                "http",
+                protocol + "[" + toNucleiStepIndex(zeroBasedIndex) + "].unsafe",
+                summarizeRawBlocks(raw),
+                "fallback",
+                "unsafe 原始 HTTP 会降级到当前普通 HTTP 执行链；畸形请求、重复头或请求走私类模板可能无法保持 Nuclei 官方语义"
+        );
+    }
+
+    private void warnReadAllFallback(String protocol, int zeroBasedIndex) {
+        addConversionWarning(
+                "READ_ALL_HTTP_FALLBACK",
+                "P2",
+                "nuclei",
+                "http",
+                protocol + "[" + toNucleiStepIndex(zeroBasedIndex) + "].read-all",
+                "true",
+                "fallback",
+                "read-all 需要读取完整原始响应流；当前 HTTP 执行链按单个响应对象处理"
+        );
+    }
+
+    private String summarizeRawBlocks(List<String> raw) {
+        if (raw == null || raw.isEmpty()) {
+            return "";
+        }
+        String first = raw.get(0);
+        if (first == null) {
+            first = "";
+        }
+        String[] lines = first.split("\\r\\n|\\r|\\n");
+        String requestLine = lines.length > 0 ? lines[0].trim() : "";
+        return "rawBlocks=" + raw.size() + (requestLine.isEmpty() ? "" : ", first=" + requestLine);
+    }
+
     /**
      * 创建Request步骤
      * @param request Request对象
@@ -1102,7 +1412,10 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         PocObj.PocStep step = new PocObj.PocStep();
         
         // 设置步骤ID
-        step.setStepId("request_" + index + idSuffix);
+        step.setStepId("request_" + toNucleiStepIndex(index) + idSuffix);
+        if (request.getId() != null && !request.getId().trim().isEmpty()) {
+            step.getOutput().put("_nuclei_id", request.getId().trim());
+        }
         
         // 检查是否使用raw格式
         boolean hasRaw = request.getRaw() != null && !request.getRaw().isEmpty();
@@ -1117,6 +1430,9 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 step.setPath(specificPath);
             } else if (request.getPath() != null && !request.getPath().isEmpty()) {
                 step.setPath(request.getPath().get(0));
+                if (request.getPath().size() > 1) {
+                    step.setPathCandidates(new ArrayList<>(request.getPath()));
+                }
             }
             
             if (request.getHeaders() != null && !request.getHeaders().isEmpty()) {
@@ -1128,6 +1444,9 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         step.setUnsafe(request.isUnsafe());
         step.setDisableCookie(request.isDisable_cookie());
         step.setDisablePathAutomerge(request.isDisable_path_automerge());
+        step.setStopAtFirstMatch(request.isStop_at_first_match());
+        step.setIterateAll(request.isIterate_all());
+        step.setReadAll(request.isRead_all());
         
         processMatchers(request.getMatchers(), request.getMatchers_condition(), step);
         processExtractors(request.getExtractors(), step);
@@ -1145,33 +1464,43 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         
         // 处理HTTP请求的全局配置
         if (nucleiPoc.getHttp() != null && !nucleiPoc.getHttp().isEmpty()) {
-            NucleiYamlObj.Http firstHttp = nucleiPoc.getHttp().get(0);
-            
-            // 设置Cookie复用
-            globalConfig.setCookieReuse(firstHttp.isCookie_reuse());
-            
-            // 设置线程数
-            if (firstHttp.getThreads() > 0) {
-                globalConfig.setThreads(firstHttp.getThreads());
+            for (NucleiYamlObj.Http http : nucleiPoc.getHttp()) {
+                if (http == null) {
+                    continue;
+                }
+
+                if (http.isCookie_reuse()) {
+                    globalConfig.setCookieReuse(true);
+                }
+
+                if (http.getThreads() > 0) {
+                    globalConfig.setThreads(http.getThreads());
+                }
+
+                if (http.isStop_at_first_match()) {
+                    globalConfig.setStopAtFirstMatch(true);
+                }
             }
-            
-            // 设置首次匹配后停止
-            globalConfig.setStopAtFirstMatch(firstHttp.isStop_at_first_match());
         }
         // 处理Request请求的全局配置
         else if (nucleiPoc.getRequests() != null && !nucleiPoc.getRequests().isEmpty()) {
-            NucleiYamlObj.Request firstRequest = nucleiPoc.getRequests().get(0);
-            
-            // 设置Cookie复用
-            globalConfig.setCookieReuse(firstRequest.isCookie_reuse());
-            
-            // 设置线程数
-            if (firstRequest.getThreads() > 0) {
-                globalConfig.setThreads(firstRequest.getThreads());
+            for (NucleiYamlObj.Request request : nucleiPoc.getRequests()) {
+                if (request == null) {
+                    continue;
+                }
+
+                if (request.isCookie_reuse()) {
+                    globalConfig.setCookieReuse(true);
+                }
+
+                if (request.getThreads() > 0) {
+                    globalConfig.setThreads(request.getThreads());
+                }
+
+                if (request.isStop_at_first_match()) {
+                    globalConfig.setStopAtFirstMatch(true);
+                }
             }
-            
-            // 设置首次匹配后停止
-            globalConfig.setStopAtFirstMatch(firstRequest.isStop_at_first_match());
         }
     }
     
@@ -1264,13 +1593,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 }
             }
             
-            // 合并到现有的验证步骤中
-            List<PocObj.PocStep> existingSteps = poc.getVerifySteps();
-            if (existingSteps == null) {
-                existingSteps = new ArrayList<>();
-            }
-            existingSteps.addAll(verifySteps);
-            poc.setVerifySteps(existingSteps);
+            appendVerifySteps(poc, verifySteps);
         } catch (Exception e) {
             System.out.println("处理 DNS 请求列表时出错: " + e.getMessage());
             e.printStackTrace();
@@ -1287,7 +1610,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         PocObj.DnsStep step = new PocObj.DnsStep();
 
         // 设置步骤 ID
-        step.setStepId("dns_" + index);
+        step.setStepId("dns_" + toNucleiStepIndex(index));
 
         // 设置域名（name现在是单个字符串，不是列表）
         if (dnsRequest.getName() != null && !dnsRequest.getName().isEmpty()) {
@@ -1333,13 +1656,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 }
             }
             
-            // 合并到现有的验证步骤中
-            List<PocObj.PocStep> existingSteps = poc.getVerifySteps();
-            if (existingSteps == null) {
-                existingSteps = new ArrayList<>();
-            }
-            existingSteps.addAll(verifySteps);
-            poc.setVerifySteps(existingSteps);
+            appendVerifySteps(poc, verifySteps);
         } catch (Exception e) {
             System.out.println("处理 WebSocket 请求列表时出错: " + e.getMessage());
             e.printStackTrace();
@@ -1356,7 +1673,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         PocObj.WebSocketStep step = new PocObj.WebSocketStep();
         
         // 设置步骤 ID
-        step.setStepId("websocket_" + index);
+        step.setStepId("websocket_" + toNucleiStepIndex(index));
         
         // 设置 WebSocket 地址
         step.setAddress(wsRequest.getAddress());
@@ -1408,13 +1725,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 }
             }
             
-            // 合并到现有的验证步骤中
-            List<PocObj.PocStep> existingSteps = poc.getVerifySteps();
-            if (existingSteps == null) {
-                existingSteps = new ArrayList<>();
-            }
-            existingSteps.addAll(verifySteps);
-            poc.setVerifySteps(existingSteps);
+            appendVerifySteps(poc, verifySteps);
         } catch (Exception e) {
             System.out.println("处理 SSL 请求列表时出错: " + e.getMessage());
             e.printStackTrace();
@@ -1431,7 +1742,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         PocObj.SslStep step = new PocObj.SslStep();
 
         // 设置步骤 ID
-        step.setStepId("ssl_" + index);
+        step.setStepId("ssl_" + toNucleiStepIndex(index));
 
         // 设置目标地址
         step.setAddress(sslRequest.getAddress());
@@ -1470,13 +1781,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 }
             }
             
-            // 合并到现有的验证步骤中
-            List<PocObj.PocStep> existingSteps = poc.getVerifySteps();
-            if (existingSteps == null) {
-                existingSteps = new ArrayList<>();
-            }
-            existingSteps.addAll(verifySteps);
-            poc.setVerifySteps(existingSteps);
+            appendVerifySteps(poc, verifySteps);
         } catch (Exception e) {
             System.out.println("处理 File 请求列表时出错: " + e.getMessage());
             e.printStackTrace();
@@ -1493,7 +1798,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         PocObj.FileStep step = new PocObj.FileStep();
         
         // 设置步骤 ID
-        step.setStepId("file_" + index);
+        step.setStepId("file_" + toNucleiStepIndex(index));
         
         // 设置路径
         if (fileRequest.getPaths() != null) {
@@ -1540,13 +1845,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 }
             }
             
-            // 合并到现有的验证步骤中
-            List<PocObj.PocStep> existingSteps = poc.getVerifySteps();
-            if (existingSteps == null) {
-                existingSteps = new ArrayList<>();
-            }
-            existingSteps.addAll(verifySteps);
-            poc.setVerifySteps(existingSteps);
+            appendVerifySteps(poc, verifySteps);
         } catch (Exception e) {
             System.out.println("处理 Headless 请求列表时出错: " + e.getMessage());
             e.printStackTrace();
@@ -1563,7 +1862,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         PocObj.HeadlessStep step = new PocObj.HeadlessStep();
         
         // 设置步骤 ID
-        step.setStepId("headless_" + index);
+        step.setStepId("headless_" + toNucleiStepIndex(index));
         
         // 转换操作步骤
         if (headlessRequest.getSteps() != null && !headlessRequest.getSteps().isEmpty()) {
@@ -1584,6 +1883,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             for (NucleiYamlObj.HeadlessStep hlStep : headlessRequest.getSteps()) {
                 PocObj.BrowserAction action = new PocObj.BrowserAction();
                 action.setAction(hlStep.getAction());
+                action.setName(hlStep.getName());
                 action.setArgs(hlStep.getArgs());
                 actions.add(action);
             }
@@ -1605,14 +1905,14 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
      * @param codeRequests Code 请求列表
      * @param poc 通用 POC 对象
      */
-    private void processCodeRequests(List<NucleiYamlObj.Code> codeRequests, PocObj.Poc poc) {
+    private void processCodeRequests(List<NucleiYamlObj.Code> codeRequests, PocObj.Poc poc, String protocolName) {
         try {
             List<PocObj.PocStep> verifySteps = new ArrayList<>();
             
             for (int i = 0; i < codeRequests.size(); i++) {
                 try {
                     NucleiYamlObj.Code codeRequest = codeRequests.get(i);
-                    PocObj.CodeStep step = createCodeStep(codeRequest, i);
+                    PocObj.CodeStep step = createCodeStep(codeRequest, i, protocolName);
                     if (step != null) {
                         verifySteps.add(step);
                     }
@@ -1622,13 +1922,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                 }
             }
             
-            // 合并到现有的验证步骤中
-            List<PocObj.PocStep> existingSteps = poc.getVerifySteps();
-            if (existingSteps == null) {
-                existingSteps = new ArrayList<>();
-            }
-            existingSteps.addAll(verifySteps);
-            poc.setVerifySteps(existingSteps);
+            appendVerifySteps(poc, verifySteps);
         } catch (Exception e) {
             System.out.println("处理 Code 请求列表时出错: " + e.getMessage());
             e.printStackTrace();
@@ -1641,11 +1935,13 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
      * @param index 索引
      * @return CodeStep 对象
      */
-    private PocObj.CodeStep createCodeStep(NucleiYamlObj.Code codeRequest, int index) {
+    private PocObj.CodeStep createCodeStep(NucleiYamlObj.Code codeRequest, int index, String protocolName) {
         PocObj.CodeStep step = new PocObj.CodeStep();
+        String stepProtocol = (protocolName == null || protocolName.trim().isEmpty()) ? "code" : protocolName.trim();
 
         // 设置步骤 ID
-        step.setStepId("code_" + index);
+        step.setStepId(stepProtocol + "_" + toNucleiStepIndex(index));
+        step.setProtocolName(stepProtocol);
 
         // 设置代码引擎（默认 JavaScript）
         if (codeRequest.getEngine() != null && !codeRequest.getEngine().isEmpty()) {
@@ -1655,6 +1951,10 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         }
 
         step.setSource(codeRequest.getSource());
+        step.setArgs(codeRequest.getArgs());
+        if (codeRequest.getPattern() != null) {
+            step.setPattern(codeRequest.getPattern());
+        }
 
         // 处理匹配器
         processMatchers(codeRequest.getMatchers(), codeRequest.getMatchers_condition(), step);
@@ -1691,6 +1991,10 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         capability.put("action", action);
         capability.put("message", message);
         unsupportedCapabilities.add(capability);
+    }
+
+    private int toNucleiStepIndex(int zeroBasedIndex) {
+        return zeroBasedIndex + 1;
     }
 
     private String inferProtocolFromStep(PocObj.PocStep step) {

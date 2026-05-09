@@ -31,6 +31,10 @@ public class SimpleMatcher {
      * @return 是否匹配成功
      */
     public static boolean match(String content, PocObj.PocStep step) {
+        return match(content, step, null);
+    }
+
+    public static boolean match(String content, PocObj.PocStep step, Map<String, Object> variables) {
         if (step == null || step.getMatchers() == null || step.getMatchers().isEmpty()) {
             return true; // 没有匹配器时默认成功
         }
@@ -38,7 +42,7 @@ public class SimpleMatcher {
         List<Matcher> matchers = step.getMatchers();
         MatchersCondition condition = step.getMatchersCondition();
         
-        return matchWithCondition(content, matchers, condition);
+        return matchWithCondition(content, matchers, condition, variables);
     }
     
     /**
@@ -50,6 +54,11 @@ public class SimpleMatcher {
      * @return 是否匹配成功
      */
     public static boolean matchWithCondition(String content, List<Matcher> matchers, MatchersCondition condition) {
+        return matchWithCondition(content, matchers, condition, null);
+    }
+
+    public static boolean matchWithCondition(String content, List<Matcher> matchers,
+                                             MatchersCondition condition, Map<String, Object> variables) {
         if (matchers == null || matchers.isEmpty()) {
             return true;
         }
@@ -61,7 +70,7 @@ public class SimpleMatcher {
         // AND 条件：所有匹配器都必须成功
         if (condition == MatchersCondition.AND) {
             for (Matcher matcher : matchers) {
-                if (!matchSingle(content, matcher)) {
+                if (!matchSingle(content, matcher, variables)) {
                     return false;
                 }
             }
@@ -70,7 +79,7 @@ public class SimpleMatcher {
         // OR 条件：任一匹配器成功即可
         else {
             for (Matcher matcher : matchers) {
-                if (matchSingle(content, matcher)) {
+                if (matchSingle(content, matcher, variables)) {
                     return true;
                 }
             }
@@ -86,6 +95,10 @@ public class SimpleMatcher {
      * @return 是否匹配成功
      */
     public static boolean matchSingle(String content, Matcher matcher) {
+        return matchSingle(content, matcher, null);
+    }
+
+    public static boolean matchSingle(String content, Matcher matcher, Map<String, Object> variables) {
         if (matcher == null || matcher.getValues() == null || matcher.getValues().isEmpty()) {
             return true;
         }
@@ -106,7 +119,7 @@ public class SimpleMatcher {
                 break;
             case DSL:
                 // DSL 匹配 - 评估 DSL 表达式
-                result = matchDsl(content, values, matcher.getCondition());
+                result = matchDsl(content, values, matcher.getCondition(), variables);
                 break;
             case BINARY:
                 // 二进制匹配 - 将内容转为十六进制后匹配
@@ -118,7 +131,7 @@ public class SimpleMatcher {
                 } else {
                     MatchersCondition groupCondition = "OR".equalsIgnoreCase(matcher.getCondition())
                             ? MatchersCondition.OR : MatchersCondition.AND;
-                    result = matchWithCondition(content, matcher.getSubMatchers(), groupCondition);
+                    result = matchWithCondition(content, matcher.getSubMatchers(), groupCondition, variables);
                 }
                 break;
             default:
@@ -212,6 +225,11 @@ public class SimpleMatcher {
      * @return 是否匹配
      */
     private static boolean matchDsl(String content, List<String> dslExpressions, String condition) {
+        return matchDsl(content, dslExpressions, condition, null);
+    }
+
+    private static boolean matchDsl(String content, List<String> dslExpressions,
+                                    String condition, Map<String, Object> variables) {
         if (content == null || dslExpressions == null || dslExpressions.isEmpty()) {
             return false;
         }
@@ -220,6 +238,9 @@ public class SimpleMatcher {
         
         // 创建上下文，将 content 作为 response 变量
         Map<String, Object> context = new HashMap<>();
+        if (variables != null) {
+            context.putAll(variables);
+        }
         context.put("response", content);
         context.put("body", content);
         

@@ -2,14 +2,12 @@ package com.potato.potatotool.content.redTeam.vulnScanner.storage;
 
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import com.potato.potatotool.utils.network.CustomHttpResponse;
+import com.potato.potatotool.utils.network.RequestObj;
+import com.potato.potatotool.utils.network.RequestUtils;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.potato.potatotool.ToStart.debugMode;
 
@@ -22,8 +20,7 @@ import static com.potato.potatotool.ToStart.debugMode;
  * 3. 只下载变化的 POC 文件
  * 4. 应用更新（新增/删除/修改）
  * 
- * 云端结构：
- * https://potato.gold/poc/
+ * 云端结构（根路径由配置项 pocBaseUrlPrimary / pocBaseUrlMirror 提供）：
  * ├── poc.json              # 清单文件
  * ├── nuclei/
  * │   ├── cves/2024/
@@ -44,26 +41,27 @@ public class PocUpdateHandler {
     private static final int READ_TIMEOUT = 30;
     
     private final PocDatabaseInitializer initializer;
-    private final OkHttpClient httpClient;
     
     // 默认更新源
-    private String primaryBaseUrl = "https://potato.gold/poc/";
-    private String mirrorBaseUrl = "https://raw.githubusercontent.com/user/poc-repo/main/";
+    private String primaryBaseUrl;
+    private String mirrorBaseUrl;
     
     public PocUpdateHandler() {
         this.initializer = PocDatabaseInitializer.getInstance();
-        this.httpClient = new OkHttpClient.Builder()
-            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-            .build();
+        this.primaryBaseUrl = resolveBaseUrl(Constants.getConfigInfo("pocBaseUrlPrimary"));
+        this.mirrorBaseUrl = resolveBaseUrl(Constants.getConfigInfo("pocBaseUrlMirror"));
     }
     
     /**
      * 设置更新源
      */
     public void setUpdateSources(String primary, String mirror) {
-        if (primary != null) this.primaryBaseUrl = primary;
-        if (mirror != null) this.mirrorBaseUrl = mirror;
+        if (primary != null) this.primaryBaseUrl = ensureTrailingSlash(primary);
+        if (mirror != null) this.mirrorBaseUrl = ensureTrailingSlash(mirror);
+    }
+
+    public boolean isIncrementalSourceAvailable() {
+        return fetchRemoteManifest() != null;
     }
     
     /**
@@ -255,20 +253,47 @@ public class PocUpdateHandler {
      * HTTP GET 请求
      */
     private String fetchUrl(String url) {
-        Request request = new Request.Builder()
-            .url(url)
-            .header("User-Agent", "PotatoTool-PocUpdater/1.0")
-            .build();
-        
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                return response.body().string();
+        try {
+            RequestObj requestObj = new RequestObj()
+                    .setUrl(url)
+                    .setMethod("GET")
+                    .setFollowRedirects(true)
+                    .setTimeOut(CONNECT_TIMEOUT)
+                    .setReadTimeout(READ_TIMEOUT);
+
+            Map<String, String> headers = new HashMap<>();
+            headers.put("User-Agent", "PotatoTool-PocUpdater/1.0");
+            requestObj.setHeaders(headers);
+
+            try (CustomHttpResponse response = RequestUtils.requests(requestObj, null)) {
+                if (response.getResponseCode() >= 200
+                        && response.getResponseCode() < 300) {
+                    return response.getTextStr();
+                }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (debugMode) System.err.println("请求失败: " + url + " - " + e.getMessage());
         }
         
         return null;
+    }
+
+    private String resolveBaseUrl(String configuredValue) {
+        if (configuredValue == null || configuredValue.trim().isEmpty()) {
+            return null;
+        }
+        return ensureTrailingSlash(configuredValue);
+    }
+
+    private String ensureTrailingSlash(String baseUrl) {
+        if (baseUrl == null) {
+            return null;
+        }
+        String normalized = baseUrl.trim();
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        return normalized.endsWith("/") ? normalized : normalized + "/";
     }
     
     /**

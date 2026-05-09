@@ -32,6 +32,16 @@ public class VariableExtractor {
      * @param extractedValues 提取的变量映射
      */
     public static void extractVariablesObj(CustomHttpResponse response, List<PocObj.Matcher> extractors, Map<String, Object> extractedValues) {
+        extractVariablesObj(response, extractors, extractedValues, false);
+    }
+
+    /**
+     * 从HTTP响应中提取变量（支持 Object 类型的变量映射）
+     *
+     * @param includeInternal true 时 internal extractor 也写入变量映射，用于多请求运行时链路
+     */
+    public static void extractVariablesObj(CustomHttpResponse response, List<PocObj.Matcher> extractors,
+                                           Map<String, Object> extractedValues, boolean includeInternal) {
         if (response == null || extractors == null || extractors.isEmpty() || extractedValues == null) {
             return;
         }
@@ -85,8 +95,8 @@ public class VariableExtractor {
                     break;
             }
 
-            // internal=true: 仅参与内部变量链路，不进入最终输出
-            if (isInternalExtractor(extractor)) {
+            // internal=true 默认仅用于内部链路；运行时执行器可显式允许写入变量 map。
+            if (!includeInternal && isInternalExtractor(extractor)) {
                 continue;
             }
 
@@ -97,10 +107,53 @@ public class VariableExtractor {
         }
     }
 
+    public static void extractVariablesObjAll(CustomHttpResponse response, List<PocObj.Matcher> extractors,
+                                              Map<String, Object> extractedValues, boolean includeInternal) {
+        if (response == null || extractors == null || extractors.isEmpty() || extractedValues == null) {
+            return;
+        }
+
+        for (PocObj.Matcher extractor : extractors) {
+            if (extractor == null || extractor.getName() == null || extractor.getName().isEmpty()) {
+                continue;
+            }
+            if (!includeInternal && isInternalExtractor(extractor)) {
+                continue;
+            }
+
+            String part = resolveExtractorPart(extractor);
+            String content = getResponsePart(response, part);
+            if (content == null || content.isEmpty()) {
+                continue;
+            }
+
+            List<String> extractedValuesList = extractAllValues(content, extractor);
+            if (extractedValuesList != null && !extractedValuesList.isEmpty()) {
+                extractedValues.put(extractor.getName(), extractedValuesList);
+                continue;
+            }
+
+            String extractedValue = extractSingleValue(content, extractor, response, part);
+            if (extractedValue != null) {
+                extractedValues.put(extractor.getName(), extractedValue);
+            }
+        }
+    }
+
     /**
      * 从纯文本响应中提取变量（用于非HTTP协议）
      */
     public static void extractVariablesFromTextObj(String rawContent, List<PocObj.Matcher> extractors, Map<String, Object> extractedValues) {
+        extractVariablesFromTextObj(rawContent, extractors, extractedValues, false);
+    }
+
+    /**
+     * 从纯文本响应中提取变量（用于非HTTP协议）
+     *
+     * @param includeInternal true 时 internal extractor 也写入变量映射，用于运行时变量链路
+     */
+    public static void extractVariablesFromTextObj(String rawContent, List<PocObj.Matcher> extractors,
+                                                   Map<String, Object> extractedValues, boolean includeInternal) {
         if (rawContent == null || extractors == null || extractors.isEmpty() || extractedValues == null) {
             return;
         }
@@ -149,7 +202,7 @@ public class VariableExtractor {
                     break;
             }
 
-            if (isInternalExtractor(extractor)) {
+            if (!includeInternal && isInternalExtractor(extractor)) {
                 continue;
             }
 
@@ -235,6 +288,61 @@ public class VariableExtractor {
         return internal != null && "true".equalsIgnoreCase(internal.trim());
     }
 
+    private static String extractSingleValue(String content, PocObj.Matcher extractor,
+                                             CustomHttpResponse response, String part) {
+        if (extractor == null) {
+            return null;
+        }
+
+        PocObj.MatcherType type = extractor.getType();
+        List<String> values = extractor.getValues();
+        switch (type) {
+            case REGEX:
+                return extractRegex(content, values, extractor.getGroup());
+            case JSON:
+                if (values != null && !values.isEmpty()) {
+                    String expr = values.get(0);
+                    if (expr != null && expr.trim().startsWith("$")) {
+                        return JsonExtractor.extractByJsonPath(content, expr.trim());
+                    }
+                    return JsonExtractor.extractJson(content, values);
+                }
+                return null;
+            case XPATH:
+                return extractXpath(content, values, extractor.getAttribute());
+            case KVAL:
+                return extractKval(content, values);
+            case DSL:
+                return extractDsl(content, values, response, part);
+            default:
+                return null;
+        }
+    }
+
+    private static List<String> extractAllValues(String content, PocObj.Matcher extractor) {
+        if (content == null || extractor == null) {
+            return null;
+        }
+
+        List<String> values = extractor.getValues();
+        if (values == null || values.isEmpty()) {
+            return null;
+        }
+
+        switch (extractor.getType()) {
+            case REGEX:
+                return extractRegexAll(content, values, extractor.getGroup());
+            case JSON:
+                String expr = values.get(0);
+                if (expr != null && expr.trim().startsWith("$")) {
+                    return null;
+                }
+                return extractJsonAll(content, values);
+            default:
+                return null;
+        }
+    }
+
     private static String resolveExtractorPart(PocObj.Matcher extractor) {
         if (extractor == null) {
             return null;
@@ -250,6 +358,54 @@ public class VariableExtractor {
         return "body";
     }
 
+    public static String stripIndexedPart(String part) {
+        IndexedPart indexedPart = parseIndexedPart(part);
+        return indexedPart == null ? part : indexedPart.basePart;
+    }
+
+    public static Integer getIndexedPartNumber(String part) {
+        IndexedPart indexedPart = parseIndexedPart(part);
+        return indexedPart == null ? null : indexedPart.index;
+    }
+
+    public static boolean matchesIndexedPart(String part, int currentIndex) {
+        Integer indexed = getIndexedPartNumber(part);
+        return indexed == null || indexed == currentIndex;
+    }
+
+    private static IndexedPart parseIndexedPart(String part) {
+        if (part == null) {
+            return null;
+        }
+        String normalized = part.trim().toLowerCase();
+        Matcher matcher = Pattern.compile("^(body|header|status|status_code|all|raw|content_length)_(\\d+)$")
+                .matcher(normalized);
+        if (!matcher.matches()) {
+            return null;
+        }
+
+        String basePart = matcher.group(1);
+        if ("status_code".equals(basePart)) {
+            basePart = "status";
+        }
+
+        try {
+            return new IndexedPart(basePart, Integer.parseInt(matcher.group(2)));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static class IndexedPart {
+        private final String basePart;
+        private final int index;
+
+        private IndexedPart(String basePart, int index) {
+            this.basePart = basePart;
+            this.index = index;
+        }
+    }
+
     private static String getTextPart(String rawContent, String part) {
         if (rawContent == null || rawContent.isEmpty()) {
             return null;
@@ -258,7 +414,11 @@ public class VariableExtractor {
             return rawContent;
         }
 
-        String normalizedPart = part.toLowerCase();
+        String normalizedPart = stripIndexedPart(part);
+        if (normalizedPart == null || normalizedPart.trim().isEmpty()) {
+            return rawContent;
+        }
+        normalizedPart = normalizedPart.toLowerCase();
         switch (normalizedPart) {
             case "body":
             case "all":
@@ -290,7 +450,12 @@ public class VariableExtractor {
         }
 
         try {
-            switch (part.toLowerCase()) {
+            String normalizedPart = stripIndexedPart(part);
+            if (normalizedPart == null || normalizedPart.isEmpty()) {
+                return null;
+            }
+
+            switch (normalizedPart.toLowerCase()) {
                 case "body":
                     return response.getTextStr();
                 case "header":
@@ -417,6 +582,67 @@ public class VariableExtractor {
         }
         
         return null;
+    }
+
+    private static List<String> extractRegexAll(String content, List<String> patterns, int group) {
+        if (content == null || patterns == null || patterns.isEmpty()) {
+            return null;
+        }
+
+        java.util.ArrayList<String> results = new java.util.ArrayList<>();
+        for (String regex : patterns) {
+            try {
+                String javaRegex = convertPythonNamedGroups(regex);
+                String namedGroupName = extractNamedGroupName(javaRegex);
+                Pattern pattern = Pattern.compile(javaRegex);
+                Matcher matcher = pattern.matcher(content);
+
+                while (matcher.find()) {
+                    String extracted = null;
+                    if (namedGroupName != null && !namedGroupName.isEmpty()) {
+                        try {
+                            extracted = matcher.group(namedGroupName);
+                        } catch (IllegalArgumentException ignored) {
+                        }
+                    }
+
+                    if (extracted == null) {
+                        int effectiveGroup = group;
+                        if (effectiveGroup == -1) {
+                            effectiveGroup = matcher.groupCount() > 0 ? 1 : 0;
+                        }
+                        if (effectiveGroup < 0 || effectiveGroup > matcher.groupCount()) {
+                            effectiveGroup = matcher.groupCount() > 0 ? 1 : 0;
+                        }
+                        extracted = matcher.group(effectiveGroup);
+                    }
+
+                    if (extracted != null) {
+                        results.add(extracted);
+                    }
+                }
+            } catch (PatternSyntaxException e) {
+                System.err.println("无效的正则表达式: " + regex + " - " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("正则批量提取失败: " + e.getMessage());
+            }
+        }
+
+        return results.isEmpty() ? null : results;
+    }
+
+    private static List<String> extractJsonAll(String content, List<String> jqExprs) {
+        String extracted = JsonExtractor.extractJson(content, jqExprs);
+        if (extracted == null || extracted.isEmpty()) {
+            return null;
+        }
+        java.util.ArrayList<String> results = new java.util.ArrayList<>();
+        for (String item : extracted.split(",")) {
+            if (item != null && !item.trim().isEmpty()) {
+                results.add(item.trim());
+            }
+        }
+        return results.isEmpty() ? null : results;
     }
     
     /**

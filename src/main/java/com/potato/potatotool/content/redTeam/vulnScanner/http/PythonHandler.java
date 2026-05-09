@@ -98,7 +98,9 @@ public class PythonHandler {
         }
         if (validatePythonPath(trimmed)) {
             pythonPath = trimmed;
-            EnvPathConfig.savePythonPath(trimmed);
+            if (!trimmed.equals(EnvPathConfig.getPythonPath())) {
+                EnvPathConfig.savePythonPath(trimmed);
+            }
         }
     }
 
@@ -316,6 +318,7 @@ public class PythonHandler {
             
             // 4. 执行 Python 脚本
             ProcessBuilder pb = new ProcessBuilder(python, tempScript.toString());
+            applyContextToEnvironment(pb.environment(), context);
             pb.redirectErrorStream(false);
             
             Process process = pb.start();
@@ -385,6 +388,24 @@ public class PythonHandler {
             deleteTempFile(tempScript);
             deleteTempFile(tempContext);
             deleteTempFile(tempResult);
+        }
+    }
+
+    private static void applyContextToEnvironment(Map<String, String> environment, Map<String, Object> context) {
+        if (environment == null || context == null || context.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, Object> entry : context.entrySet()) {
+            if (entry.getKey() == null || entry.getValue() == null) {
+                continue;
+            }
+            String key = entry.getKey();
+            if (!key.matches("[A-Za-z_][A-Za-z0-9_]*")) {
+                continue;
+            }
+            String value = String.valueOf(entry.getValue());
+            environment.put(key, value);
+            environment.put(key.toUpperCase(Locale.ROOT), value);
         }
     }
     

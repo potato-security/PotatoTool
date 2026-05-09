@@ -157,6 +157,7 @@ public class PocObj {
         private String stepId;              // 步骤ID
         private String method;              // 请求方法
         private String path;                // 请求路径
+        private List<String> pathCandidates = new ArrayList<>(); // 同一请求块中的候选路径（Nuclei path 列表）
         private Map<String, String> headers = new HashMap<>(); // 请求头
         private String body;                // 请求体
         private String dataType;            // 数据类型(json, form, text等)
@@ -172,10 +173,13 @@ public class PocObj {
         private boolean disableCookie;      // 是否禁用Cookie
         private boolean disablePathAutomerge; // 是否禁用路径自动合并
         private boolean cache;              // 是否缓存请求结果
+        private boolean iterateAll;         // Nuclei iterate-all：遍历 extractor 产生的所有值
+        private boolean readAll;            // Nuclei read-all：读取完整原始响应
         private String encoding;            // 请求编码方式
         private boolean compressed;         // 是否压缩
         private String compressionType;     // 压缩类型
         private boolean chunked;            // 是否分块传输
+        private boolean stopAtFirstMatch;   // 当前步骤首次匹配后停止（Nuclei HTTP 块级字段）
         
         // 认证信息
         private String authType;            // 认证类型(basic, digest, oauth等)
@@ -245,6 +249,7 @@ public class PocObj {
     @Data
     public static class BrowserAction {
         private String action;               // 操作类型
+        private String name;                 // 操作名称（Nuclei headless 可将动作输出映射到 name）
         private Map<String, String> args;    // 操作参数
     }
     
@@ -253,6 +258,9 @@ public class PocObj {
     public static class CodeStep extends PocStep {
         private String engine;               // 代码引擎（javascript, python）
         private String source;               // 代码源码
+        private String protocolName = "code"; // Nuclei code/javascript 协议名，用于输出变量别名
+        private Object args;                 // Nuclei code/javascript args
+        private List<String> pattern = new ArrayList<>();   // Nuclei code pattern
     }
     
     @Data

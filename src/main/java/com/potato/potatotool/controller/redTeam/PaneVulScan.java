@@ -17,6 +17,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanState;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.TaskState;
 import com.potato.potatotool.content.redTeam.vulnScanner.report.ReportGenerator;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.PocDatabaseManager;
+import com.potato.potatotool.content.redTeam.vulnScanner.storage.PocUpdateHandler;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.VulnDetail;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.VulnScanDatabase;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.HeadlessHandler;
@@ -24,7 +25,6 @@ import com.potato.potatotool.content.redTeam.vulnScanner.loader.PocLoader;
 import com.potato.potatotool.content.redTeam.vulnScanner.loader.PocUpdater;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.ScanLogger;
 import com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig;
-import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.JsonUtils;
 import com.potato.potatotool.utils.data.StrUtils;
@@ -54,6 +54,7 @@ import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -197,6 +198,8 @@ public class PaneVulScan {
     private FadeTransition promptFadeIn;
     private FadeTransition promptFadeOut;
     private volatile boolean promptAutoCloseEnabled;
+    private Node promptDefaultContent;
+    private boolean promptDialogVisible;
     
     // ==================== 数据 ====================
     private ObservableList<PocItem> allPocItems = FXCollections.observableArrayList();
@@ -219,6 +222,7 @@ public class PaneVulScan {
         
         // 绑定国际化
         Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        promptDefaultContent = promptLabel;
         
         // 检查未完成的扫描-暂时跳过
         // checkPausedScans();
@@ -251,10 +255,6 @@ public class PaneVulScan {
      * 显示未完成扫描的通知
      */
     private void showPausedScansNotification(List<ScanState> pausedScans) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(I18nUtils.getString("vulnscan.dialog.pausedscan.title"));
-        alert.setHeaderText(I18nUtils.getString("vulnscan.dialog.pausedscan.header", pausedScans.size()));
-        
         StringBuilder content = new StringBuilder();
         content.append(I18nUtils.getString("vulnscan.dialog.pausedscan.content")).append("\n\n");
         
@@ -273,17 +273,15 @@ public class PaneVulScan {
         }
         
         content.append("\n").append(I18nUtils.getString("vulnscan.dialog.pausedscan.ask"));
-        
-        alert.setContentText(content.toString());
-        
-        ButtonType resumeButton = new ButtonType(I18nUtils.getString("vulnscan.dialog.pausedscan.resume"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType laterButton = new ButtonType(I18nUtils.getString("vulnscan.dialog.pausedscan.later"), ButtonBar.ButtonData.CANCEL_CLOSE);
-        alert.getButtonTypes().setAll(resumeButton, laterButton);
-        
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == resumeButton) {
-            showResumeDialog();
-        }
+
+        showPromptConfirm(
+                I18nUtils.getString("vulnscan.dialog.pausedscan.title"),
+                I18nUtils.getString("vulnscan.dialog.pausedscan.header", pausedScans.size()),
+                content.toString(),
+                I18nUtils.getString("vulnscan.dialog.pausedscan.resume"),
+                I18nUtils.getString("vulnscan.dialog.pausedscan.later"),
+                this::showResumeDialog
+        );
     }
     
     /**
@@ -664,40 +662,34 @@ public class PaneVulScan {
     
     @FXML
     public void importPoc(ActionEvent event) {
-        // 创建选择类型对话框
-        Alert typeAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        typeAlert.setTitle(I18nUtils.getString("vulnscan.dialog.import.title"));
-        typeAlert.setHeaderText(I18nUtils.getString("vulnscan.dialog.import.header"));
-        typeAlert.setContentText(I18nUtils.getString("vulnscan.dialog.import.content"));
+        showPromptChoice(
+                I18nUtils.getString("vulnscan.dialog.import.title"),
+                I18nUtils.getString("vulnscan.dialog.import.header"),
+                I18nUtils.getString("vulnscan.dialog.import.content"),
+                Arrays.asList(
+                        I18nUtils.getString("vulnscan.dialog.import.file"),
+                        I18nUtils.getString("vulnscan.dialog.import.dir")
+                ),
+                selected -> importPocFromSelection(selected == 0)
+        );
+    }
 
-        ButtonType fileButton = new ButtonType(I18nUtils.getString("vulnscan.dialog.import.file"));
-        ButtonType dirButton = new ButtonType(I18nUtils.getString("vulnscan.dialog.import.dir"));
-        ButtonType cancelButton = new ButtonType(I18nUtils.getString("vulnscan.dialog.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-        
-        typeAlert.getButtonTypes().setAll(fileButton, dirButton, cancelButton);
-        
-        Optional<ButtonType> result = typeAlert.showAndWait();
-        if (!result.isPresent() || result.get() == cancelButton) {
-            return;
-        }
-        
+    private void importPocFromSelection(boolean importFiles) {
         Stage stage = (Stage) sPane.getScene().getWindow();
         List<File> filesToImport = new ArrayList<>();
-        
-        if (result.get() == fileButton) {
-            // 选择文件
+
+        if (importFiles) {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(I18nUtils.getString("vulnscan.filechooser.pocfile"));
             chooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(I18nUtils.getString("vulnscan.filechooser.pocfiles"), "*.yaml", "*.yml", "*.json"),
-                new FileChooser.ExtensionFilter(I18nUtils.getString("vulnscan.filechooser.allfiles"), "*.*")
+                    new FileChooser.ExtensionFilter(I18nUtils.getString("vulnscan.filechooser.pocfiles"), "*.yaml", "*.yml", "*.json"),
+                    new FileChooser.ExtensionFilter(I18nUtils.getString("vulnscan.filechooser.allfiles"), "*.*")
             );
             List<File> files = chooser.showOpenMultipleDialog(stage);
             if (files != null) {
                 filesToImport.addAll(files);
             }
         } else {
-            // 选择目录
             DirectoryChooser dirChooser = new DirectoryChooser();
             dirChooser.setTitle(I18nUtils.getString("vulnscan.filechooser.pocdir"));
             File dir = dirChooser.showDialog(stage);
@@ -705,14 +697,13 @@ public class PaneVulScan {
                 filesToImport.add(dir);
             }
         }
-        
+
         if (filesToImport.isEmpty()) {
             return;
         }
-        
-        // 在后台线程执行导入
+
         showPrompt(I18nUtils.getString("vulnscan.msg.importing"), false);
-        
+
         new Thread(() -> {
             try {
                 PocDatabaseManager pocDbManager = PocDatabaseManager.getInstance();
@@ -1386,12 +1377,6 @@ public class PaneVulScan {
             return;
         }
         
-        // 创建对话框
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18nUtils.getString("vulnscan.dialog.resume.title"));
-        alert.setHeaderText(I18nUtils.getString("vulnscan.dialog.resume.header", pausedScans.size()));
-        
-        // 创建选择列表
         ListView<String> listView = new ListView<>();
         ObservableList<String> items = FXCollections.observableArrayList();
         
@@ -1409,24 +1394,26 @@ public class PaneVulScan {
         
         listView.setItems(items);
         listView.setPrefHeight(200);
+        listView.setPrefWidth(620);
         listView.getSelectionModel().select(0);
-        
-        VBox dialogContent = new VBox(10);
-        dialogContent.getChildren().addAll(
-            new Label(I18nUtils.getString("vulnscan.dialog.resume.select")),
-            listView
+
+        Label selectLabel = createPromptTextLabel(I18nUtils.getString("vulnscan.dialog.resume.select"), 620);
+        VBox content = new VBox(10, selectLabel, listView);
+
+        showPromptContent(
+                I18nUtils.getString("vulnscan.dialog.resume.title"),
+                I18nUtils.getString("vulnscan.dialog.resume.header", pausedScans.size()),
+                content,
+                I18nUtils.getString("app.confirm"),
+                I18nUtils.getString("vulnscan.dialog.cancel"),
+                () -> {
+                    int selectedIndex = listView.getSelectionModel().getSelectedIndex();
+                    if (selectedIndex >= 0 && selectedIndex < pausedScans.size()) {
+                        ScanState selectedState = pausedScans.get(selectedIndex);
+                        resumeScanFromState(selectedState);
+                    }
+                }
         );
-        
-        alert.getDialogPane().setContent(dialogContent);
-        
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            int selectedIndex = listView.getSelectionModel().getSelectedIndex();
-            if (selectedIndex >= 0 && selectedIndex < pausedScans.size()) {
-                ScanState selectedState = pausedScans.get(selectedIndex);
-                resumeScanFromState(selectedState);
-            }
-        }
     }
     
     private void resumeScanFromState(ScanState state) {
@@ -1994,66 +1981,64 @@ public class PaneVulScan {
             showPrompt(I18nUtils.getString("vulnscan.msg.history.noselect.delete"), true);
             return;
         }
-        
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18nUtils.getString("vulnscan.dialog.delete.title"));
-        alert.setHeaderText(I18nUtils.getString("vulnscan.dialog.delete.header"));
-        alert.setContentText(I18nUtils.getString("vulnscan.dialog.delete.content"));
-        
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            Task<Void> task = new Task<Void>() {
-                @Override
-                protected Void call() throws Exception {
-                    try {
-                        long scanId = Long.parseLong(selected.getId());
-                        database.deleteHistory(scanId);
-                        Platform.runLater(() -> {
-                            historyTableView.getItems().remove(selected);
-                            showPrompt(I18nUtils.getString("vulnscan.msg.history.deleted"), false);
-                        });
-                    } catch (Exception e) {
-                        Platform.runLater(() -> {
-                            showPrompt(I18nUtils.getString("vulnscan.msg.history.deletefailed", e.getMessage()), true);
-                        });
-                        if (debugMode) e.printStackTrace();
-                    }
-                    return null;
+
+        showPromptConfirm(
+                I18nUtils.getString("vulnscan.dialog.delete.title"),
+                I18nUtils.getString("vulnscan.dialog.delete.header"),
+                I18nUtils.getString("vulnscan.dialog.delete.content"),
+                () -> {
+                    Task<Void> task = new Task<Void>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            try {
+                                long scanId = Long.parseLong(selected.getId());
+                                database.deleteHistory(scanId);
+                                Platform.runLater(() -> {
+                                    historyTableView.getItems().remove(selected);
+                                    showPrompt(I18nUtils.getString("vulnscan.msg.history.deleted"), false);
+                                });
+                            } catch (Exception e) {
+                                Platform.runLater(() -> {
+                                    showPrompt(I18nUtils.getString("vulnscan.msg.history.deletefailed", e.getMessage()), true);
+                                });
+                                if (debugMode) e.printStackTrace();
+                            }
+                            return null;
+                        }
+                    };
+                    new Thread(task).start();
                 }
-            };
-            new Thread(task).start();
-        }
+        );
     }
     
     @FXML
     public void clearHistory(ActionEvent event) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(I18nUtils.getString("vulnscan.dialog.clearhistory.title"));
-        alert.setHeaderText(I18nUtils.getString("vulnscan.dialog.clearhistory.header"));
-        alert.setContentText(I18nUtils.getString("vulnscan.dialog.clearhistory.content"));
-        
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            Task<Void> task = new Task<Void>() {
-                @Override
-                protected Void call() throws Exception {
-                    try {
-                        database.clearAllHistory();
-                        Platform.runLater(() -> {
-                            historyTableView.getItems().clear();
-                            showPrompt(I18nUtils.getString("vulnscan.msg.history.cleared"), false);
-                        });
-                    } catch (Exception e) {
-                        Platform.runLater(() -> {
-                            showPrompt(I18nUtils.getString("vulnscan.msg.history.clearfailed", e.getMessage()), true);
-                        });
-                        if (debugMode) e.printStackTrace();
-                    }
-                    return null;
+        showPromptConfirm(
+                I18nUtils.getString("vulnscan.dialog.clearhistory.title"),
+                I18nUtils.getString("vulnscan.dialog.clearhistory.header"),
+                I18nUtils.getString("vulnscan.dialog.clearhistory.content"),
+                () -> {
+                    Task<Void> task = new Task<Void>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            try {
+                                database.clearAllHistory();
+                                Platform.runLater(() -> {
+                                    historyTableView.getItems().clear();
+                                    showPrompt(I18nUtils.getString("vulnscan.msg.history.cleared"), false);
+                                });
+                            } catch (Exception e) {
+                                Platform.runLater(() -> {
+                                    showPrompt(I18nUtils.getString("vulnscan.msg.history.clearfailed", e.getMessage()), true);
+                                });
+                                if (debugMode) e.printStackTrace();
+                            }
+                            return null;
+                        }
+                    };
+                    new Thread(task).start();
                 }
-            };
-            new Thread(task).start();
-        }
+        );
     }
     
     @FXML
@@ -2149,22 +2134,19 @@ public class PaneVulScan {
         if (promptPane == null) {
             return;
         }
-        promptPane.getStyleClass().removeAll("vulscan-prompt-info", "vulscan-prompt-error");
+        promptPane.getStyleClass().removeAll("vulscan-prompt-info", "vulscan-prompt-error", "vulscan-prompt-dialog");
         promptPane.getStyleClass().add(isError ? "vulscan-prompt-error" : "vulscan-prompt-info");
     }
 
     private void playPromptAnimation(boolean autoClose) {
+        promptDialogVisible = false;
+        restorePromptDefaultContent();
         promptAutoCloseEnabled = autoClose;
 
         if (promptFadeIn == null) {
             promptFadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
             promptFadeIn.setFromValue(0);
             promptFadeIn.setToValue(1);
-            promptFadeIn.setOnFinished(event -> {
-                if (promptAutoCloseEnabled && promptFadeOut != null) {
-                    promptFadeOut.playFromStart();
-                }
-            });
         }
 
         if (promptFadeOut == null) {
@@ -2183,24 +2165,242 @@ public class PaneVulScan {
         promptPane.setOpacity(0);
         promptPane.setVisible(true);
         promptPane.setManaged(true);
+        promptPane.toFront();
+        promptFadeIn.setOnFinished(event -> {
+            if (promptAutoCloseEnabled && promptFadeOut != null) {
+                promptFadeOut.playFromStart();
+            }
+        });
         promptFadeIn.playFromStart();
+    }
+
+    private void showPromptMessage(String title, String header, String content) {
+        showPromptContent(
+                title,
+                header,
+                createPromptTextLabel(content, 680),
+                I18nUtils.getString("app.confirm"),
+                null,
+                null
+        );
+    }
+
+    private void showPromptConfirm(String title, String header, String content, Runnable onConfirm) {
+        showPromptConfirm(
+                title,
+                header,
+                content,
+                I18nUtils.getString("app.confirm"),
+                I18nUtils.getString("vulnscan.dialog.cancel"),
+                onConfirm
+        );
+    }
+
+    private void showPromptConfirm(String title, String header, String content,
+                                   String confirmText, String cancelText, Runnable onConfirm) {
+        showPromptContent(
+                title,
+                header,
+                createPromptTextLabel(content, 680),
+                confirmText,
+                cancelText,
+                onConfirm
+        );
+    }
+
+    private void showPromptChoice(String title, String header, String content,
+                                  List<String> choices, Consumer<Integer> onSelected) {
+        VBox body = new VBox(12);
+        body.setFillWidth(true);
+        body.getChildren().add(createPromptTextLabel(content, 620));
+
+        HBox choiceBox = new HBox(10);
+        choiceBox.getStyleClass().add("prompt-dialog-actions");
+        for (int i = 0; i < choices.size(); i++) {
+            final int index = i;
+            Button button = createPromptButton(choices.get(i), false);
+            button.setOnAction(event -> {
+                hidePromptPane();
+                if (onSelected != null) {
+                    onSelected.accept(index);
+                }
+            });
+            choiceBox.getChildren().add(button);
+        }
+        body.getChildren().add(choiceBox);
+
+        showPromptContent(title, header, body, null, I18nUtils.getString("vulnscan.dialog.cancel"), null);
+    }
+
+    private void showPromptSelection(String title, String header, String label,
+                                     List<String> choices, Consumer<String> onSelected) {
+        if (choices == null || choices.isEmpty()) {
+            return;
+        }
+
+        ComboBox<String> comboBox = new ComboBox<>(FXCollections.observableArrayList(choices));
+        comboBox.setMaxWidth(Double.MAX_VALUE);
+        comboBox.setPrefWidth(620);
+        comboBox.getSelectionModel().select(0);
+
+        VBox body = new VBox(10, createPromptTextLabel(label, 620), comboBox);
+        body.setFillWidth(true);
+
+        showPromptContent(
+                title,
+                header,
+                body,
+                I18nUtils.getString("app.confirm"),
+                I18nUtils.getString("vulnscan.dialog.cancel"),
+                () -> {
+                    String selected = comboBox.getSelectionModel().getSelectedItem();
+                    if (selected != null && onSelected != null) {
+                        onSelected.accept(selected);
+                    }
+                }
+        );
+    }
+
+    private void showPromptInput(String title, String header, String label,
+                                 String defaultValue, Consumer<String> onConfirm) {
+        TextField input = new TextField(defaultValue);
+        input.setPrefWidth(360);
+        input.setMaxWidth(Double.MAX_VALUE);
+
+        VBox body = new VBox(10, createPromptTextLabel(label, 620), input);
+        body.setFillWidth(true);
+
+        showPromptContent(
+                title,
+                header,
+                body,
+                I18nUtils.getString("app.confirm"),
+                I18nUtils.getString("vulnscan.dialog.cancel"),
+                () -> {
+                    if (onConfirm != null) {
+                        onConfirm.accept(input.getText());
+                    }
+                }
+        );
+
+        Platform.runLater(input::requestFocus);
+    }
+
+    private void showPromptContent(String title, String header, Node body,
+                                   String confirmText, String cancelText, Runnable onConfirm) {
+        Platform.runLater(() -> {
+            if (promptPane == null) {
+                return;
+            }
+            stopPromptTransitions();
+            promptDialogVisible = true;
+            promptPane.getStyleClass().removeAll("vulscan-prompt-info", "vulscan-prompt-error", "vulscan-prompt-dialog");
+            promptPane.getStyleClass().add("vulscan-prompt-dialog");
+
+            VBox dialog = new VBox(12);
+            dialog.getStyleClass().add("prompt-dialog");
+            dialog.setMaxWidth(760);
+            dialog.setFillWidth(true);
+            dialog.setOnMouseClicked(MouseEvent::consume);
+
+            if (title != null && !title.trim().isEmpty()) {
+                Label titleLabel = createPromptTextLabel(title, 700);
+                titleLabel.getStyleClass().add("prompt-dialog-title");
+                dialog.getChildren().add(titleLabel);
+            }
+            if (header != null && !header.trim().isEmpty()) {
+                Label headerLabel = createPromptTextLabel(header, 700);
+                headerLabel.getStyleClass().add("prompt-dialog-header");
+                dialog.getChildren().add(headerLabel);
+            }
+            if (body != null) {
+                dialog.getChildren().add(body);
+            }
+
+            if (confirmText != null || cancelText != null) {
+                HBox actions = new HBox(10);
+                actions.getStyleClass().add("prompt-dialog-actions");
+                if (cancelText != null && !cancelText.trim().isEmpty()) {
+                    Button cancelButton = createPromptButton(cancelText, false);
+                    cancelButton.setOnAction(event -> hidePromptPane());
+                    actions.getChildren().add(cancelButton);
+                }
+                if (confirmText != null && !confirmText.trim().isEmpty()) {
+                    Button confirmButton = createPromptButton(confirmText, true);
+                    confirmButton.setOnAction(event -> {
+                        hidePromptPane();
+                        if (onConfirm != null) {
+                            onConfirm.run();
+                        }
+                    });
+                    actions.getChildren().add(confirmButton);
+                }
+                dialog.getChildren().add(actions);
+            }
+
+            promptPane.getChildren().setAll(dialog);
+            promptPane.setOpacity(0);
+            promptPane.setVisible(true);
+            promptPane.setManaged(true);
+            promptPane.toFront();
+
+            promptFadeIn = new FadeTransition(Duration.seconds(0.2), promptPane);
+            promptFadeIn.setFromValue(0);
+            promptFadeIn.setToValue(1);
+            promptFadeIn.playFromStart();
+        });
+    }
+
+    private Label createPromptTextLabel(String text, double maxWidth) {
+        Label label = new Label(text == null ? "" : text);
+        label.setWrapText(true);
+        label.setMaxWidth(maxWidth);
+        label.setMinHeight(Region.USE_PREF_SIZE);
+        label.getStyleClass().add("prompt-dialog-text");
+        return label;
+    }
+
+    private Button createPromptButton(String text, boolean primary) {
+        Button button = new Button(text);
+        button.getStyleClass().add(primary ? "prompt-dialog-primary" : "prompt-dialog-secondary");
+        button.setMinWidth(92);
+        button.setMinHeight(30);
+        return button;
     }
     
     @FXML
     public void closePromptPane(MouseEvent event) {
+        if (promptDialogVisible) {
+            return;
+        }
         hidePromptPane();
     }
 
     private void hidePromptPane() {
         if (promptPane != null) {
-            if (promptFadeIn != null) {
-                promptFadeIn.stop();
-            }
-            if (promptFadeOut != null) {
-                promptFadeOut.stop();
-            }
+            stopPromptTransitions();
+            promptDialogVisible = false;
             promptPane.setVisible(false);
             promptPane.setManaged(false);
+            restorePromptDefaultContent();
+        }
+    }
+
+    private void stopPromptTransitions() {
+        if (promptFadeIn != null) {
+            promptFadeIn.stop();
+        }
+        if (promptFadeOut != null) {
+            promptFadeOut.stop();
+        }
+    }
+
+    private void restorePromptDefaultContent() {
+        if (promptPane == null || promptDefaultContent == null) {
+            return;
+        }
+        if (promptPane.getChildren().size() != 1 || promptPane.getChildren().get(0) != promptDefaultContent) {
+            promptPane.getChildren().setAll(promptDefaultContent);
         }
     }
 
@@ -2606,30 +2806,28 @@ public class PaneVulScan {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle(I18nUtils.getString("vulnscan.dialog.deletepoc.title"));
-        confirm.setHeaderText(I18nUtils.getString("vulnscan.dialog.deletepoc.header"));
-        confirm.setContentText(I18nUtils.getString("vulnscan.dialog.deletepoc.content", selected.getId(), selected.getName()));
+        showPromptConfirm(
+                I18nUtils.getString("vulnscan.dialog.deletepoc.title"),
+                I18nUtils.getString("vulnscan.dialog.deletepoc.header"),
+                I18nUtils.getString("vulnscan.dialog.deletepoc.content", selected.getId(), selected.getName()),
+                () -> {
+                    String pocId = selected.getId();
+                    allPocItems.remove(selected);
+                    scanService.getPocRepository().removePoc(pocId);
+                    applyPocFilters();
 
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                String pocId = selected.getId();
-                allPocItems.remove(selected);
-                scanService.getPocRepository().removePoc(pocId);
-                applyPocFilters();
+                    // 同步到数据库
+                    new Thread(() -> {
+                        try {
+                            PocDatabaseManager.getInstance().deletePoc(pocId);
+                        } catch (Exception e) {
+                            if (debugMode) e.printStackTrace();
+                        }
+                    }).start();
 
-                // 同步到数据库
-                new Thread(() -> {
-                    try {
-                        PocDatabaseManager.getInstance().deletePoc(pocId);
-                    } catch (Exception e) {
-                        if (debugMode) e.printStackTrace();
-                    }
-                }).start();
-
-                showPrompt(I18nUtils.getString("vulnscan.msg.poc.deleted", pocId), false);
-            }
-        });
+                    showPrompt(I18nUtils.getString("vulnscan.msg.poc.deleted", pocId), false);
+                }
+        );
     }
     
     @FXML
@@ -2640,34 +2838,32 @@ public class PaneVulScan {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle(I18nUtils.getString("vulnscan.dialog.batchdelete.title"));
-        confirm.setHeaderText(I18nUtils.getString("vulnscan.dialog.batchdelete.header", selected.size()));
-        confirm.setContentText(I18nUtils.getString("vulnscan.dialog.batchdelete.content"));
-
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                List<PocItem> toRemove = new ArrayList<>(selected);
-                List<String> ids = new ArrayList<>();
-                for (PocItem item : toRemove) {
-                    ids.add(item.getId());
-                    scanService.getPocRepository().removePoc(item.getId());
-                }
-                allPocItems.removeAll(toRemove);
-                applyPocFilters();
-
-                // 同步到数据库
-                new Thread(() -> {
-                    try {
-                        PocDatabaseManager.getInstance().batchDelete(ids);
-                    } catch (Exception e) {
-                        if (debugMode) e.printStackTrace();
+        showPromptConfirm(
+                I18nUtils.getString("vulnscan.dialog.batchdelete.title"),
+                I18nUtils.getString("vulnscan.dialog.batchdelete.header", selected.size()),
+                I18nUtils.getString("vulnscan.dialog.batchdelete.content"),
+                () -> {
+                    List<PocItem> toRemove = new ArrayList<>(selected);
+                    List<String> ids = new ArrayList<>();
+                    for (PocItem item : toRemove) {
+                        ids.add(item.getId());
+                        scanService.getPocRepository().removePoc(item.getId());
                     }
-                }).start();
+                    allPocItems.removeAll(toRemove);
+                    applyPocFilters();
 
-                showPrompt(I18nUtils.getString("vulnscan.msg.poc.batchdeleted", toRemove.size()), false);
-            }
-        });
+                    // 同步到数据库
+                    new Thread(() -> {
+                        try {
+                            PocDatabaseManager.getInstance().batchDelete(ids);
+                        } catch (Exception e) {
+                            if (debugMode) e.printStackTrace();
+                        }
+                    }).start();
+
+                    showPrompt(I18nUtils.getString("vulnscan.msg.poc.batchdeleted", toRemove.size()), false);
+                }
+        );
     }
 
     @FXML
@@ -2925,13 +3121,8 @@ public class PaneVulScan {
         
         double vulnRate = total > 0 ? (vulnerable * 100.0 / total) : 0;
         sb.append(I18nUtils.getString("vulnscan.stats.vulnrate")).append(String.format("%.2f%%", vulnRate));
-        
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(I18nUtils.getString("vulnscan.stats.title"));
-        alert.setHeaderText(null);
-        alert.setContentText(sb.toString());
-        alert.getDialogPane().setMinWidth(400);
-        alert.showAndWait();
+
+        showPromptMessage(I18nUtils.getString("vulnscan.stats.title"), null, sb.toString());
     }
     
     // ==================== 配置导入导出 ====================
@@ -3046,32 +3237,95 @@ public class PaneVulScan {
     
     @FXML
     public void showPocUpdateDialog(ActionEvent event) {
-        // 创建选择对话框
+        showPrompt(I18nUtils.getString("vulnscan.msg.update.checking"), false);
+
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() {
+                return new PocUpdateHandler().isIncrementalSourceAvailable();
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            if (Boolean.TRUE.equals(task.getValue())) {
+                startIncrementalPocUpdate();
+            } else {
+                showPrompt(I18nUtils.getString("vulnscan.msg.update.incremental.fallback"), false);
+                showLegacyPocUpdateDialog();
+            }
+        });
+
+        task.setOnFailed(e -> {
+            showPrompt(I18nUtils.getString("vulnscan.msg.update.incremental.fallback"), false);
+            showLegacyPocUpdateDialog();
+        });
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void showLegacyPocUpdateDialog() {
         List<String> choices = new ArrayList<>();
         PocUpdater updater = new PocUpdater();
         for (PocUpdater.PocSource source : updater.getAvailableSources()) {
             choices.add(source.getName() + " - " + source.getDescription());
         }
-        
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
-        dialog.setTitle(I18nUtils.getString("vulnscan.dialog.pocupdate.title"));
-        dialog.setHeaderText(I18nUtils.getString("vulnscan.dialog.pocupdate.header"));
-        dialog.setContentText(I18nUtils.getString("vulnscan.dialog.pocupdate.content"));
-        
-        dialog.showAndWait().ifPresent(selected -> {
-            // 获取选中的源key
-            String sourceKey = null;
-            for (Map.Entry<String, PocUpdater.PocSource> entry : PocUpdater.POC_SOURCES.entrySet()) {
-                if (selected.startsWith(entry.getValue().getName())) {
-                    sourceKey = entry.getKey();
-                    break;
+
+        showPromptSelection(
+                I18nUtils.getString("vulnscan.dialog.pocupdate.title"),
+                I18nUtils.getString("vulnscan.dialog.pocupdate.header"),
+                I18nUtils.getString("vulnscan.dialog.pocupdate.content"),
+                choices,
+                selected -> {
+                    String sourceKey = null;
+                    for (Map.Entry<String, PocUpdater.PocSource> entry : PocUpdater.POC_SOURCES.entrySet()) {
+                        if (selected.startsWith(entry.getValue().getName())) {
+                            sourceKey = entry.getKey();
+                            break;
+                        }
+                    }
+
+                    if (sourceKey != null) {
+                        startPocUpdate(sourceKey);
+                    }
                 }
+        );
+    }
+
+    private void startIncrementalPocUpdate() {
+        showPrompt(I18nUtils.getString("vulnscan.msg.update.downloading"), false);
+
+        Task<PocUpdateHandler.UpdateResult> task = new Task<PocUpdateHandler.UpdateResult>() {
+            @Override
+            protected PocUpdateHandler.UpdateResult call() {
+                PocUpdateHandler updater = new PocUpdateHandler();
+                return updater.update((message, percent) ->
+                        Platform.runLater(() -> showPrompt(message, false)));
             }
-            
-            if (sourceKey != null) {
-                startPocUpdate(sourceKey);
+        };
+
+        task.setOnSucceeded(e -> {
+            PocUpdateHandler.UpdateResult result = task.getValue();
+            if (result.isSuccess()) {
+                if (result.getTotalChanges() == 0) {
+                    showPrompt(I18nUtils.getString("vulnscan.msg.update.current"), false);
+                } else {
+                    showPrompt(result.getMessage(), false);
+                    refreshPocList(null);
+                }
+            } else {
+                showPrompt(result.getMessage(), true);
             }
         });
+
+        task.setOnFailed(e -> {
+            showPrompt(I18nUtils.getString("vulnscan.msg.update.failed", task.getException().getMessage()), true);
+        });
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
     }
     
     private void startPocUpdate(String sourceKey) {
@@ -3182,18 +3436,16 @@ public class PaneVulScan {
     
     @FXML
     public void clearLogs(ActionEvent event) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle(I18nUtils.getString("vulnscan.dialog.clearlog.title"));
-        confirm.setHeaderText(I18nUtils.getString("vulnscan.dialog.clearlog.header"));
-        confirm.setContentText(I18nUtils.getString("vulnscan.dialog.clearlog.content"));
-        
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                ScanLogger.getInstance().clearMemoryLogs();
-                refreshLogs(null);
-                showPrompt(I18nUtils.getString("vulnscan.msg.log.cleared"), false);
-            }
-        });
+        showPromptConfirm(
+                I18nUtils.getString("vulnscan.dialog.clearlog.title"),
+                I18nUtils.getString("vulnscan.dialog.clearlog.header"),
+                I18nUtils.getString("vulnscan.dialog.clearlog.content"),
+                () -> {
+                    ScanLogger.getInstance().clearMemoryLogs();
+                    refreshLogs(null);
+                    showPrompt(I18nUtils.getString("vulnscan.msg.log.cleared"), false);
+                }
+        );
     }
     
     @FXML
@@ -3220,20 +3472,21 @@ public class PaneVulScan {
     
     @FXML
     public void cleanOldLogs(ActionEvent event) {
-        TextInputDialog dialog = new TextInputDialog("7");
-        dialog.setTitle(I18nUtils.getString("vulnscan.dialog.cleanlog.title"));
-        dialog.setHeaderText(I18nUtils.getString("vulnscan.dialog.cleanlog.header"));
-        dialog.setContentText(I18nUtils.getString("vulnscan.dialog.cleanlog.content"));
-        
-        dialog.showAndWait().ifPresent(days -> {
-            try {
-                int keepDays = Integer.parseInt(days);
-                int deleted = ScanLogger.getInstance().cleanOldLogs(keepDays);
-                showPrompt(I18nUtils.getString("vulnscan.msg.log.cleaned", deleted), false);
-            } catch (NumberFormatException e) {
-                showPrompt(I18nUtils.getString("vulnscan.msg.log.invalidnum"), true);
-            }
-        });
+        showPromptInput(
+                I18nUtils.getString("vulnscan.dialog.cleanlog.title"),
+                I18nUtils.getString("vulnscan.dialog.cleanlog.header"),
+                I18nUtils.getString("vulnscan.dialog.cleanlog.content"),
+                "7",
+                days -> {
+                    try {
+                        int keepDays = Integer.parseInt(days);
+                        int deleted = ScanLogger.getInstance().cleanOldLogs(keepDays);
+                        showPrompt(I18nUtils.getString("vulnscan.msg.log.cleaned", deleted), false);
+                    } catch (NumberFormatException e) {
+                        showPrompt(I18nUtils.getString("vulnscan.msg.log.invalidnum"), true);
+                    }
+                }
+        );
     }
 
     // ==================== 扫描控制 ====================

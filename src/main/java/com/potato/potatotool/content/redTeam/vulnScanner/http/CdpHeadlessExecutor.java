@@ -14,8 +14,11 @@ import com.potato.potatotool.utils.browser.CdpTargetSelector;
 import com.potato.potatotool.utils.browser.ManagedChromeSession;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +34,9 @@ final class CdpHeadlessExecutor {
     private static final Gson GSON = new Gson();
     private static final long WAIT_POLL_INTERVAL_MILLIS = 200L;
     private static final long MANAGED_BROWSER_READY_WAIT_MILLIS = 15000L;
+    private static final String DEFAULT_RESPONSE_HEADERS =
+            "content-type: text/html; charset=utf-8\n"
+                    + "content-security-policy: default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;";
     private static final String VISIBILITY_CHECK_JS =
             "var style=window.getComputedStyle(el);"
                     + "var rect=el.getBoundingClientRect();"
@@ -102,6 +108,7 @@ final class CdpHeadlessExecutor {
                     compatibilityResult.getBrowserPath(),
                     null,
                     false,
+                    true,
                     MANAGED_BROWSER_READY_WAIT_MILLIS);
                  CdpBrowserSession browserSession = CdpBrowserSession.attach(
                          chromeSession.getDevToolsPort(),
@@ -109,10 +116,11 @@ final class CdpHeadlessExecutor {
                 response.addLog("✓ 浏览器初始化成功");
 
                 CdpPage page = browserSession.getPage();
+                page.enableNetwork(timeoutMillis);
                 if (shouldPerformInitialNavigation(url, steps)) {
                     response.addLog("导航到: " + url);
-                    navigateAndWait(page, url, timeoutMillis);
-                    response.addLog("✓ 页面加载完成");
+                    page.navigate(url, timeoutMillis);
+                    response.addLog("✓ 导航命令已发送");
                 }
 
                 if (steps != null && !steps.isEmpty()) {
@@ -152,6 +160,9 @@ final class CdpHeadlessExecutor {
                               List<HeadlessHandler.BrowserStep> steps,
                               HeadlessHandler.HeadlessResponse response,
                               int timeoutMillis) throws Exception {
+        String currentResponseHeaders = DEFAULT_RESPONSE_HEADERS;
+        String currentStatusCode = "200";
+        Map<String, String> requestHeaders = new LinkedHashMap<String, String>();
         for (int i = 0; i < steps.size(); i++) {
             HeadlessHandler.BrowserStep step = steps.get(i);
             String action = step.getAction();
@@ -163,36 +174,80 @@ final class CdpHeadlessExecutor {
 
                 if ("navigate".equals(actionName)) {
                     String targetUrl = readArg(args, "url");
-                    navigateAndWait(page, targetUrl, timeoutMillis);
+                    page.navigate(targetUrl, timeoutMillis);
                     response.addLog("  ✓ 导航到: " + targetUrl);
                 } else if ("waitload".equals(actionName)) {
                     page.waitForDocumentReadyState("complete", timeoutMillis, WAIT_POLL_INTERVAL_MILLIS);
                     response.addLog("  ✓ 页面加载完成");
+                } else if ("waitdom".equals(actionName)) {
+                    page.waitForDocumentReadyState("interactive", timeoutMillis, WAIT_POLL_INTERVAL_MILLIS);
+                    response.addLog("  ✓ DOM 已完成解析");
+                } else if ("waitdialog".equals(actionName)) {
+                    int dialogTimeout = resolveHeadlessActionTimeout(args, timeoutMillis, 10000);
+                    JsonObject dialogEvent = page.waitForEvent("Page.javascriptDialogOpening", dialogTimeout);
+                    page.handleJavaScriptDialog(true, "", timeoutMillis);
+                    String stepName = step.getName();
+                    if (stepName != null && !stepName.trim().isEmpty()) {
+                        String normalizedName = stepName.trim();
+                        response.getScriptResults().put(normalizedName, Boolean.TRUE);
+                        JsonObject params = dialogEvent != null && dialogEvent.has("params") && dialogEvent.get("params").isJsonObject()
+                                ? dialogEvent.getAsJsonObject("params")
+                                : null;
+                        response.getScriptResults().put(normalizedName + "_type", readJsonString(params, "type"));
+                        response.getScriptResults().put(normalizedName + "_message", readJsonString(params, "message"));
+                    }
+                    response.addLog("  ✓ 捕获并处理 JavaScript 对话框");
                 } else if ("script".equals(actionName)) {
                     String code = readArg(args, "code");
+                    String hook = safeArg(args, "hook");
+                    if ("true".equalsIgnoreCase(hook)) {
+                        page.addScriptToEvaluateOnNewDocument(code, timeoutMillis);
+                    }
                     JsonElement result = page.evaluateValue(normalizeScriptExpression(code), timeoutMillis);
-                    response.getScriptResults().put("script_" + i, toJavaValue(result));
+                    Object resultValue = toJavaValue(result);
+                    response.getScriptResults().put("script_" + i, resultValue);
+                    String stepName = step.getName();
+                    if (stepName != null && !stepName.trim().isEmpty()) {
+                        response.getScriptResults().put(stepName.trim(), resultValue);
+                    }
                     response.addLog("  ✓ 脚本执行完成，结果: " + safeDisplayValue(result));
                 } else if ("click".equals(actionName)) {
-                    String selector = readArg(args, "selector");
-                    executeSelectorAction(page, selector, null, timeoutMillis, SelectorAction.CLICK);
-                    response.addLog("  ✓ 点击元素: " + selector);
-                } else if ("input".equals(actionName)) {
-                    String selector = readArg(args, "selector");
+                    String target = describeElementTarget(args);
+                    executeSelectorAction(page, args, null, timeoutMillis, SelectorAction.CLICK);
+                    response.addLog("  ✓ 点击元素: " + target);
+                } else if ("input".equals(actionName) || "text".equals(actionName)) {
                     String value = readArg(args, "value");
-                    executeSelectorAction(page, selector, value, timeoutMillis, SelectorAction.INPUT);
-                    response.addLog("  ✓ 输入文本到: " + selector);
+                    String target = describeElementTarget(args);
+                    executeSelectorAction(page, args, value, timeoutMillis, SelectorAction.INPUT);
+                    response.addLog("  ✓ 输入文本到: " + target);
                 } else if ("screenshot".equals(actionName)) {
-                    response.setScreenshot(page.captureScreenshotBase64(timeoutMillis));
+                    boolean fullpage = "true".equalsIgnoreCase(safeArg(args, "fullpage"));
+                    String screenshotBase64 = page.captureScreenshotBase64(fullpage, timeoutMillis);
+                    response.setScreenshot(screenshotBase64);
+                    persistScreenshotIfRequested(screenshotBase64, args);
                     response.addLog("  ✓ 截图完成");
+                } else if ("setheader".equals(actionName)) {
+                    String part = safeArg(args, "part");
+                    String key = safeArg(args, "key");
+                    String value = safeArg(args, "value");
+                    if ("response".equalsIgnoreCase(part) && key != null && !key.trim().isEmpty()) {
+                        currentResponseHeaders = mergeResponseHeader(currentResponseHeaders, key.trim(), value);
+                        response.addLog("  ✓ 设置响应头: " + key);
+                    } else if ("request".equalsIgnoreCase(part) && key != null && !key.trim().isEmpty()) {
+                        requestHeaders.put(key.trim(), value == null ? "" : value);
+                        applyRequestHeaders(page, requestHeaders, timeoutMillis);
+                        response.addLog("  ✓ 设置请求头: " + key);
+                    } else {
+                        response.addLog("  ⚠ 当前仅兼容 response 侧 setheader: " + String.valueOf(part));
+                    }
                 } else if ("sleep".equals(actionName)) {
                     int sleepMs = Integer.parseInt(args != null ? args.getOrDefault("duration", "1000") : "1000");
                     Thread.sleep(sleepMs);
                     response.addLog("  ✓ 等待 " + sleepMs + "ms");
                 } else if ("waitvisible".equals(actionName)) {
-                    String selector = readArg(args, "selector");
-                    waitForVisible(page, selector, timeoutMillis);
-                    response.addLog("  ✓ 元素可见: " + selector);
+                    String target = describeElementTarget(args);
+                    waitForVisible(page, args, timeoutMillis);
+                    response.addLog("  ✓ 元素可见: " + target);
                 } else {
                     response.addLog("  ⚠ 未知操作: " + action);
                 }
@@ -201,6 +256,8 @@ final class CdpHeadlessExecutor {
                 throw new RuntimeException("步骤执行失败: " + action, e);
             }
         }
+        response.getScriptResults().put("header", currentResponseHeaders);
+        response.getScriptResults().put("status_code", currentStatusCode);
     }
 
     private void navigateAndWait(CdpPage page, String url, int timeoutMillis) throws CdpException {
@@ -236,46 +293,46 @@ final class CdpHeadlessExecutor {
     }
 
     private void waitForVisible(final CdpPage page,
-                                final String selector,
+                                final Map<String, String> args,
                                 long timeoutMillis) throws CdpException {
         boolean matched = page.waitUntil(new CdpPage.WaitCondition() {
             @Override
             public boolean test(CdpPage currentPage) throws CdpException {
-                JsonObject state = readSelectorState(currentPage, selector, 5000);
+                JsonObject state = readSelectorState(currentPage, args, 5000);
                 return state != null && readJsonBoolean(state, "visible");
             }
         }, timeoutMillis, WAIT_POLL_INTERVAL_MILLIS);
 
         if (!matched) {
-            throw CdpException.timeout("Timed out waiting for visible element: " + selector);
+            throw CdpException.timeout("Timed out waiting for visible element: " + describeElementTarget(args));
         }
     }
 
     private void executeSelectorAction(CdpPage page,
-                                       String selector,
+                                       Map<String, String> args,
                                        String value,
                                        int timeoutMillis,
                                        SelectorAction action) throws CdpException {
-        JsonObject result = readSelectorActionResult(page, selector, value, timeoutMillis, action);
+        JsonObject result = readSelectorActionResult(page, args, value, timeoutMillis, action);
         if (result == null || !readJsonBoolean(result, "ok")) {
             throw new RuntimeException(readJsonString(result, "error"));
         }
     }
 
     private JsonObject readSelectorActionResult(CdpPage page,
-                                                String selector,
+                                                Map<String, String> args,
                                                 String value,
                                                 int timeoutMillis,
                                                 SelectorAction action) throws CdpException {
         String expression = action == SelectorAction.CLICK
-                ? buildClickExpression(selector)
-                : buildInputExpression(selector, value);
+                ? buildClickExpression(args)
+                : buildInputExpression(args, value);
         JsonElement result = page.evaluateValue(expression, timeoutMillis);
         return result != null && result.isJsonObject() ? result.getAsJsonObject() : null;
     }
 
-    private JsonObject readSelectorState(CdpPage page, String selector, int timeoutMillis) throws CdpException {
-        JsonElement result = page.evaluateValue(buildVisibilityExpression(selector), timeoutMillis);
+    private JsonObject readSelectorState(CdpPage page, Map<String, String> args, int timeoutMillis) throws CdpException {
+        JsonElement result = page.evaluateValue(buildVisibilityExpression(args), timeoutMillis);
         return result != null && result.isJsonObject() ? result.getAsJsonObject() : null;
     }
 
@@ -359,6 +416,13 @@ final class CdpHeadlessExecutor {
         return args.get(key);
     }
 
+    private String safeArg(Map<String, String> args, String key) {
+        if (args == null || key == null) {
+            return null;
+        }
+        return args.get(key);
+    }
+
     private String safeDisplayValue(JsonElement result) {
         if (result == null || result.isJsonNull()) {
             return "null";
@@ -369,48 +433,45 @@ final class CdpHeadlessExecutor {
         return result.toString();
     }
 
-    private String buildVisibilityExpression(String selector) {
-        String selectorLiteral = GSON.toJson(selector);
+    private String buildVisibilityExpression(Map<String, String> args) {
+        String locatorScript = buildElementLocatorScript(args);
         return "(function(){"
-                + "var selector=" + selectorLiteral + ";"
-                + "var el=document.querySelector(selector);"
-                + "if(!el){return {exists:false,visible:false,error:'元素未找到: ' + selector};}"
+                + locatorScript
+                + "if(!el){return {exists:false,visible:false,error:'元素未找到: ' + target};}"
                 + VISIBILITY_CHECK_JS
                 + "return {exists:true,visible:visible};"
                 + "})()";
     }
 
-    private String buildClickExpression(String selector) {
-        String selectorLiteral = GSON.toJson(selector);
+    private String buildClickExpression(Map<String, String> args) {
+        String locatorScript = buildElementLocatorScript(args);
         return "(function(){"
-                + "var selector=" + selectorLiteral + ";"
-                + "var el=document.querySelector(selector);"
-                + "if(!el){return {ok:false,error:'元素未找到: ' + selector};}"
+                + locatorScript
+                + "if(!el){return {ok:false,error:'元素未找到: ' + target};}"
                 + VISIBILITY_CHECK_JS
-                + "if(!visible){return {ok:false,error:'元素不可见: ' + selector};}"
+                + "if(!visible){return {ok:false,error:'元素不可见: ' + target};}"
                 + "if(el.scrollIntoView){el.scrollIntoView({block:'center',inline:'center'});}"
                 + "rect=el.getBoundingClientRect();"
                 + "var x=rect.left+rect.width/2;"
                 + "var y=rect.top+rect.height/2;"
                 + "var topElement=document.elementFromPoint(x,y);"
-                + "if(topElement&&topElement!==el&&!el.contains(topElement)){return {ok:false,error:'元素被遮挡: ' + selector};}"
+                + "if(topElement&&topElement!==el&&!el.contains(topElement)){return {ok:false,error:'元素被遮挡: ' + target};}"
                 + "el.click();"
                 + "return {ok:true};"
                 + "})()";
     }
 
-    private String buildInputExpression(String selector, String value) {
-        String selectorLiteral = GSON.toJson(selector);
+    private String buildInputExpression(Map<String, String> args, String value) {
         String valueLiteral = GSON.toJson(value == null ? "" : value);
+        String locatorScript = buildElementLocatorScript(args);
         return "(function(){"
-                + "var selector=" + selectorLiteral + ";"
                 + "var value=" + valueLiteral + ";"
-                + "var el=document.querySelector(selector);"
-                + "if(!el){return {ok:false,error:'元素未找到: ' + selector};}"
+                + locatorScript
+                + "if(!el){return {ok:false,error:'元素未找到: ' + target};}"
                 + VISIBILITY_CHECK_JS
-                + "if(!visible){return {ok:false,error:'元素不可见: ' + selector};}"
+                + "if(!visible){return {ok:false,error:'元素不可见: ' + target};}"
                 + "var tag=(el.tagName||'').toLowerCase();"
-                + "if(!(tag==='input'||tag==='textarea'||el.isContentEditable)){return {ok:false,error:'元素不可输入: ' + selector};}"
+                + "if(!(tag==='input'||tag==='textarea'||el.isContentEditable)){return {ok:false,error:'元素不可输入: ' + target};}"
                 + "if(el.focus){el.focus();}"
                 + "if(el.isContentEditable){el.textContent='';el.textContent=value;}"
                 + "else{el.value='';el.value=value;}"
@@ -445,5 +506,148 @@ final class CdpHeadlessExecutor {
     private enum SelectorAction {
         CLICK,
         INPUT
+    }
+
+    private int resolveHeadlessActionTimeout(Map<String, String> args, int timeoutMillis, int defaultMillis) {
+        String timeoutArg = safeArg(args, "max-duration");
+        if (timeoutArg == null || timeoutArg.trim().isEmpty()) {
+            timeoutArg = safeArg(args, "timeout");
+        }
+        if (timeoutArg == null || timeoutArg.trim().isEmpty()) {
+            return defaultMillis > 0 ? Math.min(timeoutMillis, defaultMillis) : timeoutMillis;
+        }
+        try {
+            String normalized = timeoutArg.trim().toLowerCase(Locale.ENGLISH);
+            if (normalized.endsWith("ms")) {
+                return (int) Math.min(timeoutMillis, Long.parseLong(normalized.substring(0, normalized.length() - 2).trim()));
+            }
+            if (normalized.endsWith("s")) {
+                return (int) Math.min(timeoutMillis, Long.parseLong(normalized.substring(0, normalized.length() - 1).trim()) * 1000L);
+            }
+            return (int) Math.min(timeoutMillis, Long.parseLong(normalized));
+        } catch (Exception ignored) {
+            return defaultMillis > 0 ? Math.min(timeoutMillis, defaultMillis) : timeoutMillis;
+        }
+    }
+
+    private String buildElementLocatorScript(Map<String, String> args) {
+        String by = safeArg(args, "by");
+        String selector = safeArg(args, "selector");
+        String xpath = safeArg(args, "xpath");
+        String byLiteral = GSON.toJson(by == null ? "" : by);
+        String selectorLiteral = GSON.toJson(selector == null ? "" : selector);
+        String xpathLiteral = GSON.toJson(xpath == null ? "" : xpath);
+        return "var by=" + byLiteral + ";"
+                + "var selector=" + selectorLiteral + ";"
+                + "var xpath=" + xpathLiteral + ";"
+                + "var target=(by==='x'||by==='xpath')?xpath:selector;"
+                + "var el=null;"
+                + "if(by==='x'||by==='xpath'){"
+                + "  var xpathResult=document.evaluate(xpath,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null);"
+                + "  el=xpathResult?xpathResult.singleNodeValue:null;"
+                + "}else{"
+                + "  el=document.querySelector(selector);"
+                + "}";
+    }
+
+    private String describeElementTarget(Map<String, String> args) {
+        String by = safeArg(args, "by");
+        if ("x".equalsIgnoreCase(by) || "xpath".equalsIgnoreCase(by)) {
+            return safeArg(args, "xpath");
+        }
+        return safeArg(args, "selector");
+    }
+
+    private String mergeResponseHeader(String existingHeaders, String key, String value) {
+        String normalizedKey = key == null ? "" : key.trim();
+        if (normalizedKey.isEmpty()) {
+            return existingHeaders == null ? "" : existingHeaders;
+        }
+
+        List<String> lines = new ArrayList<String>();
+        boolean replaced = false;
+        if (existingHeaders != null && !existingHeaders.trim().isEmpty()) {
+            String[] split = existingHeaders.split("\\r?\\n");
+            for (String line : split) {
+                if (line == null || line.trim().isEmpty()) {
+                    continue;
+                }
+                int colon = line.indexOf(':');
+                if (colon > 0) {
+                    String lineKey = line.substring(0, colon).trim();
+                    if (lineKey.equalsIgnoreCase(normalizedKey)) {
+                        lines.add(normalizedKey.toLowerCase(Locale.ENGLISH) + ": " + (value == null ? "" : value));
+                        replaced = true;
+                        continue;
+                    }
+                }
+                lines.add(line);
+            }
+        }
+
+        if (!replaced) {
+            lines.add(normalizedKey.toLowerCase(Locale.ENGLISH) + ": " + (value == null ? "" : value));
+        }
+        return joinLines(lines);
+    }
+
+    private String joinLines(List<String> lines) {
+        if (lines == null || lines.isEmpty()) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (String line : lines) {
+            if (line == null || line.trim().isEmpty()) {
+                continue;
+            }
+            if (builder.length() > 0) {
+                builder.append('\n');
+            }
+            builder.append(line);
+        }
+        return builder.toString();
+    }
+
+    private void applyRequestHeaders(CdpPage page, Map<String, String> headers, int timeoutMillis) throws CdpException {
+        if (page == null || headers == null || headers.isEmpty()) {
+            return;
+        }
+
+        String userAgent = null;
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            if (entry.getKey() != null && "user-agent".equalsIgnoreCase(entry.getKey())) {
+                userAgent = entry.getValue();
+                break;
+            }
+        }
+        if (userAgent != null) {
+            page.setUserAgentOverride(userAgent, timeoutMillis);
+        }
+        page.setExtraHttpHeaders(headers, timeoutMillis);
+    }
+
+    private void persistScreenshotIfRequested(String screenshotBase64, Map<String, String> args) throws IOException {
+        String to = safeArg(args, "to");
+        if (to == null || to.trim().isEmpty() || screenshotBase64 == null || screenshotBase64.trim().isEmpty()) {
+            return;
+        }
+
+        String path = to.trim().endsWith(".png") ? to.trim() : to.trim() + ".png";
+        File target = new File(path);
+        if (target.exists()) {
+            throw new IOException("截图文件已存在: " + target.getAbsolutePath());
+        }
+
+        if ("true".equalsIgnoreCase(safeArg(args, "mkdir"))) {
+            File parent = target.getParentFile();
+            if (parent != null && !parent.exists() && !parent.mkdirs()) {
+                throw new IOException("截图目录创建失败: " + parent.getAbsolutePath());
+            }
+        }
+
+        byte[] bytes = java.util.Base64.getDecoder().decode(screenshotBase64);
+        try (FileOutputStream outputStream = new FileOutputStream(target)) {
+            outputStream.write(bytes);
+        }
     }
 }

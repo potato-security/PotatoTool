@@ -241,15 +241,25 @@ public class HeadlessHandler {
      */
     public static class BrowserStep {
         private String action;
+        private String name;
         private Map<String, String> args;
 
         public BrowserStep(String action, Map<String, String> args) {
+            this(action, null, args);
+        }
+
+        public BrowserStep(String action, String name, Map<String, String> args) {
             this.action = action;
+            this.name = name;
             this.args = args != null ? args : new HashMap<String, String>();
         }
 
         public String getAction() {
             return action;
+        }
+
+        public String getName() {
+            return name;
         }
 
         public Map<String, String> getArgs() {

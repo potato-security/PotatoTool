@@ -81,8 +81,8 @@ public class DslContextBuilder {
     private static void extractMultipleResponses(ResponseCache responseCache, String baseStepId,
                                                  Map<String, Object> context) {
         try {
-            // 尝试读取最多5个索引响应（Nuclei最多支持5个）
-            for (int i = 1; i <= 5; i++) {
+            // 动态读取索引响应，避免模板请求块超过 5 个时 body_N/status_code_N 缺失。
+            for (int i = 1; i <= 50; i++) {
                 String cacheKey = baseStepId + "_" + i;
                 ResponseCache.CachedResponse cachedResp = responseCache.get(cacheKey);
 
@@ -174,10 +174,12 @@ public class DslContextBuilder {
         // 内容长度
         context.put("content_length", response.getContentLength());
         
-        // 响应时间
-        context.put("latency", response.getResponseTime());
-        context.put("time", response.getResponseTime());
-        context.put("duration", response.getResponseTime());
+        // 响应时间。Nuclei DSL 的 duration 语义为秒，保留 ms 别名兼容内部使用。
+        long responseTimeMs = response.getResponseTime();
+        context.put("latency", responseTimeMs);
+        context.put("time", responseTimeMs);
+        context.put("duration_ms", responseTimeMs);
+        context.put("duration", responseTimeMs / 1000.0d);
         
         // 内容类型
         String contentType = response.getContentType();

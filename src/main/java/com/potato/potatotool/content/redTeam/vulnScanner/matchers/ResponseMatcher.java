@@ -7,17 +7,27 @@ import com.potato.potatotool.content.redTeam.vulnScanner.extractors.JsonExtracto
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.VariableExtractor;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpLogService;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.InteractshClient;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
+import net.sf.saxon.xpath.XPathFactoryImpl;
+import org.jsoup.Jsoup;
+import org.jsoup.helper.W3CDom;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
 
 /**
  * 响应匹配器，用于匹配HTTP响应是否符合条件
@@ -151,6 +161,7 @@ public class ResponseMatcher {
         List<String> values = matcher.getValues();
         PocObj.OperationType operation = matcher.getOperation();
         boolean negative = matcher.isNegative();
+        ResponseCache.CachedResponse indexedResponse = getIndexedResponse(matcher, responseCache, stepId);
 
         boolean matched;
 
@@ -163,16 +174,23 @@ public class ResponseMatcher {
         switch (type) {
             // ========== 响应级别匹配（不需要提取 content）==========
             case STATUS:
-                matched = matchStatusCode(response, values);
+                matched = indexedResponse != null
+                        ? matchStatus(indexedResponse.getStatusCode(), values, matcher.getCondition())
+                        : matchStatusCode(response, values, matcher.getCondition());
                 break;
 
             case TIME:
-                matched = matchTime(response.getResponseTime(), values, operation, matcher.getTimeUnit());
+                matched = matchTime(
+                        indexedResponse != null ? indexedResponse.getResponseTimeMs() : response.getResponseTime(),
+                        values,
+                        operation,
+                        matcher.getTimeUnit()
+                );
                 break;
 
             case DSL:
                 // Nuclei DSL 表达式匹配
-                matched = matchDsl(values, response, responseCache, stepId);
+                matched = matchDsl(values, response, responseCache, stepId, pocVariables, matcher.getCondition());
                 break;
 
             case CEL:
@@ -185,24 +203,27 @@ public class ResponseMatcher {
             case REGEX:
             case SIZE:
             case JSON:
+            case XPATH:
                 // 特殊处理：DNSLog 验证 ($reserver)
                 if (matcher.getPart() != null &&
                    ("$reserver".equalsIgnoreCase(matcher.getPart()) || "reserver".equalsIgnoreCase(matcher.getPart()))) {
                     matched = checkDnsLog(values, pocVariables);
+                } else if (matcher.getPart() != null && "interactsh_protocol".equalsIgnoreCase(matcher.getPart())) {
+                    matched = checkHttpInteraction(values, pocVariables);
                 } else {
-                    matched = matchContentBased(type, matcher, response, pocVariables);
+                    matched = matchContentBased(type, matcher, response, indexedResponse, pocVariables);
                 }
                 break;
 
             // ========== 字节级别匹配（需要 byte[]）==========
             case BINARY:
             case HASH:
-                matched = matchBytesBased(type, matcher, response);
+                matched = matchBytesBased(type, matcher, response, indexedResponse);
                 break;
 
             // ========== 组合类型 ==========
             case GROUP:
-                matched = matchGroup(matcher, response, responseCache, stepId);
+                matched = matchGroup(matcher, response, responseCache, stepId, pocVariables);
                 break;
 
             default:
@@ -217,11 +238,15 @@ public class ResponseMatcher {
      * 状态码匹配
      */
     private static boolean matchStatusCode(CustomHttpResponse response, List<String> values) {
+        return matchStatusCode(response, values, null);
+    }
+
+    private static boolean matchStatusCode(CustomHttpResponse response, List<String> values, String condition) {
         if (values == null || values.isEmpty()) {
             return false;
         }
         try {
-            return matchStatus(response.getResponseCode(), values);
+            return matchStatus(response.getResponseCode(), values, condition);
         } catch (Exception e) {
             return false;
         }
@@ -232,10 +257,32 @@ public class ResponseMatcher {
      */
     private static boolean matchDsl(List<String> values, CustomHttpResponse response, 
                                     ResponseCache responseCache, String stepId) {
+        return matchDsl(values, response, responseCache, stepId, null, null);
+    }
+
+    private static boolean matchDsl(List<String> values, CustomHttpResponse response,
+                                    ResponseCache responseCache, String stepId,
+                                    Map<String, Object> pocVariables) {
+        return matchDsl(values, response, responseCache, stepId, pocVariables, null);
+    }
+
+    private static boolean matchDsl(List<String> values, CustomHttpResponse response,
+                                    ResponseCache responseCache, String stepId,
+                                    Map<String, Object> pocVariables,
+                                    String condition) {
         if (values == null || values.isEmpty()) {
             return false;
         }
-        return DslEvaluatorRefactored.matchDslWithNestedMatchers(values, response, response, responseCache, stepId);
+        if (isOrCondition(condition)) {
+            for (String value : values) {
+                if (DslEvaluatorRefactored.matchDslWithNestedMatchers(
+                        java.util.Collections.singletonList(value), response, response, responseCache, stepId, pocVariables)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return DslEvaluatorRefactored.matchDslWithNestedMatchers(values, response, response, responseCache, stepId, pocVariables);
     }
     
     /**
@@ -254,6 +301,7 @@ public class ResponseMatcher {
      */
     private static boolean matchContentBased(PocObj.MatcherType type, PocObj.Matcher matcher, 
                                              CustomHttpResponse response,
+                                             ResponseCache.CachedResponse indexedResponse,
                                              Map<String, Object> pocVariables) {
         List<String> values = matcher.getValues();
         if (values == null || values.isEmpty()) {
@@ -266,31 +314,36 @@ public class ResponseMatcher {
         }
         
         String part = matcher.getPart();
-        String content = VariableExtractor.getResponsePart(response, part);
+        String content = indexedResponse != null
+                ? getCachedResponsePart(indexedResponse, part)
+                : VariableExtractor.getResponsePart(response, part);
         if (content == null) {
             return false;
         }
         
         boolean caseInsensitive = matcher.isCaseInsensitive();
+        String basePart = VariableExtractor.stripIndexedPart(part);
         
         PocObj.OperationType operation = matcher.getOperation();
         
         switch (type) {
             case WORD:
                 // HTTP 头名称是大小写不敏感的，对 header 匹配默认忽略大小写
-                boolean effectiveCaseInsensitive = caseInsensitive || "header".equalsIgnoreCase(part);
-                boolean wordMatch = matchWord(content, values, effectiveCaseInsensitive);
+                boolean effectiveCaseInsensitive = caseInsensitive || "header".equalsIgnoreCase(basePart);
+                boolean wordMatch = matchWord(content, values, effectiveCaseInsensitive, matcher.getCondition());
                 // 处理 NOT_CONTAINS 操作
                 if (operation == PocObj.OperationType.NOT_CONTAINS) {
                     return !wordMatch;
                 }
                 return wordMatch;
             case REGEX:
-                return matchRegex(content, values, caseInsensitive);
+                return matchRegex(content, values, caseInsensitive, matcher.getCondition());
             case SIZE:
-                return matchSize(content.length(), values, matcher.getOperation());
+                return matchSize(content.length(), values, matcher.getOperation(), matcher.getCondition());
             case JSON:
-                return JsonExtractor.matchJson(content, values);
+                return matchJson(content, values, matcher.getCondition());
+            case XPATH:
+                return matchXpath(content, values, matcher.getCondition());
             default:
                 return false;
         }
@@ -300,20 +353,21 @@ public class ResponseMatcher {
      * 基于字节的匹配（BINARY, HASH）
      */
     private static boolean matchBytesBased(PocObj.MatcherType type, PocObj.Matcher matcher,
-                                           CustomHttpResponse response) {
+                                           CustomHttpResponse response,
+                                           ResponseCache.CachedResponse indexedResponse) {
         List<String> values = matcher.getValues();
         if (values == null || values.isEmpty()) {
             return false;
         }
         
-        byte[] contentBytes = response.getByteArray();
+        byte[] contentBytes = indexedResponse != null ? indexedResponse.getRawBytes() : response.getByteArray();
         if (contentBytes == null) {
             return false;
         }
         
         switch (type) {
             case BINARY:
-                return matchBinary(contentBytes, values);
+                return matchBinary(contentBytes, values, matcher.getCondition());
             case HASH:
                 return matchHash(contentBytes, values, matcher.getOperation());
             default:
@@ -325,7 +379,8 @@ public class ResponseMatcher {
      * 匹配器组匹配（GROUP）
      */
     private static boolean matchGroup(PocObj.Matcher matcher, CustomHttpResponse response,
-                                      ResponseCache responseCache, String stepId) {
+                                      ResponseCache responseCache, String stepId,
+                                      Map<String, Object> pocVariables) {
         List<PocObj.Matcher> subMatchers = matcher.getSubMatchers();
         if (subMatchers == null || subMatchers.isEmpty()) {
             return false;
@@ -337,8 +392,53 @@ public class ResponseMatcher {
             condition = PocObj.MatchersCondition.OR;
         }
         
-        boolean groupResult = matchResponse(response, subMatchers, condition, responseCache, stepId);
+        boolean groupResult = matchResponse(response, subMatchers, condition, responseCache, stepId, pocVariables);
         return groupResult;
+    }
+
+    private static ResponseCache.CachedResponse getIndexedResponse(PocObj.Matcher matcher,
+                                                                   ResponseCache responseCache,
+                                                                   String stepId) {
+        if (matcher == null || responseCache == null || stepId == null || stepId.isEmpty()) {
+            return null;
+        }
+        Integer index = VariableExtractor.getIndexedPartNumber(matcher.getPart());
+        if (index == null) {
+            return null;
+        }
+        return responseCache.get(stepId + "_" + index);
+    }
+
+    private static String getCachedResponsePart(ResponseCache.CachedResponse cachedResponse, String part) {
+        if (cachedResponse == null) {
+            return null;
+        }
+
+        String normalizedPart = VariableExtractor.stripIndexedPart(part);
+        if (normalizedPart == null || normalizedPart.trim().isEmpty()) {
+            normalizedPart = "body";
+        }
+
+        switch (normalizedPart.toLowerCase(Locale.ROOT)) {
+            case "body":
+                return cachedResponse.getBody();
+            case "header":
+                return cachedResponse.getHeader();
+            case "status":
+                return String.valueOf(cachedResponse.getStatusCode());
+            case "all":
+                return (cachedResponse.getHeader() == null ? "" : cachedResponse.getHeader())
+                        + "\n\n"
+                        + (cachedResponse.getBody() == null ? "" : cachedResponse.getBody());
+            case "raw":
+                return cachedResponse.getRawBytes() == null
+                        ? null
+                        : new String(cachedResponse.getRawBytes(), StandardCharsets.ISO_8859_1);
+            case "content_length":
+                return String.valueOf(cachedResponse.getBody() == null ? 0 : cachedResponse.getBody().length());
+            default:
+                return cachedResponse.getHeader();
+        }
     }
     
     /**
@@ -443,8 +543,74 @@ public class ResponseMatcher {
         return false;
     }
 
+    private static boolean checkHttpInteraction(List<String> values, Map<String, Object> pocVariables) {
+        String interactshUrl = resolveInteractshUrl(pocVariables);
+        if (interactshUrl == null || interactshUrl.trim().isEmpty() || interactshUrl.contains("LAZY_INTERACTSH")) {
+            return false;
+        }
+
+        try {
+            InteractshClient.Interaction interaction = HttpLogService.waitForInteraction(interactshUrl, 8);
+            if (interaction != null) {
+                return valuesContainProtocol(values, interaction.getProtocol());
+            }
+        } catch (Exception ignored) {
+        }
+
+        try {
+            String records = HttpLogService.queryHttpLogRecords(interactshUrl);
+            if (records == null || records.trim().isEmpty() || "[]".equals(records.trim())) {
+                return false;
+            }
+            if (values == null || values.isEmpty()) {
+                return true;
+            }
+            String normalizedRecords = records.toLowerCase(Locale.ROOT);
+            for (String value : values) {
+                if (value != null && normalizedRecords.contains("\"protocol\":\"" + value.toLowerCase(Locale.ROOT) + "\"")) {
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return false;
+    }
+
+    private static String resolveInteractshUrl(Map<String, Object> pocVariables) {
+        if (pocVariables == null || pocVariables.isEmpty()) {
+            return null;
+        }
+        Object value = pocVariables.get("interactsh-url");
+        if (value == null) {
+            value = pocVariables.get("interactsh_url");
+        }
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private static boolean valuesContainProtocol(List<String> values, String protocol) {
+        if (values == null || values.isEmpty()) {
+            return protocol != null && !protocol.trim().isEmpty();
+        }
+        String normalizedProtocol = protocol == null ? "" : protocol.trim().toLowerCase(Locale.ROOT);
+        for (String value : values) {
+            if (value != null && value.trim().equalsIgnoreCase(normalizedProtocol)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean isHttpOobTarget(String value) {
         return value.contains("oast.") || value.contains("interactsh.");
+    }
+
+    private static boolean isAndCondition(String condition) {
+        return "AND".equalsIgnoreCase(condition);
+    }
+
+    private static boolean isOrCondition(String condition) {
+        return "OR".equalsIgnoreCase(condition);
     }
 
     /**
@@ -454,22 +620,35 @@ public class ResponseMatcher {
      * @return 是否匹配成功
      */
     private static boolean matchStatus(int statusCode, List<String> values) {
+        return matchStatus(statusCode, values, null);
+    }
+
+    private static boolean matchStatus(int statusCode, List<String> values, String condition) {
         if (values == null || values.isEmpty()) {
             return false;
         }
 
+        boolean requireAll = isAndCondition(condition);
         for (String value : values) {
+            boolean valueMatched = false;
             try {
                 int expectedStatus = Integer.parseInt(value.trim());
                 if (statusCode == expectedStatus) {
-                    return true;
+                    valueMatched = true;
                 }
             } catch (NumberFormatException e) {
                 // 忽略非法值
             }
+
+            if (requireAll && !valueMatched) {
+                return false;
+            }
+            if (!requireAll && valueMatched) {
+                return true;
+            }
         }
         
-        return false;
+        return requireAll;
     }
 
     /**
@@ -480,52 +659,57 @@ public class ResponseMatcher {
      * @return 是否匹配成功
      */
     private static boolean matchSize(int size, List<String> values, PocObj.OperationType operation) {
+        return matchSize(size, values, operation, null);
+    }
+
+    private static boolean matchSize(int size, List<String> values, PocObj.OperationType operation, String condition) {
         if (values == null || values.isEmpty()) {
             return false;
         }
 
+        if (operation == null) {
+            operation = PocObj.OperationType.EQUAL;
+        }
+
+        boolean requireAll = isAndCondition(condition);
         for (String value : values) {
+            boolean valueMatched = false;
             try {
                 int targetSize = Integer.parseInt(value.trim());
 
                 switch (operation) {
                     case NOT_EQUAL:
-                        if (size != targetSize) {
-                            return true;
-                        }
+                        valueMatched = size != targetSize;
                         break;
                     case GREATER:
-                        if (size > targetSize) {
-                            return true;
-                        }
+                        valueMatched = size > targetSize;
                         break;
                     case LESS:
-                        if (size < targetSize) {
-                            return true;
-                        }
+                        valueMatched = size < targetSize;
                         break;
                     case GREATER_EQUAL:
-                        if (size >= targetSize) {
-                            return true;
-                        }
+                        valueMatched = size >= targetSize;
                         break;
                     case LESS_EQUAL:
-                        if (size <= targetSize) {
-                            return true;
-                        }
+                        valueMatched = size <= targetSize;
                         break;
                     default:
-                        if (size == targetSize) {
-                            return true;
-                        }
+                        valueMatched = size == targetSize;
                         break;
                 }
             } catch (NumberFormatException e) {
                 // 忽略非法值
             }
+
+            if (requireAll && !valueMatched) {
+                return false;
+            }
+            if (!requireAll && valueMatched) {
+                return true;
+            }
         }
         
-        return false;
+        return requireAll;
     }
 
     /**
@@ -536,20 +720,29 @@ public class ResponseMatcher {
      * @return 是否匹配成功
      */
     private static boolean matchWord(String content, List<String> values, boolean caseInsensitive) {
+        return matchWord(content, values, caseInsensitive, null);
+    }
+
+    private static boolean matchWord(String content, List<String> values, boolean caseInsensitive, String condition) {
         if (content == null || values == null || values.isEmpty()) {
             return false;
         }
 
         String contentToMatch = caseInsensitive ? content.toLowerCase() : content;
+        boolean requireAll = isAndCondition(condition);
         
         for (String value : values) {
             String valueToMatch = caseInsensitive ? value.toLowerCase() : value;
-            if (contentToMatch.contains(valueToMatch)) {
+            boolean valueMatched = contentToMatch.contains(valueToMatch);
+            if (requireAll && !valueMatched) {
+                return false;
+            }
+            if (!requireAll && valueMatched) {
                 return true;
             }
         }
         
-        return false;
+        return requireAll;
     }
 
     /**
@@ -560,25 +753,38 @@ public class ResponseMatcher {
      * @return 是否匹配成功
      */
     private static boolean matchRegex(String content, List<String> values, boolean caseInsensitive) {
+        return matchRegex(content, values, caseInsensitive, null);
+    }
+
+    private static boolean matchRegex(String content, List<String> values, boolean caseInsensitive, String condition) {
         if (content == null || values == null || values.isEmpty()) {
             return false;
         }
 
+        boolean requireAll = isAndCondition(condition);
         for (String regex : values) {
+            boolean valueMatched = false;
             try {
                 Pattern pattern = caseInsensitive 
                         ? Pattern.compile(regex, Pattern.CASE_INSENSITIVE) 
                         : Pattern.compile(regex);
                 
                 if (pattern.matcher(content).find()) {
-                    return true;
+                    valueMatched = true;
                 }
             } catch (PatternSyntaxException e) {
                 // 忽略非法正则表达式
             }
+
+            if (requireAll && !valueMatched) {
+                return false;
+            }
+            if (!requireAll && valueMatched) {
+                return true;
+            }
         }
         
-        return false;
+        return requireAll;
     }
 
     /**
@@ -588,22 +794,99 @@ public class ResponseMatcher {
      * @return 是否匹配成功
      */
     private static boolean matchBinary(byte[] contentByte, List<String> values) {
+        return matchBinary(contentByte, values, null);
+    }
+
+    private static boolean matchBinary(byte[] contentByte, List<String> values, String condition) {
         if (contentByte == null || values == null || values.isEmpty()) {
             return false;
         }
 
+        boolean requireAll = isAndCondition(condition);
         for (String hexString : values) {
+            boolean valueMatched = false;
             try {
                 String hexContent = bytesToHexString(contentByte);
-                if (hexContent.contains(hexString.toLowerCase())) {
-                    return true;
+                String normalizedHex = hexString == null ? "" : hexString.replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
+                if (!normalizedHex.isEmpty() && hexContent.contains(normalizedHex)) {
+                    valueMatched = true;
                 }
             } catch (Exception e) {
                 // 忽略非法十六进制字符串
             }
+
+            if (requireAll && !valueMatched) {
+                return false;
+            }
+            if (!requireAll && valueMatched) {
+                return true;
+            }
         }
         
-        return false;
+        return requireAll;
+    }
+
+    private static boolean matchJson(String content, List<String> values, String condition) {
+        if (content == null || values == null || values.isEmpty()) {
+            return false;
+        }
+
+        boolean requireAll = isAndCondition(condition);
+        for (String value : values) {
+            boolean valueMatched = JsonExtractor.matchJson(content, java.util.Collections.singletonList(value));
+            if (requireAll && !valueMatched) {
+                return false;
+            }
+            if (!requireAll && valueMatched) {
+                return true;
+            }
+        }
+
+        return requireAll;
+    }
+
+    private static boolean matchXpath(String content, List<String> values, String condition) {
+        if (content == null || values == null || values.isEmpty()) {
+            return false;
+        }
+
+        boolean requireAll = isAndCondition(condition);
+        for (String value : values) {
+            boolean valueMatched = matchSingleXpath(content, value);
+            if (requireAll && !valueMatched) {
+                return false;
+            }
+            if (!requireAll && valueMatched) {
+                return true;
+            }
+        }
+
+        return requireAll;
+    }
+
+    private static boolean matchSingleXpath(String content, String xpathExpr) {
+        if (xpathExpr == null || xpathExpr.trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            org.jsoup.nodes.Document jsoupDocument = Jsoup.parse(content);
+            Document document = new W3CDom().namespaceAware(false).fromJsoup(jsoupDocument);
+            XPath xpath = new XPathFactoryImpl().newXPath();
+            NodeList nodes = (NodeList) xpath.evaluate(xpathExpr, document, XPathConstants.NODESET);
+            return nodes != null && nodes.getLength() > 0;
+        } catch (Exception ignored) {
+        }
+
+        try {
+            org.jsoup.nodes.Document jsoupDocument = Jsoup.parse(content);
+            Document document = new W3CDom().namespaceAware(false).fromJsoup(jsoupDocument);
+            XPath xpath = new XPathFactoryImpl().newXPath();
+            String result = xpath.evaluate(xpathExpr, document);
+            return result != null && !result.trim().isEmpty();
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     /**
@@ -789,7 +1072,7 @@ public class ResponseMatcher {
             m.appendTail(sb);
             result.add(sb.toString());
         }
-        
+
         return result;
     }
-} 
+}

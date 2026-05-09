@@ -1,5 +1,11 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpLogService;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -98,6 +104,12 @@ public class DslEvaluatorRefactored {
      */
     public static boolean matchDslWithNestedMatchers(List<String> dslExpressions, Object response, Object request,
                                                      Object responseCache, String stepId) {
+        return matchDslWithNestedMatchers(dslExpressions, response, request, responseCache, stepId, null);
+    }
+
+    public static boolean matchDslWithNestedMatchers(List<String> dslExpressions, Object response, Object request,
+                                                     Object responseCache, String stepId,
+                                                     Map<String, Object> variables) {
         try {
             // 创建DSL上下文（支持多响应）
             Map<String, Object> context;
@@ -109,6 +121,8 @@ public class DslEvaluatorRefactored {
                 // 回退到原有版本
                 context = DslContextBuilder.createDslContext(response, request);
             }
+            enrichContextWithVariables(context, variables);
+            enrichContextWithInteractsh(context);
 
             // 解析DSL表达式为匹配器（使用缓存）
             List<DslExpressionParser.DslMatcher> matchers = getCachedMatchers(dslExpressions);
@@ -123,6 +137,63 @@ public class DslEvaluatorRefactored {
             // 回退到统一DSL评估
             return evaluateUnifiedDslFallback(dslExpressions, response, request);
         }
+    }
+
+    private static void enrichContextWithVariables(Map<String, Object> context, Map<String, Object> variables) {
+        if (context == null || variables == null || variables.isEmpty()) {
+            return;
+        }
+        context.putAll(variables);
+    }
+
+    private static void enrichContextWithInteractsh(Map<String, Object> context) {
+        if (context == null) {
+            return;
+        }
+
+        Object value = context.get("interactsh-url");
+        if (value == null) {
+            value = context.get("interactsh_url");
+        }
+        if (value == null) {
+            return;
+        }
+
+        String interactshUrl = String.valueOf(value);
+        if (interactshUrl.trim().isEmpty() || interactshUrl.contains("LAZY_INTERACTSH")) {
+            return;
+        }
+
+        try {
+            String records = HttpLogService.queryHttpLogRecords(interactshUrl);
+            if (records == null || records.trim().isEmpty() || "[]".equals(records.trim())) {
+                return;
+            }
+
+            JsonElement parsed = JsonParser.parseString(records);
+            if (!parsed.isJsonArray()) {
+                return;
+            }
+
+            JsonArray array = parsed.getAsJsonArray();
+            if (array.size() == 0 || !array.get(0).isJsonObject()) {
+                return;
+            }
+
+            JsonObject first = array.get(0).getAsJsonObject();
+            putJsonString(context, "interactsh_protocol", first, "protocol");
+            putJsonString(context, "interactsh_request", first, "raw-request");
+            putJsonString(context, "interactsh_response", first, "raw-response");
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void putJsonString(Map<String, Object> context, String contextKey,
+                                      JsonObject object, String jsonKey) {
+        if (object == null || !object.has(jsonKey) || object.get(jsonKey).isJsonNull()) {
+            return;
+        }
+        context.put(contextKey, object.get(jsonKey).getAsString());
     }
 
     /**

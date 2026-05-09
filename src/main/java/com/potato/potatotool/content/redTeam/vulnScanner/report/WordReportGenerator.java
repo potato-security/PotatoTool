@@ -3,470 +3,101 @@ package com.potato.potatotool.content.redTeam.vulnScanner.report;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanResult;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.StepExecutionRecord;
-import org.apache.poi.xwpf.usermodel.*;
+import com.potato.potatotool.utils.report.PotatoReportBranding;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
-import org.apache.poi.util.Units;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
+import org.apache.poi.xwpf.usermodel.Borders;
+import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
+import org.apache.poi.xwpf.usermodel.XWPFHeader;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBorder;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageMar;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblBorders;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STBorder;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STFldCharType;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageOrientation;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
- * Word 报告生成器 - 增强版
- * 使用专业配色方案和优化的表格样式生成 DOCX 格式报告
- *
- * @author Potato
- * @date 2025/01/06
+ * 漏洞扫描 Word 报告生成器
  */
 public class WordReportGenerator {
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    // 设计系统颜色常量
-    private static final String COLOR_PRIMARY = "3B82F6";      // blue-500
-    private static final String COLOR_CRITICAL = "DC2626";     // red-600
-    private static final String COLOR_HIGH = "EA580C";         // orange-600
-    private static final String COLOR_MEDIUM = "F59E0B";       // amber-500
-    private static final String COLOR_LOW = "3B82F6";          // blue-500
-    private static final String COLOR_INFO = "6B7280";         // gray-500
-    private static final String COLOR_HEADER_BG = "F1F5F9";    // slate-100
-    private static final String COLOR_TEXT_DARK = "1E293B";    // slate-800
-    private static final String COLOR_TEXT_MUTED = "64748B";   // slate-500
-
-    // 内置48x48 logo PNG (base64)
-    private static final String LOGO_PNG_BASE64 = "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";
-
-    /**
-     * 生成 Word 报告
-     */
     public File generate(List<ScanResult> results, String outputPath, String scanDuration) throws IOException {
         XWPFDocument document = new XWPFDocument();
+        Summary summary = buildSummary(results, scanDuration);
 
+        configurePage(document);
         createHeaderFooter(document);
+        createCover(document, summary);
+        createOverview(document, summary);
+        createFindings(document, results);
 
-        // 生成报告标题
-        createTitle(document, scanDuration);
-
-        // 生成扫描摘要
-        createSummary(document, results);
-
-        // 生成漏洞详情
-        createVulnDetails(document, results);
-
-        // 生成页脚
-        createFooter(document);
-
-        // 写入文件
         File outputFile = new File(outputPath);
-        outputFile.getParentFile().mkdirs();
+        if (outputFile.getParentFile() != null && !outputFile.getParentFile().exists()) {
+            outputFile.getParentFile().mkdirs();
+        }
 
         try (FileOutputStream out = new FileOutputStream(outputFile)) {
             document.write(out);
+        } finally {
+            document.close();
         }
-
-        document.close();
         return outputFile;
     }
 
-    /**
-     * 兼容方法
-     */
     public File generate(List<ScanResult> results, String outputPath) throws IOException {
         return generate(results, outputPath, "未知");
     }
 
-    /**
-     * 创建报告标题
-     */
-    private void createTitle(XWPFDocument document, String scanDuration) {
-        // 主标题
-        XWPFParagraph title = document.createParagraph();
-        title.setAlignment(ParagraphAlignment.CENTER);
-        title.setSpacingAfter(200);
+    private void configurePage(XWPFDocument document) {
+        CTBody body = document.getDocument().getBody();
+        CTSectPr sectPr = body.isSetSectPr() ? body.getSectPr() : body.addNewSectPr();
 
-        XWPFRun titleRun = title.createRun();
-        titleRun.setText("PotatoTool 漏洞扫描报告");
-        titleRun.setFontFamily("Microsoft YaHei");
-        titleRun.setBold(true);
-        titleRun.setFontSize(28);
-        titleRun.setColor(COLOR_PRIMARY);
+        CTPageSz pageSize = sectPr.isSetPgSz() ? sectPr.getPgSz() : sectPr.addNewPgSz();
+        pageSize.setW(BigInteger.valueOf(11906));
+        pageSize.setH(BigInteger.valueOf(16838));
+        pageSize.setOrient(STPageOrientation.PORTRAIT);
 
-        // 分隔线
-        XWPFParagraph separator = document.createParagraph();
-        separator.setBorderBottom(Borders.SINGLE);
-        separator.setSpacingAfter(100);
-
-        // 元数据行
-        XWPFParagraph meta = document.createParagraph();
-        meta.setAlignment(ParagraphAlignment.CENTER);
-        meta.setSpacingAfter(400);
-
-        XWPFRun metaRun = meta.createRun();
-        metaRun.setFontFamily("Microsoft YaHei");
-        metaRun.setText("生成时间: " + sdf.format(new Date()) + "    |    扫描耗时: " + scanDuration + "    |    版本: v2.5.1");
-        metaRun.setFontSize(11);
-        metaRun.setColor(COLOR_TEXT_MUTED);
+        CTPageMar pageMar = sectPr.isSetPgMar() ? sectPr.getPgMar() : sectPr.addNewPgMar();
+        pageMar.setTop(BigInteger.valueOf(900));
+        pageMar.setBottom(BigInteger.valueOf(880));
+        pageMar.setLeft(BigInteger.valueOf(980));
+        pageMar.setRight(BigInteger.valueOf(980));
+        pageMar.setHeader(BigInteger.valueOf(540));
+        pageMar.setFooter(BigInteger.valueOf(520));
     }
 
-    /**
-     * 创建扫描摘要
-     */
-    private void createSummary(XWPFDocument document, List<ScanResult> results) {
-        // 统计数据
-        int targetCount = (int) results.stream()
-            .map(ScanResult::getTarget)
-            .distinct()
-            .count();
-        int pocCount = (int) results.stream()
-            .map(r -> r.getPoc().getId())
-            .distinct()
-            .count();
-        int vulnCount = results.size();
-
-        Map<PocObj.Severity, Long> severityCount = new HashMap<>();
-        for (ScanResult result : results) {
-            PocObj.Severity severity = result.getPoc().getSeverity();
-            severityCount.put(severity, severityCount.getOrDefault(severity, 0L) + 1);
-        }
-
-        long criticalAndHighCount = severityCount.getOrDefault(PocObj.Severity.CRITICAL, 0L)
-                                  + severityCount.getOrDefault(PocObj.Severity.HIGH, 0L);
-
-        // 第一组：基础统计
-        createSectionTitle(document, "基础统计");
-
-        XWPFTable summaryTable = document.createTable(4, 2);
-        setTableStyle(summaryTable, 4500, 3500);
-
-        setStyledTableRow(summaryTable, 0, "扫描目标数", String.valueOf(targetCount), null);
-        setStyledTableRow(summaryTable, 1, "使用POC数", String.valueOf(pocCount), null);
-        setStyledTableRow(summaryTable, 2, "发现漏洞总数", String.valueOf(vulnCount), COLOR_HIGH);
-        setStyledTableRow(summaryTable, 3, "高危漏洞数 (Critical + High)", String.valueOf(criticalAndHighCount), COLOR_CRITICAL);
-
-        document.createParagraph().setSpacingAfter(200);
-
-        // 第二组：严重度分布
-        createSectionTitle(document, "严重度分布");
-
-        XWPFTable severityTable = document.createTable(5, 3);
-        setTableStyle(severityTable, 3000, 2500, 2500);
-
-        // 表头
-        setTableHeader(severityTable, 0, new String[]{"严重级别", "数量", "占比"});
-
-        long total = vulnCount > 0 ? vulnCount : 1;
-        setStyledSeverityRow(severityTable, 1, "CRITICAL",
-            severityCount.getOrDefault(PocObj.Severity.CRITICAL, 0L), total, COLOR_CRITICAL);
-        setStyledSeverityRow(severityTable, 2, "HIGH",
-            severityCount.getOrDefault(PocObj.Severity.HIGH, 0L), total, COLOR_HIGH);
-        setStyledSeverityRow(severityTable, 3, "MEDIUM",
-            severityCount.getOrDefault(PocObj.Severity.MEDIUM, 0L), total, COLOR_MEDIUM);
-        setStyledSeverityRow(severityTable, 4, "LOW / INFO",
-            severityCount.getOrDefault(PocObj.Severity.LOW, 0L) + severityCount.getOrDefault(PocObj.Severity.INFO, 0L),
-            total, COLOR_INFO);
-
-        document.createParagraph().setSpacingAfter(300);
-    }
-
-    /**
-     * 创建漏洞详情
-     */
-    private void createVulnDetails(XWPFDocument document, List<ScanResult> results) {
-        createSectionTitle(document, "漏洞详情");
-
-        for (int i = 0; i < results.size(); i++) {
-            ScanResult result = results.get(i);
-            PocObj.Poc poc = result.getPoc();
-
-            // 漏洞标题
-            XWPFParagraph vulnTitle = document.createParagraph();
-            vulnTitle.setSpacingBefore(300);
-            vulnTitle.setSpacingAfter(100);
-
-            XWPFRun indexRun = vulnTitle.createRun();
-            indexRun.setText((i + 1) + ". ");
-            indexRun.setFontFamily("Microsoft YaHei");
-            indexRun.setBold(true);
-            indexRun.setFontSize(13);
-            indexRun.setColor(COLOR_TEXT_DARK);
-
-            XWPFRun nameRun = vulnTitle.createRun();
-            nameRun.setText(poc.getName());
-            nameRun.setFontFamily("Microsoft YaHei");
-            nameRun.setBold(true);
-            nameRun.setFontSize(13);
-            nameRun.setColor(COLOR_TEXT_DARK);
-
-            XWPFRun severityRun = vulnTitle.createRun();
-            severityRun.setText("  [" + poc.getSeverity().name() + "]");
-            severityRun.setFontFamily("Microsoft YaHei");
-            severityRun.setBold(true);
-            severityRun.setFontSize(12);
-            severityRun.setColor(getSeverityColor(poc.getSeverity()));
-
-            // 计算表格行数
-            int tableRows = 5;
-            if (poc.getDescription() != null && !poc.getDescription().isEmpty()) tableRows++;
-            if (result.getCveId() != null && !result.getCveId().isEmpty()) tableRows++;
-            if (result.getCweId() != null && !result.getCweId().isEmpty()) tableRows++;
-            if (result.getCvssScore() != null && !result.getCvssScore().isEmpty()) tableRows++;
-            if (result.getMatchedPath() != null && !result.getMatchedPath().isEmpty()) tableRows++;
-            if (result.getMatchedPayload() != null && !result.getMatchedPayload().isEmpty()) tableRows++;
-            String paramKeys = result.getFormattedParamKeys();
-            if (paramKeys != null && !paramKeys.isEmpty()) tableRows++;
-            String varValues = result.getFormattedVariableValues();
-            if (varValues != null && !varValues.isEmpty()) tableRows++;
-            String outputData = result.getFormattedOutputData();
-            if (outputData != null && !outputData.isEmpty()) tableRows++;
-            if (result.getRecommendation() != null && !result.getRecommendation().isEmpty()) tableRows++;
-
-            XWPFTable detailTable = document.createTable(tableRows, 2);
-            setTableStyle(detailTable, 2500, 6000);
-
-            int tableRow = 0;
-            setStyledTableRow(detailTable, tableRow++, "目标URL", result.getTarget(), null);
-            setStyledTableRow(detailTable, tableRow++, "POC ID", poc.getId(), null);
-            setStyledTableRow(detailTable, tableRow++, "POC格式", poc.getOriginalFormat(), null);
-            setStyledTableRow(detailTable, tableRow++, "漏洞类型", poc.getVulType() != null ? poc.getVulType() : "-", null);
-            setStyledTableRow(detailTable, tableRow++, "协议", poc.getProtocol(), null);
-
-            if (poc.getDescription() != null && !poc.getDescription().isEmpty()) {
-                setStyledTableRow(detailTable, tableRow++, "描述", poc.getDescription(), null);
-            }
-
-            // CVE/CWE/CVSS 信息
-            if (result.getCveId() != null && !result.getCveId().isEmpty()) {
-                setStyledTableRow(detailTable, tableRow++, "CVE ID", result.getCveId(), COLOR_CRITICAL);
-            }
-            if (result.getCweId() != null && !result.getCweId().isEmpty()) {
-                setStyledTableRow(detailTable, tableRow++, "CWE ID", result.getCweId(), COLOR_HIGH);
-            }
-            if (result.getCvssScore() != null && !result.getCvssScore().isEmpty()) {
-                setStyledTableRow(detailTable, tableRow++, "CVSS评分", result.getCvssScore(), null);
-            }
-
-            if (result.getMatchedPath() != null && !result.getMatchedPath().isEmpty()) {
-                setStyledTableRow(detailTable, tableRow++, "检测路径", result.getMatchedPath(), null);
-            }
-            if (result.getMatchedPayload() != null && !result.getMatchedPayload().isEmpty()) {
-                setStyledTableRow(detailTable, tableRow++, "Payload", result.getMatchedPayload(), null);
-            }
-
-            // 参数键名
-            if (paramKeys != null && !paramKeys.isEmpty()) {
-                setStyledTableRow(detailTable, tableRow++, "参数键名", paramKeys, null);
-            }
-
-            // 变量值
-            if (varValues != null && !varValues.isEmpty()) {
-                setStyledTableRow(detailTable, tableRow++, "变量值", varValues, null);
-            }
-
-            // 提取的数据
-            if (outputData != null && !outputData.isEmpty()) {
-                setStyledTableRow(detailTable, tableRow++, "提取数据", outputData, null);
-            }
-
-            // 修复建议
-            if (result.getRecommendation() != null && !result.getRecommendation().isEmpty()) {
-                setStyledTableRow(detailTable, tableRow++, "修复建议", result.getRecommendation(), COLOR_PRIMARY);
-            }
-
-            // 步骤执行详情
-            List<StepExecutionRecord> stepRecords = result.getStepRecords();
-            if (stepRecords != null && !stepRecords.isEmpty()) {
-                createStepRecordsSection(document, stepRecords);
-            }
-
-            // HTTP 请求
-            if (result.getRawRequest() != null && !result.getRawRequest().isEmpty()) {
-                createCodeBlock(document, "HTTP请求", result.getRawRequest());
-            }
-
-            // HTTP 响应
-            if (result.getRawResponseSnippet() != null && !result.getRawResponseSnippet().isEmpty()) {
-                createCodeBlock(document, "HTTP响应片段", result.getRawResponseSnippet());
-            }
-
-            // 分隔线
-            XWPFParagraph divider = document.createParagraph();
-            divider.setBorderBottom(Borders.DASH_SMALL_GAP);
-            divider.setSpacingAfter(100);
-        }
-    }
-
-    /**
-     * 创建步骤执行记录区域
-     */
-    private void createStepRecordsSection(XWPFDocument document, List<StepExecutionRecord> stepRecords) {
-        XWPFParagraph titlePara = document.createParagraph();
-        titlePara.setSpacingBefore(150);
-        titlePara.setSpacingAfter(50);
-
-        XWPFRun titleRun = titlePara.createRun();
-        titleRun.setText("步骤执行详情 (共 " + stepRecords.size() + " 步):");
-        titleRun.setFontFamily("Microsoft YaHei");
-        titleRun.setBold(true);
-        titleRun.setFontSize(11);
-        titleRun.setColor(COLOR_PRIMARY);
-
-        for (int i = 0; i < stepRecords.size(); i++) {
-            StepExecutionRecord record = stepRecords.get(i);
-
-            XWPFParagraph stepPara = document.createParagraph();
-            stepPara.setSpacingBefore(80);
-
-            // 步骤标题
-            XWPFRun stepRun = stepPara.createRun();
-            stepRun.setText("步骤 " + (i + 1));
-            if (record.isMatched()) {
-                stepRun.setText(" ✓");
-            }
-            stepRun.setFontFamily("Microsoft YaHei");
-            stepRun.setBold(true);
-            stepRun.setFontSize(10);
-            stepRun.setColor(record.isMatched() ? "22C55E" : COLOR_TEXT_MUTED);
-
-            // 步骤详情
-            XWPFParagraph detailPara = document.createParagraph();
-            detailPara.setSpacingAfter(50);
-
-            StringBuilder details = new StringBuilder();
-            details.append("URL: ").append(record.getRequestUrl()).append("\n");
-            details.append("方法: ").append(record.getRequestMethod()).append(" | ");
-            details.append("状态码: ").append(record.getResponseCode()).append(" | ");
-            details.append("响应时间: ").append(record.getResponseTime()).append("ms");
-
-            // 提取的变量
-            if (record.getExtractedVariables() != null && !record.getExtractedVariables().isEmpty()) {
-                details.append("\n提取变量: ");
-                for (Map.Entry<String, Object> entry : record.getExtractedVariables().entrySet()) {
-                    details.append(entry.getKey()).append("=").append(entry.getValue()).append("; ");
-                }
-            }
-
-            XWPFRun detailRun = detailPara.createRun();
-            detailRun.setText(details.toString());
-            detailRun.setFontFamily("Consolas");
-            detailRun.setFontSize(9);
-            detailRun.setColor(COLOR_TEXT_DARK);
-
-            // 请求头
-            Map<String, String> reqHeaders = record.getRequestHeaders();
-            if (reqHeaders != null && !reqHeaders.isEmpty()) {
-                XWPFParagraph reqHdrTitle = document.createParagraph();
-                XWPFRun reqHdrTitleRun = reqHdrTitle.createRun();
-                reqHdrTitleRun.setText("请求头:");
-                reqHdrTitleRun.setFontFamily("Microsoft YaHei");
-                reqHdrTitleRun.setFontSize(9);
-                reqHdrTitleRun.setBold(true);
-                reqHdrTitleRun.setColor(COLOR_TEXT_MUTED);
-
-                XWPFParagraph reqHdrPara = document.createParagraph();
-                StringBuilder hdrSb = new StringBuilder();
-                for (Map.Entry<String, String> h : reqHeaders.entrySet()) {
-                    hdrSb.append(h.getKey()).append(": ").append(h.getValue()).append("\n");
-                }
-                XWPFRun reqHdrRun = reqHdrPara.createRun();
-                reqHdrRun.setText(hdrSb.toString());
-                reqHdrRun.setFontFamily("Consolas");
-                reqHdrRun.setFontSize(8);
-                reqHdrRun.setColor(COLOR_TEXT_DARK);
-            }
-
-            // 响应头
-            Map<String, String> respHeaders = record.getResponseHeaders();
-            if (respHeaders != null && !respHeaders.isEmpty()) {
-                XWPFParagraph respHdrTitle = document.createParagraph();
-                XWPFRun respHdrTitleRun = respHdrTitle.createRun();
-                respHdrTitleRun.setText("响应头:");
-                respHdrTitleRun.setFontFamily("Microsoft YaHei");
-                respHdrTitleRun.setFontSize(9);
-                respHdrTitleRun.setBold(true);
-                respHdrTitleRun.setColor(COLOR_TEXT_MUTED);
-
-                XWPFParagraph respHdrPara = document.createParagraph();
-                StringBuilder hdrSb = new StringBuilder();
-                for (Map.Entry<String, String> h : respHeaders.entrySet()) {
-                    hdrSb.append(h.getKey()).append(": ").append(h.getValue()).append("\n");
-                }
-                XWPFRun respHdrRun = respHdrPara.createRun();
-                respHdrRun.setText(hdrSb.toString());
-                respHdrRun.setFontFamily("Consolas");
-                respHdrRun.setFontSize(8);
-                respHdrRun.setColor(COLOR_TEXT_DARK);
-            }
-        }
-    }
-
-    /**
-     * 创建章节标题
-     */
-    private void createSectionTitle(XWPFDocument document, String title) {
-        XWPFParagraph para = document.createParagraph();
-        para.setSpacingBefore(400);
-        para.setSpacingAfter(200);
-        para.setBorderLeft(Borders.THICK);
-
-        XWPFRun run = para.createRun();
-        run.setText("  " + title);
-        run.setFontFamily("Microsoft YaHei");
-        run.setBold(true);
-        run.setFontSize(16);
-        run.setColor(COLOR_PRIMARY);
-    }
-
-    /**
-     * 创建代码块
-     */
-    private void createCodeBlock(XWPFDocument document, String title, String content) {
-        XWPFParagraph titlePara = document.createParagraph();
-        titlePara.setSpacingBefore(150);
-        titlePara.setSpacingAfter(50);
-
-        XWPFRun titleRun = titlePara.createRun();
-        titleRun.setText(title + ":");
-        titleRun.setFontFamily("Microsoft YaHei");
-        titleRun.setBold(true);
-        titleRun.setFontSize(11);
-        titleRun.setColor(COLOR_PRIMARY);
-
-        XWPFParagraph codePara = document.createParagraph();
-        codePara.setSpacingAfter(100);
-
-        // 限制内容长度
-        String displayContent = content;
-        if (content.length() > 2000) {
-            displayContent = content.substring(0, 2000) + "\n...(内容截断，共 " + content.length() + " 字符)";
-        }
-
-        XWPFRun codeRun = codePara.createRun();
-        codeRun.setText(displayContent);
-        codeRun.setFontFamily("Consolas");
-        codeRun.setFontSize(9);
-        codeRun.setColor(COLOR_TEXT_DARK);
-    }
-
-    /**
-     * 创建Word页眉和页脚
-     */
     private void createHeaderFooter(XWPFDocument document) {
         try {
             CTBody body = document.getDocument().getBody();
             CTSectPr sectPr = body.isSetSectPr() ? body.getSectPr() : body.addNewSectPr();
             XWPFHeaderFooterPolicy policy = new XWPFHeaderFooterPolicy(document, sectPr);
 
-            // === 页眉 ===
             XWPFHeader header = policy.createHeader(XWPFHeaderFooterPolicy.DEFAULT);
             XWPFParagraph headerPara = header.getParagraphArray(0);
             if (headerPara == null) {
@@ -474,24 +105,14 @@ public class WordReportGenerator {
             }
             headerPara.setAlignment(ParagraphAlignment.LEFT);
             headerPara.setBorderBottom(Borders.SINGLE);
+            PotatoReportBranding.appendIcon(headerPara, 18, 18);
 
-            // Logo图片 (内置base64)
-            try {
-                byte[] logoBytes = Base64.getDecoder().decode(LOGO_PNG_BASE64);
-                InputStream logoStream = new ByteArrayInputStream(logoBytes);
-                XWPFRun logoRun = headerPara.createRun();
-                logoRun.addPicture(logoStream, XWPFDocument.PICTURE_TYPE_PNG,
-                        "logo.png", Units.toEMU(24), Units.toEMU(24));
-                logoStream.close();
-            } catch (Exception ignored) {}
+            XWPFRun headerRun = headerPara.createRun();
+            headerRun.setText("  PotatoTool | 漏洞扫描报告");
+            headerRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+            headerRun.setFontSize(9);
+            headerRun.setColor(PotatoReportBranding.COLOR_TEXT_MUTED);
 
-            XWPFRun headerTextRun = headerPara.createRun();
-            headerTextRun.setText("  PotatoTool | 漏洞扫描报告");
-            headerTextRun.setFontFamily("Microsoft YaHei");
-            headerTextRun.setFontSize(9);
-            headerTextRun.setColor(COLOR_TEXT_MUTED);
-
-            // === 页脚 ===
             XWPFFooter footer = policy.createFooter(XWPFHeaderFooterPolicy.DEFAULT);
             XWPFParagraph footerPara = footer.getParagraphArray(0);
             if (footerPara == null) {
@@ -500,233 +121,805 @@ public class WordReportGenerator {
             footerPara.setAlignment(ParagraphAlignment.CENTER);
             footerPara.setBorderTop(Borders.SINGLE);
 
-            XWPFRun footerTextRun = footerPara.createRun();
-            footerTextRun.setText("PotatoTool v2.5.1 | 专业安全审计工具    ");
-            footerTextRun.setFontFamily("Microsoft YaHei");
-            footerTextRun.setFontSize(8);
-            footerTextRun.setColor(COLOR_TEXT_MUTED);
+            XWPFRun footerRun = footerPara.createRun();
+            footerRun.setText("PotatoTool v2.5 | Red Team · Vuln Scan    ");
+            footerRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+            footerRun.setFontSize(8);
+            footerRun.setColor(PotatoReportBranding.COLOR_TEXT_MUTED);
 
-            // 页码字段
-            XWPFRun pageRun = footerPara.createRun();
-            pageRun.setFontFamily("Microsoft YaHei");
-            pageRun.setFontSize(8);
-            pageRun.setColor(COLOR_TEXT_MUTED);
-            pageRun.getCTR().addNewFldChar().setFldCharType(org.openxmlformats.schemas.wordprocessingml.x2006.main.STFldCharType.BEGIN);
-            XWPFRun pageInstr = footerPara.createRun();
-            pageInstr.getCTR().addNewInstrText().setStringValue(" PAGE ");
-            XWPFRun pageEnd = footerPara.createRun();
-            pageEnd.getCTR().addNewFldChar().setFldCharType(org.openxmlformats.schemas.wordprocessingml.x2006.main.STFldCharType.END);
-
-            XWPFRun slashRun = footerPara.createRun();
-            slashRun.setText(" / ");
-            slashRun.setFontSize(8);
-            slashRun.setColor(COLOR_TEXT_MUTED);
-
-            XWPFRun totalBegin = footerPara.createRun();
-            totalBegin.getCTR().addNewFldChar().setFldCharType(org.openxmlformats.schemas.wordprocessingml.x2006.main.STFldCharType.BEGIN);
-            XWPFRun totalInstr = footerPara.createRun();
-            totalInstr.getCTR().addNewInstrText().setStringValue(" NUMPAGES ");
-            XWPFRun totalEnd = footerPara.createRun();
-            totalEnd.getCTR().addNewFldChar().setFldCharType(org.openxmlformats.schemas.wordprocessingml.x2006.main.STFldCharType.END);
-
-        } catch (Exception e) {
-            // 页眉页脚创建失败不影响报告主体
-            e.printStackTrace();
+            addPageNumberField(footerPara);
+        } catch (Exception ignored) {
+            // 页眉页脚失败时不影响正文导出
         }
     }
 
-    /**
-     * 创建页脚
-     */
-    private void createFooter(XWPFDocument document) {
-        // 页脚已通过 createHeaderFooter 中的 XWPFHeaderFooterPolicy 创建
+    private void addPageNumberField(XWPFParagraph paragraph) {
+        XWPFRun pageBegin = paragraph.createRun();
+        pageBegin.getCTR().addNewFldChar().setFldCharType(STFldCharType.BEGIN);
+
+        XWPFRun pageInstr = paragraph.createRun();
+        pageInstr.getCTR().addNewInstrText().setStringValue(" PAGE ");
+
+        XWPFRun pageEnd = paragraph.createRun();
+        pageEnd.getCTR().addNewFldChar().setFldCharType(STFldCharType.END);
+
+        XWPFRun slashRun = paragraph.createRun();
+        slashRun.setText(" / ");
+        slashRun.setFontSize(8);
+        slashRun.setColor(PotatoReportBranding.COLOR_TEXT_MUTED);
+
+        XWPFRun totalBegin = paragraph.createRun();
+        totalBegin.getCTR().addNewFldChar().setFldCharType(STFldCharType.BEGIN);
+
+        XWPFRun totalInstr = paragraph.createRun();
+        totalInstr.getCTR().addNewInstrText().setStringValue(" NUMPAGES ");
+
+        XWPFRun totalEnd = paragraph.createRun();
+        totalEnd.getCTR().addNewFldChar().setFldCharType(STFldCharType.END);
     }
 
-    /**
-     * 设置表格样式（两列）
-     */
-    private void setTableStyle(XWPFTable table, int col1Width, int col2Width) {
+    private void createCover(XWPFDocument document, Summary summary) {
+        addSpacing(document, 220);
+
+        XWPFParagraph iconPara = document.createParagraph();
+        iconPara.setAlignment(ParagraphAlignment.CENTER);
+        PotatoReportBranding.appendIcon(iconPara, 52, 52);
+
+        XWPFParagraph wordmarkPara = document.createParagraph();
+        wordmarkPara.setAlignment(ParagraphAlignment.CENTER);
+        wordmarkPara.setSpacingAfter(50);
+        PotatoReportBranding.appendWordmark(wordmarkPara, 235, 38);
+
+        XWPFParagraph tagPara = document.createParagraph();
+        tagPara.setAlignment(ParagraphAlignment.CENTER);
+        tagPara.setSpacingAfter(70);
+        XWPFRun tagRun = tagPara.createRun();
+        tagRun.setText("RED TEAM · VULN SCAN");
+        tagRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        tagRun.setBold(true);
+        tagRun.setFontSize(11);
+        tagRun.setColor(PotatoReportBranding.COLOR_ACCENT);
+
+        XWPFParagraph titlePara = document.createParagraph();
+        titlePara.setAlignment(ParagraphAlignment.CENTER);
+        titlePara.setSpacingAfter(90);
+        XWPFRun titleRun = titlePara.createRun();
+        titleRun.setText("PotatoTool 漏洞扫描报告");
+        titleRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        titleRun.setBold(true);
+        titleRun.setFontSize(26);
+        titleRun.setColor(PotatoReportBranding.COLOR_PRIMARY);
+
+        XWPFParagraph subtitlePara = document.createParagraph();
+        subtitlePara.setAlignment(ParagraphAlignment.CENTER);
+        subtitlePara.setSpacingAfter(180);
+        XWPFRun subtitleRun = subtitlePara.createRun();
+        subtitleRun.setText("统一输出扫描概览、严重度分布、漏洞详情与请求证据");
+        subtitleRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        subtitleRun.setFontSize(11);
+        subtitleRun.setColor(PotatoReportBranding.COLOR_TEXT_MUTED);
+
+        createCalloutCard(document,
+                "风险等级：" + summary.riskLevel + "。 " + summary.riskSummary,
+                summary.riskSoftColor, summary.riskColor);
+
+        XWPFTable metaTable = document.createTable(2, 3);
+        metaTable.setCellMargins(110, 170, 110, 170);
+        styleTable(metaTable, new int[]{3000, 3000, 3000});
+        setMetaCard(metaTable.getRow(0).getCell(0), "生成时间", summary.generatedAt,
+                PotatoReportBranding.COLOR_SURFACE_SOFT, PotatoReportBranding.COLOR_PRIMARY);
+        setMetaCard(metaTable.getRow(0).getCell(1), "扫描耗时", summary.scanDuration,
+                PotatoReportBranding.COLOR_SURFACE_SOFT, PotatoReportBranding.COLOR_PRIMARY);
+        setMetaCard(metaTable.getRow(0).getCell(2), "扫描目标数", String.valueOf(summary.targetCount),
+                PotatoReportBranding.COLOR_PRIMARY_SOFT, PotatoReportBranding.COLOR_PRIMARY);
+        setMetaCard(metaTable.getRow(1).getCell(0), "POC 数量", String.valueOf(summary.pocCount),
+                PotatoReportBranding.COLOR_SURFACE_SOFT, PotatoReportBranding.COLOR_PRIMARY_DARK);
+        setMetaCard(metaTable.getRow(1).getCell(1), "漏洞结果数", String.valueOf(summary.vulnCount),
+                PotatoReportBranding.COLOR_ACCENT_SOFT, PotatoReportBranding.COLOR_ACCENT);
+        setMetaCard(metaTable.getRow(1).getCell(2), "高优先级风险", String.valueOf(summary.urgentCount),
+                summary.riskSoftColor, summary.riskColor);
+
+        addSpacing(document, 300);
+        XWPFParagraph divider = document.createParagraph();
+        divider.setBorderBottom(Borders.SINGLE);
+        divider.setSpacingAfter(0);
+
+        XWPFParagraph pageBreak = document.createParagraph();
+        pageBreak.setPageBreak(true);
+    }
+
+    private void createOverview(XWPFDocument document, Summary summary) {
+        createSectionHeading(document, "01", "风险概览");
+
+        XWPFTable metricTable = document.createTable(2, 2);
+        metricTable.setCellMargins(110, 180, 110, 180);
+        styleTable(metricTable, new int[]{4500, 4500});
+        setMetricCell(metricTable.getRow(0).getCell(0), "扫描目标数", String.valueOf(summary.targetCount),
+                PotatoReportBranding.COLOR_PRIMARY, PotatoReportBranding.COLOR_PRIMARY_SOFT);
+        setMetricCell(metricTable.getRow(0).getCell(1), "使用 POC 数", String.valueOf(summary.pocCount),
+                PotatoReportBranding.COLOR_PRIMARY_DARK, PotatoReportBranding.COLOR_SURFACE_SOFT);
+        setMetricCell(metricTable.getRow(1).getCell(0), "漏洞结果总数", String.valueOf(summary.vulnCount),
+                PotatoReportBranding.COLOR_ACCENT, PotatoReportBranding.COLOR_ACCENT_SOFT);
+        setMetricCell(metricTable.getRow(1).getCell(1), "高优先级风险", String.valueOf(summary.urgentCount),
+                summary.riskColor, summary.riskSoftColor);
+
+        addSpacing(document, 120);
+
+        XWPFTable severityTable = document.createTable(1, 5);
+        severityTable.setCellMargins(110, 130, 110, 130);
+        styleTable(severityTable, new int[]{1800, 1800, 1800, 1800, 1800});
+        setSeverityCell(severityTable.getRow(0).getCell(0), "CRITICAL", summary.critical,
+                summary.vulnCount, PotatoReportBranding.COLOR_CRITICAL, PotatoReportBranding.COLOR_CRITICAL_SOFT);
+        setSeverityCell(severityTable.getRow(0).getCell(1), "HIGH", summary.high,
+                summary.vulnCount, PotatoReportBranding.COLOR_HIGH, PotatoReportBranding.COLOR_HIGH_SOFT);
+        setSeverityCell(severityTable.getRow(0).getCell(2), "MEDIUM", summary.medium,
+                summary.vulnCount, PotatoReportBranding.COLOR_MEDIUM, PotatoReportBranding.COLOR_MEDIUM_SOFT);
+        setSeverityCell(severityTable.getRow(0).getCell(3), "LOW", summary.low,
+                summary.vulnCount, PotatoReportBranding.COLOR_LOW, PotatoReportBranding.COLOR_LOW_SOFT);
+        setSeverityCell(severityTable.getRow(0).getCell(4), "INFO", summary.info,
+                summary.vulnCount, PotatoReportBranding.COLOR_INFO, PotatoReportBranding.COLOR_INFO_SOFT);
+
+        addSpacing(document, 120);
+        createCalloutCard(document, summary.actionGuide,
+                PotatoReportBranding.COLOR_SURFACE_SOFT, PotatoReportBranding.COLOR_TEXT_DARK);
+        addSpacing(document, 90);
+    }
+
+    private void createFindings(XWPFDocument document, List<ScanResult> results) {
+        createSectionHeading(document, "02", "漏洞详情");
+
+        for (int i = 0; i < results.size(); i++) {
+            ScanResult result = results.get(i);
+            PocObj.Poc poc = result.getPoc();
+            String severityColor = getSeverityColor(poc.getSeverity());
+            String severitySoftColor = getSeveritySoftColor(poc.getSeverity());
+
+            XWPFTable headingTable = document.createTable(1, 2);
+            headingTable.setCellMargins(110, 170, 110, 170);
+            styleTable(headingTable, new int[]{6800, 2200});
+
+            XWPFTableCell leftCell = headingTable.getRow(0).getCell(0);
+            leftCell.setColor(severitySoftColor);
+            clearCell(leftCell);
+            XWPFParagraph titlePara = leftCell.addParagraph();
+            titlePara.setAlignment(ParagraphAlignment.LEFT);
+            titlePara.setSpacingAfter(35);
+            XWPFRun titleRun = titlePara.createRun();
+            titleRun.setText(padIndex(i + 1) + "  " + safeText(poc.getName()));
+            titleRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+            titleRun.setBold(true);
+            titleRun.setFontSize(14);
+            titleRun.setColor(PotatoReportBranding.COLOR_TEXT_DARK);
+
+            XWPFParagraph targetPara = leftCell.addParagraph();
+            targetPara.setAlignment(ParagraphAlignment.LEFT);
+            XWPFRun targetRun = targetPara.createRun();
+            targetRun.setText("目标地址： " + nonEmpty(result.getTarget()));
+            targetRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+            targetRun.setFontSize(9);
+            targetRun.setColor(PotatoReportBranding.COLOR_TEXT_MUTED);
+
+            XWPFTableCell rightCell = headingTable.getRow(0).getCell(1);
+            rightCell.setColor(severityColor);
+            clearCell(rightCell);
+            XWPFParagraph sevPara = rightCell.addParagraph();
+            sevPara.setAlignment(ParagraphAlignment.CENTER);
+            sevPara.setSpacingAfter(20);
+            XWPFRun sevRun = sevPara.createRun();
+            sevRun.setText(poc.getSeverity().name());
+            sevRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+            sevRun.setBold(true);
+            sevRun.setFontSize(13);
+            sevRun.setColor(PotatoReportBranding.COLOR_SURFACE);
+
+            XWPFParagraph protoPara = rightCell.addParagraph();
+            protoPara.setAlignment(ParagraphAlignment.CENTER);
+            XWPFRun protoRun = protoPara.createRun();
+            protoRun.setText(nonEmpty(poc.getProtocol()));
+            protoRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+            protoRun.setFontSize(9);
+            protoRun.setColor(PotatoReportBranding.COLOR_SURFACE);
+
+            List<InfoRow> rows = buildBasicRows(result);
+            XWPFTable infoTable = document.createTable(rows.size(), 2);
+            infoTable.setCellMargins(110, 170, 110, 170);
+            styleTable(infoTable, new int[]{2400, 6600});
+            for (int rowIndex = 0; rowIndex < rows.size(); rowIndex++) {
+                applyInfoRow(infoTable.getRow(rowIndex), rows.get(rowIndex));
+            }
+
+            if (hasText(poc.getDescription())) {
+                createLabeledBlock(document, "漏洞说明", poc.getDescription(),
+                        PotatoReportBranding.COLOR_SURFACE_SOFT, PotatoReportBranding.FONT_BODY, 10);
+            }
+            if (hasText(result.getMatchedPath())) {
+                createLabeledBlock(document, "检测路径", result.getMatchedPath(),
+                        PotatoReportBranding.COLOR_SURFACE_SOFT, PotatoReportBranding.FONT_BODY, 10);
+            }
+            if (hasText(result.getMatchedPayload())) {
+                createCodeBlock(document, "检测 Payload", result.getMatchedPayload());
+            }
+            if (hasText(result.getFormattedParamKeys())) {
+                createLabeledBlock(document, "参数键名", result.getFormattedParamKeys(),
+                        PotatoReportBranding.COLOR_SURFACE_SOFT, PotatoReportBranding.FONT_BODY, 10);
+            }
+            if (hasText(result.getFormattedVariableValues())) {
+                createCodeBlock(document, "变量值", result.getFormattedVariableValues());
+            }
+            if (hasText(result.getFormattedOutputData())) {
+                createCodeBlock(document, "提取数据", result.getFormattedOutputData());
+            }
+            if (hasText(result.getRecommendation())) {
+                createCalloutCard(document, "修复建议： " + result.getRecommendation(),
+                        PotatoReportBranding.COLOR_ACCENT_SOFT, PotatoReportBranding.COLOR_TEXT_DARK);
+            }
+
+            List<StepExecutionRecord> stepRecords = result.getStepRecords();
+            if (stepRecords != null && !stepRecords.isEmpty()) {
+                createStepRecordsSection(document, stepRecords);
+            }
+
+            if (hasText(result.getRawRequest())) {
+                createCodeBlock(document, "HTTP 请求", trimCodeBlock(result.getRawRequest(), 5000));
+            }
+            if (hasText(result.getRawResponseSnippet())) {
+                createCodeBlock(document, "HTTP 响应片段", trimCodeBlock(result.getRawResponseSnippet(), 5000));
+            }
+
+            XWPFParagraph divider = document.createParagraph();
+            divider.setSpacingBefore(80);
+            divider.setSpacingAfter(100);
+            divider.setBorderBottom(Borders.DASH_SMALL_GAP);
+        }
+    }
+
+    private List<InfoRow> buildBasicRows(ScanResult result) {
+        List<InfoRow> rows = new ArrayList<InfoRow>();
+        PocObj.Poc poc = result.getPoc();
+
+        rows.add(new InfoRow("POC ID", poc.getId(), null, false));
+        rows.add(new InfoRow("POC 格式", nonEmpty(poc.getOriginalFormat()), null, false));
+        rows.add(new InfoRow("协议", nonEmpty(poc.getProtocol()), null, false));
+        rows.add(new InfoRow("漏洞类型", nonEmpty(poc.getVulType()), null, false));
+
+        if (hasText(result.getCveId())) {
+            rows.add(new InfoRow("CVE ID", result.getCveId(), PotatoReportBranding.COLOR_CRITICAL, false));
+        }
+        if (hasText(result.getCweId())) {
+            rows.add(new InfoRow("CWE ID", result.getCweId(), PotatoReportBranding.COLOR_HIGH, false));
+        }
+        if (hasText(result.getCvssScore())) {
+            rows.add(new InfoRow("CVSS 评分", result.getCvssScore(), PotatoReportBranding.COLOR_MEDIUM, false));
+        }
+
+        String target = nonEmpty(result.getTarget());
+        rows.add(0, new InfoRow("目标地址", target, null, false));
+        return rows;
+    }
+
+    private void applyInfoRow(XWPFTableRow row, InfoRow infoRow) {
+        XWPFTableCell keyCell = row.getCell(0);
+        keyCell.setColor(PotatoReportBranding.COLOR_PRIMARY_SOFT);
+        writeCellText(keyCell, infoRow.label, PotatoReportBranding.FONT_BODY, 10,
+                PotatoReportBranding.COLOR_PRIMARY_DARK, true);
+
+        XWPFTableCell valueCell = row.getCell(1);
+        valueCell.setColor(PotatoReportBranding.COLOR_SURFACE);
+        writeCellText(valueCell, infoRow.value,
+                infoRow.monospace ? PotatoReportBranding.FONT_MONO : PotatoReportBranding.FONT_BODY,
+                10, infoRow.color == null ? PotatoReportBranding.COLOR_TEXT_DARK : infoRow.color,
+                infoRow.color != null);
+    }
+
+    private void createStepRecordsSection(XWPFDocument document, List<StepExecutionRecord> stepRecords) {
+        createMiniHeading(document, "执行链路");
+
+        for (int i = 0; i < stepRecords.size(); i++) {
+            StepExecutionRecord record = stepRecords.get(i);
+            XWPFTable stepTable = document.createTable(1, 1);
+            stepTable.setCellMargins(110, 160, 110, 160);
+            styleTable(stepTable, new int[]{9000});
+            XWPFTableCell cell = stepTable.getRow(0).getCell(0);
+            cell.setColor(record.isMatched() ? PotatoReportBranding.COLOR_SUCCESS_SOFT
+                    : PotatoReportBranding.COLOR_SURFACE_SOFT);
+            clearCell(cell);
+
+            XWPFParagraph titlePara = cell.addParagraph();
+            titlePara.setAlignment(ParagraphAlignment.LEFT);
+            titlePara.setSpacingAfter(45);
+            XWPFRun titleRun = titlePara.createRun();
+            titleRun.setText("步骤 " + padIndex(i + 1) + (record.isMatched() ? " · 已命中" : " · 未命中"));
+            titleRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+            titleRun.setBold(true);
+            titleRun.setFontSize(11);
+            titleRun.setColor(record.isMatched() ? PotatoReportBranding.COLOR_SUCCESS : PotatoReportBranding.COLOR_PRIMARY);
+
+            addStepDetailParagraph(cell, "URL", record.getRequestUrl());
+            addStepDetailParagraph(cell, "方法", record.getRequestMethod());
+            addStepDetailParagraph(cell, "状态码", String.valueOf(record.getResponseCode()));
+            addStepDetailParagraph(cell, "响应时间", record.getResponseTime() + " ms");
+
+            Map<String, Object> extractedVariables = record.getExtractedVariables();
+            if (extractedVariables != null && !extractedVariables.isEmpty()) {
+                addStepDetailParagraph(cell, "提取变量", mapToText(extractedVariables));
+            }
+            if (record.getRequestHeaders() != null && !record.getRequestHeaders().isEmpty()) {
+                addCodeParagraph(cell, "请求头", mapToText(record.getRequestHeaders()));
+            }
+            if (hasText(record.getRequestBody())) {
+                addCodeParagraph(cell, "请求体", trimCodeBlock(record.getRequestBody(), 1500));
+            }
+            if (record.getResponseHeaders() != null && !record.getResponseHeaders().isEmpty()) {
+                addCodeParagraph(cell, "响应头", mapToText(record.getResponseHeaders()));
+            }
+            if (hasText(record.getResponseBody())) {
+                addCodeParagraph(cell, "响应体", trimCodeBlock(record.getResponseBody(), 1500));
+            }
+            addSpacing(document, 80);
+        }
+    }
+
+    private void addStepDetailParagraph(XWPFTableCell cell, String label, String value) {
+        XWPFParagraph paragraph = cell.addParagraph();
+        paragraph.setAlignment(ParagraphAlignment.LEFT);
+        paragraph.setSpacingAfter(20);
+
+        XWPFRun labelRun = paragraph.createRun();
+        labelRun.setText(label + "：");
+        labelRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        labelRun.setBold(true);
+        labelRun.setFontSize(9);
+        labelRun.setColor(PotatoReportBranding.COLOR_TEXT_MUTED);
+
+        XWPFRun valueRun = paragraph.createRun();
+        valueRun.setText(nonEmpty(value));
+        valueRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        valueRun.setFontSize(9);
+        valueRun.setColor(PotatoReportBranding.COLOR_TEXT_DARK);
+    }
+
+    private void addCodeParagraph(XWPFTableCell cell, String title, String content) {
+        XWPFParagraph titlePara = cell.addParagraph();
+        titlePara.setAlignment(ParagraphAlignment.LEFT);
+        titlePara.setSpacingAfter(15);
+        XWPFRun titleRun = titlePara.createRun();
+        titleRun.setText(title);
+        titleRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        titleRun.setBold(true);
+        titleRun.setFontSize(9);
+        titleRun.setColor(PotatoReportBranding.COLOR_PRIMARY);
+
+        XWPFParagraph contentPara = cell.addParagraph();
+        contentPara.setAlignment(ParagraphAlignment.LEFT);
+        contentPara.setSpacingAfter(25);
+        XWPFRun contentRun = contentPara.createRun();
+        contentRun.setText(trimCodeBlock(content, 1500));
+        contentRun.setFontFamily(PotatoReportBranding.FONT_MONO);
+        contentRun.setFontSize(8);
+        contentRun.setColor(PotatoReportBranding.COLOR_TEXT_DARK);
+    }
+
+    private void createMiniHeading(XWPFDocument document, String title) {
+        XWPFParagraph paragraph = document.createParagraph();
+        paragraph.setSpacingBefore(100);
+        paragraph.setSpacingAfter(55);
+        XWPFRun run = paragraph.createRun();
+        run.setText(title);
+        run.setFontFamily(PotatoReportBranding.FONT_BODY);
+        run.setBold(true);
+        run.setFontSize(11);
+        run.setColor(PotatoReportBranding.COLOR_PRIMARY);
+    }
+
+    private void createCodeBlock(XWPFDocument document, String title, String content) {
+        createMiniHeading(document, title);
+        XWPFTable table = document.createTable(1, 1);
+        table.setCellMargins(120, 170, 120, 170);
+        styleTable(table, new int[]{9000});
+        XWPFTableCell cell = table.getRow(0).getCell(0);
+        cell.setColor(PotatoReportBranding.COLOR_CODE_BG);
+        writeCellText(cell, content, PotatoReportBranding.FONT_MONO, 9,
+                PotatoReportBranding.COLOR_TEXT_DARK, false);
+        addSpacing(document, 70);
+    }
+
+    private void createLabeledBlock(XWPFDocument document, String title, String content,
+                                    String backgroundColor, String fontFamily, int fontSize) {
+        createMiniHeading(document, title);
+        XWPFTable table = document.createTable(1, 1);
+        table.setCellMargins(120, 170, 120, 170);
+        styleTable(table, new int[]{9000});
+        XWPFTableCell cell = table.getRow(0).getCell(0);
+        cell.setColor(backgroundColor);
+        writeCellText(cell, content, fontFamily, fontSize,
+                PotatoReportBranding.COLOR_TEXT_DARK, false);
+        addSpacing(document, 70);
+    }
+
+    private void createSectionHeading(XWPFDocument document, String sectionNo, String title) {
+        XWPFParagraph paragraph = document.createParagraph();
+        paragraph.setSpacingBefore(120);
+        paragraph.setSpacingAfter(110);
+
+        XWPFRun noRun = paragraph.createRun();
+        noRun.setText(sectionNo + "  ");
+        noRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        noRun.setBold(true);
+        noRun.setFontSize(11);
+        noRun.setColor(PotatoReportBranding.COLOR_ACCENT);
+
+        XWPFRun titleRun = paragraph.createRun();
+        titleRun.setText(title);
+        titleRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        titleRun.setBold(true);
+        titleRun.setFontSize(16);
+        titleRun.setColor(PotatoReportBranding.COLOR_PRIMARY);
+    }
+
+    private void createCalloutCard(XWPFDocument document, String text, String backgroundColor, String textColor) {
+        XWPFTable table = document.createTable(1, 1);
+        table.setCellMargins(120, 170, 120, 170);
+        styleTable(table, new int[]{9000});
+        XWPFTableCell cell = table.getRow(0).getCell(0);
+        cell.setColor(backgroundColor);
+        writeCellText(cell, text, PotatoReportBranding.FONT_BODY, 10, textColor, false);
+        addSpacing(document, 80);
+    }
+
+    private void setMetaCard(XWPFTableCell cell, String label, String value, String backgroundColor, String valueColor) {
+        cell.setColor(backgroundColor);
+        clearCell(cell);
+
+        XWPFParagraph labelPara = cell.addParagraph();
+        labelPara.setAlignment(ParagraphAlignment.LEFT);
+        labelPara.setSpacingAfter(40);
+        XWPFRun labelRun = labelPara.createRun();
+        labelRun.setText(label);
+        labelRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        labelRun.setFontSize(9);
+        labelRun.setColor(PotatoReportBranding.COLOR_TEXT_MUTED);
+
+        XWPFParagraph valuePara = cell.addParagraph();
+        valuePara.setAlignment(ParagraphAlignment.LEFT);
+        XWPFRun valueRun = valuePara.createRun();
+        valueRun.setText(nonEmpty(value));
+        valueRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        valueRun.setBold(true);
+        valueRun.setFontSize(12);
+        valueRun.setColor(valueColor);
+    }
+
+    private void setMetricCell(XWPFTableCell cell, String label, String value, String valueColor, String backgroundColor) {
+        cell.setColor(backgroundColor);
+        clearCell(cell);
+
+        XWPFParagraph labelPara = cell.addParagraph();
+        labelPara.setAlignment(ParagraphAlignment.LEFT);
+        labelPara.setSpacingAfter(45);
+        XWPFRun labelRun = labelPara.createRun();
+        labelRun.setText(label);
+        labelRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        labelRun.setFontSize(9);
+        labelRun.setColor(PotatoReportBranding.COLOR_TEXT_MUTED);
+
+        XWPFParagraph valuePara = cell.addParagraph();
+        valuePara.setAlignment(ParagraphAlignment.LEFT);
+        XWPFRun valueRun = valuePara.createRun();
+        valueRun.setText(nonEmpty(value));
+        valueRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        valueRun.setBold(true);
+        valueRun.setFontSize(18);
+        valueRun.setColor(valueColor);
+    }
+
+    private void setSeverityCell(XWPFTableCell cell, String title, long count, int total, String accentColor, String backgroundColor) {
+        cell.setColor(backgroundColor);
+        clearCell(cell);
+
+        XWPFParagraph titlePara = cell.addParagraph();
+        titlePara.setAlignment(ParagraphAlignment.CENTER);
+        titlePara.setSpacingAfter(30);
+        XWPFRun titleRun = titlePara.createRun();
+        titleRun.setText(title);
+        titleRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        titleRun.setBold(true);
+        titleRun.setFontSize(10);
+        titleRun.setColor(accentColor);
+
+        XWPFParagraph countPara = cell.addParagraph();
+        countPara.setAlignment(ParagraphAlignment.CENTER);
+        countPara.setSpacingAfter(18);
+        XWPFRun countRun = countPara.createRun();
+        countRun.setText(String.valueOf(count));
+        countRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        countRun.setBold(true);
+        countRun.setFontSize(16);
+        countRun.setColor(PotatoReportBranding.COLOR_TEXT_DARK);
+
+        XWPFParagraph percentPara = cell.addParagraph();
+        percentPara.setAlignment(ParagraphAlignment.CENTER);
+        XWPFRun percentRun = percentPara.createRun();
+        percentRun.setText(total <= 0 ? "0.0%" : String.format("%.1f%%", count * 100.0 / total));
+        percentRun.setFontFamily(PotatoReportBranding.FONT_BODY);
+        percentRun.setFontSize(9);
+        percentRun.setColor(PotatoReportBranding.COLOR_TEXT_MUTED);
+    }
+
+    private void writeCellText(XWPFTableCell cell, String content, String fontFamily,
+                               int fontSize, String color, boolean bold) {
+        clearCell(cell);
+        XWPFParagraph paragraph = cell.addParagraph();
+        paragraph.setAlignment(ParagraphAlignment.LEFT);
+        paragraph.setSpacingAfter(0);
+        XWPFRun run = paragraph.createRun();
+        run.setFontFamily(fontFamily);
+        run.setFontSize(fontSize);
+        run.setColor(color);
+        run.setBold(bold);
+        appendMultilineText(run, nonEmpty(content));
+    }
+
+    private void appendMultilineText(XWPFRun run, String content) {
+        String[] lines = safeContent(content).split("\\r?\\n", -1);
+        for (int i = 0; i < lines.length; i++) {
+            if (i > 0) {
+                run.addBreak();
+            }
+            run.setText(lines[i]);
+        }
+    }
+
+    private void styleTable(XWPFTable table, int[] widths) {
         table.setWidth("100%");
         CTTblPr tblPr = table.getCTTbl().getTblPr();
         if (tblPr == null) {
             tblPr = table.getCTTbl().addNewTblPr();
         }
 
-        // 设置表格边框
-        CTTblBorders borders = tblPr.addNewTblBorders();
-        setBorder(borders.addNewTop(), STBorder.SINGLE, "CCCCCC", 4);
-        setBorder(borders.addNewBottom(), STBorder.SINGLE, "CCCCCC", 4);
-        setBorder(borders.addNewLeft(), STBorder.SINGLE, "CCCCCC", 4);
-        setBorder(borders.addNewRight(), STBorder.SINGLE, "CCCCCC", 4);
-        setBorder(borders.addNewInsideH(), STBorder.SINGLE, "E5E5E5", 4);
-        setBorder(borders.addNewInsideV(), STBorder.SINGLE, "E5E5E5", 4);
+        CTTblBorders borders = tblPr.isSetTblBorders() ? tblPr.getTblBorders() : tblPr.addNewTblBorders();
+        setBorder(borders.isSetTop() ? borders.getTop() : borders.addNewTop(), STBorder.SINGLE,
+                PotatoReportBranding.COLOR_BORDER, 5);
+        setBorder(borders.isSetBottom() ? borders.getBottom() : borders.addNewBottom(), STBorder.SINGLE,
+                PotatoReportBranding.COLOR_BORDER, 5);
+        setBorder(borders.isSetLeft() ? borders.getLeft() : borders.addNewLeft(), STBorder.SINGLE,
+                PotatoReportBranding.COLOR_BORDER, 5);
+        setBorder(borders.isSetRight() ? borders.getRight() : borders.addNewRight(), STBorder.SINGLE,
+                PotatoReportBranding.COLOR_BORDER, 5);
+        setBorder(borders.isSetInsideH() ? borders.getInsideH() : borders.addNewInsideH(), STBorder.SINGLE,
+                PotatoReportBranding.COLOR_BORDER, 4);
+        setBorder(borders.isSetInsideV() ? borders.getInsideV() : borders.addNewInsideV(), STBorder.SINGLE,
+                PotatoReportBranding.COLOR_BORDER, 4);
 
-        // 设置列宽
         for (XWPFTableRow row : table.getRows()) {
-            if (row.getTableCells().size() >= 2) {
-                setColumnWidth(row.getCell(0), col1Width);
-                setColumnWidth(row.getCell(1), col2Width);
+            for (int i = 0; i < row.getTableCells().size(); i++) {
+                int width = widths.length == 1 ? widths[0] : widths[Math.min(i, widths.length - 1)];
+                setColumnWidth(row.getCell(i), width);
             }
         }
     }
 
-    /**
-     * 设置表格样式（三列）
-     */
-    private void setTableStyle(XWPFTable table, int col1Width, int col2Width, int col3Width) {
-        table.setWidth("100%");
-        CTTblPr tblPr = table.getCTTbl().getTblPr();
-        if (tblPr == null) {
-            tblPr = table.getCTTbl().addNewTblPr();
+    private void setColumnWidth(XWPFTableCell cell, int width) {
+        CTTcPr tcPr = cell.getCTTc().getTcPr();
+        if (tcPr == null) {
+            tcPr = cell.getCTTc().addNewTcPr();
         }
-
-        CTTblBorders borders = tblPr.addNewTblBorders();
-        setBorder(borders.addNewTop(), STBorder.SINGLE, "CCCCCC", 4);
-        setBorder(borders.addNewBottom(), STBorder.SINGLE, "CCCCCC", 4);
-        setBorder(borders.addNewLeft(), STBorder.SINGLE, "CCCCCC", 4);
-        setBorder(borders.addNewRight(), STBorder.SINGLE, "CCCCCC", 4);
-        setBorder(borders.addNewInsideH(), STBorder.SINGLE, "E5E5E5", 4);
-        setBorder(borders.addNewInsideV(), STBorder.SINGLE, "E5E5E5", 4);
-
-        for (XWPFTableRow row : table.getRows()) {
-            if (row.getTableCells().size() >= 3) {
-                setColumnWidth(row.getCell(0), col1Width);
-                setColumnWidth(row.getCell(1), col2Width);
-                setColumnWidth(row.getCell(2), col3Width);
-            }
-        }
+        CTTblWidth cellWidth = tcPr.isSetTcW() ? tcPr.getTcW() : tcPr.addNewTcW();
+        cellWidth.setW(BigInteger.valueOf(width));
+        cellWidth.setType(STTblWidth.DXA);
     }
 
-    /**
-     * 设置边框样式
-     */
     private void setBorder(CTBorder border, STBorder.Enum style, String color, int size) {
         border.setVal(style);
         border.setColor(color);
         border.setSz(BigInteger.valueOf(size));
     }
 
-    /**
-     * 设置列宽
-     */
-    private void setColumnWidth(XWPFTableCell cell, int width) {
-        CTTcPr tcPr = cell.getCTTc().getTcPr();
-        if (tcPr == null) {
-            tcPr = cell.getCTTc().addNewTcPr();
-        }
-        CTTblWidth cellWidth = tcPr.addNewTcW();
-        cellWidth.setW(BigInteger.valueOf(width));
-        cellWidth.setType(STTblWidth.DXA);
-    }
-
-    /**
-     * 设置表格表头行
-     */
-    private void setTableHeader(XWPFTable table, int rowIndex, String[] headers) {
-        XWPFTableRow row = table.getRow(rowIndex);
-        for (int i = 0; i < headers.length && i < row.getTableCells().size(); i++) {
-            XWPFTableCell cell = row.getCell(i);
-            cell.setColor(COLOR_PRIMARY);
-            cell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-
-            XWPFParagraph para = cell.getParagraphs().get(0);
-            para.setAlignment(ParagraphAlignment.CENTER);
-
-            XWPFRun run = para.createRun();
-            run.setText(headers[i]);
-            run.setFontFamily("Microsoft YaHei");
-            run.setBold(true);
-            run.setFontSize(11);
-            run.setColor("FFFFFF");
+    private void clearCell(XWPFTableCell cell) {
+        int paragraphCount = cell.getParagraphs().size();
+        for (int i = paragraphCount - 1; i >= 0; i--) {
+            cell.removeParagraph(i);
         }
     }
 
-    /**
-     * 设置表格行样式
-     */
-    private void setStyledTableRow(XWPFTable table, int rowIndex, String key, String value, String valueColor) {
-        XWPFTableRow row = table.getRow(rowIndex);
+    private void addSpacing(XWPFDocument document, int after) {
+        XWPFParagraph paragraph = document.createParagraph();
+        paragraph.setSpacingAfter(after);
+    }
 
-        // 键单元格
-        XWPFTableCell keyCell = row.getCell(0);
-        keyCell.setColor(COLOR_HEADER_BG);
-        keyCell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+    private Summary buildSummary(List<ScanResult> results, String scanDuration) {
+        Summary summary = new Summary();
+        summary.generatedAt = sdf.format(new Date());
+        summary.scanDuration = scanDuration == null || scanDuration.trim().isEmpty() ? "未知" : scanDuration;
+        summary.targetCount = distinctTargetCount(results);
+        summary.pocCount = distinctPocCount(results);
+        summary.vulnCount = results == null ? 0 : results.size();
 
-        XWPFParagraph keyPara = keyCell.getParagraphs().get(0);
-        XWPFRun keyRun = keyPara.createRun();
-        keyRun.setText(key);
-        keyRun.setFontFamily("Microsoft YaHei");
-        keyRun.setBold(true);
-        keyRun.setFontSize(10);
-        keyRun.setColor(COLOR_TEXT_DARK);
-
-        // 值单元格
-        XWPFTableCell valueCell = row.getCell(1);
-        valueCell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-
-        XWPFParagraph valuePara = valueCell.getParagraphs().get(0);
-        XWPFRun valueRun = valuePara.createRun();
-        valueRun.setText(value);
-        valueRun.setFontFamily("Microsoft YaHei");
-        valueRun.setFontSize(10);
-        if (valueColor != null) {
-            valueRun.setBold(true);
-            valueRun.setColor(valueColor);
+        Map<PocObj.Severity, Long> severityCount = new HashMap<PocObj.Severity, Long>();
+        if (results != null) {
+            for (ScanResult result : results) {
+                PocObj.Severity severity = result.getPoc().getSeverity();
+                Long current = severityCount.get(severity);
+                severityCount.put(severity, current == null ? 1L : current + 1L);
+            }
         }
+
+        summary.critical = getSeverityCount(severityCount, PocObj.Severity.CRITICAL);
+        summary.high = getSeverityCount(severityCount, PocObj.Severity.HIGH);
+        summary.medium = getSeverityCount(severityCount, PocObj.Severity.MEDIUM);
+        summary.low = getSeverityCount(severityCount, PocObj.Severity.LOW);
+        summary.info = getSeverityCount(severityCount, PocObj.Severity.INFO);
+        summary.urgentCount = (int) (summary.critical + summary.high);
+
+        if (summary.critical > 0) {
+            summary.riskLevel = "极高";
+            summary.riskColor = PotatoReportBranding.COLOR_CRITICAL;
+            summary.riskSoftColor = PotatoReportBranding.COLOR_CRITICAL_SOFT;
+        } else if (summary.high > 0) {
+            summary.riskLevel = "高";
+            summary.riskColor = PotatoReportBranding.COLOR_HIGH;
+            summary.riskSoftColor = PotatoReportBranding.COLOR_HIGH_SOFT;
+        } else if (summary.medium > 0) {
+            summary.riskLevel = "中";
+            summary.riskColor = PotatoReportBranding.COLOR_MEDIUM;
+            summary.riskSoftColor = PotatoReportBranding.COLOR_MEDIUM_SOFT;
+        } else if (summary.low > 0) {
+            summary.riskLevel = "低";
+            summary.riskColor = PotatoReportBranding.COLOR_LOW;
+            summary.riskSoftColor = PotatoReportBranding.COLOR_LOW_SOFT;
+        } else {
+            summary.riskLevel = "信息";
+            summary.riskColor = PotatoReportBranding.COLOR_INFO;
+            summary.riskSoftColor = PotatoReportBranding.COLOR_INFO_SOFT;
+        }
+
+        if (summary.urgentCount > 0) {
+            summary.riskSummary = "共发现 " + summary.vulnCount + " 条漏洞结果，其中 "
+                    + summary.urgentCount + " 条属于高优先级风险，建议立即安排复核与修复。";
+            summary.actionGuide = "建议先按 CRITICAL / HIGH 级别建立处置清单，优先完成外网资产、核心系统和存在公开编号漏洞的修复闭环。";
+        } else if (summary.vulnCount > 0) {
+            summary.riskSummary = "当前未发现高优先级风险，但存在 "
+                    + summary.vulnCount + " 条结果需要持续验证与跟踪处置。";
+            summary.actionGuide = "建议继续结合业务影响、暴露面与资产重要性完成分级处置，并保留请求证据用于后续复测。";
+        } else {
+            summary.riskSummary = "当前未发现可导出的漏洞结果。";
+            summary.actionGuide = "建议保留本次扫描参数与资产范围，后续在新增指纹、POC 或版本变更后再次执行核验。";
+        }
+        return summary;
     }
 
-    /**
-     * 设置严重度统计行
-     */
-    private void setStyledSeverityRow(XWPFTable table, int rowIndex, String level, long count, long total, String color) {
-        XWPFTableRow row = table.getRow(rowIndex);
-
-        // 级别单元格
-        XWPFTableCell levelCell = row.getCell(0);
-        levelCell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-        XWPFParagraph levelPara = levelCell.getParagraphs().get(0);
-        levelPara.setAlignment(ParagraphAlignment.CENTER);
-        XWPFRun levelRun = levelPara.createRun();
-        levelRun.setText(level);
-        levelRun.setFontFamily("Microsoft YaHei");
-        levelRun.setBold(true);
-        levelRun.setFontSize(10);
-        levelRun.setColor(color);
-
-        // 数量单元格
-        XWPFTableCell countCell = row.getCell(1);
-        countCell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-        XWPFParagraph countPara = countCell.getParagraphs().get(0);
-        countPara.setAlignment(ParagraphAlignment.CENTER);
-        XWPFRun countRun = countPara.createRun();
-        countRun.setText(String.valueOf(count));
-        countRun.setFontFamily("Microsoft YaHei");
-        countRun.setBold(true);
-        countRun.setFontSize(10);
-
-        // 占比单元格
-        XWPFTableCell percentCell = row.getCell(2);
-        percentCell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-        XWPFParagraph percentPara = percentCell.getParagraphs().get(0);
-        percentPara.setAlignment(ParagraphAlignment.CENTER);
-        XWPFRun percentRun = percentPara.createRun();
-        double percent = (count * 100.0) / total;
-        percentRun.setText(String.format("%.1f%%", percent));
-        percentRun.setFontFamily("Microsoft YaHei");
-        percentRun.setFontSize(10);
+    private int distinctTargetCount(List<ScanResult> results) {
+        List<String> targets = new ArrayList<String>();
+        if (results != null) {
+            for (ScanResult result : results) {
+                String target = safeText(result.getTarget());
+                if (!target.isEmpty() && !targets.contains(target)) {
+                    targets.add(target);
+                }
+            }
+        }
+        return targets.size();
     }
 
-    /**
-     * 获取严重度颜色
-     */
+    private int distinctPocCount(List<ScanResult> results) {
+        List<String> ids = new ArrayList<String>();
+        if (results != null) {
+            for (ScanResult result : results) {
+                String id = safeText(result.getPoc().getId());
+                if (!id.isEmpty() && !ids.contains(id)) {
+                    ids.add(id);
+                }
+            }
+        }
+        return ids.size();
+    }
+
+    private long getSeverityCount(Map<PocObj.Severity, Long> severityCount, PocObj.Severity severity) {
+        Long count = severityCount.get(severity);
+        return count == null ? 0L : count.longValue();
+    }
+
     private String getSeverityColor(PocObj.Severity severity) {
         switch (severity) {
-            case CRITICAL: return COLOR_CRITICAL;
-            case HIGH: return COLOR_HIGH;
-            case MEDIUM: return COLOR_MEDIUM;
-            case LOW: return COLOR_LOW;
-            case INFO: return COLOR_INFO;
-            default: return COLOR_TEXT_MUTED;
+            case CRITICAL:
+                return PotatoReportBranding.COLOR_CRITICAL;
+            case HIGH:
+                return PotatoReportBranding.COLOR_HIGH;
+            case MEDIUM:
+                return PotatoReportBranding.COLOR_MEDIUM;
+            case LOW:
+                return PotatoReportBranding.COLOR_LOW;
+            case INFO:
+            default:
+                return PotatoReportBranding.COLOR_INFO;
         }
+    }
+
+    private String getSeveritySoftColor(PocObj.Severity severity) {
+        switch (severity) {
+            case CRITICAL:
+                return PotatoReportBranding.COLOR_CRITICAL_SOFT;
+            case HIGH:
+                return PotatoReportBranding.COLOR_HIGH_SOFT;
+            case MEDIUM:
+                return PotatoReportBranding.COLOR_MEDIUM_SOFT;
+            case LOW:
+                return PotatoReportBranding.COLOR_LOW_SOFT;
+            case INFO:
+            default:
+                return PotatoReportBranding.COLOR_INFO_SOFT;
+        }
+    }
+
+    private String mapToText(Map<?, ?> map) {
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            if (builder.length() > 0) {
+                builder.append("\n");
+            }
+            builder.append(String.valueOf(entry.getKey())).append(": ").append(String.valueOf(entry.getValue()));
+        }
+        return builder.toString();
+    }
+
+    private String trimCodeBlock(String content, int maxLength) {
+        String text = safeContent(content);
+        if (text.length() <= maxLength) {
+            return text;
+        }
+        return text.substring(0, maxLength) + "\n...(内容截断，共 " + text.length() + " 字符)";
+    }
+
+    private boolean hasText(String text) {
+        return text != null && !text.trim().isEmpty();
+    }
+
+    private String nonEmpty(String text) {
+        String value = safeText(text);
+        return value.isEmpty() ? "-" : value;
+    }
+
+    private String safeText(String text) {
+        return text == null ? "" : text.trim();
+    }
+
+    private String safeContent(String text) {
+        return text == null ? "" : text;
+    }
+
+    private String padIndex(int index) {
+        return index < 10 ? "0" + index : String.valueOf(index);
+    }
+
+    private static final class InfoRow {
+        private final String label;
+        private final String value;
+        private final String color;
+        private final boolean monospace;
+
+        private InfoRow(String label, String value, String color, boolean monospace) {
+            this.label = label;
+            this.value = value == null ? "" : value;
+            this.color = color;
+            this.monospace = monospace;
+        }
+    }
+
+    private static final class Summary {
+        private String generatedAt;
+        private String scanDuration;
+        private int targetCount;
+        private int pocCount;
+        private int vulnCount;
+        private int urgentCount;
+        private long critical;
+        private long high;
+        private long medium;
+        private long low;
+        private long info;
+        private String riskLevel;
+        private String riskColor;
+        private String riskSoftColor;
+        private String riskSummary;
+        private String actionGuide;
     }
 }

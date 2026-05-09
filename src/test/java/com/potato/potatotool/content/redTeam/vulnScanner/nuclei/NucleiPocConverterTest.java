@@ -492,6 +492,176 @@ public class NucleiPocConverterTest {
     }
 
     @Test
+    @DisplayName("测试 global-matchers 不应转换成主动请求步骤")
+    public void testGlobalMatchersShouldBeMarkedUnsupportedAndDropped() {
+        String yaml =
+                "id: global-matchers-drop-test\n" +
+                "info:\n" +
+                "  name: global-matchers-drop-test\n" +
+                "  severity: info\n" +
+                "http:\n" +
+                "  - global-matchers: true\n" +
+                "    matchers:\n" +
+                "      - type: regex\n" +
+                "        part: body\n" +
+                "        regex:\n" +
+                "          - 'AKIA[0-9A-Z]{16}'\n";
+
+        PocObj.Poc poc = convertYaml(yaml);
+        assertTrue(poc.getVerifySteps().isEmpty(), "global-matchers 是被动全局响应匹配，不应生成主动请求步骤");
+        assertTrue(hasDiagnosticCode(poc.getUnsupportedCapabilities(), "UNSUPPORTED_GLOBAL_MATCHERS"),
+                "应明确标记当前未实现 global-matchers 被动监听语义");
+    }
+
+    @Test
+    @DisplayName("测试 read-all + unsafe 不应静默降级为普通 HTTP")
+    public void testReadAllUnsafeShouldBeMarkedUnsupportedAndDropped() {
+        String yaml =
+                "id: read-all-unsafe-drop-test\n" +
+                "info:\n" +
+                "  name: read-all-unsafe-drop-test\n" +
+                "  severity: info\n" +
+                "http:\n" +
+                "  - unsafe: true\n" +
+                "    read-all: true\n" +
+                "    raw:\n" +
+                "      - |\n" +
+                "        POST / HTTP/1.1\n" +
+                "        Host: {{Hostname}}\n" +
+                "        Content-Length: 6\n" +
+                "\n" +
+                "        0\n" +
+                "\n" +
+                "    matchers:\n" +
+                "      - type: word\n" +
+                "        words:\n" +
+                "          - HTTP/1.1 200\n";
+
+        PocObj.Poc poc = convertYaml(yaml);
+        assertTrue(poc.getVerifySteps().isEmpty(), "read-all + unsafe 需要 raw socket 语义，不应按 OkHttp 普通请求执行");
+        assertTrue(hasDiagnosticCode(poc.getUnsupportedCapabilities(), "UNSUPPORTED_READ_ALL_UNSAFE_HTTP"),
+                "应明确标记 read-all + unsafe 当前不支持");
+    }
+
+    @Test
+    @DisplayName("测试单独 unsafe 只记录降级警告且保留执行步骤")
+    public void testUnsafeOnlyShouldWarnButKeepExecutableStep() {
+        String yaml =
+                "id: unsafe-warning-test\n" +
+                "info:\n" +
+                "  name: unsafe-warning-test\n" +
+                "  severity: info\n" +
+                "http:\n" +
+                "  - unsafe: true\n" +
+                "    raw:\n" +
+                "      - |\n" +
+                "        GET / HTTP/1.1\n" +
+                "        Host: {{Hostname}}\n" +
+                "    matchers:\n" +
+                "      - type: status\n" +
+                "        status:\n" +
+                "          - 200\n";
+
+        PocObj.Poc poc = convertYaml(yaml);
+        assertFalse(poc.getVerifySteps().isEmpty(), "单独 unsafe 仍可按普通 HTTP 尝试执行");
+        assertTrue(hasDiagnosticCode(poc.getConversionWarnings(), "UNSAFE_HTTP_TRANSPORT_FALLBACK"),
+                "单独 unsafe 应记录语义降级警告");
+        assertFalse(hasDiagnosticCode(poc.getUnsupportedCapabilities(), "UNSUPPORTED_READ_ALL_UNSAFE_HTTP"),
+                "单独 unsafe 不应误标为 read-all + unsafe 不支持");
+    }
+
+    @Test
+    @DisplayName("测试 Nuclei code + http 多协议模板不应丢失任一协议步骤")
+    public void testNucleiCodeHttpMultiProtocolShouldKeepAllSteps() {
+        String yaml =
+                "id: code-http-multi-protocol-test\n" +
+                "info:\n" +
+                "  name: code-http-multi-protocol-test\n" +
+                "  severity: info\n" +
+                "code:\n" +
+                "  - engine:\n" +
+                "      - javascript\n" +
+                "    code: |\n" +
+                "      'token-from-code'\n" +
+                "http:\n" +
+                "  - raw:\n" +
+                "      - |\n" +
+                "        GET /{{code_response}} HTTP/1.1\n" +
+                "        Host: {{Hostname}}\n" +
+                "    matchers:\n" +
+                "      - type: status\n" +
+                "        status:\n" +
+                "          - 200\n";
+
+        PocObj.Poc poc = convertYaml(yaml);
+        assertEquals("http", poc.getProtocol(), "含 HTTP 的多协议模板主协议仍应用于 URL 扫描选择");
+        assertEquals(2, poc.getVerifySteps().size(), "code 与 http 步骤都应保留");
+        assertTrue(poc.getVerifySteps().get(0) instanceof PocObj.CodeStep,
+                "无 flow 的 code/http 模板应先执行 code，供后续 HTTP 使用 code_response");
+        assertEquals("code_1", poc.getVerifySteps().get(0).getStepId());
+        assertEquals("http_1", poc.getVerifySteps().get(1).getStepId());
+    }
+
+    @Test
+    @DisplayName("测试 Nuclei flow 多协议模板应按 flow 顺序重排步骤")
+    public void testNucleiFlowShouldOrderMixedProtocolSteps() {
+        String yaml =
+                "id: mixed-flow-order-test\n" +
+                "info:\n" +
+                "  name: mixed-flow-order-test\n" +
+                "  severity: info\n" +
+                "flow: |\n" +
+                "  http(1);\n" +
+                "  javascript();\n" +
+                "  http(2);\n" +
+                "javascript:\n" +
+                "  - code: |\n" +
+                "      'js-value'\n" +
+                "http:\n" +
+                "  - method: GET\n" +
+                "    path:\n" +
+                "      - '{{BaseURL}}/first'\n" +
+                "  - method: GET\n" +
+                "    path:\n" +
+                "      - '{{BaseURL}}/second/{{javascript_response}}'\n";
+
+        PocObj.Poc poc = convertYaml(yaml);
+        assertEquals(3, poc.getVerifySteps().size(), "flow 引用的 http/javascript/http 步骤都应保留");
+        assertEquals("http_1", poc.getVerifySteps().get(0).getStepId());
+        assertEquals("javascript_1", poc.getVerifySteps().get(1).getStepId());
+        assertEquals("http_2", poc.getVerifySteps().get(2).getStepId());
+        assertTrue(hasDiagnosticCode(poc.getConversionWarnings(), "UNSUPPORTED_FLOW_EXPRESSION"),
+                "复杂 flow 仍应明确记录当前执行语义不完整");
+    }
+
+    @Test
+    @DisplayName("测试 Nuclei 命名 HTTP flow 应映射到对应 id 步骤")
+    public void testNucleiFlowShouldResolveNamedHttpIds() {
+        String yaml =
+                "id: named-http-flow-test\n" +
+                "info:\n" +
+                "  name: named-http-flow-test\n" +
+                "  severity: info\n" +
+                "flow: |\n" +
+                "  http(\"second\");\n" +
+                "  http(\"first\");\n" +
+                "http:\n" +
+                "  - id: first\n" +
+                "    method: GET\n" +
+                "    path:\n" +
+                "      - '{{BaseURL}}/first'\n" +
+                "  - id: second\n" +
+                "    method: GET\n" +
+                "    path:\n" +
+                "      - '{{BaseURL}}/second'\n";
+
+        PocObj.Poc poc = convertYaml(yaml);
+        assertEquals(2, poc.getVerifySteps().size(), "命名 flow 应找到对应 HTTP id");
+        assertEquals("http_2", poc.getVerifySteps().get(0).getStepId());
+        assertEquals("http_1", poc.getVerifySteps().get(1).getStepId());
+    }
+
+    @Test
     @DisplayName("测试JSON/XPATH/KVAL提取器字段映射(part/negative)")
     public void testExtractorPartAndNegativeMapping() {
         NucleiYamlObj.Poc nucleiPoc = new NucleiYamlObj.Poc();
@@ -727,5 +897,24 @@ public class NucleiPocConverterTest {
         String actual2 = (String) method.invoke(executor, expression2, "http://example.com", context2);
         assertEquals(expected2, actual2, "函数参数中的 '+' 拼接应由 DSL 函数求值而不是被算术路径误拆分");
     }
-}
 
+    private PocObj.Poc convertYaml(String yaml) {
+        NucleiYamlObj.Poc nucleiPoc = PocConverter.loadNucleiYamlFromContent(yaml);
+        assertNotNull(nucleiPoc, "测试 YAML 应可解析");
+        PocObj.Poc poc = converter.convert(nucleiPoc);
+        assertNotNull(poc, "测试 YAML 应可转换");
+        return poc;
+    }
+
+    private boolean hasDiagnosticCode(java.util.List<Map<String, Object>> diagnostics, String code) {
+        if (diagnostics == null) {
+            return false;
+        }
+        for (Map<String, Object> diagnostic : diagnostics) {
+            if (diagnostic != null && code.equals(String.valueOf(diagnostic.get("code")))) {
+                return true;
+            }
+        }
+        return false;
+    }
+}

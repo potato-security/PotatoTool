@@ -299,7 +299,7 @@ public class NucleiHeadlessTest {
         
         // 验证所有操作类型
         NucleiYamlObj.HeadlessAction[] actions = NucleiYamlObj.HeadlessAction.values();
-        assertEquals(8, actions.length, "应该有 8 种操作类型");
+        assertEquals(12, actions.length, "应该有 12 种操作类型");
         
         // 验证具体操作类型
         assertEquals("navigate", NucleiYamlObj.HeadlessAction.navigate.name());
@@ -310,9 +310,12 @@ public class NucleiHeadlessTest {
         assertEquals("screenshot", NucleiYamlObj.HeadlessAction.screenshot.name());
         assertEquals("sleep", NucleiYamlObj.HeadlessAction.sleep.name());
         assertEquals("waitvisible", NucleiYamlObj.HeadlessAction.waitvisible.name());
+        assertEquals("waitdialog", NucleiYamlObj.HeadlessAction.waitdialog.name());
+        assertEquals("setheader", NucleiYamlObj.HeadlessAction.setheader.name());
+        assertEquals("text", NucleiYamlObj.HeadlessAction.text.name());
+        assertEquals("waitdom", NucleiYamlObj.HeadlessAction.waitdom.name());
         
         System.out.println("✓ Headless 操作类型枚举测试通过");
     }
 }
-
 

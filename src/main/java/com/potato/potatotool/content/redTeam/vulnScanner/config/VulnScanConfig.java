@@ -619,26 +619,16 @@ public class VulnScanConfig {
      */
     private boolean saveVariableConfig(String key, String value) {
         try {
-            // 获取现有的variables配置
-            JsonObject existingVariables = getVariablesConfig();
-            Map<String, Object> variablesMap = new HashMap<>();
+            JsonObject variablesConfig = getVariablesConfig().deepCopy();
 
-            // 复制现有配置
-            for (String existingKey : existingVariables.keySet()) {
-                variablesMap.put(existingKey, existingVariables.get(existingKey).getAsString());
-            }
-
-            // 更新或添加新值
             if (value != null && !value.trim().isEmpty()) {
-                variablesMap.put(key, value);
+                variablesConfig.addProperty(key, value.trim());
             } else {
-                // 如果值为空，删除该配置
-                variablesMap.remove(key);
+                variablesConfig.remove(key);
             }
 
-            // 保存到VulnScan.variables
             Map<String, Object> vulnScanMap = new HashMap<>();
-            vulnScanMap.put(ConfigConstants.VULNSCAN_VARIABLES, variablesMap);
+            vulnScanMap.put(ConfigConstants.VULNSCAN_VARIABLES, variablesConfig);
 
             return Constants.saveConfig(vulnScanMap, ConfigConstants.VULNSCAN);
         } catch (Exception e) {

@@ -1,13 +1,18 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.http;
 
 import com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig;
+import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslEvaluatorRefactored;
 import com.potato.potatotool.utils.network.HeaderManager;
 import com.potato.potatotool.utils.network.RequestObj;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
@@ -19,6 +24,9 @@ import java.util.Map;
  * HTTP请求处理类，负责解析和处理HTTP请求
  */
 public class HttpHandler {
+
+    private static final Pattern NUCLEI_EXPRESSION_PATTERN =
+            Pattern.compile("\\{\\{\\s*([A-Za-z_][\\w]*)\\s*\\((.*?)\\)\\s*\\}\\}");
 
     /**
      * 处理原始HTTP请求（支持 Object 类型的变量）
@@ -257,6 +265,8 @@ public class HttpHandler {
         // 这一步需要在变量替换之前进行，因为函数参数可能引用变量
         result = GobyFunctionProcessor.processGobyFunctions(result, variables);
 
+        result = evaluateNucleiHelperExpressions(result, variables);
+
         // 多轮替换，支持嵌套变量解析（如 {{FILENAME}} → "{{FQDN}}" → "example.com"）
         if (variables != null && !variables.isEmpty()) {
             int maxIterations = 10; // 最大替换轮数，防止循环引用导致死循环
@@ -291,6 +301,7 @@ public class HttpHandler {
                     System.err.println("[警告] 检测到变量循环引用，停止替换");
                     break;
                 }
+
             }
 
             // 如果达到最大轮数仍有未替换的变量，输出警告
@@ -299,6 +310,218 @@ public class HttpHandler {
             }
         }
 
+        result = evaluateNucleiHelperExpressions(result, variables);
+
+        return result;
+    }
+
+    private static String evaluateNucleiHelperExpressions(String input, Map<String, String> variables) {
+        if (input == null || input.indexOf("{{") < 0 || input.indexOf('(') < 0) {
+            return input;
+        }
+
+        String result = input;
+        int maxIterations = 8;
+        for (int i = 0; i < maxIterations; i++) {
+            Matcher matcher = NUCLEI_EXPRESSION_PATTERN.matcher(result);
+            StringBuffer sb = new StringBuffer();
+            boolean changed = false;
+
+            while (matcher.find()) {
+                String functionName = matcher.group(1);
+                String args = matcher.group(2);
+                String expression = functionName + "(" + args + ")";
+                String evaluated = evaluateNucleiHelperExpression(expression, variables);
+                if (evaluated == null) {
+                    continue;
+                }
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(evaluated));
+                changed = true;
+            }
+
+            matcher.appendTail(sb);
+            result = sb.toString();
+            if (!changed) {
+                break;
+            }
+        }
+        return result;
+    }
+
+    private static String evaluateNucleiHelperExpression(String expression, Map<String, String> variables) {
+        if (expression == null || expression.trim().isEmpty()) {
+            return null;
+        }
+
+        String functionName = extractFunctionName(expression);
+        if (functionName == null) {
+            return null;
+        }
+
+        Map<String, Object> context = new HashMap<>();
+        if (variables != null) {
+            context.putAll(variables);
+        }
+
+        try {
+            List<String> args = splitFunctionArgs(extractFunctionArgs(expression));
+            List<String> resolvedArgs = new ArrayList<>();
+            for (String arg : args) {
+                resolvedArgs.add(resolveHelperArgument(arg, variables, context));
+            }
+
+            String lowerName = functionName.toLowerCase(Locale.ROOT);
+            if ("url_encode".equals(lowerName) || "urlencode".equals(lowerName)) {
+                if (resolvedArgs.isEmpty()) {
+                    return null;
+                }
+                return URLEncoder.encode(resolvedArgs.get(0), "UTF-8");
+            }
+
+            String rebuiltExpression = rebuildExpression(functionName, resolvedArgs);
+            String value = DslEvaluatorRefactored.evaluateFunctionForValue(rebuiltExpression, context);
+            if (value != null) {
+                return value;
+            }
+        } catch (Exception e) {
+            System.err.println("[警告] Nuclei helper 表达式计算失败: " + expression + " - " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    private static String extractFunctionName(String expression) {
+        int paren = expression.indexOf('(');
+        if (paren <= 0) {
+            return null;
+        }
+        return expression.substring(0, paren).trim();
+    }
+
+    private static String extractFunctionArgs(String expression) {
+        int start = expression.indexOf('(');
+        int end = expression.lastIndexOf(')');
+        if (start < 0 || end <= start) {
+            return "";
+        }
+        return expression.substring(start + 1, end);
+    }
+
+    private static String rebuildExpression(String functionName, List<String> args) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(functionName).append('(');
+        for (int i = 0; i < args.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append('"').append(escapeDslString(args.get(i))).append('"');
+        }
+        sb.append(')');
+        return sb.toString();
+    }
+
+    private static String escapeDslString(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    private static String resolveHelperArgument(String arg, Map<String, String> variables, Map<String, Object> context) {
+        if (arg == null) {
+            return "";
+        }
+
+        String resolved = stripQuotes(arg.trim());
+        resolved = replaceVariablesInArgument(resolved, variables);
+
+        if (variables != null && variables.containsKey(resolved)) {
+            return variables.get(resolved);
+        }
+        Object contextValue = context.get(resolved);
+        if (contextValue != null) {
+            return String.valueOf(contextValue);
+        }
+        return resolved;
+    }
+
+    private static String stripQuotes(String value) {
+        if (value == null || value.length() < 2) {
+            return value;
+        }
+        char first = value.charAt(0);
+        char last = value.charAt(value.length() - 1);
+        if ((first == '\'' && last == '\'') || (first == '"' && last == '"')) {
+            return value.substring(1, value.length() - 1);
+        }
+        return value;
+    }
+
+    private static String replaceVariablesInArgument(String value, Map<String, String> variables) {
+        if (value == null || variables == null || variables.isEmpty() || value.indexOf("{{") < 0) {
+            return value;
+        }
+
+        String result = value;
+        List<Map.Entry<String, String>> entries = new ArrayList<>(variables.entrySet());
+        Collections.sort(entries, new Comparator<Map.Entry<String, String>>() {
+            @Override
+            public int compare(Map.Entry<String, String> a, Map.Entry<String, String> b) {
+                int aLength = a.getKey() == null ? 0 : a.getKey().length();
+                int bLength = b.getKey() == null ? 0 : b.getKey().length();
+                return bLength - aLength;
+            }
+        });
+
+        for (Map.Entry<String, String> entry : entries) {
+            if (entry.getKey() != null && entry.getValue() != null) {
+                result = result.replace("{{" + entry.getKey() + "}}", entry.getValue());
+            }
+        }
+        return result;
+    }
+
+    private static List<String> splitFunctionArgs(String args) {
+        List<String> result = new ArrayList<>();
+        if (args == null || args.trim().isEmpty()) {
+            return result;
+        }
+
+        StringBuilder current = new StringBuilder();
+        int parenDepth = 0;
+        boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+
+        for (int i = 0; i < args.length(); i++) {
+            char c = args.charAt(i);
+
+            if (c == '\'' && !inDoubleQuote) {
+                inSingleQuote = !inSingleQuote;
+                current.append(c);
+                continue;
+            }
+            if (c == '"' && !inSingleQuote) {
+                inDoubleQuote = !inDoubleQuote;
+                current.append(c);
+                continue;
+            }
+
+            if (!inSingleQuote && !inDoubleQuote) {
+                if (c == '(') {
+                    parenDepth++;
+                } else if (c == ')' && parenDepth > 0) {
+                    parenDepth--;
+                } else if (c == ',' && parenDepth == 0) {
+                    result.add(current.toString().trim());
+                    current.setLength(0);
+                    continue;
+                }
+            }
+
+            current.append(c);
+        }
+
+        result.add(current.toString().trim());
         return result;
     }
 
