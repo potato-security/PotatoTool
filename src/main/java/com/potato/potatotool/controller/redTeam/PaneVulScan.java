@@ -28,6 +28,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.JsonUtils;
 import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.utils.network.HeaderManager;
 import com.potato.potatotool.utils.network.ProxyUtils;
 import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;
@@ -377,6 +378,12 @@ public class PaneVulScan {
                 return null;
             }
             config.setProxy(proxyAddress.trim());
+        }
+
+        Map<String, String> globalHeaders = HeaderManager.getInstance().getCustomHeaders();
+        if (PaneVulScanSupport.shouldBlockScanForBuildingProfile(globalHeaders)) {
+            showPrompt(I18nUtils.getString("vulnscan.msg.scan.profile.required"), true, true);
+            return null;
         }
 
         // 调试模式
@@ -880,7 +887,7 @@ public class PaneVulScan {
         
         if (file != null) {
             try {
-                List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
+                List<String> lines = PaneVulScanTargetSupport.readTargetLines(file.toPath());
                 String content = String.join("\n", lines);
                 targetField.setText(content);
                 showPrompt(I18nUtils.getString("vulnscan.msg.imported", lines.size()), false);
@@ -904,10 +911,7 @@ public class PaneVulScan {
         }
         
         // 解析目标
-        List<String> targets = Arrays.stream(targetText.split("\n"))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty() && !s.startsWith("#"))
-            .collect(Collectors.toList());
+        List<String> targets = PaneVulScanTargetSupport.parseTargets(targetText);
         
         if (targets.isEmpty()) {
             showPrompt(I18nUtils.getString("vulnscan.msg.target.novalid"), true);
@@ -1158,9 +1162,11 @@ public class PaneVulScan {
     @FXML
     public void pauseScan(MouseEvent event) {
         // 如果在指纹识别阶段（currentTask运行中但scanEngine未启动），取消任务
-        if (currentTask != null && currentTask.isRunning() && !scanService.isScanning()) {
-            currentTask.cancel(true);
-            if (currentThread != null) currentThread.interrupt();
+        if (PaneVulScanSupport.cancelTaskBeforeEngineStart(
+                currentTask != null && currentTask.isRunning(),
+                currentTask,
+                currentThread,
+                scanService.isScanning())) {
             stopScanTimer();
             updateButtonsForStatus(ScanState.Status.STOPPED);
             updateScanStateLabel(I18nUtils.getString("vulnscan.status.stopped"));
@@ -1228,13 +1234,10 @@ public class PaneVulScan {
         }
 
         // 取消当前任务
-        if (currentTask != null && currentTask.isRunning()) {
-            currentTask.cancel();
-        }
-
-        if (currentThread != null) {
-            currentThread.interrupt();
-        }
+        PaneVulScanSupport.cancelRunningTask(
+                currentTask != null && currentTask.isRunning(),
+                currentTask,
+                currentThread);
 
         // 停止加载动画
         if (rotateTransition != null) {

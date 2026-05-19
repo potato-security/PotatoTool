@@ -177,7 +177,7 @@
                 
                 <Separator orientation="VERTICAL"/>
                 
-                <ComboBox fx:id="exportFormatComboBox" prefWidth="90" promptText="格式">
+                <ComboBox fx:id="exportFormatComboBox" prefWidth="90" promptText="格式" userData="i18n-prompt:vulnscan.ui.exportformat.prompt">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <String fx:value="HTML"/>
@@ -185,6 +185,7 @@
                             <String fx:value="Excel"/>
                             <String fx:value="CSV"/>
                             <String fx:value="JSON"/>
+                            <String fx:value="TXT"/>
                         </FXCollections>
                     </items>
                 </ComboBox>
