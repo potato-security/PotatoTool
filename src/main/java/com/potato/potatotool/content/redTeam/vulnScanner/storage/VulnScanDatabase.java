@@ -34,6 +34,7 @@ import java.util.Date;
 public class VulnScanDatabase {
     
     private static VulnScanDatabase instance;
+    // SQLite 单连接在并发 prepare/step 下容易互相阻塞，这里统一串行访问。
     private Connection connection;
     private final Gson gson = new Gson();
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -125,6 +126,11 @@ public class VulnScanDatabase {
             // 连接数据库
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+            try (Statement pragma = connection.createStatement()) {
+                pragma.execute("PRAGMA journal_mode=WAL");
+                pragma.execute("PRAGMA synchronous=NORMAL");
+                pragma.execute("PRAGMA busy_timeout=3000");
+            }
             
             // 创建表
             createTables();
@@ -136,7 +142,7 @@ public class VulnScanDatabase {
         }
     }
     
-    private void createTables() throws SQLException {
+    private synchronized void createTables() throws SQLException {
         Statement stmt = connection.createStatement();
         
         // 扫描记录表（scan_id关联scan_states表，实现同一扫描任务只有一条历史记录）
@@ -300,7 +306,7 @@ public class VulnScanDatabase {
      * 保存扫描记录
      * @return 扫描ID
      */
-    public long saveScanRecord(List<ScanResult> results, Map<String, Object> config,
+    public synchronized long saveScanRecord(List<ScanResult> results, Map<String, Object> config,
                                long durationSeconds, String status) throws SQLException {
         // 允许暂停状态的扫描保存空结果
         if (results == null || (results.isEmpty() && !"paused".equalsIgnoreCase(status))) {
@@ -375,7 +381,7 @@ public class VulnScanDatabase {
         return scanId;
     }
     
-    private void saveVulnDetails(long scanId, List<ScanResult> results) throws SQLException {
+    private synchronized void saveVulnDetails(long scanId, List<ScanResult> results) throws SQLException {
         String sql = "INSERT INTO vuln_details (scan_id, target, poc_id, poc_name, " +
                     "poc_format, severity, vuln_type, protocol, description) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -414,7 +420,7 @@ public class VulnScanDatabase {
      * @param status 扫描状态（paused/completed/stopped）
      * @return 历史记录ID
      */
-    public long saveOrUpdateScanRecord(String scanId, List<ScanResult> results,
+    public synchronized long saveOrUpdateScanRecord(String scanId, List<ScanResult> results,
                                        Map<String, Object> config, long durationSeconds,
                                        String status) throws SQLException {
         // 允许暂停状态保存空结果
@@ -532,7 +538,7 @@ public class VulnScanDatabase {
     /**
      * 根据scan_id查找历史记录ID
      */
-    private Long findScanRecordByScanId(String scanId) throws SQLException {
+    private synchronized Long findScanRecordByScanId(String scanId) throws SQLException {
         if (scanId == null || scanId.isEmpty()) {
             return null;
         }
@@ -554,7 +560,7 @@ public class VulnScanDatabase {
     /**
      * 删除指定扫描记录的漏洞详情
      */
-    private void deleteVulnDetails(long scanId) throws SQLException {
+    private synchronized void deleteVulnDetails(long scanId) throws SQLException {
         String sql = "DELETE FROM vuln_details WHERE scan_id = ?";
         PreparedStatement pstmt = connection.prepareStatement(sql);
         pstmt.setLong(1, scanId);
@@ -565,7 +571,7 @@ public class VulnScanDatabase {
     /**
      * 查询扫描历史
      */
-    public List<ScanHistory> queryHistory(Date startDate, Date endDate, int limit) throws SQLException {
+    public synchronized List<ScanHistory> queryHistory(Date startDate, Date endDate, int limit) throws SQLException {
         String sql = "SELECT * FROM scan_records WHERE scan_time BETWEEN ? AND ? " +
                     "ORDER BY scan_time DESC LIMIT ?";
         
@@ -610,7 +616,7 @@ public class VulnScanDatabase {
     /**
      * 查询所有历史记录
      */
-    public List<ScanHistory> queryAllHistory() throws SQLException {
+    public synchronized List<ScanHistory> queryAllHistory() throws SQLException {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.YEAR, -10); // 10年前
         Date startDate = cal.getTime();
@@ -621,7 +627,7 @@ public class VulnScanDatabase {
     /**
      * 加载历史记录详情
      */
-    public List<VulnDetail> loadHistoryDetails(long scanId) throws SQLException {
+    public synchronized List<VulnDetail> loadHistoryDetails(long scanId) throws SQLException {
         String sql = "SELECT * FROM vuln_details WHERE scan_id = ? ORDER BY id";
         PreparedStatement pstmt = connection.prepareStatement(sql);
         pstmt.setLong(1, scanId);
@@ -653,7 +659,7 @@ public class VulnScanDatabase {
     /**
      * 删除历史记录
      */
-    public void deleteHistory(long scanId) throws SQLException {
+    public synchronized void deleteHistory(long scanId) throws SQLException {
         String sql = "DELETE FROM scan_records WHERE id = ?";
         PreparedStatement pstmt = connection.prepareStatement(sql);
         pstmt.setLong(1, scanId);
@@ -668,7 +674,7 @@ public class VulnScanDatabase {
     /**
      * 清空所有历史记录
      */
-    public void clearAllHistory() throws SQLException {
+    public synchronized void clearAllHistory() throws SQLException {
         Statement stmt = connection.createStatement();
         stmt.execute("DELETE FROM scan_records");
         stmt.execute("DELETE FROM vuln_details");
@@ -682,7 +688,7 @@ public class VulnScanDatabase {
     /**
      * 获取统计信息
      */
-    public DatabaseStatistics getStatistics() throws SQLException {
+    public synchronized DatabaseStatistics getStatistics() throws SQLException {
         DatabaseStatistics stats = new DatabaseStatistics();
         
         Statement stmt = connection.createStatement();
@@ -721,7 +727,7 @@ public class VulnScanDatabase {
     /**
      * 保存扫描状态
      */
-    public void saveScanState(ScanState state) throws SQLException {
+    public synchronized void saveScanState(ScanState state) throws SQLException {
         String sql = "INSERT OR REPLACE INTO scan_states (" +
                     "scan_id, status, start_time, pause_time, resume_time, " +
                     "threads, timeout, proxy, selected_formats, targets, poc_ids, " +
@@ -752,7 +758,7 @@ public class VulnScanDatabase {
     /**
      * 更新扫描状态
      */
-    public void updateScanState(String scanId, ScanState.Status status, 
+    public synchronized void updateScanState(String scanId, ScanState.Status status, 
                                 int completedTasks, int vulnerabilitiesFound) throws SQLException {
         String sql = "UPDATE scan_states SET status = ?, completed_tasks = ?, " +
                     "vulnerabilities_found = ?, updated_at = datetime('now') WHERE scan_id = ?";
@@ -770,7 +776,7 @@ public class VulnScanDatabase {
     /**
      * 标记扫描为暂停状态
      */
-    public void pauseScanState(String scanId) throws SQLException {
+    public synchronized void pauseScanState(String scanId) throws SQLException {
         String sql = "UPDATE scan_states SET status = ?, pause_time = ?, " +
                     "updated_at = datetime('now') WHERE scan_id = ?";
         
@@ -786,7 +792,7 @@ public class VulnScanDatabase {
     /**
      * 标记扫描为恢复状态
      */
-    public void resumeScanState(String scanId) throws SQLException {
+    public synchronized void resumeScanState(String scanId) throws SQLException {
         String sql = "UPDATE scan_states SET status = ?, resume_time = ?, " +
                     "updated_at = datetime('now') WHERE scan_id = ?";
         
@@ -802,7 +808,7 @@ public class VulnScanDatabase {
     /**
      * 查询扫描状态
      */
-    public ScanState loadScanState(String scanId) throws SQLException {
+    public synchronized ScanState loadScanState(String scanId) throws SQLException {
         String sql = "SELECT * FROM scan_states WHERE scan_id = ?";
         PreparedStatement pstmt = connection.prepareStatement(sql);
         pstmt.setString(1, scanId);
@@ -846,7 +852,7 @@ public class VulnScanDatabase {
     /**
      * 查询所有未完成的扫描（过滤掉进度100%的扫描）
      */
-    public List<ScanState> loadPausedScans() throws SQLException {
+    public synchronized List<ScanState> loadPausedScans() throws SQLException {
         String sql = "SELECT * FROM scan_states WHERE (status = ? OR status = ?) " +
                     "AND completed_tasks < total_tasks " +
                     "ORDER BY updated_at DESC";
@@ -885,7 +891,7 @@ public class VulnScanDatabase {
     /**
      * 删除扫描状态
      */
-    public void deleteScanState(String scanId) throws SQLException {
+    public synchronized void deleteScanState(String scanId) throws SQLException {
         String sql = "DELETE FROM scan_states WHERE scan_id = ?";
         PreparedStatement pstmt = connection.prepareStatement(sql);
         pstmt.setString(1, scanId);
@@ -896,7 +902,7 @@ public class VulnScanDatabase {
     /**
      * 保存任务状态
      */
-    public void saveTaskState(TaskState task) throws SQLException {
+    public synchronized void saveTaskState(TaskState task) throws SQLException {
         String sql = "INSERT INTO task_states (task_id, scan_id, target, poc_id, " +
                     "completed, vulnerable, start_time, end_time) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -918,7 +924,7 @@ public class VulnScanDatabase {
     /**
      * 批量保存任务状态
      */
-    public void saveTaskStates(List<TaskState> tasks) throws SQLException {
+    public synchronized void saveTaskStates(List<TaskState> tasks) throws SQLException {
         if (tasks == null || tasks.isEmpty()) {
             return;
         }
@@ -948,7 +954,7 @@ public class VulnScanDatabase {
     /**
      * 查询已完成的任务ID列表
      */
-    public List<String> loadCompletedTaskIds(String scanId) throws SQLException {
+    public synchronized List<String> loadCompletedTaskIds(String scanId) throws SQLException {
         String sql = "SELECT task_id FROM task_states WHERE scan_id = ? AND completed = 1";
         PreparedStatement pstmt = connection.prepareStatement(sql);
         pstmt.setString(1, scanId);
@@ -968,7 +974,7 @@ public class VulnScanDatabase {
     /**
      * 清理扫描的任务状态
      */
-    public void clearTaskStates(String scanId) throws SQLException {
+    public synchronized void clearTaskStates(String scanId) throws SQLException {
         String sql = "DELETE FROM task_states WHERE scan_id = ?";
         PreparedStatement pstmt = connection.prepareStatement(sql);
         pstmt.setString(1, scanId);
@@ -979,7 +985,7 @@ public class VulnScanDatabase {
     /**
      * 加载扫描中发现的漏洞任务(用于恢复扫描时重建结果)
      */
-    public List<TaskState> loadVulnerableTasks(String scanId) throws SQLException {
+    public synchronized List<TaskState> loadVulnerableTasks(String scanId) throws SQLException {
         String sql = "SELECT * FROM task_states WHERE scan_id = ? AND vulnerable = 1";
         PreparedStatement pstmt = connection.prepareStatement(sql);
         pstmt.setString(1, scanId);
@@ -1011,7 +1017,7 @@ public class VulnScanDatabase {
      * 加载所有扫描任务（用于历史记录展示）
      * 按更新时间倒序排列
      */
-    public List<ScanState> loadAllScanTasks() throws SQLException {
+    public synchronized List<ScanState> loadAllScanTasks() throws SQLException {
         String sql = "SELECT * FROM scan_states ORDER BY updated_at DESC";
         PreparedStatement pstmt = connection.prepareStatement(sql);
 
@@ -1031,7 +1037,7 @@ public class VulnScanDatabase {
     /**
      * 加载所有扫描任务（带日期过滤）
      */
-    public List<ScanState> loadScanTasksByDateRange(Date startDate, Date endDate, int limit) throws SQLException {
+    public synchronized List<ScanState> loadScanTasksByDateRange(Date startDate, Date endDate, int limit) throws SQLException {
         String sql = "SELECT * FROM scan_states WHERE created_at BETWEEN ? AND ? ORDER BY updated_at DESC LIMIT ?";
 
         PreparedStatement pstmt = connection.prepareStatement(sql);
@@ -1098,10 +1104,10 @@ public class VulnScanDatabase {
     /**
      * 标记扫描为完成状态
      */
-    public void completeScanTask(String scanId, int vulnCount,
+    public synchronized void completeScanTask(String scanId, int vulnCount,
                                   int criticalCount, int highCount, int mediumCount,
                                   int lowCount, int infoCount) throws SQLException {
-        String sql = "UPDATE scan_states SET status = ?, end_time = ?, " +
+        String sql = "UPDATE scan_states SET status = ?, end_time = ?, completed_tasks = total_tasks, " +
                     "vulnerabilities_found = ?, critical_count = ?, high_count = ?, " +
                     "medium_count = ?, low_count = ?, info_count = ?, " +
                     "updated_at = datetime('now') WHERE scan_id = ?";
@@ -1124,7 +1130,7 @@ public class VulnScanDatabase {
     /**
      * 标记扫描为停止状态
      */
-    public void stopScanTask(String scanId) throws SQLException {
+    public synchronized void stopScanTask(String scanId) throws SQLException {
         String sql = "UPDATE scan_states SET status = ?, end_time = ?, " +
                     "updated_at = datetime('now') WHERE scan_id = ?";
 
@@ -1140,7 +1146,7 @@ public class VulnScanDatabase {
     /**
      * 更新扫描任务的漏洞统计
      */
-    public void updateScanVulnCounts(String scanId, int vulnCount,
+    public synchronized void updateScanVulnCounts(String scanId, int vulnCount,
                                       int criticalCount, int highCount, int mediumCount,
                                       int lowCount, int infoCount) throws SQLException {
         String sql = "UPDATE scan_states SET vulnerabilities_found = ?, " +
@@ -1184,14 +1190,14 @@ public class VulnScanDatabase {
     /**
      * 获取数据库连接（供PocDatabaseManager使用）
      */
-    public Connection getConnection() {
+    public synchronized Connection getConnection() {
         return connection;
     }
     
     /**
      * 检查连接是否有效
      */
-    public boolean isConnectionValid() {
+    public synchronized boolean isConnectionValid() {
         try {
             return connection != null && !connection.isClosed();
         } catch (SQLException e) {
@@ -1202,7 +1208,7 @@ public class VulnScanDatabase {
     /**
      * 关闭数据库连接
      */
-    public void close() {
+    public synchronized void close() {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
@@ -1213,4 +1219,3 @@ public class VulnScanDatabase {
         }
     }
 }
-

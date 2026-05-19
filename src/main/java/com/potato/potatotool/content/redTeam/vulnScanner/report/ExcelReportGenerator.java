@@ -27,6 +27,8 @@ import java.util.*;
  */
 public class ExcelReportGenerator {
 
+    private static final int MAX_CELL_TEXT_LENGTH = 32767;
+
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     // 行高常量（单位：点）
@@ -470,8 +472,15 @@ public class ExcelReportGenerator {
     
     private void createDataCell(Row row, int col, String value, CellStyle style) {
         Cell cell = row.createCell(col);
-        cell.setCellValue(value);
+        cell.setCellValue(limitCellText(value));
         cell.setCellStyle(style);
+    }
+
+    private String limitCellText(String value) {
+        if (value == null || value.length() <= MAX_CELL_TEXT_LENGTH) {
+            return value;
+        }
+        return value.substring(0, MAX_CELL_TEXT_LENGTH - 4) + "...";
     }
     
     private CellStyle createTitleStyle(Workbook wb) {
@@ -664,5 +673,4 @@ public class ExcelReportGenerator {
         }
     }
 }
-
 

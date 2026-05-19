@@ -9,7 +9,7 @@ import java.util.Map;
 
 /**
  * 报告生成器统一入口
- * 支持多种格式：HTML, Word, Excel, CSV, JSON
+ * 支持多种格式：HTML, Word, Excel, CSV, JSON, TXT
  * 
  * @author Potato
  * @date 2025/11/03
@@ -21,6 +21,7 @@ public class ReportGenerator {
     private final ExcelReportGenerator excelGenerator;
     private final CsvReportGenerator csvGenerator;
     private final JsonReportGenerator jsonGenerator;
+    private final TxtReportGenerator txtGenerator;
     
     public ReportGenerator() {
         this.htmlGenerator = new HtmlReportGenerator();
@@ -28,11 +29,12 @@ public class ReportGenerator {
         this.excelGenerator = new ExcelReportGenerator();
         this.csvGenerator = new CsvReportGenerator();
         this.jsonGenerator = new JsonReportGenerator();
+        this.txtGenerator = new TxtReportGenerator();
     }
     
     /**
      * 生成报告（不带扫描耗时 - 兼容旧版本）
-     * @param format 格式：HTML, Word, Excel, CSV, JSON
+     * @param format 格式：HTML, Word, Excel, CSV, JSON, TXT
      * @param results 扫描结果列表
      * @param outputPath 输出路径
      * @return 生成的文件
@@ -44,7 +46,7 @@ public class ReportGenerator {
 
     /**
      * 生成报告（带扫描耗时）
-     * @param format 格式：HTML, Word, Excel, CSV, JSON
+     * @param format 格式：HTML, Word, Excel, CSV, JSON, TXT
      * @param results 扫描结果列表
      * @param outputPath 输出路径
      * @param scanDuration 扫描耗时（格式: "05分32秒" 或 "00:05:32"）
@@ -52,10 +54,11 @@ public class ReportGenerator {
      */
     public File generateReport(String format, List<ScanResult> results, String outputPath, String scanDuration)
             throws Exception {
-        if (results == null || results.isEmpty()) {
-            throw new IllegalArgumentException("扫描结果不能为空");
-        }
+        return generatePreparedReport(format, prepareResults(results), outputPath, scanDuration);
+    }
 
+    private File generatePreparedReport(String format, List<ScanResult> results,
+                                        String outputPath, String scanDuration) throws Exception {
         switch (format.toUpperCase()) {
             case "HTML":
                 return htmlGenerator.generate(results, outputPath, scanDuration);
@@ -69,9 +72,28 @@ public class ReportGenerator {
                 return csvGenerator.generate(results, outputPath);
             case "JSON":
                 return jsonGenerator.generate(results, outputPath);
+            case "TXT":
+                return txtGenerator.generate(results, outputPath, scanDuration);
             default:
                 throw new IllegalArgumentException("不支持的格式: " + format);
         }
+    }
+
+    private List<ScanResult> prepareResults(List<ScanResult> results) {
+        return ReportDataSanitizer.sanitizeResults(filterVulnerableResults(results));
+    }
+
+    private List<ScanResult> filterVulnerableResults(List<ScanResult> results) {
+        List<ScanResult> filtered = new ArrayList<ScanResult>();
+        if (results == null) {
+            return filtered;
+        }
+        for (ScanResult result : results) {
+            if (result != null && result.isVulnerable()) {
+                filtered.add(result);
+            }
+        }
+        return filtered;
     }
     
     /**
@@ -89,14 +111,14 @@ public class ReportGenerator {
      */
     public List<File> generateAllFormats(List<ScanResult> results, String baseDir) 
             throws Exception {
+        List<ScanResult> preparedResults = prepareResults(results);
         List<File> files = new ArrayList<>();
-        files.add(generateReport("HTML", results, baseDir + "/report.html"));
-        files.add(generateReport("Word", results, baseDir + "/report.docx"));
-        files.add(generateReport("Excel", results, baseDir + "/report.xlsx"));
-        files.add(generateReport("CSV", results, baseDir + "/report.csv"));
-        files.add(generateReport("JSON", results, baseDir + "/report.json"));
+        files.add(generatePreparedReport("HTML", preparedResults, baseDir + "/report.html", "未知"));
+        files.add(generatePreparedReport("Word", preparedResults, baseDir + "/report.docx", "未知"));
+        files.add(generatePreparedReport("Excel", preparedResults, baseDir + "/report.xlsx", "未知"));
+        files.add(generatePreparedReport("CSV", preparedResults, baseDir + "/report.csv", "未知"));
+        files.add(generatePreparedReport("JSON", preparedResults, baseDir + "/report.json", "未知"));
+        files.add(generatePreparedReport("TXT", preparedResults, baseDir + "/report.txt", "未知"));
         return files;
     }
 }
-
-
