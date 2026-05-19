@@ -12,11 +12,12 @@ info:
     max-request: 1
     vendor: gitea
     product: gitea
-    shodan-query: 'title:"Installation -  Gitea: Git with a cup of tea"'
+    shodan-query: 'title:"Installation - Gitea: Git with a cup of tea"'
   tags: misconfig,gitea,install
 
 http:
   - method: GET
+    redirects: true
     path:
       - '{{BaseURL}}'
 
@@ -25,7 +26,7 @@ http:
       - type: word
         part: body
         words:
-          - 'Installation -  Gitea: Git with a cup of tea'
+          - 'Installation - Gitea: Git with a cup of tea'
           - 'Database Name'
         condition: and
 
