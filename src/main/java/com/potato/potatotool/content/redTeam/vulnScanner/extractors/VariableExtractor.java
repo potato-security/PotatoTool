@@ -445,6 +445,10 @@ public class VariableExtractor {
      * @return 响应内容
      */
     public static String getResponsePart(CustomHttpResponse response, String part) {
+        return getResponsePart(response, part, false);
+    }
+
+    public static String getResponsePart(CustomHttpResponse response, String part, boolean useInitialRedirectResponse) {
         if (response == null || part == null || part.isEmpty()) {
             return null;
         }
@@ -459,10 +463,10 @@ public class VariableExtractor {
                 case "body":
                     return response.getTextStr();
                 case "header":
-                    return response.getHeaderFieldsText();
+                    return useInitialRedirectResponse ? response.getInitialHeaderFieldsText() : response.getHeaderFieldsText();
                 case "status":
                     try {
-                        return String.valueOf(response.getResponseCode());
+                        return String.valueOf(useInitialRedirectResponse ? response.getInitialResponseCode() : response.getResponseCode());
                     } catch (Exception e) {
                         System.err.println("获取响应状态码失败: " + e.getMessage());
                         return "0"; // 返回默认值
@@ -474,7 +478,7 @@ public class VariableExtractor {
                 case "set-cookie":
                     return getHeaderCaseInsensitive(response, "Set-Cookie");
                 case "location":
-                    return getHeaderCaseInsensitive(response, "Location");
+                    return getHeaderCaseInsensitive(response, "Location", useInitialRedirectResponse);
                 case "content_type":
                 case "content-type":
                     return getHeaderCaseInsensitive(response, "Content-Type");
@@ -483,7 +487,7 @@ public class VariableExtractor {
                     return getHeaderCaseInsensitive(response, "Content-Length");
                 default:
                     // 尝试获取特定的响应头（大小写不敏感）
-                    String headerValue = getHeaderCaseInsensitive(response, part);
+                    String headerValue = getHeaderCaseInsensitive(response, part, useInitialRedirectResponse);
                     if (headerValue != null) {
                         return headerValue;
                     }
@@ -502,10 +506,17 @@ public class VariableExtractor {
      * @return 头值，如果不存在返回 null
      */
     private static String getHeaderCaseInsensitive(CustomHttpResponse response, String headerName) {
+        return getHeaderCaseInsensitive(response, headerName, false);
+    }
+
+    private static String getHeaderCaseInsensitive(CustomHttpResponse response, String headerName,
+                                                   boolean useInitialRedirectResponse) {
         if (response == null || headerName == null) {
             return null;
         }
-        Map<String, List<String>> fields = response.getHeaderFields();
+        Map<String, List<String>> fields = useInitialRedirectResponse
+                ? response.getInitialHeaderFields()
+                : response.getHeaderFields();
         if (fields == null) {
             return null;
         }

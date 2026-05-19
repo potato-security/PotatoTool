@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -17,6 +18,7 @@ import java.net.URI;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -152,6 +154,95 @@ class RequestUtilsProxyRoutingTest {
         assertEquals(0, targetHits.get());
     }
 
+    @Test
+    @DisplayName("设置 HTTPS 代理地址时请求也应经过代理")
+    void shouldSendRequestThroughProxyWhenHttpsProxyConfigured() throws Exception {
+        AtomicInteger targetHits = new AtomicInteger();
+        AtomicInteger proxyHits = new AtomicInteger();
+        CountDownLatch proxyObserved = new CountDownLatch(1);
+        HttpServer server = startTargetServer(targetHits);
+        ServerSocket localProxy = startProxyServer(proxyHits, proxyObserved);
+
+        String url = "http://127.0.0.1:" + server.getAddress().getPort() + "/https-proxy";
+        String proxyAddress = "https://127.0.0.1:" + localProxy.getLocalPort();
+        RequestObj requestObj = new RequestObj()
+                .setUrl(url)
+                .setMethod("GET")
+                .setProxies(proxyAddress)
+                .setProxiesType("HTTPS")
+                .setRetries(0);
+
+        try (CustomHttpResponse response = RequestUtils.requests(requestObj)) {
+            assertNotNull(response);
+            assertEquals(200, response.getResponseCode());
+            assertEquals("proxied", response.getTextStr());
+        }
+
+        assertTrue(proxyObserved.await(1, TimeUnit.SECONDS));
+        assertEquals(1, proxyHits.get());
+        assertEquals(0, targetHits.get());
+    }
+
+    @Test
+    @DisplayName("设置带认证的 HTTP 代理时应发送 Proxy-Authorization")
+    void shouldSendProxyAuthorizationWhenProxyCredentialsProvided() throws Exception {
+        AtomicInteger targetHits = new AtomicInteger();
+        AtomicInteger proxyHits = new AtomicInteger();
+        CountDownLatch proxyObserved = new CountDownLatch(2);
+        AtomicInteger authHits = new AtomicInteger();
+        HttpServer server = startTargetServer(targetHits);
+        ServerSocket localProxy = startProxyServer(proxyHits, proxyObserved, authHits);
+
+        String url = "http://127.0.0.1:" + server.getAddress().getPort() + "/proxy-auth";
+        String proxyAddress = "http://user:pass@127.0.0.1:" + localProxy.getLocalPort();
+        RequestObj requestObj = new RequestObj()
+                .setUrl(url)
+                .setMethod("GET")
+                .setProxies(proxyAddress)
+                .setProxiesType("HTTP")
+                .setRetries(0);
+
+        try (CustomHttpResponse response = RequestUtils.requests(requestObj)) {
+            assertNotNull(response);
+            assertEquals(200, response.getResponseCode());
+            assertEquals("proxied", response.getTextStr());
+        }
+
+        assertTrue(proxyObserved.await(2, TimeUnit.SECONDS));
+        assertEquals(2, proxyHits.get(), "认证代理应先收到 407，再收到带凭据的重试请求");
+        assertEquals(1, authHits.get(), "第二次请求应包含 Proxy-Authorization");
+        assertEquals(0, targetHits.get());
+    }
+
+    @Test
+    @DisplayName("设置 SOCKS 代理时请求应经过 SOCKS 握手")
+    void shouldSendRequestThroughSocksProxyWhenConfigured() throws Exception {
+        AtomicInteger targetHits = new AtomicInteger();
+        AtomicInteger proxyHits = new AtomicInteger();
+        CountDownLatch proxyObserved = new CountDownLatch(1);
+        HttpServer server = startTargetServer(targetHits);
+        ServerSocket localProxy = startSocksProxyServer(proxyHits, proxyObserved);
+
+        String url = "http://127.0.0.1:" + server.getAddress().getPort() + "/socks-proxy";
+        String proxyAddress = "socks://127.0.0.1:" + localProxy.getLocalPort();
+        RequestObj requestObj = new RequestObj()
+                .setUrl(url)
+                .setMethod("GET")
+                .setProxies(proxyAddress)
+                .setProxiesType("SOCKS")
+                .setRetries(0);
+
+        try (CustomHttpResponse response = RequestUtils.requests(requestObj)) {
+            assertNotNull(response);
+            assertEquals(200, response.getResponseCode());
+            assertEquals("proxied", response.getTextStr());
+        }
+
+        assertTrue(proxyObserved.await(1, TimeUnit.SECONDS));
+        assertEquals(1, proxyHits.get());
+        assertEquals(0, targetHits.get());
+    }
+
     private HttpServer startTargetServer(AtomicInteger targetHits) throws IOException {
         targetServer = HttpServer.create(new InetSocketAddress(0), 0);
         targetServer.createContext("/", exchange -> respond(exchange, targetHits, "direct"));
@@ -160,6 +251,12 @@ class RequestUtilsProxyRoutingTest {
     }
 
     private ServerSocket startProxyServer(AtomicInteger proxyHits, CountDownLatch observedLatch) throws IOException {
+        return startProxyServer(proxyHits, observedLatch, null);
+    }
+
+    private ServerSocket startProxyServer(AtomicInteger proxyHits,
+                                          CountDownLatch observedLatch,
+                                          AtomicInteger authHits) throws IOException {
         proxyServer = new ServerSocket(0);
         proxyThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
@@ -168,7 +265,7 @@ class RequestUtilsProxyRoutingTest {
                     if (observedLatch != null) {
                         observedLatch.countDown();
                     }
-                    handleProxyRequest(socket);
+                    handleProxyRequest(socket, authHits);
                 } catch (IOException e) {
                     if (proxyServer == null || proxyServer.isClosed()) {
                         return;
@@ -181,20 +278,59 @@ class RequestUtilsProxyRoutingTest {
         return proxyServer;
     }
 
-    private void handleProxyRequest(Socket socket) throws IOException {
+    private ServerSocket startSocksProxyServer(AtomicInteger proxyHits, CountDownLatch observedLatch) throws IOException {
+        proxyServer = new ServerSocket(0);
+        proxyThread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                try (Socket socket = proxyServer.accept()) {
+                    proxyHits.incrementAndGet();
+                    if (observedLatch != null) {
+                        observedLatch.countDown();
+                    }
+                    handleSocksProxyRequest(socket);
+                } catch (IOException e) {
+                    if (proxyServer == null || proxyServer.isClosed()) {
+                        return;
+                    }
+                }
+            }
+        }, "test-socks-proxy");
+        proxyThread.setDaemon(true);
+        proxyThread.start();
+        return proxyServer;
+    }
+
+    private void handleProxyRequest(Socket socket, AtomicInteger authHits) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.ISO_8859_1));
         String line = reader.readLine();
         if (line == null) {
             return;
         }
 
+        boolean hasProxyAuthorization = false;
         // Drain remaining headers to finish the request cleanly.
         while ((line = reader.readLine()) != null && !line.isEmpty()) {
-            // no-op
+            if (line.regionMatches(true, 0, "Proxy-Authorization:", 0, "Proxy-Authorization:".length())) {
+                hasProxyAuthorization = true;
+            }
+        }
+
+        OutputStream output = socket.getOutputStream();
+        if (authHits != null && !hasProxyAuthorization) {
+            output.write(("HTTP/1.1 407 Proxy Authentication Required\r\n" +
+                    "Proxy-Authenticate: Basic realm=\"PotatoTool\"\r\n" +
+                    "Content-Length: 0\r\n" +
+                    "Connection: close\r\n" +
+                    "\r\n").getBytes(StandardCharsets.ISO_8859_1));
+            output.flush();
+            return;
+        }
+
+        if (authHits != null && hasProxyAuthorization) {
+            authHits.incrementAndGet();
         }
 
         byte[] body = "proxied".getBytes(StandardCharsets.UTF_8);
-        OutputStream output = socket.getOutputStream();
         output.write(("HTTP/1.1 200 OK\r\n" +
                 "Content-Type: text/plain; charset=utf-8\r\n" +
                 "Content-Length: " + body.length + "\r\n" +
@@ -202,6 +338,67 @@ class RequestUtilsProxyRoutingTest {
                 "\r\n").getBytes(StandardCharsets.ISO_8859_1));
         output.write(body);
         output.flush();
+    }
+
+    private void handleSocksProxyRequest(Socket socket) throws IOException {
+        InputStream input = socket.getInputStream();
+        OutputStream output = socket.getOutputStream();
+
+        int version = input.read();
+        int methodCount = input.read();
+        if (version != 5 || methodCount <= 0) {
+            return;
+        }
+        for (int i = 0; i < methodCount; i++) {
+            input.read();
+        }
+        output.write(new byte[]{0x05, 0x00});
+        output.flush();
+
+        byte[] header = readFully(input, 4);
+        if (header[0] != 0x05 || header[1] != 0x01) {
+            return;
+        }
+
+        int addressType = header[3] & 0xff;
+        if (addressType == 0x01) {
+            readFully(input, 4);
+        } else if (addressType == 0x03) {
+            int domainLength = input.read();
+            readFully(input, domainLength);
+        } else if (addressType == 0x04) {
+            readFully(input, 16);
+        } else {
+            return;
+        }
+        readFully(input, 2);
+
+        output.write(new byte[]{0x05, 0x00, 0x00, 0x01});
+        output.write(new byte[]{127, 0, 0, 1});
+        output.write(ByteBuffer.allocate(2).putShort((short) 0).array());
+        output.flush();
+
+        byte[] body = "proxied".getBytes(StandardCharsets.UTF_8);
+        output.write(("HTTP/1.1 200 OK\r\n" +
+                "Content-Type: text/plain; charset=utf-8\r\n" +
+                "Content-Length: " + body.length + "\r\n" +
+                "Connection: close\r\n" +
+                "\r\n").getBytes(StandardCharsets.ISO_8859_1));
+        output.write(body);
+        output.flush();
+    }
+
+    private byte[] readFully(InputStream input, int length) throws IOException {
+        byte[] buffer = new byte[length];
+        int offset = 0;
+        while (offset < length) {
+            int read = input.read(buffer, offset, length - offset);
+            if (read == -1) {
+                throw new IOException("unexpected eof");
+            }
+            offset += read;
+        }
+        return buffer;
     }
 
     private void respond(HttpExchange exchange, AtomicInteger hitCounter, String bodyText) throws IOException {

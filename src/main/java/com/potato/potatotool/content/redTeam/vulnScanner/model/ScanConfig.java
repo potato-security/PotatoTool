@@ -133,6 +133,11 @@ public class ScanConfig {
      * 响应缓存 TTL（毫秒）
      */
     private long responseCacheTtlMs = 30000;
+
+    /**
+     * 全局请求速率限制（每秒请求数），0 表示不限制
+     */
+    private int requestsPerSecond = 0;
     
     // ========== 新增：请求聚类配置 ==========
     /**
@@ -488,6 +493,14 @@ public class ScanConfig {
     
     public void setResponseCacheTtlMs(long responseCacheTtlMs) {
         this.responseCacheTtlMs = responseCacheTtlMs;
+    }
+
+    public int getRequestsPerSecond() {
+        return requestsPerSecond;
+    }
+
+    public void setRequestsPerSecond(int requestsPerSecond) {
+        this.requestsPerSecond = Math.max(0, requestsPerSecond);
     }
     
     public boolean isEnableClustering() {

@@ -89,13 +89,18 @@ public class XrayCelEvaluator {
      * @return 评估结果
      */
     public static boolean evaluateRuleExpression(String expression, Map<String, Boolean> ruleResults) {
+        return evaluateRuleExpression(expression, ruleResults, null);
+    }
+
+    public static boolean evaluateRuleExpression(String expression, Map<String, Boolean> ruleResults,
+                                                 Map<String, ?> variables) {
         if (expression == null || expression.trim().isEmpty()) {
             return false;
         }
         
         try {
             // 创建上下文，包含规则结果
-            Map<String, Object> context = XrayCelContext.createRuleContext(ruleResults);
+            Map<String, Object> context = XrayCelContext.createRuleContext(ruleResults, variables);
             
             // 评估表达式
             return evaluateExpression(expression, context);
@@ -204,4 +209,3 @@ public class XrayCelEvaluator {
         return XrayCelParser.evaluateSingle(expression, context);
     }
 }
-

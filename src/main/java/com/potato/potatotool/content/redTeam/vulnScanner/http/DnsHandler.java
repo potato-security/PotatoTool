@@ -109,9 +109,9 @@ public class DnsHandler {
             Record queryRecord = Record.newRecord(queryName, recordType, DClass.IN);
             Message queryMessage = Message.newQuery(queryRecord);
             
-            // 设置递归查询标志
+            // Message.newQuery 默认会打开 RD；显式关闭以支持非递归查询。
             if (!recursion) {
-                queryMessage.getHeader().setFlag(Flags.RD);
+                queryMessage.getHeader().unsetFlag(Flags.RD);
             }
             
             // 创建解析器
@@ -349,4 +349,3 @@ public class DnsHandler {
         System.out.println("应答: " + responseCustom.getAnswers());
     }
 }
-

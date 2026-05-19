@@ -3,6 +3,7 @@ package com.potato.potatotool.content.redTeam.vulnScanner.http;
 import com.google.gson.JsonObject;
 import com.potato.potatotool.utils.network.RequestObj;
 import com.potato.potatotool.utils.network.RequestUtils;
+import okhttp3.Request;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -99,6 +100,40 @@ class HttpHandlerPostMethodMappingTest {
         requestObj.setPostMethod("RAW");
 
         assertEquals("RAW", resolveEffectivePostMethod(requestObj));
+    }
+
+    @Test
+    @DisplayName("RAW body 应保留调用方指定的 Content-Type")
+    void rawBodyShouldPreserveCallerContentType() throws Exception {
+        RequestObj requestObj = new RequestObj();
+        requestObj.setUrl("http://127.0.0.1/uploads/user");
+        requestObj.setMethod("POST");
+        requestObj.setHeaders(Collections.singletonMap(
+                "Content-Type",
+                "multipart/form-data; boundary=---------------------------99652559321225150602861519786"));
+        requestObj.setPostData("-----------------------------99652559321225150602861519786\r\n"
+                + "Content-Disposition: form-data; name=\"file\"; filename=\"demo.jpg\"\r\n\r\n"
+                + "data\r\n"
+                + "-----------------------------99652559321225150602861519786--\r\n");
+
+        Request request = RequestUtils.buildRequest(requestObj);
+
+        assertEquals(
+                "multipart/form-data; boundary=---------------------------99652559321225150602861519786",
+                request.body().contentType().toString());
+    }
+
+    @Test
+    @DisplayName("Goby三花括号变量与普通变量都应替换")
+    void gobyTripleBracePlaceholderShouldBeReplaced() {
+        Map<String, String> variables = new HashMap<String, String>();
+        variables.put("X-CSRF-Token", "token_value");
+
+        String result = HttpHandler.replaceVariables(
+                "{{{X-CSRF-Token}}}|{{X-CSRF-Token}}",
+                variables);
+
+        assertEquals("token_value|token_value", result);
     }
 
     private String resolveEffectivePostMethod(RequestObj requestObj) throws Exception {

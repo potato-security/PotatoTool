@@ -613,6 +613,11 @@ public class CustomHttpResponse implements AutoCloseable {
         return response.code();
     }
 
+    public int getInitialResponseCode() {
+        Response initialResponse = getInitialResponse();
+        return initialResponse != null ? initialResponse.code() : getResponseCode();
+    }
+
     public int getContentLength() {
         ResponseBody body = response.body();
         if (body != null) {
@@ -662,6 +667,18 @@ public class CustomHttpResponse implements AutoCloseable {
         }
         return headerMap;
     }
+
+    public Map<String, List<String>> getInitialHeaderFields() {
+        Response initialResponse = getInitialResponse();
+        if (initialResponse == null) {
+            return getHeaderFields();
+        }
+        Map<String, List<String>> headerMap = new HashMap<>();
+        for (String name : initialResponse.headers().names()) {
+            headerMap.put(name, initialResponse.headers().values(name));
+        }
+        return headerMap;
+    }
     
     public String getHeaderField(int n) {
         if (n < response.headers().size()) {
@@ -696,6 +713,21 @@ public class CustomHttpResponse implements AutoCloseable {
         return sb.toString();
     }
 
+    public String getInitialHeaderFieldsText() {
+        Response initialResponse = getInitialResponse();
+        if (initialResponse == null) {
+            return getHeaderFieldsText();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (String name : initialResponse.headers().names()) {
+            for (String value : initialResponse.headers().values(name)) {
+                sb.append(name).append(": ").append(value).append("\n");
+            }
+        }
+        return sb.toString();
+    }
+
     public String getAllResponseText() {
         StringBuilder sb = new StringBuilder();
         
@@ -720,5 +752,16 @@ public class CustomHttpResponse implements AutoCloseable {
     @Override
     public void close() throws Exception {
         disconnect();
+    }
+
+    private Response getInitialResponse() {
+        Response current = response;
+        if (current == null) {
+            return null;
+        }
+        while (current.priorResponse() != null) {
+            current = current.priorResponse();
+        }
+        return current;
     }
 }

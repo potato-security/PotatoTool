@@ -59,6 +59,21 @@ public class XrayCelContext {
         
         return context;
     }
+
+    public static Map<String, Object> createRuleContext(Map<String, Boolean> ruleResults,
+                                                         Map<String, ?> variables) {
+        Map<String, Object> context = createRuleContext(ruleResults);
+        if (variables != null) {
+            for (Map.Entry<String, ?> entry : variables.entrySet()) {
+                Object value = entry.getValue();
+                if (value instanceof List && !((List<?>) value).isEmpty()) {
+                    value = ((List<?>) value).get(0);
+                }
+                context.put(entry.getKey(), value);
+            }
+        }
+        return context;
+    }
     
     /**
      * 添加自定义变量到上下文
@@ -113,7 +128,7 @@ public class XrayCelContext {
                 responseMap.put("latency", response.getResponseTime());
                 
                 // 响应 URL（最终 URL，可能经过重定向）
-                String finalUrl = response.getURL().toString();
+                String finalUrl = response.getURL() != null ? response.getURL().toString() : "";
                 responseMap.put("url", finalUrl != null ? finalUrl : "");
                 responseMap.put("time", response.getResponseTime());
                 
@@ -521,4 +536,3 @@ public class XrayCelContext {
         }
     }
 }
-

@@ -56,6 +56,7 @@ public class JarmFingerprinter {
 
         // 存储10个探测的结果
         ProbeResult[] results = new ProbeResult[10];
+        boolean hasSuccessfulProbe = false;
 
         // 并行执行10个探测 (提高速度)
         ExecutorService executor = Executors.newFixedThreadPool(5);
@@ -76,6 +77,9 @@ public class JarmFingerprinter {
         for (int i = 0; i < futures.size(); i++) {
             try {
                 results[i] = futures.get(i).get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+                if (results[i] != null && results[i].success) {
+                    hasSuccessfulProbe = true;
+                }
             } catch (TimeoutException e) {
                 results[i] = new ProbeResult(); // 超时返回空结果
             } catch (Exception e) {
@@ -84,6 +88,10 @@ public class JarmFingerprinter {
         }
 
         executor.shutdown();
+
+        if (!hasSuccessfulProbe) {
+            return "";
+        }
 
         // 计算指纹
         return calculateFingerprint(results);

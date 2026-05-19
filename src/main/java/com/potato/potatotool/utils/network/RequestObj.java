@@ -97,6 +97,10 @@ public class RequestObj {
     private String tlsSni;
     /** 是否为内置 AI 请求（用于日志/异常地址脱敏） */
     private boolean internalAiRequest = false;
+    /** 代理认证用户名 */
+    private String proxyUsername;
+    /** 代理认证密码 */
+    private String proxyPassword;
 
     public RequestObj(){
         initializeProxySettings();
@@ -116,6 +120,12 @@ public class RequestObj {
     private void initializeProxySettings() {
         //  初始化默认代理配置
         JsonObject tmpJsonObj = (JsonObject) Constants.getOutsideConfig(ConfigConstants.PROXY);
+        if (tmpJsonObj == null) {
+            return;
+        }
+        if (!tmpJsonObj.has(ConfigConstants.PROXY_ENABLE) || !tmpJsonObj.has(ConfigConstants.PROXY_ADDRESS)) {
+            return;
+        }
         boolean enable = tmpJsonObj.getAsJsonPrimitive(ConfigConstants.PROXY_ENABLE).getAsBoolean();
         String address = tmpJsonObj.getAsJsonPrimitive(ConfigConstants.PROXY_ADDRESS).getAsString();
         if(enable && address.length() > 0){
@@ -209,6 +219,24 @@ public class RequestObj {
 
     public String getProxies() {
         return this.proxies;
+    }
+
+    public String getProxyUsername() {
+        return proxyUsername;
+    }
+
+    public RequestObj setProxyUsername(String proxyUsername) {
+        this.proxyUsername = proxyUsername;
+        return this;
+    }
+
+    public String getProxyPassword() {
+        return proxyPassword;
+    }
+
+    public RequestObj setProxyPassword(String proxyPassword) {
+        this.proxyPassword = proxyPassword;
+        return this;
     }
 
     public RequestObj setProxiesType(String proxiesType) {

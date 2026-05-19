@@ -28,8 +28,14 @@ import org.graalvm.polyglot.PolyglotAccess;
 import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyExecutable;
+import okhttp3.MediaType;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 import java.io.BufferedReader;
+import java.net.ConnectException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -41,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,6 +66,9 @@ public class PocExecutor {
 
     private static final Gson GSON = new Gson();
     private static final String DNSLOG_UNAVAILABLE_SKIPPED = "DNSLOG_UNAVAILABLE_SKIPPED";
+    private static final String GOBY_LAST_BODY_KEY = "__goby_last_body";
+    private static final String GOBY_LAST_HEADER_KEY = "__goby_last_header";
+    private static final String GOBY_LAST_STATUS_KEY = "__goby_last_status";
 
     private static final List<PocObj.MatcherType> NON_HTTP_ALLOWED_MATCHERS = Arrays.asList(
             PocObj.MatcherType.WORD,
@@ -82,6 +92,8 @@ public class PocExecutor {
     private final ScanConfig scanConfig;
     private final ConnectionPoolManager connectionPool;
     private final ResponseCache responseCache;
+    private final ResponseCacheService responseCacheService;
+    private final AtomicLong nextRequestPermitTimeMs = new AtomicLong(0L);
 
     // 用于存储最后匹配的请求/响应数据（报告生成用）
     private ThreadLocal<RequestObj> lastMatchedRequest = new ThreadLocal<>();
@@ -96,6 +108,7 @@ public class PocExecutor {
     private ThreadLocal<List<String>> usedParamKeys = ThreadLocal.withInitial(ArrayList::new);
     private ThreadLocal<List<Map<String, Object>>> semanticWarnings = ThreadLocal.withInitial(ArrayList::new);
     private ThreadLocal<Map<String, String>> cookieJar = ThreadLocal.withInitial(LinkedHashMap::new);
+    private ThreadLocal<List<String>> dnsLogManagementMockDomains = ThreadLocal.withInitial(ArrayList::new);
     private ThreadLocal<String> flowExecutionMode = ThreadLocal.withInitial(() -> "stepsCondition");
     private ThreadLocal<Map<String, Object>> lastStepTemplateAliases = ThreadLocal.withInitial(LinkedHashMap::new);
 
@@ -103,6 +116,7 @@ public class PocExecutor {
         this.scanConfig = scanConfig != null ? scanConfig : new ScanConfig();
         this.connectionPool = ConnectionPoolManager.getInstance();
         this.responseCache = new ResponseCache();
+        this.responseCacheService = new ResponseCacheService(1000, this.scanConfig.getResponseCacheTtlMs());
     }
 
     /**
@@ -118,6 +132,13 @@ public class PocExecutor {
             throws ScanExecutionException, NetworkException {
 
         long startTime = System.currentTimeMillis();
+        responseCache.clear();
+        if (scanConfig != null) {
+            responseCacheService.setCacheTtlMs(scanConfig.getResponseCacheTtlMs());
+            if (!scanConfig.isEnableResponseCache()) {
+                responseCacheService.clear();
+            }
+        }
 
         // 尝试获取连接
         if (!connectionPool.acquireConnection(target)) {
@@ -164,6 +185,7 @@ public class PocExecutor {
         List<PocObj.PocStep> steps = poc.getVerifySteps();
         PocObj.GlobalConfig globalConfig = poc.getGlobalConfig();
         cookieJar.get().clear();
+        dnsLogManagementMockDomains.get().clear();
         flowExecutionMode.set("stepsCondition");
 
         if (poc.getFlow() != null && !poc.getFlow().trim().isEmpty() && !isSimpleFlowExpression(poc.getFlow())) {
@@ -240,6 +262,9 @@ public class PocExecutor {
                 }
             }
         }
+
+        // 将已使用变量扩展为依赖闭包，避免 md1 -> @@md5(r1) 这类上游变量被裁剪
+        usedVariables = expandUsedVariableDependencies(pocVariables, usedVariables);
 
         // 过滤未使用的变量（减少不必要的 payload 组合）
         if (pocVariables != null && !pocVariables.isEmpty()) {
@@ -644,7 +669,7 @@ public class PocExecutor {
         PocObj.MatchersCondition stepsCondition
     ) throws Exception {
         // 使用提供的初始变量
-        Map<String, Object> extractedValues = new HashMap<>(initialVariables);
+        Map<String, Object> extractedValues = materializeGobyRuntimeVariables(initialVariables);
 
         // OR 条件：任一步骤匹配即可
         boolean isOrCondition = (stepsCondition == PocObj.MatchersCondition.OR);
@@ -656,7 +681,7 @@ public class PocExecutor {
                 if (step == null) {
                     continue;
                 }
-                Map<String, Object> stepVariables = new HashMap<>(initialVariables);
+                Map<String, Object> stepVariables = new HashMap<>(extractedValues);
                 try {
                     boolean stepResult = executeAndStep(target, step, globalConfig, stepVariables, i + 1);
                     if (stepResult) {
@@ -685,6 +710,9 @@ public class PocExecutor {
             } catch (SocketTimeoutException e) {
                 throw new NetworkException(NetworkException.NetworkErrorType.READ_TIMEOUT,
                     "请求超时: " + target, e);
+            } catch (ConnectException e) {
+                throw new NetworkException(NetworkException.NetworkErrorType.CONNECTION_REFUSED,
+                    "连接被拒绝: " + target, e);
             } catch (UnknownHostException e) {
                 throw new NetworkException(NetworkException.NetworkErrorType.UNKNOWN_HOST,
                     "未知主机: " + target, e);
@@ -1024,14 +1052,14 @@ public class PocExecutor {
             boolean matched = executeSslStep((PocObj.SslStep) step, extractedValues);
             return new NucleiStepResult(matched, hasExtractorValues(step, extractedValues), hasStepOperators(step));
         } else if (step instanceof PocObj.FileStep) {
-            boolean matched = executeFileStep((PocObj.FileStep) step, extractedValues);
+            boolean matched = executeFileStep(target, (PocObj.FileStep) step, extractedValues);
             return new NucleiStepResult(matched, hasExtractorValues(step, extractedValues), hasStepOperators(step));
         } else if (step instanceof PocObj.HeadlessStep) {
             boolean matched = executeHeadlessStep((PocObj.HeadlessStep) step, extractedValues, globalConfig);
             updateTemplateAliasesForStep(step, null, null, extractedValues);
             return new NucleiStepResult(matched, hasExtractorValues(step, extractedValues), hasStepOperators(step));
         } else if (step instanceof PocObj.TcpStep) {
-            boolean matched = executeTcpStep((PocObj.TcpStep) step, extractedValues);
+            boolean matched = executeTcpStep(target, (PocObj.TcpStep) step, extractedValues);
             return new NucleiStepResult(matched, hasExtractorValues(step, extractedValues), hasStepOperators(step));
         } else if (step instanceof PocObj.CodeStep) {
             boolean matched = executeCodeStep((PocObj.CodeStep) step, extractedValues);
@@ -1062,7 +1090,7 @@ public class PocExecutor {
                 long responseTime;
                 try {
                     // 发送请求
-                    response = requests(requestObj);
+                    response = executeHttpRequest(requestObj);
                     responseTime = System.currentTimeMillis();
                 } catch (Exception e) {
                     System.err.println("警告: raw块 " + (rawIndex + 1) + " 请求异常: " + e.getMessage());
@@ -1077,6 +1105,7 @@ public class PocExecutor {
                 // 设置响应时间
                 response.setResponseTime(responseTime - requestTime);
                 captureCookies(response, globalConfig, singleRawStep);
+                updateGobyResponseContext(extractedValues, response);
 
                 // 缓存响应（使用索引后缀）
                 String cacheKey = baseCacheKey + "_" + (rawIndex + 1);
@@ -1148,7 +1177,7 @@ public class PocExecutor {
         long requestTime = System.currentTimeMillis();
 
         // 发送请求
-        try (CustomHttpResponse response = requests(requestObj)) {
+        try (CustomHttpResponse response = executeHttpRequest(requestObj)) {
             // 记录响应时间
             long responseTime = System.currentTimeMillis();
 
@@ -1160,6 +1189,7 @@ public class PocExecutor {
             // 设置响应时间到 response 对象（用于时间盲注检测）
             response.setResponseTime(responseTime - requestTime);
             captureCookies(response, globalConfig, step);
+            updateGobyResponseContext(extractedValues, response);
 
             // 缓存响应（用于diff操作）
             responseCache.put(baseCacheKey, response, requestTime, responseTime);
@@ -1261,7 +1291,7 @@ public class PocExecutor {
                     CustomHttpResponse response;
                     long responseTime;
                     try {
-                        response = requests(requestObj);
+                        response = executeHttpRequest(requestObj);
                         responseTime = System.currentTimeMillis();
                     } catch (Exception e) {
                         System.err.println("警告: iterate-all raw块 " + (rawIndex + 1) + " 请求异常: " + e.getMessage());
@@ -1279,6 +1309,7 @@ public class PocExecutor {
                     Map<String, Object> nextVariables = new HashMap<>(requestVariables);
                     List<CustomHttpResponse> nextResponses = new ArrayList<>(state.responses);
                     nextResponses.add(response);
+                    updateGobyResponseContext(nextVariables, response);
 
                     StepExecutionRecord record = buildHttpStepRecord(
                             stepIndex,
@@ -1377,7 +1408,7 @@ public class PocExecutor {
                 CustomHttpResponse response;
                 long responseTime;
                 try {
-                    response = requests(requestObj);
+                    response = executeHttpRequest(requestObj);
                     responseTime = System.currentTimeMillis();
                 } catch (Exception e) {
                     System.err.println("警告: path候选 " + (pathIndex + 1) + " 请求异常: " + e.getMessage());
@@ -1391,6 +1422,7 @@ public class PocExecutor {
                 anyResponse = true;
                 response.setResponseTime(responseTime - requestTime);
                 captureCookies(response, globalConfig, candidateStep);
+                updateGobyResponseContext(requestVariables, response);
 
                 String cacheKey = baseCacheKey + "_path_" + (pathIndex + 1);
                 responseCache.put(cacheKey, response, requestTime, responseTime);
@@ -1442,6 +1474,100 @@ public class PocExecutor {
         return new NucleiStepResult(anyResponse && anyMatched, hasExtractorOutput, hasStepOperators(step));
     }
 
+    private Map<String, Object> materializeGobyRuntimeVariables(Map<String, Object> initialVariables) {
+        Map<String, Object> resolved = new LinkedHashMap<>();
+        if (initialVariables == null || initialVariables.isEmpty()) {
+            return resolved;
+        }
+        resolved.putAll(initialVariables);
+
+        int maxIterations = 8;
+        for (int i = 0; i < maxIterations; i++) {
+            boolean changed = false;
+            Map<String, String> stringVariables = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> entry : resolved.entrySet()) {
+                if (entry.getKey() != null && entry.getValue() != null) {
+                    stringVariables.put(entry.getKey(), String.valueOf(entry.getValue()));
+                }
+            }
+
+            for (Map.Entry<String, Object> entry : resolved.entrySet()) {
+                Object currentValue = entry.getValue();
+                if (!(currentValue instanceof String)) {
+                    continue;
+                }
+
+                String value = (String) currentValue;
+                if (hasUnresolvedVariableDependencies(entry.getKey(), value, stringVariables)) {
+                    continue;
+                }
+                String processed = replaceResolvedVariablePlaceholders(value, stringVariables);
+                processed = GobyFunctionProcessor.processGobyFunctions(processed, stringVariables);
+                if (!processed.equals(value)) {
+                    entry.setValue(processed);
+                    stringVariables.put(entry.getKey(), processed);
+                    changed = true;
+                }
+            }
+
+            if (!changed) {
+                break;
+            }
+        }
+
+        return resolved;
+    }
+
+    private boolean hasUnresolvedVariableDependencies(String variableName,
+                                                      String value,
+                                                      Map<String, String> variables) {
+        if (value == null || value.isEmpty() || variables == null || variables.isEmpty()) {
+            return false;
+        }
+
+        Set<String> dependencies = new HashSet<>();
+        extractVariableNames(value, dependencies);
+        if (dependencies.isEmpty()) {
+            return false;
+        }
+
+        for (String dependency : dependencies) {
+            if (dependency == null || dependency.isEmpty() || dependency.equals(variableName)) {
+                continue;
+            }
+            String dependencyValue = variables.get(dependency);
+            if (dependencyValue != null && looksLikeDeferredVariableValue(dependencyValue)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean looksLikeDeferredVariableValue(String value) {
+        return value != null
+                && (value.contains("@@")
+                || value.contains("{{")
+                || value.contains("{{{"));
+    }
+
+    private String replaceResolvedVariablePlaceholders(String value, Map<String, String> variables) {
+        if (value == null || variables == null || variables.isEmpty()) {
+            return value;
+        }
+
+        String result = value;
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+            String varName = entry.getKey();
+            String varValue = entry.getValue();
+            if (varName == null || varValue == null) {
+                continue;
+            }
+            result = result.replace("{{{" + varName + "}}}", varValue);
+            result = result.replace("{{" + varName + "}}", varValue);
+        }
+        return result;
+    }
+
     private StepExecutionRecord buildHttpStepRecord(int stepIndex, String stepId, RequestObj requestObj,
                                                     CustomHttpResponse response, long responseTime,
                                                     boolean matched) {
@@ -1475,6 +1601,9 @@ public class PocExecutor {
 
     private boolean evaluateHttpMatchers(CustomHttpResponse response, PocObj.PocStep step,
                                          String stepId, Map<String, Object> extractedValues) {
+        if (step == null || step.getMatchers() == null || step.getMatchers().isEmpty()) {
+            return true;
+        }
         return ResponseMatcher.matchResponse(
                 response, step.getMatchers(), step.getMatchersCondition(), responseCache,
                 stepId, extractedValues
@@ -1826,12 +1955,265 @@ public class PocExecutor {
         );
     }
 
+    private CustomHttpResponse executeHttpRequest(RequestObj requestObj) throws Exception {
+        CustomHttpResponse dnsLogMockResponse = createDnsLogManagementMockResponse(requestObj);
+        if (dnsLogMockResponse != null) {
+            return dnsLogMockResponse;
+        }
+        String cacheKey = buildRequestCacheKey(requestObj);
+        if (cacheKey != null && scanConfig != null && scanConfig.isEnableResponseCache()) {
+            ResponseCacheService.CachedResponse cached = responseCacheService.get(cacheKey);
+            if (cached != null) {
+                return buildSyntheticHttpResponse(
+                        requestObj.getUrl(),
+                        cached.getBody(),
+                        cached.getHeaders(),
+                        cached.getStatusCode(),
+                        cached.getResponseTimeMs());
+            }
+        }
+        try {
+            applyGlobalRateLimit();
+            CustomHttpResponse response = requests(requestObj);
+            if (cacheKey != null && response != null && scanConfig != null && scanConfig.isEnableResponseCache()) {
+                responseCacheService.put(
+                        cacheKey,
+                        response.getResponseCode(),
+                        flattenHeaders(response.getHeaderFields()),
+                        response.getTextStr(),
+                        response.getResponseTime());
+            }
+            return response;
+        } catch (Exception e) {
+            throw unwrapRequestException(e);
+        }
+    }
+
+    private void applyGlobalRateLimit() throws InterruptedException {
+        if (scanConfig == null) {
+            return;
+        }
+        int requestsPerSecond = scanConfig.getRequestsPerSecond();
+        if (requestsPerSecond <= 0) {
+            return;
+        }
+
+        long intervalMs = Math.max(1L, 1000L / requestsPerSecond);
+        while (true) {
+            long now = System.currentTimeMillis();
+            long permitAt = nextRequestPermitTimeMs.get();
+            long candidate = Math.max(now, permitAt);
+            long next = candidate + intervalMs;
+            if (nextRequestPermitTimeMs.compareAndSet(permitAt, next)) {
+                long waitMs = candidate - now;
+                if (waitMs > 0) {
+                    Thread.sleep(waitMs);
+                }
+                return;
+            }
+        }
+    }
+
+    private String buildRequestCacheKey(RequestObj requestObj) {
+        if (requestObj == null || requestObj.getUrl() == null || requestObj.getUrl().trim().isEmpty()) {
+            return null;
+        }
+        String method = requestObj.getMethod() == null ? "GET" : requestObj.getMethod();
+        String url = requestObj.getUrl();
+        String path = "/";
+        try {
+            URL parsed = new URL(url);
+            path = parsed.getPath();
+            if (parsed.getQuery() != null && !parsed.getQuery().isEmpty()) {
+                path = path + "?" + parsed.getQuery();
+            }
+            String baseUrl = parsed.getProtocol() + "://" + parsed.getAuthority();
+            String body = requestObj.getPostData() == null ? null : new String(requestObj.getPostData(), StandardCharsets.UTF_8);
+            return responseCacheService.generateCacheKey(baseUrl, method, path, body, requestObj.getHeaders());
+        } catch (MalformedURLException ignored) {
+            String body = requestObj.getPostData() == null ? null : new String(requestObj.getPostData(), StandardCharsets.UTF_8);
+            return responseCacheService.generateCacheKey(url, method, path, body, requestObj.getHeaders());
+        }
+    }
+
+    private Map<String, String> flattenHeaders(Map<String, List<String>> headers) {
+        Map<String, String> flattened = new LinkedHashMap<>();
+        if (headers == null || headers.isEmpty()) {
+            return flattened;
+        }
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            if (entry.getKey() == null || entry.getValue() == null || entry.getValue().isEmpty()) {
+                continue;
+            }
+            flattened.put(entry.getKey(), String.join(", ", entry.getValue()));
+        }
+        return flattened;
+    }
+
+    private Exception unwrapRequestException(Exception exception) {
+        Throwable current = exception;
+        while (current != null) {
+            if (current instanceof SocketTimeoutException) {
+                return (SocketTimeoutException) current;
+            }
+            if (current instanceof ConnectException) {
+                return (ConnectException) current;
+            }
+            if (current instanceof UnknownHostException) {
+                return (UnknownHostException) current;
+            }
+            if (current instanceof IOException) {
+                return (IOException) current;
+            }
+            current = current.getCause();
+        }
+        return exception;
+    }
+
+    private CustomHttpResponse createDnsLogManagementMockResponse(RequestObj requestObj) {
+        if (!DnsLogService.isMockMode() || requestObj == null || requestObj.getUrl() == null) {
+            return null;
+        }
+
+        try {
+            URL url = new URL(requestObj.getUrl());
+            String host = url.getHost();
+            String path = url.getPath();
+            if (host == null || path == null || !isDnsLogCnHost(host)) {
+                return null;
+            }
+
+            if ("/getdomain.php".equalsIgnoreCase(path)) {
+                String domain = DnsLogService.generateDnsLogDomain();
+                if (domain != null && !domain.trim().isEmpty()) {
+                    dnsLogManagementMockDomains.get().add(domain.trim());
+                }
+
+                Map<String, String> headers = new LinkedHashMap<>();
+                headers.put("Content-Type", "text/plain; charset=utf-8");
+                headers.put("Set-Cookie", "PHPSESSID=potatotool-mock; path=/");
+                return buildSyntheticHttpResponse(requestObj.getUrl(), domain, headers);
+            }
+
+            if ("/getrecords.php".equalsIgnoreCase(path)) {
+                Map<String, String> headers = new LinkedHashMap<>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                return buildSyntheticHttpResponse(requestObj.getUrl(), buildDnsLogMockRecordsForTriggeredDomains(), headers);
+            }
+        } catch (Exception ignored) {
+            return null;
+        }
+
+        return null;
+    }
+
+    private boolean isDnsLogCnHost(String host) {
+        String normalizedHost = host == null ? "" : host.trim().toLowerCase(Locale.ROOT);
+        return "dnslog.cn".equals(normalizedHost) || "www.dnslog.cn".equals(normalizedHost);
+    }
+
+    private String buildDnsLogMockRecords() {
+        List<String> domains = dnsLogManagementMockDomains.get();
+        if (domains == null || domains.isEmpty()) {
+            return "[]";
+        }
+
+        StringBuilder records = new StringBuilder("[");
+        long timestamp = System.currentTimeMillis() / 1000;
+        for (int i = 0; i < domains.size(); i++) {
+            if (i > 0) {
+                records.append(',');
+            }
+            records.append("{\"domain\":\"")
+                    .append(escapeJson(domains.get(i)))
+                    .append("\",\"ip\":\"127.0.0.1\",\"time\":\"")
+                    .append(timestamp)
+                    .append("\"}");
+        }
+        records.append(']');
+        return records.toString();
+    }
+
+    private String buildDnsLogMockRecordsForTriggeredDomains() {
+        List<String> domains = dnsLogManagementMockDomains.get();
+        if (domains == null || domains.isEmpty()) {
+            return "[]";
+        }
+
+        List<String> triggeredDomains = new ArrayList<>();
+        for (String domain : domains) {
+            if (DnsLogService.hasDnsResolution(domain)) {
+                triggeredDomains.add(domain);
+            }
+        }
+        if (triggeredDomains.isEmpty()) {
+            return "[]";
+        }
+
+        StringBuilder records = new StringBuilder("[");
+        long timestamp = System.currentTimeMillis() / 1000;
+        for (int i = 0; i < triggeredDomains.size(); i++) {
+            if (i > 0) {
+                records.append(',');
+            }
+            records.append("{\"domain\":\"")
+                    .append(escapeJson(triggeredDomains.get(i)))
+                    .append("\",\"ip\":\"127.0.0.1\",\"time\":\"")
+                    .append(timestamp)
+                    .append("\"}");
+        }
+        records.append(']');
+        return records.toString();
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    private CustomHttpResponse buildSyntheticHttpResponse(String url, String body, Map<String, String> headers) {
+        return buildSyntheticHttpResponse(url, body, headers, 200, 0L);
+    }
+
+    private CustomHttpResponse buildSyntheticHttpResponse(String url,
+                                                          String body,
+                                                          Map<String, String> headers,
+                                                          int statusCode,
+                                                          long responseTimeMs) {
+        String responseBody = body == null ? "" : body;
+        String contentType = headers != null && headers.get("Content-Type") != null
+                ? headers.get("Content-Type")
+                : "text/plain; charset=utf-8";
+
+        Response.Builder responseBuilder = new Response.Builder()
+                .request(new Request.Builder().url(url).build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(statusCode)
+                .message(statusCode == 200 ? "OK" : String.valueOf(statusCode))
+                .body(ResponseBody.create(MediaType.parse(contentType), responseBody));
+
+        if (headers != null) {
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                if (header.getKey() != null && header.getValue() != null) {
+                    responseBuilder.addHeader(header.getKey(), header.getValue());
+                }
+            }
+        }
+
+        CustomHttpResponse synthetic = new CustomHttpResponse(responseBuilder.build());
+        synthetic.setResponseTime(responseTimeMs);
+        return synthetic;
+    }
+
     /**
      * 创建HTTP请求对象
      */
     private RequestObj createRequest(String target, PocObj.PocStep step,
                                      PocObj.GlobalConfig globalConfig,
                                      Map<String, Object> extractedValues) {
+        applyGobyRequestVariables(step, extractedValues);
         RequestObj requestObj = new RequestObj();
         // RequestObj 会默认继承总代理；漏扫链路统一改为显式代理，避免绕过 Proxy.services.VulnScan。
         HttpHandler.applyProxySettings(requestObj);
@@ -1916,6 +2298,9 @@ public class PocExecutor {
         int timeout = determineTimeout(step, globalConfig);
         if (timeout > 0) {
             requestObj.setTimeOut(timeout);
+            requestObj.setReadTimeout(timeout);
+            requestObj.setWriteTimeout(timeout);
+            requestObj.setCallTimeout(Math.max(timeout, timeout + 5));
         }
 
         // 设置重试次数
@@ -1939,6 +2324,157 @@ public class PocExecutor {
         }
 
         return requestObj;
+    }
+
+    private void applyGobyRequestVariables(PocObj.PocStep step, Map<String, Object> extractedValues) {
+        if (step == null || step.getRequestVariables() == null || step.getRequestVariables().isEmpty()
+                || extractedValues == null) {
+            return;
+        }
+
+        Map<String, String> stringVariables = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : extractedValues.entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null) {
+                stringVariables.put(entry.getKey(), String.valueOf(entry.getValue()));
+            }
+        }
+
+        for (String requestVariable : step.getRequestVariables()) {
+            if (requestVariable == null || requestVariable.trim().isEmpty()) {
+                continue;
+            }
+
+            String[] parts = requestVariable.split("\\|", -1);
+            if (parts.length < 2) {
+                continue;
+            }
+
+            String varName = parts[0].trim();
+            String dataSource = parts[1].trim().toLowerCase(Locale.ROOT);
+            String operation = parts.length > 2 ? parts[2].trim().toLowerCase(Locale.ROOT) : "";
+            String value = parts.length > 3 ? parts[3] : "";
+            if (varName.isEmpty()) {
+                continue;
+            }
+
+            String resolvedValue = resolveGobyRequestVariable(varName, dataSource, operation, value, stringVariables);
+            if (resolvedValue == null) {
+                continue;
+            }
+
+            extractedValues.put(varName, resolvedValue);
+            stringVariables.put(varName, resolvedValue);
+        }
+    }
+
+    private String resolveGobyRequestVariable(String varName,
+                                              String dataSource,
+                                              String operation,
+                                              String value,
+                                              Map<String, String> variables) {
+        if ("rand".equals(dataSource)) {
+            String functionArg = value == null ? "" : value.trim();
+            if ("int".equals(operation) || "str".equals(operation)) {
+                return GobyFunctionProcessor.processGobyFunctions("@@random(" + functionArg + ")", variables);
+            }
+            return null;
+        }
+
+        if ("dnslog".equals(dataSource)) {
+            return GobyFunctionProcessor.processGobyFunctions("@@dnslog()", variables);
+        }
+
+        if ("httplog".equals(dataSource)) {
+            return GobyFunctionProcessor.processGobyFunctions("@@httplog()", variables);
+        }
+
+        if ("define".equals(dataSource) || dataSource.isEmpty()) {
+            if ("str".equals(operation) || "text".equals(operation)) {
+                return replaceResolvedVariablePlaceholders(value, variables);
+            }
+            if (isSupportedGobyFunctionOperation(operation)) {
+                return GobyFunctionProcessor.processGobyFunctions("@@" + operation + "(" + value + ")", variables);
+            }
+        }
+
+        if (isResponseDataSource(dataSource)) {
+            String content = resolveGobyResponseDataSource(dataSource, variables);
+            if (content == null) {
+                return null;
+            }
+
+            String normalizedOperation = (operation == null || operation.isEmpty()
+                    || "undefined".equals(operation)) ? "regex" : operation;
+            if ("text".equals(normalizedOperation)) {
+                normalizedOperation = "regex";
+            }
+
+            String pattern = value == null ? "" : value.trim();
+            if ("regex".equals(normalizedOperation) && pattern.isEmpty()) {
+                pattern = "(?s).*";
+            }
+
+            PocObj.Matcher extractor = new PocObj.Matcher();
+            extractor.setName(varName);
+            extractor.setPart("body");
+            extractor.setType(PocObj.MatcherType.REGEX);
+            extractor.setGroup(-1);
+            extractor.setValues(Collections.singletonList(pattern));
+
+            Map<String, Object> extracted = new HashMap<>();
+            VariableExtractor.extractVariablesFromTextObj(content,
+                    Collections.singletonList(extractor),
+                    extracted,
+                    true);
+            Object extractedValue = extracted.get(varName);
+            return extractedValue != null ? String.valueOf(extractedValue) : null;
+        }
+
+        return null;
+    }
+
+    private boolean isSupportedGobyFunctionOperation(String operation) {
+        if (operation == null || operation.isEmpty()) {
+            return false;
+        }
+        return Arrays.asList("base64", "md5", "sha1", "sha256", "sha512",
+                "urlencode", "urldecode", "timestamp", "date", "uuid", "file").contains(operation);
+    }
+
+    private boolean isResponseDataSource(String dataSource) {
+        return "body".equals(dataSource)
+                || "lastbody".equals(dataSource)
+                || "header".equals(dataSource)
+                || "lastheader".equals(dataSource)
+                || "status".equals(dataSource)
+                || "code".equals(dataSource)
+                || "lastraw".equals(dataSource);
+    }
+
+    private String resolveGobyResponseDataSource(String dataSource, Map<String, String> variables) {
+        if (variables == null || dataSource == null) {
+            return null;
+        }
+
+        if ("body".equals(dataSource) || "lastbody".equals(dataSource) || "lastraw".equals(dataSource)) {
+            return variables.get(GOBY_LAST_BODY_KEY);
+        }
+        if ("header".equals(dataSource) || "lastheader".equals(dataSource)) {
+            return variables.get(GOBY_LAST_HEADER_KEY);
+        }
+        if ("status".equals(dataSource) || "code".equals(dataSource)) {
+            return variables.get(GOBY_LAST_STATUS_KEY);
+        }
+        return null;
+    }
+
+    private void updateGobyResponseContext(Map<String, Object> extractedValues, CustomHttpResponse response) {
+        if (extractedValues == null || response == null) {
+            return;
+        }
+        extractedValues.put(GOBY_LAST_BODY_KEY, VariableExtractor.getResponsePart(response, "body"));
+        extractedValues.put(GOBY_LAST_HEADER_KEY, VariableExtractor.getResponsePart(response, "header"));
+        extractedValues.put(GOBY_LAST_STATUS_KEY, VariableExtractor.getResponsePart(response, "status"));
     }
 
     /**
@@ -2306,6 +2842,27 @@ public class PocExecutor {
         result.setTimestamp(System.currentTimeMillis());
         result.addDetail("scan_duration", System.currentTimeMillis() - startTime);
         attachInternalWarningDetails(result, poc);
+
+        List<StepExecutionRecord> records = stepExecutionRecords.get();
+        if (records != null && !records.isEmpty()) {
+            result.setStepRecords(new ArrayList<>(records));
+        }
+
+        Map<String, Object> outputData = extractedOutputData.get();
+        if (outputData != null && !outputData.isEmpty()) {
+            result.setOutputData(new HashMap<>(outputData));
+        }
+
+        Map<String, String> varValues = usedVariableValues.get();
+        if (varValues != null && !varValues.isEmpty()) {
+            result.setVariableValues(new HashMap<>(varValues));
+        }
+
+        List<String> paramKeys = usedParamKeys.get();
+        if (paramKeys != null && !paramKeys.isEmpty()) {
+            result.setParamKeys(new ArrayList<>(paramKeys));
+        }
+
         clearThreadLocals();
         return result;
     }
@@ -2399,9 +2956,10 @@ public class PocExecutor {
 
         // 确保请求头存在
         Map<String, String> headers = requestObj.getHeaders();
+        boolean initializedHeaders = false;
         if (headers == null) {
             headers = new HashMap<>();
-            requestObj.setHeaders(headers);
+            initializedHeaders = true;
         }
 
         try {
@@ -2420,6 +2978,9 @@ public class PocExecutor {
 
                 default:
                     System.err.println("不支持的认证类型: " + authType);
+            }
+            if (initializedHeaders) {
+                requestObj.setHeaders(headers);
             }
         } catch (Exception e) {
             System.err.println("应用认证配置失败: " + e.getMessage());
@@ -2671,10 +3232,19 @@ public class PocExecutor {
     /**
      * 执行 File 步骤
      */
-    private boolean executeFileStep(PocObj.FileStep fileStep, Map<String, Object> variables) {
+    private boolean executeFileStep(String target, PocObj.FileStep fileStep, Map<String, Object> variables) {
         try {
+            List<String> sourcePaths = fileStep.getPaths();
+            if ((sourcePaths == null || sourcePaths.isEmpty()) && target != null && !target.trim().isEmpty()) {
+                sourcePaths = Collections.singletonList(target);
+            }
+            if (sourcePaths == null || sourcePaths.isEmpty()) {
+                System.out.println("File 步骤缺少扫描路径");
+                return false;
+            }
+
             // 替换变量（支持嵌套变量）
-            List<String> paths = fileStep.getPaths().stream()
+            List<String> paths = sourcePaths.stream()
                 .map(path -> HttpHandler.replaceVariablesObj(path, variables))
                 .collect(Collectors.toList());
 
@@ -2974,22 +3544,8 @@ public class PocExecutor {
     /**
      * 执行 TCP 步骤
      */
-    private boolean executeTcpStep(PocObj.TcpStep tcpStep, Map<String, Object> variables) {
+    private boolean executeTcpStep(String target, PocObj.TcpStep tcpStep, Map<String, Object> variables) {
         try {
-            // 替换变量
-            String host = HttpHandler.replaceVariablesObj(tcpStep.getHost(), variables);
-            String portStr = HttpHandler.replaceVariablesObj(tcpStep.getPort(), variables);
-
-            System.out.println("→ 执行 TCP 通信: " + host + ":" + portStr);
-
-            int port;
-            try {
-                port = Integer.parseInt(portStr);
-            } catch (NumberFormatException e) {
-                System.err.println("无效的端口: " + portStr);
-                return false;
-            }
-
             // 处理输入列表中的变量
             List<PocObj.Input> processedInputs = new ArrayList<>();
             if (tcpStep.getInputs() != null) {
@@ -3007,39 +3563,218 @@ public class PocExecutor {
                 }
             }
 
-            // 执行 Socket 通信
-            SocketHandler.SocketResponse response = SocketHandler.execute(
-                host,
-                port,
-                processedInputs,
-                tcpStep.getTimeout() > 0 ? tcpStep.getTimeout() : 10 // 默认10秒
-            );
-
-            if (!response.isSuccess()) {
-                System.err.println("TCP 通信失败: " + response.getError());
+            List<String> candidateHosts = resolveTcpHosts(target, tcpStep, variables);
+            List<Integer> candidatePorts = resolveTcpPorts(target, tcpStep, variables);
+            if (candidateHosts.isEmpty()) {
+                System.err.println("TCP 步骤缺少有效主机");
+                return false;
+            }
+            if (candidatePorts.isEmpty()) {
+                System.err.println("TCP 步骤缺少有效端口");
                 return false;
             }
 
-            // 执行匹配
-            String raw = response.getRawString();
-            if (tcpStep.getExtractors() != null && !tcpStep.getExtractors().isEmpty()) {
-                VariableExtractor.extractVariablesFromTextObj(raw, tcpStep.getExtractors(), variables, true);
-            }
-            if (tcpStep.getMatchers() != null && !tcpStep.getMatchers().isEmpty()) {
-                validateNonHttpMatcherTypes(tcpStep, "tcp");
-                boolean matched = SimpleMatcher.match(raw, tcpStep);
-                if (!matched) {
-                    System.out.println("TCP 响应不匹配");
-                    return false;
+            validateNonHttpMatcherTypes(tcpStep, "tcp");
+
+            int timeout = tcpStep.getTimeout() > 0 ? tcpStep.getTimeout() : 10;
+            String lastError = null;
+            for (String host : candidateHosts) {
+                for (Integer port : candidatePorts) {
+                    if (port == null) {
+                        continue;
+                    }
+                    System.out.println("→ 执行 TCP 通信: " + host + ":" + port);
+                    SocketHandler.SocketResponse response = SocketHandler.execute(
+                            host,
+                            port,
+                            processedInputs,
+                            timeout
+                    );
+
+                    if (!response.isSuccess()) {
+                        lastError = response.getError();
+                        System.err.println("TCP 通信失败: " + host + ":" + port + " - " + response.getError());
+                        continue;
+                    }
+
+                    String raw = response.getRawString();
+                    if (tcpStep.getExtractors() != null && !tcpStep.getExtractors().isEmpty()) {
+                        VariableExtractor.extractVariablesFromTextObj(raw, tcpStep.getExtractors(), variables, true);
+                    }
+                    if (tcpStep.getMatchers() != null && !tcpStep.getMatchers().isEmpty()) {
+                        boolean matched = SimpleMatcher.match(raw, tcpStep);
+                        if (!matched) {
+                            System.out.println("TCP 响应不匹配: " + host + ":" + port);
+                            continue;
+                        }
+                    }
+
+                    System.out.println("✓ TCP 步骤执行成功");
+                    return true;
                 }
             }
-
-            System.out.println("✓ TCP 步骤执行成功");
-            return true;
+            if (lastError != null) {
+                System.err.println("TCP 候选全部失败，最后错误: " + lastError);
+            }
+            return false;
 
         } catch (Exception e) {
             System.err.println("TCP 步骤执行失败: " + e.getMessage());
             return false;
+        }
+    }
+
+    private List<String> resolveTcpHosts(String target, PocObj.TcpStep tcpStep, Map<String, Object> variables) {
+        LinkedHashSet<String> resolvedHosts = new LinkedHashSet<>();
+        String targetHost = firstNonBlank(resolveTcpTargetHost(target, variables));
+        String singleHost = firstNonBlank(resolveTcpHostValue(tcpStep.getHost(), variables));
+        List<String> hosts = tcpStep.getHosts();
+
+        if (targetHost != null) {
+            resolvedHosts.add(targetHost);
+        }
+        if (hosts != null) {
+            for (String host : hosts) {
+                String resolved = firstNonBlank(resolveTcpHostValue(host, variables));
+                if (resolved != null) {
+                    resolvedHosts.add(resolved);
+                }
+            }
+        }
+        if (singleHost != null) {
+            resolvedHosts.add(singleHost);
+        }
+        return new ArrayList<String>(resolvedHosts);
+    }
+
+    private List<Integer> resolveTcpPorts(String target, PocObj.TcpStep tcpStep, Map<String, Object> variables) {
+        LinkedHashSet<Integer> resolvedPorts = new LinkedHashSet<>();
+        Integer targetPort = resolveTcpTargetPort(target, variables);
+        if (targetPort != null) {
+            resolvedPorts.add(targetPort);
+        }
+
+        String portStr = HttpHandler.replaceVariablesObj(tcpStep.getPort(), variables);
+        if (portStr != null) {
+            String[] candidates = portStr.split(",");
+            for (String candidate : candidates) {
+                String trimmed = candidate == null ? null : candidate.trim();
+                if (trimmed == null || trimmed.isEmpty()) {
+                    continue;
+                }
+                try {
+                    resolvedPorts.add(Integer.parseInt(trimmed));
+                } catch (NumberFormatException e) {
+                    System.err.println("无效的端口: " + trimmed);
+                }
+            }
+        }
+        return new ArrayList<Integer>(resolvedPorts);
+    }
+
+    private String resolveTcpTargetHost(String target, Map<String, Object> variables) {
+        TargetEndpoint endpoint = parseTargetEndpoint(target);
+        if (endpoint != null && endpoint.host != null) {
+            return endpoint.host;
+        }
+        Object hostname = variables.get("Hostname");
+        String value = objectToScalarString(hostname);
+        if (value != null) {
+            return stripTcpSchemeAndPort(value);
+        }
+        Object host = variables.get("Host");
+        return stripTcpSchemeAndPort(objectToScalarString(host));
+    }
+
+    private Integer resolveTcpTargetPort(String target, Map<String, Object> variables) {
+        TargetEndpoint endpoint = parseTargetEndpoint(target);
+        if (endpoint != null && endpoint.port != null) {
+            return endpoint.port;
+        }
+        Object portValue = variables.get("Port");
+        String value = objectToScalarString(portValue);
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String resolveTcpHostValue(String rawHost, Map<String, Object> variables) {
+        return stripTcpSchemeAndPort(firstNonBlank(HttpHandler.replaceVariablesObj(rawHost, variables)));
+    }
+
+    private String stripTcpSchemeAndPort(String hostValue) {
+        String value = firstNonBlank(hostValue);
+        if (value == null) {
+            return null;
+        }
+        int schemeIndex = value.indexOf("://");
+        if (schemeIndex >= 0) {
+            value = value.substring(schemeIndex + 3);
+        }
+        int colonIndex = value.lastIndexOf(':');
+        if (colonIndex > 0 && value.indexOf(']') == -1) {
+            String suffix = value.substring(colonIndex + 1);
+            if (suffix.matches("\\d+")) {
+                value = value.substring(0, colonIndex);
+            }
+        }
+        return firstNonBlank(value);
+    }
+
+    private String firstNonBlank(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String objectToScalarString(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof List) {
+            List list = (List) value;
+            if (list.isEmpty()) {
+                return null;
+            }
+            Object first = list.get(0);
+            return first == null ? null : String.valueOf(first);
+        }
+        return String.valueOf(value);
+    }
+
+    private TargetEndpoint parseTargetEndpoint(String target) {
+        String value = firstNonBlank(target);
+        if (value == null) {
+            return null;
+        }
+        try {
+            String normalized = value.contains("://") ? value : "tcp://" + value;
+            URL url = new URL(normalized.replaceFirst("^tcp://", "http://"));
+            String host = firstNonBlank(url.getHost());
+            int port = url.getPort();
+            if (host == null) {
+                return null;
+            }
+            return new TargetEndpoint(host, port > 0 ? port : null);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static class TargetEndpoint {
+        private final String host;
+        private final Integer port;
+
+        private TargetEndpoint(String host, Integer port) {
+            this.host = host;
+            this.port = port;
         }
     }
 
@@ -4415,6 +5150,7 @@ public class PocExecutor {
         singleRawStep.setTimeout(originalStep.getTimeout());
         singleRawStep.setRetries(originalStep.getRetries());
         singleRawStep.setProxy(originalStep.getProxy());
+        singleRawStep.setRequestVariables(originalStep.getRequestVariables());
 
         // 只设置当前这一个raw块
         List<String> singleRaw = new ArrayList<>();
@@ -4454,6 +5190,7 @@ public class PocExecutor {
         candidateStep.setUsername(originalStep.getUsername());
         candidateStep.setPassword(originalStep.getPassword());
         candidateStep.setToken(originalStep.getToken());
+        candidateStep.setRequestVariables(originalStep.getRequestVariables());
         candidateStep.setRetries(originalStep.getRetries());
         candidateStep.setRetryInterval(originalStep.getRetryInterval());
         candidateStep.setStopAtFirstMatch(originalStep.isStopAtFirstMatch());
@@ -4461,9 +5198,14 @@ public class PocExecutor {
         return candidateStep;
     }
 
+    private static final Pattern DOUBLE_BRACE_VARIABLE_PATTERN = Pattern.compile("\\{\\{([\\w-]+)\\}\\}");
+    private static final Pattern TRIPLE_BRACE_VARIABLE_PATTERN = Pattern.compile("\\{\\{\\{([\\w-]+)\\}\\}\\}");
+    private static final Pattern HELPER_ARGUMENT_PATTERN = Pattern.compile("\\{\\{\\s*[A-Za-z_][\\w]*\\s*\\((.*?)\\)\\s*\\}\\}");
+    private static final Pattern GOBY_FUNCTION_ARGUMENT_PATTERN = Pattern.compile("@@[A-Za-z_][\\w]*\\((.*?)\\)");
+
     /**
      * 检测 POC 实际使用的变量
-     * 遍历所有步骤，提取 {{varName}} 格式的变量引用
+     * 遍历所有步骤，提取 {{varName}} / {{{varName}}} 格式的变量引用
      *
      * @param steps POC步骤列表
      * @return 实际使用的变量名集合
@@ -4474,8 +5216,6 @@ public class PocExecutor {
             return usedVariables;
         }
 
-        Pattern varPattern = Pattern.compile("\\{\\{([\\w-]+)\\}\\}");
-
         for (PocObj.PocStep step : steps) {
             if (step == null) {
                 continue;
@@ -4485,47 +5225,47 @@ public class PocExecutor {
             if (step instanceof PocObj.DnsStep) {
                 // DNS 协议
                 PocObj.DnsStep dnsStep = (PocObj.DnsStep) step;
-                extractVariableNames(dnsStep.getDomain(), varPattern, usedVariables);
-                extractVariableNames(dnsStep.getResolver(), varPattern, usedVariables);
+                extractVariableNames(dnsStep.getDomain(), usedVariables);
+                extractVariableNames(dnsStep.getResolver(), usedVariables);
 
             } else if (step instanceof PocObj.WebSocketStep) {
                 // WebSocket 协议
                 PocObj.WebSocketStep wsStep = (PocObj.WebSocketStep) step;
-                extractVariableNames(wsStep.getAddress(), varPattern, usedVariables);
+                extractVariableNames(wsStep.getAddress(), usedVariables);
                 if (wsStep.getMessages() != null) {
                     for (String message : wsStep.getMessages()) {
-                        extractVariableNames(message, varPattern, usedVariables);
+                        extractVariableNames(message, usedVariables);
                     }
                 }
                 if (wsStep.getHeaders() != null) {
                     for (String headerValue : wsStep.getHeaders().values()) {
-                        extractVariableNames(headerValue, varPattern, usedVariables);
+                        extractVariableNames(headerValue, usedVariables);
                     }
                 }
 
             } else if (step instanceof PocObj.SslStep) {
                 // SSL/TLS 协议
                 PocObj.SslStep sslStep = (PocObj.SslStep) step;
-                extractVariableNames(sslStep.getAddress(), varPattern, usedVariables);
+                extractVariableNames(sslStep.getAddress(), usedVariables);
 
             } else if (step instanceof PocObj.FileStep) {
                 // File 协议
                 PocObj.FileStep fileStep = (PocObj.FileStep) step;
                 if (fileStep.getPaths() != null) {
                     for (String path : fileStep.getPaths()) {
-                        extractVariableNames(path, varPattern, usedVariables);
+                        extractVariableNames(path, usedVariables);
                     }
                 }
 
             } else if (step instanceof PocObj.HeadlessStep) {
                 // Headless 协议
                 PocObj.HeadlessStep headlessStep = (PocObj.HeadlessStep) step;
-                extractVariableNames(headlessStep.getUrl(), varPattern, usedVariables);
+                extractVariableNames(headlessStep.getUrl(), usedVariables);
                 if (headlessStep.getActions() != null) {
                     for (PocObj.BrowserAction action : headlessStep.getActions()) {
                         if (action.getArgs() != null) {
                             for (String argValue : action.getArgs().values()) {
-                                extractVariableNames(argValue, varPattern, usedVariables);
+                                extractVariableNames(argValue, usedVariables);
                             }
                         }
                     }
@@ -4534,48 +5274,57 @@ public class PocExecutor {
             } else if (step instanceof PocObj.CodeStep) {
                 // Code 协议
                 PocObj.CodeStep codeStep = (PocObj.CodeStep) step;
-                extractVariableNames(codeStep.getSource(), varPattern, usedVariables);
+                extractVariableNames(codeStep.getSource(), usedVariables);
 
             } else if (step instanceof PocObj.TcpStep) {
                 // TCP 协议
                 PocObj.TcpStep tcpStep = (PocObj.TcpStep) step;
-                extractVariableNames(tcpStep.getHost(), varPattern, usedVariables);
-                extractVariableNames(tcpStep.getPort(), varPattern, usedVariables);
+                extractVariableNames(tcpStep.getHost(), usedVariables);
+                extractVariableNames(tcpStep.getPort(), usedVariables);
                 if (tcpStep.getInputs() != null) {
                     for (PocObj.Input input : tcpStep.getInputs()) {
-                        extractVariableNames(input.getData(), varPattern, usedVariables);
+                        extractVariableNames(input.getData(), usedVariables);
                     }
                 }
 
             } else {
                 // HTTP 协议（包括普通 PocStep）
                 // 检测 path
-                extractVariableNames(step.getPath(), varPattern, usedVariables);
+                extractVariableNames(step.getPath(), usedVariables);
 
                 // 检测 body
-                extractVariableNames(step.getBody(), varPattern, usedVariables);
+                extractVariableNames(step.getBody(), usedVariables);
 
                 // 检测 headers
                 if (step.getHeaders() != null) {
                     for (Map.Entry<String, String> header : step.getHeaders().entrySet()) {
-                        extractVariableNames(header.getKey(), varPattern, usedVariables);
-                        extractVariableNames(header.getValue(), varPattern, usedVariables);
+                        extractVariableNames(header.getKey(), usedVariables);
+                        extractVariableNames(header.getValue(), usedVariables);
                     }
                 }
 
                 // 检测 raw 请求
                 if (step.getRaw() != null) {
                     for (String rawBlock : step.getRaw()) {
-                        extractVariableNames(rawBlock, varPattern, usedVariables);
+                        extractVariableNames(rawBlock, usedVariables);
                     }
                 }
+            }
 
-                // 检测 output（Xray POC 的输出变量定义）
-                if (step.getOutput() != null) {
-                    for (Object outputValue : step.getOutput().values()) {
-                        if (outputValue != null) {
-                            extractVariableNames(outputValue.toString(), varPattern, usedVariables);
-                        }
+            extractVariableNames(step.getCookie(), usedVariables);
+            extractVariableNames(step.getProxy(), usedVariables);
+            extractVariableNames(step.getDelay(), usedVariables);
+            extractVariableNames(step.getUsername(), usedVariables);
+            extractVariableNames(step.getPassword(), usedVariables);
+            extractVariableNames(step.getToken(), usedVariables);
+            collectMatcherVariableNames(step.getMatchers(), usedVariables);
+            collectMatcherVariableNames(step.getExtractors(), usedVariables);
+
+            // 检测 output（Xray POC 的输出变量定义）
+            if (step.getOutput() != null) {
+                for (Object outputValue : step.getOutput().values()) {
+                    if (outputValue != null) {
+                        extractVariableNames(outputValue.toString(), usedVariables);
                     }
                 }
             }
@@ -4588,30 +5337,82 @@ public class PocExecutor {
      * 从字符串中提取变量名
      *
      * @param input 输入字符串
-     * @param pattern 正则表达式模式
      * @param usedVariables 用于收集变量名的集合
      */
-    private void extractVariableNames(String input, Pattern pattern, Set<String> usedVariables) {
+    private void extractVariableNames(String input, Set<String> usedVariables) {
         if (input == null || input.isEmpty()) {
             return;
         }
 
+        extractVariableNamesByPattern(input, DOUBLE_BRACE_VARIABLE_PATTERN, usedVariables);
+        extractVariableNamesByPattern(input, TRIPLE_BRACE_VARIABLE_PATTERN, usedVariables);
+
+        extractBareHelperArgumentNames(input, usedVariables);
+        extractGobyFunctionArgumentNames(input, usedVariables);
+    }
+
+    private void extractVariableNamesByPattern(String input, Pattern pattern, Set<String> usedVariables) {
         Matcher matcher = pattern.matcher(input);
         while (matcher.find()) {
-            String varName = matcher.group(1); // 提取 {{varName}} 中的 varName
+            String varName = matcher.group(1);
             if (varName != null && !varName.isEmpty()) {
                 usedVariables.add(varName);
             }
         }
+    }
 
-        extractBareHelperArgumentNames(input, usedVariables);
+    private void collectMatcherVariableNames(List<PocObj.Matcher> matchers, Set<String> usedVariables) {
+        if (matchers == null || matchers.isEmpty()) {
+            return;
+        }
+        for (PocObj.Matcher matcher : matchers) {
+            collectMatcherVariableNames(matcher, usedVariables);
+        }
+    }
+
+    private void collectMatcherVariableNames(PocObj.Matcher matcher, Set<String> usedVariables) {
+        if (matcher == null) {
+            return;
+        }
+
+        extractVariableNames(matcher.getPart(), usedVariables);
+        extractVariableNames(matcher.getAttribute(), usedVariables);
+        extractVariableNames(matcher.getInternal(), usedVariables);
+
+        if (matcher.getValues() != null) {
+            for (String value : matcher.getValues()) {
+                extractVariableNames(value, usedVariables);
+            }
+        }
+
+        if (matcher.getSubMatchers() != null) {
+            for (PocObj.Matcher subMatcher : matcher.getSubMatchers()) {
+                collectMatcherVariableNames(subMatcher, usedVariables);
+            }
+        }
     }
 
     private void extractBareHelperArgumentNames(String input, Set<String> usedVariables) {
-        Pattern helperPattern = Pattern.compile("\\{\\{\\s*[A-Za-z_][\\w]*\\s*\\((.*?)\\)\\s*\\}\\}");
-        Matcher helperMatcher = helperPattern.matcher(input);
+        Matcher helperMatcher = HELPER_ARGUMENT_PATTERN.matcher(input);
         while (helperMatcher.find()) {
             String args = helperMatcher.group(1);
+            if (args == null || args.isEmpty()) {
+                continue;
+            }
+            List<String> parts = splitHelperArguments(args);
+            for (String part : parts) {
+                String token = stripQuotes(part.trim());
+                if (token.matches("[A-Za-z_][A-Za-z0-9_-]*")) {
+                    usedVariables.add(token);
+                }
+            }
+        }
+    }
+
+    private void extractGobyFunctionArgumentNames(String input, Set<String> usedVariables) {
+        Matcher gobyFunctionMatcher = GOBY_FUNCTION_ARGUMENT_PATTERN.matcher(input);
+        while (gobyFunctionMatcher.find()) {
+            String args = gobyFunctionMatcher.group(1);
             if (args == null || args.isEmpty()) {
                 continue;
             }
@@ -4675,6 +5476,38 @@ public class PocExecutor {
             return value.substring(1, value.length() - 1);
         }
         return value;
+    }
+
+    private Set<String> expandUsedVariableDependencies(Map<String, List<String>> allVariables,
+                                                       Set<String> usedVariables) {
+        Set<String> expanded = new HashSet<>();
+        if (usedVariables != null) {
+            expanded.addAll(usedVariables);
+        }
+        if (allVariables == null || allVariables.isEmpty() || expanded.isEmpty()) {
+            return expanded;
+        }
+
+        ArrayDeque<String> queue = new ArrayDeque<>(expanded);
+        while (!queue.isEmpty()) {
+            String variableName = queue.poll();
+            List<String> values = allVariables.get(variableName);
+            if (values == null || values.isEmpty()) {
+                continue;
+            }
+            for (String value : values) {
+                Set<String> dependencies = new HashSet<>();
+                extractVariableNames(value, dependencies);
+                for (String dependency : dependencies) {
+                    if (!expanded.contains(dependency) && allVariables.containsKey(dependency)) {
+                        expanded.add(dependency);
+                        queue.add(dependency);
+                    }
+                }
+            }
+        }
+
+        return expanded;
     }
 
     /**

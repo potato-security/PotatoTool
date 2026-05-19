@@ -749,24 +749,10 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             for (int i = 0; i < tcpRequests.size(); i++) {
                 try {
                     NucleiYamlObj.Tcp tcpRequest = tcpRequests.get(i);
-                    
-                    if (tcpRequest.getHost() != null && !tcpRequest.getHost().isEmpty()) {
-                        // 如果有多个host，为每个host创建一个独立的step
-                        for (int hIdx = 0; hIdx < tcpRequest.getHost().size(); hIdx++) {
-                            String host = tcpRequest.getHost().get(hIdx);
-                            String suffix = tcpRequest.getHost().size() > 1 ? "_" + hIdx : "";
-                            
-                            PocObj.TcpStep step = createTcpStep(tcpRequest, i, host, suffix);
-                            if (step != null) {
-                                verifySteps.add(step);
-                            }
-                        }
-                    } else {
-                        // 没有host的情况（可能是异常）
-                        PocObj.TcpStep step = createTcpStep(tcpRequest, i, null, "");
-                        if (step != null) {
-                            verifySteps.add(step);
-                        }
+
+                    PocObj.TcpStep step = createTcpStep(tcpRequest, i);
+                    if (step != null) {
+                        verifySteps.add(step);
                     }
                 } catch (Exception e) {
                     System.out.println("处理TCP请求时出错: " + e.getMessage());
@@ -785,21 +771,18 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
      * 创建TCP步骤
      * @param tcpRequest TCP请求对象
      * @param index 索引
-     * @param specificHost 指定的主机
-     * @param idSuffix ID后缀
      * @return TcpStep对象
      */
-    private PocObj.TcpStep createTcpStep(NucleiYamlObj.Tcp tcpRequest, int index, String specificHost, String idSuffix) {
+    private PocObj.TcpStep createTcpStep(NucleiYamlObj.Tcp tcpRequest, int index) {
         PocObj.TcpStep step = new PocObj.TcpStep();
         
         // 设置步骤ID
-        step.setStepId("tcp_" + toNucleiStepIndex(index) + idSuffix);
+        step.setStepId("tcp_" + toNucleiStepIndex(index));
         
         // 设置主机和端口
-        if (specificHost != null) {
-            step.setHost(specificHost);
-        } else if (tcpRequest.getHost() != null && !tcpRequest.getHost().isEmpty()) {
-            step.setHost(tcpRequest.getHost().get(0)); // Fallback
+        if (tcpRequest.getHost() != null && !tcpRequest.getHost().isEmpty()) {
+            step.setHosts(new ArrayList<String>(tcpRequest.getHost()));
+            step.setHost(tcpRequest.getHost().get(0)); // 兼容旧逻辑
         }
         step.setPort(tcpRequest.getPort());
         

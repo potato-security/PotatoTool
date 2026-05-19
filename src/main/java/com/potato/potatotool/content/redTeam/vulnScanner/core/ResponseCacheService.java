@@ -1,6 +1,10 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.core;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -98,11 +102,17 @@ public class ResponseCacheService {
             }
         }
         
-        // 关键请求头（如 Content-Type, Authorization）
+        // 请求头哈希，避免不同认证态/会话错误复用缓存
         if (headers != null && !headers.isEmpty()) {
-            String contentType = headers.get("Content-Type");
-            if (contentType != null) {
-                sb.append("|ct:").append(contentType);
+            List<String> normalizedHeaders = new ArrayList<>();
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                if (entry.getKey() != null && entry.getValue() != null) {
+                    normalizedHeaders.add(entry.getKey().toLowerCase(Locale.ROOT) + ":" + entry.getValue());
+                }
+            }
+            if (!normalizedHeaders.isEmpty()) {
+                Collections.sort(normalizedHeaders);
+                sb.append("|headers_hash:").append(normalizedHeaders.toString().hashCode());
             }
         }
         
@@ -168,9 +178,13 @@ public class ResponseCacheService {
      * @param body 响应体
      */
     public void put(String cacheKey, int statusCode, Map<String, String> headers, String body) {
+        put(cacheKey, statusCode, headers, body, 0L);
+    }
+
+    public void put(String cacheKey, int statusCode, Map<String, String> headers, String body, long responseTimeMs) {
         lock.writeLock().lock();
         try {
-            CachedResponse response = new CachedResponse(statusCode, headers, body, System.currentTimeMillis());
+            CachedResponse response = new CachedResponse(statusCode, headers, body, System.currentTimeMillis(), responseTimeMs);
             cache.put(cacheKey, response);
             stats.incrementPuts();
         } finally {
@@ -257,12 +271,14 @@ public class ResponseCacheService {
         private final Map<String, String> headers;
         private final String body;
         private final long timestamp;
+        private final long responseTimeMs;
         
-        public CachedResponse(int statusCode, Map<String, String> headers, String body, long timestamp) {
+        public CachedResponse(int statusCode, Map<String, String> headers, String body, long timestamp, long responseTimeMs) {
             this.statusCode = statusCode;
             this.headers = headers != null ? new ConcurrentHashMap<>(headers) : new ConcurrentHashMap<>();
             this.body = body;
             this.timestamp = timestamp;
+            this.responseTimeMs = responseTimeMs;
         }
         
         public boolean isExpired(long ttlMs) {
@@ -277,6 +293,7 @@ public class ResponseCacheService {
         public Map<String, String> getHeaders() { return headers; }
         public String getBody() { return body; }
         public long getTimestamp() { return timestamp; }
+        public long getResponseTimeMs() { return responseTimeMs; }
         
         /**
          * 获取响应体长度

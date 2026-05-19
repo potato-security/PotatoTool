@@ -61,6 +61,9 @@ public class HttpHandler {
             return;
         }
 
+        // 对原始报文先做结构校验，避免无效请求被静默降级为默认 GET。
+        RawHttpRequestParser.parse(firstBlock);
+
         // 验证：如果仍有多个块，说明转换器有问题
         if (rawBlocks.size() > 1) {
             System.err.println("[错误] raw 字段仍包含多个请求块，转换器未正确拆分！将只使用第一个块。");
@@ -284,9 +287,14 @@ public class HttpHandler {
                     if (varName != null && varValue != null) {
                         // 变量值本身可能也包含 @@ 函数，需要先处理
                         String processedValue = GobyFunctionProcessor.processGobyFunctions(varValue, variables);
+                        String gobyPlaceholder = "{{{" + varName + "}}}";
                         String placeholder = "{{" + varName + "}}";
 
                         // 只有当字符串包含该变量时才进行替换
+                        if (result.contains(gobyPlaceholder)) {
+                            result = result.replace(gobyPlaceholder, processedValue);
+                            hasChanges = true;
+                        }
                         if (result.contains(placeholder)) {
                             result = result.replace(placeholder, processedValue);
                             hasChanges = true;

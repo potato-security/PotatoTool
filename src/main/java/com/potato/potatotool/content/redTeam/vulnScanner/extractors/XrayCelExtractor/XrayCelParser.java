@@ -373,16 +373,6 @@ public class XrayCelParser {
                 return evaluateComparison(left, operator, right, context);
             }
             
-            // 处理函数调用返回布尔值
-            if (expression.contains("(") && expression.contains(")")) {
-                Object result = evaluateFunctionCall(expression, context);
-                if (result instanceof Boolean) {
-                    return (Boolean) result;
-                }
-                // 非空结果视为 true
-                return result != null;
-            }
-            
             // 处理直接的布尔值
             if ("true".equalsIgnoreCase(expression)) {
                 return true;
@@ -395,6 +385,9 @@ public class XrayCelParser {
             Object value = resolveValue(expression, context);
             if (value instanceof Boolean) {
                 return (Boolean) value;
+            }
+            if (value != null && !(value instanceof String && value.equals(expression))) {
+                return true;
             }
             
             return false;
@@ -482,6 +475,14 @@ public class XrayCelParser {
         if (containsTernaryOperator(expression)) {
             return evaluateTernary(expression, context);
         }
+
+        // Xray 特有的链式/字面量方法调用（如 response.body.contains(...)、"regex".bmatches(...)）
+        if (isStringLiteralMethodCall(expression) || isChainedMethodCall(expression, context)) {
+            Object value = evaluateFunctionCall(expression, context);
+            if (value != null) {
+                return value;
+            }
+        }
         
         // 函数调用（允许包含空格，因为参数可能包含空格）
         // 注意：需要在切片之前检查，因为函数参数可能包含切片
@@ -508,7 +509,7 @@ public class XrayCelParser {
         }
         
         // 属性访问（如 response.status）
-        if (expression.contains(".") && !expression.matches(".*[+\\-*/].*")) {
+        if (isPropertyAccessCandidate(expression, context)) {
             return resolvePropertyAccess(expression, context);
         }
         
@@ -519,6 +520,44 @@ public class XrayCelParser {
         
         // 返回原始字符串
         return expression;
+    }
+
+    private static boolean isChainedMethodCall(String expression, Map<String, Object> context) {
+        if (expression == null || !expression.contains(".") || !expression.contains("(") || !expression.endsWith(")")) {
+            return false;
+        }
+
+        int firstParen = expression.indexOf('(');
+        int lastDotBeforeParen = expression.lastIndexOf('.', firstParen);
+        if (firstParen <= 0 || lastDotBeforeParen <= 0) {
+            return false;
+        }
+
+        String objectPath = expression.substring(0, lastDotBeforeParen).trim();
+        if (objectPath.isEmpty()) {
+            return false;
+        }
+
+        if (objectPath.contains(".")) {
+            String root = objectPath.substring(0, objectPath.indexOf('.')).trim();
+            return context != null && context.containsKey(root);
+        }
+
+        return context != null && context.containsKey(objectPath);
+    }
+
+    private static boolean isPropertyAccessCandidate(String expression, Map<String, Object> context) {
+        if (expression == null || !expression.contains(".")) {
+            return false;
+        }
+
+        int firstDot = expression.indexOf('.');
+        if (firstDot <= 0) {
+            return false;
+        }
+
+        String root = expression.substring(0, firstDot).trim();
+        return context != null && context.containsKey(root);
     }
     
     /**
@@ -2139,4 +2178,3 @@ public class XrayCelParser {
         return result.toString();
     }
 }
-

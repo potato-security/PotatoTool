@@ -445,19 +445,37 @@ public class PayloadCombiner {
             return result;
         }
 
-        // 找出最小列表长度
+        // 只让真正的多值变量决定 pitchfork 组合数；单值变量作为广播变量附带到每个组合上
         int minLength = Integer.MAX_VALUE;
+        boolean hasMultiValuePayload = false;
         Map<String, List<String>> validPayloads = new HashMap<>();
 
         for (Map.Entry<String, List<String>> entry : payloads.entrySet()) {
             List<String> values = entry.getValue();
             if (values != null && !values.isEmpty()) {
                 validPayloads.put(entry.getKey(), values);
-                minLength = Math.min(minLength, values.size());
+                if (values.size() > 1) {
+                    hasMultiValuePayload = true;
+                    minLength = Math.min(minLength, values.size());
+                }
             }
         }
 
-        if (validPayloads.isEmpty() || minLength == Integer.MAX_VALUE || minLength == 0) {
+        if (validPayloads.isEmpty()) {
+            result.add(new HashMap<>());
+            return result;
+        }
+
+        if (!hasMultiValuePayload) {
+            Map<String, String> singleCombination = new HashMap<>();
+            for (Map.Entry<String, List<String>> entry : validPayloads.entrySet()) {
+                singleCombination.put(entry.getKey(), entry.getValue().get(0));
+            }
+            result.add(singleCombination);
+            return result;
+        }
+
+        if (minLength == Integer.MAX_VALUE || minLength == 0) {
             result.add(new HashMap<>());
             return result;
         }
@@ -469,7 +487,11 @@ public class PayloadCombiner {
             for (Map.Entry<String, List<String>> entry : validPayloads.entrySet()) {
                 String key = entry.getKey();
                 List<String> values = entry.getValue();
-                combination.put(key, values.get(i));
+                if (values.size() == 1) {
+                    combination.put(key, values.get(0));
+                } else {
+                    combination.put(key, values.get(i));
+                }
             }
 
             result.add(combination);
@@ -478,4 +500,3 @@ public class PayloadCombiner {
         return result;
     }
 }
-

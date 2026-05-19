@@ -1,5 +1,6 @@
 package com.potato.potatotool.vulnScanner.testlab;
 
+import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -7,10 +8,16 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 手工编写的 POC 测试服务器
@@ -22,8 +29,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class ManualPocTestServer {
     
+    private static final Pattern MOCK_DNSLOG_DOMAIN_PATTERN =
+            Pattern.compile("([A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)*\\.dnslog\\.mock)", Pattern.CASE_INSENSITIVE);
+
     private RawHttpServer rawServer;
     private int port;
+    private final Map<String, String> uploadedMockBodies = new HashMap<String, String>();
     
     public ManualPocTestServer(int port) {
         this.port = port;
@@ -147,30 +158,7 @@ public class ManualPocTestServer {
                 requestHeaders.add(entry.getKey(), entry.getValue());
             }
             
-            // 解析 URI（保留原始路径）
-            try {
-                // 使用原始 URI 创建 URI 对象，但我们会覆盖 getRawPath 等方法
-                this.requestUri = new URI(request.getRawUri());
-            } catch (Exception e) {
-                System.err.println("[DEBUG] URI 解析失败: " + request.getRawUri() + " -> " + e.getMessage());
-                try {
-                    // 尝试直接从 rawUri 中提取 query 部分
-                    String rawUri = request.getRawUri();
-                    int queryIdx = rawUri.indexOf('?');
-                    if (queryIdx >= 0) {
-                        String path = rawUri.substring(0, queryIdx);
-                        String query = rawUri.substring(queryIdx + 1);
-                        // 使用简化的 URI 构造
-                        this.requestUri = new URI(null, null, path, query, null);
-                    } else {
-                        this.requestUri = new URI("/");
-                    }
-                } catch (Exception ex) {
-                    try {
-                        this.requestUri = new URI("/");
-                    } catch (Exception ignored) {}
-                }
-            }
+            this.requestUri = buildCompatibleUri(request.getRawUri());
         }
         
         @Override
@@ -255,6 +243,103 @@ public class ManualPocTestServer {
         @Override
         public String getProtocol() { return "HTTP/1.1"; }
     }
+
+    private static URI buildCompatibleUri(String rawUri) {
+        if (rawUri == null || rawUri.isEmpty()) {
+            return URI.create("/");
+        }
+
+        try {
+            return new URI(rawUri);
+        } catch (Exception ignored) {
+            try {
+                String rawPath = extractRawPath(rawUri);
+                String rawQuery = extractRawQuery(rawUri);
+                return new URI(null, null, rawPath == null || rawPath.isEmpty() ? "/" : rawPath, rawQuery, null);
+            } catch (Exception ignoredAgain) {
+                return URI.create("/");
+            }
+        }
+    }
+
+    private static String getRawRequestPath(HttpExchange exchange) {
+        if (exchange instanceof RawHttpExchangeAdapter) {
+            return ((RawHttpExchangeAdapter) exchange).getRawPath();
+        }
+        URI uri = exchange.getRequestURI();
+        return uri != null ? uri.getRawPath() : null;
+    }
+
+    private static void recordMockDnsResolution(String content) {
+        if (!DnsLogService.isMockMode() || content == null || content.isEmpty()) {
+            return;
+        }
+        recordMockDnsResolutionFromText(content);
+        try {
+            String decoded = URLDecoder.decode(content, "UTF-8");
+            if (!decoded.equals(content)) {
+                recordMockDnsResolutionFromText(decoded);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void recordMockDnsResolutionFromText(String content) {
+        Matcher matcher = MOCK_DNSLOG_DOMAIN_PATTERN.matcher(content);
+        while (matcher.find()) {
+            DnsLogService.recordMockResolution(matcher.group(1));
+        }
+    }
+
+    private static boolean containsLog4ShellPayload(String content) {
+        if (content == null || content.isEmpty()) {
+            return false;
+        }
+        String normalized = content.toLowerCase();
+        if (normalized.contains("${jndi:") || normalized.contains("$%7bjndi:")) {
+            return true;
+        }
+        try {
+            String decoded = URLDecoder.decode(content, "UTF-8").toLowerCase();
+            return decoded.contains("${jndi:");
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private static String getRequestPath(HttpExchange exchange) {
+        if (exchange instanceof RawHttpExchangeAdapter) {
+            return ((RawHttpExchangeAdapter) exchange).getRawPath();
+        }
+        URI uri = exchange.getRequestURI();
+        return uri != null ? uri.getPath() : null;
+    }
+
+    private static String getRawRequestQuery(HttpExchange exchange) {
+        if (exchange instanceof RawHttpExchangeAdapter) {
+            return ((RawHttpExchangeAdapter) exchange).getQueryString();
+        }
+        URI uri = exchange.getRequestURI();
+        return uri != null ? uri.getRawQuery() : null;
+    }
+
+    private static String getRequestQuery(HttpExchange exchange) {
+        if (exchange instanceof RawHttpExchangeAdapter) {
+            return ((RawHttpExchangeAdapter) exchange).getQueryString();
+        }
+        URI uri = exchange.getRequestURI();
+        return uri != null ? uri.getQuery() : null;
+    }
+
+    private static String extractRawPath(String rawUri) {
+        int queryIdx = rawUri.indexOf('?');
+        return queryIdx >= 0 ? rawUri.substring(0, queryIdx) : rawUri;
+    }
+
+    private static String extractRawQuery(String rawUri) {
+        int queryIdx = rawUri.indexOf('?');
+        return queryIdx >= 0 ? rawUri.substring(queryIdx + 1) : null;
+    }
     
     // ========================================
     // 辅助方法
@@ -291,9 +376,11 @@ public class ManualPocTestServer {
         // 漏洞版本
         registerHandler("/vuln/pocsuite/multistep/api/auth/token", new MultiStepTokenHandler(true));
         registerHandler("/vuln/pocsuite/multistep/admin/panel", new MultiStepAdminPanelHandler(true));
+        registerHandler("/vuln/pocsuite/multistep/admin/users", new MultiStepAdminUsersHandler(true));
         // 安全版本
         registerHandler("/safe/pocsuite/multistep/api/auth/token", new MultiStepTokenHandler(false));
         registerHandler("/safe/pocsuite/multistep/admin/panel", new MultiStepAdminPanelHandler(false));
+        registerHandler("/safe/pocsuite/multistep/admin/users", new MultiStepAdminUsersHandler(false));
         
         // POC 3: sql_time_blind_injection.json - 时间盲注
         // 漏洞版本
@@ -397,15 +484,20 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            String path = getRequestPath(exchange);
             String response;
             if (vulnerable) {
-                // 漏洞版本：返回包含敏感文件内容的响应
-                response = "<?xml version=\"1.0\"?>\n" +
-                          "<" + keyword1 + ">\n" +
-                          "  <" + keyword2 + ">\n" +
-                          "    <compilation debug=\"true\"/>\n" +
-                          "  </" + keyword2 + ">\n" +
-                          "</" + keyword1 + ">";
+                if (path != null && path.contains("downloadWpsFile.jsp")) {
+                    response = "<?xml version=\"1.0\"?>\n<web-app>\n  <display-name>htoa</display-name>\n</web-app>";
+                } else {
+                    // 漏洞版本：返回包含敏感文件内容的响应
+                    response = "<?xml version=\"1.0\"?>\n" +
+                              "<" + keyword1 + ">\n" +
+                              "  <" + keyword2 + ">\n" +
+                              "    <compilation debug=\"true\"/>\n" +
+                              "  </" + keyword2 + ">\n" +
+                              "</" + keyword1 + ">";
+                }
             } else {
                 // 安全版本：返回错误或空响应
                 response = "{\"error\":\"Access denied\",\"code\":403}";
@@ -452,7 +544,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             
             if (vulnerable && query != null) {
                 // 检查是否包含 WAITFOR DELAY
@@ -513,7 +605,8 @@ public class ManualPocTestServer {
             if (vulnerable) {
                 // 读取请求体检查是否包含命令
                 String body = readRequestBody(exchange);
-                if (body.contains("cat /etc/passwd") || body.contains("cat%20/etc/passwd")) {
+                if (body.contains("cat /etc/passwd") || body.contains("cat%20/etc/passwd")
+                        || body.contains("\\\"cat /etc/passwd\\\"")) {
                     response = "root:x:0:0:root:/root:/bin/bash\n" +
                               "daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\n" +
                               "bin:x:2:2:bin:/bin:/usr/sbin/nologin";
@@ -574,7 +667,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String response;
             
             // 检查路径是否匹配 /yuding/selectUserByOrgId.action
@@ -659,7 +752,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String response;
             
             // 检查路径是否匹配
@@ -716,19 +809,20 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            String query = exchange.getRequestURI().getQuery();
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
             String response;
             
             // 检查路径是否匹配 /install/installOperate.do
             if (path.contains("/install/installOperate.do")) {
                 if (vulnerable) {
-                    // 漏洞版本：返回 200（DNSLog 被网络拦截，仅输出日志）
+                    // 漏洞版本：返回 200，并在 mock DNSLog 中登记反连
                     if (query != null && query.contains("svrurl=")) {
                         try {
                             String svrurl = java.net.URLDecoder.decode(
                                 query.split("svrurl=")[1].split("&")[0], "UTF-8");
                             System.out.println("[SSRF] 收到反连URL: " + svrurl);
+                            recordMockDnsResolution(svrurl);
                         } catch (Exception e) {
                             // 忽略
                         }
@@ -1297,6 +1391,8 @@ public class ManualPocTestServer {
         // Goby POC 141: FineReport 目录遍历
         registerHandler("/vuln/goby/finereport-traversal", new GobyFineReportTraversalHandler(true));
         registerHandler("/safe/goby/finereport-traversal", new GobyFineReportTraversalHandler(false));
+        registerHandler("/vuln/goby/finereport-dirtraversal", new GobyFineReportTraversalHandler(true));
+        registerHandler("/safe/goby/finereport-dirtraversal", new GobyFineReportTraversalHandler(false));
         
         // Goby POC 142: GitLab RCE CVE-2021-22205
         registerHandler("/vuln/goby/gitlab-rce", new GobyGitLabRCEHandler(true));
@@ -1589,6 +1685,8 @@ public class ManualPocTestServer {
         // Goby POC 214: Consul Rexec RCE
         registerHandler("/vuln/goby/consul-rce", new GobyConsulRCEHandler(true));
         registerHandler("/safe/goby/consul-rce", new GobyConsulRCEHandler(false));
+        registerHandler("/vuln/goby/consul-rexec", new GobyConsulRCEHandler(true));
+        registerHandler("/safe/goby/consul-rexec", new GobyConsulRCEHandler(false));
         
         // Goby POC 215: Coremail Config Disclosure
         registerHandler("/vuln/goby/coremail-config", new GobyCoremailConfigHandler(true));
@@ -1681,7 +1779,17 @@ public class ManualPocTestServer {
         // Goby POC 243: Dubbo Admin Default Password
         registerHandler("/vuln/goby/dubbo-admin-default", new GobyDubboAdminDefaultPwdHandler(true));
         registerHandler("/safe/goby/dubbo-admin-default", new GobyDubboAdminDefaultPwdHandler(false));
-        
+
+        // Goby POC 254: FineReport v9 File Overwrite
+        registerHandler("/vuln/goby/finereport-v9-overwrite", new GobyFineReportV9FileOverwriteHandler(true));
+        registerHandler("/safe/goby/finereport-v9-overwrite", new GobyFineReportV9FileOverwriteHandler(false));
+        registerHandler("/vuln/goby/finereport-fileread", new GobyFineReportArbitraryFileReadHandler(true));
+        registerHandler("/safe/goby/finereport-fileread", new GobyFineReportArbitraryFileReadHandler(false));
+
+        // Goby POC 255: Finetree 5MP Auth
+        registerHandler("/vuln/goby/finetree-5mp-auth", new GobyFinetree5MPAuthHandler(true));
+        registerHandler("/safe/goby/finetree-5mp-auth", new GobyFinetree5MPAuthHandler(false));
+
         // Goby POC 260: GitLab RCE CVE-2021-22205
         registerHandler("/vuln/goby/gitlab-rce-cve-2021-22205", new GobyGitLabRCECVE202122205Handler(true));
         registerHandler("/safe/goby/gitlab-rce-cve-2021-22205", new GobyGitLabRCECVE202122205Handler(false));
@@ -1847,6 +1955,8 @@ public class ManualPocTestServer {
         // Goby POC 321: Mallgard Firewall Default Login
         registerHandler("/vuln/goby/mallgard-firewall-login", new GobyMallgardFirewallDefaultLoginHandler(true));
         registerHandler("/safe/goby/mallgard-firewall-login", new GobyMallgardFirewallDefaultLoginHandler(false));
+        registerHandler("/vuln/goby/mallgard", new GobyMallgardFirewallDefaultLoginHandler(true));
+        registerHandler("/safe/goby/mallgard", new GobyMallgardFirewallDefaultLoginHandler(false));
 
         // Goby POC 322: MessageSolution EEA Info Leak
         registerHandler("/vuln/goby/messagesolution-eea-leak", new GobyMessageSolutionEEAInfoLeakHandler(true));
@@ -1865,6 +1975,8 @@ public class ManualPocTestServer {
         registerHandler("/safe/goby/micro-module-leak", new GobyMicroModuleUserListLeakHandler(false));
 
         // Goby POC 329, 330: Microsoft Exchange SSRF
+        registerHandler("/vuln/goby/exchange-ssrf", new GobyMicrosoftExchangeSSRFHandler(true));
+        registerHandler("/safe/goby/exchange-ssrf", new GobyMicrosoftExchangeSSRFHandler(false));
 
         // Goby POC 331: MinIO Browser API SSRF
         registerHandler("/vuln/goby/minio-browser-ssrf", new GobyMinIOBrowserSSRFHandler(true));
@@ -2275,7 +2387,7 @@ public class ManualPocTestServer {
         public GobyNacosUnauthHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/v1/auth/users")) {
                 sendResponse(exchange, 500, "{\"message\":\"server is DOWN now\"}", "application/json");
             } else {
@@ -2289,7 +2401,7 @@ public class ManualPocTestServer {
         public GobyWeblogicPathHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && (path.contains("WEB-INF") || path.contains("META-INF"))) {
                 sendResponse(exchange, 200, "<?xml version=\"1.0\"?><web-app></web-app>", "application/xml");
             } else {
@@ -2303,7 +2415,7 @@ public class ManualPocTestServer {
         public GobyStruts2Handler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("redirect:")) {
                 sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
             } else {
@@ -2350,10 +2462,21 @@ public class ManualPocTestServer {
         public GobyGrafanaFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String rawPath = exchange.getRequestURI().getRawPath();
-            // 检查 raw path 中是否有路径遍历
-            if (vulnerable && (rawPath.contains("/public/plugins") || rawPath.contains("..") || rawPath.contains("%2e"))) {
-                sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
+            String rawPath = getRawRequestPath(exchange);
+            String decodedPath = rawPath;
+            try {
+                decodedPath = URLDecoder.decode(rawPath, "UTF-8");
+            } catch (Exception ignored) {
+            }
+            boolean grafanaPluginPath = rawPath != null && rawPath.contains("/public/plugins/");
+            grafanaPluginPath = grafanaPluginPath || decodedPath != null && decodedPath.contains("/public/plugins/");
+            boolean passwdTarget = rawPath != null && rawPath.toLowerCase().contains("passwd");
+            passwdTarget = passwdTarget || decodedPath != null && decodedPath.toLowerCase().contains("passwd");
+            if (vulnerable && grafanaPluginPath && passwdTarget) {
+                sendResponse(exchange, 200,
+                        "root:x:0:0:root:/root:/bin/bash\n"
+                                + "daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin",
+                        "text/plain");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -2365,7 +2488,7 @@ public class ManualPocTestServer {
         public GobyThinkPHPHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("invokefunction")) {
                 sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
             } else {
@@ -2392,7 +2515,7 @@ public class ManualPocTestServer {
         public GobyJenkinsHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && (path.contains("/script") || path.contains("/manage"))) {
                 sendResponse(exchange, 200, "<html><title>Jenkins</title><body>Script Console</body></html>", "text/html");
             } else {
@@ -2432,7 +2555,7 @@ public class ManualPocTestServer {
         public GobyKibanaHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/api/timelion/run")) {
                 sendResponse(exchange, 200, "{\"sheet\":[\".es(*).props(label.__proto__.env.AAAA='require('child_process').exec')\"]}}", "application/json");
             } else {
@@ -2446,7 +2569,7 @@ public class ManualPocTestServer {
         public GobyHarborHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/api/v2.0/users")) {
                 sendResponse(exchange, 200, "[{\"user_id\":1,\"username\":\"admin\"}]", "application/json");
             } else {
@@ -2478,7 +2601,7 @@ public class ManualPocTestServer {
         public GobyYAPIHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/api/user/reg")) {
                 sendResponse(exchange, 200, "{\"errcode\":400,\"errmsg\":\"邮箱不能为空\"}", "application/json");
             } else {
@@ -2493,8 +2616,10 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String auth = exchange.getRequestHeaders().getFirst("Authorization");
-            if (vulnerable && auth != null && auth.contains("Basic")) {
-                sendResponse(exchange, 200, "<html><title>Ruijie</title><body>login_ok</body></html>", "text/html");
+            String body = readRequestBody(exchange);
+            if (vulnerable && auth != null && auth.contains("Basic")
+                    && body != null && body.contains("show basic-info")) {
+                sendResponse(exchange, 200, "Level was: LEVEL15", "text/plain");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -2506,7 +2631,7 @@ public class ManualPocTestServer {
         public GobyDahuaHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && (query.contains("path=") || query.contains("filePath="))) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -2520,17 +2645,19 @@ public class ManualPocTestServer {
         public GobyZabbixHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String cookie = exchange.getRequestHeaders().getFirst("Cookie");
             // POC 请求 index_sso.php 并带有恶意 Cookie
             if (vulnerable && (path.contains("/zabbix.php") || path.contains("/index_sso.php"))) {
                 if (path.contains("index_sso.php") && cookie != null && cookie.contains("zbx_session")) {
                     exchange.getResponseHeaders().set("Location", "/zabbix.php?action=dashboard.view");
+                    exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
                     exchange.sendResponseHeaders(302, 0);
                     exchange.getResponseBody().close();
                 } else if (path.contains("zabbix.php")) {
                     // 兼容其他可能得 POC
                     exchange.getResponseHeaders().set("Location", "/zabbix.php?action=dashboard.view");
+                    exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
                     exchange.sendResponseHeaders(302, 0);
                     exchange.getResponseBody().close();
                 } else {
@@ -2547,9 +2674,11 @@ public class ManualPocTestServer {
         public GobyDLinkHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/apply_sec.cgi")) {
-                sendResponse(exchange, 200, "admin:admin", "text/plain");
+            String path = getRequestPath(exchange);
+            String body = readRequestBody(exchange);
+            if (vulnerable && path.contains("/apply_sec.cgi") && body.contains("action=ping_test")) {
+                recordMockDnsResolution(body);
+                sendResponse(exchange, 200, "Ping Result", "text/plain");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -2561,7 +2690,7 @@ public class ManualPocTestServer {
         public GobySamsungHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/(download)")) {
                 sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
             } else {
@@ -2575,8 +2704,12 @@ public class ManualPocTestServer {
         public GobyMinIOHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/minio/health")) {
+            String path = getRequestPath(exchange);
+            String body = readRequestBody(exchange);
+            if (vulnerable && path.contains("/minio/webrpc")
+                    && body != null && body.contains("\"method\":\"web.LoginSTS\"")) {
+                sendResponse(exchange, 200, "{\"message\":\"STS not configured\"}", "application/json");
+            } else if (vulnerable && path.contains("/minio/health")) {
                 sendResponse(exchange, 200, "{\"version\":\"2021-06-17T00:10:46Z\"}", "application/json");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
@@ -2589,7 +2722,7 @@ public class ManualPocTestServer {
         public GobyNodeJSHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String rawPath = exchange.getRequestURI().getRawPath();
+            String rawPath = getRawRequestPath(exchange);
             if (vulnerable && rawPath.contains("..")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -2618,7 +2751,7 @@ public class ManualPocTestServer {
         public GobyPortainerHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/api/users/admin/check")) {
                 // POC 期望未初始化系统返回 404，表示 admin 不存在
                 sendResponse(exchange, 404, "Not Found", "text/plain");
@@ -2638,7 +2771,7 @@ public class ManualPocTestServer {
         public GobyShenYuUnauthHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/plugin")) {
                 sendResponse(exchange, 200, "{\"code\":200,\"message\":\"query success\",\"data\":[]}", "application/json");
             } else {
@@ -2652,7 +2785,7 @@ public class ManualPocTestServer {
         public GobySpringCloudFunctionHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String spel = exchange.getRequestHeaders().getFirst("spring.cloud.function.routing-expression");
             if (vulnerable && path.contains("/functionRouter") && spel != null) {
                 sendResponse(exchange, 500, "{\"error\":\"Internal Server Error\",\"path\":\"/functionRouter\"}", "application/json");
@@ -2667,7 +2800,7 @@ public class ManualPocTestServer {
         public GobySpringCloudGatewayHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String method = exchange.getRequestMethod();
             if (vulnerable && path.contains("/actuator/gateway/routes") && "POST".equals(method)) {
                 exchange.getResponseHeaders().set("Location", "/actuator/gateway/routes/gobytest");
@@ -2686,8 +2819,12 @@ public class ManualPocTestServer {
         public GobyConfluenceRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String rawPath = exchange.getRequestURI().getRawPath();
-            if (vulnerable && rawPath != null && (rawPath.contains("%24") || rawPath.contains("$"))) {
+            String rawPath = getRawRequestPath(exchange);
+            String body = readRequestBody(exchange);
+            if (vulnerable && rawPath != null && rawPath.contains("/pages/doenterpagevariables.action")
+                    && body != null && (body.contains("workwork") || body.contains("ProcessBuilder"))) {
+                sendResponse(exchange, 200, "workwork", "text/plain");
+            } else if (vulnerable && rawPath != null && (rawPath.contains("%24") || rawPath.contains("$"))) {
                 exchange.getResponseHeaders().set("X-Cmd-Response", "root");
                 exchange.getResponseHeaders().set("Location", "/login.action");
                 exchange.sendResponseHeaders(302, 0);
@@ -2703,7 +2840,7 @@ public class ManualPocTestServer {
         public GobyVMwareWorkspaceHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("deviceUdid=")) {
                 sendResponse(exchange, 400, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -2717,7 +2854,7 @@ public class ManualPocTestServer {
         public GobyF5BigIPHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/mgmt/shared/authn/login")) {
                 sendResponse(exchange, 200, "{\"resterrorresponse\":{\"message\":\"Authorization failed\"}}", "application/json");
             } else {
@@ -2731,7 +2868,7 @@ public class ManualPocTestServer {
         public GobySeeyonInfoLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/initDataAssess.jsp")) {
                 sendResponse(exchange, 200, "var personList = [{id:1,name:'admin'}];", "application/javascript");
             } else {
@@ -2745,7 +2882,7 @@ public class ManualPocTestServer {
         public GobyYongyouNCHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/servlet/~ic/bsh.servlet.BshServlet")) {
                 sendResponse(exchange, 200, "<html><body>BeanShell: uid=0(root)</body></html>", "text/html");
             } else {
@@ -2759,7 +2896,7 @@ public class ManualPocTestServer {
         public GobyWeaverOAHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/custom.jsp")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -2773,7 +2910,7 @@ public class ManualPocTestServer {
         public GobyShopXOHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("s=/index/qrcode/download")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -2791,7 +2928,7 @@ public class ManualPocTestServer {
         public GobyDruidFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/druid/indexer/v1/sampler")) {
                 sendResponse(exchange, 200, "{\"data\":[{\"raw\":\"root:x:0:0:root:/root:/bin/bash\"}]}", "application/json");
             } else {
@@ -2805,7 +2942,7 @@ public class ManualPocTestServer {
         public GobyFlinkFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/jobmanager/logs")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin", "text/plain");
             } else {
@@ -2819,7 +2956,7 @@ public class ManualPocTestServer {
         public GobyAirflowUnauthHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/admin")) {
                 sendResponse(exchange, 200, "<html><title>Airflow - DAGs</title><body>DAGs List</body></html>", "text/html");
             } else {
@@ -2833,7 +2970,7 @@ public class ManualPocTestServer {
         public GobyCouchDBUnauthHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/_config")) {
                 sendResponse(exchange, 200, "{\"httpd_design_handlers\":{},\"external_manager\":{},\"replicator_manager\":{}}", "application/json");
             } else {
@@ -2862,7 +2999,7 @@ public class ManualPocTestServer {
         public GobyMetabaseFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("url=")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/ash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin", "text/plain");
             } else {
@@ -2876,8 +3013,8 @@ public class ManualPocTestServer {
         public GobyWeblogicSSRFHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
-            String path = exchange.getRequestURI().getPath();
+            String query = getRequestQuery(exchange);
+            String path = getRequestPath(exchange);
             System.out.println("[DEBUG] GobyWeblogicSSRFHandler: path=" + path + ", vulnerable=" + vulnerable);
             // 放宽检查条件，只要是漏洞模式
             if (vulnerable) {
@@ -2896,17 +3033,22 @@ public class ManualPocTestServer {
         public GobyJettyFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String rawPath = exchange.getRequestURI().getRawPath();
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable) {
-                // 第一步检查 /WEB-INF/web.xml 返回 404+Jetty
-                if (path.equals("/WEB-INF/web.xml") && !rawPath.contains("%")) {
-                    sendResponse(exchange, 404, "<html><body>Jetty - Not Found</body></html>", "text/html");
-                } else if (rawPath.contains("%u002e") || rawPath.contains("%00") || path.contains("/WEB-INF")) {
-                    // 其他绕过路径返回 web-app
-                    sendResponse(exchange, 200, "<?xml version=\"1.0\"?><web-app><display-name>Test</display-name></web-app>", "application/xml");
+            String rawPath = getRawRequestPath(exchange);
+            String query = getRequestQuery(exchange);
+            if (!vulnerable) {
+                sendResponse(exchange, 404, "Not Found", "text/plain");
+                return;
+            }
+
+            if (query != null && query.contains("%2557EB-INF")) {
+                sendResponse(exchange, 200, "<web-app>jetty</web-app>", "text/xml");
+            } else if (rawPath != null && rawPath.contains("/WEB-INF/web.xml")) {
+                if (rawPath.contains("%u002e") || rawPath.contains("%00") || rawPath.contains("..%00")) {
+                    sendResponse(exchange, 200, "<web-app>web-app</web-app>", "text/xml");
                 } else {
-                    sendResponse(exchange, 404, "Not Found", "text/plain");
+                    sendResponse(exchange, 404,
+                            "<html><body><h2>Error 404 Not Found</h2><hr><i>Jetty://9.4.43.v20210629</i></body></html>",
+                            "text/html");
                 }
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
@@ -2919,7 +3061,7 @@ public class ManualPocTestServer {
         public GobyLaravelEnvLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains(".env")) {
                 sendResponse(exchange, 200, "APP_NAME=Laravel\nAPP_ENV=local\nAPP_KEY=base64:xxx\nDB_PASSWORD=secret", "text/plain");
             } else {
@@ -2933,7 +3075,7 @@ public class ManualPocTestServer {
         public GobyVCenterFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("url=file:")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash\nbin:x:1:1:bin:/bin:/sbin/nologin", "text/plain");
             } else {
@@ -2951,7 +3093,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/api/dp/rptsvcsyncpoint")) {
                 sendResponse(exchange, 200, "{\"result\":\"ok\",\"success\":true,\"data\":[]}", "application/json");
             } else {
@@ -2969,7 +3111,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/solr/admin/cores")) {
                 sendResponse(exchange, 200, "{\"responseHeader\":{\"status\":0},\"status\":{\"core1\":{\"name\":\"core1\"}}}", "application/json");
             } else {
@@ -2987,7 +3129,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/actuator")) {
                 sendResponse(exchange, 200, "{\"_links\":{\"self\":{\"href\":\"/actuator\"},\"health\":{\"href\":\"/actuator/health\"}}}", "application/json");
             } else {
@@ -3005,8 +3147,8 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            String query = exchange.getRequestURI().getQuery();
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
             // POC 请求 /request_para.cgi?parameter=wifi_get_5g_host
             if (vulnerable && (path.contains("request_para.cgi") || (query != null && query.contains("wifi_get_5g_host")))) {
                 sendResponse(exchange, 200, "{\"wifi_5g_ssid\":\"TestNetwork\",\"security\":\"WPA-PSK\",\"password\":\"123456\"}", "application/json");
@@ -3025,7 +3167,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/org_execl_download.action")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin", "text/plain");
             } else {
@@ -3043,7 +3185,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/RestAPI/LogonCustomization")) {
                 sendResponse(exchange, 200, "<script>var d = new Date(); window.parent.$(\"#tabLogo\")</script>", "text/html");
             } else {
@@ -3061,7 +3203,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/druid")) {
                 sendResponse(exchange, 200, "<html><title>Druid Stat Index</title><body>View JSON API</body></html>", "text/html");
             } else {
@@ -3079,7 +3221,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String method = exchange.getRequestMethod();
             if (vulnerable && "POST".equals(method) && path.contains("/login")) {
                 sendResponse(exchange, 200, "{\"code\":200,\"msg\":\"success\"}", "application/json");
@@ -3098,7 +3240,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String method = exchange.getRequestMethod();
             if (vulnerable && "POST".equals(method) && path.contains("/api/v1/user/login")) {
                 // 第一步返回特征字符串，第二步返回成功
@@ -3123,7 +3265,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/api/settings/values")) {
                 sendResponse(exchange, 200, "{\"settings\":[{\"key\":\"sonaranalyzer-cs.nuget.packageVersion\",\"value\":\"8.0\"},{\"key\":\"sonar.core.id\",\"value\":\"xxx\"}]}", "application/json");
             } else {
@@ -3144,8 +3286,8 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            String query = exchange.getRequestURI().getQuery();
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
             
             if (vulnerable) {
                 if (path.contains("/CFIDE/administrator") && query != null && query.contains("locale=")) {
@@ -3172,7 +3314,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             
             if (vulnerable) {
                 if (path.contains("/plugins/web/service/search/auto-completion")) {
@@ -3199,7 +3341,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             
             if (vulnerable) {
                 if (path.contains("/kylin/api/admin/config")) {
@@ -3226,7 +3368,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String auth = exchange.getRequestHeaders().getFirst("Authorization");
             
             if (vulnerable) {
@@ -3264,7 +3406,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String method = exchange.getRequestMethod();
             String apiKey = exchange.getRequestHeaders().getFirst("X-API-KEY");
             
@@ -3305,7 +3447,7 @@ public class ManualPocTestServer {
         
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String method = exchange.getRequestMethod();
             
             if (vulnerable) {
@@ -3345,8 +3487,17 @@ public class ManualPocTestServer {
         public PhpcmsSqlInjectionHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            String referer = exchange.getRequestHeaders().getFirst("Referer");
             if (vulnerable) {
-                sendResponse(exchange, 200, "phpcms_v9", "text/html");
+                if (referer != null && referer.contains("md5(1)")) {
+                    sendResponse(exchange, 200,
+                            "Duplicate entry '1---c4ca4238a0b923820dcc509a6f75849b' for key 'group_key'",
+                            "text/html");
+                } else {
+                    sendResponse(exchange, 200,
+                            "Duplicate entry '1---admin---5f4dcc3b5aa765d61d8327deb882cf99--' for key 'group_key'",
+                            "text/html");
+                }
             } else {
                 sendResponse(exchange, 200, "Access Denied", "text/html");
             }
@@ -3379,13 +3530,27 @@ public class ManualPocTestServer {
             }
         }
     }
+
+    class MultiStepAdminUsersHandler implements HttpHandler {
+        private final boolean vulnerable;
+        public MultiStepAdminUsersHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String auth = exchange.getRequestHeaders().getFirst("Authorization");
+            if (vulnerable && auth != null && auth.contains("admin_token")) {
+                sendResponse(exchange, 200, "{\"users\":[{\"username\":\"admin\"}]}", "application/json");
+            } else {
+                sendResponse(exchange, 403, "{\"error\":\"Forbidden\"}", "application/json");
+            }
+        }
+    }
     
     class TimeBasedSqlInjectionHandler implements HttpHandler {
         private final boolean vulnerable;
         public TimeBasedSqlInjectionHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && (query.toUpperCase().contains("SLEEP") || query.toUpperCase().contains("BENCHMARK"))) {
                 try { Thread.sleep(5500); } catch (InterruptedException e) {}
             }
@@ -3398,8 +3563,8 @@ public class ManualPocTestServer {
         public GobyApacheTraversalHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String rawPath = exchange.getRequestURI().getRawPath();
-            String path = exchange.getRequestURI().getPath();
+            String rawPath = getRawRequestPath(exchange);
+            String path = getRequestPath(exchange);
             if (vulnerable && rawPath != null && (rawPath.contains("%2e") || rawPath.contains("..") || path.contains("..") || rawPath.contains("passwd"))) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -3413,7 +3578,7 @@ public class ManualPocTestServer {
         public Goby360TianqingHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("gettablessize")) {
                 sendResponse(exchange, 200, "{\"data\":[{\"schema_name\":\"tianqing\",\"table_name\":\"users\",\"table_size\":100}]}", "application/json");
             } else {
@@ -3431,7 +3596,7 @@ public class ManualPocTestServer {
         public GobyConsulRexecHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/v1/agent/self")) {
                 sendResponse(exchange, 200, "{\"Config\":{\"DisableRemoteExec\":false}}", "application/json");
             } else {
@@ -3445,7 +3610,7 @@ public class ManualPocTestServer {
         public GobyCoremailConfigHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/mailsms/s")) {
                 sendResponse(exchange, 200, "{\"configHome\":\"/opt/coremail\",\"port\":80}", "application/json");
             } else {
@@ -3459,7 +3624,7 @@ public class ManualPocTestServer {
         public GobyDockerRegistryHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable) {
                 if (path.contains("/v2/_catalog")) {
                     sendResponse(exchange, 200, "{\"repositories\":[\"app\",\"nginx\"]}", "application/json");
@@ -3480,7 +3645,7 @@ public class ManualPocTestServer {
         public GobyDLinkDCSHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/config/getuser")) {
                 sendResponse(exchange, 200, "name=admin\npass=admin123", "text/plain");
             } else {
@@ -3508,7 +3673,7 @@ public class ManualPocTestServer {
         public GobyDedeCMSInfoLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/include/downmix.inc.php")) {
                 sendResponse(exchange, 200, "Fatal error: Call to undefined function helper() in /var/www/html/include/downmix.inc.php", "text/html");
             } else {
@@ -3535,7 +3700,7 @@ public class ManualPocTestServer {
         public GobyFineReportHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && (path.contains("..") || path.contains("ReportServer"))) {
                 // 返回目录列表，包含 etc/passwd
                 sendResponse(exchange, 200, "[{\"fileName\":\"etc/passwd\"},{\"fileName\":\"etc/shadow\"}]", "application/json");
@@ -3550,7 +3715,7 @@ public class ManualPocTestServer {
         public GobyGoCDFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/go/add-on/")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -3564,7 +3729,7 @@ public class ManualPocTestServer {
         public GobyConfluenceOGNLHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/pages/doenterpagevariables.action")) {
                 sendResponse(exchange, 200, "workwork", "text/html");
             } else {
@@ -3578,7 +3743,7 @@ public class ManualPocTestServer {
         public GobyJiraPathHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/s/")) {
                 sendResponse(exchange, 200, "<web-app><display-name>jira</display-name></web-app>", "text/xml");
             } else {
@@ -3592,7 +3757,7 @@ public class ManualPocTestServer {
         public GobyJiraInfoLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && (path.contains("/ViewUserHover.jspa") || path.contains("/rest/api/2/user"))) {
                 sendResponse(exchange, 200, "{\"name\":\"admin\",\"displayName\":\"Administrator\",\"email\":\"admin@test.com\"}", "application/json");
             } else {
@@ -3606,7 +3771,7 @@ public class ManualPocTestServer {
         public GobyCraftCMSRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getRawQuery();
+            String query = getRawRequestQuery(exchange);
             if (vulnerable && (pathContains(exchange, "/actions/seomatic/meta-container") || (query != null && query.contains("uri=")))) {
                  // POC 执行 5*5，期望返回 MetaLinkContainer, canonical, 25
                 sendResponse(exchange, 200, "MetaLinkContainer\ncanonical\n25", "text/plain");
@@ -3615,7 +3780,8 @@ public class ManualPocTestServer {
             }
         }
         private boolean pathContains(HttpExchange ex, String sub) {
-            return ex.getRequestURI().getPath().contains(sub);
+            String path = getRequestPath(ex);
+            return path != null && path.contains(sub);
         }
     }
     
@@ -3624,9 +3790,15 @@ public class ManualPocTestServer {
         public GobyCactiWeathermapHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/plugins/weathermap/editor.php")) {
+            String path = getRequestPath(exchange);
+            if (!vulnerable) {
+                sendResponse(exchange, 403, "Forbidden", "text/plain");
+                return;
+            }
+            if (path.contains("/plugins/weathermap/editor.php")) {
                 sendResponse(exchange, 200, "Weathermap Editor", "text/html");
+            } else if (path.contains("/plugins/weathermap/configs/test.php")) {
+                sendResponse(exchange, 200, "46ea1712d4b13b55b3f680cc5b8b54e8", "text/plain");
             } else {
                 sendResponse(exchange, 403, "Forbidden", "text/plain");
             }
@@ -3638,8 +3810,8 @@ public class ManualPocTestServer {
         public GobyClickHouseSQLiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            String query = exchange.getRequestURI().getQuery();
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
             if (vulnerable) {
                 // 第一步：/ping 请求需要返回 X-Clickhouse-Summary 响应头
                 if (path.contains("/ping")) {
@@ -3664,7 +3836,7 @@ public class ManualPocTestServer {
         public GobyCitrixLFIHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable) {
                 // POC 期望返回 406 + SESSID 响应头
                 if (path.contains("/pcidss/report")) {
@@ -3687,10 +3859,12 @@ public class ManualPocTestServer {
         public GobyCouchCMSInfoLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/includes/mysql2i/mysql2i.func.php")) {
-                // POC 期望 PHP 错误信息
                 String resp = "Fatal error: Cannot redeclare mysql_affected_rows() in /var/www/html/includes/mysql2i/mysql2i.func.php on line 10";
+                sendResponse(exchange, 200, resp, "text/plain");
+            } else if (vulnerable && path.contains("/addons/phpmailer/phpmailer.php")) {
+                String resp = "Fatal error: Call to a menber function add_event_listener() on a non-object in /var/www/html/addons/phpmailer/phpmailer.php on line 10";
                 sendResponse(exchange, 200, resp, "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
@@ -3703,7 +3877,7 @@ public class ManualPocTestServer {
         public GobyDLinkDIR850LHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/hedwig.cgi")) {
                 // POC 检查 HTML 编码的 </usrid> 和 </password>，以及 &lt;result&gt;
                 String resp = "&lt;result&gt;OK&lt;/result&gt;<account><usrid>admin&lt;/usrid&gt;<password>admin123&lt;/password&gt;</password></account>";
@@ -3719,7 +3893,7 @@ public class ManualPocTestServer {
         public GobyDLinkShareCenterHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             // POC 使用 system_mgr.cgi 或 nas_sharing.cgi
             if (vulnerable && (path.contains("/cgi-bin/system_mgr.cgi") || path.contains("/cgi-bin/nas_sharing.cgi"))) {
                 // POC 检查 body 包含 "var/www"
@@ -3750,7 +3924,7 @@ public class ManualPocTestServer {
         public GobyDocCMSSQLiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("keyword=")) {
                 sendResponse(exchange, 200, "Error: XPATH syntax error: '~root~'", "text/html");
             } else {
@@ -3764,7 +3938,7 @@ public class ManualPocTestServer {
         public GobyDotCMSUploadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable) {
                 if (path.contains("/api/content/")) {
                     // 上传步骤期望返回 500
@@ -3786,7 +3960,7 @@ public class ManualPocTestServer {
         public GobyF5RCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/mgmt/tm/util/bash")) {
                 // POC 执行 echo tsxts|base64，期望返回 dHN4dHMK
                 sendResponse(exchange, 200, "{\"commandResult\":\"dHN4dHMK\\nuid=0(root) gid=0(root)\"}", "application/json");
@@ -3801,8 +3975,8 @@ public class ManualPocTestServer {
         public GobyFastmeetingHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            String query = exchange.getRequestURI().getQuery();
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
             // POC 通过 fileName 参数进行路径遍历读取 win.ini
             if (vulnerable && (path.contains("/toDownload.do") || path.contains("/download.aspx") || (query != null && query.contains("fileName")))) {
                 sendResponse(exchange, 200, "[fonts]\nfile=test\n[extensions]\n[mci extensions]\n[files]", "text/plain");
@@ -3819,9 +3993,16 @@ public class ManualPocTestServer {
         public GobyGitLabSSRFHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && (path.contains("/api/v4/ci/lint") || path.contains("/include/"))) {
-                sendResponse(exchange, 200, "{\"status\":\"valid\",\"errors\":[],\"warnings\":[],\"merged_yaml\":\"---\\n: http://test.dnslog.cn/api/v1/targets?test.yml\\n\"}", "application/json");
+            String path = getRequestPath(exchange);
+            String body = readRequestBody(exchange);
+            if (vulnerable && path.contains("/api/v4/ci/lint")) {
+                if (body != null && body.contains("test.dnslog.cn")) {
+                    sendResponse(exchange, 200, "{\"status\":\"valid\",\"errors\":[],\"warnings\":[],\"merged_yaml\":\"---\\ninclude:\\n  remote: http://test.dnslog.cn/api/v1/targets?test.yml\\n\"}", "application/json");
+                } else if (body != null && body.contains("127.0.0.1:9100/test.yml")) {
+                    sendResponse(exchange, 200, "does not have valid YAML syntax", "application/json");
+                } else {
+                    sendResponse(exchange, 200, "{\"status\":\"valid\"}", "application/json");
+                }
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -3833,7 +4014,7 @@ public class ManualPocTestServer {
         public GobyGitLabGraphQLHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/api/graphql")) {
                 // POC 期望返回 username, email, avatarUrl
                 sendResponse(exchange, 200, "{\"data\":{\"users\":{\"nodes\":[{\"username\":\"root\",\"email\":\"admin@gitlab.com\",\"avatarUrl\":\"http://test/avatar\"}]}}}", "application/json");
@@ -3849,8 +4030,8 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             // S2-053: OGNL 注入通过 URL 参数传递
-            String query = exchange.getRequestURI().getRawQuery();
-            String path = exchange.getRequestURI().getPath();
+            String query = getRawRequestQuery(exchange);
+            String path = getRequestPath(exchange);
             if (vulnerable && (path.contains(".action") || (query != null && query.contains("%25%7B")))) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -3865,9 +4046,15 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             // S2-059: OGNL 注入，检查路径或查询参数
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains(".action")) {
-                sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
+            String path = getRequestPath(exchange);
+            String query = getRawRequestQuery(exchange);
+            if (vulnerable && ((path != null && path.contains(".action"))
+                    || (query != null && query.contains("goby")))) {
+                if (query != null && query.contains("goby")) {
+                    sendResponse(exchange, 200, "<html>id=goby16384</html>", "text/html");
+                } else {
+                    sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
+                }
             } else {
                 sendResponse(exchange, 200, "OK", "text/plain");
             }
@@ -3880,10 +4067,13 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             // S2-062: 通过 Content-Type 或路径检测
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String ct = exchange.getRequestHeaders().getFirst("Content-Type");
             if (vulnerable && (path.contains(".action") || (ct != null && ct.contains("multipart/form-data")))) {
-                sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
+                sendResponse(exchange, 200,
+                        "root:x:0:0:root:/root:/bin/bash\n"
+                                + "daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin",
+                        "text/plain");
             } else {
                 sendResponse(exchange, 200, "OK", "text/plain");
             }
@@ -3895,7 +4085,7 @@ public class ManualPocTestServer {
         public GobyAspCMSSQLiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/commentList.asp")) {
                 sendResponse(exchange, 200, "Microsoft SQL Server ... admin", "text/html");
             } else {
@@ -3926,12 +4116,23 @@ public class ManualPocTestServer {
         public GobyH5SVideoHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/api/v1/")) {
-                sendResponse(exchange, 200, "{\"strUser\":\"admin\",\"strPassword\":\"admin123\"}", "application/json");
-            } else {
+            String path = getRequestPath(exchange);
+            if (!vulnerable) {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
+                return;
             }
+
+            if (path.contains("/api/v1/GetSrc")) {
+                sendResponse(exchange, 200, "{\"src\":\"H5_CLOUD\",\"type\":\"H5_STREAM\"}", "application/json");
+                return;
+            }
+
+            if (path.contains("/api/v1/GetUserInfo")) {
+                sendResponse(exchange, 200, "{\"strUser\":\"admin\",\"strPasswd\":\"12345\",\"strUserType\":\"admin\",\"strRole\":\"admin\"}", "application/json");
+                return;
+            }
+
+            sendResponse(exchange, 404, "Not Found", "text/plain");
         }
     }
     
@@ -3940,7 +4141,7 @@ public class ManualPocTestServer {
         public GobyHikvisionHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && (path.contains("/SDK/webLanguage") || path.contains("/serverLog/downFile.php"))) {
                 // POC 期望返回 $file_name=
                 sendResponse(exchange, 200, "$file_name=../web/html/serverLog/downFile.php", "text/plain");
@@ -3955,9 +4156,9 @@ public class ManualPocTestServer {
         public GobyIFW8RouterHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/backup/")) {
-                sendResponse(exchange, 200, "admin:password123", "text/plain");
+            String path = getRequestPath(exchange);
+            if (vulnerable && (path.contains("/backup/") || path.contains("/action/usermanager.htm"))) {
+                sendResponse(exchange, 200, "admin=admin&pwd=password123", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -3970,7 +4171,7 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             if (vulnerable) {
-                sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
+                sendResponse(exchange, 200, "Windows IP Configuration", "text/plain");
             } else {
                 sendResponse(exchange, 403, "Forbidden", "text/plain");
             }
@@ -3982,9 +4183,9 @@ public class ManualPocTestServer {
         public GobyJellyfinFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/Audio/")) {
-                sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
+            String path = getRequestPath(exchange);
+            if (vulnerable && (path.contains("/Audio/") || path.contains("/Videos/"))) {
+                sendResponse(exchange, 200, "[fonts]\nfont=Segoe UI\nfile=test\n[extensions]", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -3997,10 +4198,10 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String body = readRequestBody(exchange);
-            if (vulnerable && body.contains("admin")) {
-                sendResponse(exchange, 200, "{\"success\":true,\"token\":\"admin_session\"}", "application/json");
+            if (vulnerable && body.contains("loginCode=YWRtaW4=") && body.contains("pwd=MDAwMDAw")) {
+                sendResponse(exchange, 200, "OK...系统管理员", "text/plain");
             } else {
-                sendResponse(exchange, 401, "{\"success\":false}", "application/json");
+                sendResponse(exchange, 401, "Login Failed", "text/plain");
             }
         }
     }
@@ -4010,9 +4211,9 @@ public class ManualPocTestServer {
         public GobyJitongEWEBSHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/casmain.xgi")) {
-                sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
+            String body = readRequestBody(exchange);
+            if (vulnerable && body.contains("Language_S=")) {
+                sendResponse(exchange, 200, "MAPI=", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -4024,7 +4225,7 @@ public class ManualPocTestServer {
         public GobyKedacomMTSHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/download/")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -4038,9 +4239,12 @@ public class ManualPocTestServer {
         public GobyKingsoftV8Handler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/htmltopdf/")) {
-                sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
+            String path = getRequestPath(exchange);
+            String body = readRequestBody(exchange);
+            if (vulnerable && body.contains("21232f297a57a5a743894a0e4a801fc3")) {
+                sendResponse(exchange, 200, "userSession", "text/plain");
+            } else if (vulnerable && path.contains("/htmltopdf/downfile.php")) {
+                sendResponse(exchange, 200, "filename=$filename", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -4053,7 +4257,9 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             if (vulnerable) {
-                sendResponse(exchange, 200, "{\"token\":\"default_jwt_secret_key\"}", "application/json");
+                sendResponse(exchange, 200,
+                        "{\"token\":\"default_jwt_secret_key\",\"createdUser\":\"system\",\"username\":\"admin\"}",
+                        "application/json");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -4065,9 +4271,9 @@ public class ManualPocTestServer {
         public GobyKyanHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/hosts")) {
-                sendResponse(exchange, 200, "admin:admin123\nroot:root123", "text/plain");
+                sendResponse(exchange, 200, "UserName=admin\nPassword=admin123\nUserName=root", "text/plain");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -4079,7 +4285,7 @@ public class ManualPocTestServer {
         public GobyLanproxyHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             // OkHttp 归一化后路径不包含 ../，检查是否包含 config.properties 或 /conf/
             if (vulnerable && (path.contains("config.properties") || path.contains("/conf/"))) {
                 sendResponse(exchange, 200, "server.ssl.enable=false\nserver.bind=0.0.0.0\nconfig.admin.username=admin\nconfig.admin.password=admin", "text/plain");
@@ -4096,7 +4302,7 @@ public class ManualPocTestServer {
         public GobyLaravelEnvHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains(".env")) {
                 sendResponse(exchange, 200, "APP_NAME=Laravel\nAPP_KEY=base64:secretkey\nDB_PASSWORD=root", "text/plain");
             } else {
@@ -4123,7 +4329,7 @@ public class ManualPocTestServer {
         public GobyMPSecISGHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/webui/")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -4150,7 +4356,7 @@ public class ManualPocTestServer {
         public GobyMinIOSSRFHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/minio/webrpc")) {
                 // POC 检查 body 包含 "message"
                 sendResponse(exchange, 200, "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32000,\"message\":\"We encountered an internal error\"}}", "application/json");
@@ -4165,9 +4371,18 @@ public class ManualPocTestServer {
         public GobyNodeREDHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/ui_base/")) {
-                sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
+            String rawPath = getRawRequestPath(exchange);
+            String decodedPath = rawPath;
+            try {
+                decodedPath = URLDecoder.decode(rawPath, "UTF-8");
+            } catch (Exception ignored) {
+            }
+            boolean uiBaseTraversal = rawPath != null && rawPath.contains("/ui_base/js/..");
+            uiBaseTraversal = uiBaseTraversal || decodedPath != null && decodedPath.contains("/ui_base/js/..");
+            if (vulnerable && uiBaseTraversal) {
+                sendResponse(exchange, 200,
+                        "root:x:0:0:root:/root:/bin/bash\nbin:x:2:2:bin:/bin:/usr/sbin/nologin",
+                        "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -4180,9 +4395,9 @@ public class ManualPocTestServer {
         public GobyWeblogicLDAPHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/console/")) {
-                sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
+            String uri = exchange.getRequestURI().toString();
+            if (vulnerable && uri.contains("consolejndi.portal")) {
+                sendResponse(exchange, 200, "JNDI", "text/plain");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -4194,9 +4409,14 @@ public class ManualPocTestServer {
         public GobySunloginRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/cgi-bin/rpc")) {
-                sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
+            String path = getRequestPath(exchange);
+            String method = exchange.getRequestMethod();
+            String body = readRequestBody(exchange);
+            String query = getRequestQuery(exchange);
+            if (vulnerable && path.contains("/cgi-bin/rpc")
+                    && (("POST".equalsIgnoreCase(method) && body.contains("action=verify-haras"))
+                    || ("GET".equalsIgnoreCase(method) && query != null && query.contains("action=verify-haras")))) {
+                sendResponse(exchange, 200, "verify_string", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -4209,9 +4429,9 @@ public class ManualPocTestServer {
         public GobyRuijieUACHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/get_pwd")) {
-                sendResponse(exchange, 200, "{\"password\":\"admin@123\"}", "application/json");
+            String query = getRequestQuery(exchange);
+            if (vulnerable && query != null && query.contains("user=admin")) {
+                sendResponse(exchange, 200, "password", "text/plain");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -4252,7 +4472,7 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String body = readRequestBody(exchange);
-            if (vulnerable && body.contains("admin") && body.contains("admin@123")) {
+            if (vulnerable && body.contains("username=admin") && body.contains("password=admin%40123")) {
                 sendResponse(exchange, 200, "{\"result\":true,\"userid\":\"1\"}", "application/json");
             } else {
                 sendResponse(exchange, 200, "{\"result\":false}", "application/json");
@@ -4266,7 +4486,7 @@ public class ManualPocTestServer {
         public GobySeeyonDownExcelHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/DownExcelBeanServlet")) {
                 sendResponse(exchange, 200, "admin@example.com,user@test.com", "text/plain");
             } else {
@@ -4281,7 +4501,7 @@ public class ManualPocTestServer {
         public GobySonarQubeHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/api/settings/values")) {
                 sendResponse(exchange, 200, "{\"settings\":[{\"key\":\"sonaranalyzer-cs.nuget.packageVersion\"},{\"key\":\"sonar.core.id\"}]}", "application/json");
             } else {
@@ -4296,7 +4516,7 @@ public class ManualPocTestServer {
         public GobySpiderFlowHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/function/save")) {
                 sendResponse(exchange, 200, "{\"data\":\"exec success\"}", "application/json");
             } else {
@@ -4311,7 +4531,7 @@ public class ManualPocTestServer {
         public GobySpringBootLogviewHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && (path.contains("/log/view") || path.contains("/manage/log/view"))) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -4326,7 +4546,7 @@ public class ManualPocTestServer {
         public GobyTamronOSHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/api/ping")) {
                 sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
             } else {
@@ -4341,7 +4561,7 @@ public class ManualPocTestServer {
         public GobyWeaverEOfficeHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/UploadFile.php")) {
                 sendResponse(exchange, 200, "logo-eoffice.php", "text/plain");
             } else if (vulnerable && path.contains("/logo-eoffice.php")) {
@@ -4358,9 +4578,11 @@ public class ManualPocTestServer {
         public GobyWSO2UploadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/fileupload/toolsAny")) {
                 sendResponse(exchange, 200, "1234567890", "text/plain");
+            } else if (vulnerable && path.contains("/authenticationendpoint/vuln.jsp")) {
+                sendResponse(exchange, 200, "WSO2-RCE-CVE-2022-29464", "text/plain");
             } else {
                 sendResponse(exchange, 403, "Forbidden", "text/plain");
             }
@@ -4373,7 +4595,7 @@ public class ManualPocTestServer {
         public GobyXiedaOAHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/DownFileAttach.jsp")) {
                 sendResponse(exchange, 200, "jdbc.password=admin123", "text/plain");
             } else {
@@ -4388,7 +4610,7 @@ public class ManualPocTestServer {
         public GobyDahuaDSSHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/attachment_downloadByUrlAtt.action")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -4405,7 +4627,7 @@ public class ManualPocTestServer {
         public void handle(HttpExchange exchange) throws IOException {
             String auth = exchange.getRequestHeaders().getFirst("Authorization");
             if (vulnerable && auth != null && auth.contains("cm9vdDpyb290")) {
-                sendResponse(exchange, 200, "<title>Dubbo Admin</title>", "text/html");
+                sendResponse(exchange, 200, "&lt;title&gt;Dubbo Admin&lt;/title&gt;/sysinfo/versions", "text/html");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -4418,8 +4640,12 @@ public class ManualPocTestServer {
         public GobyDedeCMSInfoHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/data/admin/ver.txt")) {
+            String path = getRequestPath(exchange);
+            if (vulnerable && path.contains("/include/downmix.inc.php")) {
+                sendResponse(exchange, 200,
+                        "Fatal error: Call to undefined function helper() in downmix.inc.php",
+                        "text/plain");
+            } else if (vulnerable && path.contains("/data/admin/ver.txt")) {
                 sendResponse(exchange, 200, "20180109", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
@@ -4433,8 +4659,11 @@ public class ManualPocTestServer {
         public GobyDLinkDNS320Handler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
+            if (vulnerable && path != null && path.contains("/cgi-bin/system_mgr.cgi")
+                    && query != null && query.contains("cmd=cgi_get_log_item")) {
+                sendResponse(exchange, 200, "var/www", "text/plain");
             } else {
                 sendResponse(exchange, 403, "Forbidden", "text/plain");
             }
@@ -4447,9 +4676,11 @@ public class ManualPocTestServer {
         public GobyFineReportTraversalHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && (path.contains("..") || path.contains("ReportServer"))) {
-                sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
+                sendResponse(exchange, 200,
+                        "root:x:0:0:root:/root:/bin/bash\netc/passwd\netc/shadow",
+                        "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -4462,7 +4693,7 @@ public class ManualPocTestServer {
         public GobyGitLabRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable) {
                 if (path.contains("/users/sign_in")) {
                     // 第一步：返回登录页，设置 experimentation_subject_id 头和 csrf-token
@@ -4470,8 +4701,14 @@ public class ManualPocTestServer {
                     String html = "<html><head><meta name=\"csrf-token\" content=\"test-csrf-token\" /></head><body>GitLab</body></html>";
                     sendResponse(exchange, 200, html, "text/html");
                 } else if (path.contains("/uploads/user")) {
-                    // 第二步：上传成功
-                    sendResponse(exchange, 200, "{\"id\":\"uploads/test.jpg\"}", "application/json");
+                    String csrf = exchange.getRequestHeaders().getFirst("X-CSRF-Token");
+                    String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
+                    if (csrf != null && !csrf.trim().isEmpty()
+                            && contentType != null && contentType.contains("multipart/form-data")) {
+                        sendResponse(exchange, 422, "Failed to process image", "application/json");
+                    } else {
+                        sendResponse(exchange, 200, "{\"status\":\"ok\"}", "application/json");
+                    }
                 } else {
                     sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
                 }
@@ -4487,8 +4724,9 @@ public class ManualPocTestServer {
         public GobyU8OAHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
+            String query = getRequestQuery(exchange);
+            if (vulnerable && query != null && query.contains("doType=101") && query.contains("MD5(1)")) {
+                sendResponse(exchange, 200, "c4ca4238a0b923820dcc509a6f75849b", "text/plain");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -4501,8 +4739,9 @@ public class ManualPocTestServer {
         public GobyWeaverOA8Handler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "c4ca4238a0b923820dcc509a6f75849b", "text/plain");
+            String path = getRequestPath(exchange);
+            if (vulnerable && path != null && path.contains("/js/hrm/getdata.jsp")) {
+                sendResponse(exchange, 200, "script:getSelectAllId,password", "text/plain");
             } else {
                 sendResponse(exchange, 200, "error", "text/plain");
             }
@@ -4559,9 +4798,10 @@ public class ManualPocTestServer {
         public GobySecurityDevicesHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String auth = exchange.getRequestHeaders().getFirst("Authorization");
-            if (vulnerable && auth != null && auth.contains("Basic")) {
-                sendResponse(exchange, 200, "<title>Admin Console</title>", "text/html");
+            if (vulnerable) {
+                sendResponse(exchange, 200,
+                        "{\"name\":\"admin\",\"password\":\"hardcoded\"}",
+                        "application/json");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -4574,9 +4814,18 @@ public class ManualPocTestServer {
         public GobyZhongXinJingDunHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            String query = getRequestQuery(exchange);
             String body = readRequestBody(exchange);
-            if (vulnerable && body.contains("admin") && body.contains("123456")) {
-                sendResponse(exchange, 200, "{\"success\":true,\"token\":\"admin_session\"}", "application/json");
+            String cookie = exchange.getRequestHeaders().getFirst("Cookie");
+            if (vulnerable && query != null && query.contains("q=common/getcode")) {
+                exchange.getResponseHeaders().add("Set-Cookie", "check_code=abcd1234; Path=/");
+                sendResponse(exchange, 200, "code", "text/plain");
+            } else if (vulnerable && query != null && query.contains("q=common/login")
+                    && cookie != null && cookie.contains("check_code=abcd1234")
+                    && body.contains("name=admin")
+                    && body.contains("password=zxsoft1234!@#$")
+                    && body.contains("checkcode=abcd1234")) {
+                sendResponse(exchange, 200, "1", "text/plain");
             } else {
                 sendResponse(exchange, 401, "{\"success\":false}", "application/json");
             }
@@ -4589,10 +4838,11 @@ public class ManualPocTestServer {
         public GobyZZZCMSHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
+            String body = readRequestBody(exchange);
+            if (vulnerable && body.contains("PHPINFO")) {
+                sendResponse(exchange, 200, "PHP Version 7.4.0\nSystem Version", "text/plain");
             } else {
-                sendResponse(exchange, 403, "Forbidden", "text/plain");
+                sendResponse(exchange, 200, "Normal", "text/plain");
             }
         }
     }
@@ -4674,8 +4924,11 @@ public class ManualPocTestServer {
         public GobyTongdaOAHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "SUCCESS", "text/plain");
+            String path = getRequestPath(exchange);
+            if (vulnerable && path.contains("auth_mobi.php")) {
+                sendResponse(exchange, 200, "{\"status\":\"ok\"}", "application/json");
+            } else if (vulnerable && path.contains("/general/")) {
+                sendResponse(exchange, 200, "test", "text/plain");
             } else {
                 sendResponse(exchange, 200, "relogin", "text/plain");
             }
@@ -4704,7 +4957,7 @@ public class ManualPocTestServer {
         public void handle(HttpExchange exchange) throws IOException {
             String auth = exchange.getRequestHeaders().getFirst("Authorization");
             if (vulnerable && auth != null && auth.contains("Basic")) {
-                sendResponse(exchange, 200, "<title>Apache ActiveMQ</title>", "text/html");
+                sendResponse(exchange, 200, "<title>Apache ActiveMQ</title><div>Version 5.16.0</div>", "text/html");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -4728,13 +4981,29 @@ public class ManualPocTestServer {
     // POC 165: 海康威视 RCE
     class GobyHikvisionRCEHandler implements HttpHandler {
         private final boolean vulnerable;
+        private boolean exploded = false;
         public GobyHikvisionRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
+            String path = getRequestPath(exchange);
+            if (path != null && (path.endsWith("/") || !path.contains("/SDK/webLanguage") && !path.contains("/c"))) {
+                exploded = false;
+                sendResponse(exchange, 200, "Index", "text/plain");
+            } else if (path.contains("/SDK/webLanguage")) {
+                if (vulnerable) {
+                    exploded = true;
+                    sendResponse(exchange, 500, "Error", "text/plain");
+                } else {
+                    sendResponse(exchange, 404, "Not Found", "text/plain");
+                }
+            } else if (path.contains("/c")) {
+                if (vulnerable && exploded) {
+                    sendResponse(exchange, 200, "result", "text/plain");
+                } else {
+                    sendResponse(exchange, 404, "Not Found", "text/plain");
+                }
             } else {
-                sendResponse(exchange, 403, "Forbidden", "text/plain");
+                sendResponse(exchange, 404, "Not Found", "text/plain");
             }
         }
     }
@@ -4746,10 +5015,10 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String body = readRequestBody(exchange);
-            if (vulnerable && body.contains("admin")) {
-                sendResponse(exchange, 200, "{\"success\":true,\"token\":\"admin\"}", "application/json");
+            if (vulnerable && body.contains("loginCode=YWRtaW4=") && body.contains("pwd=MDAwMDAw")) {
+                sendResponse(exchange, 200, "OK...系统管理员", "text/plain");
             } else {
-                sendResponse(exchange, 401, "{\"success\":false}", "application/json");
+                sendResponse(exchange, 401, "Login Failed", "text/plain");
             }
         }
     }
@@ -4761,7 +5030,7 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             if (vulnerable) {
-                sendResponse(exchange, 200, "username=admin&password=admin123", "text/plain");
+                sendResponse(exchange, 200, "UserName=admin\nPassword=admin123", "text/plain");
             } else {
                 sendResponse(exchange, 403, "Forbidden", "text/plain");
             }
@@ -4774,10 +5043,11 @@ public class ManualPocTestServer {
         public GobyWebSVNHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
+            String query = getRequestQuery(exchange);
+            if (vulnerable && query != null && query.contains("www.example.com")) {
+                sendResponse(exchange, 200, "wget http://www.example.com", "text/plain");
             } else {
-                sendResponse(exchange, 403, "Forbidden", "text/plain");
+                sendResponse(exchange, 200, "Normal", "text/plain");
             }
         }
     }
@@ -4789,7 +5059,10 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             if (vulnerable) {
-                sendResponse(exchange, 302, "", "text/plain");
+                exchange.getResponseHeaders().set("Location", "/zabbix.php?action=dashboard.view");
+                exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+                exchange.sendResponseHeaders(302, 0);
+                exchange.getResponseBody().close();
             } else {
                 sendResponse(exchange, 403, "Forbidden", "text/plain");
             }
@@ -4830,10 +5103,27 @@ public class ManualPocTestServer {
         public GobyChanjetCRMHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "c4ca4238a0b923820dcc509a6f75849b", "text/plain");
-            } else {
+            String query = getRequestQuery(exchange);
+            if (vulnerable && query != null) {
+                String decodedQuery = query;
+                try {
+                    decodedQuery = URLDecoder.decode(query, "UTF-8");
+                } catch (Exception ignored) {
+                }
+                String dynamicMd5 = extractMd5FromQuery(decodedQuery);
+                if (dynamicMd5 != null) {
+                    sendResponse(exchange, 200, dynamicMd5, "text/plain");
+                    return;
+                }
+                if (decodedQuery.toLowerCase().contains("union")) {
+                    sendResponse(exchange, 200, "^^!e10adc3949ba59abbe56e057f20f883e!^^", "text/plain");
+                    return;
+                }
+            }
+            if (!vulnerable) {
                 sendResponse(exchange, 200, "error", "text/plain");
+            } else {
+                sendResponse(exchange, 200, "OK", "text/plain");
             }
         }
     }
@@ -4845,7 +5135,7 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             if (vulnerable) {
-                sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/plain");
+                sendResponse(exchange, 200, "Windows IP Configuration", "text/plain");
             } else {
                 sendResponse(exchange, 403, "Forbidden", "text/plain");
             }
@@ -4858,8 +5148,18 @@ public class ManualPocTestServer {
         public GobyQilaiOAHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "c4ca4238a0b923820dcc509a6f75849b", "text/plain");
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
+            if (vulnerable && containsQilaiUserPayload(query)) {
+                if (path.contains("messageurl.aspx")) {
+                    sendResponse(exchange, 500, "messageurl", "text/plain");
+                    return;
+                }
+                if (path.contains("treelist.aspx")) {
+                    sendResponse(exchange, 500, "treelist", "text/plain");
+                    return;
+                }
+                sendResponse(exchange, 500, "messageurl", "text/plain");
             } else {
                 sendResponse(exchange, 200, "error", "text/plain");
             }
@@ -4872,8 +5172,11 @@ public class ManualPocTestServer {
         public GobyHuatianOAHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "c4ca4238a0b923820dcc509a6f75849b", "text/plain");
+            String path = getRequestPath(exchange);
+            String body = readRequestBody(exchange);
+            if (vulnerable && path != null && path.contains("workFlowService")
+                    && body != null && body.toLowerCase().contains("select user()")) {
+                sendResponse(exchange, 200, "<string>user@localhost</string>", "text/xml");
             } else {
                 sendResponse(exchange, 200, "error", "text/plain");
             }
@@ -4886,8 +5189,9 @@ public class ManualPocTestServer {
         public Goby360TianQingCcidHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "c4ca4238a0b923820dcc509a6f75849b", "text/plain");
+            String path = getRequestPath(exchange);
+            if (vulnerable && path != null && path.contains("/api/dp/rptsvcsyncpoint")) {
+                sendResponse(exchange, 200, "{\"result\":\"success\"}", "application/json");
             } else {
                 sendResponse(exchange, 200, "error", "text/plain");
             }
@@ -4900,7 +5204,7 @@ public class ManualPocTestServer {
         public GobyADSelfServiceHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/RestAPI/LogonCustomization")) {
                 sendResponse(exchange, 200, "var d = new Date(); window.parent.$(\"#tabLogo\")", "text/html");
             } else {
@@ -4915,7 +5219,7 @@ public class ManualPocTestServer {
         public GobyAVCON6Handler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/org_execl_download.action")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -4930,7 +5234,7 @@ public class ManualPocTestServer {
         public GobyActiveUCHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/acenter/index.action")) {
                 sendResponse(exchange, 200, "Windows IP Configuration", "text/plain");
             } else {
@@ -4945,7 +5249,7 @@ public class ManualPocTestServer {
         public GobyAdslrHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/request_para.cgi")) {
                 sendResponse(exchange, 200, "WPA-PSK", "text/plain");
             } else {
@@ -4979,7 +5283,7 @@ public class ManualPocTestServer {
         public GobyAPISIXDashboardHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/apisix/admin/migrate/export")) {
                 sendResponse(exchange, 200, "\"Consumers\":[],\"Routes\":[],\"PluginConfigs\":[]", "application/json");
             } else {
@@ -4994,10 +5298,13 @@ public class ManualPocTestServer {
         public GobyCouchDBPrivEscHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.startsWith("/_users/org.couchdb.user:")) {
+            String path = getRequestPath(exchange);
+            if (vulnerable && path.contains("/_users/org.couchdb.user:")) {
                 String username = path.substring(path.lastIndexOf(':') + 1);
-                sendResponse(exchange, 201, "{\"ok\":true,\"id\":\"org.couchdb.user:" + username + "\",\"rev\":\"1-123\"}", "application/json");
+                sendResponse(exchange, 201,
+                        "{\"ok\":true,\"id\":\"org.couchdb.user:" + username
+                                + "\",\"rev\":\"1-123\",\"alias\":\"org.couchdb.user:{{{r1}}}\"}",
+                        "application/json");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "application/json");
             }
@@ -5010,7 +5317,7 @@ public class ManualPocTestServer {
         public GobyApacheSSRFHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.startsWith("unix:")) {
                 sendResponse(exchange, 200, "Example Domain", "text/html");
             } else {
@@ -5025,8 +5332,23 @@ public class ManualPocTestServer {
         public GobyApachePathTraversalHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String rawPath = exchange.getRequestURI().getRawPath();
-            if (vulnerable && (rawPath.contains(".%2e") || rawPath.contains("%2e%2e"))) {
+            String rawPath = getRawRequestPath(exchange);
+            String method = exchange.getRequestMethod();
+            if (!vulnerable) {
+                sendResponse(exchange, 403, "Forbidden", "text/plain");
+                return;
+            }
+
+            boolean passwdTraversal = rawPath != null && (rawPath.contains(".%2e")
+                    || rawPath.contains("%2e%2e")
+                    || rawPath.contains("%32%65")
+                    || rawPath.contains("%%32%65"));
+            boolean shellTraversal = rawPath != null && (rawPath.contains("/bin/sh")
+                    || rawPath.contains(".%%%25%33%32%25%36%35"));
+
+            if ("POST".equalsIgnoreCase(method) && shellTraversal) {
+                sendResponse(exchange, 200, "CVE-2021-42013", "text/plain");
+            } else if (passwdTraversal) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
                 sendResponse(exchange, 403, "Forbidden", "text/plain");
@@ -5070,10 +5392,15 @@ public class ManualPocTestServer {
         public GobyAspCMSBackendLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "<script>alert('1');top.location.href='/admin_login.asp';</script>", "text/html");
-            } else {
+            String path = getRequestPath(exchange);
+            if (!vulnerable) {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
+                return;
+            }
+            if (path != null && path.contains("/admin_login.asp")) {
+                sendResponse(exchange, 200, "<input name=\"username\" value=\"admin\">", "text/html");
+            } else {
+                sendResponse(exchange, 200, "<script>alert('1');top.location.href='/admin_login.asp';</script>", "text/html");
             }
         }
     }
@@ -5098,9 +5425,9 @@ public class ManualPocTestServer {
         public GobyBigAntPathTraversalHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("true_path=../")) {
-                sendResponse(exchange, 200, "[fonts]\r\n[extensions]", "text/plain");
+                sendResponse(exchange, 200, "[fonts]\r\nbit app support\r\n[extensions]", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -5128,7 +5455,7 @@ public class ManualPocTestServer {
         public GobyCactiFileWriteHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable) {
                 if (path.contains("editor.php")) {
                     sendResponse(exchange, 200, "OK", "text/plain");
@@ -5149,7 +5476,7 @@ public class ManualPocTestServer {
         public GobyCasdoorSQLiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("updatexml")) {
                 sendResponse(exchange, 200, "XPATH syntax error", "text/plain");
             } else {
@@ -5164,8 +5491,10 @@ public class ManualPocTestServer {
         public GobyCerebroSQLiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
-            if (vulnerable && query != null && query.contains("Name=Y'")) {
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
+            if (vulnerable && path != null && path.contains("AjaxMethod.ashx")
+                    && query != null && (query.contains("Name=Y%27") || query.contains("Name=Y'"))) {
                 sendResponse(exchange, 500, "SELECT * FROM", "text/plain");
             } else {
                 sendResponse(exchange, 200, "OK", "text/plain");
@@ -5179,9 +5508,25 @@ public class ManualPocTestServer {
         public GobyChanjetCRMSQLiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
-            if (vulnerable && query != null && query.contains("union")) {
-                sendResponse(exchange, 200, "^^!e10adc3949ba59abbe56e057f20f883e!^^", "text/plain");
+            String query = getRequestQuery(exchange);
+            if (vulnerable && query != null) {
+                String decodedQuery = query;
+                try {
+                    decodedQuery = URLDecoder.decode(query, "UTF-8");
+                } catch (Exception ignored) {
+                }
+                String dynamicMd5 = extractMd5FromQuery(decodedQuery);
+                if (dynamicMd5 != null) {
+                    sendResponse(exchange, 200, dynamicMd5, "text/plain");
+                    return;
+                }
+                if (decodedQuery.toLowerCase().contains("union")) {
+                    sendResponse(exchange, 200, "^^!e10adc3949ba59abbe56e057f20f883e!^^", "text/plain");
+                    return;
+                }
+            }
+            if (vulnerable) {
+                sendResponse(exchange, 200, "OK", "text/plain");
             } else {
                 sendResponse(exchange, 200, "OK", "text/plain");
             }
@@ -5208,9 +5553,11 @@ public class ManualPocTestServer {
         public GobyChinaMobileYuLoginBypassHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            String path = getRequestPath(exchange);
             String body = readRequestBody(exchange);
-            if (vulnerable && body.contains("login=Login")) {
-                sendResponse(exchange, 200, "<html><body>... admin/index.asp ...</body></html>", "text/html");
+            if (vulnerable && ((path != null && path.contains("/simple-index.asp"))
+                    || body.contains("login=Login"))) {
+                sendResponse(exchange, 200, "<html><body>无线密码：admin123</body></html>", "text/html;charset=utf-8");
             } else {
                 sendResponse(exchange, 200, "Login Failed", "text/html");
             }
@@ -5223,9 +5570,11 @@ public class ManualPocTestServer {
         public GobyCitrixUnauthorizedHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
-            if (vulnerable && query != null && query.contains("sid=loginchallengeresponse1requestbody")) {
-                exchange.getResponseHeaders().add("SESSID", "123456");
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
+            if (vulnerable && path.contains("/pcidss/report")
+                    && query != null && query.contains("sid=loginchallengeresponse1requestbody")) {
+                exchange.getResponseHeaders().add("Set-Cookie", "SESSID=123456; Path=/");
                 sendResponse(exchange, 406, "SESSID=...", "text/xml");
             } else {
                 sendResponse(exchange, 200, "OK", "text/xml");
@@ -5255,7 +5604,7 @@ public class ManualPocTestServer {
         public GobyCmsEasySQLiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("case=crossall")) {
                 sendResponse(exchange, 200, "123", "text/plain");
             } else {
@@ -5270,7 +5619,7 @@ public class ManualPocTestServer {
         public GobyColdfusionLFICVE20102861Handler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("locale=")) {
                 sendResponse(exchange, 200, "rdspassword=xxx\nencrypted=true", "text/plain");
             } else {
@@ -5286,8 +5635,9 @@ public class ManualPocTestServer {
         public GobyConsulRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
-                sendResponse(exchange, 200, "", "text/plain");
+            String path = getRequestPath(exchange);
+            if (vulnerable && path != null && path.contains("/v1/agent/self")) {
+                sendResponse(exchange, 200, "{\"Config\":{\"DisableRemoteExec\":false}}", "application/json");
             } else {
                 sendResponse(exchange, 403, "Forbidden", "text/plain");
             }
@@ -5303,7 +5653,7 @@ public class ManualPocTestServer {
         public GobyCraftCMSSeomaticHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getRawQuery(); // 使用 RawQuery 避免解码问题
+            String query = getRawRequestQuery(exchange); // 使用 RawQuery 避免解码问题
             if (vulnerable && query != null && (query.contains("uri=") || query.contains("{{"))) {
                 // POC 执行 5*5，期望返回 MetaLinkContainer, canonical, 25
                 sendResponse(exchange, 200, "MetaLinkContainer\ncanonical\n25", "text/plain");
@@ -5319,8 +5669,11 @@ public class ManualPocTestServer {
         public GobyDLinkACDefaultPwdHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            String body = readRequestBody(exchange);
             if (vulnerable) {
                 sendResponse(exchange, 200, "D-Link", "text/plain");
+            } else if (body.contains("user=admin&password=admin")) {
+                sendResponse(exchange, 200, "flag=0", "text/plain");
             } else {
                 sendResponse(exchange, 200, "Login", "text/plain");
             }
@@ -5348,7 +5701,7 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
              if (vulnerable) {
-                sendResponse(exchange, 200, "<usrid>admin</usrid><password>123456</password><result>OK</result>", "text/xml");
+                sendResponse(exchange, 200, "&lt;usrid&gt;admin&lt;/usrid&gt;&lt;password&gt;123456&lt;/password&gt;&lt;result&gt;OK&lt;/result&gt;", "text/xml");
              } else {
                  sendResponse(exchange, 200, "Login", "text/html");
              }
@@ -5362,7 +5715,7 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
              if (vulnerable) {
-                sendResponse(exchange, 200, "<name>admin</name><password>123456</password>", "text/xml");
+                sendResponse(exchange, 200, "&lt;name&gt;admin&lt;/name&gt;&lt;password&gt;123456&lt;/password&gt;", "text/xml");
              } else {
                  sendResponse(exchange, 200, "Login", "text/html");
              }
@@ -5514,7 +5867,7 @@ public class ManualPocTestServer {
             if (vulnerable) {
                 exchange.getResponseHeaders().add("Location", "http://wsq.discuz.com");
                 exchange.getResponseHeaders().add("Set-Cookie", "auth=123");
-                sendResponse(exchange, 302, "Redirecting...", "text/plain");
+                sendResponse(exchange, 302, "location.href='http://wsq.discuz.com';", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -5543,6 +5896,7 @@ public class ManualPocTestServer {
         public void handle(HttpExchange exchange) throws IOException {
             String body = readRequestBody(exchange);
             if (vulnerable && body.contains("action=ping_test")) {
+                recordMockDnsResolution(body);
                 sendResponse(exchange, 200, "Ping Result", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
@@ -5556,7 +5910,7 @@ public class ManualPocTestServer {
         public GobyDocCMSSQLiPOC240Handler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("keyword=")) {
                 sendResponse(exchange, 200, "XPATH syntax error", "text/plain");
             } else {
@@ -5571,9 +5925,13 @@ public class ManualPocTestServer {
         public GobyDockerRegistryUnauthHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (vulnerable) {
+            String path = getRequestPath(exchange);
+            if (vulnerable && path != null && path.endsWith("/v2/")) {
                 exchange.getResponseHeaders().add("docker-distribution-api-version", "registry/2.0");
                 sendResponse(exchange, 200, "{}", "application/json");
+            } else if (vulnerable && path != null && path.contains("/v2/_catalog")) {
+                exchange.getResponseHeaders().add("docker-distribution-api-version", "registry/2.0");
+                sendResponse(exchange, 200, "{\"repositories\":[\"library/alpine\",\"library/nginx\"]}", "application/json");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -5588,7 +5946,7 @@ public class ManualPocTestServer {
         public void handle(HttpExchange exchange) throws IOException {
             String auth = exchange.getRequestHeaders().getFirst("Authorization");
             if (vulnerable && auth != null && (auth.contains("Basic Z3Vlc3Q6Z3Vlc3Q=") || auth.contains("Basic cm9vdDpyb290"))) {
-                sendResponse(exchange, 200, "<title>Dubbo Admin</title>/sysinfo/versions", "text/html");
+                sendResponse(exchange, 200, "&lt;title&gt;Dubbo Admin&lt;/title&gt;/sysinfo/versions", "text/html");
             } else {
                 sendResponse(exchange, 401, "Unauthorized", "text/plain");
             }
@@ -5646,7 +6004,7 @@ public class ManualPocTestServer {
         public GobyFastmeetingFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("fileName=") && query.contains("win.ini")) {
                 sendResponse(exchange, 200, "[fonts]\n[extensions]", "text/plain");
             } else {
@@ -5661,7 +6019,7 @@ public class ManualPocTestServer {
         public GobyFineReportDirTraversalHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("file_path=") && query.contains("etc")) {
                  sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash\netc/passwd", "text/plain");
             } else {
@@ -5676,7 +6034,7 @@ public class ManualPocTestServer {
         public GobyFineReportArbitraryFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("resourcepath=privilege.xml")) {
                 sendResponse(exchange, 200, "<![CDATA[...]]>", "text/xml");
             } else {
@@ -5688,25 +6046,40 @@ public class ManualPocTestServer {
     // POC 254: FineReport v9 File Overwrite
     class GobyFineReportV9FileOverwriteHandler implements HttpHandler {
         private final boolean vulnerable;
+        private volatile String savedContent;
         public GobyFineReportV9FileOverwriteHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
+            String body = readRequestBody(exchange);
             if (path.contains("ReportServer")) {
-                 // Step 1: Overwrite
                  if (vulnerable) {
+                     savedContent = extractSavedContent(body);
                      sendResponse(exchange, 200, "{\"status\":\"success\"}", "application/json");
                  } else {
+                     savedContent = null;
                      sendResponse(exchange, 200, "{\"status\":\"failed\"}", "application/json");
                  }
             } else if (path.contains("a.svg.jsp")) {
-                 // Step 2: Check
-                 if (vulnerable) {
-                     sendResponse(exchange, 200, "test", "text/plain");
+                 if (vulnerable && savedContent != null) {
+                     sendResponse(exchange, 200, savedContent, "text/plain");
                  } else {
                      sendResponse(exchange, 404, "Not Found", "text/plain");
                  }
+            } else {
+                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
+        }
+
+        private String extractSavedContent(String body) {
+            if (body == null) {
+                return "";
+            }
+            Matcher matcher = Pattern.compile("\"__CONTENT__\"\\s*:\\s*\"([^\"]+)\"").matcher(body);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+            return body;
         }
     }
     
@@ -5716,8 +6089,8 @@ public class ManualPocTestServer {
         public GobyFinetree5MPAuthHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (path.equals("/")) {
+            String path = getRequestPath(exchange);
+            if (path.equals("/") || path.endsWith("/")) {
                 if (vulnerable) {
                     sendResponse(exchange, 302, "Redirect", "text/plain");
                 } else {
@@ -5753,8 +6126,9 @@ public class ManualPocTestServer {
         public GobyGitLabRCECVE202122205Handler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (path.contains("/users/sign_in")) {
+                exchange.getResponseHeaders().add("Set-Cookie", "experimentation_subject_id=abc123");
                 exchange.getResponseHeaders().set("Content-Type", "text/html");
                 // Provide CSRF token
                 String body = "<html><head><meta name=\"csrf-token\" content=\"token_value\" /></head><body>experimentation_subject_id</body></html>";
@@ -5780,7 +6154,13 @@ public class ManualPocTestServer {
         public void handle(HttpExchange exchange) throws IOException {
             String body = readRequestBody(exchange);
             if (vulnerable && body.contains("include:") && body.contains("remote:")) {
-                sendResponse(exchange, 200, "does not have valid YAML syntax", "application/json");
+                if (body.contains("test.dnslog.cn")) {
+                    sendResponse(exchange, 200,
+                            "{\"status\":\"valid\",\"errors\":[],\"warnings\":[],\"merged_yaml\":\"---\\ninclude:\\n  remote: http://test.dnslog.cn/api/v1/targets?test.yml\\n\"}",
+                            "application/json");
+                } else {
+                    sendResponse(exchange, 200, "does not have valid YAML syntax", "application/json");
+                }
             } else {
                 sendResponse(exchange, 200, "Valid", "application/json");
             }
@@ -5793,7 +6173,7 @@ public class ManualPocTestServer {
         public GobyGrafanaXSSHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath(); // e.g. /dashboard/snapshot/{{...}}
+            String path = getRequestPath(exchange); // e.g. /dashboard/snapshot/{{...}}
             if (vulnerable && path.contains("%7B%7B")) { // {{ encoded
                  sendResponse(exchange, 200, "frontend_boot_js_done_time_seconds", "text/html");
             } else {
@@ -5812,7 +6192,7 @@ public class ManualPocTestServer {
             if (vulnerable && body.contains("pfdrt=sc") && body.contains("cmd=")) {
                  sendResponse(exchange, 200, "Administrator", "text/plain");
             } else {
-                 sendResponse(exchange, 200, "Normal", "text/plain");
+                 sendResponse(exchange, 403, "Forbidden", "text/plain");
             }
         }
     }
@@ -5851,8 +6231,9 @@ public class ManualPocTestServer {
         public GobyHikvisionFileDownloadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             if (vulnerable) {
-                 sendResponse(exchange, 200, "<user><name>admin</name></user>", "text/xml");
+             String query = getRequestQuery(exchange);
+             if (vulnerable && query != null && query.contains("fileName=")) {
+                 sendResponse(exchange, 200, "$file_name=../web/html/serverLog/downFile.php", "text/plain");
              } else {
                  sendResponse(exchange, 403, "Forbidden", "text/plain");
              }
@@ -5866,8 +6247,8 @@ public class ManualPocTestServer {
         public GobyHikvisionRCEHandlerPoc272(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (path.equals("/")) {
+            String path = getRequestPath(exchange);
+            if (path != null && (path.endsWith("/") || !path.contains("/SDK/webLanguage") && !path.contains("/c"))) {
                 sendResponse(exchange, 200, "Index", "text/plain");
             } else if (path.contains("/SDK/webLanguage")) {
                 if (vulnerable) {
@@ -5894,7 +6275,7 @@ public class ManualPocTestServer {
         public GobyHikvisionAnyFileDownloadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("fileName=../")) {
                 sendResponse(exchange, 200, "$file_name=xxx", "text/plain");
             } else {
@@ -5909,8 +6290,15 @@ public class ManualPocTestServer {
         public GobyHotelDruidXSSHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
-            if (vulnerable && query != null && query.contains("<script>")) {
+            String query = getRequestQuery(exchange);
+            String decodedQuery = query;
+            if (decodedQuery != null) {
+                try {
+                    decodedQuery = URLDecoder.decode(decodedQuery, "UTF-8");
+                } catch (Exception ignored) {
+                }
+            }
+            if (vulnerable && decodedQuery != null && decodedQuery.contains("<script>")) {
                 sendResponse(exchange, 200, "XSS", "text/plain");
             } else {
                 sendResponse(exchange, 200, "Normal", "text/plain");
@@ -5968,7 +6356,7 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String body = readRequestBody(exchange);
-            if (vulnerable && body.contains("system('ipconfig')")) {
+            if (vulnerable && body.contains("ipconfig")) {
                 sendResponse(exchange, 200, "Windows IP Configuration", "text/plain");
             } else {
                 sendResponse(exchange, 200, "Normal", "text/plain");
@@ -5982,7 +6370,7 @@ public class ManualPocTestServer {
         public GobyJQueryFileDownloadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("file_name=../")) {
                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
             } else {
@@ -5997,9 +6385,9 @@ public class ManualPocTestServer {
         public GobyJellyfinFileReadHandlerCVE202121402(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && (path.contains("/Audio/") || path.contains("/Videos/"))) {
-                sendResponse(exchange, 200, "; for 16-bit app support\n[fonts]\n[extensions]\n[file]", "application/octet-stream");
+                sendResponse(exchange, 200, "[fonts]\nfont=Segoe UI\nfile=test\n[extensions]", "application/octet-stream");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -6012,7 +6400,7 @@ public class ManualPocTestServer {
         public GobyJellyfinSSRFHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("imageUrl=")) {
                 if (query.contains("baidu.com")) {
                     sendResponse(exchange, 200, "<html><title>百度一下，你就知道</title><body>百度</body></html>", "text/html;charset=utf-8");
@@ -6032,7 +6420,7 @@ public class ManualPocTestServer {
         public GobyJettyFileReadHandlerCVE202128169(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             // The POC requests /static?/%2557EB-INF/web.xml
             if (vulnerable && query != null && query.contains("%2557EB-INF")) {
                 sendResponse(exchange, 200, "<web-app>jetty</web-app>", "text/xml");
@@ -6048,12 +6436,14 @@ public class ManualPocTestServer {
         public GobyJettyFileReadHandlerCVE202134429(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String rawPath = exchange.getRequestURI().getRawPath();
+            String rawPath = getRawRequestPath(exchange);
             if (vulnerable) {
-                if (rawPath.contains("%u002e") || rawPath.contains("%00") || rawPath.contains("..%00")) {
+                if (rawPath != null && (rawPath.contains("%u002e") || rawPath.contains("%00") || rawPath.contains("..%00"))) {
                     sendResponse(exchange, 200, "<web-app>web-app</web-app>", "text/xml");
-                } else if (rawPath.contains("/WEB-INF/web.xml")) {
-                    sendResponse(exchange, 404, "Jetty - Not Found", "text/html");
+                } else if (rawPath != null && rawPath.contains("/WEB-INF/web.xml")) {
+                    sendResponse(exchange, 404,
+                            "<html><body><h2>Error 404 Not Found</h2><hr><i>Jetty://9.4.43.v20210629</i></body></html>",
+                            "text/html");
                 } else {
                     sendResponse(exchange, 404, "Not Found", "text/plain");
                 }
@@ -6083,7 +6473,7 @@ public class ManualPocTestServer {
         public GobyJinHeOAFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("filename=")) {
                 sendResponse(exchange, 200, "<xml>web.config content</xml>", "text/xml");
             } else {
@@ -6098,7 +6488,7 @@ public class ManualPocTestServer {
         public GobyKingsoftV8FileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("filename=")) {
                 sendResponse(exchange, 200, "filename=$filename", "text/plain");
             } else {
@@ -6128,8 +6518,8 @@ public class ManualPocTestServer {
         public GobyJitongEWEBSPhpinfoHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
-            if (vulnerable && query != null && query.contains("Language_S=phpinfo")) {
+            String path = getRequestPath(exchange);
+            if (vulnerable && path != null && path.contains("/testweb.php")) {
                 sendResponse(exchange, 200, "PHP Version", "text/html");
             } else {
                 sendResponse(exchange, 200, "Normal", "text/plain");
@@ -6143,8 +6533,8 @@ public class ManualPocTestServer {
         public GobyKEDACOMMTSFileDownloadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.startsWith("/download/")) {
+            String path = getRequestPath(exchange);
+            if (vulnerable && path.contains("/download/")) {
                 sendResponse(exchange, 200, "root:x:0:0:", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
@@ -6189,7 +6579,7 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             if (vulnerable) {
-                sendResponse(exchange, 200, "UserName...Password", "text/plain");
+                sendResponse(exchange, 200, "UserName=admin\nPassword=admin123", "text/plain");
             } else {
                 sendResponse(exchange, 200, "Normal Page", "text/plain");
             }
@@ -6202,9 +6592,9 @@ public class ManualPocTestServer {
         public GobyKyanRCECommandRunHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
-            if (vulnerable && query != null && query.contains("command=phpinfo()")) {
-                sendResponse(exchange, 200, "PHP Version", "text/html");
+            String body = readRequestBody(exchange);
+            if (vulnerable && body != null && (body.contains("command=id") || body.contains("command=phpinfo()"))) {
+                sendResponse(exchange, 200, "uid=0(root) gid=0(root)\nPHP Version", "text/html");
             } else {
                 sendResponse(exchange, 200, "Normal Page", "text/plain");
             }
@@ -6232,9 +6622,9 @@ public class ManualPocTestServer {
         public GobyLanproxyTraversalHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/../")) {
-                sendResponse(exchange, 200, "server.ssl", "text/plain");
+                sendResponse(exchange, 200, "server.ssl.enable=false\nconfig.admin.username=admin", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -6248,7 +6638,9 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             if (vulnerable) {
-                sendResponse(exchange, 200, "APP_KEY=xxx\nDB_HOST=localhost", "text/plain");
+                sendResponse(exchange, 200,
+                        "APP_NAME=Laravel\nAPP_ENV=production\nAPP_KEY=xxx\nDB_HOST=localhost",
+                        "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -6275,7 +6667,7 @@ public class ManualPocTestServer {
         public GobyMPSecISGGatewayFileDownloadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("file_name=../")) {
                 sendResponse(exchange, 200, "root:x:0:0:", "text/plain");
             } else {
@@ -6290,9 +6682,11 @@ public class ManualPocTestServer {
         public GobyMallgardFirewallDefaultLoginHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            String path = getRequestPath(exchange);
             String body = readRequestBody(exchange);
-            if (vulnerable && body.contains("hicomadmin")) {
-                sendResponse(exchange, 200, "message success", "text/plain");
+            if (vulnerable && path != null && path.contains("/index.php")
+                    && body.contains("username=admin") && body.contains("password=hicomadmin")) {
+                sendResponse(exchange, 200, "{\"message\":\"success\"}", "application/json");
             } else {
                 sendResponse(exchange, 200, "Login Failed", "text/plain");
             }
@@ -6319,7 +6713,7 @@ public class ManualPocTestServer {
         public GobyMetabaseGeojsonFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("url=file:/etc/passwd")) {
                 sendResponse(exchange, 200, "/root:/bin/ash", "text/plain");
             } else {
@@ -6378,9 +6772,23 @@ public class ManualPocTestServer {
         public GobyNodeREDFireReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            if (vulnerable && path.contains("/ui_base/js/..") && path.contains("/etc/passwd")) {
-                sendResponse(exchange, 200, "root:x:", "text/plain");
+            String rawPath = getRawRequestPath(exchange);
+            String decodedPath = rawPath;
+            try {
+                decodedPath = URLDecoder.decode(rawPath, "UTF-8");
+            } catch (Exception ignored) {
+            }
+
+            boolean uiBaseTraversal = rawPath != null && rawPath.contains("/ui_base/js/..");
+            uiBaseTraversal = uiBaseTraversal || decodedPath != null && decodedPath.contains("/ui_base/js/..");
+
+            boolean passwdTarget = rawPath != null && rawPath.toLowerCase().contains("%2fetc%2fpasswd");
+            passwdTarget = passwdTarget || decodedPath != null && decodedPath.contains("/etc/passwd");
+
+            if (vulnerable && uiBaseTraversal && passwdTarget) {
+                sendResponse(exchange, 200,
+                        "root:x:0:0:root:/root:/bin/bash\nbin:x:2:2:bin:/bin:/usr/sbin/nologin",
+                        "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -6393,7 +6801,7 @@ public class ManualPocTestServer {
         public GobyNodeJsPathTraversalHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/static/") && path.contains("/etc/passwd")) {
                 sendResponse(exchange, 200, "root", "text/plain");
             } else {
@@ -6408,9 +6816,22 @@ public class ManualPocTestServer {
         public GobyOpenSNSRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
-            if (vulnerable && query != null && query.contains("s=weixin/index/index")) {
-                sendResponse(exchange, 200, "PHP Version", "text/html");
+            String query = getRequestQuery(exchange);
+            if (vulnerable && query != null && query.contains("shareBox")) {
+                String decodedQuery = query;
+                try {
+                    decodedQuery = URLDecoder.decode(query, "UTF-8");
+                } catch (Exception ignored) {
+                }
+                if (decodedQuery.contains("system(id)")) {
+                    sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/html");
+                    return;
+                }
+                if (decodedQuery.contains("system(ipconfig)")) {
+                    sendResponse(exchange, 200, "Windows IP Configuration", "text/html");
+                    return;
+                }
+                sendResponse(exchange, 200, "uid=0(root) gid=0(root)", "text/html");
             } else {
                 sendResponse(exchange, 200, "Normal", "text/plain");
             }
@@ -6423,10 +6844,12 @@ public class ManualPocTestServer {
         public GobyOracleWebLogicPathTraversalHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            // Simplified check for traversal
-            if (vulnerable && path.contains("..")) {
-                sendResponse(exchange, 200, "root", "text/plain");
+            String rawPath = getRawRequestPath(exchange);
+            String path = getRequestPath(exchange);
+            boolean weblogicTraversal = rawPath != null && rawPath.contains(".//WEB-INF/");
+            weblogicTraversal = weblogicTraversal || path != null && path.contains(".//WEB-INF/");
+            if (vulnerable && weblogicTraversal) {
+                sendResponse(exchange, 200, "<?xml version=\"1.0\"?><web-app><display-name>weblogic</display-name></web-app>", "application/xml");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -6439,9 +6862,9 @@ public class ManualPocTestServer {
         public GobyOracleWebLogicLDAPRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             // Simplified check
-            if (vulnerable) {
-                sendResponse(exchange, 200, "root", "text/plain");
+            String path = getRequestPath(exchange);
+            if (vulnerable && path != null && path.contains("consolejndi.portal")) {
+                sendResponse(exchange, 200, "JNDI Binding Portal", "text/plain");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -6454,7 +6877,7 @@ public class ManualPocTestServer {
         public GobyOracleWebLogicSSRFHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
+            String query = getRequestQuery(exchange);
             if (vulnerable && query != null && query.contains("operator=http")) {
                 sendResponse(exchange, 200, "weblogic.uddi.client.structures.exception.XML_SoapException", "text/html");
             } else {
@@ -6469,8 +6892,11 @@ public class ManualPocTestServer {
         public GobyOraySunloginRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
             String body = readRequestBody(exchange);
-            if (vulnerable && body.contains("action=verify-haras")) {
+            if (vulnerable && ((body != null && body.contains("action=verify-haras"))
+                    || (path != null && path.contains("/cgi-bin/rpc") && query != null && query.contains("action=verify-haras")))) {
                 sendResponse(exchange, 200, "verify_string", "text/plain");
             } else {
                 sendResponse(exchange, 200, "Normal", "text/plain");
@@ -6499,10 +6925,11 @@ public class ManualPocTestServer {
         public GobyPortainerInitHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             if (vulnerable) {
-                sendResponse(exchange, 200, "Success", "text/plain");
-            } else {
+            String path = getRequestPath(exchange);
+            if (vulnerable && path.contains("/api/users/admin/check")) {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
+            } else {
+                sendResponse(exchange, 200, "{\"Id\":1}", "application/json");
             }
         }
     }
@@ -6514,7 +6941,7 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
              if (vulnerable) {
-                sendResponse(exchange, 200, "Vulnerable", "text/plain");
+                sendResponse(exchange, 200, "password", "text/plain");
             } else {
                 sendResponse(exchange, 200, "Normal", "text/plain");
             }
@@ -6527,9 +6954,11 @@ public class ManualPocTestServer {
         public GobyRiskscannerSQLInjectionHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
-            if (vulnerable && query != null && query.contains("content=1'")) {
-                sendResponse(exchange, 500, "SQL syntax", "text/plain");
+            String path = getRequestPath(exchange);
+            String body = readRequestBody(exchange);
+            if (vulnerable && path != null && path.contains("/resource/list/")
+                    && body != null && body.contains("sleep(5)")) {
+                sendResponse(exchange, 200, "{\"success\":true}", "application/json");
             } else {
                 sendResponse(exchange, 200, "Normal", "text/plain");
             }
@@ -6542,8 +6971,11 @@ public class ManualPocTestServer {
         public GobyRuijieEWEBHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            String method = exchange.getRequestMethod();
             String body = readRequestBody(exchange);
-            if (vulnerable && body.contains("echo 123")) {
+            if (!vulnerable && "GET".equalsIgnoreCase(method)) {
+                sendResponse(exchange, 404, "File not found.", "text/plain");
+            } else if (vulnerable && body.contains("echo 123")) {
                 sendResponse(exchange, 200, "123", "text/plain");
             } else {
                 sendResponse(exchange, 200, "Normal", "text/plain");
@@ -6557,8 +6989,8 @@ public class ManualPocTestServer {
         public GobyRuijieRGUACLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String query = exchange.getRequestURI().getQuery();
-            if (vulnerable && query != null && query.contains("name=admin")) {
+            String query = getRequestQuery(exchange);
+            if (vulnerable && query != null && query.contains("user=admin")) {
                 sendResponse(exchange, 200, "password", "text/plain");
             } else {
                 sendResponse(exchange, 200, "Normal", "text/plain");
@@ -6572,8 +7004,13 @@ public class ManualPocTestServer {
         public GobyRuijieSmartwebPasswordLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             if (vulnerable) {
-                sendResponse(exchange, 200, "<![CDATA[   admin]]>", "text/xml");
+             String path = getRequestPath(exchange);
+             String auth = exchange.getRequestHeaders().getFirst("Authorization");
+             if (vulnerable && path != null && path.contains("/WEB_VMS/LEVEL15/")
+                     && auth != null && auth.contains("Basic Z3Vlc3Q6Z3Vlc3Q=")) {
+                sendResponse(exchange, 200, "Level was: LEVEL15", "text/plain");
+            } else if (vulnerable) {
+                sendResponse(exchange, 200, "<![CDATA[   admin]]>\n&lt;![CDATA[   admin]]&gt;", "text/xml");
             } else {
                 sendResponse(exchange, 200, "Normal", "text/plain");
             }
@@ -6601,9 +7038,9 @@ public class ManualPocTestServer {
         public GobyRuoYiDruidHandlerPoc353(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             if (vulnerable && path.contains("/druid/index.html")) {
-                sendResponse(exchange, 200, "Druid Stat Index", "text/html");
+                sendResponse(exchange, 200, "Druid Stat Index\nView JSON API", "text/html");
             } else {
                 sendResponse(exchange, 404, "Not Found", "text/plain");
             }
@@ -6616,11 +7053,11 @@ public class ManualPocTestServer {
         public GobySDWANSmartGatewayHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            // Simplified: Assume default password check passes if vulnerable
-            if (vulnerable) {
-                sendResponse(exchange, 200, "success", "text/plain");
+            String body = readRequestBody(exchange);
+            if (vulnerable && body.contains("username=admin") && body.contains("password=admin%40123")) {
+                sendResponse(exchange, 200, "{\"result\":true,\"userid\":\"1\"}", "application/json");
             } else {
-                sendResponse(exchange, 401, "Unauthorized", "text/plain");
+                sendResponse(exchange, 200, "{\"result\":false}", "application/json");
             }
         }
     }
@@ -6631,8 +7068,11 @@ public class ManualPocTestServer {
         public GobySamsungWLANRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+             String path = getRequestPath(exchange);
              String body = readRequestBody(exchange);
-             if (vulnerable && body.contains("command")) {
+             if (vulnerable && path != null && path.contains("/(download)/tmp/a.txt")) {
+                 sendResponse(exchange, 200, "root:x:0:0:root:/root:/bin/bash", "text/plain");
+             } else if (vulnerable && body.contains("command")) {
                  sendResponse(exchange, 200, "uid=0(root)", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
@@ -6676,7 +7116,7 @@ public class ManualPocTestServer {
         public GobySeeyonSetExtNoHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
+             String query = getRequestQuery(exchange);
              if (vulnerable && query != null && query.contains("md5")) {
                  sendResponse(exchange, 200, "c4ca4238a0b923820dcc509a6f75849b", "text/plain");
              } else {
@@ -6691,7 +7131,7 @@ public class ManualPocTestServer {
         public GobySeeyonTestJspHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
+             String query = getRequestQuery(exchange);
              if (vulnerable && query != null && query.contains("SELECT")) {
                  sendResponse(exchange, 200, "c4ca4238a0b923820dcc509a6f75849b", "text/plain");
              } else {
@@ -6720,9 +7160,13 @@ public class ManualPocTestServer {
         public GobyShiziyuCmsSQLHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             // Simplified check
-             if (vulnerable) {
-                 sendResponse(exchange, 200, "md5(1)", "text/plain"); // Or whatever it checks
+             String path = getRequestPath(exchange);
+             String query = getRequestQuery(exchange);
+             if (vulnerable && path != null && path.contains("/index.php")
+                     && query != null && query.contains("updatexml")) {
+                 sendResponse(exchange, 404,
+                         "XPATH syntax error: ~c4ca4238a0b923820dcc509a6f75849~",
+                         "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -6749,8 +7193,9 @@ public class ManualPocTestServer {
         public GobyShtermQiZhiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             if (vulnerable) {
-                 sendResponse(exchange, 200, "事件审计", "text/plain");
+             String path = getRequestPath(exchange);
+             if (vulnerable && path.contains("/audit/gui_detail_view.php")) {
+                 sendResponse(exchange, 200, "错误的id\n事件审计\n审计管理员", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -6807,11 +7252,15 @@ public class ManualPocTestServer {
         public GobySpiderFlowRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             if (vulnerable) {
-                 sendResponse(exchange, 200, "success", "text/plain");
-             } else {
-                 sendResponse(exchange, 200, "Normal", "text/plain");
-             }
+            String path = getRequestPath(exchange);
+            String method = exchange.getRequestMethod();
+            if (vulnerable && path.contains("/function/save") && "POST".equalsIgnoreCase(method)) {
+                sendResponse(exchange, 200, "{\"data\":\"exec success\"}", "application/json");
+            } else if (vulnerable) {
+                sendResponse(exchange, 403, "Forbidden", "text/plain");
+            } else {
+                sendResponse(exchange, 200, "Normal", "text/plain");
+            }
         }
     }
 
@@ -6822,12 +7271,15 @@ public class ManualPocTestServer {
         public GobySpringCloudFunctionSpELHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String header = exchange.getRequestHeaders().getFirst("spring.cloud.function.routing-expression");
-             if (vulnerable && header != null) {
-                 sendResponse(exchange, 500, "uid=0(root)", "text/plain"); // Usually errors with output
-             } else {
-                 sendResponse(exchange, 200, "Normal", "text/plain");
-             }
+            String path = getRequestPath(exchange);
+            String header = exchange.getRequestHeaders().getFirst("spring.cloud.function.routing-expression");
+            if (vulnerable && path.contains("/functionRouter") && header != null) {
+                sendResponse(exchange, 500,
+                        "{\"error\":\"Internal Server Error\",\"path\":\"/functionRouter\"}",
+                        "application/json");
+            } else {
+                sendResponse(exchange, 200, "Normal", "text/plain");
+            }
         }
     }
 
@@ -6837,12 +7289,21 @@ public class ManualPocTestServer {
         public GobySpringCloudGatewaySpELHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             // Complex flow, simplified check
-             if (vulnerable) {
-                 sendResponse(exchange, 201, "Created", "application/json");
-             } else {
-                 sendResponse(exchange, 404, "Not Found", "text/plain");
-             }
+            String path = getRequestPath(exchange);
+            String method = exchange.getRequestMethod();
+            if (vulnerable && path.contains("/actuator/gateway/routes") && "POST".equalsIgnoreCase(method)) {
+                exchange.getResponseHeaders().set("Location", "/actuator/gateway/routes/gobytest");
+                exchange.getResponseHeaders().set("X-Route-Id", "gobytest");
+                sendResponse(exchange, 201, "{\"id\":\"gobytest\"}", "application/json");
+            } else if (vulnerable && path.contains("/actuator/gateway/routes") && "DELETE".equalsIgnoreCase(method)) {
+                sendResponse(exchange, 200, "{\"result\":\"deleted\"}", "application/json");
+            } else if (vulnerable && path.contains("/actuator/gateway/routes") && "GET".equalsIgnoreCase(method)) {
+                sendResponse(exchange, 200, "{\"filters\":[{\"args\":{\"name\":\"Result\",\"value\":\"uid=0(root)\"}}]}", "application/json");
+            } else if (vulnerable && path.contains("/actuator/gateway/refresh") && "POST".equalsIgnoreCase(method)) {
+                sendResponse(exchange, 200, "{\"result\":\"refreshed\"}", "application/json");
+            } else {
+                sendResponse(exchange, 404, "Not Found", "text/plain");
+            }
         }
     }
 
@@ -6854,9 +7315,18 @@ public class ManualPocTestServer {
         public GobyStruts2Log4ShellHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
+             String rawPath = getRawRequestPath(exchange);
+             String ifModifiedSince = exchange.getRequestHeaders().getFirst("If-Modified-Since");
              String body = readRequestBody(exchange);
-             if (vulnerable && path.contains("transfer4.action") && body.contains("${jndi:")) {
+             if (vulnerable && (containsLog4ShellPayload(body)
+                     || containsLog4ShellPayload(path)
+                     || containsLog4ShellPayload(rawPath)
+                     || containsLog4ShellPayload(ifModifiedSince))) {
+                 recordMockDnsResolution(body);
+                 recordMockDnsResolution(path);
+                 recordMockDnsResolution(rawPath);
+                 recordMockDnsResolution(ifModifiedSince);
                  sendResponse(exchange, 200, "OK", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
@@ -6870,7 +7340,7 @@ public class ManualPocTestServer {
         public GobyTamronOSFileDownloadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
+             String query = getRequestQuery(exchange);
              if (vulnerable && query != null && query.contains("etc/passwd")) {
                  sendResponse(exchange, 200, "root:x:0:0", "text/plain");
              } else {
@@ -6885,7 +7355,7 @@ public class ManualPocTestServer {
         public GobyTamronOSRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
+             String query = getRequestQuery(exchange);
              if (vulnerable && query != null && query.contains("id")) {
                  sendResponse(exchange, 200, "uid=0(root)", "text/plain");
              } else {
@@ -6900,12 +7370,27 @@ public class ManualPocTestServer {
         public GobyTianwenFileUploadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("upload")) {
-                 sendResponse(exchange, 200, "success", "text/plain");
-             } else {
-                 sendResponse(exchange, 404, "Not Found", "text/plain");
-             }
+            String path = getRequestPath(exchange);
+            String body = readRequestBody(exchange);
+            if (!vulnerable) {
+                sendResponse(exchange, 404, "Not Found", "text/plain");
+                return;
+            }
+            if (path.contains("/HM/M_Main/uploadfile.aspx")) {
+                String marker = decodeBase64Marker(body);
+                if (marker != null) {
+                    uploadedMockBodies.put("/vuln/goby/tianwen-upload/HM/M_Main/test.aspx", marker);
+                    uploadedMockBodies.put("/HM/M_Main/test.aspx", marker);
+                }
+                sendResponse(exchange, 200, "UploadCallBack('/HM/M_Main/test.aspx')", "text/plain");
+            } else {
+                String uploaded = uploadedMockBodies.get(path);
+                if (uploaded != null) {
+                    sendResponse(exchange, 200, uploaded, "text/plain");
+                } else {
+                    sendResponse(exchange, 404, "Not Found", "text/plain");
+                }
+            }
         }
     }
 
@@ -6917,8 +7402,9 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
              String body = readRequestBody(exchange);
-             if (vulnerable && body.contains("ping_addr")) {
-                 sendResponse(exchange, 200, "uid=0(root)", "text/plain");
+             if (vulnerable && body.contains("action=ping_test")) {
+                 recordMockDnsResolution(body);
+                 sendResponse(exchange, 200, "Ping Result", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -6933,6 +7419,7 @@ public class ManualPocTestServer {
         public void handle(HttpExchange exchange) throws IOException {
              String body = readRequestBody(exchange);
              if (vulnerable && body.contains("${jndi:")) {
+                 recordMockDnsResolution(body);
                  sendResponse(exchange, 200, "OK", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
@@ -6946,12 +7433,30 @@ public class ManualPocTestServer {
         public GobyVENGDFileUploadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("upload.php")) {
-                 sendResponse(exchange, 200, "success", "text/plain");
-             } else {
-                 sendResponse(exchange, 200, "Normal", "text/plain");
-             }
+            String path = getRequestPath(exchange);
+            String body = readRequestBody(exchange);
+            if (!vulnerable) {
+                sendResponse(exchange, 200, "Normal", "text/plain");
+                return;
+            }
+            if (path.contains("/Upload/upload_file.php")) {
+                Matcher fileMatcher = Pattern.compile("filename=\"([^\"]+\\.php)\"").matcher(body);
+                Matcher markerMatcher = Pattern.compile("print\\s+\"([^\"]+)\"").matcher(body);
+                if (fileMatcher.find() && markerMatcher.find()) {
+                    String storedPath = normalizeUploadPath(path, "/Upload/test/" + fileMatcher.group(1));
+                    uploadedMockBodies.put(storedPath, markerMatcher.group(1));
+                }
+                sendResponse(exchange, 200, "success", "text/plain");
+            } else if (path.contains("/Upload/test/")) {
+                String uploaded = uploadedMockBodies.get(path);
+                if (uploaded != null) {
+                    sendResponse(exchange, 200, uploaded, "text/plain");
+                } else {
+                    sendResponse(exchange, 200, "Normal", "text/plain");
+                }
+            } else {
+                sendResponse(exchange, 200, "Normal", "text/plain");
+            }
         }
     }
 
@@ -6963,6 +7468,7 @@ public class ManualPocTestServer {
         public void handle(HttpExchange exchange) throws IOException {
              String lang = exchange.getRequestHeaders().getFirst("Accept-Language");
              if (vulnerable && lang != null && lang.contains("${jndi:")) {
+                 recordMockDnsResolution(lang);
                  sendResponse(exchange, 200, "OK", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
@@ -6992,6 +7498,7 @@ public class ManualPocTestServer {
         public void handle(HttpExchange exchange) throws IOException {
              String body = readRequestBody(exchange);
              if (vulnerable && body.contains("${jndi:")) {
+                 recordMockDnsResolution(body);
                  sendResponse(exchange, 200, "OK", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
@@ -7005,9 +7512,12 @@ public class ManualPocTestServer {
         public GobyVMwareWorkspaceONEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
-             if (vulnerable && query != null && query.contains("freemarker")) {
-                 sendResponse(exchange, 200, "uid=0(root)", "text/plain");
+             String query = getRequestQuery(exchange);
+             if (vulnerable && query != null
+                     && (query.contains("freemarker") || query.contains("%66%72%65%65%6d%61%72%6b%65%72"))) {
+                 sendResponse(exchange, 400,
+                         "Authorization context is not valid\nroot:x:0:0:root:/root:/bin/bash\nbin:x:2:2:bin:/bin:/usr/sbin/nologin",
+                         "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7020,8 +7530,15 @@ public class ManualPocTestServer {
         public GobyVMwarevCenterLog4ShellHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+             String path = getRequestPath(exchange);
              String ua = exchange.getRequestHeaders().getFirst("X-Forwarded-For");
+             if (vulnerable && path != null && path.contains("/ui/login")) {
+                 exchange.getResponseHeaders().add("Location", "/websso/SAML2/SSO/vsphere.local?SAMLRequest=");
+                 sendResponse(exchange, 302, "Redirect", "text/plain");
+                 return;
+             }
              if (vulnerable) {
+                 recordMockDnsResolution(ua);
                  sendResponse(exchange, 200, "OK", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
@@ -7035,9 +7552,11 @@ public class ManualPocTestServer {
         public GobyVMwarevCenterFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("eula")) {
-                 sendResponse(exchange, 200, "root:x:0:0", "text/plain");
+             String uri = exchange.getRequestURI().toString();
+             if (vulnerable && uri.contains("provider-logo?url=file:///etc/passwd")) {
+                 sendResponse(exchange, 200,
+                         "root:x:0:0:root:/root:/bin/bash\nbin:x:2:2:bin:/bin:/usr/sbin/nologin",
+                         "text/plain");
              } else {
                  sendResponse(exchange, 404, "Not Found", "text/plain");
              }
@@ -7065,7 +7584,7 @@ public class ManualPocTestServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
              if (vulnerable) {
-                 sendResponse(exchange, 200, "CARBON.showWarningDialog('???');alert(document.domain)", "text/html");
+                 sendResponse(exchange, 200, "CARBON.showWarningDialog('???');alert(document.domain)//???", "text/html");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7078,7 +7597,7 @@ public class ManualPocTestServer {
         public GobyWSO2FileUploadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("toolsAny")) {
                  sendResponse(exchange, 200, "Success", "text/plain");
              } else if (vulnerable && path.contains("vuln.jsp")) {
@@ -7096,9 +7615,11 @@ public class ManualPocTestServer {
         public GobyWeaverEOfficeUploadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("uploadify.php")) {
-                 sendResponse(exchange, 200, "attachmentID", "text/plain");
+             String path = getRequestPath(exchange);
+             if (vulnerable && path.contains("UploadFile.php")) {
+                 sendResponse(exchange, 200, "logo-eoffice.php", "text/plain");
+             } else if (vulnerable && path.contains("/images/logo/logo-eoffice.php")) {
+                 sendResponse(exchange, 200, "test", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7111,8 +7632,11 @@ public class ManualPocTestServer {
         public GobyWeaverOASQLiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
-             if (vulnerable && query != null && query.contains("loginid")) {
+             String path = getRequestPath(exchange);
+             String query = getRequestQuery(exchange);
+             if (vulnerable && path != null && path.contains("/js/hrm/getdata.jsp")) {
+                 sendResponse(exchange, 200, "script Sysadmin", "text/plain");
+             } else if (vulnerable && query != null && query.contains("loginid")) {
                  sendResponse(exchange, 200, "Sysadmin", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
@@ -7126,7 +7650,7 @@ public class ManualPocTestServer {
         public GobyWebSVNRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
+             String query = getRequestQuery(exchange);
              if (vulnerable && query != null && query.contains("search")) {
                  sendResponse(exchange, 200, "uid=0(root)", "text/plain");
              } else {
@@ -7143,7 +7667,7 @@ public class ManualPocTestServer {
         public void handle(HttpExchange exchange) throws IOException {
              String uri = exchange.getRequestURI().toString();
              if (vulnerable && uri.contains("consolejndi.portal")) {
-                 sendResponse(exchange, 200, "AdminServer", "text/plain");
+                 sendResponse(exchange, 200, "JNDI Binding Portal AdminServer", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7156,9 +7680,13 @@ public class ManualPocTestServer {
         public GobyWeblogicSSRFHandler2(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("SearchPublicRegistries.jsp")) {
-                 sendResponse(exchange, 200, "weblogic.uddi.client.structures.exception.XML_SoapException", "text/plain");
+             String uri = exchange.getRequestURI().toString();
+             if (vulnerable && uri.contains("SearchPublicRegistries.jsp") && uri.contains("operator=http")) {
+                 sendResponse(exchange, 200,
+                         "weblogic.uddi.client.structures.exception.XML_SoapException: but could not connect over HTTP to server",
+                         "text/plain");
+             } else if (vulnerable && uri.contains("SearchPublicRegistries.jsp")) {
+                 sendResponse(exchange, 200, "<html><title>Search</title><body>Search</body></html>", "text/html");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7171,9 +7699,9 @@ public class ManualPocTestServer {
         public GobyWPSimpleAjaxChatHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("sac-export.php")) {
-                 sendResponse(exchange, 200, "Chat Log", "text/plain");
+             String path = getRequestPath(exchange);
+             if (vulnerable && path.contains("sac-export.csv")) {
+                 sendResponse(exchange, 200, "Chat Log,User IP,User ID", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7186,7 +7714,7 @@ public class ManualPocTestServer {
         public GobyWPWPQAHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("asked-question")) {
                  sendResponse(exchange, 200, "id\":", "application/json");
              } else {
@@ -7201,7 +7729,7 @@ public class ManualPocTestServer {
         public GobyXXLJOBHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              String body = readRequestBody(exchange);
              if (vulnerable && path.contains("login") && body.contains("password=123456")) {
                  sendResponse(exchange, 200, "200", "application/json");
@@ -7218,12 +7746,12 @@ public class ManualPocTestServer {
         public GobyYAPIRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("api")) {
-                 sendResponse(exchange, 200, "uid=0(root)", "text/plain");
-             } else {
-                 sendResponse(exchange, 200, "Normal", "text/plain");
-             }
+            String path = getRequestPath(exchange);
+            if (vulnerable && path != null && path.contains("/api/user/reg")) {
+                sendResponse(exchange, 200, "{\"errcode\":400,\"errmsg\":\"邮箱不能为空\"}", "application/json");
+            } else {
+                sendResponse(exchange, 200, "{\"errmsg\":\"禁止注册，请联系管理员\"}", "application/json");
+            }
         }
     }
 
@@ -7233,12 +7761,12 @@ public class ManualPocTestServer {
         public GobyYCCMSXSSHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String uri = exchange.getRequestURI().toString();
-             if (vulnerable && uri.contains("script")) {
-                 sendResponse(exchange, 200, "alert(/xss/)", "text/html");
-             } else {
-                 sendResponse(exchange, 200, "Normal", "text/plain");
-             }
+            String uri = exchange.getRequestURI().toString();
+            if (vulnerable && uri.contains("script")) {
+                sendResponse(exchange, 200, "<font>alert(/xss/)</font>", "text/html");
+            } else {
+                sendResponse(exchange, 200, "Normal", "text/plain");
+            }
         }
     }
 
@@ -7248,7 +7776,7 @@ public class ManualPocTestServer {
         public GobyYinpengHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
+             String query = getRequestQuery(exchange);
              if (vulnerable && query != null && query.contains("fileName")) {
                  sendResponse(exchange, 200, "fonts", "text/plain");
              } else {
@@ -7263,7 +7791,7 @@ public class ManualPocTestServer {
         public GobyYonyouNCBshHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("BshServlet")) {
                  sendResponse(exchange, 200, "BeanShell", "text/plain");
              } else {
@@ -7280,13 +7808,67 @@ public class ManualPocTestServer {
         public GobyF5BigIpRceHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
+             String body = readRequestBody(exchange);
              if (vulnerable && path.contains("util/bash")) {
-                 sendResponse(exchange, 200, "commandResult", "application/json");
+                 if (body.contains("-c id")) {
+                     sendResponse(exchange, 200, "{\"commandResult\":\"uid=0(root) gid=0(root)\"}", "application/json");
+                 } else {
+                     sendResponse(exchange, 200, "{\"commandResult\":\"dHN4dHMK\"}", "application/json");
+                 }
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
         }
+    }
+
+    private String extractMd5FromQuery(String decodedQuery) {
+        if (decodedQuery == null) {
+            return null;
+        }
+        Matcher matcher = Pattern.compile("md5\\(([A-Za-z0-9]+)\\)", Pattern.CASE_INSENSITIVE).matcher(decodedQuery);
+        if (!matcher.find()) {
+            return null;
+        }
+        return md5Hex(matcher.group(1));
+    }
+
+    private String md5Hex(String value) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] digest = md.digest(value.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String decodeBase64Marker(String body) {
+        if (body == null || body.isEmpty()) {
+            return null;
+        }
+        Matcher matcher = Pattern.compile("FromBase64String\\(\"([A-Za-z0-9+/=]+)\"\\)").matcher(body);
+        if (!matcher.find()) {
+            return null;
+        }
+        try {
+            byte[] decoded = java.util.Base64.getDecoder().decode(matcher.group(1));
+            return new String(decoded, StandardCharsets.UTF_8);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private String normalizeUploadPath(String requestPath, String suffix) {
+        int idx = requestPath.indexOf("/Upload/");
+        if (idx >= 0) {
+            return requestPath.substring(0, idx) + suffix;
+        }
+        return suffix;
     }
 
     // POC 435: Fahuo100 SQLi
@@ -7295,12 +7877,14 @@ public class ManualPocTestServer {
         public GobyFahuo100Handler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
-             if (vulnerable && query != null && query.contains("M_id")) {
-                 sendResponse(exchange, 200, "OK", "text/plain");
-             } else {
-                 sendResponse(exchange, 404, "Not Found", "text/plain");
-             }
+            String query = getRequestQuery(exchange);
+            if (vulnerable && query != null && query.contains("M_id=") && query.contains("type=product")) {
+                sendResponse(exchange, 200,
+                        "Warning: mysql_fetch_array(): supplied argument is not a valid MySQL result resource",
+                        "text/plain");
+            } else {
+                sendResponse(exchange, 404, "Not Found", "text/plain");
+            }
         }
     }
 
@@ -7310,9 +7894,9 @@ public class ManualPocTestServer {
         public GobyFeishimeiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("confinfoaction")) {
-                 sendResponse(exchange, 200, "OK", "text/plain");
+                 sendResponse(exchange, 200, "Windows IP Configuration", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7325,8 +7909,8 @@ public class ManualPocTestServer {
         public GobyFirewallInfoLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.equals("/")) {
+             String path = getRequestPath(exchange);
+             if (vulnerable && (path.equals("/") || path.endsWith("/"))) {
                  sendResponse(exchange, 200, "var dkey_verify = Get_Verify_Info(hex_md5", "text/html");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/html");
@@ -7340,12 +7924,16 @@ public class ManualPocTestServer {
         public GobyFumengyunHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("AjaxMethod.ashx")) {
-                 sendResponse(exchange, 200, "OK", "text/plain");
-             } else {
-                 sendResponse(exchange, 200, "Normal", "text/plain");
-             }
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
+            if (vulnerable && path.contains("AjaxMethod.ashx") && query != null && path.contains("laifuyun-sqli")
+                    && query.contains("Name=Y")) {
+                sendResponse(exchange, 200, "OK", "text/plain");
+            } else if (vulnerable && path.contains("AjaxMethod.ashx") && query != null && query.contains("Name=Y%27")) {
+                sendResponse(exchange, 500, "SELECT * FROM employee WHERE Name='Y''", "text/plain");
+            } else {
+                sendResponse(exchange, 404, "Normal", "text/plain");
+            }
         }
     }
 
@@ -7355,7 +7943,7 @@ public class ManualPocTestServer {
         public GobyHuatiandongliHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("workFlowService")) {
                  sendResponse(exchange, 200, "user", "text/xml");
              } else {
@@ -7370,7 +7958,7 @@ public class ManualPocTestServer {
         public GobyLandrayOAFileReadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("custom.jsp")) {
                  sendResponse(exchange, 200, "root", "text/plain");
              } else {
@@ -7385,8 +7973,9 @@ public class ManualPocTestServer {
         public GobyMallgardHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("ajax_save")) {
+             String path = getRequestPath(exchange);
+             String query = getRequestQuery(exchange);
+             if (vulnerable && (path.contains("ajax_save") || (query != null && query.contains("a=ajax_save")))) {
                  sendResponse(exchange, 200, "message", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
@@ -7415,12 +8004,13 @@ public class ManualPocTestServer {
         public GobyQilaiOAMessageUrlHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("messageurl.aspx")) {
-                 sendResponse(exchange, 200, "OK", "text/plain");
-             } else {
-                 sendResponse(exchange, 200, "Normal", "text/plain");
-             }
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
+            if (vulnerable && path.contains("messageurl.aspx") && containsQilaiUserPayload(query)) {
+                sendResponse(exchange, 500, "messageurl", "text/plain");
+            } else {
+                sendResponse(exchange, 200, "Normal", "text/plain");
+            }
         }
     }
 
@@ -7430,12 +8020,28 @@ public class ManualPocTestServer {
         public GobyQilaiOATreelistHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("treelist.aspx")) {
-                 sendResponse(exchange, 200, "OK", "text/plain");
-             } else {
-                 sendResponse(exchange, 200, "Normal", "text/plain");
-             }
+            String path = getRequestPath(exchange);
+            String query = getRequestQuery(exchange);
+            if (vulnerable && path.contains("treelist.aspx") && containsQilaiUserPayload(query)) {
+                sendResponse(exchange, 500, "treelist", "text/plain");
+            } else {
+                sendResponse(exchange, 200, "Normal", "text/plain");
+            }
+        }
+    }
+
+    private boolean containsQilaiUserPayload(String query) {
+        if (query == null || query.isEmpty()) {
+            return false;
+        }
+        if (query.contains("user='") || query.contains("user=%27")) {
+            return true;
+        }
+        try {
+            String decoded = URLDecoder.decode(query, "UTF-8");
+            return decoded.contains("user='");
+        } catch (Exception ignored) {
+            return false;
         }
     }
 
@@ -7445,9 +8051,9 @@ public class ManualPocTestServer {
         public GobyRedFanOAHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("ioFileExport.aspx")) {
-                 sendResponse(exchange, 200, "OK", "text/plain");
+                 sendResponse(exchange, 200, "pwd=admin123", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7462,9 +8068,11 @@ public class ManualPocTestServer {
         public GobyTongdaOAUnauthHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("auth_mobi.php")) {
-                 sendResponse(exchange, 200, "OK", "text/plain");
+                 sendResponse(exchange, 200, "{\"status\":\"ok\"}", "application/json");
+             } else if (vulnerable && path.contains("/general/")) {
+                 sendResponse(exchange, 200, "test", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7477,9 +8085,9 @@ public class ManualPocTestServer {
         public GobyWangyixingyunHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("API")) {
-                 sendResponse(exchange, 200, "OK", "text/plain");
+                 sendResponse(exchange, 404, "order list", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7492,9 +8100,9 @@ public class ManualPocTestServer {
         public GobyWeaverEcologySQLiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
+             String query = getRequestQuery(exchange);
              if (vulnerable && query != null && query.contains("sql=")) {
-                 sendResponse(exchange, 200, "SQL Server", "text/plain");
+                 sendResponse(exchange, 200, "{\"data\":\"Microsoft SQL Server 2019\"}", "application/json");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7507,9 +8115,12 @@ public class ManualPocTestServer {
         public GobyYiyouHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
-             if (vulnerable && query != null && query.contains("moni_detail.do")) {
-                 sendResponse(exchange, 200, "root", "text/plain");
+             String path = getRequestPath(exchange);
+             String query = getRequestQuery(exchange);
+             String body = readRequestBody(exchange);
+             if (vulnerable && path.contains("/webadm/") && query != null && query.contains("moni_detail.do")
+                     && body != null && body.contains("whoami")) {
+                 sendResponse(exchange, 200, "user=root", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7522,7 +8133,7 @@ public class ManualPocTestServer {
         public GobyYuanchuangxianfengHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("admin_list.html")) {
                  sendResponse(exchange, 200, "admin", "text/html");
              } else {
@@ -7537,9 +8148,9 @@ public class ManualPocTestServer {
         public GobyYunshidaiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
+             String query = getRequestQuery(exchange);
              if (vulnerable && query != null && query.contains("loginName")) {
-                 sendResponse(exchange, 200, "OK", "text/plain");
+                 sendResponse(exchange, 500, "java.sql.SQLException", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7553,9 +8164,9 @@ public class ManualPocTestServer {
         public GobyZhihuipingtaiHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("FileDownLoad.aspx")) {
-                 sendResponse(exchange, 200, "OK", "text/plain");
+                 sendResponse(exchange, 200, "<configuration><appSettings></appSettings></configuration>", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7568,7 +8179,7 @@ public class ManualPocTestServer {
         public GobyZiguangHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("editPass.html")) {
                  sendResponse(exchange, 404, "c4ca4238a0b923820dcc509a6f75849", "text/plain");
              } else {
@@ -7583,7 +8194,7 @@ public class ManualPocTestServer {
         public GobyFanruanReportHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("ReportServer")) {
                  sendResponse(exchange, 200, "CDATA", "text/xml");
              } else {
@@ -7598,7 +8209,7 @@ public class ManualPocTestServer {
         public GobySeeyonA6DBInfoLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("createMysql.jsp")) {
                  sendResponse(exchange, 200, "root", "text/plain");
              } else {
@@ -7613,9 +8224,9 @@ public class ManualPocTestServer {
         public GobySeeyonA6UserInfoLeakHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("DownExcelBeanServlet")) {
-                 sendResponse(exchange, 200, "xls", "application/vnd.ms-excel");
+                 sendResponse(exchange, 200, "username,email\nadmin,admin@seeyon.local", "application/vnd.ms-excel");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7628,9 +8239,9 @@ public class ManualPocTestServer {
         public GobySeeyonWebmailFileDownloadHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String query = exchange.getRequestURI().getQuery();
+             String query = getRequestQuery(exchange);
              if (vulnerable && query != null && query.contains("doDownloadAtt")) {
-                 sendResponse(exchange, 200, "password", "text/plain");
+                 sendResponse(exchange, 200, "workflow=true\npassword=seeyon", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
              }
@@ -7643,7 +8254,7 @@ public class ManualPocTestServer {
         public GobyFengwangRouterHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
+             String path = getRequestPath(exchange);
              if (vulnerable && path.contains("usermanager.htm")) {
                  sendResponse(exchange, 200, "pwd", "text/plain");
              } else {
@@ -7658,8 +8269,11 @@ public class ManualPocTestServer {
         public GobyRuijieNBRRCEHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-             String path = exchange.getRequestURI().getPath();
-             if (vulnerable && path.contains("guestIsUp.php")) {
+             String method = exchange.getRequestMethod();
+             String path = getRequestPath(exchange);
+             if (!vulnerable && "GET".equalsIgnoreCase(method)) {
+                 sendResponse(exchange, 404, "File not found.", "text/plain");
+             } else if (vulnerable && path.contains("guestIsUp.php")) {
                  sendResponse(exchange, 200, "root", "text/plain");
              } else {
                  sendResponse(exchange, 200, "Normal", "text/plain");
@@ -7677,7 +8291,7 @@ public class ManualPocTestServer {
         public GobyZabbixSAMLFixHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
+            String path = getRequestPath(exchange);
             String cookie = exchange.getRequestHeaders().getFirst("Cookie");
             System.out.println("[DEBUG] GobyZabbixSAMLFixHandler: path=" + path + ", cookie=" + cookie);
             if (vulnerable && cookie != null && cookie.contains("zbx_session")) {
@@ -7726,8 +8340,8 @@ public class ManualPocTestServer {
         public GobyStruts2S2059FixHandler(boolean vulnerable) { this.vulnerable = vulnerable; }
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            String query = exchange.getRequestURI().getRawQuery();
+            String path = getRequestPath(exchange);
+            String query = getRawRequestQuery(exchange);
             System.out.println("[DEBUG] GobyStruts2S2059FixHandler: path=" + path + ", query=" + query);
             // POC 查询 /?id=goby%25{128*128}，期望响应包含 goby16384
             if (vulnerable && query != null && query.contains("goby")) {

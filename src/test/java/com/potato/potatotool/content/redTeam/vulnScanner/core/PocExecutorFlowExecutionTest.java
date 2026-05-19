@@ -3,6 +3,7 @@ package com.potato.potatotool.content.redTeam.vulnScanner.core;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanConfig;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanResult;
+import com.potato.potatotool.content.redTeam.vulnScanner.util.PayloadCombiner;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,6 +73,21 @@ public class PocExecutorFlowExecutionTest {
         server.createContext("/flow/shortcircuit", exchange -> {
             int count = shortCircuitCounter.incrementAndGet();
             write(exchange, 200, "shortcircuit-hit-" + count);
+        });
+        server.createContext("/goby-empty/trigger", exchange -> write(exchange, 200, "token=ok"));
+        server.createContext("/goby-empty/md5", exchange -> write(exchange, 200, "94a08da1fecbb6e8b46990538c7b50b2"));
+        server.createContext("/goby-empty/chain", exchange -> {
+            String seed = extractQueryValue(exchange.getRequestURI().getRawQuery(), "seed");
+            write(exchange, 200, md5(seed == null ? "" : seed));
+        });
+        server.createContext("/goby-empty/ok", exchange -> write(exchange, 200, "final-ok"));
+        server.createContext("/goby-empty/header-source", exchange -> {
+            exchange.getResponseHeaders().add("Set-Cookie", "check_code=abcd1234; Path=/");
+            write(exchange, 200, "header-source");
+        });
+        server.createContext("/goby-empty/header-consumer", exchange -> {
+            String cookie = exchange.getRequestHeaders().getFirst("Cookie");
+            write(exchange, "check_code=abcd1234".equals(cookie) ? 200 : 401, cookie == null ? "missing" : cookie);
         });
 
         server.start();
@@ -201,6 +219,26 @@ public class PocExecutorFlowExecutionTest {
     }
 
     @Test
+    @DisplayName("pitchfork 不应被单值 helper 变量压缩组合数")
+    void testPitchforkCombinationWithSingleValueHelpers() {
+        Map<String, java.util.List<String>> variables = new HashMap<>();
+        variables.put("username", Arrays.asList("admin", "admin"));
+        variables.put("password", Arrays.asList("prom-operator", "admin"));
+        variables.put("Hostname", Collections.singletonList("127.0.0.1"));
+        variables.put("BaseURL", Collections.singletonList(baseUrl));
+
+        java.util.List<Map<String, String>> combinations = PayloadCombiner.generatePitchforkCombinations(variables);
+
+        assertEquals(2, combinations.size(), "单值 helper 变量不应把 pitchfork 组合数压成 1");
+        assertEquals("admin", combinations.get(0).get("username"));
+        assertEquals("prom-operator", combinations.get(0).get("password"));
+        assertEquals("admin", combinations.get(1).get("username"));
+        assertEquals("admin", combinations.get(1).get("password"));
+        assertEquals("127.0.0.1", combinations.get(0).get("Hostname"));
+        assertEquals("127.0.0.1", combinations.get(1).get("Hostname"));
+    }
+
+    @Test
     @DisplayName("batteringram 组合应可执行并命中")
     void testBatteringramCombinationExecution() throws Exception {
         PocObj.Poc poc = new PocObj.Poc();
@@ -329,6 +367,108 @@ public class PocExecutorFlowExecutionTest {
         assertEquals("flow", result.getDetails().get("flowExecutionMode"));
     }
 
+    @Test
+    @DisplayName("Goby 空 checks 触发步骤应继续执行后续步骤")
+    void testGobyEmptyChecksStepShouldContinue() throws Exception {
+        PocObj.Poc poc = new PocObj.Poc();
+        poc.setId("goby-empty-checks-step-test");
+        poc.setName("goby-empty-checks-step-test");
+        poc.setProtocol("http");
+        poc.setStepsCondition(PocObj.MatchersCondition.AND);
+
+        PocObj.PocStep trigger = new PocObj.PocStep();
+        trigger.setStepId("http_1");
+        trigger.setMethod("GET");
+        trigger.setPath("/goby-empty/trigger");
+        PocObj.Matcher tokenExtractor = regexExtractor("token", "token=([a-z]+)");
+        tokenExtractor.setGroup(-1);
+        trigger.setExtractors(Collections.singletonList(tokenExtractor));
+
+        PocObj.PocStep verify = step("http_2", "/goby-empty/{{token}}", statusMatcher(200));
+        poc.setVerifySteps(Arrays.asList(trigger, verify));
+
+        PocExecutor executor = new PocExecutor(new ScanConfig());
+        ScanResult result = executor.execute(baseUrl, poc);
+
+        assertTrue(result.isVulnerable(), "空 checks 的中间请求应作为触发步骤继续执行");
+    }
+
+    @Test
+    @DisplayName("仅在 matcher 中引用的 Goby 变量不应被裁剪")
+    void testGobyVariableUsedOnlyInMatcherShouldBePreserved() throws Exception {
+        PocObj.Poc poc = new PocObj.Poc();
+        poc.setId("goby-matcher-variable-preserve-test");
+        poc.setName("goby-matcher-variable-preserve-test");
+        poc.setProtocol("http");
+        poc.setStepsCondition(PocObj.MatchersCondition.AND);
+
+        Map<String, java.util.List<String>> variables = new HashMap<>();
+        variables.put("seed", Collections.singletonList("token"));
+        variables.put("seedMd5", Collections.singletonList("@@md5(seed)"));
+        poc.setVariables(variables);
+
+        PocObj.PocStep step = step("http_1", "/goby-empty/md5", wordMatcher("{{{seedMd5}}}"));
+        poc.setVerifySteps(Collections.singletonList(step));
+
+        PocExecutor executor = new PocExecutor(new ScanConfig());
+        ScanResult result = executor.execute(baseUrl, poc);
+
+        assertTrue(result.isVulnerable(), "仅在 matcher 中引用的 Goby 变量也应保留并完成运行时计算");
+    }
+
+    @Test
+    @DisplayName("Goby 随机变量应先物化再参与哈希函数")
+    void testGobyRandomDependencyShouldResolveBeforeHash() throws Exception {
+        PocObj.Poc poc = new PocObj.Poc();
+        poc.setId("goby-random-hash-chain-test");
+        poc.setName("goby-random-hash-chain-test");
+        poc.setProtocol("http");
+        poc.setStepsCondition(PocObj.MatchersCondition.AND);
+
+        Map<String, java.util.List<String>> variables = new HashMap<>();
+        variables.put("seed", Collections.singletonList("@@random(8)"));
+        variables.put("seedMd5", Collections.singletonList("@@md5(seed)"));
+        poc.setVariables(variables);
+
+        PocObj.PocStep step = step("http_1", "/goby-empty/chain?seed={{{seed}}}", wordMatcher("{{{seedMd5}}}"));
+        poc.setVerifySteps(Collections.singletonList(step));
+
+        PocExecutor executor = new PocExecutor(new ScanConfig());
+        ScanResult result = executor.execute(baseUrl, poc);
+
+        assertTrue(result.isVulnerable(), "Goby 应先生成随机变量，再对其结果执行哈希");
+    }
+
+    @Test
+    @DisplayName("Goby request.set_variable 应可在下一请求前读取上一响应头")
+    void testGobyRequestSetVariableCanReadLastHeaderBeforeNextRequest() throws Exception {
+        PocObj.Poc poc = new PocObj.Poc();
+        poc.setId("goby-lastheader-request-variable-test");
+        poc.setName("goby-lastheader-request-variable-test");
+        poc.setProtocol("http");
+        poc.setStepsCondition(PocObj.MatchersCondition.AND);
+
+        PocObj.PocStep first = step("http_1", "/goby-empty/header-source", statusMatcher(200));
+
+        PocObj.PocStep second = new PocObj.PocStep();
+        second.setStepId("http_2");
+        second.setMethod("GET");
+        second.setPath("/goby-empty/header-consumer");
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Cookie", "check_code={{{check_code}}}");
+        second.setHeaders(headers);
+        second.setRequestVariables(Collections.singletonList("check_code|lastheader|regex|check_code=(.*?);"));
+        second.setMatchers(Collections.singletonList(statusMatcher(200)));
+        second.setMatchersCondition(PocObj.MatchersCondition.AND);
+
+        poc.setVerifySteps(Arrays.asList(first, second));
+
+        PocExecutor executor = new PocExecutor(new ScanConfig());
+        ScanResult result = executor.execute(baseUrl, poc);
+
+        assertTrue(result.isVulnerable(), "上一响应头提取出的变量应在下一请求发送前完成绑定");
+    }
+
     private static PocObj.PocStep step(String stepId, String path, PocObj.Matcher matcher) {
         PocObj.PocStep step = new PocObj.PocStep();
         step.setStepId(stepId);
@@ -369,6 +509,34 @@ public class PocExecutorFlowExecutionTest {
         exchange.sendResponseHeaders(code, bytes.length);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(bytes);
+        }
+    }
+
+    private static String extractQueryValue(String rawQuery, String key) throws IOException {
+        if (rawQuery == null || rawQuery.isEmpty() || key == null || key.isEmpty()) {
+            return null;
+        }
+        String[] parts = rawQuery.split("&");
+        for (String part : parts) {
+            String[] pair = part.split("=", 2);
+            if (pair.length == 2 && key.equals(pair[0])) {
+                return URLDecoder.decode(pair[1], "UTF-8");
+            }
+        }
+        return null;
+    }
+
+    private static String md5(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] hashed = digest.digest((input == null ? "" : input).getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashed) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new IllegalStateException("无法计算 MD5", e);
         }
     }
 }

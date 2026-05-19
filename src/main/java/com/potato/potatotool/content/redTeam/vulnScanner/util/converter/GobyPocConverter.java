@@ -403,9 +403,8 @@ public class GobyPocConverter extends AbstractPocConverter<GobyJsonObj.PocJson> 
                 step.setDataType(request.getData_type());
             }
             
-            // 处理Request中的Set_variable提取器
             if (request.getSet_variable() != null && !request.getSet_variable().isEmpty()) {
-                processExtractors(request.getSet_variable(), step, poc);
+                step.setRequestVariables(new ArrayList<>(request.getSet_variable()));
             }
         }
         
@@ -676,7 +675,15 @@ public class GobyPocConverter extends AbstractPocConverter<GobyJsonObj.PocJson> 
         if (parts.length == 2 && (dataSource.equals("lastbody") || dataSource.equals("body") || 
             dataSource.equals("lastraw") || dataSource.equals("header") || dataSource.equals("lastheader"))) {
             operation = "regex";
-            value = ".*"; // 匹配所有内容
+            value = "(?s).*"; // 匹配所有内容
+        }
+
+        // Goby 的 body|text/lastbody|text 表示复制响应片段作为变量，不是关键词匹配器。
+        if ("text".equals(operation) && isResponseDataSource(dataSource)) {
+            operation = "regex";
+            if (value.isEmpty()) {
+                value = "(?s).*";
+            }
         }
         
         // 特殊情况处理：随机字符串生成
@@ -758,9 +765,12 @@ public class GobyPocConverter extends AbstractPocConverter<GobyJsonObj.PocJson> 
         
         // 处理操作类型
         setExtractorOperationType(extractor, operation);
+        if (extractor.getType() == MatcherType.REGEX) {
+            extractor.setGroup(-1);
+        }
         
         if(value.equals("") && operation.equals("regex")) {
-            value = ".*";
+            value = "(?s).*";
         }
         // 处理匹配值
         if (!value.isEmpty()) {
@@ -826,6 +836,14 @@ public class GobyPocConverter extends AbstractPocConverter<GobyJsonObj.PocJson> 
             default:
                 extractor.setPart("body"); // 默认使用body
         }
+    }
+
+    private boolean isResponseDataSource(String dataSource) {
+        return "lastbody".equals(dataSource)
+                || "body".equals(dataSource)
+                || "lastraw".equals(dataSource)
+                || "header".equals(dataSource)
+                || "lastheader".equals(dataSource);
     }
     
     /**

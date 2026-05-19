@@ -81,6 +81,7 @@ public class DnsLogService {
     
     // 缓存生成的DNSLog信息，避免重复请求
     private static final ConcurrentHashMap<String, DnsLogInfo> DNSLOG_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Boolean> MOCK_DNSLOG_RECORDS = new ConcurrentHashMap<>();
     
     // Mock support for testing
     private static boolean mockMode = false;
@@ -162,6 +163,10 @@ public class DnsLogService {
      */
     public static String generateDnsLogDomain() {
         try {
+            if (mockMode) {
+                return generateMockDomain();
+            }
+
             // 快速失败检查：如果 dnslog.cn 连续失败多次，直接返回占位符
             if (dnslogCnFailCount.get() >= MAX_FAIL_COUNT) {
                 long now = System.currentTimeMillis();
@@ -390,6 +395,11 @@ public class DnsLogService {
         return uniqueId + ".dnslog.example.com";
     }
 
+    private static String generateMockDomain() {
+        String uniqueId = StrUtils.generateRandomString(12, 12).toLowerCase();
+        return uniqueId + ".dnslog.mock";
+    }
+
     /**
      * 判断是否为 fallback 占位域名
      */
@@ -415,6 +425,9 @@ public class DnsLogService {
      */
     public static String queryDnsLogRecords(String domain) {
         if (mockMode) {
+            if (domain == null || domain.trim().isEmpty() || !MOCK_DNSLOG_RECORDS.containsKey(normalizeDomain(domain))) {
+                return null;
+            }
             long now = System.currentTimeMillis() / 1000;
             return String.format("[{\"domain\":\"%s\",\"ip\":\"127.0.0.1\",\"time\":\"%d\"}]", domain, now);
         }
@@ -531,9 +544,31 @@ public class DnsLogService {
     public static synchronized void clearCache() {
         dnslogCnInfo = null;
         DNSLOG_CACHE.clear();
+        MOCK_DNSLOG_RECORDS.clear();
         dnslogCnFailCount.set(0);
         lastFailTime = 0;
         System.out.println("DNSLog缓存已清除");
+    }
+
+    public static void recordMockResolution(String domain) {
+        if (domain == null || domain.trim().isEmpty()) {
+            return;
+        }
+        String normalized = normalizeDomain(domain);
+        if (normalized.startsWith("http://")) {
+            normalized = normalized.substring("http://".length());
+        } else if (normalized.startsWith("https://")) {
+            normalized = normalized.substring("https://".length());
+        }
+        int slash = normalized.indexOf('/');
+        if (slash >= 0) {
+            normalized = normalized.substring(0, slash);
+        }
+        int question = normalized.indexOf('?');
+        if (question >= 0) {
+            normalized = normalized.substring(0, question);
+        }
+        MOCK_DNSLOG_RECORDS.put(normalized, Boolean.TRUE);
     }
     
     /**

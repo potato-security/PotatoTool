@@ -186,6 +186,7 @@ public class PocObj {
         private String username;            // 用户名
         private String password;            // 密码
         private String token;               // 认证令牌
+        private List<String> requestVariables = new ArrayList<>(); // 请求前变量定义（Goby request.set_variable）
         
         // 匹配规则
         private List<Matcher> matchers = new ArrayList<>();    // 匹配器
@@ -204,6 +205,7 @@ public class PocObj {
     @EqualsAndHashCode(callSuper = true)
     public static class TcpStep extends PocStep {
         private String host;                // 主机地址
+        private List<String> hosts = new ArrayList<>(); // 主机候选列表
         private String port;                // 端口
         private List<Input> inputs = new ArrayList<>(); // 输入列表
     }

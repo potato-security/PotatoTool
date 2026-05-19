@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @author Potato
@@ -180,6 +181,7 @@ public class PocsuitePocConverter implements IPocConverter<PocsuiteJsonObj.PocJs
         }
         
         if (!verifySteps.isEmpty()) {
+            injectCrossStepPlaceholderExtractors(verifySteps);
             poc.setVerifySteps(verifySteps);
         }
     }
@@ -209,6 +211,7 @@ public class PocsuitePocConverter implements IPocConverter<PocsuiteJsonObj.PocJs
         }
         
         if (!exploitSteps.isEmpty()) {
+            injectCrossStepPlaceholderExtractors(exploitSteps);
             poc.setExploitSteps(exploitSteps);
         }
     }
@@ -257,7 +260,7 @@ public class PocsuitePocConverter implements IPocConverter<PocsuiteJsonObj.PocJs
         if (step.getHeaders() != null && !step.getHeaders().isEmpty()) {
             pocStep.setHeaders(step.getHeaders());
         }
-        
+
         // 处理 Pocsuite 特有的 necessary 字段
         // necessary 字段描述执行该步骤的前置条件（如：需要登录、需要特定权限等）
         if (step.getNecessary() != null && !step.getNecessary().isEmpty()) {
@@ -282,6 +285,110 @@ public class PocsuitePocConverter implements IPocConverter<PocsuiteJsonObj.PocJs
         convertOutput(step.getResult(), pocStep);
         
         return pocStep;
+    }
+
+    private void injectCrossStepPlaceholderExtractors(List<PocObj.PocStep> steps) {
+        if (steps == null || steps.size() < 2) {
+            return;
+        }
+
+        for (int currentIndex = 1; currentIndex < steps.size(); currentIndex++) {
+            PocObj.PocStep currentStep = steps.get(currentIndex);
+            if (currentStep == null) {
+                continue;
+            }
+
+            java.util.LinkedHashSet<String> placeholders = new java.util.LinkedHashSet<>();
+            collectStepRequestPlaceholders(currentStep, placeholders);
+            if (placeholders.isEmpty()) {
+                continue;
+            }
+
+            for (String placeholder : placeholders) {
+                if (hasExtractorInPreviousSteps(steps, currentIndex, placeholder)) {
+                    continue;
+                }
+                injectPlaceholderExtractor(steps.get(currentIndex - 1), placeholder);
+            }
+        }
+    }
+
+    private void collectStepRequestPlaceholders(PocObj.PocStep step, java.util.Set<String> output) {
+        if (step == null || output == null) {
+            return;
+        }
+        collectDoubleBracePlaceholders(step.getPath(), output);
+        collectDoubleBracePlaceholders(step.getBody(), output);
+        if (step.getHeaders() != null) {
+            for (String headerValue : step.getHeaders().values()) {
+                collectDoubleBracePlaceholders(headerValue, output);
+            }
+        }
+        if (step.getRaw() != null) {
+            for (String rawRequest : step.getRaw()) {
+                collectDoubleBracePlaceholders(rawRequest, output);
+            }
+        }
+    }
+
+    private boolean hasExtractorInPreviousSteps(List<PocObj.PocStep> steps, int currentIndex, String name) {
+        if (steps == null || currentIndex <= 0) {
+            return false;
+        }
+        for (int i = 0; i < currentIndex; i++) {
+            PocObj.PocStep previousStep = steps.get(i);
+            if (previousStep != null && hasExtractor(previousStep.getExtractors(), name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void injectPlaceholderExtractor(PocObj.PocStep pocStep, String placeholder) {
+        if (pocStep == null || placeholder == null || placeholder.isEmpty()) {
+            return;
+        }
+        List<Matcher> extractors = pocStep.getExtractors();
+        if (extractors == null) {
+            extractors = new ArrayList<>();
+            pocStep.setExtractors(extractors);
+        }
+        if (hasExtractor(extractors, placeholder)) {
+            return;
+        }
+
+        Matcher extractor = new Matcher();
+        extractor.setType(MatcherType.REGEX);
+        extractor.setPart("body");
+        extractor.setName(placeholder);
+        List<String> values = new ArrayList<>();
+        values.add("\"" + Pattern.quote(placeholder) + "\"\\s*:\\s*\"([^\"]+)\"");
+        extractor.setValues(values);
+        extractor.setGroup(1);
+        extractor.setInternal("true");
+        extractors.add(extractor);
+    }
+
+    private void collectDoubleBracePlaceholders(String input, java.util.Set<String> output) {
+        if (input == null || input.isEmpty() || output == null) {
+            return;
+        }
+        java.util.regex.Matcher matcher = Pattern.compile("\\{\\{\\s*([A-Za-z_][A-Za-z0-9_-]*)\\s*\\}\\}").matcher(input);
+        while (matcher.find()) {
+            output.add(matcher.group(1));
+        }
+    }
+
+    private boolean hasExtractor(List<Matcher> extractors, String name) {
+        if (extractors == null || extractors.isEmpty() || name == null || name.isEmpty()) {
+            return false;
+        }
+        for (Matcher extractor : extractors) {
+            if (extractor != null && name.equals(extractor.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
@@ -385,6 +492,9 @@ public class PocsuitePocConverter implements IPocConverter<PocsuiteJsonObj.PocJs
         
         Map<String, Object> chineseOutput = new HashMap<>();
         List<Matcher> extractors = new ArrayList<>();
+        if (pocStep.getExtractors() != null && !pocStep.getExtractors().isEmpty()) {
+            extractors.addAll(pocStep.getExtractors());
+        }
         int[] extractorIndex = {1}; // 使用数组以便在递归中共享
         
         // 递归处理嵌套结构
@@ -400,9 +510,7 @@ public class PocsuitePocConverter implements IPocConverter<PocsuiteJsonObj.PocJs
         
         // 设置转换后的输出和提取器
         pocStep.setOutput(chineseOutput);
-        if (!extractors.isEmpty()) {
-            pocStep.setExtractors(extractors);
-        }
+        pocStep.setExtractors(extractors);
     }
     
     /**

@@ -14,6 +14,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanState;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.PocDatabaseInitializer;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.PocDatabaseManager;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.VulnScanDatabase;
+import com.potato.potatotool.content.redTeam.vulnScanner.util.InputTypeDetector;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.ScanLogger;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -218,7 +219,9 @@ public class VulnScanService {
     public void setTargets(List<String> targets) {
         targetList.clear();
         if (targets != null) {
-            targetList.addAll(targets);
+            for (String target : targets) {
+                addNormalizedTarget(target);
+            }
         }
     }
 
@@ -226,19 +229,26 @@ public class VulnScanService {
      * 添加目标
      */
     public void addTarget(String target) {
-        if (target != null && !target.trim().isEmpty()) {
-            targetList.add(normalizeTarget(target.trim()));
-        }
+        addNormalizedTarget(target);
     }
     
     /**
      * 规范化目标URL
      */
     private String normalizeTarget(String target) {
-        if (!target.startsWith("http://") && !target.startsWith("https://")) {
-            return "http://" + target;
+        PocObj.InputType inputType = InputTypeDetector.detect(target);
+        return InputTypeDetector.normalizeTarget(target, inputType);
+    }
+
+    private void addNormalizedTarget(String target) {
+        if (target == null) {
+            return;
         }
-        return target;
+        String trimmed = target.trim();
+        if (trimmed.isEmpty()) {
+            return;
+        }
+        targetList.add(normalizeTarget(trimmed));
     }
     
     /**
@@ -332,6 +342,7 @@ public class VulnScanService {
         target.setEnableDeduplication(source.isEnableDeduplication());
         target.setEnableResponseCache(source.isEnableResponseCache());
         target.setResponseCacheTtlMs(source.getResponseCacheTtlMs());
+        target.setRequestsPerSecond(source.getRequestsPerSecond());
         target.setEnableClustering(source.isEnableClustering());
         target.setLocalTargetPath(source.getLocalTargetPath());
         target.setTargetProtocol(source.getTargetProtocol());
@@ -413,6 +424,7 @@ public class VulnScanService {
         scanConfig.setProxy(uiConfig.getProxy());
         scanConfig.setEnableClustering(uiConfig.isEnableClustering());
         scanConfig.setEnableResponseCache(uiConfig.isEnableResponseCache());
+        scanConfig.setRequestsPerSecond(uiConfig.getRequestsPerSecond());
         scanConfig.setRetries(uiConfig.getRetries());
         scanConfig.setEnableHeadless(uiConfig.isEnableHeadless());
         scanConfig.setEnableCode(uiConfig.isEnableCode());

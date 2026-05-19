@@ -414,10 +414,21 @@ public class HttpLogService {
         TestResult result = new TestResult(Platform.INTERACTSH);
         long startTime = System.currentTimeMillis();
         try {
-            String testUrl = generateInteractshUrl();
-            result.url = testUrl;
-            result.success = testUrl != null && !testUrl.contains("example.com");
-            result.message = result.success ? "连接成功，服务器: " + interactshServer : "生成URL失败";
+            InteractshClient client = getInteractshClient();
+            String interactionUrl;
+            if (client.isRegistered()) {
+                interactionUrl = client.getInteractionUrl();
+            } else {
+                interactionUrl = client.register();
+            }
+
+            if (interactionUrl != null && !interactionUrl.startsWith("http")) {
+                interactionUrl = "http://" + interactionUrl;
+            }
+
+            result.url = interactionUrl;
+            result.success = client.isRegistered() && interactionUrl != null && !interactionUrl.trim().isEmpty();
+            result.message = result.success ? "连接成功，服务器: " + interactshServer : "注册失败";
         } catch (Exception e) {
             result.success = false;
             result.message = "连接失败: " + e.getMessage();

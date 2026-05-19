@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -74,5 +75,28 @@ public class HeadlessCompatibilityTest {
         assertTrue(message.contains("Chrome/Chromium 浏览器（内置 DevTools 连接）"));
         assertTrue(message.contains("策略:"));
         assertTrue(message.contains("浏览器运行时可用"));
+    }
+
+    @Test
+    public void testCheckCompatibilityWithoutConfiguredPathShouldReturnNotFound() {
+        HeadlessHandler.HeadlessCompatibilityResult result = HeadlessHandler.checkCompatibility((String) null);
+
+        assertNotNull(result);
+        assertEquals(HeadlessHandler.CompatibilityStatus.NOT_FOUND, result.getStatus());
+        assertNotNull(result.getMessage());
+        assertTrue(result.getMessage().contains("未检测到 Chrome/Chromium 浏览器"));
+    }
+
+    @Test
+    public void testCheckCompatibilityWithInvalidConfiguredBrowserPathShouldReturnNotFound() throws Exception {
+        File tempFile = File.createTempFile("invalid-browser-runtime", ".txt");
+        tempFile.deleteOnExit();
+        try (FileWriter writer = new FileWriter(tempFile)) {
+            writer.write("not-a-browser-runtime");
+        }
+
+        HeadlessHandler.HeadlessCompatibilityResult compatibility = HeadlessHandler.checkCompatibility(tempFile.getAbsolutePath());
+        assertEquals(HeadlessHandler.CompatibilityStatus.NOT_FOUND, compatibility.getStatus());
+        assertTrue(compatibility.getMessage().contains("浏览器版本解析失败"));
     }
 }

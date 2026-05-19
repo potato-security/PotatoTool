@@ -83,6 +83,7 @@ public class ScanEngineResumeAndServiceIsolationTest {
         first.setProxy("http://127.0.0.1:8080");
         first.setEnableClustering(false);
         first.setEnableResponseCache(false);
+        first.setRequestsPerSecond(3);
         first.setRetries(4);
         first.setEnableHeadless(true);
         first.setEnableCode(true);
@@ -98,6 +99,7 @@ public class ScanEngineResumeAndServiceIsolationTest {
         second.setProxy(null);
         second.setEnableClustering(true);
         second.setEnableResponseCache(true);
+        second.setRequestsPerSecond(0);
         second.setRetries(1);
         second.setEnableHeadless(false);
         second.setEnableCode(false);
@@ -110,6 +112,7 @@ public class ScanEngineResumeAndServiceIsolationTest {
         assertEquals("http://127.0.0.1:8080", capturedConfig.getProxy());
         assertFalse(capturedConfig.isEnableClustering());
         assertFalse(capturedConfig.isEnableResponseCache());
+        assertEquals(3, capturedConfig.getRequestsPerSecond());
         assertEquals(4, capturedConfig.getRetries());
         assertTrue(capturedConfig.isEnableHeadless());
         assertTrue(capturedConfig.isEnableCode());

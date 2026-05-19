@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -102,6 +103,26 @@ public class GobyPocConverterTest {
         PocObj.PocStep step1 = poc.getVerifySteps().get(0);
         assertNotNull(step1.getExtractors());
         assertFalse(step1.getExtractors().isEmpty());
+    }
+
+    @Test
+    @DisplayName("测试 Goby request.set_variable 保留为请求前变量定义")
+    public void testRequestSetVariablePreservedAsRequestVariables() throws Exception {
+        String pocPath = "src/main/resources/poc/gobyPoc/ZhongXinJingDun_Default_administrator_password.json";
+        String jsonContent = new String(Files.readAllBytes(Paths.get(pocPath)));
+
+        GobyJsonObj.PocJson gobyPoc = gson.fromJson(jsonContent, GobyJsonObj.PocJson.class);
+        PocObj.Poc poc = converter.convert(gobyPoc);
+
+        assertNotNull(poc);
+        assertTrue(poc.getVerifySteps().size() >= 2);
+
+        PocObj.PocStep firstStep = poc.getVerifySteps().get(0);
+        PocObj.PocStep secondStep = poc.getVerifySteps().get(1);
+
+        assertTrue(firstStep.getRequestVariables().isEmpty(), "第一步 request.set_variable 为空时不应生成请求前变量");
+        assertEquals(1, secondStep.getRequestVariables().size(), "第二步 request.set_variable 应保留在请求前变量定义中");
+        assertEquals("check_code|lastheader|regex|check_code=(.*?);", secondStep.getRequestVariables().get(0));
     }
     
     @Test
@@ -303,6 +324,87 @@ public class GobyPocConverterTest {
         PocObj.Poc poc2 = converter.convert(gobyPoc2);
         assertEquals("Update now", poc2.getRecommendation());
     }
+
+    @Test
+    @DisplayName("测试lastbody text提取器转换为正则提取")
+    public void testLastBodyTextExtractorConversion() {
+        String jsonContent = "{"
+                + "\"Name\":\"LastBody Text Extractor\","
+                + "\"ScanSteps\":[{"
+                + "\"Request\":{\"method\":\"GET\",\"uri\":\"/\"},"
+                + "\"SetVariable\":[\"dnstest|lastbody|text|\"],"
+                + "\"ResponseTest\":{\"type\":\"item\",\"variable\":\"$code\",\"operation\":\"==\",\"value\":\"200\"}"
+                + "}],"
+                + "\"ExploitSteps\":[]"
+                + "}";
+
+        GobyJsonObj.PocJson gobyPoc = gson.fromJson(jsonContent, GobyJsonObj.PocJson.class);
+        PocObj.Poc poc = converter.convert(gobyPoc);
+
+        assertNotNull(poc);
+        assertNotNull(poc.getVerifySteps());
+        assertFalse(poc.getVerifySteps().isEmpty());
+        assertNotNull(poc.getVerifySteps().get(0).getExtractors());
+        assertFalse(poc.getVerifySteps().get(0).getExtractors().isEmpty());
+
+        PocObj.Matcher extractor = poc.getVerifySteps().get(0).getExtractors().get(0);
+        assertEquals("dnstest", extractor.getName());
+        assertEquals(PocObj.MatcherType.REGEX, extractor.getType());
+        assertEquals(PocObj.OperationType.REGEX_MATCH, extractor.getOperation());
+        assertEquals("body", extractor.getPart());
+        assertEquals(-1, extractor.getGroup());
+        assertEquals("(?s).*", extractor.getValues().get(0));
+    }
+
+    @Test
+    @DisplayName("测试regex提取器默认提取首个分组")
+    public void testRegexExtractorUsesFirstCaptureGroupByDefault() {
+        String jsonContent = "{"
+                + "\"Name\":\"Regex Extractor Group\","
+                + "\"ScanSteps\":[{"
+                + "\"Request\":{\"method\":\"GET\",\"uri\":\"/users/sign_in\"},"
+                + "\"SetVariable\":[\"X-CSRF-Token|lastbody|regex|name=\\\"csrf-token\\\" content=\\\"([a-z0-9_-]+)\\\"\"],"
+                + "\"ResponseTest\":{\"type\":\"item\",\"variable\":\"$code\",\"operation\":\"==\",\"value\":\"200\"}"
+                + "}],"
+                + "\"ExploitSteps\":[]"
+                + "}";
+
+        GobyJsonObj.PocJson gobyPoc = gson.fromJson(jsonContent, GobyJsonObj.PocJson.class);
+        PocObj.Poc poc = converter.convert(gobyPoc);
+
+        assertNotNull(poc);
+        assertNotNull(poc.getVerifySteps());
+        assertFalse(poc.getVerifySteps().isEmpty());
+        assertNotNull(poc.getVerifySteps().get(0).getExtractors());
+        assertFalse(poc.getVerifySteps().get(0).getExtractors().isEmpty());
+
+        PocObj.Matcher extractor = poc.getVerifySteps().get(0).getExtractors().get(0);
+        assertEquals("X-CSRF-Token", extractor.getName());
+        assertEquals(PocObj.MatcherType.REGEX, extractor.getType());
+        assertEquals(-1, extractor.getGroup());
+    }
+
+    @Test
+    @DisplayName("测试 Goby 状态码不等于操作转换")
+    public void testStatusNotEqualConversion() throws Exception {
+        String pocPath = "src/main/resources/poc/gobyPoc/cve_2022_1388_goby.json";
+        String jsonContent = new String(Files.readAllBytes(Paths.get(pocPath)));
+
+        GobyJsonObj.PocJson gobyPoc = gson.fromJson(jsonContent, GobyJsonObj.PocJson.class);
+        PocObj.Poc poc = converter.convert(gobyPoc);
+
+        assertNotNull(poc);
+        assertNotNull(poc.getVerifySteps());
+        assertFalse(poc.getVerifySteps().isEmpty());
+
+        List<PocObj.Matcher> matchers = poc.getVerifySteps().get(0).getMatchers();
+        assertNotNull(matchers);
+        assertEquals(2, matchers.size());
+
+        PocObj.Matcher statusMatcher = matchers.get(0);
+        assertEquals(PocObj.MatcherType.STATUS, statusMatcher.getType());
+        assertEquals(PocObj.OperationType.NOT_EQUAL, statusMatcher.getOperation());
+        assertEquals("status", statusMatcher.getPart());
+        assertEquals("204", statusMatcher.getValues().get(0));
+    }
 }
-
-

@@ -8,6 +8,8 @@ import com.potato.potatotool.content.redTeam.vulnScanner.util.converter.NucleiPo
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,6 +23,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * @date 2025-11-02
  */
 public class NucleiFileTest {
+    private static final String TEST_RESOURCE_ROOT = "src/test/resources";
+    private static final String TEST_SAMPLE_DIR = "src/test/resources/nuclei-poc-samples";
+    private static final String TEST_SAMPLE_FILE = "src/test/resources/nuclei-poc-samples/20-file-simple.yml";
+    private static final String TEST_PROTOCOL_FILE = "src/test/resources/nuclei-poc-samples/19-file-protocol.yml";
     
     /**
      * 测试 File 数据模型
@@ -53,17 +59,18 @@ public class NucleiFileTest {
     public void testFileHandlerSingleFile() {
         System.out.println("\n=== 测试 FileHandler 单文件扫描 ===");
         
-        String testFile = "pom.xml";
+        String testFile = TEST_SAMPLE_FILE;
         FileHandler.FileResponse response = FileHandler.scanFile(testFile);
         
         assertNotNull(response);
         assertTrue(response.isSuccess(), "文件扫描应该成功");
-        assertEquals("pom.xml", response.getName());
-        assertEquals("xml", response.getExtension());
+        assertEquals("20-file-simple.yml", response.getName());
+        assertEquals("yml", response.getExtension());
         assertTrue(response.getSize() > 0);
         assertNotNull(response.getContent());
         assertNotNull(response.getMd5());
         assertNotNull(response.getSha256());
+        assertPathUnderTestResources(response.getPath());
         
         System.out.println("文件名: " + response.getName());
         System.out.println("大小: " + response.getSize() + " 字节");
@@ -81,7 +88,7 @@ public class NucleiFileTest {
     public void testFileHandlerDirectoryScan() {
         System.out.println("\n=== 测试 FileHandler 目录扫描 ===");
         
-        String testDir = "src/test/resources/nuclei-poc-samples";
+        String testDir = TEST_SAMPLE_DIR;
         List<String> extensions = Arrays.asList("yml", "yaml");
         
         List<FileHandler.FileResponse> results = FileHandler.scanDirectory(
@@ -94,6 +101,7 @@ public class NucleiFileTest {
         for (FileHandler.FileResponse file : results) {
             System.out.println("  - " + file.getName() + " (" + file.getSize() + " 字节)");
             assertTrue(file.getName().endsWith(".yml") || file.getName().endsWith(".yaml"));
+            assertPathUnderTestResources(file.getPath());
         }
         
         System.out.println("✓ 目录扫描测试通过");
@@ -106,7 +114,7 @@ public class NucleiFileTest {
     public void testFileHandlerRecursiveScan() {
         System.out.println("\n=== 测试 FileHandler 递归扫描 ===");
         
-        String testDir = "src/test/resources";
+        String testDir = TEST_RESOURCE_ROOT;
         List<String> extensions = Arrays.asList("yml");
         
         List<FileHandler.FileResponse> results = FileHandler.scanDirectory(
@@ -120,6 +128,7 @@ public class NucleiFileTest {
             System.out.println("示例文件:");
             for (int i = 0; i < Math.min(5, results.size()); i++) {
                 System.out.println("  - " + results.get(i).getPath());
+                assertPathUnderTestResources(results.get(i).getPath());
             }
         }
         
@@ -133,7 +142,7 @@ public class NucleiFileTest {
     public void testFileHandlerSizeLimit() {
         System.out.println("\n=== 测试 FileHandler 文件大小限制 ===");
         
-        String testFile = "pom.xml";
+        String testFile = TEST_SAMPLE_FILE;
         long maxSize = 100; // 限制为 100 字节
         
         FileHandler.FileResponse response = FileHandler.scanFile(testFile, maxSize);
@@ -154,7 +163,7 @@ public class NucleiFileTest {
     public void testSimpleFilePocParsing() throws Exception {
         System.out.println("\n=== 测试简单 File 样例文件解析 ===");
         
-        String pocPath = "src/test/resources/nuclei-poc-samples/20-file-simple.yml";
+        String pocPath = TEST_SAMPLE_FILE;
         File pocFile = new File(pocPath);
         
         if (!pocFile.exists()) {
@@ -200,7 +209,7 @@ public class NucleiFileTest {
     public void testComprehensiveFilePocParsing() throws Exception {
         System.out.println("\n=== 测试完整 File 样例文件解析 ===");
         
-        String pocPath = "src/test/resources/nuclei-poc-samples/19-file-protocol.yml";
+        String pocPath = TEST_PROTOCOL_FILE;
         File pocFile = new File(pocPath);
         
         if (!pocFile.exists()) {
@@ -245,7 +254,7 @@ public class NucleiFileTest {
     public void testFilePocConversion() throws Exception {
         System.out.println("\n=== 测试 File POC 转换 ===");
         
-        String pocPath = "src/test/resources/nuclei-poc-samples/20-file-simple.yml";
+        String pocPath = TEST_SAMPLE_FILE;
         File pocFile = new File(pocPath);
         
         if (!pocFile.exists()) {
@@ -291,7 +300,7 @@ public class NucleiFileTest {
     public void testFileHashCalculation() {
         System.out.println("\n=== 测试文件哈希计算 ===");
         
-        String testFile = "README.md";
+        String testFile = TEST_PROTOCOL_FILE;
         File file = new File(testFile);
         
         if (!file.exists()) {
@@ -324,7 +333,7 @@ public class NucleiFileTest {
     public void testFilePermissions() {
         System.out.println("\n=== 测试文件权限检测 ===");
         
-        String testFile = "pom.xml";
+        String testFile = TEST_SAMPLE_FILE;
         FileHandler.FileResponse response = FileHandler.scanFile(testFile);
         
         if (response.isSuccess()) {
@@ -333,8 +342,9 @@ public class NucleiFileTest {
             System.out.println("可写: " + response.isWritable());
             System.out.println("可执行: " + response.isExecutable());
             
-            // pom.xml 应该是可读的
+            // 测试资源文件应该是可读的
             assertTrue(response.isReadable());
+            assertPathUnderTestResources(response.getPath());
             
             System.out.println("✓ 文件权限检测测试通过");
         } else {
@@ -350,9 +360,9 @@ public class NucleiFileTest {
         System.out.println("\n=== 测试批量路径扫描 ===");
         
         List<String> paths = Arrays.asList(
-            "pom.xml",
-            "README.md",
-            "src/test/resources/nuclei-poc-samples"
+            TEST_SAMPLE_FILE,
+            TEST_PROTOCOL_FILE,
+            TEST_SAMPLE_DIR
         );
         
         List<String> extensions = Arrays.asList("yml", "yaml", "xml", "md");
@@ -366,10 +376,34 @@ public class NucleiFileTest {
         
         for (FileHandler.FileResponse file : results) {
             System.out.println("  - " + file.getName() + " (" + file.getSize() + " 字节, " + file.getExtension() + ")");
+            assertPathUnderTestResources(file.getPath());
         }
         
         System.out.println("✓ 批量路径扫描测试通过");
     }
-}
 
+    @Test
+    public void testFileScansShouldStayWithinTestResourceDirectory() {
+        System.out.println("\n=== 测试 File 仅扫描测试资源目录 ===");
+
+        List<FileHandler.FileResponse> results = FileHandler.scanPaths(
+                Arrays.asList(TEST_SAMPLE_FILE, TEST_SAMPLE_DIR),
+                Arrays.asList("yml", "yaml"),
+                true,
+                1048576
+        );
+
+        assertFalse(results.isEmpty());
+        for (FileHandler.FileResponse file : results) {
+            assertPathUnderTestResources(file.getPath());
+        }
+    }
+
+    private void assertPathUnderTestResources(String actualPath) {
+        assertNotNull(actualPath);
+        Path expectedRoot = Paths.get(TEST_RESOURCE_ROOT).toAbsolutePath().normalize();
+        Path actual = Paths.get(actualPath).toAbsolutePath().normalize();
+        assertTrue(actual.startsWith(expectedRoot), "文件扫描应限制在测试资源目录内: " + actual);
+    }
+}
 

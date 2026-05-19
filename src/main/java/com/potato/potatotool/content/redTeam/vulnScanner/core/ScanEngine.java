@@ -95,8 +95,9 @@ public class ScanEngine {
                         }
                     }
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
+                    if (stopDbThread && dbQueue.isEmpty()) {
+                        break;
+                    }
                 } catch (Exception e) {
                     System.err.println("DB写入线程异常: " + e.getMessage());
                 }
@@ -710,6 +711,7 @@ public class ScanEngine {
 
         long duration = System.currentTimeMillis() - scanStartTime;
         isScanning = false;
+        shutdownExecutorService();
 
         try {
             int[] counts = countBySeverity();
@@ -744,6 +746,7 @@ public class ScanEngine {
         long duration = System.currentTimeMillis() - scanStartTime;
         isScanning = false;
         isPaused = false;
+        shutdownExecutorService();
 
         eventDispatcher.dispatchScanError(
             new ScanErrorEvent(this, currentScanId, "扫描执行失败", throwable));
@@ -936,6 +939,7 @@ public class ScanEngine {
         scanConfig.setEnableDeduplication(runtimeConfig.isEnableDeduplication());
         scanConfig.setEnableResponseCache(runtimeConfig.isEnableResponseCache());
         scanConfig.setResponseCacheTtlMs(runtimeConfig.getResponseCacheTtlMs());
+        scanConfig.setRequestsPerSecond(runtimeConfig.getRequestsPerSecond());
         scanConfig.setEnableClustering(runtimeConfig.isEnableClustering());
         scanConfig.setLocalTargetPath(runtimeConfig.getLocalTargetPath());
         scanConfig.setTargetProtocol(runtimeConfig.getTargetProtocol());
@@ -1105,15 +1109,31 @@ public class ScanEngine {
      */
     public void shutdown() {
         stopScan();
-        
-        // 停止DB写入线程
-        stopDbThread = true;
-        if (dbWriterThread != null) {
-            dbWriterThread.interrupt();
-        }
-        
+        shutdownExecutorService();
+
+        shutdownDbWriterThread();
         eventDispatcher.shutdown();
         pocExecutor.shutdown();
+    }
+
+    private void shutdownDbWriterThread() {
+        stopDbThread = true;
+        if (dbWriterThread == null) {
+            return;
+        }
+        dbWriterThread.interrupt();
+        try {
+            dbWriterThread.join(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        dbWriterThread = null;
+    }
+
+    private void shutdownExecutorService() {
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
     }
     
     /**

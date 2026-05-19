@@ -73,4 +73,23 @@ class DnsLogServiceDomainAvailabilityTest {
 
         assertNull(DnsLogService.queryDnsLogRecords("unknown.dnslog.cn"));
     }
+
+    @Test
+    @DisplayName("mock 模式只返回已显式触发的解析记录")
+    void testMockModeOnlyReturnsRecordedResolution() {
+        DnsLogService.setMockMode(true);
+        DnsLogService.clearCache();
+
+        String domain = "abc123.dnslog.mock";
+        assertNull(DnsLogService.queryDnsLogRecords(domain));
+        assertFalse(DnsLogService.hasDnsResolution(domain));
+
+        DnsLogService.recordMockResolution(domain);
+
+        assertTrue(DnsLogService.hasDnsResolution(domain));
+        assertTrue(DnsLogService.queryDnsLogRecords(domain).contains(domain));
+
+        DnsLogService.setMockMode(false);
+        DnsLogService.clearCache();
+    }
 }

@@ -10,6 +10,7 @@ import okio.Source;
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -330,6 +331,10 @@ public class RequestUtils {
         CustomHttpResponse customResponse = null;
 
         try {
+            if (shouldUseRawSocketHttp(requestObj)) {
+                return sendRawSocketHttpRequest(requestObj, maxResponseSize);
+            }
+
             // 如果没有传入客户端，则创建新的
             if (client == null) {
                 client = createOkHttpClient(requestObj);
@@ -394,6 +399,515 @@ public class RequestUtils {
             }
             throw e;
         }
+    }
+
+    private static boolean shouldUseRawSocketHttp(RequestObj requestObj) {
+        if (requestObj == null || !requestObj.getPreserveRawUrl()) {
+            return false;
+        }
+        String url = requestObj.getUrl();
+        if (url == null || url.isEmpty()) {
+            return false;
+        }
+        return url.contains("/../")
+                || url.contains(".//")
+                || url.contains("/..%2f")
+                || url.contains("/..%2F")
+                || url.contains("%2e%2e")
+                || url.contains("%2E%2E")
+                || url.contains("%u");
+    }
+
+    private static CustomHttpResponse sendRawSocketHttpRequest(RequestObj requestObj, int maxResponseSize) throws Exception {
+        RawHttpExchange exchange = executeRawSocketHttpRequest(requestObj, maxResponseSize);
+        Response response = exchange.toOkHttpResponse();
+        CustomHttpResponse customResponse = new CustomHttpResponse(response, maxResponseSize);
+        customResponse.setResponseTime(exchange.getResponseTimeMillis());
+        return customResponse;
+    }
+
+    private static RawHttpExchange executeRawSocketHttpRequest(RequestObj requestObj, int maxResponseSize) throws Exception {
+        if (requestObj == null || requestObj.getUrl() == null || requestObj.getUrl().trim().isEmpty()) {
+            throw new IllegalArgumentException("[×] URL不能为空");
+        }
+
+        URL url = new URL(requestObj.getUrl());
+        String protocol = url.getProtocol();
+        String host = url.getHost();
+        int port = url.getPort() != -1 ? url.getPort() : url.getDefaultPort();
+        if (port <= 0) {
+            port = "https".equalsIgnoreCase(protocol) ? 443 : 80;
+        }
+
+        String requestTarget = resolveRawRequestTarget(requestObj.getUrl(), url);
+        byte[] requestBody = buildRawRequestBodyBytes(requestObj);
+        Map<String, String> headers = enrichRawRequestHeaders(
+                buildRawRequestHeaders(requestObj, host, port, protocol),
+                requestBody
+        );
+        int connectTimeoutMs = Math.max(1, requestObj.getTimeOut()) * 1000;
+        int readTimeoutMs = Math.max(1, requestObj.getReadTimeout()) * 1000;
+        int maxRetries = Math.max(0, requestObj.getRetries());
+
+        Exception lastError = null;
+        for (int attempt = 0; attempt <= maxRetries; attempt++) {
+            Socket socket = null;
+            long startTime = System.currentTimeMillis();
+            try {
+                socket = createRawSocket(protocol, host, port, connectTimeoutMs, readTimeoutMs, requestObj);
+                OutputStream outputStream = socket.getOutputStream();
+                writeRawHttpRequest(outputStream, requestObj.getMethod(), requestTarget, headers, requestBody);
+                outputStream.flush();
+
+                RawHttpExchange exchange = readRawHttpResponse(socket.getInputStream(), requestObj.getUrl(), requestObj,
+                        protocol, maxResponseSize, System.currentTimeMillis() - startTime);
+                return exchange;
+            } catch (Exception e) {
+                lastError = e;
+                if (attempt >= maxRetries) {
+                    break;
+                }
+                try {
+                    Thread.sleep(1000L * Math.max(0, requestObj.getRetryWaitTime()));
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException("重试被中断", ie);
+                }
+            } finally {
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (IOException ignored) {
+                    }
+                }
+            }
+        }
+
+        if (lastError instanceof Exception) {
+            throw lastError;
+        }
+        throw new IOException("[×] 请求失败: " + requestObj.getUrl());
+    }
+
+    private static Socket createRawSocket(String protocol, String host, int port,
+                                          int connectTimeoutMs, int readTimeoutMs,
+                                          RequestObj requestObj) throws Exception {
+        Socket rawSocket = new Socket();
+        rawSocket.connect(new InetSocketAddress(host, port), connectTimeoutMs);
+        rawSocket.setSoTimeout(readTimeoutMs);
+
+        if (!"https".equalsIgnoreCase(protocol)) {
+            return rawSocket;
+        }
+
+        SSLSocketFactory socketFactory;
+        if (requestObj != null && requestObj.hasTlsSni()) {
+            socketFactory = new CustomSniSSLSocketFactory(trustAllSSLSocketFactory, requestObj.getTlsSni());
+        } else {
+            socketFactory = trustAllSSLSocketFactory;
+        }
+
+        SSLSocket sslSocket = (SSLSocket) socketFactory.createSocket(rawSocket, host, port, true);
+        sslSocket.setSoTimeout(readTimeoutMs);
+        sslSocket.startHandshake();
+        return sslSocket;
+    }
+
+    private static void writeRawHttpRequest(OutputStream outputStream,
+                                            String method,
+                                            String requestTarget,
+                                            Map<String, String> headers,
+                                            byte[] requestBody) throws IOException {
+        String requestMethod = method == null || method.trim().isEmpty() ? "GET" : method.trim().toUpperCase(Locale.ROOT);
+        StringBuilder builder = new StringBuilder();
+        builder.append(requestMethod).append(' ').append(requestTarget).append(" HTTP/1.1\r\n");
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            if (entry.getKey() == null || entry.getValue() == null) {
+                continue;
+            }
+            builder.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
+        }
+        builder.append("\r\n");
+
+        outputStream.write(builder.toString().getBytes(StandardCharsets.ISO_8859_1));
+        if (requestBody != null && requestBody.length > 0) {
+            outputStream.write(requestBody);
+        }
+    }
+
+    private static RawHttpExchange readRawHttpResponse(InputStream inputStream,
+                                                       String requestUrl,
+                                                       RequestObj requestObj,
+                                                       String protocol,
+                                                       int maxResponseSize,
+                                                       long responseTimeMillis) throws Exception {
+        String statusLine = readAsciiLine(inputStream);
+        if (statusLine == null || statusLine.trim().isEmpty()) {
+            throw new IOException("响应为空");
+        }
+
+        String[] statusParts = statusLine.split(" ", 3);
+        int statusCode = statusParts.length > 1 ? Integer.parseInt(statusParts[1]) : 200;
+        String message = statusParts.length > 2 ? statusParts[2] : "";
+
+        Map<String, List<String>> headers = new LinkedHashMap<>();
+        String headerLine;
+        int contentLength = -1;
+        while ((headerLine = readAsciiLine(inputStream)) != null) {
+            if (headerLine.isEmpty()) {
+                break;
+            }
+            int idx = headerLine.indexOf(':');
+            if (idx <= 0) {
+                continue;
+            }
+            String name = headerLine.substring(0, idx).trim();
+            String value = headerLine.substring(idx + 1).trim();
+            if (!headers.containsKey(name)) {
+                headers.put(name, new ArrayList<String>());
+            }
+            headers.get(name).add(value);
+            if ("Content-Length".equalsIgnoreCase(name)) {
+                try {
+                    contentLength = Integer.parseInt(value);
+                } catch (NumberFormatException ignored) {
+                    contentLength = -1;
+                }
+            }
+        }
+
+        byte[] body = readRawResponseBody(inputStream, headers, contentLength, maxResponseSize);
+        return new RawHttpExchange(requestUrl, requestObj, protocol, statusCode, message, headers, body, responseTimeMillis);
+    }
+
+    private static byte[] readRawResponseBody(InputStream inputStream,
+                                              Map<String, List<String>> headers,
+                                              int contentLength,
+                                              int maxResponseSize) throws IOException {
+        if (inputStream == null) {
+            return new byte[0];
+        }
+
+        String transferEncoding = getHeaderValue(headers, "Transfer-Encoding");
+        if (transferEncoding != null && transferEncoding.toLowerCase(Locale.ROOT).contains("chunked")) {
+            return readChunkedBody(inputStream, maxResponseSize);
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int remaining = contentLength;
+        while (true) {
+            int bytesRead;
+            if (contentLength >= 0) {
+                if (remaining <= 0) {
+                    break;
+                }
+                bytesRead = inputStream.read(buffer, 0, Math.min(buffer.length, remaining));
+            } else {
+                bytesRead = inputStream.read(buffer);
+            }
+
+            if (bytesRead == -1) {
+                break;
+            }
+
+            int writable = bytesRead;
+            if (maxResponseSize > 0 && outputStream.size() + bytesRead > maxResponseSize) {
+                writable = Math.max(0, maxResponseSize - outputStream.size());
+            }
+            if (writable > 0) {
+                outputStream.write(buffer, 0, writable);
+            }
+            if (contentLength >= 0) {
+                remaining -= bytesRead;
+            }
+            if (maxResponseSize > 0 && outputStream.size() >= maxResponseSize) {
+                break;
+            }
+        }
+        return outputStream.toByteArray();
+    }
+
+    private static byte[] readChunkedBody(InputStream inputStream, int maxResponseSize) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        while (true) {
+            String chunkSizeLine = readAsciiLine(inputStream);
+            if (chunkSizeLine == null) {
+                break;
+            }
+            String normalized = chunkSizeLine.trim();
+            int semicolonIndex = normalized.indexOf(';');
+            if (semicolonIndex >= 0) {
+                normalized = normalized.substring(0, semicolonIndex);
+            }
+            int chunkSize = Integer.parseInt(normalized.trim(), 16);
+            if (chunkSize == 0) {
+                readAsciiLine(inputStream);
+                break;
+            }
+
+            byte[] chunk = new byte[chunkSize];
+            int offset = 0;
+            while (offset < chunkSize) {
+                int read = inputStream.read(chunk, offset, chunkSize - offset);
+                if (read == -1) {
+                    throw new EOFException("chunked body 提前结束");
+                }
+                offset += read;
+            }
+            readAsciiLine(inputStream);
+
+            int writable = chunk.length;
+            if (maxResponseSize > 0 && outputStream.size() + chunk.length > maxResponseSize) {
+                writable = Math.max(0, maxResponseSize - outputStream.size());
+            }
+            if (writable > 0) {
+                outputStream.write(chunk, 0, writable);
+            }
+            if (maxResponseSize > 0 && outputStream.size() >= maxResponseSize) {
+                break;
+            }
+        }
+        return outputStream.toByteArray();
+    }
+
+    private static String resolveRawRequestTarget(String rawUrl, URL parsedUrl) {
+        String fallbackPath = "/";
+        if (parsedUrl != null && parsedUrl.getFile() != null && !parsedUrl.getFile().isEmpty()) {
+            fallbackPath = parsedUrl.getFile();
+        }
+
+        try {
+            URI uri = new URI(rawUrl);
+            String rawPath = uri.getRawPath();
+            String rawQuery = uri.getRawQuery();
+            if (rawPath == null || rawPath.isEmpty()) {
+                rawPath = "/";
+            }
+            return rawQuery == null || rawQuery.isEmpty() ? rawPath : rawPath + "?" + rawQuery;
+        } catch (Exception ignored) {
+            int schemeIdx = rawUrl.indexOf("://");
+            int pathIdx = schemeIdx >= 0 ? rawUrl.indexOf('/', schemeIdx + 3) : rawUrl.indexOf('/');
+            if (pathIdx < 0) {
+                return fallbackPath;
+            }
+            return rawUrl.substring(pathIdx);
+        }
+    }
+
+    private static Map<String, String> buildRawRequestHeaders(RequestObj requestObj, String host, int port, String protocol) {
+        Map<String, String> headers = new LinkedHashMap<String, String>();
+        if (!requestObj.getNoUserAgent()) {
+            if (requestObj.getRandomUserAgent()) {
+                headers.put("User-Agent", StrUtils.RandomUserAgent());
+            } else {
+                headers.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36");
+            }
+        }
+        headers.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+        headers.put("Connection", "close");
+        headers.put("Host", buildHostHeader(host, port, protocol));
+
+        String bearerToken = requestObj.getBearerToken();
+        if (bearerToken != null && !bearerToken.isEmpty()) {
+            headers.put("Authorization", "Bearer " + bearerToken.replace("Bearer ", ""));
+        }
+
+        Map<String, String> customHeaders = requestObj.getHeaders();
+        if (customHeaders != null) {
+            for (Map.Entry<String, String> entry : customHeaders.entrySet()) {
+                String headerName = entry.getKey();
+                String headerValue = entry.getValue();
+                if (headerName == null || headerValue == null || headerName.trim().isEmpty() || headerValue.trim().isEmpty()) {
+                    continue;
+                }
+                if (headerValue.contains("{{randomAgent}}")) {
+                    headerValue = headerValue.replace("{{randomAgent}}", StrUtils.RandomUserAgent());
+                }
+                if (headerValue.contains("{{UUID}}")) {
+                    headerValue = headerValue.replace("{{UUID}}", UUID.randomUUID().toString().replace("-", ""));
+                }
+                headers.put(headerName, headerValue);
+            }
+        }
+        return headers;
+    }
+
+    private static Map<String, String> enrichRawRequestHeaders(Map<String, String> headers, byte[] requestBody) {
+        Map<String, String> enriched = new LinkedHashMap<String, String>();
+        if (headers != null) {
+            enriched.putAll(headers);
+        }
+        if (requestBody != null && requestBody.length > 0 && !containsHeaderIgnoreCase(enriched, "Content-Length")) {
+            enriched.put("Content-Length", String.valueOf(requestBody.length));
+        }
+        return enriched;
+    }
+
+    private static boolean containsHeaderIgnoreCase(Map<String, String> headers, String headerName) {
+        if (headers == null || headerName == null) {
+            return false;
+        }
+        for (String key : headers.keySet()) {
+            if (key != null && key.equalsIgnoreCase(headerName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String buildHostHeader(String host, int port, String protocol) {
+        boolean defaultPort = "https".equalsIgnoreCase(protocol) ? port == 443 : port == 80;
+        return defaultPort ? host : host + ":" + port;
+    }
+
+    private static byte[] buildRawRequestBodyBytes(RequestObj requestObj) throws Exception {
+        String method = requestObj.getMethod();
+        if (method == null) {
+            method = "GET";
+        }
+        if ("GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method)
+                || "OPTIONS".equalsIgnoreCase(method) || "TRACE".equalsIgnoreCase(method)) {
+            return new byte[0];
+        }
+
+        Request request = buildRequestForRawSocket(requestObj);
+        RequestBody body = request.body();
+        if (body == null) {
+            return new byte[0];
+        }
+
+        Buffer buffer = new Buffer();
+        body.writeTo(buffer);
+        return buffer.readByteArray();
+    }
+
+    private static Request buildRequestForRawSocket(RequestObj requestObj) throws Exception {
+        Request.Builder builder = new Request.Builder().url(requestObj.getUrl());
+        setRequestBody(builder, requestObj);
+        return builder.build();
+    }
+
+    private static String getHeaderValue(Map<String, List<String>> headers, String headerName) {
+        if (headers == null || headerName == null) {
+            return null;
+        }
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(headerName)
+                    && entry.getValue() != null && !entry.getValue().isEmpty()) {
+                return entry.getValue().get(0);
+            }
+        }
+        return null;
+    }
+
+    private static String readAsciiLine(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        int previous = -1;
+        int current;
+        while ((current = inputStream.read()) != -1) {
+            if (previous == '\r' && current == '\n') {
+                byte[] bytes = outputStream.toByteArray();
+                return bytes.length == 0 ? "" : new String(bytes, 0, bytes.length - 1, StandardCharsets.ISO_8859_1);
+            }
+            outputStream.write(current);
+            previous = current;
+        }
+        if (outputStream.size() == 0) {
+            return null;
+        }
+        return new String(outputStream.toByteArray(), StandardCharsets.ISO_8859_1);
+    }
+
+    private static final class RawHttpExchange {
+        private final String requestUrl;
+        private final RequestObj requestObj;
+        private final String protocol;
+        private final int statusCode;
+        private final String message;
+        private final Map<String, List<String>> headers;
+        private final byte[] body;
+        private final long responseTimeMillis;
+
+        private RawHttpExchange(String requestUrl, RequestObj requestObj, String protocol, int statusCode,
+                                String message, Map<String, List<String>> headers, byte[] body,
+                                long responseTimeMillis) {
+            this.requestUrl = requestUrl;
+            this.requestObj = requestObj;
+            this.protocol = protocol;
+            this.statusCode = statusCode;
+            this.message = message == null ? "" : message;
+            this.headers = headers == null ? new LinkedHashMap<String, List<String>>() : headers;
+            this.body = body == null ? new byte[0] : body;
+            this.responseTimeMillis = responseTimeMillis;
+        }
+
+        private long getResponseTimeMillis() {
+            return responseTimeMillis;
+        }
+
+        private Response toOkHttpResponse() {
+            Request.Builder requestBuilder = new Request.Builder().url(requestUrl);
+            String method = requestObj != null && requestObj.getMethod() != null ? requestObj.getMethod() : "GET";
+            requestBuilder.method(method, buildRawSocketResponseRequestBody(method, requestObj));
+            Response.Builder responseBuilder = new Response.Builder()
+                    .request(requestBuilder.build())
+                    .protocol("https".equalsIgnoreCase(protocol) ? Protocol.HTTP_1_1 : Protocol.HTTP_1_1)
+                    .code(statusCode)
+                    .message(message)
+                    .body(ResponseBody.create(resolveResponseMediaType(), body));
+
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) {
+                    continue;
+                }
+                for (String value : entry.getValue()) {
+                    if (value != null) {
+                        responseBuilder.addHeader(entry.getKey(), value);
+                    }
+                }
+            }
+            return responseBuilder.build();
+        }
+
+        private MediaType resolveResponseMediaType() {
+            String contentType = getHeaderValue(headers, "Content-Type");
+            MediaType mediaType = contentType == null ? null : MediaType.parse(contentType);
+            return mediaType != null ? mediaType : MediaType.parse("application/octet-stream");
+        }
+    }
+
+    private static RequestBody buildRawSocketResponseRequestBody(String method, RequestObj requestObj) {
+        String normalizedMethod = method == null ? "GET" : method.trim().toUpperCase(Locale.ROOT);
+        if ("GET".equals(normalizedMethod) || "HEAD".equals(normalizedMethod)) {
+            return null;
+        }
+
+        byte[] requestBodyBytes = null;
+        if (requestObj != null) {
+            requestBodyBytes = requestObj.getPostData();
+        }
+        if (requestBodyBytes == null) {
+            requestBodyBytes = new byte[0];
+        }
+
+        MediaType mediaType = null;
+        if (requestObj != null && requestObj.getHeaders() != null) {
+            String contentType = requestObj.getHeaders().get("Content-Type");
+            if (contentType == null) {
+                for (Map.Entry<String, String> entry : requestObj.getHeaders().entrySet()) {
+                    if (entry.getKey() != null && "Content-Type".equalsIgnoreCase(entry.getKey())) {
+                        contentType = entry.getValue();
+                        break;
+                    }
+                }
+            }
+            mediaType = contentType == null ? null : MediaType.parse(contentType);
+        }
+        if (mediaType == null) {
+            mediaType = MediaType.parse("application/octet-stream");
+        }
+        return RequestBody.create(mediaType, requestBodyBytes);
     }
 
     /**
@@ -464,13 +978,20 @@ public class RequestUtils {
 
         // 显式指定代理路由，避免回退到 JVM/IDE/系统默认代理。
         Proxy effectiveProxy = Proxy.NO_PROXY;
+        ProxyAddressParser.ParsedProxyAddress parsedProxy = null;
         if (proxies != null && !proxies.isEmpty()) {
-            Proxy proxy = createProxy(proxies, proxiesType);
+            parsedProxy = ProxyAddressParser.parse(proxies, proxiesType);
+            if (parsedProxy != null && parsedProxy.hasCredentials()) {
+                requestObj.setProxyUsername(parsedProxy.getUsername());
+                requestObj.setProxyPassword(parsedProxy.getPassword());
+            }
+            Proxy proxy = createProxy(parsedProxy, proxiesType);
             if (proxy != null) {
                 effectiveProxy = proxy;
             }
         }
         builder.proxy(effectiveProxy);
+        configureProxyAuthenticator(builder, requestObj, parsedProxy);
 
         return builder.build();
     }
@@ -478,29 +999,46 @@ public class RequestUtils {
     /**
      * 创建代理对象
      */
-    private static Proxy createProxy(String proxies, String proxiesType) {
+    private static Proxy createProxy(ProxyAddressParser.ParsedProxyAddress parsedProxy, String proxiesType) {
         try {
-            String[] tmpProxyList = proxies.toLowerCase()
-                .replace("http://", "")
-                .replace("https://", "")
-                .replace("socks://", "")
-                .split(":");
-            
-            if (tmpProxyList.length != 2) {
-                System.err.println("代理格式错误: " + proxies);
+            if (parsedProxy == null) {
                 return null;
             }
-            
-            Proxy.Type proxyType = Proxy.Type.HTTP; // 默认HTTP代理模式
-            if (proxiesType.equalsIgnoreCase("SOCKS") || proxies.toLowerCase().startsWith("socks://")) {
-                proxyType = Proxy.Type.SOCKS;
-            }
-            
-            return new Proxy(proxyType, new InetSocketAddress(tmpProxyList[0], Integer.parseInt(tmpProxyList[1])));
+
+            Proxy.Type proxyType = parsedProxy.toJavaProxyType(proxiesType);
+            return new Proxy(proxyType, new InetSocketAddress(parsedProxy.getHost(), parsedProxy.getPort()));
         } catch (Exception e) {
             System.err.println("创建代理失败: " + e.getMessage());
             return null;
         }
+    }
+
+    private static void configureProxyAuthenticator(OkHttpClient.Builder builder,
+                                                    RequestObj requestObj,
+                                                    ProxyAddressParser.ParsedProxyAddress parsedProxy) {
+        if (builder == null || requestObj == null || parsedProxy == null) {
+            return;
+        }
+
+        final String username = requestObj.getProxyUsername();
+        if (username == null || username.isEmpty()) {
+            return;
+        }
+
+        if (parsedProxy.toJavaProxyType(requestObj.getProxiesType()) == Proxy.Type.SOCKS) {
+            return;
+        }
+
+        final String password = requestObj.getProxyPassword() == null ? "" : requestObj.getProxyPassword();
+        builder.proxyAuthenticator((route, response) -> {
+            if (response.request().header("Proxy-Authorization") != null) {
+                return null;
+            }
+            String credential = Credentials.basic(username, password, StandardCharsets.UTF_8);
+            return response.request().newBuilder()
+                    .header("Proxy-Authorization", credential)
+                    .build();
+        });
     }
 
     /**
@@ -651,6 +1189,17 @@ public class RequestUtils {
         return null;
     }
 
+    private static MediaType resolveRequestBodyMediaType(RequestObj requestObj, String fallbackContentType) {
+        String contentType = getHeaderIgnoreCase(requestObj == null ? null : requestObj.getHeaders(), "Content-Type");
+        if (contentType == null || contentType.trim().isEmpty()) {
+            contentType = fallbackContentType;
+        }
+        MediaType mediaType = contentType == null || contentType.trim().isEmpty()
+                ? null
+                : MediaType.parse(contentType.trim());
+        return mediaType != null ? mediaType : MediaType.parse(fallbackContentType);
+    }
+
     private static String resolveEffectivePostMethod(RequestObj requestObj) {
         if (requestObj == null) {
             return "RAW";
@@ -784,14 +1333,14 @@ public class RequestUtils {
     private static RequestBody createRawRequestBody(RequestObj requestObj) {
         byte[] postData = requestObj.getPostData();
         File file = requestObj.getPostFile();
+        MediaType mediaType = resolveRequestBodyMediaType(requestObj, "application/octet-stream");
         
         if (file != null) {
-            String contentType = guessContentType(file.getName());
-            return RequestBody.create(file, MediaType.parse(contentType));
+            return RequestBody.create(file, mediaType);
         } else if (postData != null && postData.length > 0) {
-            return RequestBody.create(postData, MediaType.parse("application/octet-stream"));
+            return RequestBody.create(postData, mediaType);
         } else {
-            return RequestBody.create("", MediaType.parse("text/plain"));
+            return RequestBody.create("", resolveRequestBodyMediaType(requestObj, "text/plain"));
         }
     }
 

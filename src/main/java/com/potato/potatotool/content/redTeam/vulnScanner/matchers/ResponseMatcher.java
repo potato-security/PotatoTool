@@ -6,6 +6,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtra
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.JsonExtractor;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.VariableExtractor;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
+import com.potato.potatotool.content.redTeam.vulnScanner.http.GobyFunctionProcessor;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpLogService;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.InteractshClient;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
@@ -20,9 +21,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -175,8 +177,8 @@ public class ResponseMatcher {
             // ========== 响应级别匹配（不需要提取 content）==========
             case STATUS:
                 matched = indexedResponse != null
-                        ? matchStatus(indexedResponse.getStatusCode(), values, matcher.getCondition())
-                        : matchStatusCode(response, values, matcher.getCondition());
+                        ? matchStatus(indexedResponse.getStatusCode(), values, matcher.getOperation(), matcher.getCondition())
+                        : matchStatusCode(response, values, matcher.getOperation(), matcher.getCondition());
                 break;
 
             case TIME:
@@ -242,11 +244,16 @@ public class ResponseMatcher {
     }
 
     private static boolean matchStatusCode(CustomHttpResponse response, List<String> values, String condition) {
+        return matchStatusCode(response, values, null, condition);
+    }
+
+    private static boolean matchStatusCode(CustomHttpResponse response, List<String> values,
+                                           PocObj.OperationType operation, String condition) {
         if (values == null || values.isEmpty()) {
             return false;
         }
         try {
-            return matchStatus(response.getResponseCode(), values, condition);
+            return matchStatus(resolveStatusCodeForMatcher(response), values, operation, condition);
         } catch (Exception e) {
             return false;
         }
@@ -316,7 +323,7 @@ public class ResponseMatcher {
         String part = matcher.getPart();
         String content = indexedResponse != null
                 ? getCachedResponsePart(indexedResponse, part)
-                : VariableExtractor.getResponsePart(response, part);
+                : VariableExtractor.getResponsePart(response, part, shouldUseInitialRedirectResponse(matcher));
         if (content == null) {
             return false;
         }
@@ -347,6 +354,25 @@ public class ResponseMatcher {
             default:
                 return false;
         }
+    }
+
+    private static int resolveStatusCodeForMatcher(CustomHttpResponse response) {
+        if (response == null) {
+            return 0;
+        }
+        return response.getResponseCode();
+    }
+
+    private static boolean shouldUseInitialRedirectResponse(PocObj.Matcher matcher) {
+        if (matcher == null) {
+            return false;
+        }
+        String part = matcher.getPart();
+        if (part == null) {
+            return false;
+        }
+        String normalizedPart = VariableExtractor.stripIndexedPart(part);
+        return "header".equalsIgnoreCase(normalizedPart) || "location".equalsIgnoreCase(normalizedPart);
     }
     
     /**
@@ -624,8 +650,17 @@ public class ResponseMatcher {
     }
 
     private static boolean matchStatus(int statusCode, List<String> values, String condition) {
+        return matchStatus(statusCode, values, null, condition);
+    }
+
+    private static boolean matchStatus(int statusCode, List<String> values,
+                                       PocObj.OperationType operation, String condition) {
         if (values == null || values.isEmpty()) {
             return false;
+        }
+
+        if (operation == null) {
+            operation = PocObj.OperationType.EQUAL;
         }
 
         boolean requireAll = isAndCondition(condition);
@@ -633,8 +668,25 @@ public class ResponseMatcher {
             boolean valueMatched = false;
             try {
                 int expectedStatus = Integer.parseInt(value.trim());
-                if (statusCode == expectedStatus) {
-                    valueMatched = true;
+                switch (operation) {
+                    case NOT_EQUAL:
+                        valueMatched = statusCode != expectedStatus;
+                        break;
+                    case GREATER:
+                        valueMatched = statusCode > expectedStatus;
+                        break;
+                    case LESS:
+                        valueMatched = statusCode < expectedStatus;
+                        break;
+                    case GREATER_EQUAL:
+                        valueMatched = statusCode >= expectedStatus;
+                        break;
+                    case LESS_EQUAL:
+                        valueMatched = statusCode <= expectedStatus;
+                        break;
+                    default:
+                        valueMatched = statusCode == expectedStatus;
+                        break;
                 }
             } catch (NumberFormatException e) {
                 // 忽略非法值
@@ -1047,6 +1099,12 @@ public class ResponseMatcher {
         }
         
         List<String> result = new ArrayList<>(values.size());
+        Map<String, String> stringVariables = new HashMap<>();
+        for (Map.Entry<String, Object> entry : pocVariables.entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null) {
+                stringVariables.put(entry.getKey(), String.valueOf(entry.getValue()));
+            }
+        }
         // Goby 变量格式: {{{varName}}}
         Pattern pattern = Pattern.compile("\\{\\{\\{([^}]+)\\}\\}\\}");
         
@@ -1070,7 +1128,7 @@ public class ResponseMatcher {
                 }
             }
             m.appendTail(sb);
-            result.add(sb.toString());
+            result.add(GobyFunctionProcessor.processGobyFunctions(sb.toString(), stringVariables));
         }
 
         return result;

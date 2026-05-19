@@ -137,45 +137,14 @@ public class ProxyUtils {
     }
 
     public static ProxyReachabilityResult checkProxyAddressReachability(String proxyAddress, int timeoutMs) {
-        if (proxyAddress == null) {
-            return new ProxyReachabilityResult(false, "setting.proxy.unavailable.invalid.address");
-        }
-
-        String trimmed = proxyAddress.trim();
-        if (trimmed.isEmpty()) {
-            return new ProxyReachabilityResult(false, "setting.proxy.unavailable.invalid.address");
-        }
-
-        String normalized = trimmed;
-        int schemaIndex = normalized.indexOf("://");
-        if (schemaIndex >= 0) {
-            normalized = normalized.substring(schemaIndex + 3);
-        }
-
-        int separator = normalized.lastIndexOf(':');
-        if (separator <= 0 || separator == normalized.length() - 1) {
-            return new ProxyReachabilityResult(false, "setting.proxy.unavailable.invalid.address");
-        }
-
-        String host = normalized.substring(0, separator).trim();
-        String portText = normalized.substring(separator + 1).trim();
-        if (host.isEmpty()) {
-            return new ProxyReachabilityResult(false, "setting.proxy.unavailable.invalid.address");
-        }
-
-        int port;
-        try {
-            port = Integer.parseInt(portText);
-            if (port <= 0 || port > 65535) {
-                return new ProxyReachabilityResult(false, "setting.proxy.unavailable.invalid.address");
-            }
-        } catch (NumberFormatException e) {
+        ProxyAddressParser.ParsedProxyAddress parsed = ProxyAddressParser.parse(proxyAddress, null);
+        if (parsed == null) {
             return new ProxyReachabilityResult(false, "setting.proxy.unavailable.invalid.address");
         }
 
         try (Socket socket = new Socket()) {
-            InetAddress resolvedAddress = InetAddress.getByName(host);
-            socket.connect(new InetSocketAddress(resolvedAddress, port), timeoutMs);
+            InetAddress resolvedAddress = InetAddress.getByName(parsed.getHost());
+            socket.connect(new InetSocketAddress(resolvedAddress, parsed.getPort()), timeoutMs);
             return new ProxyReachabilityResult(true, null);
         } catch (SocketTimeoutException e) {
             return new ProxyReachabilityResult(false, "setting.proxy.unavailable.timeout");
