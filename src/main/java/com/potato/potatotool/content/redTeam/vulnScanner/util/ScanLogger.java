@@ -98,18 +98,28 @@ public class ScanLogger {
      * 开始新的扫描会话
      */
     public void startScanSession(String scanId) {
-        this.currentScanId = scanId;
-        
+        endScanSession();
+
+        String normalizedScanId = scanId != null && !scanId.trim().isEmpty() ? scanId.trim() : "unknown";
+
         // 创建日志文件
         String fileName = String.format("scan_%s_%s.log", 
-            FILE_DATE_FORMAT.format(new Date()), scanId);
+            FILE_DATE_FORMAT.format(new Date()), normalizedScanId);
         Path logFile = logDirectory.resolve(fileName);
         
         try {
-            currentLogWriter = new PrintWriter(new BufferedWriter(
+            PrintWriter writer = new PrintWriter(new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(logFile.toFile(), true), StandardCharsets.UTF_8)));
-            info("SYSTEM", "扫描会话开始: " + scanId);
+            synchronized (this) {
+                currentScanId = normalizedScanId;
+                currentLogWriter = writer;
+            }
+            info("SYSTEM", "扫描会话开始: " + normalizedScanId);
         } catch (IOException e) {
+            synchronized (this) {
+                currentScanId = null;
+                currentLogWriter = null;
+            }
             System.err.println("无法创建日志文件: " + e.getMessage());
         }
     }
@@ -118,12 +128,25 @@ public class ScanLogger {
      * 结束扫描会话
      */
     public void endScanSession() {
-        if (currentLogWriter != null) {
-            info("SYSTEM", "扫描会话结束: " + currentScanId);
-            currentLogWriter.close();
+        String scanId;
+        PrintWriter writer;
+        synchronized (this) {
+            scanId = currentScanId;
+            writer = currentLogWriter;
+            currentScanId = null;
             currentLogWriter = null;
         }
-        currentScanId = null;
+
+        if (writer != null) {
+            LogEntry entry = new LogEntry(LogLevel.INFO, "SYSTEM", "扫描会话结束: " + scanId, scanId);
+            appendMemoryLog(entry);
+            synchronized (writer) {
+                writer.println(entry.toString());
+                writer.flush();
+                writer.close();
+            }
+            notifyListeners(entry);
+        }
     }
     
     /**
@@ -172,22 +195,34 @@ public class ScanLogger {
      * 记录日志
      */
     private void log(LogLevel level, String category, String message) {
-        LogEntry entry = new LogEntry(level, category, message, currentScanId);
+        String scanId;
+        PrintWriter writer;
+        synchronized (this) {
+            scanId = currentScanId;
+            writer = currentLogWriter;
+        }
+        LogEntry entry = new LogEntry(level, category, message, scanId);
 
         // 添加到内存队列
-        memoryLogs.offer(entry);
-        while (memoryLogs.size() > MAX_MEMORY_LOGS) {
-            memoryLogs.poll();
-        }
+        appendMemoryLog(entry);
 
         // 写入文件
-        if (currentLogWriter != null) {
-            currentLogWriter.println(entry.toString());
-            currentLogWriter.flush();
+        if (writer != null) {
+            synchronized (writer) {
+                writer.println(entry.toString());
+                writer.flush();
+            }
         }
 
         // 通知所有监听器
         notifyListeners(entry);
+    }
+
+    private void appendMemoryLog(LogEntry entry) {
+        memoryLogs.offer(entry);
+        while (memoryLogs.size() > MAX_MEMORY_LOGS) {
+            memoryLogs.poll();
+        }
     }
 
     /**

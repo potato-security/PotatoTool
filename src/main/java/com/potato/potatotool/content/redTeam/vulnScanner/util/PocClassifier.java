@@ -316,6 +316,11 @@ public class PocClassifier {
         String normalizedPath = filePath == null ? "" : filePath.replace("\\", "/").toLowerCase();
         boolean headlessByProtocol = "headless".equalsIgnoreCase(poc.getProtocol());
         boolean headlessBySteps = containsHeadlessStep(poc.getVerifySteps()) || containsHeadlessStep(poc.getExploitSteps());
+        boolean codeByProtocol = "code".equalsIgnoreCase(poc.getProtocol())
+                || "javascript".equalsIgnoreCase(poc.getProtocol());
+        boolean codeBySteps = containsCodeStep(poc.getVerifySteps()) || containsCodeStep(poc.getExploitSteps());
+        boolean sslByProtocol = "ssl".equalsIgnoreCase(poc.getProtocol());
+        boolean sslBySteps = containsSslStep(poc.getVerifySteps()) || containsSslStep(poc.getExploitSteps());
 
         // Headless flag
         if (normalizedPath.contains("/headless/") || headlessByProtocol || headlessBySteps) {
@@ -325,16 +330,25 @@ public class PocClassifier {
         }
         
         // Code flag
-        if (normalizedPath.contains("/code/")) {
+        if (normalizedPath.contains("/code/") || normalizedPath.contains("/javascript/")
+                || codeByProtocol || codeBySteps) {
             poc.setRequiresCode(true);
-            poc.setInputType(InputType.LOCAL_PATH);
-            poc.setCategory(PocCategory.CODE);
+            if (normalizedPath.contains("/code/") || "code".equalsIgnoreCase(poc.getProtocol())) {
+                poc.setInputType(InputType.LOCAL_PATH);
+                poc.setCategory(PocCategory.CODE);
+            }
         }
         
         // Fuzz flag
         if (normalizedPath.contains("/fuzzing/") || normalizedPath.contains("/fuzz/")) {
             poc.setRequiresFuzz(true);
             poc.setCategory(PocCategory.FUZZING);
+        }
+
+        if (normalizedPath.contains("/ssl/") || sslByProtocol || sslBySteps) {
+            if (normalizedPath.contains("/ssl/") || poc.getCategory() == PocCategory.UNKNOWN) {
+                poc.setCategory(PocCategory.SSL);
+            }
         }
     }
 
@@ -345,6 +359,32 @@ public class PocClassifier {
 
         for (PocObj.PocStep step : steps) {
             if (step instanceof PocObj.HeadlessStep) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean containsCodeStep(List<PocObj.PocStep> steps) {
+        if (steps == null || steps.isEmpty()) {
+            return false;
+        }
+
+        for (PocObj.PocStep step : steps) {
+            if (step instanceof PocObj.CodeStep) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean containsSslStep(List<PocObj.PocStep> steps) {
+        if (steps == null || steps.isEmpty()) {
+            return false;
+        }
+
+        for (PocObj.PocStep step : steps) {
+            if (step instanceof PocObj.SslStep) {
                 return true;
             }
         }

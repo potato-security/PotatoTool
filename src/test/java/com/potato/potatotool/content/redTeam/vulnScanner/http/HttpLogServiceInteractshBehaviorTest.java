@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("HttpLogService Interactsh 行为测试")
@@ -45,6 +47,28 @@ class HttpLogServiceInteractshBehaviorTest {
 
         assertTrue(result.success);
         assertTrue(result.url.contains("fixed-correlation.oast.test"));
+    }
+
+    @Test
+    @DisplayName("callback host 提取应支持带协议和裸域名")
+    void shouldExtractBareCallbackHost() {
+        assertEquals("abc.oast.test", HttpLogService.toBareCallbackHost("http://abc.oast.test/path"));
+        assertEquals("abc.oast.test", HttpLogService.toBareCallbackHost("https://abc.oast.test:443/path"));
+        assertEquals("abc.oast.test", HttpLogService.toBareCallbackHost("abc.oast.test"));
+    }
+
+    @Test
+    @DisplayName("Interactsh 空轮询数据不应作为错误输出")
+    void shouldTreatEmptyPollDataAsNoInteraction() throws Exception {
+        FakeInteractshClient fakeClient = new FakeInteractshClient(false, true, "fixed-correlation.oast.test");
+        Method method = InteractshClient.class.getDeclaredMethod("parseInteractionsArray", String.class);
+        method.setAccessible(true);
+
+        Object empty = method.invoke(fakeClient, "");
+        Object jsonNull = method.invoke(fakeClient, "null");
+
+        assertEquals(0, ((com.google.gson.JsonArray) empty).size());
+        assertEquals(0, ((com.google.gson.JsonArray) jsonNull).size());
     }
 
     private void setStaticField(Class<?> type, String fieldName, Object value) throws Exception {

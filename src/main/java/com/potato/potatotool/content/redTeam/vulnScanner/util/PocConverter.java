@@ -24,6 +24,20 @@ import org.yaml.snakeyaml.Yaml;
  * 该类已重构为门面模式，实际转换逻辑已移至converter包下的具体转换器实现类
  */
 public class PocConverter {
+
+    private static final ThreadLocal<Boolean> VERBOSE_LOGGING = ThreadLocal.withInitial(() -> Boolean.TRUE);
+
+    public static void setVerboseLogging(boolean verbose) {
+        VERBOSE_LOGGING.set(verbose);
+    }
+
+    public static void clearVerboseLogging() {
+        VERBOSE_LOGGING.remove();
+    }
+
+    public static boolean isVerboseLogging() {
+        return Boolean.TRUE.equals(VERBOSE_LOGGING.get());
+    }
     private static final Gson gson = new Gson();
 
     /**
@@ -99,7 +113,7 @@ public class PocConverter {
             poc = yaml.loadAs(input, NucleiYamlObj.Poc.class);
             
             // 添加详细的调试日志
-            if (poc != null) {
+            if (poc != null && isVerboseLogging()) {
                 System.out.println("=== YAML 解析成功 ===");
                 System.out.println("文件: " + new File(fileName).getName());
                 System.out.println("ID: " + poc.getId());
@@ -116,8 +130,12 @@ public class PocConverter {
                 System.out.println("  - Flow: " + poc.getFlow());
             }
         } catch (Exception e) {
-            System.err.println("Error loading Nuclei YAML POC file: " + e.getMessage());
-            e.printStackTrace(); // 打印完整堆栈信息
+            if (isVerboseLogging()) {
+                System.err.println("Error loading Nuclei YAML POC file: " + e.getMessage());
+                e.printStackTrace();
+            } else {
+                System.err.println("Error loading Nuclei YAML POC file: " + fileName + " - " + e.getMessage());
+            }
         }
         return poc;
     }

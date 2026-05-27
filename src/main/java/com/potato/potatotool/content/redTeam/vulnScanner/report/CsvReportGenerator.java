@@ -25,6 +25,7 @@ public class CsvReportGenerator {
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     
     public File generate(List<ScanResult> results, String outputPath) throws IOException {
+        results = ReportDataSanitizer.sanitizeResults(results);
         File outputFile = new File(outputPath);
         outputFile.getParentFile().mkdirs();
         
@@ -96,4 +97,3 @@ public class CsvReportGenerator {
         return outputFile;
     }
 }
-

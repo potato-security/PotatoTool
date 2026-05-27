@@ -304,24 +304,25 @@ public class DslEvaluatorRefactored {
      * 检查表达式是否包含逻辑操作符
      */
     private static boolean containsLogicalOperators(String expression) {
-        return DslConstants.AND_PATTERN.matcher(expression).find() ||
-               DslConstants.OR_PATTERN.matcher(expression).find() ||
-               DslConstants.NOT_PATTERN.matcher(expression).find();
+        return DslExpressionParser.hasTopLevelLogicalOperator(expression) ||
+               DslExpressionParser.stripLeadingNot(expression) != null;
     }
 
     /**
      * 评估包含逻辑操作符的表达式
      */
     private static boolean evaluateLogicalExpression(String expression, Map<String, Object> context) {
+        expression = DslExpressionParser.stripEnclosingParentheses(expression.trim());
+
         // 处理NOT操作符
-        if (DslConstants.NOT_PATTERN.matcher(expression).find()) {
-            String withoutNot = DslConstants.NOT_PATTERN.matcher(expression).replaceFirst("").trim();
+        String withoutNot = DslExpressionParser.stripLeadingNot(expression);
+        if (withoutNot != null) {
             return !evaluateDslExpression(withoutNot, context);
         }
         
         // 处理OR操作符
-        if (DslConstants.OR_PATTERN.matcher(expression).find()) {
-            String[] orParts = DslConstants.OR_PATTERN.split(expression);
+        List<String> orParts = DslExpressionParser.splitTopLevelLogical(expression, "OR");
+        if (orParts.size() > 1) {
             for (String part : orParts) {
                 if (evaluateDslExpression(part.trim(), context)) {
                     return true;
@@ -331,8 +332,8 @@ public class DslEvaluatorRefactored {
         }
         
         // 处理AND操作符
-        if (DslConstants.AND_PATTERN.matcher(expression).find()) {
-            String[] andParts = DslConstants.AND_PATTERN.split(expression);
+        List<String> andParts = DslExpressionParser.splitTopLevelLogical(expression, "AND");
+        if (andParts.size() > 1) {
             for (String part : andParts) {
                 if (!evaluateDslExpression(part.trim(), context)) {
                     return false;
@@ -348,7 +349,7 @@ public class DslEvaluatorRefactored {
      * 评估单个条件
      */
     private static boolean evaluateSingleCondition(String expression, Map<String, Object> context) {
-        expression = expression.trim();
+        expression = DslExpressionParser.stripEnclosingParentheses(expression.trim());
         
         // 首先检查是否是比较表达式
         String operator = DslUtils.findComparisonOperator(expression);

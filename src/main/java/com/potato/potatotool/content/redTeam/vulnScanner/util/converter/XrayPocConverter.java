@@ -308,7 +308,7 @@ public class XrayPocConverter implements IPocConverter<XrayYamlObj.Poc> {
                     "expression", expression, "fallback",
                     "Xray CEL表达式验证失败: " + e.getMessage());
             System.err.println("警告: Xray CEL表达式验证失败 - " + e.getMessage());
-            logUnrecognizedExpression(e.getMessage());
+//            logUnrecognizedExpression(e.getMessage());
             // 继续执行，但记录警告
         }
 

@@ -28,7 +28,6 @@ import com.potato.potatotool.content.redTeam.vulnScanner.config.VulnScanConfig;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.JsonUtils;
 import com.potato.potatotool.utils.data.StrUtils;
-import com.potato.potatotool.utils.network.HeaderManager;
 import com.potato.potatotool.utils.network.ProxyUtils;
 import javafx.animation.FadeTransition;
 import javafx.animation.RotateTransition;
@@ -223,6 +222,15 @@ public class PaneVulScan {
         
         // 绑定国际化
         Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        // 二次保险：i18n 完成 setItems 后再强制选回默认值，避免被 i18n 绑定副作用回退到 select(0)
+        Platform.runLater(() -> {
+            if (scanModeComboBox != null) {
+                scanModeComboBox.getSelectionModel().select(2); // STANDARD
+            }
+            if (inputTypeComboBox != null && inputTypeComboBox.getSelectionModel().getSelectedIndex() < 0) {
+                inputTypeComboBox.getSelectionModel().select(0); // 自动检测
+            }
+        });
         promptDefaultContent = promptLabel;
         
         // 检查未完成的扫描-暂时跳过
@@ -380,12 +388,6 @@ public class PaneVulScan {
             config.setProxy(proxyAddress.trim());
         }
 
-        Map<String, String> globalHeaders = HeaderManager.getInstance().getCustomHeaders();
-        if (PaneVulScanSupport.shouldBlockScanForBuildingProfile(globalHeaders)) {
-            showPrompt(I18nUtils.getString("vulnscan.msg.scan.profile.required"), true, true);
-            return null;
-        }
-
         // 调试模式
         config.setDebug(debugMode || verboseLogBox.isSelected());
 
@@ -530,6 +532,9 @@ public class PaneVulScan {
                         if (!result.isCompatible()) {
                             enableHeadlessBox.setSelected(false);
                             showPrompt(HeadlessHandler.buildCompatibilityErrorMessage(result), true, true);
+                        } else {
+                            // 兼容性检测通过：关闭“正在检测...”提示
+                            hidePromptPane();
                         }
                     });
                     precheckTask.setOnFailed(e -> {
@@ -559,6 +564,16 @@ public class PaneVulScan {
                     refreshLogs(null);
                 }
             });
+        }
+
+        // scanStateLabel 宽度跟随 progressBox 可见性：进度条出现时收紧到 220，否则放宽到 460
+        if (scanStateLabel != null && progressBox != null) {
+            Runnable applyWidth = () -> {
+                double max = progressBox.isVisible() ? 220.0 : 460.0;
+                scanStateLabel.setMaxWidth(max);
+            };
+            applyWidth.run();
+            progressBox.visibleProperty().addListener((obs, oldVal, newVal) -> applyWidth.run());
         }
     }
 
@@ -896,6 +911,22 @@ public class PaneVulScan {
             }
         }
     }
+
+    public void importTargets(List<String> targets) {
+        if (targets == null || targets.isEmpty()) {
+            return;
+        }
+        Runnable action = () -> {
+            String text = String.join("\n", targets);
+            targetField.setText(text);
+            showPrompt(I18nUtils.getString("vulnscan.msg.targets.imported", targets.size()), false);
+        };
+        if (Platform.isFxApplicationThread()) {
+            action.run();
+        } else {
+            Platform.runLater(action);
+        }
+    }
     
     @FXML
     public void startQuickScan(MouseEvent event) {
@@ -1014,9 +1045,9 @@ public class PaneVulScan {
             @Override
             public void onScanProgress(ScanProgressEvent event) {
                 Platform.runLater(() -> {
-                    double progress = event.getProgressPercentage() / 100.0;
+                    double progress = event.getOverallProgress();
                     progressBar.setProgress(progress);
-                    progressLabel.setText(String.format("%.1f%%", progress * 100));
+                    progressLabel.setText(buildProgressLabel(event, progress));
                     // 时间更新由独立的 scanTimer 计时器处理，每秒更新一次
                 });
             }
@@ -1037,15 +1068,15 @@ public class PaneVulScan {
                     // 检查是否是因为暂停而触发的完成事件
                     if (!scanService.isPaused()) {
                         stopScanTimer(); // 停止计时器
-                        updateButtonsForStatus(ScanState.Status.COMPLETED);
-                        updateScanStateLabel(I18nUtils.getString("vulnscan.status.completed"));
-                        updateResultVBox(I18nUtils.getString("vulnscan.scan.completed", scanResults.size()), true, null);
-                        updateStatistics(scanResults);
-
-                        // 自动保存
-                        if (autoSaveBox.isSelected() && !scanResults.isEmpty()) {
-                            saveToDatabase(null);
+                        if (event.isSuccess()) {
+                            updateButtonsForStatus(ScanState.Status.COMPLETED);
+                            updateScanStateLabel(I18nUtils.getString("vulnscan.status.completed"));
+                            updateResultVBox(I18nUtils.getString("vulnscan.scan.completed", scanResults.size()), true, null);
+                        } else {
+                            updateButtonsForStatus(ScanState.Status.STOPPED);
+                            updateScanStateLabel(I18nUtils.getString("vulnscan.status.stopped"));
                         }
+                        updateStatistics(scanResults);
                     }
                     // 如果是暂停状态，保持暂停按钮的显示状态
                 });
@@ -1112,7 +1143,7 @@ public class PaneVulScan {
 
                         scanService.startScan(new ArrayList<>(targets), selectedPocs, selection.getFingerprint());
                     } else {
-                        // 多目标：逐目标指纹识别，POC 取并集
+                        // 多目标：逐目标指纹识别，并按目标执行对应 POC，避免跨目标串扰。
                         MultiTargetSelectionResult selection = scanService.selectAndFilterPocsMultiTarget(targets, config);
                         if (isCancelled()) return null;
                         selectedPocs = selection.getPocs();
@@ -1131,7 +1162,7 @@ public class PaneVulScan {
                         Platform.runLater(() ->
                             updateResultVBox(I18nUtils.getString("vulnscan.scan.selected", selectedPocs.size()), false, null));
 
-                        scanService.startScan(new ArrayList<>(targets), selectedPocs, selection.getFingerprintMap());
+                        scanService.startScan(new ArrayList<>(targets), selection);
                     }
                 } catch (Exception e) {
                     if (isCancelled()) return null;
@@ -1198,7 +1229,7 @@ public class PaneVulScan {
     @FXML
     public void resumeFromPause(MouseEvent event) {
         // 优先恢复当前正在暂停的扫描
-        if (scanService.isPaused() && scanService.isScanning()) {
+        if (scanService.isPaused()) {
             try {
                 String currentScanId = scanService.getCurrentScanId();
                 if (currentScanId != null) {
@@ -1367,6 +1398,7 @@ public class PaneVulScan {
             case PAUSED: return I18nUtils.getString("vulnscan.status.paused");
             case STOPPED: return I18nUtils.getString("vulnscan.status.stopped");
             case COMPLETED: return I18nUtils.getString("vulnscan.status.completed");
+            case FAILED: return I18nUtils.getString("vulnscan.status.failed");
             default: return "";
         }
     }
@@ -1994,8 +2026,7 @@ public class PaneVulScan {
                         @Override
                         protected Void call() throws Exception {
                             try {
-                                long scanId = Long.parseLong(selected.getId());
-                                database.deleteHistory(scanId);
+                                database.deleteScanTaskHistory(selected.getId());
                                 Platform.runLater(() -> {
                                     historyTableView.getItems().remove(selected);
                                     showPrompt(I18nUtils.getString("vulnscan.msg.history.deleted"), false);
@@ -2412,6 +2443,24 @@ public class PaneVulScan {
         long minutes = (seconds % 3600) / 60;
         long secs = seconds % 60;
         return String.format("%02d:%02d:%02d", hours, minutes, secs);
+    }
+
+    private String buildProgressLabel(ScanProgressEvent event, double progress) {
+        if (event == null) {
+            return String.format("%.1f%%", progress * 100);
+        }
+        String phaseMessage = event.getMessage();
+        if (phaseMessage != null && !phaseMessage.trim().isEmpty()) {
+            if (event.getPhaseTotal() > 0) {
+                return String.format("%s %d/%d (%.1f%%)",
+                    phaseMessage,
+                    event.getPhaseCompleted(),
+                    event.getPhaseTotal(),
+                    progress * 100);
+            }
+            return String.format("%s (%.1f%%)", phaseMessage, progress * 100);
+        }
+        return String.format("%.1f%%", progress * 100);
     }
     
     // ==================== POC管理增强功能 ====================
@@ -3513,9 +3562,9 @@ public class PaneVulScan {
                 @Override
                 public void onScanProgress(ScanProgressEvent event) {
                     Platform.runLater(() -> {
-                        double progress = event.getProgressPercentage() / 100.0;
+                        double progress = event.getOverallProgress();
                         progressBar.setProgress(progress);
-                        progressLabel.setText(String.format("%.1f%%", progress * 100));
+                        progressLabel.setText(buildProgressLabel(event, progress));
 
                         // 更新扫描时间
                         long elapsed = System.currentTimeMillis() - scanStartTime;
@@ -3538,15 +3587,15 @@ public class PaneVulScan {
                     Platform.runLater(() -> {
                         // 检查是否是因为暂停而触发的完成事件
                         if (!scanService.isPaused()) {
-                            updateButtonsForStatus(ScanState.Status.COMPLETED);
-                            updateScanStateLabel(I18nUtils.getString("vulnscan.status.completed"));
-                            updateResultVBox(I18nUtils.getString("vulnscan.scan.completed", scanResults.size()), true, null);
-                            updateStatistics(scanResults);
-
-                            // 自动保存
-                            if (autoSaveBox.isSelected() && !scanResults.isEmpty()) {
-                                saveToDatabase(null);
+                            if (event.isSuccess()) {
+                                updateButtonsForStatus(ScanState.Status.COMPLETED);
+                                updateScanStateLabel(I18nUtils.getString("vulnscan.status.completed"));
+                                updateResultVBox(I18nUtils.getString("vulnscan.scan.completed", scanResults.size()), true, null);
+                            } else {
+                                updateButtonsForStatus(ScanState.Status.STOPPED);
+                                updateScanStateLabel(I18nUtils.getString("vulnscan.status.stopped"));
                             }
+                            updateStatistics(scanResults);
                         }
                         // 如果是暂停状态，保持暂停按钮的显示状态
                     });
@@ -3636,12 +3685,20 @@ public class PaneVulScan {
     }
 
     /**
-     * 更新扫描状态标签
+     * 更新扫描状态标签：同步 text + tooltip，方便用户在文本被省略时悬停查看完整内容
      */
     private void updateScanStateLabel(String state) {
         Platform.runLater(() -> {
-            if (scanStateLabel != null) {
-                scanStateLabel.setText(state);
+            if (scanStateLabel == null) {
+                return;
+            }
+            scanStateLabel.setText(state);
+            Tooltip tip = scanStateLabel.getTooltip();
+            if (tip == null) {
+                tip = new Tooltip(state);
+                scanStateLabel.setTooltip(tip);
+            } else {
+                tip.setText(state);
             }
         });
     }

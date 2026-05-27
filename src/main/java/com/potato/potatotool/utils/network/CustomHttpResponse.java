@@ -101,15 +101,14 @@ public class CustomHttpResponse implements AutoCloseable {
                     // 3xx 重定向：EOF 是正常的，不输出完整堆栈
                     System.err.println("读取重定向响应体时遇到 EOF（状态码: " + statusCode + "），这通常是正常的");
                 } else {
-                    // 非重定向状态码：输出详细错误
                     System.err.println("读取响应数据失败，状态码: " + statusCode + ", 错误: EOFException");
-                    e.printStackTrace();
                 }
                 dataBuffer = new byte[0];
+            } catch (java.io.InterruptedIOException e) {
+                System.err.println("读取响应数据超时，状态码: " + response.code() + ", 错误: " + e.getMessage());
+                dataBuffer = new byte[0];
             } catch (Exception e) {
-                // 其他异常：完整输出
                 System.err.println("读取响应数据失败，状态码: " + response.code() + ", 错误: " + e.getMessage());
-                e.printStackTrace();
                 dataBuffer = new byte[0];
             }
         }
@@ -148,7 +147,7 @@ public class CustomHttpResponse implements AutoCloseable {
             byte[] buffer = getDataBuffer();
             return new String(buffer, charset);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("响应文本解析失败: " + e.getMessage());
             return null;
         }
     }

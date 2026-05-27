@@ -7,6 +7,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.Matcher
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.MatchersCondition;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.Severity;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslEvaluatorRefactored;
+import com.potato.potatotool.content.redTeam.vulnScanner.util.PocConverter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -132,7 +133,9 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             return poc;
         }
 
-        System.out.println("✅ POC 转换开始 - ID: " + nucleiPoc.getId() + ", " + protocolInfo);
+        if (PocConverter.isVerboseLogging()) {
+            System.out.println("✅ POC 转换开始 - ID: " + nucleiPoc.getId() + ", " + protocolInfo);
+        }
 
         // 转换基本信息
         convertBasicInfo(nucleiPoc, poc);
@@ -189,6 +192,22 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
             
             // 设置标签
             convertTags(info, poc);
+
+            // 设置产品元数据，用于智能筛选时区分通用审计与产品专属审计
+            convertMetadataProduct(info, poc);
+        }
+    }
+
+    private void convertMetadataProduct(NucleiYamlObj.Info info, PocObj.Poc poc) {
+        if (info.getMetadata() == null) {
+            return;
+        }
+
+        NucleiYamlObj.Metadata metadata = info.getMetadata();
+        if (metadata.getProduct() != null && !metadata.getProduct().trim().isEmpty()) {
+            poc.setProduct(safeGetString(metadata.getProduct()).trim());
+        } else if (metadata.getVendor() != null && !metadata.getVendor().trim().isEmpty()) {
+            poc.setProduct(safeGetString(metadata.getVendor()).trim());
         }
     }
     
@@ -954,7 +973,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                                     DslEvaluatorRefactored.validateDslSyntax(dslExpr);
                                 } catch (IllegalArgumentException e) {
                                     System.err.println("警告: Nuclei DSL表达式验证失败 - " + e.getMessage());
-                                    logUnrecognizedExpression(e.getMessage());
+//                                    logUnrecognizedExpression(e.getMessage());
                                     // 继续执行，但记录警告
                                 }
                             }
@@ -1138,7 +1157,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
                                 DslEvaluatorRefactored.validateDslSyntax(dslExpr);
                             } catch (IllegalArgumentException e) {
                                 System.err.println("警告: Nuclei DSL提取器表达式验证失败 - " + e.getMessage());
-                                logUnrecognizedExpression(e.getMessage());
+//                                logUnrecognizedExpression(e.getMessage());
                                 // 继续执行，但记录警告
                             }
                         }
@@ -1936,7 +1955,7 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         step.setSource(codeRequest.getSource());
         step.setArgs(codeRequest.getArgs());
         if (codeRequest.getPattern() != null) {
-            step.setPattern(codeRequest.getPattern());
+            step.setPattern(normalizeCodePattern(codeRequest.getPattern()));
         }
 
         // 处理匹配器
@@ -1974,6 +1993,23 @@ public class NucleiPocConverter extends AbstractPocConverter<NucleiYamlObj.Poc> 
         capability.put("action", action);
         capability.put("message", message);
         unsupportedCapabilities.add(capability);
+    }
+
+    private List<String> normalizeCodePattern(Object pattern) {
+        List<String> result = new ArrayList<>();
+        if (pattern == null) {
+            return result;
+        }
+        if (pattern instanceof List) {
+            for (Object item : (List<?>) pattern) {
+                if (item != null) {
+                    result.add(String.valueOf(item));
+                }
+            }
+            return result;
+        }
+        result.add(String.valueOf(pattern));
+        return result;
     }
 
     private int toNucleiStepIndex(int zeroBasedIndex) {

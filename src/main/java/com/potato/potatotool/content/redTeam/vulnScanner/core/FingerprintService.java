@@ -10,6 +10,8 @@ import com.potato.potatotool.content.redTeam.vulnScanner.util.TagNormalizer;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -50,14 +52,32 @@ public class FingerprintService {
      * @return 指纹识别结果
      */
     public FingerprintResult identify(String target, InputType inputType) {
+        return identify(target, inputType, null);
+    }
+
+    public FingerprintResult identify(String target, InputType inputType,
+                                      BiConsumer<Integer, Integer> progressCallback) {
+        return identify(target, inputType, progressCallback, null);
+    }
+
+    public FingerprintResult identify(String target, InputType inputType,
+                                      BiConsumer<Integer, Integer> progressCallback,
+                                      ScanProgressTracker progressTracker) {
         if (target == null || target.isEmpty()) {
             return new FingerprintResult();
         }
+
+        List<PocObj.Poc> fingerprintPocs = selectFingerprintPocs(inputType);
+        int fingerprintPocCount = fingerprintPocs.size();
         
         // 检查缓存
         String cacheKey = target + "|" + inputType;
         FingerprintResult cached = fingerprintCache.get(cacheKey);
         if (cached != null && !cached.isExpired(cacheTtlMs)) {
+            notifyProgress(progressCallback, fingerprintPocCount, fingerprintPocCount);
+            if (progressTracker != null) {
+                progressTracker.advance(Math.max(1, fingerprintPocCount), "指纹缓存命中: " + target);
+            }
             return cached;
         }
         
@@ -67,9 +87,6 @@ public class FingerprintService {
         result.setStartTime(System.currentTimeMillis());
         
         try {
-            // 根据输入类型选择指纹 POC
-            List<PocObj.Poc> fingerprintPocs = selectFingerprintPocs(inputType);
-            
             if (fingerprintPocs.isEmpty()) {
                 result.setMessage("没有找到适用于 " + inputType + " 的指纹 POC");
                 return result;
@@ -80,9 +97,21 @@ public class FingerprintService {
                 Math.min(fingerprintThreads, fingerprintPocs.size()));
             
             List<Future<FingerprintMatch>> futures = new ArrayList<>();
+            final AtomicInteger completed = new AtomicInteger(0);
+            final int total = fingerprintPocs.size();
             
             for (PocObj.Poc poc : fingerprintPocs) {
-                futures.add(executor.submit(() -> executeFingerprintPoc(target, poc)));
+                futures.add(executor.submit(() -> {
+                    try {
+                        return executeFingerprintPoc(target, poc);
+                    } finally {
+                        int done = completed.incrementAndGet();
+                        notifyProgress(progressCallback, done, total);
+                        if (progressTracker != null) {
+                            progressTracker.advance(1, "指纹识别中: " + target);
+                        }
+                    }
+                }));
             }
             
             // 收集结果
@@ -99,7 +128,7 @@ public class FingerprintService {
                 }
             }
             
-            executor.shutdown();
+            executor.shutdownNow();
             
             // 汇总结果
             result.summarize();
@@ -114,6 +143,21 @@ public class FingerprintService {
         fingerprintCache.put(cacheKey, result);
         
         return result;
+    }
+
+    public int countFingerprintPocs(InputType inputType) {
+        return selectFingerprintPocs(inputType).size();
+    }
+
+    private void notifyProgress(BiConsumer<Integer, Integer> progressCallback, int completed, int total) {
+        if (progressCallback == null) {
+            return;
+        }
+        try {
+            progressCallback.accept(completed, total);
+        } catch (Exception ignore) {
+            // 指纹进度回调不影响识别流程
+        }
     }
     
     /**

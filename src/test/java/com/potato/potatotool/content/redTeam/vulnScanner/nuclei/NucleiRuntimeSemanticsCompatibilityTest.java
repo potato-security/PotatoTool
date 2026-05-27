@@ -4,6 +4,8 @@ import com.potato.potatotool.content.redTeam.vulnScanner.classObj.NucleiYamlObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.core.PocExecutor;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslContextBuilder;
+import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslEvaluatorRefactored;
+import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslUtils;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpHandler;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanConfig;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanResult;
@@ -113,6 +115,12 @@ public class NucleiRuntimeSemanticsCompatibilityTest {
         server.createContext("/iterate/raw-index", exchange -> write(exchange, 200, "item=miss\nitem=hit\n", "text/plain"));
         server.createContext("/iterate/raw/miss", exchange -> write(exchange, 404, "raw-miss", "text/plain"));
         server.createContext("/iterate/raw/hit", exchange -> write(exchange, 200, "raw-hit", "text/plain"));
+        server.createContext("/regex-braces", exchange -> write(exchange, 200,
+                "nonce-ok\nkb_adv_form_params = {\"nonce\":\"nonce-001\"}", "text/plain"));
+        server.createContext("/regex-parentheses", exchange -> write(exchange, 200,
+                "TOKEN-ABC123456789\nAUTHORIZATION=\"ABCDEFGHIJKL\"", "text/plain"));
+        server.createContext("/wp-content/plugins/missing-plugin/readme.txt", exchange ->
+                write(exchange, 404, "<html><title>not found</title><body>missing plugin</body></html>", "text/html"));
         server.createContext("/code/output-from-code", exchange -> write(exchange, 200, "code-response-ok", "text/plain"));
         server.createContext("/javascript/output-from-js", exchange -> write(exchange, 200, "javascript-response-ok", "text/plain"));
 
@@ -219,6 +227,205 @@ public class NucleiRuntimeSemanticsCompatibilityTest {
 
         ScanResult result = executeYaml(yaml);
         assertTrue(result.isVulnerable(), "cookie-reuse 与裸变量 helper 表达式应正常替换");
+    }
+
+    @Test
+    @DisplayName("OOB 与编码 helper 应符合 Nuclei 模板语义")
+    void oobAndEncodingHelpersShouldMatchNucleiTemplates() {
+        Map<String, Object> context = new HashMap<String, Object>();
+        context.put("interactsh-url", "abc123.oast.test");
+        context.put("oast", "http://abc123.oast.test/?");
+        context.put("padstr", "A");
+
+        assertEquals("abc123.oast.test",
+                DslEvaluatorRefactored.evaluateFunctionForValue("to_string(interactsh-url)", context));
+        assertEquals("hello_world",
+                DslEvaluatorRefactored.evaluateFunctionForValue("base64_decode('aGVsbG9fd29ybGQ')", context));
+        assertEquals("http://abc123.oast.test/?AAAAA",
+                DslEvaluatorRefactored.evaluateFunctionForValue("padding(oast,padstr,30,'suffix')", context));
+    }
+
+    @Test
+    @DisplayName("compare_versions 缺失版本时不应按 0.0.0 误判")
+    void compareVersionsShouldRequireExtractedVersion() {
+        Map<String, Object> context = new HashMap<String, Object>();
+        context.put("last_version", "9.0.0");
+
+        assertFalse(DslEvaluatorRefactored.evaluateDslExpression(
+                "compare_versions(internal_detected_version, concat(\"< \", last_version))",
+                context));
+
+        context.put("internal_detected_version", "8.1.0");
+        assertTrue(DslEvaluatorRefactored.evaluateDslExpression(
+                "compare_versions(internal_detected_version, concat(\"< \", last_version))",
+                context));
+    }
+
+    @Test
+    @DisplayName("WordPress 插件 readme 404 页面不应被版本比较误报")
+    void wordpressPluginReadmeNotFoundShouldNotReportVulnerability() throws Exception {
+        String yaml =
+                "id: runtime-wordpress-plugin-missing-readme\n" +
+                "info:\n" +
+                "  name: runtime-wordpress-plugin-missing-readme\n" +
+                "  severity: info\n" +
+                "http:\n" +
+                "  - method: GET\n" +
+                "    path:\n" +
+                "      - '{{BaseURL}}/wp-content/plugins/missing-plugin/readme.txt'\n" +
+                "    payloads:\n" +
+                "      last_version:\n" +
+                "        - '9.0.0'\n" +
+                "    extractors:\n" +
+                "      - type: regex\n" +
+                "        part: body\n" +
+                "        internal: true\n" +
+                "        name: internal_detected_version\n" +
+                "        group: 1\n" +
+                "        regex:\n" +
+                "          - '(?i)Stable.tag:\\s?([\\w.]+)'\n" +
+                "    matchers-condition: or\n" +
+                "    matchers:\n" +
+                "      - type: dsl\n" +
+                "        name: outdated_version\n" +
+                "        dsl:\n" +
+                "          - compare_versions(internal_detected_version, concat(\"< \", last_version))\n" +
+                "      - type: regex\n" +
+                "        part: body\n" +
+                "        regex:\n" +
+                "          - '(?i)Stable.tag:\\s?([\\w.]+)'\n";
+
+        ScanResult result = executeYaml(yaml);
+        assertFalse(result.isVulnerable(), "未提取到 Stable.tag 时不应把 readme 404 页误报为插件存在");
+    }
+
+    @Test
+    @DisplayName("interactsh helper 应保持裸域名并避免重复协议")
+    void interactshHelperShouldAvoidDuplicateScheme() throws Exception {
+        Map<String, String> variables = new HashMap<>();
+        variables.put("interactsh-url", "http://abc123.oast.test");
+        variables.put("interactsh_url", "http://abc123.oast.test");
+
+        String result = HttpHandler.replaceVariables(
+                "http://{{interactsh-url}}|https://{{interactsh_url}}|{{to_string(interactsh-url)}}",
+                variables);
+
+        assertEquals("http://abc123.oast.test|https://abc123.oast.test|abc123.oast.test", result);
+
+        Map<String, Object> context = new HashMap<String, Object>();
+        context.put("interactsh-url", "abc123.oast.test");
+        String gadget = DslEvaluatorRefactored.evaluateFunctionForValue(
+                "generate_java_gadget(\"dns\", \"http://{{interactsh-url}}\", \"base64\")",
+                context);
+        assertEquals("JAVA_GADGET_PLACEHOLDER", gadget);
+    }
+
+    @Test
+    @DisplayName("regex extractor 应兼容 Nuclei 裸花括号")
+    void regexExtractorShouldAcceptLiteralBraces() throws Exception {
+        String yaml =
+                "id: runtime-regex-literal-braces\n" +
+                "info:\n" +
+                "  name: runtime-regex-literal-braces\n" +
+                "  severity: info\n" +
+                "http:\n" +
+                "  - method: GET\n" +
+                "    path:\n" +
+                "      - '{{BaseURL}}/regex-braces'\n" +
+                "    extractors:\n" +
+                "      - type: regex\n" +
+                "        name: nonce\n" +
+                "        group: 1\n" +
+                "        regex:\n" +
+                "          - 'kb_adv_form_params\\s*=\\s*{[^}]*\"nonce\"\\s*:\\s*\"([^\"]*)\"'\n" +
+                "        internal: true\n" +
+                "    matchers:\n" +
+                "      - type: word\n" +
+                "        part: body\n" +
+                "        words:\n" +
+                "          - nonce-ok\n";
+
+        ScanResult result = executeYaml(yaml);
+        assertTrue(result.isVulnerable(), "裸 { / } 应按 Nuclei 常见正则语义作为字面量处理");
+    }
+
+    @Test
+    @DisplayName("DSL regex 参数内包含括号时不应截断")
+    void dslRegexShouldParseParenthesesInPattern() throws Exception {
+        String yaml =
+                "id: runtime-regex-parentheses\n" +
+                "info:\n" +
+                "  name: runtime-regex-parentheses\n" +
+                "  severity: info\n" +
+                "http:\n" +
+                "  - method: GET\n" +
+                "    path:\n" +
+                "      - '{{BaseURL}}/regex-parentheses'\n" +
+                "    matchers:\n" +
+                "      - type: dsl\n" +
+                "        dsl:\n" +
+                "          - \"regex(\\\"AUTHORIZATION[\\\\\\\\-|_|A-Z0-9]*(\\\\'|\\\\\\\")?(:|=)(\\\\'|\\\\\\\")?[\\\\\\\\-|_|A-Z0-9]{10}\\\", replace(toupper(body),\\\"\\\",\\\"\\\"))\"\n";
+
+        ScanResult result = executeYaml(yaml);
+        assertTrue(result.isVulnerable(), "regex 参数里的捕获组/括号不应导致参数解析失败");
+    }
+
+    @Test
+    @DisplayName("比较运算符检测应忽略转义引号内的等号")
+    void comparisonOperatorShouldIgnoreEscapedQuotedRegex() {
+        String expression = "regex(\"TOKEN[\\\\-|_|A-Z0-9]*(\\'|\\\")?(:|=)(\\'|\\\")?[\\\\-|_|A-Z0-9]{10}\", replace(toupper(body),\"\",\"\"))";
+        assertEquals(null, DslUtils.findComparisonOperator(expression));
+    }
+
+    @Test
+    @DisplayName("仅 extractor 命中不应报告漏洞")
+    void extractorOnlyTemplateShouldNotReportVulnerability() throws Exception {
+        String yaml =
+                "id: runtime-extractor-only-token\n" +
+                "info:\n" +
+                "  name: runtime-extractor-only-token\n" +
+                "  severity: info\n" +
+                "http:\n" +
+                "  - method: GET\n" +
+                "    path:\n" +
+                "      - '{{BaseURL}}/regex-parentheses'\n" +
+                "    extractors:\n" +
+                "      - type: regex\n" +
+                "        part: body\n" +
+                "        name: leaked_token\n" +
+                "        group: 0\n" +
+                "        regex:\n" +
+                "          - 'TOKEN-[A-Z0-9]+'\n";
+
+        ScanResult result = executeYaml(yaml);
+        assertFalse(result.isVulnerable(), "没有 matcher 的 extractor-only 模板只能提取数据，不应直接标记漏洞");
+    }
+
+    @Test
+    @DisplayName("DSL 逻辑表达式应按顶层 && / || 拆分")
+    void dslLogicalExpressionShouldSplitTopLevelSymbolOperators() {
+        Map<String, Object> context = new HashMap<String, Object>();
+        context.put("body_1", "220 FTP service ready");
+        context.put("body_2", "220 FTP service ready");
+        context.put("body_3", "220 FTP service ready");
+        context.put("body_4", "SSH-.-");
+        context.put("body_5", "SMTP service ready");
+        context.put("body_6", "POP3 service ready");
+        context.put("body_7", "SMTP service ready");
+        context.put("body_8", "SMTP service ready");
+
+        assertTrue(DslEvaluatorRefactored.evaluateDslExpression(
+                "(regex(\"(?i)FTP\",body_1)) && (regex(\"(?i)FTP\",body_2)) && (regex(\"(?i)FTP\",body_3))",
+                context));
+        assertTrue(DslEvaluatorRefactored.evaluateDslExpression(
+                "(regex(\"(?i)SSH-[.]+-+\",body_1)) || (regex(\"(?i)SSH-[.]+-+\",body_4))",
+                context));
+        assertTrue(DslEvaluatorRefactored.evaluateDslExpression(
+                "(regex(\"(?i)POP3\",body_6)) && ((regex(\"(?i)SMTP\",body_5)) || (regex(\"(?i)SMTP\",body_7)) || (regex(\"(?i)SMTP\",body_8)))",
+                context));
+        assertFalse(DslEvaluatorRefactored.evaluateDslExpression(
+                "(regex(\"(?i)FTP\",body_1)) && (regex(\"(?i)SMTP\",body_2))",
+                context));
     }
 
     @Test

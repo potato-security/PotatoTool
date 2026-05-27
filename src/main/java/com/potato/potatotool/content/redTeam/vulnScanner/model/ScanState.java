@@ -15,7 +15,8 @@ public class ScanState {
         RUNNING,    // 运行中
         PAUSED,     // 已暂停
         STOPPED,    // 已停止
-        COMPLETED   // 已完成
+        COMPLETED,  // 已完成
+        FAILED      // 执行失败
     }
     
     private String scanId;
@@ -258,10 +259,9 @@ public class ScanState {
         if (startTime == 0) {
             return 0;
         }
-        long end = (status == Status.COMPLETED || status == Status.STOPPED) && endTime > 0
+        long end = (status == Status.COMPLETED || status == Status.STOPPED || status == Status.FAILED) && endTime > 0
             ? endTime
             : System.currentTimeMillis();
         return (end - startTime) / 1000;
     }
 }
-

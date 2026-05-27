@@ -5,6 +5,7 @@ import java.util.Set;
 import com.potato.potatotool.utils.data.GzipUtils;
 import java.util.Base64;
 import java.util.HashSet;
+import java.util.regex.Pattern;
 
 /**
  * DSL函数类型管理器
@@ -716,14 +717,15 @@ public class DslFunctionTypeManager {
                     String[] args = DslUtils.extractFunctionArgs(expression);
                     if (args.length >= 2) {
                         String gadgetType = DslUtils.cleanStringValue(args[0]);
-                        String cmd = DslEvaluatorRefactored.resolveValueOrFunction(args[1], context);
+                        String cmd = resolveStringArgument(args[1], context);
                         String encoding = args.length >= 3 ? DslUtils.cleanStringValue(args[2]) : "base64";
                         // 使用DslFunctionExtended中的实现
                         String result = DslFunctionExtended.generateJavaGadget(gadgetType);
                         // 如果返回占位符，尝试生成实际的gadget
                         if ("JAVA_GADGET_PLACEHOLDER".equals(result)) {
                             // 这里可以集成ysoserial或使用其他方法生成
-                            System.out.println("generate_java_gadget: gadget=" + gadgetType + ", cmd=" + cmd + ", encoding=" + encoding);
+                            String normalizedCmd = normalizeCallbackCommand(cmd);
+                            System.out.println("generate_java_gadget: gadget=" + gadgetType + ", cmd=" + normalizedCmd + ", encoding=" + encoding);
                             return result;
                         }
                         return result;
@@ -906,7 +908,19 @@ public class DslFunctionTypeManager {
     private static String evaluateExtendedFunction(String functionName, String expression, Map<String, Object> context) {
         // 这些函数在DslFunctionExtended中实现
                 System.out.println("未实现的扩展函数: " + functionName);
-                return null;
+        return null;
+    }
+
+    private static String normalizeCallbackCommand(String cmd) {
+        if (cmd == null) {
+            return null;
+        }
+        String normalized = DslUtils.cleanStringValue(cmd).trim();
+        normalized = normalized.replaceAll("(?i)^(https?://)(?:https?://)+", "$1");
+        while (Pattern.compile("(?i)^https?://https?://").matcher(normalized).find()) {
+            normalized = normalized.replaceFirst("(?i)^(https?://)https?://", "$1");
+        }
+        return normalized;
     }
 
     /**
@@ -1120,13 +1134,34 @@ public class DslFunctionTypeManager {
                 return null;
             }
             
-            String str = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
+            String str;
+            String padChar = " ";
+            String direction = "";
+            int length;
+
+            // Nuclei 语义兼容：
+            // padding(str, padChar, length[, direction])
+            // pad_left(str, padChar, length)
+            // pad_right(str, padChar, length)
+            if (args.length >= 3 && looksLikeInteger(DslEvaluatorRefactored.resolveValueOrFunction(args[2], context))) {
+                str = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
+                padChar = resolvePaddingArgument(args[1], context);
+                length = Integer.parseInt(DslEvaluatorRefactored.resolveValueOrFunction(args[2], context));
+                if (args.length >= 4) {
+                    direction = DslUtils.cleanStringValue(args[3]);
+                }
+            } else {
+                str = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
+                length = Integer.parseInt(DslEvaluatorRefactored.resolveValueOrFunction(args[1], context));
+                if (args.length >= 3) {
+                    padChar = resolvePaddingArgument(args[2], context);
+                }
+                if (args.length >= 4) {
+                    direction = DslUtils.cleanStringValue(args[3]);
+                }
+            }
+
             if (str == null) str = "";
-            
-            int length = Integer.parseInt(DslEvaluatorRefactored.resolveValueOrFunction(args[1], context));
-            
-            // 获取填充字符，默认为空格
-            String padChar = args.length >= 3 ? DslUtils.cleanStringValue(args[2]) : " ";
             if (padChar == null || padChar.isEmpty()) padChar = " ";
             
             if (str.length() >= length) {
@@ -1141,7 +1176,7 @@ public class DslFunctionTypeManager {
             String padStr = padding.substring(0, padCount);
             
             // 根据函数名决定填充方向
-            if ("pad_right".equals(functionName)) {
+            if ("pad_right".equals(functionName) || "suffix".equalsIgnoreCase(direction)) {
                 return str + padStr;
             } else {
                 // pad_left 或 padding 默认左填充
@@ -1152,6 +1187,39 @@ public class DslFunctionTypeManager {
             System.err.println("评估 padding 函数失败: " + e.getMessage());
             return null;
         }
+    }
+
+    private static String resolvePaddingArgument(String arg, Map<String, Object> context) {
+        String resolved = DslEvaluatorRefactored.resolveValueOrFunction(arg, context);
+        if (resolved != null) {
+            return resolved;
+        }
+        return DslUtils.cleanStringValue(arg);
+    }
+
+    private static String resolveStringArgument(String arg, Map<String, Object> context) {
+        String resolved = DslEvaluatorRefactored.resolveValueOrFunction(arg, context);
+        if (resolved == null) {
+            resolved = DslUtils.cleanStringValue(arg);
+        }
+        if (resolved == null || context == null || context.isEmpty()) {
+            return resolved;
+        }
+
+        String result = resolved;
+        for (Map.Entry<String, Object> entry : context.entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null) {
+                result = result.replace("{{" + entry.getKey() + "}}", String.valueOf(entry.getValue()));
+            }
+        }
+        return result;
+    }
+
+    private static boolean looksLikeInteger(String value) {
+        if (value == null) {
+            return false;
+        }
+        return value.trim().matches("^-?\\d+$");
     }
     
     /**

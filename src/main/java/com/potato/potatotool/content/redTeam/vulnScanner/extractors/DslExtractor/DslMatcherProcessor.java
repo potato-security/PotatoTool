@@ -47,7 +47,7 @@ public class DslMatcherProcessor {
             // 处理逻辑操作符
             if (matcher.getOperator() != null) {
                 boolean result = processLogicalOperator(matcher, context);
-                System.out.println("[DEBUG] DSL逻辑操作符: " + matcher.getOperator() + " => " + result);
+                DslLogContext.debug("DSL逻辑操作符: " + matcher.getOperator() + " => " + result);
                 return result;
             }
 
@@ -56,7 +56,7 @@ public class DslMatcherProcessor {
             String expression = matcher.getExpression();
 
             if (type == null || expression == null) {
-                System.out.println("[DEBUG] DSL匹配器类型或表达式为空: type=" + type + ", expr=" + expression);
+                DslLogContext.debug("DSL匹配器类型或表达式为空: type=" + type + ", expr=" + expression);
                 return false;
             }
             
@@ -65,16 +65,16 @@ public class DslMatcherProcessor {
             switch (type.toLowerCase()) {
                 case "contains":
                     result = DslFunctionEvaluator.evaluateContainsFunction(expression, context);
-                    System.out.println("[DEBUG] DSL contains: " + expression + " => " + result);
+                    DslLogContext.debug("DSL contains: " + expression + " => " + result);
                     return result;
                 case "matches":
                     result = DslFunctionEvaluator.evaluateMatchesFunction(expression, context);
-                    System.out.println("[DEBUG] DSL matches: " + expression + " => " + result);
+                    DslLogContext.debug("DSL matches: " + expression + " => " + result);
                     return result;
                 case "len":
                 case "length":
                     result = DslFunctionEvaluator.evaluateLenFunction(expression, context);
-                    System.out.println("[DEBUG] DSL len: " + expression + " => " + result);
+                    DslLogContext.debug("DSL len: " + expression + " => " + result);
                     return result;
                 case "startswith":
                     return DslFunctionEvaluator.evaluateStartsWithFunction(expression, context);
@@ -84,25 +84,25 @@ public class DslMatcherProcessor {
                     return processIgnoreCaseMatcher(expression, context);
                 case "status":
                     result = processStatusMatcher(expression, context);
-                    System.out.println("[DEBUG] DSL status: " + expression + " => " + result);
+                    DslLogContext.debug("DSL status: " + expression + " => " + result);
                     return result;
                 case "comparison":
                     result = processComparisonMatcher(expression, context);
-                    System.out.println("[DEBUG] DSL comparison: " + expression + " => " + result);
+                    DslLogContext.debug("DSL comparison: " + expression + " => " + result);
                     return result;
                 case "function":
                     result = processFunctionMatcher(expression, context);
-                    System.out.println("[DEBUG] DSL function: " + expression + " => " + result);
+                    DslLogContext.debug("DSL function: " + expression + " => " + result);
                     return result;
                 case "dsl":
                 default:
                     result = processDslMatcher(expression, context);
-                    System.out.println("[DEBUG] DSL default: type=" + type + ", expr=" + expression + " => " + result);
+                    DslLogContext.debug("DSL default: type=" + type + ", expr=" + expression + " => " + result);
                     return result;
             }
             
         } catch (Exception e) {
-            System.err.println("处理匹配器失败: " + e.getMessage());
+            DslLogContext.warn("处理匹配器失败: " + e.getMessage());
             return false;
         }
     }
@@ -142,7 +142,7 @@ public class DslMatcherProcessor {
                 return false;
                 
             default:
-                System.err.println("未知的逻辑操作符: " + operator);
+                DslLogContext.warn("未知的逻辑操作符: " + operator);
                 return false;
         }
     }
@@ -174,7 +174,7 @@ public class DslMatcherProcessor {
             return DslFunctionEvaluator.evaluateContainsFunction(innerExpression, tempContext);
             
         } catch (Exception e) {
-            System.err.println("处理ignoreCase匹配器失败: " + e.getMessage());
+            DslLogContext.warn("处理ignoreCase匹配器失败: " + e.getMessage());
             return false;
         }
     }
@@ -206,7 +206,7 @@ public class DslMatcherProcessor {
             return compareValues(statusValue, operator, expectedValue);
             
         } catch (Exception e) {
-            System.err.println("处理状态码匹配器失败: " + e.getMessage());
+            DslLogContext.warn("处理状态码匹配器失败: " + e.getMessage());
             return false;
         }
     }
@@ -228,7 +228,7 @@ public class DslMatcherProcessor {
             return compareValues(leftValue, operator, rightValue);
             
         } catch (Exception e) {
-            System.err.println("处理比较匹配器失败: " + e.getMessage());
+            DslLogContext.warn("处理比较匹配器失败: " + e.getMessage());
             return false;
         }
     }
@@ -254,7 +254,7 @@ public class DslMatcherProcessor {
             
             // 检查是否为已知函数
             if (!DslFunctionTypeManager.isKnownFunction(normalizedFunctionName)) {
-                System.err.println("未知的函数: " + functionName);
+                DslLogContext.warn("未知的函数: " + functionName);
                 return false;
             }
             
@@ -262,7 +262,7 @@ public class DslMatcherProcessor {
             return DslFunctionTypeManager.evaluateFunctionAsBoolean(normalizedFunctionName, expression, context);
             
         } catch (Exception e) {
-            System.err.println("处理函数匹配器失败: " + e.getMessage());
+            DslLogContext.warn("处理函数匹配器失败: " + e.getMessage());
             return false;
         }
     }
@@ -293,13 +293,13 @@ public class DslMatcherProcessor {
             // 处理右边的值（移除引号）
             String rightValue = DslUtils.cleanStringValue(rightPart);
             
-            System.out.println("[DEBUG] DSL function: " + functionName + "(body) = '" + leftValue + "' " + operator + " '" + rightValue + "'");
+            DslLogContext.debug("DSL function: " + functionName + "(body) = '" + leftValue + "' " + operator + " '" + rightValue + "'");
             
             // 执行比较
             return compareValues(leftValue, operator, rightValue);
             
         } catch (Exception e) {
-            System.err.println("处理函数比较表达式失败: " + e.getMessage());
+            DslLogContext.warn("处理函数比较表达式失败: " + e.getMessage());
             return false;
         }
     }
@@ -314,7 +314,7 @@ public class DslMatcherProcessor {
             return evaluateBasicDslExpression(expression, context);
             
         } catch (Exception e) {
-            System.err.println("处理DSL匹配器失败: " + e.getMessage());
+            DslLogContext.warn("处理DSL匹配器失败: " + e.getMessage());
             return false;
         }
     }

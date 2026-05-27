@@ -308,9 +308,8 @@ public class VulnScanDatabase {
      */
     public synchronized long saveScanRecord(List<ScanResult> results, Map<String, Object> config,
                                long durationSeconds, String status) throws SQLException {
-        // 允许暂停状态的扫描保存空结果
-        if (results == null || (results.isEmpty() && !"paused".equalsIgnoreCase(status))) {
-            throw new IllegalArgumentException("扫描结果不能为空");
+        if (results == null) {
+            results = Collections.emptyList();
         }
 
         // 统计数据
@@ -341,6 +340,12 @@ public class VulnScanDatabase {
                 PocObj.Severity severity = result.getPoc().getSeverity();
                 severityCount.put(severity, severityCount.get(severity) + 1);
             }
+        }
+        if (targetCount == 0) {
+            targetCount = getIntConfigValue(config, "targetCount");
+        }
+        if (pocCount == 0) {
+            pocCount = getIntConfigValue(config, "pocCount");
         }
 
         // 插入扫描记录
@@ -423,9 +428,8 @@ public class VulnScanDatabase {
     public synchronized long saveOrUpdateScanRecord(String scanId, List<ScanResult> results,
                                        Map<String, Object> config, long durationSeconds,
                                        String status) throws SQLException {
-        // 允许暂停状态保存空结果
-        if (results == null || (results.isEmpty() && !"paused".equalsIgnoreCase(status))) {
-            throw new IllegalArgumentException("扫描结果不能为空");
+        if (results == null) {
+            results = Collections.emptyList();
         }
 
         // 统计数据
@@ -455,6 +459,12 @@ public class VulnScanDatabase {
                 PocObj.Severity severity = result.getPoc().getSeverity();
                 severityCount.put(severity, severityCount.get(severity) + 1);
             }
+        }
+        if (targetCount == 0) {
+            targetCount = getIntConfigValue(config, "targetCount");
+        }
+        if (pocCount == 0) {
+            pocCount = getIntConfigValue(config, "pocCount");
         }
 
         // 查找是否已存在该scan_id的记录
@@ -555,6 +565,24 @@ public class VulnScanDatabase {
         rs.close();
         pstmt.close();
         return recordId;
+    }
+
+    private int getIntConfigValue(Map<String, Object> config, String key) {
+        if (config == null || key == null) {
+            return 0;
+        }
+        Object value = config.get(key);
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        if (value instanceof String) {
+            try {
+                return Integer.parseInt((String) value);
+            } catch (NumberFormatException ignored) {
+                return 0;
+            }
+        }
+        return 0;
     }
 
     /**
@@ -669,6 +697,30 @@ public class VulnScanDatabase {
         if (deleted > 0) {
             System.out.println("✓ 已删除扫描记录: " + scanId);
         }
+    }
+
+    /**
+     * 按运行时 scan_id 删除统一历史记录。
+     */
+    public synchronized void deleteScanTaskHistory(String scanId) throws SQLException {
+        if (scanId == null || scanId.trim().isEmpty()) {
+            return;
+        }
+
+        Long recordId = findScanRecordByScanId(scanId);
+        if (recordId != null) {
+            deleteVulnDetails(recordId);
+        }
+
+        PreparedStatement deleteRecord = connection.prepareStatement("DELETE FROM scan_records WHERE scan_id = ?");
+        deleteRecord.setString(1, scanId);
+        deleteRecord.executeUpdate();
+        deleteRecord.close();
+
+        clearTaskStates(scanId);
+        deleteScanState(scanId);
+
+        System.out.println("✓ 已删除扫描任务历史: " + scanId);
     }
     
     /**
@@ -1138,6 +1190,32 @@ public class VulnScanDatabase {
         pstmt.setString(1, ScanState.Status.STOPPED.name());
         pstmt.setLong(2, System.currentTimeMillis());
         pstmt.setString(3, scanId);
+
+        pstmt.executeUpdate();
+        pstmt.close();
+    }
+
+    /**
+     * 标记扫描为失败状态。
+     */
+    public synchronized void failScanTask(String scanId, int vulnCount,
+                                  int criticalCount, int highCount, int mediumCount,
+                                  int lowCount, int infoCount) throws SQLException {
+        String sql = "UPDATE scan_states SET status = ?, end_time = ?, " +
+                    "vulnerabilities_found = ?, critical_count = ?, high_count = ?, " +
+                    "medium_count = ?, low_count = ?, info_count = ?, " +
+                    "updated_at = datetime('now') WHERE scan_id = ?";
+
+        PreparedStatement pstmt = connection.prepareStatement(sql);
+        pstmt.setString(1, ScanState.Status.FAILED.name());
+        pstmt.setLong(2, System.currentTimeMillis());
+        pstmt.setInt(3, vulnCount);
+        pstmt.setInt(4, criticalCount);
+        pstmt.setInt(5, highCount);
+        pstmt.setInt(6, mediumCount);
+        pstmt.setInt(7, lowCount);
+        pstmt.setInt(8, infoCount);
+        pstmt.setString(9, scanId);
 
         pstmt.executeUpdate();
         pstmt.close();

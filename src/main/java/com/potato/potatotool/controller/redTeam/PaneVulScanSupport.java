@@ -2,7 +2,6 @@ package com.potato.potatotool.controller.redTeam;
 
 import com.potato.potatotool.utils.network.ProxyUtils;
 
-import java.util.Map;
 import java.util.concurrent.Future;
 
 final class PaneVulScanSupport {
@@ -33,14 +32,6 @@ final class PaneVulScanSupport {
         return result == null || !result.isReachable();
     }
 
-    static boolean shouldBlockScanForBuildingProfile(Map<String, String> headers) {
-        if (headers == null || headers.isEmpty()) {
-            return true;
-        }
-        return isBlank(headers.get("X-Building-Profile"))
-                || isBlank(headers.get("X-Scan-Window"));
-    }
-
     static boolean cancelTaskBeforeEngineStart(boolean taskRunning,
                                                Future<?> task,
                                                Thread workerThread,
@@ -65,9 +56,5 @@ final class PaneVulScanSupport {
         if (workerThread != null) {
             workerThread.interrupt();
         }
-    }
-
-    private static boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
     }
 }

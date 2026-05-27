@@ -28,6 +28,7 @@ public class TxtReportGenerator {
     }
 
     public File generate(List<ScanResult> results, String outputPath, String scanDuration) throws IOException {
+        results = ReportDataSanitizer.sanitizeResults(results);
         File outputFile = new File(outputPath);
         File parent = outputFile.getParentFile();
         if (parent != null && !parent.exists()) {

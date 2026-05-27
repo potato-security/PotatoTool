@@ -94,6 +94,28 @@ public class OobMatcherIntegrationTest {
     }
 
     @Test
+    @DisplayName("小写占位符也不应被当成已物化 interactsh URL")
+    void testInteractshProtocolMatcherShouldNotMatchWhenLowercasePlaceholderMissing() {
+        MockCustomHttpResponse response = new MockCustomHttpResponse(200, "no callback");
+        PocObj.Matcher matcher = new PocObj.Matcher();
+        matcher.setType(PocObj.MatcherType.WORD);
+        matcher.setPart("interactsh_protocol");
+        matcher.setValues(Collections.singletonList("dns"));
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("interactsh-url", "{{lazy_interactsh}}");
+
+        boolean matched = ResponseMatcher.matchResponse(
+                response,
+                Collections.singletonList(matcher),
+                PocObj.MatchersCondition.AND,
+                null,
+                null,
+                variables);
+        assertFalse(matched);
+    }
+
+    @Test
     @DisplayName("Interactsh 配置正确且存在交互记录时 matcher 应命中")
     void testInteractshProtocolMatcherShouldMatchWhenInteractionRecorded() throws Exception {
         FakeInteractshClient fakeClient = new FakeInteractshClient();

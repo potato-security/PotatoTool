@@ -33,9 +33,9 @@ public class DslUtils {
         }
 
         // 检查并记录未识别的函数
-        if (containsUnrecognizedFunctions(normalized)) {
-            logUnrecognizedExpression(expression);
-        }
+//        if (containsUnrecognizedFunctions(normalized)) {
+//            logUnrecognizedExpression(expression);
+//        }
 
         return normalized;
     }
@@ -336,6 +336,11 @@ public class DslUtils {
         }
         
         String cleaned = value.trim();
+        if (cleaned.length() >= 4
+                && ((cleaned.startsWith("\\\"") && cleaned.endsWith("\\\""))
+                || (cleaned.startsWith("\\'") && cleaned.endsWith("\\'")))) {
+            return cleaned.substring(2, cleaned.length() - 2);
+        }
         if ((cleaned.startsWith("\"") && cleaned.endsWith("\"")) ||
             (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
             return cleaned.substring(1, cleaned.length() - 1);
@@ -409,11 +414,11 @@ public class DslUtils {
             char c = expression.charAt(i);
             
             // 跟踪引号状态
-            if (c == '"' && !inSingleQuote) {
+            if (c == '"' && !inSingleQuote && !isEscaped(expression, i)) {
                 inDoubleQuote = !inDoubleQuote;
                 continue;
             }
-            if (c == '\'' && !inDoubleQuote) {
+            if (c == '\'' && !inDoubleQuote && !isEscaped(expression, i)) {
                 inSingleQuote = !inSingleQuote;
                 continue;
             }
@@ -448,6 +453,14 @@ public class DslUtils {
             }
         }
         return -1;
+    }
+
+    private static boolean isEscaped(String value, int index) {
+        int slashCount = 0;
+        for (int i = index - 1; i >= 0 && value.charAt(i) == '\\'; i--) {
+            slashCount++;
+        }
+        return slashCount % 2 == 1;
     }
 
     /**

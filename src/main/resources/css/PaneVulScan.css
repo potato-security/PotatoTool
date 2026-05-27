@@ -616,3 +616,43 @@
 .date-picker .arrow-button .arrow {
     -fx-background-color: -main-font-color;
 }
+
+/* ========================================
+   14. 可折叠配置面板
+   ======================================== */
+
+.compact-config-pane {
+    -fx-background-color: transparent;
+    -fx-text-fill: -main-font-color;
+    -fx-border-color: -main-lineno-color;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-border-width: 1;
+}
+
+.compact-config-pane > .title {
+    -fx-background-color: -main-cell-color;
+    -fx-background-radius: 6 6 0 0;
+    -fx-padding: 6 12 6 12;
+    -fx-font-size: 13;
+    -fx-font-weight: 600;
+}
+
+.compact-config-pane:collapsed > .title {
+    -fx-background-radius: 6;
+}
+
+.compact-config-pane > .title > .text {
+    -fx-fill: -main-border-color;
+}
+
+.compact-config-pane > .title > .arrow-button > .arrow {
+    -fx-background-color: -main-border-color;
+}
+
+.compact-config-pane > .content {
+    -fx-background-color: transparent;
+    -fx-border-color: -main-lineno-color;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 0;
+}

@@ -2,10 +2,14 @@ package com.potato.potatotool.content.redTeam.vulnScanner.core;
 
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.event.ScanCompletedEvent;
+import com.potato.potatotool.content.redTeam.vulnScanner.event.ScanErrorEvent;
 import com.potato.potatotool.content.redTeam.vulnScanner.event.ScanEventListener;
 import com.potato.potatotool.content.redTeam.vulnScanner.event.ScanStartedEvent;
+import com.potato.potatotool.content.redTeam.vulnScanner.loader.PocRepository;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanConfig;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanState;
+import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanTask;
+import com.potato.potatotool.content.redTeam.vulnScanner.storage.ScanHistory;
 import com.potato.potatotool.content.redTeam.vulnScanner.storage.VulnScanDatabase;
 import com.potato.potatotool.utils.core.Constants;
 import com.sun.net.httpserver.HttpExchange;
@@ -19,12 +23,14 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,6 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -293,6 +300,177 @@ class ScanEngineLifecycleTest {
         assertEquals(0, countThreads("scan-db-writer"), "shutdown 后数据库写线程应已退出");
     }
 
+    @Test
+    @DisplayName("旧扫描的迟到任务不应污染新扫描会话")
+    void shouldIgnoreStaleTaskFromPreviousScanSession(@TempDir Path tempHome) throws Exception {
+        configureIsolatedHome(tempHome);
+        ScanConfig config = new ScanConfig();
+        config.setDebug(true);
+        config.setEnableClustering(false);
+        ScanEngine engine = new ScanEngine(config);
+        try {
+            AtomicReference<ScanErrorEvent> errorRef = new AtomicReference<ScanErrorEvent>();
+            engine.addEventListener(new ScanEventListener() {
+                @Override
+                public void onScanError(ScanErrorEvent event) {
+                    errorRef.compareAndSet(null, event);
+                }
+            });
+
+            setField(engine, "currentScanId", "scan-new");
+            setField(engine, "isScanning", true);
+            setField(engine, "isPaused", false);
+
+            PocObj.Poc stalePoc = buildHttpPoc("stale-session-poc", "/timeout", "never");
+            Method executeTask = ScanEngine.class.getDeclaredMethod("executeTask", ScanTask.class, String.class);
+            executeTask.setAccessible(true);
+            executeTask.invoke(engine, new ScanTask(BASE_URL, stalePoc), "scan-old");
+
+            assertNull(errorRef.get(), "旧 scanId 的任务不应向当前会话派发错误事件");
+            assertEquals(0, engine.getCompletedTasks(), "旧 scanId 的任务不应推进当前会话进度");
+        } finally {
+            engine.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("启用聚合时同请求不同 matcher 不应漏报")
+    void shouldEvaluateAllMatchersInsideClusteredRequests(@TempDir Path tempHome) throws Exception {
+        configureIsolatedHome(tempHome);
+        ScanConfig config = new ScanConfig();
+        config.setThreads(2);
+        config.setEnableClustering(true);
+        config.setEnableResponseCache(true);
+        ScanEngine engine = new ScanEngine(config);
+        try {
+            CountDownLatch completed = new CountDownLatch(1);
+            AtomicReference<ScanCompletedEvent> completedRef = new AtomicReference<ScanCompletedEvent>();
+            engine.addEventListener(new ScanEventListener() {
+                @Override
+                public void onScanCompleted(ScanCompletedEvent event) {
+                    completedRef.set(event);
+                    completed.countDown();
+                }
+            });
+
+            PocObj.Poc first = buildHttpPoc("cluster-alpha", "/multi", "ALPHA");
+            PocObj.Poc second = buildHttpPoc("cluster-beta", "/multi", "BETA");
+            engine.startScan(Collections.singletonList(BASE_URL), Arrays.asList(first, second));
+
+            assertTrue(completed.await(5, TimeUnit.SECONDS), "聚合扫描未在预期时间内完成");
+            assertNotNull(completedRef.get());
+            assertEquals(2, completedRef.get().getVulnerabilityCount(), "同请求不同 matcher 应分别命中");
+        } finally {
+            engine.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("零漏洞扫描完成后也应写入历史记录")
+    void shouldPersistHistoryForCompletedScanWithoutFindings(@TempDir Path tempHome) throws Exception {
+        configureIsolatedHome(tempHome);
+        ScanConfig config = new ScanConfig();
+        config.setThreads(2);
+        config.setEnableClustering(true);
+        ScanEngine engine = new ScanEngine(config);
+        try {
+            CountDownLatch completed = new CountDownLatch(1);
+            engine.addEventListener(new ScanEventListener() {
+                @Override
+                public void onScanCompleted(ScanCompletedEvent event) {
+                    completed.countDown();
+                }
+            });
+
+            PocObj.Poc negative = buildHttpPoc("history-negative", "/fast", "BODY-THAT-DOES-NOT-EXIST");
+            engine.startScan(Collections.singletonList(BASE_URL), Collections.singletonList(negative));
+
+            assertTrue(completed.await(5, TimeUnit.SECONDS), "零漏洞扫描未在预期时间内完成");
+
+            VulnScanDatabase database = VulnScanDatabase.getInstance();
+            ScanState state = database.loadScanState(engine.getCurrentScanId());
+            assertNotNull(state);
+            assertEquals(ScanState.Status.COMPLETED, state.getStatus());
+            assertEquals(0, state.getVulnerabilitiesFound());
+
+            java.util.List<ScanHistory> histories = database.queryAllHistory();
+            assertEquals(1, histories.size(), "零漏洞完成扫描也应出现在历史记录中");
+            assertEquals(1, histories.get(0).getTargetCount());
+            assertEquals(1, histories.get(0).getPocCount());
+            assertEquals(0, histories.get(0).getVulnCount());
+            assertEquals("completed", histories.get(0).getStatus());
+        } finally {
+            engine.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("stopScan 后应写入停止历史且完成事件 success=false")
+    void shouldPersistStoppedHistoryAndNonSuccessCompletion(@TempDir Path tempHome) throws Exception {
+        configureIsolatedHome(tempHome);
+        ScanConfig config = new ScanConfig();
+        config.setThreads(1);
+        config.setEnableClustering(true);
+        ScanEngine engine = new ScanEngine(config);
+        try {
+            CountDownLatch started = new CountDownLatch(1);
+            CountDownLatch completed = new CountDownLatch(1);
+            AtomicReference<ScanCompletedEvent> completedRef = new AtomicReference<ScanCompletedEvent>();
+            engine.addEventListener(new ScanEventListener() {
+                @Override
+                public void onScanStarted(ScanStartedEvent event) {
+                    started.countDown();
+                }
+
+                @Override
+                public void onScanCompleted(ScanCompletedEvent event) {
+                    completedRef.set(event);
+                    completed.countDown();
+                }
+            });
+
+            PocObj.Poc slowPoc = buildHttpPoc("stop-history", "/slow", "SLOW-OK");
+            engine.startScan(Collections.singletonList(BASE_URL), Collections.singletonList(slowPoc));
+            assertTrue(started.await(2, TimeUnit.SECONDS));
+            engine.stopScan();
+
+            assertTrue(completed.await(2, TimeUnit.SECONDS), "停止扫描应派发非成功完成事件");
+            assertNotNull(completedRef.get());
+            assertFalse(completedRef.get().isSuccess());
+
+            java.util.List<ScanHistory> histories = VulnScanDatabase.getInstance().queryAllHistory();
+            assertEquals(1, histories.size(), "停止扫描也应保留历史记录");
+            assertEquals("stopped", histories.get(0).getStatus());
+        } finally {
+            engine.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("指纹识别阶段应产生进度回调")
+    void shouldReportFingerprintProgressBeforeScanTasks(@TempDir Path tempHome) throws Exception {
+        configureIsolatedHome(tempHome);
+        PocRepository repository = new PocRepository();
+        repository.addPoc(buildFingerprintPoc("fp-one", "/fingerprint?one=1"));
+        repository.addPoc(buildFingerprintPoc("fp-two", "/fingerprint?two=1"));
+
+        SmartPocSelector selector = new SmartPocSelector(
+                repository, new PocExecutor(new ScanConfig()), new com.potato.potatotool.content.redTeam.vulnScanner.event.ScanEventDispatcher());
+        AtomicReference<String> lastProgress = new AtomicReference<String>("");
+        selector.setFingerprintProgressCallback((completed, total) ->
+                lastProgress.set(completed + "/" + total));
+
+        ScanConfig config = ScanConfig.createDefaultUrlConfig();
+        config.setAutoDetectInputType(false);
+        config.setScanMode(ScanConfig.ScanMode.STANDARD);
+        config.setSkipFingerprint(false);
+        config.setFingerprintTimeout(2);
+
+        selector.selectAndFilterPocs(BASE_URL, config);
+
+        assertEquals("2/2", lastProgress.get(), "指纹识别完成时应推进到全部指纹任务");
+    }
+
     private void configureIsolatedHome(Path tempHome) throws Exception {
         originalUserHome = System.getProperty("user.home");
         System.setProperty("user.home", tempHome.toString());
@@ -344,7 +522,14 @@ class ScanEngineLifecycleTest {
     private static HttpServer createServer() {
         try {
             HttpServer server = HttpServer.create(new java.net.InetSocketAddress(0), 0);
+            server.setExecutor(Executors.newCachedThreadPool(r -> {
+                Thread thread = new Thread(r, "scan-lifecycle-http");
+                thread.setDaemon(true);
+                return thread;
+            }));
             server.createContext("/fast", exchange -> write(exchange, 200, "FAST-OK"));
+            server.createContext("/multi", exchange -> write(exchange, 200, "ALPHA BETA"));
+            server.createContext("/fingerprint", exchange -> write(exchange, 200, "FINGERPRINT-OK"));
             server.createContext("/slow", exchange -> {
                 sleepQuietly(1500);
                 write(exchange, 200, "SLOW-OK");
@@ -353,6 +538,14 @@ class ScanEngineLifecycleTest {
         } catch (IOException e) {
             throw new IllegalStateException("启动生命周期测试服务器失败", e);
         }
+    }
+
+    private static PocObj.Poc buildFingerprintPoc(String id, String path) {
+        PocObj.Poc poc = buildHttpPoc(id, path, "FINGERPRINT-OK");
+        poc.setCategory(PocObj.PocCategory.TECHNOLOGIES);
+        poc.setTags(Collections.singletonList("test-fingerprint"));
+        poc.setProduct("test-fingerprint");
+        return poc;
     }
 
     private static void write(HttpExchange exchange, int statusCode, String body) throws IOException {
@@ -390,6 +583,12 @@ class ScanEngineLifecycleTest {
             ((VulnScanDatabase) existing).close();
         }
         field.set(null, null);
+    }
+
+    private static void setField(Object target, String fieldName, Object value) throws Exception {
+        Field field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(target, value);
     }
 
     private String escapeForJson(String value) {

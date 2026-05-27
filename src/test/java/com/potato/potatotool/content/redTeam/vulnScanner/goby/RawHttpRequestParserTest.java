@@ -204,6 +204,21 @@ public class RawHttpRequestParserTest {
         assertEquals("/test", parsed.getPath());
         assertEquals("HTTP/1.1", parsed.getProtocol()); // 默认值
     }
+
+    @Test
+    @DisplayName("测试缺省路径的请求行")
+    public void testBareRequestLineWithoutPath() {
+        String raw = "GET HTTP/1.1\r\n" +
+                    "Host: example.com\r\n" +
+                    "\r\n";
+
+        ParsedRequest parsed = RawHttpRequestParser.parse(raw);
+
+        assertNotNull(parsed);
+        assertEquals("GET", parsed.getMethod());
+        assertEquals("", parsed.getPath());
+        assertEquals("HTTP/1.1", parsed.getProtocol());
+    }
     
     @Test
     @DisplayName("测试各种HTTP方法")
@@ -401,4 +416,3 @@ public class RawHttpRequestParserTest {
         assertEquals(longBody.toString(), parsed.getBody());
     }
 }
-

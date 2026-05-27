@@ -3,6 +3,7 @@ package com.potato.potatotool.content.redTeam.vulnScanner.extractors;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslEvaluatorRefactored;
+import com.potato.potatotool.content.redTeam.vulnScanner.util.RegexCompat;
 import net.sf.saxon.xpath.XPathFactoryImpl;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -556,7 +557,7 @@ public class VariableExtractor {
                 // 检测是否包含命名分组
                 String namedGroupName = extractNamedGroupName(javaRegex);
                 
-                Pattern pattern = Pattern.compile(javaRegex);
+                Pattern pattern = RegexCompat.compile(javaRegex);
                 Matcher matcher = pattern.matcher(content);
 
                 if (matcher.find()) {
@@ -605,7 +606,7 @@ public class VariableExtractor {
             try {
                 String javaRegex = convertPythonNamedGroups(regex);
                 String namedGroupName = extractNamedGroupName(javaRegex);
-                Pattern pattern = Pattern.compile(javaRegex);
+                Pattern pattern = RegexCompat.compile(javaRegex);
                 Matcher matcher = pattern.matcher(content);
 
                 while (matcher.find()) {

@@ -5,6 +5,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.Matcher
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.MatcherType;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.MatchersCondition;
 import com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor.DslEvaluatorRefactored;
+import com.potato.potatotool.content.redTeam.vulnScanner.util.RegexCompat;
 
 import java.util.HashMap;
 import java.util.List;
@@ -193,9 +194,9 @@ public class SimpleMatcher {
         
         for (String regex : patterns) {
             try {
-                Pattern pattern = caseInsensitive 
-                        ? Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL)
-                        : Pattern.compile(regex, Pattern.DOTALL);
+                Pattern pattern = caseInsensitive
+                        ? RegexCompat.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL)
+                        : RegexCompat.compile(regex, Pattern.DOTALL);
                 
                 boolean matches = pattern.matcher(content).find();
                 

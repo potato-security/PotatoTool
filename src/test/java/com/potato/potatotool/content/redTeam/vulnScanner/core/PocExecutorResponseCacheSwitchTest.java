@@ -19,6 +19,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("PocExecutor 响应缓存开关测试")
@@ -99,6 +100,38 @@ class PocExecutorResponseCacheSwitchTest {
         assertTrue(first.isVulnerable());
         assertTrue(second.isVulnerable());
         assertEquals(2, hitCount.get(), "不同 Authorization 头不应命中同一个缓存项");
+    }
+
+    @Test
+    @DisplayName("显式动态 UA 占位符应先渲染再进入报告与缓存签名")
+    void shouldResolveExplicitDynamicUserAgentBeforeReportAndCacheSignature() throws Exception {
+        AtomicInteger hitCount = new AtomicInteger();
+        server = HttpServer.create(new InetSocketAddress(0), 0);
+        server.createContext("/ua-cache", exchange -> {
+            hitCount.incrementAndGet();
+            String ua = exchange.getRequestHeaders().getFirst("User-Agent");
+            write(exchange, 200, ua == null ? "" : ua);
+        });
+        server.start();
+
+        ScanConfig config = new ScanConfig();
+        config.setEnableClustering(false);
+        config.setEnableResponseCache(true);
+
+        String target = "http://127.0.0.1:" + server.getAddress().getPort();
+        PocExecutor executor = new PocExecutor(config);
+
+        ScanResult first = executor.execute(target, buildHeaderPoc(
+                "dynamic-ua-a", "/ua-cache", "User-Agent", "{{randomAgent}}; Explicit-A"));
+        ScanResult second = executor.execute(target, buildHeaderPoc(
+                "dynamic-ua-b", "/ua-cache", "User-Agent", "{{randomAgent}}; Explicit-B"));
+
+        assertTrue(first.isVulnerable());
+        assertTrue(second.isVulnerable());
+        assertEquals(2, hitCount.get(), "POC 显式动态 UA 不应按内置 UA 归一后复用缓存");
+        String rawRequest = first.getRawRequest();
+        assertTrue(rawRequest.contains("Explicit-A"));
+        assertFalse(rawRequest.contains("{{randomAgent}}"));
     }
 
     @Test
@@ -203,6 +236,12 @@ class PocExecutorResponseCacheSwitchTest {
     private PocObj.Poc buildHeaderAwarePoc(String id, String path, String authorizationValue) {
         PocObj.Poc poc = buildHttpPoc(id, path, authorizationValue);
         poc.getVerifySteps().get(0).setHeaders(Collections.singletonMap("Authorization", authorizationValue));
+        return poc;
+    }
+
+    private PocObj.Poc buildHeaderPoc(String id, String path, String headerName, String headerValue) {
+        PocObj.Poc poc = buildHttpPoc(id, path, "Explicit");
+        poc.getVerifySteps().get(0).setHeaders(Collections.singletonMap(headerName, headerValue));
         return poc;
     }
 

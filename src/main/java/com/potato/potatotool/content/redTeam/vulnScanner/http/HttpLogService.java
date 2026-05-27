@@ -8,6 +8,7 @@ import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.RequestObj;
 import com.potato.potatotool.utils.network.RequestUtils;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -106,6 +107,7 @@ public class HttpLogService {
     private static volatile String customToken = null;
 
     private static volatile long cacheDurationMs = 60 * 60 * 1000;
+    private static volatile int interactionWaitSeconds = 8;
 
     private static InteractshClient getInteractshClient() {
         if (interactshClient == null) {
@@ -132,6 +134,14 @@ public class HttpLogService {
             cacheDurationMs = seconds * 1000;
             removeExpiredCacheEntries();
         }
+    }
+
+    public static synchronized void setInteractionWaitSeconds(int seconds) {
+        interactionWaitSeconds = Math.max(0, seconds);
+    }
+
+    public static int getInteractionWaitSeconds() {
+        return interactionWaitSeconds;
     }
 
     public static synchronized void configureInteractsh(String server, String token) {
@@ -202,8 +212,12 @@ public class HttpLogService {
             }
 
             String url = "http://" + fullUrl;
-            HttpLogInfo info = new HttpLogInfo(url, uniqueId, client.getCorrelationId(), Platform.INTERACTSH);
-            HTTPLOG_CACHE.put(uniqueId, info);
+            String callbackId = extractUniqueIdFromUrl(fullUrl);
+            if (callbackId == null || callbackId.trim().isEmpty()) {
+                callbackId = uniqueId;
+            }
+            HttpLogInfo info = new HttpLogInfo(url, callbackId, client.getCorrelationId(), Platform.INTERACTSH);
+            HTTPLOG_CACHE.put(callbackId, info);
             return url;
         } catch (Exception e) {
             System.err.println("[Interactsh] 完整协议注册失败，使用简化模式: " + e.getMessage());
@@ -378,8 +392,9 @@ public class HttpLogService {
     }
 
     private static HttpLogInfo findHttpLogInfo(String url) {
+        String normalized = normalizeLogUrl(url);
         for (HttpLogInfo info : HTTPLOG_CACHE.values()) {
-            if (info.getUrl().equals(url)) {
+            if (info.getUrl().equals(url) || info.getUrl().equals(normalized)) {
                 return info;
             }
         }
@@ -388,11 +403,56 @@ public class HttpLogService {
 
     private static String extractUniqueIdFromUrl(String url) {
         try {
-            String host = url.replaceFirst("https?://", "").split("/")[0];
+            String host = extractHost(url);
             return host.split("\\.")[0];
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static String extractHost(String url) {
+        if (url == null) {
+            return null;
+        }
+        String normalized = url.trim();
+        if (normalized.isEmpty()) {
+            return normalized;
+        }
+        try {
+            if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+                return new URL(normalized).getHost();
+            }
+        } catch (Exception ignored) {
+        }
+        if (normalized.contains("://")) {
+            normalized = normalized.substring(normalized.indexOf("://") + 3);
+        }
+        normalized = normalized.split("/", 2)[0];
+        int at = normalized.lastIndexOf('@');
+        if (at >= 0) {
+            normalized = normalized.substring(at + 1);
+        }
+        int colon = normalized.lastIndexOf(':');
+        if (colon > 0 && normalized.indexOf(']') < 0) {
+            normalized = normalized.substring(0, colon);
+        }
+        return normalized;
+    }
+
+    public static String toBareCallbackHost(String url) {
+        String host = extractHost(url);
+        return host == null ? url : host;
+    }
+
+    private static String normalizeLogUrl(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return url;
+        }
+        String trimmed = url.trim();
+        if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+            return trimmed;
+        }
+        return "http://" + trimmed;
     }
 
     private static void removeExpiredCacheEntries() {
@@ -523,6 +583,10 @@ public class HttpLogService {
 
     public static InteractshClient getClient() {
         return getInteractshClient();
+    }
+
+    public static InteractshClient.Interaction waitForConfiguredInteraction(String url) {
+        return waitForInteraction(url, interactionWaitSeconds);
     }
 
     public static void closeClient() {

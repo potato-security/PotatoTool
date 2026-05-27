@@ -138,6 +138,18 @@ public class ScanConfig {
      * 全局请求速率限制（每秒请求数），0 表示不限制
      */
     private int requestsPerSecond = 0;
+
+    /**
+     * HTTP OOB 同步等待时间（秒）
+     * 小于 0 表示沿用执行器默认推导逻辑，0 表示关闭同步等待，仅做即时查询。
+     */
+    private int oobInteractionWaitSeconds = -1;
+
+    /**
+     * 是否仅允许向当前扫描目标主机发起 HTTP 请求
+     * 启用后，越界外联请求会被本地阻断并返回合成响应。
+     */
+    private boolean restrictOutboundRequestsToTargetHost = false;
     
     // ========== 新增：请求聚类配置 ==========
     /**
@@ -501,6 +513,22 @@ public class ScanConfig {
 
     public void setRequestsPerSecond(int requestsPerSecond) {
         this.requestsPerSecond = Math.max(0, requestsPerSecond);
+    }
+
+    public int getOobInteractionWaitSeconds() {
+        return oobInteractionWaitSeconds;
+    }
+
+    public void setOobInteractionWaitSeconds(int oobInteractionWaitSeconds) {
+        this.oobInteractionWaitSeconds = Math.max(-1, oobInteractionWaitSeconds);
+    }
+
+    public boolean isRestrictOutboundRequestsToTargetHost() {
+        return restrictOutboundRequestsToTargetHost;
+    }
+
+    public void setRestrictOutboundRequestsToTargetHost(boolean restrictOutboundRequestsToTargetHost) {
+        this.restrictOutboundRequestsToTargetHost = restrictOutboundRequestsToTargetHost;
     }
     
     public boolean isEnableClustering() {

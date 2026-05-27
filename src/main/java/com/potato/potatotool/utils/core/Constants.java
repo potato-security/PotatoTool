@@ -596,7 +596,9 @@ public class Constants {
                 return value == null ? null : value.deepCopy();
             } catch (Exception e) {
                 if(debugMode) e.printStackTrace();
-                System.out.println("读取配置时出错!");
+                if (debugMode) {
+                    System.out.println("读取配置时出错!");
+                }
                 return null;
             }
         }

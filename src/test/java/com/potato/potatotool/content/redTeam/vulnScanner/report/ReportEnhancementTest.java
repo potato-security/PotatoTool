@@ -7,9 +7,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -347,6 +350,38 @@ public class ReportEnhancementTest {
         System.out.println("✅ JSON报告内部字段导出边界测试通过");
     }
 
+    @Test
+    public void testDirectGeneratorsShouldNotLeakTemplatePlaceholders() throws Exception {
+        ScanResult result = createMockResult(
+            "http://example.com/template-leak",
+            "模板残留验证",
+            "template-leak-test",
+            PocObj.Severity.HIGH,
+            "Template",
+            "/api/template",
+            "payload={{UUID}}",
+            "GET /api/template HTTP/1.1\nX-Trace: {{random_uuid}}",
+            "HTTP/1.1 200 OK\n\n{\"marker\":\"{{randstr}}\"}"
+        );
+
+        List<ScanResult> results = new ArrayList<>();
+        results.add(result);
+
+        assertNoTemplatePlaceholder(new String(java.nio.file.Files.readAllBytes(
+            new HtmlReportGenerator().generate(results, tempDir.resolve("direct.html").toFile().getAbsolutePath()).toPath()),
+            StandardCharsets.UTF_8));
+        assertNoTemplatePlaceholderInZip(new WordReportGenerator().generate(
+            results, tempDir.resolve("direct.docx").toFile().getAbsolutePath()).toPath().toFile());
+        assertNoTemplatePlaceholderInZip(new ExcelReportGenerator().generate(
+            results, tempDir.resolve("direct.xlsx").toFile().getAbsolutePath()).toPath().toFile());
+        assertNoTemplatePlaceholder(new String(java.nio.file.Files.readAllBytes(
+            new JsonReportGenerator().generate(results, tempDir.resolve("direct.json").toFile().getAbsolutePath()).toPath()),
+            StandardCharsets.UTF_8));
+        assertNoTemplatePlaceholder(new String(java.nio.file.Files.readAllBytes(
+            new TxtReportGenerator().generate(results, tempDir.resolve("direct.txt").toFile().getAbsolutePath(), "00:00:01").toPath()),
+            StandardCharsets.UTF_8));
+    }
+
     /**
      * 创建模拟的扫描结果
      */
@@ -378,5 +413,37 @@ public class ReportEnhancementTest {
         result.setRawResponseSnippet(rawResponseSnippet);
 
         return result;
+    }
+
+    private void assertNoTemplatePlaceholder(String content) {
+        assertFalse(content.contains("{{UUID}}"), "报告不应残留 UUID 占位符");
+        assertFalse(content.contains("{{random_uuid}}"), "报告不应残留 random_uuid 占位符");
+        assertFalse(content.contains("{{randstr}}"), "报告不应残留 randstr 占位符");
+    }
+
+    private void assertNoTemplatePlaceholderInZip(File file) throws Exception {
+        try (ZipFile zipFile = new ZipFile(file)) {
+            java.util.Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (entry.isDirectory()) {
+                    continue;
+                }
+                String content = new String(readAllBytes(zipFile.getInputStream(entry)), StandardCharsets.UTF_8);
+                assertNoTemplatePlaceholder(content);
+            }
+        }
+    }
+
+    private byte[] readAllBytes(java.io.InputStream inputStream) throws Exception {
+        try (java.io.InputStream in = inputStream;
+             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            return out.toByteArray();
+        }
     }
 }

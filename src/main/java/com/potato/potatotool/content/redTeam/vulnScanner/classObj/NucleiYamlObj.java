@@ -59,6 +59,8 @@ public class NucleiYamlObj {
         private Object google_query;
         private Object publicwww_query;
         private Object zoomeye_query;
+        private String vendor;
+        private String product;
         
         // 兼容 YAML 连字符格式字段名
         public void setMaxRequest(int maxRequest) { this.max_request = maxRequest; }
@@ -397,7 +399,7 @@ public class NucleiYamlObj {
     public static class Code {
         private List<String> engine;
         private Object args;
-        private List<String> pattern;
+        private Object pattern;
         private String source;
         private MatchersCondition matchers_condition;
         private List<TemplateMatcher> matchers;
@@ -416,6 +418,23 @@ public class NucleiYamlObj {
          */
         public String getCode() {
             return this.source;
+        }
+
+        public List<String> getPatternList() {
+            List<String> result = new ArrayList<>();
+            if (this.pattern == null) {
+                return result;
+            }
+            if (this.pattern instanceof Collection) {
+                for (Object item : (Collection<?>) this.pattern) {
+                    if (item != null) {
+                        result.add(String.valueOf(item));
+                    }
+                }
+            } else {
+                result.add(String.valueOf(this.pattern));
+            }
+            return result;
         }
     }
 

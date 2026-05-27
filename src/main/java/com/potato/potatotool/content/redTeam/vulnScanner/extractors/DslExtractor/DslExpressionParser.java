@@ -73,7 +73,7 @@ public class DslExpressionParser {
             return null;
         }
 
-        expression = expression.trim();
+        expression = stripEnclosingParentheses(expression.trim());
 
         // 检查是否包含逻辑操作符
         if (containsLogicalOperators(expression)) {
@@ -88,17 +88,19 @@ public class DslExpressionParser {
      * 检查表达式是否包含逻辑操作符
      */
     private static boolean containsLogicalOperators(String expression) {
-        return DslConstants.AND_PATTERN.matcher(expression).find() ||
-               DslConstants.OR_PATTERN.matcher(expression).find();
+        return hasTopLevelLogicalOperator(expression) ||
+               stripLeadingNot(expression) != null;
     }
 
     /**
      * 解析包含逻辑操作符的表达式
      */
     private static DslMatcher parseLogicalExpression(String expression) {
+        expression = stripEnclosingParentheses(expression.trim());
+
         // 首先按 OR 分割
-        String[] orParts = DslConstants.OR_PATTERN.split(expression);
-        if (orParts.length > 1) {
+        List<String> orParts = splitTopLevelLogical(expression, "OR");
+        if (orParts.size() > 1) {
             List<DslMatcher> orMatchers = new ArrayList<>();
             for (String part : orParts) {
                 DslMatcher matcher = parseExpression(part.trim());
@@ -110,8 +112,8 @@ public class DslExpressionParser {
         }
 
         // 然后按 AND 分割
-        String[] andParts = DslConstants.AND_PATTERN.split(expression);
-        if (andParts.length > 1) {
+        List<String> andParts = splitTopLevelLogical(expression, "AND");
+        if (andParts.size() > 1) {
             List<DslMatcher> andMatchers = new ArrayList<>();
             for (String part : andParts) {
                 DslMatcher matcher = parseExpression(part.trim());
@@ -122,6 +124,16 @@ public class DslExpressionParser {
             return new DslMatcher("AND", andMatchers);
         }
 
+        String withoutNot = stripLeadingNot(expression);
+        if (withoutNot != null) {
+            DslMatcher innerMatcher = parseExpression(withoutNot);
+            if (innerMatcher != null) {
+                List<DslMatcher> notMatchers = new ArrayList<>();
+                notMatchers.add(innerMatcher);
+                return new DslMatcher("NOT", notMatchers);
+            }
+        }
+
         // 如果没有找到逻辑操作符，解析为单个条件
         return parseSingleCondition(expression);
     }
@@ -130,12 +142,12 @@ public class DslExpressionParser {
      * 解析单个条件
      */
     private static DslMatcher parseSingleCondition(String expression) {
-        expression = expression.trim();
+        expression = stripEnclosingParentheses(expression.trim());
 
         // 处理 NOT 操作符
-        if (DslConstants.NOT_PATTERN.matcher(expression).find()) {
-            String withoutNot = DslConstants.NOT_PATTERN.matcher(expression).replaceFirst("").trim();
-            DslMatcher innerMatcher = parseSingleCondition(withoutNot);
+        String withoutNot = stripLeadingNot(expression);
+        if (withoutNot != null) {
+            DslMatcher innerMatcher = parseExpression(withoutNot);
             if (innerMatcher != null) {
                 List<DslMatcher> notMatchers = new ArrayList<>();
                 notMatchers.add(innerMatcher);
@@ -199,6 +211,184 @@ public class DslExpressionParser {
         }
         
         return new DslMatcher("dsl", expression);
+    }
+
+    /**
+     * 判断表达式是否包含顶层逻辑操作符。
+     */
+    public static boolean hasTopLevelLogicalOperator(String expression) {
+        String strippedExpression = stripEnclosingParentheses(expression);
+        return splitTopLevelLogical(strippedExpression, "OR").size() > 1 ||
+               splitTopLevelLogical(strippedExpression, "AND").size() > 1;
+    }
+
+    /**
+     * 只在顶层拆分逻辑操作符，忽略字符串和括号内的 and/or、&&、||。
+     */
+    public static List<String> splitTopLevelLogical(String expression, String operator) {
+        List<String> parts = new ArrayList<>();
+        if (expression == null) {
+            return parts;
+        }
+
+        String trimmed = expression.trim();
+        if (trimmed.isEmpty()) {
+            parts.add(trimmed);
+            return parts;
+        }
+
+        String normalizedOperator = operator == null ? "" : operator.trim().toUpperCase();
+        int start = 0;
+        int parenthesesLevel = 0;
+        boolean inQuotes = false;
+        char quoteChar = '\0';
+
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+
+            if (!inQuotes && (c == '"' || c == '\'')) {
+                inQuotes = true;
+                quoteChar = c;
+                continue;
+            }
+            if (inQuotes) {
+                if (c == quoteChar && !isEscaped(trimmed, i)) {
+                    inQuotes = false;
+                }
+                continue;
+            }
+
+            if (c == '(') {
+                parenthesesLevel++;
+                continue;
+            }
+            if (c == ')') {
+                if (parenthesesLevel > 0) {
+                    parenthesesLevel--;
+                }
+                continue;
+            }
+
+            if (parenthesesLevel == 0) {
+                int operatorLength = topLevelLogicalOperatorLength(trimmed, i, normalizedOperator);
+                if (operatorLength > 0) {
+                    parts.add(trimmed.substring(start, i).trim());
+                    start = i + operatorLength;
+                    i = start - 1;
+                }
+            }
+        }
+
+        if (start == 0) {
+            parts.add(trimmed);
+        } else {
+            parts.add(trimmed.substring(start).trim());
+        }
+        return parts;
+    }
+
+    private static int topLevelLogicalOperatorLength(String expression, int index, String operator) {
+        if ("OR".equals(operator)) {
+            if (expression.startsWith("||", index)) {
+                return 2;
+            }
+            return wordLogicalOperatorLength(expression, index, "or");
+        }
+        if ("AND".equals(operator)) {
+            if (expression.startsWith("&&", index)) {
+                return 2;
+            }
+            return wordLogicalOperatorLength(expression, index, "and");
+        }
+        return 0;
+    }
+
+    private static int wordLogicalOperatorLength(String expression, int index, String operator) {
+        int end = index + operator.length();
+        if (end > expression.length()) {
+            return 0;
+        }
+        if (!expression.regionMatches(true, index, operator, 0, operator.length())) {
+            return 0;
+        }
+        boolean leftBoundary = index == 0 || !isIdentifierChar(expression.charAt(index - 1));
+        boolean rightBoundary = end == expression.length() || !isIdentifierChar(expression.charAt(end));
+        return leftBoundary && rightBoundary ? operator.length() : 0;
+    }
+
+    private static boolean isIdentifierChar(char c) {
+        return Character.isLetterOrDigit(c) || c == '_';
+    }
+
+    /**
+     * 移除完整包裹表达式的一层或多层括号。
+     */
+    public static String stripEnclosingParentheses(String expression) {
+        if (expression == null) {
+            return null;
+        }
+
+        String result = expression.trim();
+        while (result.length() >= 2 && result.charAt(0) == '(' && result.charAt(result.length() - 1) == ')'
+                && closingParenthesisMatchesEnd(result)) {
+            result = result.substring(1, result.length() - 1).trim();
+        }
+        return result;
+    }
+
+    private static boolean closingParenthesisMatchesEnd(String expression) {
+        int parenthesesLevel = 0;
+        boolean inQuotes = false;
+        char quoteChar = '\0';
+
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+
+            if (!inQuotes && (c == '"' || c == '\'')) {
+                inQuotes = true;
+                quoteChar = c;
+                continue;
+            }
+            if (inQuotes) {
+                if (c == quoteChar && !isEscaped(expression, i)) {
+                    inQuotes = false;
+                }
+                continue;
+            }
+
+            if (c == '(') {
+                parenthesesLevel++;
+            } else if (c == ')') {
+                parenthesesLevel--;
+                if (parenthesesLevel == 0 && i < expression.length() - 1) {
+                    return false;
+                }
+                if (parenthesesLevel < 0) {
+                    return false;
+                }
+            }
+        }
+
+        return parenthesesLevel == 0;
+    }
+
+    /**
+     * 移除表达式开头的顶层 not / !，不处理 !=。
+     */
+    public static String stripLeadingNot(String expression) {
+        if (expression == null) {
+            return null;
+        }
+
+        String trimmed = expression.trim();
+        if (trimmed.startsWith("!") && !trimmed.startsWith("!=")) {
+            return stripEnclosingParentheses(trimmed.substring(1).trim());
+        }
+        if (trimmed.length() >= 3 && trimmed.regionMatches(true, 0, "not", 0, 3)
+                && (trimmed.length() == 3 || !isIdentifierChar(trimmed.charAt(3)))) {
+            return stripEnclosingParentheses(trimmed.substring(3).trim());
+        }
+        return null;
     }
 
     /**
@@ -300,7 +490,9 @@ public class DslExpressionParser {
                 quoteChar = c;
                 currentArg.append(c);
             } else if (inQuotes && c == quoteChar) {
-                inQuotes = false;
+                if (!isEscaped(argsString, i)) {
+                    inQuotes = false;
+                }
                 currentArg.append(c);
             } else if (!inQuotes && c == '(') {
                 parenthesesLevel++;
@@ -321,6 +513,14 @@ public class DslExpressionParser {
         }
 
         return args.toArray(new String[0]);
+    }
+
+    private static boolean isEscaped(String value, int index) {
+        int slashCount = 0;
+        for (int i = index - 1; i >= 0 && value.charAt(i) == '\\'; i--) {
+            slashCount++;
+        }
+        return slashCount % 2 == 1;
     }
 
     /**

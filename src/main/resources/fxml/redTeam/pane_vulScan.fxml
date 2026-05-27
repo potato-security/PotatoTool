@@ -19,7 +19,11 @@
            fx:controller="com.potato.potatotool.controller.redTeam.PaneVulScan"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox alignment="TOP_CENTER" prefWidth="${sPane.width}" spacing="15" styleClass="vulscan-root">
+    <!-- 外层滚动容器：配置展开后整体超出窗口时出现 vbar，避免底部内容被截 -->
+    <SmoothScrollPane fx:id="rootScroll" prefWidth="${sPane.width}" maxWidth="${sPane.width}" maxHeight="Infinity"
+                      fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+    <VBox alignment="TOP_CENTER" spacing="15" styleClass="vulscan-root">
         
         <!-- 1. 顶部目标输入区 -->
         <HBox alignment="CENTER_LEFT" spacing="15">
@@ -66,10 +70,13 @@
         </HBox>
         
         <!-- 2. 配置区域 (仿 PaneInfoSearch 风格) -->
-        <VBox id="settingVbox" prefWidth="${sPane.width}">
+        <TitledPane fx:id="configTitledPane" text="扫描配置" expanded="false" animated="true"
+                    styleClass="compact-config-pane" prefWidth="${sPane.width}" maxWidth="${sPane.width}"
+                    userData="i18n:vulnscan.config.title">
+        <VBox id="settingVbox" maxWidth="Infinity">
             
             <!-- Row 1: POC 格式 & 预设 -->
-            <HBox alignment="CENTER_LEFT" prefWidth="${sPane.width}">
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity">
                 <HBox id="topLeftTitle" alignment="CENTER">
                     <Label text="POC 格式" userData="i18n:vulnscan.format"/>
                 </HBox>
@@ -85,7 +92,7 @@
             </HBox>
             
             <!-- Row 2: 扫描选项 -->
-            <HBox alignment="CENTER_LEFT" prefWidth="${sPane.width}">
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity">
                 <HBox id="smartScanLeftTitle" alignment="CENTER">
                     <Label text="扫描选项" userData="i18n:vulnscan.options"/>
                 </HBox>
@@ -101,7 +108,7 @@
             </HBox>
             
             <!-- Row 3: 高级选项 -->
-            <HBox alignment="CENTER_LEFT" prefWidth="${sPane.width}">
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity">
                 <HBox id="bottomLeftTitle" alignment="CENTER">
                     <Label text="高级配置" userData="i18n:vulnscan.advanced"/>
                 </HBox>
@@ -127,30 +134,39 @@
                 </FlowPane>
             </HBox>
         </VBox>
+        </TitledPane>
         
-        <!-- 3. 信息栏 (POC统计 + 进度条) -->
-        <HBox alignment="CENTER_LEFT" spacing="15">
-            <HBox spacing="10" alignment="CENTER_LEFT">
+        <!-- 3. 信息栏 (POC统计 与 进度条 拆为两行，避免占宍、裁切) -->
+        <VBox spacing="6">
+            <!-- Row A: POC 统计 + 状态 -->
+            <HBox alignment="CENTER_LEFT" spacing="6">
                 <Label text="POC库:" style="-fx-font-weight: bold; -fx-text-fill: -main-font-color;" userData="i18n:vulnscan.ui.poclib"/>
                 <Label fx:id="pocTotalLabel" text="0" styleClass="stat-value"/>
-                <Label text="(N:" styleClass="stat-label"/><Label fx:id="pocNucleiLabel" text="0" styleClass="stat-value-nuclei"/><Label text=")" styleClass="stat-label"/>
-                <Label text="(G:" styleClass="stat-label"/><Label fx:id="pocGobyLabel" text="0" styleClass="stat-value-goby"/><Label text=")" styleClass="stat-label"/>
-                <Label text="(X:" styleClass="stat-label"/><Label fx:id="pocXrayLabel" text="0" styleClass="stat-value-xray"/><Label text=")" styleClass="stat-label"/>
-                
+                <Label text="(" styleClass="stat-label"/>
+                <Label text="N" styleClass="stat-label"/>
+                <Label fx:id="pocNucleiLabel" text="0" styleClass="stat-value-nuclei"/>
+                <Label text="·G" styleClass="stat-label"/>
+                <Label fx:id="pocGobyLabel" text="0" styleClass="stat-value-goby"/>
+                <Label text="·X" styleClass="stat-label"/>
+                <Label fx:id="pocXrayLabel" text="0" styleClass="stat-value-xray"/>
+                <Label text=")" styleClass="stat-label"/>
+
                 <Button text="刷新" onAction="#refreshPocList" styleClass="tiny-button" userData="i18n:vulnscan.button.refresh"><tooltip><Tooltip text="刷新POC"/></tooltip></Button>
                 <Button text="管理" onAction="#managePoc" styleClass="tiny-button" userData="i18n:vulnscan.manage"><tooltip><Tooltip text="POC管理"/></tooltip></Button>
-            </HBox>
-            
-            <Region HBox.hgrow="ALWAYS"/>
-            
-            <!-- 进度显示 (默认隐藏，扫描时显示) -->
-            <HBox fx:id="progressBox" spacing="10" alignment="CENTER_RIGHT" visible="false" managed="false">
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- 状态文本（进度条已另起行，状态可完整显示） -->
                 <Label fx:id="scanStateLabel" text="准备就绪" style="-fx-text-fill: -main-border-color;"/>
-                <ProgressBar fx:id="progressBar" prefWidth="150" progress="0" styleClass="scan-progress"/>
+            </HBox>
+
+            <!-- Row B: 进度条 (默认隐藏，扫描时显示) -->
+            <HBox fx:id="progressBox" spacing="10" alignment="CENTER_LEFT" visible="false" managed="false">
+                <ProgressBar fx:id="progressBar" HBox.hgrow="ALWAYS" maxWidth="Infinity" progress="0" styleClass="scan-progress"/>
                 <Label fx:id="progressLabel" text="0%" styleClass="stat-value"/>
                 <Label fx:id="timeLabel" text="00:00:00" styleClass="stat-label"/>
             </HBox>
-        </HBox>
+        </VBox>
 
         <!-- 4. 结果区域 -->
         <VBox VBox.vgrow="ALWAYS" spacing="10" styleClass="result-area">
@@ -192,8 +208,8 @@
                 <Button text="导出报告" onAction="#exportReport" styleClass="small-button" style="-fx-border-color: -main-border-color; -fx-text-fill: -main-border-color;" userData="i18n:vulnscan.export"/>
             </HBox>
             
-            <!-- 结果列表 -->
-            <SmoothScrollPane fx:id="resultScroll" VBox.vgrow="ALWAYS" fitToWidth="true" style="-fx-background-color: transparent;">
+            <!-- 结果列表：内层 ScrollPane 仅负责结果列表滚动，设 minHeight=200 避免被压扣 -->
+            <SmoothScrollPane fx:id="resultScroll" VBox.vgrow="ALWAYS" fitToWidth="true" minHeight="200" prefHeight="320" style="-fx-background-color: transparent;">
                 <VBox fx:id="resultVBox" spacing="8" style="-fx-padding: 5;">
                     <!-- 动态内容 -->
                 </VBox>
@@ -201,6 +217,7 @@
         </VBox>
         
     </VBox>
+    </SmoothScrollPane>
     
     <!-- === 弹窗层 (保持逻辑不变，仅更新样式类) === -->
     

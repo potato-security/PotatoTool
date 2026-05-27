@@ -99,6 +99,10 @@ public class RawHttpRequestParser {
 
             String method = requestLine[0].toUpperCase();
             String path = requestLine[1];
+            // 兼容部分 POC 写法：`GET HTTP/1.1` 表示省略 path，不能把协议 token 当成路径
+            if (requestLine.length == 2 && looksLikeHttpProtocol(path)) {
+                path = "";
+            }
             // 宽容模式：如果缺少协议版本，默认为HTTP/1.1
             String protocol = requestLine.length > 2 ? requestLine[2] : "HTTP/1.1";
 
@@ -201,6 +205,13 @@ public class RawHttpRequestParser {
         }
     }
 
+    private static boolean looksLikeHttpProtocol(String value) {
+        if (value == null) {
+            return false;
+        }
+        return value.matches("(?i)^HTTP/\\d(?:\\.\\d+)?$");
+    }
+
     /**
      * 测试主方法
      */
@@ -253,5 +264,4 @@ public class RawHttpRequestParser {
         System.out.println("无效报文: " + isValidRawRequest("invalid data"));
     }
 }
-
 

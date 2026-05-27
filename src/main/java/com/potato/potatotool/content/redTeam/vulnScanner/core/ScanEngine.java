@@ -49,11 +49,15 @@ public class ScanEngine {
     private List<PocObj.Poc> currentPocs;
     private long scanStartTime;
     
-    // 请求聚合
-    private ClusteredPocExecutor clusteredExecutor;
+    // 请求聚合执行器按目标组隔离，避免多目标并发时共享状态串扰。
+    private final Set<ClusteredPocExecutor> activeClusteredExecutors =
+        Collections.synchronizedSet(new HashSet<ClusteredPocExecutor>());
 
     // 指纹结果映射（由 VulnScanService 设置，用于附加到 ScanResult）
     private volatile Map<String, FingerprintResult> fingerprintResultMap;
+    private volatile Map<String, List<PocObj.Poc>> pocsByTarget;
+    private volatile boolean completionEventDispatched = false;
+    private volatile ScanProgressTracker progressTracker;
 
     // 数据库批处理队列
     private final BlockingQueue<TaskState> dbQueue = new LinkedBlockingQueue<>(5000);
@@ -135,6 +139,10 @@ public class ScanEngine {
         return eventDispatcher;
     }
 
+    public void setProgressTracker(ScanProgressTracker progressTracker) {
+        this.progressTracker = progressTracker;
+    }
+
     /**
      * 设置指纹结果（单目标，向后兼容）
      */
@@ -155,6 +163,10 @@ public class ScanEngine {
         this.fingerprintResultMap = fingerprintResultMap;
     }
 
+    public void setPocsByTarget(Map<String, List<PocObj.Poc>> pocsByTarget) {
+        this.pocsByTarget = pocsByTarget;
+    }
+
     /**
      * 获取指定目标的指纹结果
      */
@@ -173,10 +185,14 @@ public class ScanEngine {
      * @param pocs POC列表
      */
     public void startScan(List<String> targets, List<PocObj.Poc> pocs) {
-        startScan(targets, pocs, null);
+        startScan(targets, pocs, null, null);
     }
 
     public void startScan(List<String> targets, List<PocObj.Poc> pocs, ScanConfig runtimeConfig) {
+        startScan(targets, pocs, runtimeConfig, null);
+    }
+
+    public void startScan(List<String> targets, List<PocObj.Poc> pocs, ScanConfig runtimeConfig, String scanId) {
         if (isScanning) {
             throw new IllegalStateException("扫描任务正在进行中");
         }
@@ -192,11 +208,15 @@ public class ScanEngine {
         applyRuntimeConfig(runtimeConfig);
 
         // 生成扫描ID
-        currentScanId = generateScanId();
+        currentScanId = scanId != null && !scanId.trim().isEmpty()
+            ? scanId.trim()
+            : generateScanId();
+        ScanLogger.getInstance().startScanSession(currentScanId);
         
         // 初始化
         isScanning = true;
         isPaused = false;
+        shutdownClusteredExecutorNow();
         scanResults.clear();
         completedTasks.set(0);
         vulnerabilityCount.set(0);
@@ -204,13 +224,18 @@ public class ScanEngine {
         currentTargets = new ArrayList<>(targets);
         currentPocs = new ArrayList<>(pocs);
         scanStartTime = System.currentTimeMillis();
-        
-        // 初始化线程池
-        initExecutorService();
+        completionEventDispatched = false;
         
         // 创建扫描任务
         List<ScanTask> tasks = createScanTasks(targets, pocs);
         totalTasks.set(tasks.size());
+        if (progressTracker != null) {
+            progressTracker.startPhase(ScanPhase.SCANNING, tasks.size(), "开始漏洞扫描");
+            progressTracker.setVulnerabilitiesFound(0);
+        }
+
+        // 初始化线程池。队列容量至少覆盖本次任务数，避免 CallerRunsPolicy 将任务回压到 UI/测试调用线程。
+        initExecutorService(tasks.size());
         
         // 保存扫描状态到数据库
         saveScanState();
@@ -239,8 +264,10 @@ public class ScanEngine {
         
         // 恢复状态
         currentScanId = state.getScanId();
+        ScanLogger.getInstance().startScanSession(currentScanId);
         isScanning = true;
         isPaused = false;
+        shutdownClusteredExecutorNow();
         scanStartTime = state.getStartTime();
         
         // 恢复配置
@@ -297,9 +324,6 @@ public class ScanEngine {
             System.err.println("恢复漏洞结果失败: " + e.getMessage());
         }
         
-        // 初始化线程池
-        initExecutorService();
-        
         // 创建所有任务
         List<ScanTask> allTasks = createScanTasks(currentTargets, currentPocs);
         
@@ -307,6 +331,9 @@ public class ScanEngine {
         List<ScanTask> remainingTasks = allTasks.stream()
             .filter(task -> !isTaskCompleted(task))
             .collect(Collectors.toList());
+
+        // 初始化线程池。恢复扫描时同样按剩余任务数扩容队列，避免恢复入口被同步扫描阻塞。
+        initExecutorService(remainingTasks.size());
         
         ScanLogger.getInstance().info("SCAN", "恢复扫描: " + currentScanId +
             ", 总任务: " + allTasks.size() +
@@ -343,25 +370,16 @@ public class ScanEngine {
         }
 
         isPaused = true;
+        isScanning = false;
 
         // 强行中断线程池，立即停止所有任务（不等待确认）
+        shutdownClusteredExecutorNow();
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdownNow();
         }
 
         // 等待数据库批量写入队列完成（避免丢失已完成的任务记录）
-        try {
-            Thread.sleep(500); // 等待500毫秒让队列中的任务写入数据库
-            // 手动刷新队列中剩余的任务
-            List<TaskState> remaining = new ArrayList<>();
-            dbQueue.drainTo(remaining);
-            if (!remaining.isEmpty()) {
-                database.saveTaskStates(remaining);
-                ScanLogger.getInstance().info("SCAN", "刷新了 " + remaining.size() + " 个待写入的任务记录");
-            }
-        } catch (Exception e) {
-            ScanLogger.getInstance().warn("SCAN", "刷新任务队列失败: " + e.getMessage());
-        }
+        flushDbQueue();
 
         // 注意：不要调用 cleanupInterruptedTasks()
         // 因为暂停后恢复时应该继续之前的进度，而不是重新开始
@@ -378,38 +396,14 @@ public class ScanEngine {
         // 保存到扫描历史记录（scan_records表）
         // 使用saveOrUpdateScanRecord确保同一次扫描只有一条历史记录
         try {
-            // 构建配置信息
-            Map<String, Object> config = new HashMap<>();
-            config.put("threads", scanConfig.getThreads());
-            config.put("timeout", scanConfig.getTimeout());
-            config.put("retries", scanConfig.getRetries());
-            if (scanConfig.getProxy() != null) {
-                config.put("proxy", scanConfig.getProxy());
-            }
-            if (currentTargets != null) {
-                config.put("targetCount", currentTargets.size());
-            }
-            if (currentPocs != null) {
-                config.put("pocCount", currentPocs.size());
-            }
-
-            // 计算扫描持续时间（秒）
-            long duration = (System.currentTimeMillis() - scanStartTime) / 1000;
-
-            // 保存或更新扫描记录到历史（使用scan_id关联，同一扫描任务只保留一条记录）
-            database.saveOrUpdateScanRecord(
-                currentScanId,
-                new ArrayList<>(scanResults),
-                config,
-                duration,
-                "paused"
-            );
+            saveHistoryRecord("paused");
         } catch (Exception e) {
             System.err.println("保存暂停记录到历史失败: " + e.getMessage());
         }
 
         ScanLogger.getInstance().info("SCAN", "扫描已强行暂停: " + currentScanId +
             ", 已完成: " + completedTasks.get() + "/" + totalTasks.get());
+        ScanLogger.getInstance().endScanSession();
     }
 
     /**
@@ -424,6 +418,10 @@ public class ScanEngine {
      * 从VulnScanConfig读取线程池配置，支持用户自定义
      */
     private void initExecutorService() {
+        initExecutorService(0);
+    }
+
+    private void initExecutorService(int expectedTaskCount) {
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdown();
         }
@@ -439,7 +437,8 @@ public class ScanEngine {
         int coreThreads = Math.max(2, baseCoreThreads);
         int maxThreads = Math.max(coreThreads, configMaxThreads > 0 ? configMaxThreads : 
             Runtime.getRuntime().availableProcessors() * 2);
-        int queueSize = configQueueSize > 0 ? configQueueSize : 1000;
+        int configuredQueueSize = configQueueSize > 0 ? configQueueSize : 1000;
+        int queueSize = Math.max(configuredQueueSize, Math.max(expectedTaskCount, coreThreads));
         
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
             coreThreads,
@@ -466,12 +465,25 @@ public class ScanEngine {
         List<ScanTask> tasks = new ArrayList<>();
         
         for (String target : targets) {
-            for (PocObj.Poc poc : pocs) {
+            List<PocObj.Poc> targetPocs = resolvePocsForTarget(target, pocs);
+            for (PocObj.Poc poc : targetPocs) {
                 tasks.add(new ScanTask(target, poc));
             }
         }
         
         return tasks;
+    }
+
+    private List<PocObj.Poc> resolvePocsForTarget(String target, List<PocObj.Poc> fallbackPocs) {
+        Map<String, List<PocObj.Poc>> targetMap = pocsByTarget;
+        if (targetMap == null || targetMap.isEmpty()) {
+            return fallbackPocs;
+        }
+        List<PocObj.Poc> targetPocs = targetMap.get(target);
+        if (targetPocs == null || targetPocs.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return targetPocs;
     }
     
     /**
@@ -489,6 +501,7 @@ public class ScanEngine {
         // 如果没有任务，直接返回
         if (tasks == null || tasks.isEmpty()) {
             ScanLogger.getInstance().warn("SCAN", "没有需要执行的任务");
+            handleScanCompletion(currentScanId);
             return;
         }
 
@@ -507,7 +520,7 @@ public class ScanEngine {
 
             final String thisScanId = currentScanId;
             CompletableFuture<?>[] futures = tasksByTarget.values().stream()
-                .map(group -> CompletableFuture.runAsync(() -> executeClusterGroup(group), executorService))
+                .map(group -> CompletableFuture.runAsync(() -> executeClusterGroup(group, thisScanId), executorService))
                 .toArray(CompletableFuture[]::new);
 
             CompletableFuture.allOf(futures)
@@ -524,7 +537,7 @@ public class ScanEngine {
 
         // 提交所有任务
         CompletableFuture<?>[] futures = tasks.stream()
-            .map(task -> CompletableFuture.runAsync(() -> executeTask(task), executorService))
+            .map(task -> CompletableFuture.runAsync(() -> executeTask(task, thisScanId), executorService))
             .toArray(CompletableFuture[]::new);
 
         // 等待所有任务完成
@@ -555,73 +568,43 @@ public class ScanEngine {
         final String thisScanId = currentScanId;
 
         // 延迟初始化 ClusteredPocExecutor
-        if (clusteredExecutor == null) {
-            clusteredExecutor = new ClusteredPocExecutor(scanConfig, pocExecutor);
-        }
-
         String target = tasks.get(0).getTarget();
         List<PocObj.Poc> pocs = new ArrayList<>();
         for (ScanTask task : tasks) {
             pocs.add(task.getPoc());
         }
 
-        eventDispatcher.dispatchScanInfo(new ScanInfoEvent(this, currentScanId,
+        eventDispatcher.dispatchScanInfo(new ScanInfoEvent(this, thisScanId,
             ScanInfoEvent.InfoType.CLUSTERING_STATS, "启用请求聚类优化，POC 数量: " + pocs.size()));
 
         CompletableFuture.runAsync(() -> {
+            if (!isActiveScan(thisScanId)) {
+                return;
+            }
+            ClusteredPocExecutor clusteredExecutor = createClusteredExecutor();
             try {
-                List<ScanResult> results = clusteredExecutor.executeClusteredPocs(target, pocs);
+                // 用回调实时处理每个结果，进度可即时上报，避免聚类批量返回后才一次性突变
+                clusteredExecutor.executeClusteredPocs(target, pocs,
+                    result -> handleClusterResult(result, thisScanId));
 
-                // 处理聚类结果
-                for (ScanResult result : results) {
-                    if (isPaused || !isScanning) break;
-                    if (!thisScanId.equals(currentScanId)) break;
-
-                    // 附加指纹信息
-                    FingerprintResult fp = getFingerprintForTarget(result.getTarget());
-                    if (fp != null && fp.hasFingerprint()) {
-                        result.setFingerprint(fp.toFingerprintInfo());
-                    }
-
-                    if (result.isVulnerable()) {
-                        scanResults.add(result);
-                        vulnerabilityCount.incrementAndGet();
-                        eventDispatcher.dispatchVulnerabilityFound(
-                            new VulnerabilityFoundEvent(this, currentScanId, result));
-                    }
-
-                    // 保存任务状态
-                    String taskId = TaskState.generateTaskId(result.getTarget(),
-                        result.getPoc() != null ? result.getPoc().getId() : "unknown");
-                    TaskState taskState = new TaskState();
-                    taskState.setTaskId(taskId);
-                    taskState.setScanId(currentScanId);
-                    taskState.setTarget(result.getTarget());
-                    taskState.setPocId(result.getPoc() != null ? result.getPoc().getId() : "unknown");
-                    taskState.setCompleted(true);
-                    taskState.setVulnerable(result.isVulnerable());
-                    taskState.setStartTime(result.getTimestamp());
-                    taskState.setEndTime(System.currentTimeMillis());
-                    if (!dbQueue.offer(taskState)) {
-                        database.saveTaskState(taskState);
-                    }
-                    completedTaskIds.add(taskId);
-
-                    int completed = completedTasks.incrementAndGet();
-                    int total = totalTasks.get();
-                    if (completed % 10 == 0 || completed == total) {
-                        eventDispatcher.dispatchScanProgress(
-                            new ScanProgressEvent(this, currentScanId, completed, total, getVulnerabilityCount()));
-                    }
+                if (!isActiveScan(thisScanId)) {
+                    return;
                 }
 
                 // 输出聚类统计
                 ClusteredPocExecutor.ClusterStats stats = clusteredExecutor.getStats();
-                eventDispatcher.dispatchScanInfo(new ScanInfoEvent(this, currentScanId,
-                    ScanInfoEvent.InfoType.CLUSTERING_STATS, stats.toString()));
+                if (isActiveScan(thisScanId)) {
+                    eventDispatcher.dispatchScanInfo(new ScanInfoEvent(this, thisScanId,
+                        ScanInfoEvent.InfoType.CLUSTERING_STATS, stats.toString()));
+                }
 
             } catch (Exception e) {
-                ScanLogger.getInstance().error("SCAN", "聚类执行失败: " + e.getMessage());
+                if (isActiveScan(thisScanId)) {
+                    ScanLogger.getInstance().error("SCAN", "聚类执行失败: " + e.getMessage());
+                    throw new RuntimeException(e);
+                }
+            } finally {
+                shutdownClusteredExecutor(clusteredExecutor);
             }
         }, executorService)
         .thenRun(() -> handleScanCompletion(thisScanId))
@@ -634,10 +617,11 @@ public class ScanEngine {
     /**
      * 执行单个目标组的聚类扫描（不含 completion handler）
      */
-    private void executeClusterGroup(List<ScanTask> tasks) {
-        if (clusteredExecutor == null) {
-            clusteredExecutor = new ClusteredPocExecutor(scanConfig, pocExecutor);
+    private void executeClusterGroup(List<ScanTask> tasks, String thisScanId) {
+        if (!isActiveScan(thisScanId)) {
+            return;
         }
+        ClusteredPocExecutor clusteredExecutor = createClusteredExecutor();
 
         String target = tasks.get(0).getTarget();
         List<PocObj.Poc> pocs = new ArrayList<>();
@@ -646,55 +630,83 @@ public class ScanEngine {
         }
 
         try {
-            List<ScanResult> results = clusteredExecutor.executeClusteredPocs(target, pocs);
-
-            for (ScanResult result : results) {
-                if (isPaused || !isScanning) break;
-
-                FingerprintResult fp = getFingerprintForTarget(result.getTarget());
-                if (fp != null && fp.hasFingerprint()) {
-                    result.setFingerprint(fp.toFingerprintInfo());
-                }
-
-                if (result.isVulnerable()) {
-                    scanResults.add(result);
-                    vulnerabilityCount.incrementAndGet();
-                    eventDispatcher.dispatchVulnerabilityFound(
-                        new VulnerabilityFoundEvent(this, currentScanId, result));
-                }
-
-                String taskId = TaskState.generateTaskId(result.getTarget(),
-                    result.getPoc() != null ? result.getPoc().getId() : "unknown");
-                TaskState taskState = new TaskState();
-                taskState.setTaskId(taskId);
-                taskState.setScanId(currentScanId);
-                taskState.setTarget(result.getTarget());
-                taskState.setPocId(result.getPoc() != null ? result.getPoc().getId() : "unknown");
-                taskState.setCompleted(true);
-                taskState.setVulnerable(result.isVulnerable());
-                taskState.setStartTime(result.getTimestamp());
-                taskState.setEndTime(System.currentTimeMillis());
-                if (!dbQueue.offer(taskState)) {
-                    database.saveTaskState(taskState);
-                }
-                completedTaskIds.add(taskId);
-
-                int completed = completedTasks.incrementAndGet();
-                int total = totalTasks.get();
-                if (completed % 10 == 0 || completed == total) {
-                    eventDispatcher.dispatchScanProgress(
-                        new ScanProgressEvent(this, currentScanId, completed, total, getVulnerabilityCount()));
-                }
-            }
+            // 用回调实时处理每个结果，进度可即时上报，避免聚类批量返回后才一次性突变
+            clusteredExecutor.executeClusteredPocs(target, pocs,
+                result -> handleClusterResult(result, thisScanId));
         } catch (Exception e) {
-            ScanLogger.getInstance().error("SCAN", "聚类执行失败: " + e.getMessage());
+            if (isActiveScan(thisScanId)) {
+                ScanLogger.getInstance().error("SCAN", "聚类执行失败: " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+        } finally {
+            shutdownClusteredExecutor(clusteredExecutor);
+        }
+    }
+
+    /**
+     * 处理聚类执行器实时返回的单个结果：附加指纹、保存任务状态、累计进度、派发事件。
+     * 由聚类执行器在每个 ScanResult 产生时立即回调，确保 UI 进度可以动态更新。
+     */
+    private void handleClusterResult(ScanResult result, String thisScanId) {
+        if (result == null || !isActiveScan(thisScanId)) {
+            return;
+        }
+
+        // 附加指纹信息
+        FingerprintResult fp = getFingerprintForTarget(result.getTarget());
+        if (fp != null && fp.hasFingerprint()) {
+            result.setFingerprint(fp.toFingerprintInfo());
+        }
+
+        if (result.isVulnerable()) {
+            scanResults.add(result);
+            vulnerabilityCount.incrementAndGet();
+            eventDispatcher.dispatchVulnerabilityFound(
+                new VulnerabilityFoundEvent(this, thisScanId, result));
+        }
+
+        String taskId = TaskState.generateTaskId(result.getTarget(),
+            result.getPoc() != null ? result.getPoc().getId() : "unknown");
+        TaskState taskState = new TaskState();
+        taskState.setTaskId(taskId);
+        taskState.setScanId(thisScanId);
+        taskState.setTarget(result.getTarget());
+        taskState.setPocId(result.getPoc() != null ? result.getPoc().getId() : "unknown");
+        taskState.setCompleted(true);
+        taskState.setVulnerable(result.isVulnerable());
+        taskState.setStartTime(result.getTimestamp());
+        taskState.setEndTime(System.currentTimeMillis());
+        if (!dbQueue.offer(taskState)) {
+            try {
+                database.saveTaskState(taskState);
+            } catch (Exception dbEx) {
+                ScanLogger.getInstance().error("SCAN", "保存聚类任务状态失败: " + dbEx.getMessage());
+            }
+        }
+        completedTaskIds.add(taskId);
+
+        int completed = completedTasks.incrementAndGet();
+        int total = totalTasks.get();
+        if (progressTracker != null) {
+            progressTracker.setVulnerabilitiesFound(getVulnerabilityCount());
+            progressTracker.advance(1, "漏洞扫描中");
+        } else {
+            // 与 PocExecutor 路径保持一致的细粒度节流：前 3 个 / 每 1% / 最后一个都派发
+            int progressInterval = Math.max(1, total / 100);
+            if (completed <= 3 || completed == total || completed % progressInterval == 0) {
+                eventDispatcher.dispatchScanProgress(
+                    new ScanProgressEvent(this, thisScanId, completed, total, getVulnerabilityCount()));
+            }
         }
     }
 
     /**
      * 处理扫描正常完成
      */
-    private void handleScanCompletion(String thisScanId) {
+    private synchronized void handleScanCompletion(String thisScanId) {
+        if (completionEventDispatched) {
+            return;
+        }
         if (!thisScanId.equals(currentScanId)) {
             ScanLogger.getInstance().debug("SCAN", "扫描ID不匹配，忽略完成事件: " + thisScanId);
             return;
@@ -711,25 +723,42 @@ public class ScanEngine {
 
         long duration = System.currentTimeMillis() - scanStartTime;
         isScanning = false;
+        flushDbQueue();
         shutdownExecutorService();
+        shutdownActiveClusteredExecutors();
+        if (progressTracker != null) {
+            progressTracker.startPhase(ScanPhase.FINALIZING, 1, "保存扫描结果");
+        }
 
         try {
             int[] counts = countBySeverity();
             database.completeScanTask(currentScanId, getVulnerabilityCount(),
                 counts[0], counts[1], counts[2], counts[3], counts[4]);
+            saveHistoryRecord("completed");
         } catch (Exception e) {
             System.err.println("更新扫描状态失败: " + e.getMessage());
+        }
+
+        if (progressTracker != null) {
+            progressTracker.setVulnerabilitiesFound(getVulnerabilityCount());
+            progressTracker.setPhaseProgress(1, 1, "扫描完成");
+            progressTracker.finishSuccess();
         }
 
         eventDispatcher.dispatchScanCompleted(
             new ScanCompletedEvent(this, currentScanId,
                 new ArrayList<>(scanResults), duration, true));
+        completionEventDispatched = true;
+        ScanLogger.getInstance().endScanSession();
     }
 
     /**
      * 处理扫描异常
      */
-    private void handleScanException(String thisScanId, Throwable throwable) {
+    private synchronized void handleScanException(String thisScanId, Throwable throwable) {
+        if (completionEventDispatched) {
+            return;
+        }
         if (!thisScanId.equals(currentScanId)) {
             ScanLogger.getInstance().debug("SCAN", "扫描ID不匹配，忽略异常事件: " + thisScanId);
             return;
@@ -746,19 +775,40 @@ public class ScanEngine {
         long duration = System.currentTimeMillis() - scanStartTime;
         isScanning = false;
         isPaused = false;
+        flushDbQueue();
         shutdownExecutorService();
+        shutdownActiveClusteredExecutors();
+        if (progressTracker != null) {
+            progressTracker.startPhase(ScanPhase.FINALIZING, 1, "保存失败结果");
+        }
+
+        try {
+            int[] counts = countBySeverity();
+            database.failScanTask(currentScanId, getVulnerabilityCount(),
+                counts[0], counts[1], counts[2], counts[3], counts[4]);
+            saveHistoryRecord("failed");
+        } catch (Exception e) {
+            System.err.println("保存失败扫描状态失败: " + e.getMessage());
+        }
+
+        if (progressTracker != null) {
+            progressTracker.setVulnerabilitiesFound(getVulnerabilityCount());
+            progressTracker.finishFailed("扫描执行失败");
+        }
 
         eventDispatcher.dispatchScanError(
             new ScanErrorEvent(this, currentScanId, "扫描执行失败", throwable));
         eventDispatcher.dispatchScanCompleted(
             new ScanCompletedEvent(this, currentScanId,
                 new ArrayList<>(scanResults), duration, false));
+        completionEventDispatched = true;
+        ScanLogger.getInstance().endScanSession();
     }
     
     /**
      * 执行单个扫描任务
      */
-    private void executeTask(ScanTask task) {
+    private void executeTask(ScanTask task, String thisScanId) {
         String taskId = TaskState.generateTaskId(task.getTarget(), task.getPoc().getId());
 
         // 标记任务是否被跳过（用于决定是否增加计数器）
@@ -766,7 +816,7 @@ public class ScanEngine {
 
         try {
             // 检查是否暂停或停止
-            if (isPaused || !isScanning) {
+            if (!isActiveScan(thisScanId)) {
                 taskSkipped = true;
                 return;
             }
@@ -780,7 +830,7 @@ public class ScanEngine {
             long taskStartTime = System.currentTimeMillis();
 
             // 执行POC前再次检查暂停状态
-            if (isPaused || !isScanning) {
+            if (!isActiveScan(thisScanId)) {
                 taskSkipped = true;
                 return;
             }
@@ -789,7 +839,7 @@ public class ScanEngine {
             ScanResult result = pocExecutor.execute(task.getTarget(), task.getPoc());
 
             // 执行POC后再次检查暂停状态（避免保存无效结果）
-            if (isPaused || !isScanning) {
+            if (!isActiveScan(thisScanId)) {
                 taskSkipped = true;
                 return;
             }
@@ -808,14 +858,14 @@ public class ScanEngine {
 
                     // 如果发现漏洞，触发事件
                     eventDispatcher.dispatchVulnerabilityFound(
-                        new VulnerabilityFoundEvent(this, currentScanId, result)
+                        new VulnerabilityFoundEvent(this, thisScanId, result)
                     );
                 }
 
                 // 保存任务状态
                 TaskState taskState = new TaskState();
                 taskState.setTaskId(taskId);
-                taskState.setScanId(currentScanId);
+                taskState.setScanId(thisScanId);
                 taskState.setTarget(task.getTarget());
                 taskState.setPocId(task.getPoc().getId());
                 taskState.setCompleted(true);
@@ -839,17 +889,17 @@ public class ScanEngine {
 
         } catch (NetworkException e) {
             // 网络异常，记录但不中断扫描
-            if (scanConfig.isDebug()) {
+            if (scanConfig.isDebug() && isActiveScan(thisScanId)) {
                 eventDispatcher.dispatchScanError(
-                    new ScanErrorEvent(this, currentScanId, task.getTarget(),
+                    new ScanErrorEvent(this, thisScanId, task.getTarget(),
                         task.getPoc().getId(), e.getMessage(), e)
                 );
             }
         } catch (ScanExecutionException e) {
             // 扫描执行异常
-            if (scanConfig.isDebug()) {
+            if (scanConfig.isDebug() && isActiveScan(thisScanId)) {
                 eventDispatcher.dispatchScanError(
-                    new ScanErrorEvent(this, currentScanId, task.getTarget(),
+                    new ScanErrorEvent(this, thisScanId, task.getTarget(),
                         task.getPoc().getId(), e.getMessage(), e)
                 );
             }
@@ -862,13 +912,15 @@ public class ScanEngine {
                 return;
             }
             // 其他异常
-            eventDispatcher.dispatchScanError(
-                new ScanErrorEvent(this, currentScanId, task.getTarget(),
-                    task.getPoc().getId(), "未知错误: " + e.getMessage(), e)
-            );
+            if (isActiveScan(thisScanId)) {
+                eventDispatcher.dispatchScanError(
+                    new ScanErrorEvent(this, thisScanId, task.getTarget(),
+                        task.getPoc().getId(), "未知错误: " + e.getMessage(), e)
+                );
+            }
         } finally {
             // 如果任务被跳过（暂停/停止/已完成），不更新进度
-            if (taskSkipped) {
+            if (taskSkipped || !isActiveScan(thisScanId)) {
                 return;
             }
 
@@ -877,25 +929,30 @@ public class ScanEngine {
             int total = totalTasks.get();
 
             // 如果已暂停或停止，不触发进度事件（但计数器已更新）
-            if (isPaused || !isScanning) {
+            if (!isActiveScan(thisScanId)) {
                 return;
             }
 
             int vulnerabilities = getVulnerabilityCount();
 
-            // 动态进度更新频率：任务少时每个都更新，任务多时按比例
-            int progressInterval = Math.max(1, total / 100);
-            if (completed <= 3 || completed == total || completed % progressInterval == 0) {
-                // 触发进度事件
-                eventDispatcher.dispatchScanProgress(
-                    new ScanProgressEvent(this, currentScanId, completed, total, vulnerabilities)
-                );
+            if (progressTracker != null) {
+                progressTracker.setVulnerabilitiesFound(vulnerabilities);
+                progressTracker.advance(1, "漏洞扫描中");
+            } else {
+                // 动态进度更新频率：任务少时每个都更新，任务多时按比例
+                int progressInterval = Math.max(1, total / 100);
+                if (completed <= 3 || completed == total || completed % progressInterval == 0) {
+                    // 触发进度事件
+                    eventDispatcher.dispatchScanProgress(
+                        new ScanProgressEvent(this, thisScanId, completed, total, vulnerabilities)
+                    );
+                }
             }
 
             // 数据库更新频率较低（每50个或完成时）
             if (completed % 50 == 0 || completed == total) {
                 try {
-                    database.updateScanState(currentScanId,
+                    database.updateScanState(thisScanId,
                         isPaused ? ScanState.Status.PAUSED : ScanState.Status.RUNNING,
                         completed, vulnerabilities);
                 } catch (Exception e) {
@@ -903,6 +960,10 @@ public class ScanEngine {
                 }
             }
         }
+    }
+
+    private boolean isActiveScan(String scanId) {
+        return scanId != null && scanId.equals(currentScanId) && isScanning && !isPaused;
     }
     
     private void applyRuntimeConfig(ScanConfig runtimeConfig) {
@@ -940,6 +1001,8 @@ public class ScanEngine {
         scanConfig.setEnableResponseCache(runtimeConfig.isEnableResponseCache());
         scanConfig.setResponseCacheTtlMs(runtimeConfig.getResponseCacheTtlMs());
         scanConfig.setRequestsPerSecond(runtimeConfig.getRequestsPerSecond());
+        scanConfig.setOobInteractionWaitSeconds(runtimeConfig.getOobInteractionWaitSeconds());
+        scanConfig.setRestrictOutboundRequestsToTargetHost(runtimeConfig.isRestrictOutboundRequestsToTargetHost());
         scanConfig.setEnableClustering(runtimeConfig.isEnableClustering());
         scanConfig.setLocalTargetPath(runtimeConfig.getLocalTargetPath());
         scanConfig.setTargetProtocol(runtimeConfig.getTargetProtocol());
@@ -992,7 +1055,7 @@ public class ScanEngine {
      * 停止扫描（强行停止，立即中断所有任务）
      */
     public void stopScan() {
-        if (!isScanning) {
+        if (!isScanning && !isPaused) {
             return;
         }
 
@@ -1000,23 +1063,13 @@ public class ScanEngine {
         isPaused = false;
 
         // 强行中断线程池，立即停止所有任务（不等待确认）
+        shutdownClusteredExecutorNow();
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdownNow();
         }
 
         // 等待数据库批量写入队列完成（避免丢失已完成的任务记录）
-        try {
-            Thread.sleep(500); // 等待500毫秒让队列中的任务写入数据库
-            // 手动刷新队列中剩余的任务
-            List<TaskState> remaining = new ArrayList<>();
-            dbQueue.drainTo(remaining);
-            if (!remaining.isEmpty()) {
-                database.saveTaskStates(remaining);
-                ScanLogger.getInstance().info("SCAN", "刷新了 " + remaining.size() + " 个待写入的任务记录");
-            }
-        } catch (Exception e) {
-            ScanLogger.getInstance().warn("SCAN", "刷新任务队列失败: " + e.getMessage());
-        }
+        flushDbQueue();
 
         // 注意：停止操作保留已完成的任务记录
         // 不调用 cleanupInterruptedTasks()，以便用户可以查看已发现的漏洞
@@ -1027,12 +1080,31 @@ public class ScanEngine {
             int[] counts = countBySeverity();
             database.updateScanVulnCounts(currentScanId, getVulnerabilityCount(),
                 counts[0], counts[1], counts[2], counts[3], counts[4]);
+            saveHistoryRecord("stopped");
         } catch (Exception e) {
             System.err.println("更新扫描状态失败: " + e.getMessage());
         }
 
+        if (progressTracker != null) {
+            progressTracker.setVulnerabilitiesFound(getVulnerabilityCount());
+            progressTracker.finishStopped("扫描已停止");
+        }
+
         ScanLogger.getInstance().info("SCAN", "扫描已强行停止: " + currentScanId +
             ", 已完成: " + completedTasks.get() + "/" + totalTasks.get());
+        dispatchStoppedCompletionEvent();
+        ScanLogger.getInstance().endScanSession();
+    }
+
+    private synchronized void dispatchStoppedCompletionEvent() {
+        if (completionEventDispatched) {
+            return;
+        }
+        long duration = System.currentTimeMillis() - scanStartTime;
+        eventDispatcher.dispatchScanCompleted(
+            new ScanCompletedEvent(this, currentScanId,
+                new ArrayList<>(scanResults), duration, false));
+        completionEventDispatched = true;
     }
     
     /**
@@ -1110,10 +1182,12 @@ public class ScanEngine {
     public void shutdown() {
         stopScan();
         shutdownExecutorService();
+        shutdownClusteredExecutorNow();
 
         shutdownDbWriterThread();
         eventDispatcher.shutdown();
         pocExecutor.shutdown();
+        ScanLogger.getInstance().endScanSession();
     }
 
     private void shutdownDbWriterThread() {
@@ -1134,6 +1208,88 @@ public class ScanEngine {
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdown();
         }
+    }
+
+    private ClusteredPocExecutor createClusteredExecutor() {
+        ClusteredPocExecutor executor = new ClusteredPocExecutor(scanConfig, pocExecutor);
+        activeClusteredExecutors.add(executor);
+        return executor;
+    }
+
+    private void shutdownClusteredExecutor(ClusteredPocExecutor executor) {
+        if (executor == null) {
+            return;
+        }
+        activeClusteredExecutors.remove(executor);
+        executor.shutdown();
+    }
+
+    private void shutdownActiveClusteredExecutors() {
+        List<ClusteredPocExecutor> snapshot;
+        synchronized (activeClusteredExecutors) {
+            snapshot = new ArrayList<>(activeClusteredExecutors);
+            activeClusteredExecutors.clear();
+        }
+        for (ClusteredPocExecutor executor : snapshot) {
+            executor.shutdown();
+        }
+    }
+
+    private void shutdownClusteredExecutorNow() {
+        List<ClusteredPocExecutor> snapshot;
+        synchronized (activeClusteredExecutors) {
+            snapshot = new ArrayList<>(activeClusteredExecutors);
+            activeClusteredExecutors.clear();
+        }
+        for (ClusteredPocExecutor executor : snapshot) {
+            executor.shutdownNow();
+        }
+    }
+
+    private void flushDbQueue() {
+        try {
+            List<TaskState> remaining = new ArrayList<>();
+            dbQueue.drainTo(remaining);
+            if (!remaining.isEmpty()) {
+                database.saveTaskStates(remaining);
+                ScanLogger.getInstance().info("SCAN", "刷新了 " + remaining.size() + " 个待写入的任务记录");
+            }
+        } catch (Exception e) {
+            ScanLogger.getInstance().warn("SCAN", "刷新任务队列失败: " + e.getMessage());
+        }
+    }
+
+    private void saveHistoryRecord(String status) throws Exception {
+        database.saveOrUpdateScanRecord(
+            currentScanId,
+            new ArrayList<>(scanResults),
+            buildHistoryConfig(),
+            Math.max(0, (System.currentTimeMillis() - scanStartTime) / 1000),
+            status
+        );
+    }
+
+    private Map<String, Object> buildHistoryConfig() {
+        Map<String, Object> config = new HashMap<>();
+        config.put("threads", scanConfig.getThreads());
+        config.put("timeout", scanConfig.getTimeout());
+        config.put("retries", scanConfig.getRetries());
+        config.put("enableClustering", scanConfig.isEnableClustering());
+        config.put("enableResponseCache", scanConfig.isEnableResponseCache());
+        if (scanConfig.getProxy() != null) {
+            config.put("proxy", scanConfig.getProxy());
+        }
+        if (currentTargets != null) {
+            config.put("targetCount", currentTargets.size());
+            config.put("targets", new ArrayList<>(currentTargets));
+        }
+        if (currentPocs != null) {
+            config.put("pocCount", currentPocs.size());
+        }
+        config.put("totalTasks", totalTasks.get());
+        config.put("completedTasks", completedTasks.get());
+        config.put("vulnerabilityCount", getVulnerabilityCount());
+        return config;
     }
     
     /**

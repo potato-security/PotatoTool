@@ -20,8 +20,11 @@ import com.potato.potatotool.content.redTeam.vulnScanner.util.ScanLogger;
 import static com.potato.potatotool.ToStart.debugMode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * 漏洞扫描服务 V2 (重构版本)
@@ -40,6 +43,8 @@ public class VulnScanService {
     private final ScanConfig scanConfig;
     private final VulnScanConfig vulnConfig;
     private final SmartPocSelector smartPocSelector;
+    private final ScanProgressTracker progressTracker;
+    private String preparedScanId;
 
     // 目标列表
     private final List<String> targetList = new ArrayList<>();
@@ -51,6 +56,9 @@ public class VulnScanService {
         this.scanEngine = new ScanEngine(scanConfig);
         this.smartPocSelector = new SmartPocSelector(
             pocRepository, scanEngine.getPocExecutor(), scanEngine.getEventDispatcher());
+        this.progressTracker = new ScanProgressTracker(this, scanEngine.getEventDispatcher());
+        this.smartPocSelector.setProgressTracker(progressTracker);
+        this.scanEngine.setProgressTracker(progressTracker);
 
         // 设置默认事件监听器
         setupDefaultEventListeners();
@@ -115,7 +123,7 @@ public class VulnScanService {
                 if (scanConfig.isDebug()) {
                     String error = event.getErrorMessage();
                     logger.error("SCAN", "扫描错误: " + error);
-                    event.logUnrecognizedExpression(error);
+//                    event.logUnrecognizedExpression(error);
                 }
             }
         });
@@ -343,6 +351,8 @@ public class VulnScanService {
         target.setEnableResponseCache(source.isEnableResponseCache());
         target.setResponseCacheTtlMs(source.getResponseCacheTtlMs());
         target.setRequestsPerSecond(source.getRequestsPerSecond());
+        target.setOobInteractionWaitSeconds(source.getOobInteractionWaitSeconds());
+        target.setRestrictOutboundRequestsToTargetHost(source.isRestrictOutboundRequestsToTargetHost());
         target.setEnableClustering(source.isEnableClustering());
         target.setLocalTargetPath(source.getLocalTargetPath());
         target.setTargetProtocol(source.getTargetProtocol());
@@ -361,9 +371,14 @@ public class VulnScanService {
     }
 
     public void startScan(List<String> targets, List<PocObj.Poc> pocs) {
+        smartPocSelector.setFingerprintProgressCallback(null);
         scanEngine.setFingerprintResult(null);
         scanEngine.setFingerprintResultMap(null);
-        scanEngine.startScan(new ArrayList<>(targets), pocs, getScanConfigSnapshot());
+        scanEngine.setPocsByTarget(null);
+        String scanId = consumePreparedScanId();
+        progressTracker.reset(scanId);
+        smartPocSelector.setScanId(scanId);
+        scanEngine.startScan(new ArrayList<>(targets), pocs, getScanConfigSnapshot(), scanId);
     }
 
     /**
@@ -374,15 +389,21 @@ public class VulnScanService {
     }
 
     public void startScan(List<String> targets, List<PocObj.Poc> pocs, FingerprintResult fingerprint) {
+        smartPocSelector.setFingerprintProgressCallback(null);
         scanEngine.setFingerprintResult(fingerprint);
         scanEngine.setFingerprintResultMap(null);
-        scanEngine.startScan(new ArrayList<>(targets), pocs, getScanConfigSnapshot());
+        scanEngine.setPocsByTarget(null);
+        String scanId = consumePreparedScanId();
+        progressTracker.reset(scanId);
+        smartPocSelector.setScanId(scanId);
+        scanEngine.startScan(new ArrayList<>(targets), pocs, getScanConfigSnapshot(), scanId);
     }
 
     /**
      * 智能 POC 筛选（供 PaneVulScan 调用）
      */
     public PocSelectionResult selectAndFilterPocs(String target, ScanConfig config) {
+        ensureSelectorScanId();
         return smartPocSelector.selectAndFilterPocs(target, config);
     }
 
@@ -397,6 +418,7 @@ public class VulnScanService {
      * 多目标智能 POC 筛选
      */
     public MultiTargetSelectionResult selectAndFilterPocsMultiTarget(List<String> targets, ScanConfig config) {
+        ensureSelectorScanId();
         return smartPocSelector.selectAndFilterPocsMultiTarget(targets, config);
     }
 
@@ -408,9 +430,53 @@ public class VulnScanService {
     }
 
     public void startScan(List<String> targets, List<PocObj.Poc> pocs, Map<String, FingerprintResult> fingerprintMap) {
+        smartPocSelector.setFingerprintProgressCallback(null);
         scanEngine.setFingerprintResult(null);
         scanEngine.setFingerprintResultMap(fingerprintMap);
-        scanEngine.startScan(new ArrayList<>(targets), pocs, getScanConfigSnapshot());
+        scanEngine.setPocsByTarget(null);
+        String scanId = consumePreparedScanId();
+        progressTracker.reset(scanId);
+        smartPocSelector.setScanId(scanId);
+        scanEngine.startScan(new ArrayList<>(targets), pocs, getScanConfigSnapshot(), scanId);
+    }
+
+    public void startScan(List<String> targets, MultiTargetSelectionResult selection) {
+        if (selection == null) {
+            throw new IllegalArgumentException("POC筛选结果不能为空");
+        }
+        smartPocSelector.setFingerprintProgressCallback(null);
+        scanEngine.setFingerprintResult(null);
+        scanEngine.setFingerprintResultMap(selection.getFingerprintMap());
+        scanEngine.setPocsByTarget(selection.getPocsByTarget());
+        String scanId = consumePreparedScanId();
+        progressTracker.reset(scanId);
+        smartPocSelector.setScanId(scanId);
+        scanEngine.startScan(new ArrayList<>(targets), selection.getPocs(), getScanConfigSnapshot(), scanId);
+    }
+
+    private void ensureSelectorScanId() {
+        if (preparedScanId == null || preparedScanId.trim().isEmpty()) {
+            preparedScanId = buildNextScanId();
+        }
+        progressTracker.reset(preparedScanId);
+        smartPocSelector.setScanId(preparedScanId);
+    }
+
+    private String consumePreparedScanId() {
+        String scanId = preparedScanId;
+        if (scanId == null || scanId.trim().isEmpty()) {
+            scanId = buildNextScanId();
+        }
+        preparedScanId = null;
+        return scanId;
+    }
+
+    private String buildNextScanId() {
+        String current = scanEngine.getCurrentScanId();
+        if (current != null && !current.trim().isEmpty() && scanEngine.isScanning()) {
+            return current;
+        }
+        return "scan-" + System.currentTimeMillis() + "-" + java.util.UUID.randomUUID().toString().substring(0, 8);
     }
 
     /**
@@ -418,17 +484,47 @@ public class VulnScanService {
      * 确保 ScanEngine 使用正确的配置
      */
     public void applyScanConfig(ScanConfig uiConfig) {
+        if (uiConfig == null) {
+            return;
+        }
+
         scanConfig.setThreads(uiConfig.getThreads());
+        scanConfig.setProtocol(uiConfig.getProtocol());
+        scanConfig.setTags(uiConfig.getTags());
+        scanConfig.setSeverity(uiConfig.getSeverity());
         scanConfig.setTimeout(uiConfig.getTimeout());
         scanConfig.setDebug(uiConfig.isDebug());
         scanConfig.setProxy(uiConfig.getProxy());
+        scanConfig.setFollowRedirects(uiConfig.isFollowRedirects());
+        scanConfig.setUserAgent(uiConfig.getUserAgent());
+        scanConfig.setHeaders(new HashMap<String, String>(uiConfig.getHeaders()));
+        scanConfig.setMaxResponseSize(uiConfig.getMaxResponseSize());
+        scanConfig.setInputType(uiConfig.getInputType());
+        scanConfig.setAutoDetectInputType(uiConfig.isAutoDetectInputType());
+        scanConfig.setScanMode(uiConfig.getScanMode());
+        scanConfig.setEnabledPocFormats(new HashSet<String>(uiConfig.getEnabledPocFormats()));
+        scanConfig.setEnabledCategories(new HashSet<PocObj.PocCategory>(uiConfig.getEnabledCategories()));
+        scanConfig.setExcludedCategories(new HashSet<PocObj.PocCategory>(uiConfig.getExcludedCategories()));
+        scanConfig.setSkipFingerprint(uiConfig.isSkipFingerprint());
+        scanConfig.setFingerprintTimeout(uiConfig.getFingerprintTimeout());
+        scanConfig.setEnableHoneypotDetection(uiConfig.isEnableHoneypotDetection());
+        scanConfig.setStopOnHoneypot(uiConfig.isStopOnHoneypot());
+        scanConfig.setEnableConfigAudit(uiConfig.isEnableConfigAudit());
+        scanConfig.setMinSeverity(uiConfig.getMinSeverity());
         scanConfig.setEnableClustering(uiConfig.isEnableClustering());
+        scanConfig.setEnableDeduplication(uiConfig.isEnableDeduplication());
         scanConfig.setEnableResponseCache(uiConfig.isEnableResponseCache());
+        scanConfig.setResponseCacheTtlMs(uiConfig.getResponseCacheTtlMs());
         scanConfig.setRequestsPerSecond(uiConfig.getRequestsPerSecond());
+        scanConfig.setOobInteractionWaitSeconds(uiConfig.getOobInteractionWaitSeconds());
+        scanConfig.setRestrictOutboundRequestsToTargetHost(uiConfig.isRestrictOutboundRequestsToTargetHost());
         scanConfig.setRetries(uiConfig.getRetries());
         scanConfig.setEnableHeadless(uiConfig.isEnableHeadless());
         scanConfig.setEnableCode(uiConfig.isEnableCode());
         scanConfig.setEnableFuzz(uiConfig.isEnableFuzz());
+        scanConfig.setLocalTargetPath(uiConfig.getLocalTargetPath());
+        scanConfig.setTargetProtocol(uiConfig.getTargetProtocol());
+        scanConfig.setFileExtensions(new ArrayList<String>(uiConfig.getFileExtensions()));
     }
     
     /**
@@ -556,6 +652,10 @@ public class VulnScanService {
      */
     public void removeEventListener(ScanEventListener listener) {
         scanEngine.removeEventListener(listener);
+    }
+
+    public void setFingerprintProgressCallback(BiConsumer<Integer, Integer> callback) {
+        smartPocSelector.setFingerprintProgressCallback(callback);
     }
     
     // ==================== 生命周期 ====================

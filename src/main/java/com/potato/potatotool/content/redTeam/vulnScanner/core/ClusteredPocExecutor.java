@@ -1,22 +1,23 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.core;
 
+import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.Poc;
-import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj.PocStep;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanConfig;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanResult;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 /**
  * 请求聚类执行器
  * 核心功能：将相同请求特征的 POC 聚类，减少重复请求
  * 
  * 聚类逻辑：
- * 1. 按请求特征（URL路径+方法+请求体签名）对POC进行分组
- * 2. 对同一聚类中的POC，只发送一次请求
- * 3. 用这个响应匹配聚类中所有POC的匹配规则
- * 4. 显著减少网络请求数量，提高扫描效率
+ * 1. 按完整请求签名对POC进行分组
+ * 2. 同组 POC 仍各自执行 matcher/extractor
+ * 3. 真正的重复网络请求由 PocExecutor 响应缓存复用
+ * 4. 避免“相同请求、不同匹配规则”被错误跳过
  * 
  * @author Potato
  * @date 2025/12/11
@@ -24,9 +25,10 @@ import java.util.concurrent.*;
 public class ClusteredPocExecutor {
     
     private final ScanConfig scanConfig;
-    private final ResponseCacheService cacheService;
     private final PocExecutor pocExecutor;
     private final ExecutorService executorService;
+    private final RequestSignatureService requestSignatureService;
+    private volatile boolean shutdownRequested = false;
     
     // 聚类统计
     private volatile int totalRequests = 0;
@@ -35,8 +37,8 @@ public class ClusteredPocExecutor {
     
     public ClusteredPocExecutor(ScanConfig scanConfig, PocExecutor pocExecutor) {
         this.scanConfig = scanConfig;
-        this.cacheService = new ResponseCacheService();
         this.pocExecutor = pocExecutor;
+        this.requestSignatureService = new RequestSignatureService();
         this.executorService = Executors.newFixedThreadPool(
             Math.max(1, scanConfig.getThreads() / 2)
         );
@@ -44,67 +46,151 @@ public class ClusteredPocExecutor {
     
     /**
      * 聚类执行 POC 列表
-     * 
+     *
      * @param target 目标 URL
      * @param pocs POC 列表
      * @return 扫描结果列表
      */
     public List<ScanResult> executeClusteredPocs(String target, List<Poc> pocs) {
+        return executeClusteredPocs(target, pocs, null);
+    }
+
+    /**
+     * 聚类执行 POC 列表（带实时回调）
+     * 每个 ScanResult 产生时立即触发 onResult.accept(result)，用于进度上报与逐项处理。
+     * 回调和批量返回都会拿到全部结果，调用方可二选一，也可同时使用。
+     *
+     * @param target 目标 URL
+     * @param pocs POC 列表
+     * @param onResult 单个结果回调（可为 null）
+     * @return 扫描结果列表
+     */
+    public List<ScanResult> executeClusteredPocs(String target, List<Poc> pocs, Consumer<ScanResult> onResult) {
         if (pocs == null || pocs.isEmpty()) {
             return Collections.emptyList();
         }
-        
+        if (shutdownRequested || Thread.currentThread().isInterrupted()) {
+            return Collections.emptyList();
+        }
+
         // 重置统计
         totalRequests = 0;
         savedRequests = 0;
         clusteredPocs = 0;
-        
+
         // 1. 对 POC 进行聚类
         Map<String, ClusterGroup> clusters = clusterPocs(pocs);
-        
+
         List<ScanResult> allResults = new CopyOnWriteArrayList<>();
-        
+
         // 2. 并行执行各聚类组
         List<Future<?>> futures = new ArrayList<>();
-        
+
         for (Map.Entry<String, ClusterGroup> entry : clusters.entrySet()) {
             ClusterGroup group = entry.getValue();
-            
-            futures.add(executorService.submit(() -> {
-                try {
-                    List<ScanResult> results = executeClusterGroup(target, group);
-                    allResults.addAll(results);
-                } catch (Exception e) {
-                    // 聚类执行失败，回退到单独执行
-                    for (Poc poc : group.getPocs()) {
-                        try {
-                            ScanResult result = pocExecutor.execute(target, poc);
-                            if (result != null) {
-                                allResults.add(result);
+
+            try {
+                futures.add(executorService.submit(() -> {
+                    if (shutdownRequested || Thread.currentThread().isInterrupted()) {
+                        return;
+                    }
+                    try {
+                        List<ScanResult> results = executeClusterGroup(target, group);
+                        if (shutdownRequested || Thread.currentThread().isInterrupted()) {
+                            return;
+                        }
+                        notifyResults(results, onResult);
+                        allResults.addAll(results);
+                    } catch (Exception e) {
+                        if (shutdownRequested || Thread.currentThread().isInterrupted()) {
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+                        // 聚类执行失败，回退到单独执行
+                        for (Poc poc : group.getPocs()) {
+                            if (shutdownRequested || Thread.currentThread().isInterrupted()) {
+                                return;
                             }
-                        } catch (Exception ex) {
-                            // 忽略单个 POC 执行错误
+                            try {
+                                ScanResult result = pocExecutor.execute(target, poc);
+                                if (result != null && !shutdownRequested && !Thread.currentThread().isInterrupted()) {
+                                    notifyResult(result, onResult);
+                                    allResults.add(result);
+                                }
+                            } catch (Exception ex) {
+                                if (Thread.currentThread().isInterrupted()) {
+                                    return;
+                                }
+                                // 忽略单个 POC 执行错误
+                            }
                         }
                     }
+                }));
+            } catch (RejectedExecutionException e) {
+                if (!shutdownRequested) {
+                    throw e;
                 }
-            }));
-        }
-        
-        // 等待所有任务完成
-        for (Future<?> future : futures) {
-            try {
-                future.get(scanConfig.getTimeout() * 2L, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                // 忽略超时
             }
         }
-        
+
+        // 等待所有任务真正完成。不能用固定 future 超时后直接返回，否则 UI 会提前显示完成，
+        // 而内部线程仍在继续发请求和输出重试日志。
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                cancelFutures(futures);
+                Thread.currentThread().interrupt();
+                throw new CancellationException("聚类扫描被中断");
+            } catch (CancellationException e) {
+                cancelFutures(futures);
+                throw e;
+            } catch (ExecutionException e) {
+                if (shutdownRequested) {
+                    cancelFutures(futures);
+                    break;
+                }
+            }
+        }
+
         return allResults;
+    }
+
+    private void cancelFutures(List<Future<?>> futures) {
+        if (futures == null) {
+            return;
+        }
+        for (Future<?> future : futures) {
+            if (future != null && !future.isDone()) {
+                future.cancel(true);
+            }
+        }
+    }
+
+    private void notifyResults(List<ScanResult> results, Consumer<ScanResult> onResult) {
+        if (onResult == null || results == null || results.isEmpty()) {
+            return;
+        }
+        for (ScanResult r : results) {
+            notifyResult(r, onResult);
+        }
+    }
+
+    private void notifyResult(ScanResult result, Consumer<ScanResult> onResult) {
+        if (onResult == null || result == null) {
+            return;
+        }
+        try {
+            onResult.accept(result);
+        } catch (Exception ignore) {
+            // 回调异常不影响主流程
+        }
     }
     
     /**
      * 对 POC 进行聚类
-     * 聚类依据：第一个HTTP请求的路径+方法+请求体签名
+     * 聚类依据：第一个HTTP请求的完整请求签名。
+     * 注意：聚类只决定调度分组，真实网络复用由 PocExecutor 的响应缓存完成，避免不同 matcher 被误跳过。
      */
     private Map<String, ClusterGroup> clusterPocs(List<Poc> pocs) {
         Map<String, ClusterGroup> clusters = new HashMap<>();
@@ -131,43 +217,13 @@ public class ClusteredPocExecutor {
     }
     
     /**
-     * 生成聚类键
-     * 只有单步骤HTTP POC才能聚类（基于 PocStep 的 method/path/body 字段）
+     * 生成聚类键。
+     * 只有单步骤、无运行时依赖的 HTTP POC 才能聚类。签名必须包含方法、路径、body、headers、
+     * cookie、raw 请求等会影响响应的输入，避免请求不完全一致时误合并。
      */
     private String generateClusterKey(Poc poc) {
-        // 只聚类单步骤HTTP POC（协议为 http）
-        if (poc.getVerifySteps() == null || poc.getVerifySteps().size() != 1) {
-            return null;
-        }
-        
-        // 检查协议是否为 HTTP
-        String protocol = poc.getProtocol();
-        if (protocol != null && !protocol.equalsIgnoreCase("http") && !protocol.equalsIgnoreCase("https")) {
-            return null;
-        }
-        
-        PocStep step = poc.getVerifySteps().get(0);
-        
-        // PocStep 直接包含 method, path, body 字段
-        String method = step.getMethod();
-        String path = step.getPath();
-        String body = step.getBody();
-        
-        // 构建聚类键：方法 + 路径 + 请求体签名
-        StringBuilder keyBuilder = new StringBuilder();
-        keyBuilder.append(method != null ? method.toUpperCase() : "GET");
-        keyBuilder.append("|");
-        keyBuilder.append(path != null ? path : "/");
-        keyBuilder.append("|");
-        
-        // 请求体签名（如果有）
-        if (body != null && !body.isEmpty()) {
-            keyBuilder.append(String.valueOf(body.hashCode()));
-        } else {
-            keyBuilder.append("nobody");
-        }
-        
-        return keyBuilder.toString();
+        RequestSignatureService.RequestSignature signature = requestSignatureService.buildForPoc(poc);
+        return signature.isCoalescible() ? signature.getSignatureKey() : null;
     }
     
     /**
@@ -190,6 +246,9 @@ public class ClusteredPocExecutor {
         // 不可聚类的POC，逐个执行
         if (!group.isClusterable()) {
             for (Poc poc : pocs) {
+                if (shutdownRequested || Thread.currentThread().isInterrupted()) {
+                    break;
+                }
                 try {
                     ScanResult result = pocExecutor.execute(target, poc);
                     if (result != null) {
@@ -203,44 +262,26 @@ public class ClusteredPocExecutor {
             return results;
         }
         
-        // 可聚类的 POC 组：执行第一个 POC，用结果推断其他 POC
-        Poc firstPoc = pocs.get(0);
-        ScanResult firstResult = null;
-        
-        try {
-            firstResult = pocExecutor.execute(target, firstPoc);
-            totalRequests++;
-            
-            if (firstResult != null) {
-                results.add(firstResult);
+        for (Poc poc : pocs) {
+            if (shutdownRequested || Thread.currentThread().isInterrupted()) {
+                break;
             }
-        } catch (Exception e) {
-            // 第一个 POC 执行失败，创建失败结果
-            firstResult = new ScanResult();
-            firstResult.setTarget(target);
-            firstResult.setPoc(firstPoc);
-            firstResult.setVulnerable(false);
-            firstResult.setTimestamp(System.currentTimeMillis());
-            results.add(firstResult);
+            try {
+                ScanResult result = pocExecutor.execute(target, poc);
+                if (result != null) {
+                    results.add(result);
+                }
+                totalRequests++;
+            } catch (Exception e) {
+                ScanResult result = new ScanResult();
+                result.setTarget(target);
+                result.setPoc(poc);
+                result.setVulnerable(false);
+                result.setTimestamp(System.currentTimeMillis());
+                results.add(result);
+            }
         }
-        
-        // 对于同组的其他 POC，直接标记为已检测（节省请求）
-        // 因为它们的请求特征相同，结果也应该相同
-        for (int i = 1; i < pocs.size(); i++) {
-            Poc poc = pocs.get(i);
-            
-            ScanResult result = new ScanResult();
-            result.setTarget(target);
-            result.setPoc(poc);
-            result.setVulnerable(false); // 聚类组内其他 POC 默认不报告漏洞，避免重复
-            result.setTimestamp(System.currentTimeMillis());
-            result.setPocSource(poc.getOriginalFormat());
-            result.setDuplicate(true);
-            result.setDuplicateReason("聚类组内跳过：与 " + firstPoc.getId() + " 请求特征相同");
-            
-            results.add(result);
-            savedRequests++;
-        }
+        savedRequests += Math.max(0, pocs.size() - 1);
         
         return results;
     }
@@ -256,6 +297,7 @@ public class ClusteredPocExecutor {
      * 关闭执行器
      */
     public void shutdown() {
+        shutdownRequested = true;
         executorService.shutdown();
         try {
             if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -265,6 +307,18 @@ public class ClusteredPocExecutor {
             executorService.shutdownNow();
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * 立即取消等待中和排队中的聚类任务。
+     */
+    public void shutdownNow() {
+        shutdownRequested = true;
+        executorService.shutdownNow();
+    }
+
+    public boolean isShutdown() {
+        return executorService.isShutdown() || executorService.isTerminated();
     }
     
     // ========== 内部类 ==========

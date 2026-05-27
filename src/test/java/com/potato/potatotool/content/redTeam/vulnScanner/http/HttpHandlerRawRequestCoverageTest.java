@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("HttpHandler Raw HTTP 组装覆盖测试")
 class HttpHandlerRawRequestCoverageTest {
@@ -67,5 +68,44 @@ class HttpHandlerRawRequestCoverageTest {
 
         assertEquals("second", requestObj.getHeaders().get("X-Test"));
         assertEquals("body=1", new String(requestObj.getPostData()));
+    }
+
+    @Test
+    @DisplayName("@Host/@tls-sni 配置行不应被当作请求行")
+    void shouldIgnoreRawConfigLinesBeforeParsingRequestLine() {
+        RequestObj requestObj = new RequestObj();
+        HttpHandler.processRawRequest(
+                requestObj,
+                Collections.singletonList(
+                        "@tls-sni: interactsh-url\n" +
+                        "@Host: http://example.com:43800\n" +
+                        "GET HTTP/1.1\n" +
+                        "Host: {{Hostname}}\n\n"
+                ),
+                "https://example.com/base",
+                new LinkedHashMap<String, String>()
+        );
+
+        assertEquals("GET", requestObj.getMethod());
+        assertEquals("http://example.com:43800/base", requestObj.getUrl());
+        assertTrue(requestObj.hasTlsSni(), "应设置 TLS SNI");
+    }
+
+    @Test
+    @DisplayName("缺省请求路径应保持目标根路径而不是把 HTTP/1.1 当成路径")
+    void shouldTreatBareRequestLineAsEmptyPath() {
+        RequestObj requestObj = new RequestObj();
+        HttpHandler.processRawRequest(
+                requestObj,
+                Collections.singletonList(
+                        "GET HTTP/1.1\n" +
+                        "Host: {{Hostname}}\n\n"
+                ),
+                "https://example.com/base",
+                new LinkedHashMap<String, String>()
+        );
+
+        assertEquals("GET", requestObj.getMethod());
+        assertEquals("https://example.com/base", requestObj.getUrl());
     }
 }

@@ -48,6 +48,7 @@ public class WordReportGenerator {
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public File generate(List<ScanResult> results, String outputPath, String scanDuration) throws IOException {
+        results = ReportDataSanitizer.sanitizeResults(results);
         XWPFDocument document = new XWPFDocument();
         Summary summary = buildSummary(results, scanDuration);
 

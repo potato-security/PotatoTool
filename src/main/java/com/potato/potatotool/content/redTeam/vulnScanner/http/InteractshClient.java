@@ -321,7 +321,7 @@ public class InteractshClient {
                     if (responseBody != null && !responseBody.trim().isEmpty()) {
                         JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
 
-                        if (jsonResponse.has("data") && jsonResponse.has("aes_key")) {
+                        if (hasNonNull(jsonResponse, "data") && hasNonNull(jsonResponse, "aes_key")) {
                             // 解密数据
                             String encryptedData = jsonResponse.get("data").getAsString();
                             String encryptedAesKey = jsonResponse.get("aes_key").getAsString();
@@ -333,7 +333,10 @@ public class InteractshClient {
                             String decryptedData = decryptData(encryptedData, aesKey);
 
                             // 解析交互记录
-                            JsonArray interactionsArray = JsonParser.parseString(decryptedData).getAsJsonArray();
+                            JsonArray interactionsArray = parseInteractionsArray(decryptedData);
+                            if (interactionsArray == null) {
+                                return newInteractions;
+                            }
                             for (JsonElement element : interactionsArray) {
                                 Interaction interaction = parseInteraction(element.getAsJsonObject());
                                 if (interaction != null) {
@@ -346,7 +349,7 @@ public class InteractshClient {
                                     }
                                 }
                             }
-                        } else if (jsonResponse.has("data") && jsonResponse.get("data").isJsonArray()) {
+                        } else if (hasNonNull(jsonResponse, "data") && jsonResponse.get("data").isJsonArray()) {
                             // 未加密的数据（某些服务器可能不加密）
                             JsonArray dataArray = jsonResponse.getAsJsonArray("data");
                             for (JsonElement element : dataArray) {
@@ -675,6 +678,24 @@ public class InteractshClient {
         
         byte[] decrypted = cipher.doFinal(ciphertext);
         return new String(decrypted, StandardCharsets.UTF_8);
+    }
+
+    private boolean hasNonNull(JsonObject json, String key) {
+        return json != null && json.has(key) && json.get(key) != null && !json.get(key).isJsonNull();
+    }
+
+    private JsonArray parseInteractionsArray(String data) {
+        if (data == null || data.trim().isEmpty()) {
+            return new JsonArray();
+        }
+        JsonElement parsed = JsonParser.parseString(data);
+        if (parsed == null || parsed.isJsonNull()) {
+            return new JsonArray();
+        }
+        if (parsed.isJsonArray()) {
+            return parsed.getAsJsonArray();
+        }
+        return null;
     }
     
     /**

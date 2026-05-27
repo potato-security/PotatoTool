@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReportGeneratorCoverageTest {
@@ -102,6 +103,31 @@ class ReportGeneratorCoverageTest {
         assertTrue(readUtf8(txtFile.toPath()).contains("中文漏洞验证"));
         assertTrue(readUtf8(jsonFile.toPath()).contains("中文漏洞验证"));
         assertTrue(readUtf8(htmlFile.toPath()).contains("中文漏洞验证"));
+    }
+
+    @Test
+    void shouldRemoveUnresolvedRuntimePlaceholdersFromJsonReport() throws Exception {
+        ScanResult result = buildResult("placeholder");
+        StepExecutionRecord record = new StepExecutionRecord();
+        record.setStepIndex(1);
+        record.setRequestUrl("http://127.0.0.1/api/placeholder");
+        record.setRequestMethod("GET");
+        Map<String, String> headers = new LinkedHashMap<String, String>();
+        headers.put("User-Agent", "{{randomAgent}}; Internal-Scanner/1.0");
+        headers.put("X-Security-Audit-Token", "{{UUID}}");
+        record.setRequestHeaders(headers);
+        record.buildRawRequest();
+        record.setMatched(true);
+        result.setStepRecords(Arrays.asList(record));
+        result.setRawRequest(null);
+
+        Path output = tempDir.resolve("placeholder-report.json");
+        new JsonReportGenerator().generate(Arrays.asList(result), output.toString());
+
+        String json = readUtf8(output);
+        assertFalse(json.contains("{{UUID}}"));
+        assertFalse(json.contains("{{randomAgent}}"));
+        assertTrue(json.contains("[UNRESOLVED_TEMPLATE]"));
     }
 
     private void assertContainsCoreFields(String content, String suffix) {

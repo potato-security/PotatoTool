@@ -27,6 +27,8 @@ public class HttpHandler {
 
     private static final Pattern NUCLEI_EXPRESSION_PATTERN =
             Pattern.compile("\\{\\{\\s*([A-Za-z_][\\w]*)\\s*\\((.*?)\\)\\s*\\}\\}");
+    private static final Pattern RAW_CONFIG_LINE_PATTERN =
+            Pattern.compile("^@(?i:(timeout|redirects?|followredirects?|proxy|retries?|retrywaittime|useragent|user-agent|host|tls-sni|tlssni|sni))(?:\\s*[:=\\s].*)?$");
 
     /**
      * 处理原始HTTP请求（支持 Object 类型的变量）
@@ -61,9 +63,6 @@ public class HttpHandler {
             return;
         }
 
-        // 对原始报文先做结构校验，避免无效请求被静默降级为默认 GET。
-        RawHttpRequestParser.parse(firstBlock);
-
         // 验证：如果仍有多个块，说明转换器有问题
         if (rawBlocks.size() > 1) {
             System.err.println("[错误] raw 字段仍包含多个请求块，转换器未正确拆分！将只使用第一个块。");
@@ -83,117 +82,108 @@ public class HttpHandler {
             return;
         }
 
+        Map<String, String> configState = new HashMap<String, String>();
+        List<String> effectiveRawLines = new ArrayList<String>();
+
         // 处理以@开头的特殊配置行（如 @timeout: 10s）
         int startIndex = 0;
-        while (startIndex < rawLines.size() && rawLines.get(startIndex).trim().startsWith("@")) {
+        while (startIndex < rawLines.size() && isRawConfigLine(rawLines.get(startIndex))) {
             String configLine = rawLines.get(startIndex).trim();
             // 解析并应用配置
-            parseAndApplyConfig(requestObj, configLine, variables);
+            parseAndApplyConfig(requestObj, configLine, variables, configState);
             startIndex++;
         }
-        
+
         if (startIndex >= rawLines.size()) {
             return;
         }
 
-        // 解析第一行以获取请求方法和路径
-        String firstLine = rawLines.get(startIndex);
-        String[] parts = firstLine.split("\\s+");
-        if (parts.length >= 2) {
-            // 设置请求方法
-            try {
-                requestObj.setMethod(parts[0]);
-            } catch (IllegalArgumentException e) {
-                System.err.println("[错误] 无效的请求方法: " + parts[0] + " - " + e.getMessage());
-                // 使用默认方法
-                requestObj.setMethod("GET");
+        for (int i = startIndex; i < rawLines.size(); i++) {
+            String line = rawLines.get(i);
+            if (isRawConfigLine(line)) {
+                parseAndApplyConfig(requestObj, line.trim(), variables, configState);
+                continue;
             }
-            
-            // 设置请求路径（可能需要替换变量）
-            String path = parts[1];
-            if (variables != null && !variables.isEmpty()) {
-                path = replaceVariables(path, variables);
-            }
-            
-            String fullUrl;
-            
-            // 判断是否为完整URL（代理请求或SSRF测试）
-            if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://")) {
-                try {
-                    URL pathUrl = new URL(path);
-                    URL targetUrl = new URL(target);
-                    
-                    // 比较 host 是否相同
-                    if (pathUrl.getHost().equalsIgnoreCase(targetUrl.getHost())) {
-                        // 同一个 host，提取路径部分并组合
-                        String extractedPath = pathUrl.getPath();
-                        if (pathUrl.getQuery() != null && !pathUrl.getQuery().isEmpty()) {
-                            extractedPath += "?" + pathUrl.getQuery();
-                        }
-                        fullUrl = buildUrl(target, extractedPath);
-                    } else {
-                        // 不同 host，这是代理请求或 SSRF 测试，保持完整 URL
-                        fullUrl = path;
-                    }
-                } catch (MalformedURLException e) {
-                    // URL 解析失败，尝试作为路径处理
-                    System.err.println("[警告] URL 解析失败，作为路径处理: " + path);
-                    fullUrl = buildUrl(target, path);
-                }
-            } else {
-                // 普通路径，组合 target 和 path
-                fullUrl = buildUrl(target, path);
-            }
-            
-            requestObj.setUrl(fullUrl);
+            effectiveRawLines.add(line);
         }
 
-        Map<String, String> headers = new HashMap<>();
-        StringBuilder body = new StringBuilder();
-        boolean isBody = false;
+        if (effectiveRawLines.isEmpty()) {
+            return;
+        }
 
-        // 解析其余行以获取请求头和请求体（从 startIndex + 1 开始）
-        for (int i = startIndex + 1; i < rawLines.size(); i++) {
-            String line = rawLines.get(i);
-            
-            // 处理以@开头的特殊配置行（继续应用配置）
-            if (line.trim().startsWith("@")) {
-                parseAndApplyConfig(requestObj, line.trim(), variables);
-                continue;
-            }
-            
-            // 空行标志着请求头的结束和请求体的开始
-            if (line.trim().isEmpty()) {
-                isBody = true;
-                continue;
-            }
-            
-            if (!isBody) {
-                // 解析请求头
-                int colonIndex = line.indexOf(':');
-                if (colonIndex > 0) {
-                    String headerName = line.substring(0, colonIndex).trim();
-                    String headerValue = line.substring(colonIndex + 1).trim();
-                    
-                    // 替换变量
-                    if (variables != null && !variables.isEmpty()) {
-                        headerValue = replaceVariables(headerValue, variables);
+        String sanitizedRawBlock = joinRawLines(effectiveRawLines, 0);
+        RawHttpRequestParser.ParsedRequest parsedRequest = RawHttpRequestParser.parse(sanitizedRawBlock);
+
+        try {
+            requestObj.setMethod(parsedRequest.getMethod());
+        } catch (IllegalArgumentException e) {
+            System.err.println("[错误] 无效的请求方法: " + parsedRequest.getMethod() + " - " + e.getMessage());
+            requestObj.setMethod("GET");
+        }
+
+        String path = parsedRequest.getPath();
+        if (variables != null && !variables.isEmpty() && path != null) {
+            path = replaceVariables(path, variables);
+        }
+
+        String fullUrl;
+        if (path == null || path.trim().isEmpty()) {
+            fullUrl = target;
+        } else if (path.toLowerCase().startsWith("http://") || path.toLowerCase().startsWith("https://")) {
+            try {
+                URL pathUrl = new URL(path);
+                URL targetUrl = new URL(target);
+
+                if (pathUrl.getHost().equalsIgnoreCase(targetUrl.getHost())) {
+                    String extractedPath = pathUrl.getPath();
+                    if (pathUrl.getQuery() != null && !pathUrl.getQuery().isEmpty()) {
+                        extractedPath += "?" + pathUrl.getQuery();
                     }
-                    
-                    headers.put(headerName, headerValue);
+                    fullUrl = buildUrl(target, extractedPath);
+                } else {
+                    fullUrl = path;
                 }
-            } else {
-                // 累积请求体
-                body.append(line).append("\n");
+            } catch (MalformedURLException e) {
+                System.err.println("[警告] URL 解析失败，作为路径处理: " + path);
+                fullUrl = buildUrl(target, path);
             }
+        } else {
+            fullUrl = buildUrl(target, path);
+        }
+
+        requestObj.setUrl(fullUrl);
+
+        String hostOverride = configState.get("host");
+        if (hostOverride != null && !hostOverride.trim().isEmpty()) {
+            requestObj.setUrl(applyHostOverride(fullUrl, hostOverride));
+        }
+
+        Map<String, String> headers = new HashMap<String, String>();
+        if (parsedRequest.getHeaders() != null) {
+            for (Map.Entry<String, String> entry : parsedRequest.getHeaders().entrySet()) {
+                String headerName = entry.getKey();
+                String headerValue = entry.getValue();
+                if (headerName == null || headerValue == null) {
+                    continue;
+                }
+                if (variables != null && !variables.isEmpty()) {
+                    headerValue = replaceVariables(headerValue, variables);
+                }
+                headers.put(headerName, headerValue);
+            }
+        }
+
+        String tlsSniValue = configState.get("tls-sni");
+        if (tlsSniValue != null && !tlsSniValue.trim().isEmpty()) {
+            requestObj.setTlsSni(resolveTlsSniHost(tlsSniValue, requestObj.getUrl(), variables));
         }
 
         // 合并请求头：默认Headers < 自定义Headers < POC Headers
         // 使用HeaderManager进行headers合并
         Map<String, String> mergedHeaders = mergeWithDefaultHeaders(headers);
         requestObj.setHeaders(mergedHeaders);
-        
-        String bodyContent = body.toString().trim();
+
+        String bodyContent = parsedRequest.getBody() == null ? "" : parsedRequest.getBody().trim();
         if (!bodyContent.isEmpty()) {
             // 替换请求体中的变量
             if (variables != null && !variables.isEmpty()) {
@@ -245,19 +235,11 @@ public class HttpHandler {
         }
 
         String result = input;
+        String interactshUrl = resolveInteractshUrl(variables);
         
         // ========== 懒加载处理 ==========
         // 1. Interactsh URL：仅在当前变量上下文内复用，避免全局串扰
-        if (result.contains("{{interactsh-url}}") || result.contains("{{LAZY_INTERACTSH}}")) {
-            String interactshUrl = variables == null ? null : variables.get("interactsh-url");
-            if (interactshUrl == null || interactshUrl.trim().isEmpty()) {
-                interactshUrl = getOrCreateInteractshUrl();
-                if (variables != null) {
-                    variables.put("interactsh-url", interactshUrl);
-                }
-            }
-            result = result.replace("{{LAZY_INTERACTSH}}", interactshUrl);
-        }
+        result = materializeInteractshPlaceholders(result, variables);
         
         // 2. IP 地址：只有实际使用时才 DNS 解析
         if (result.contains("{{LAZY_IP:")) {
@@ -318,9 +300,54 @@ public class HttpHandler {
             }
         }
 
+        result = materializeInteractshPlaceholders(result, variables);
         result = evaluateNucleiHelperExpressions(result, variables);
 
         return result;
+    }
+
+    private static String materializeInteractshPlaceholders(String input, Map<String, String> variables) {
+        if (input == null || (!input.contains("{{interactsh-url}}") && !input.contains("{{interactsh_url}}")
+                && !input.contains("{{LAZY_INTERACTSH}}") && !input.contains("{{lazy_interactsh}}"))) {
+            return input;
+        }
+
+        String interactshUrl = resolveInteractshUrl(variables);
+        if (interactshUrl == null || interactshUrl.trim().isEmpty() || isLazyInteractshPlaceholder(interactshUrl)) {
+            interactshUrl = getOrCreateInteractshHost();
+        }
+        interactshUrl = HttpLogService.toBareCallbackHost(interactshUrl);
+        if (variables != null) {
+            variables.put("interactsh-url", interactshUrl);
+            variables.put("interactsh_url", interactshUrl);
+        }
+        return input.replace("{{interactsh-url}}", interactshUrl)
+                .replace("{{interactsh_url}}", interactshUrl)
+                .replace("{{LAZY_INTERACTSH}}", interactshUrl)
+                .replace("{{lazy_interactsh}}", interactshUrl);
+    }
+
+    private static String resolveInteractshUrl(Map<String, String> variables) {
+        if (variables == null || variables.isEmpty()) {
+            return null;
+        }
+        String interactshUrl = variables.get("interactsh-url");
+        if (interactshUrl == null || interactshUrl.trim().isEmpty() || isLazyInteractshPlaceholder(interactshUrl)) {
+            interactshUrl = variables.get("interactsh_url");
+        }
+        return interactshUrl;
+    }
+
+    private static boolean isLazyInteractshPlaceholder(String value) {
+        if (value == null) {
+            return false;
+        }
+        String normalized = value.trim();
+        return normalized.toUpperCase(Locale.ROOT).contains("LAZY_INTERACTSH");
+    }
+
+    private static String getOrCreateInteractshHost() {
+        return HttpLogService.toBareCallbackHost(getOrCreateInteractshUrl());
     }
 
     private static String evaluateNucleiHelperExpressions(String input, Map<String, String> variables) {
@@ -636,6 +663,11 @@ public class HttpHandler {
      * @param variables 变量映射
      */
     private static void parseAndApplyConfig(RequestObj requestObj, String configLine, Map<String, String> variables) {
+        parseAndApplyConfig(requestObj, configLine, variables, null);
+    }
+
+    private static void parseAndApplyConfig(RequestObj requestObj, String configLine, Map<String, String> variables,
+                                            Map<String, String> configState) {
         if (configLine == null || !configLine.startsWith("@")) {
             return;
         }
@@ -717,11 +749,9 @@ public class HttpHandler {
                     break;
                     
                 case "host":
-                    // 设置 Host 头（用于 HTTP/1.0 请求）
-                    if (requestObj.getHeaders() == null) {
-                        requestObj.setHeaders(new HashMap<>());
+                    if (configState != null) {
+                        configState.put("host", value);
                     }
-                    requestObj.getHeaders().put("Host", value);
                     break;
                     
                 case "tls-sni":
@@ -730,7 +760,10 @@ public class HttpHandler {
                     // TLS SNI 配置（用于 SSRF 检测）
                     // 设置自定义 SNI 主机名，在 TLS 握手时使用
                     if (!value.isEmpty()) {
-                        requestObj.setTlsSni(value);
+                        if (configState != null) {
+                            configState.put("tls-sni", value);
+                        }
+                        requestObj.setTlsSni(resolveTlsSniValue(value, requestObj.getUrl(), variables));
                     }
                     break;
                     
@@ -741,6 +774,142 @@ public class HttpHandler {
             }
         } catch (Exception e) {
             System.err.println("[ERROR] 解析配置失败 @" + name + ": " + value + " - " + e.getMessage());
+        }
+    }
+
+    private static boolean isRawConfigLine(String line) {
+        if (line == null) {
+            return false;
+        }
+        return RAW_CONFIG_LINE_PATTERN.matcher(line.trim()).matches();
+    }
+
+    private static String joinRawLines(List<String> rawLines, int startIndex) {
+        if (rawLines == null || rawLines.isEmpty() || startIndex >= rawLines.size()) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (int i = startIndex; i < rawLines.size(); i++) {
+            if (i > startIndex) {
+                builder.append("\r\n");
+            }
+            builder.append(rawLines.get(i));
+        }
+        return builder.toString();
+    }
+
+    private static String applyHostOverride(String originalUrl, String hostOverride) {
+        if (originalUrl == null || originalUrl.trim().isEmpty()) {
+            return originalUrl;
+        }
+        if (hostOverride == null || hostOverride.trim().isEmpty()) {
+            return originalUrl;
+        }
+
+        try {
+            URL original = new URL(originalUrl);
+            String normalizedOverride = hostOverride.trim();
+            boolean protocolSpecified = normalizedOverride.contains("://");
+            URL overrideUrl = protocolSpecified
+                    ? new URL(normalizedOverride)
+                    : new URL(original.getProtocol() + "://" + normalizedOverride);
+
+            String protocol = protocolSpecified ? overrideUrl.getProtocol() : original.getProtocol();
+            String host = overrideUrl.getHost();
+            int port;
+            if (overrideUrl.getPort() > 0) {
+                port = overrideUrl.getPort();
+            } else if (protocolSpecified) {
+                port = overrideUrl.getDefaultPort();
+            } else if (original.getPort() > 0) {
+                port = original.getPort();
+            } else {
+                port = original.getDefaultPort();
+            }
+            String file = original.getFile();
+            if (file == null || file.isEmpty()) {
+                file = "/";
+            }
+
+            StringBuilder rebuilt = new StringBuilder();
+            rebuilt.append(protocol).append("://").append(host);
+            if (overrideUrl.getPort() > 0
+                    || (!protocolSpecified && original.getPort() > 0)) {
+                rebuilt.append(":").append(port);
+            }
+            rebuilt.append(file);
+            return rebuilt.toString();
+        } catch (Exception ignored) {
+            return originalUrl;
+        }
+    }
+
+    private static String resolveTlsSniHost(String value, String targetUrl, Map<String, String> variables) {
+        String resolved = resolveTlsSniValue(value, targetUrl, variables);
+        if (resolved == null || resolved.trim().isEmpty()) {
+            return null;
+        }
+        return resolved;
+    }
+
+    private static String resolveTlsSniValue(String value, String targetUrl, Map<String, String> variables) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        String trimmed = value.trim();
+        try {
+            if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+                return new URL(trimmed).getHost();
+            }
+            if (trimmed.contains("://")) {
+                return new URL(trimmed).getHost();
+            }
+            if (trimmed.startsWith("{{") && trimmed.endsWith("}}")) {
+                String placeholder = trimmed.substring(2, trimmed.length() - 2).trim();
+                if ("Hostname".equalsIgnoreCase(placeholder) || "Host".equalsIgnoreCase(placeholder)) {
+                    return resolveHostFromTargetUrl(targetUrl, "Hostname".equalsIgnoreCase(placeholder));
+                }
+                if ("interactsh-url".equalsIgnoreCase(placeholder) || "interactsh_url".equalsIgnoreCase(placeholder)) {
+                    String interactsh = getOrCreateInteractshUrl();
+                    if (interactsh.startsWith("http://") || interactsh.startsWith("https://")) {
+                        return new URL(interactsh).getHost();
+                    }
+                    return interactsh;
+                }
+                if (variables != null) {
+                    String variableValue = variables.get(placeholder);
+                    if (variableValue != null && !variableValue.trim().isEmpty()) {
+                        return resolveTlsSniValue(variableValue, targetUrl, variables);
+                    }
+                }
+                return placeholder;
+            }
+            if ("interactsh-url".equalsIgnoreCase(trimmed) || "interactsh_url".equalsIgnoreCase(trimmed)) {
+                String resolved = getOrCreateInteractshUrl();
+                if (resolved.startsWith("http://") || resolved.startsWith("https://")) {
+                    return new URL(resolved).getHost();
+                }
+                return resolved;
+            }
+        } catch (Exception ignored) {
+        }
+        return trimmed;
+    }
+
+    private static String resolveHostFromTargetUrl(String targetUrl, boolean includePort) {
+        if (targetUrl == null || targetUrl.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            URL target = new URL(targetUrl);
+            String host = target.getHost();
+            int port = target.getPort() != -1 ? target.getPort() : target.getDefaultPort();
+            if (!includePort || port <= 0 || port == 80 || port == 443) {
+                return host;
+            }
+            return host + ":" + port;
+        } catch (Exception e) {
+            return targetUrl;
         }
     }
     

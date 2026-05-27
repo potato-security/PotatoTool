@@ -113,7 +113,7 @@ public class DslConstants {
     /**
      * 正则表达式模式
      */
-    public static final Pattern FUNCTION_PATTERN = Pattern.compile("\\b(\\w+)\\s*\\(([^)]*)\\)");
+    public static final Pattern FUNCTION_PATTERN = Pattern.compile("\\b(\\w+)\\s*\\(");
     public static final Pattern OBJECT_PATTERN = Pattern.compile("\\b(\\w+)\\.(\\w+)");
     public static final Pattern AND_PATTERN = Pattern.compile("\\band\\b", Pattern.CASE_INSENSITIVE);
     public static final Pattern OR_PATTERN = Pattern.compile("\\bor\\b", Pattern.CASE_INSENSITIVE);
@@ -132,7 +132,7 @@ public class DslConstants {
     /**
      * 错误日志文件名
      */
-    public static final String ERROR_LOG_FILE = "errorPoc.txt";
+    public static final String ERROR_LOG_FILE = "ScanError.txt";
 
     /**
      * 默认字符编码

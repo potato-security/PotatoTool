@@ -3,6 +3,7 @@ package com.potato.potatotool.content.redTeam.vulnScanner.loader;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import com.potato.potatotool.content.redTeam.vulnScanner.exception.PocLoadException;
 import com.potato.potatotool.content.redTeam.vulnScanner.exception.PocParseException;
+import com.potato.potatotool.content.redTeam.vulnScanner.util.PocConverter;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.converter.PocConverterRegistry;
 
 import java.io.File;
@@ -147,11 +148,14 @@ public class PocLoader {
         }
         
         try {
+            PocConverter.setVerboseLogging(verbose);
             return converterRegistry.convertPocFile(filePath);
         } catch (PocParseException e) {
             throw e;
         } catch (Exception e) {
             throw new PocLoadException(filePath, "解析POC文件失败", e);
+        } finally {
+            PocConverter.clearVerboseLogging();
         }
     }
     
@@ -177,12 +181,15 @@ public class PocLoader {
             return null;
         }
         try {
+            PocConverter.setVerboseLogging(verbose);
             return converterRegistry.convertFromContent(content, fileName, sourcePath);
         } catch (Exception e) {
             if (verbose) {
                 System.err.println("从内容加载 POC 失败: " + fileName + " - " + e.getMessage());
             }
             return null;
+        } finally {
+            PocConverter.clearVerboseLogging();
         }
     }
     
@@ -344,4 +351,3 @@ public class PocLoader {
         }
     }
 }
-

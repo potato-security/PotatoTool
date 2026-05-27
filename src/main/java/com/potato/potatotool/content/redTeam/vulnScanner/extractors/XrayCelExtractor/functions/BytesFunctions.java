@@ -1,5 +1,7 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtractor.functions;
 
+import com.potato.potatotool.content.redTeam.vulnScanner.util.RegexCompat;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -131,7 +133,7 @@ public class BytesFunctions {
         try {
             String str = string(data);
             // 使用 find() 检查是否包含匹配的部分，而不是 matches() 要求整个字符串匹配
-            Pattern pattern = Pattern.compile(regex);
+            Pattern pattern = RegexCompat.compile(regex);
             return pattern.matcher(str).find();
         } catch (Exception e) {
             System.err.println("字节级正则匹配失败: " + regex + " - " + e.getMessage());
@@ -171,7 +173,7 @@ public class BytesFunctions {
         
         try {
             String str = string(data);
-            Pattern pattern = Pattern.compile(regex);
+            Pattern pattern = RegexCompat.compile(regex);
             Matcher matcher = pattern.matcher(str);
             
             if (matcher.find()) {
@@ -274,4 +276,3 @@ public class BytesFunctions {
         return result;
     }
 }
-

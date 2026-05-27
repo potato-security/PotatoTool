@@ -7,6 +7,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.core.FingerprintService
 import com.potato.potatotool.content.redTeam.vulnScanner.event.ScanEventDispatcher;
 import com.potato.potatotool.content.redTeam.vulnScanner.event.ScanInfoEvent;
 import com.potato.potatotool.content.redTeam.vulnScanner.event.ScanInfoEvent.InfoType;
+import com.potato.potatotool.content.redTeam.vulnScanner.event.ScanPhase;
 import com.potato.potatotool.content.redTeam.vulnScanner.loader.PocRepository;
 import com.potato.potatotool.content.redTeam.vulnScanner.model.ScanConfig;
 import com.potato.potatotool.content.redTeam.vulnScanner.util.InputTypeDetector;
@@ -15,6 +16,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.util.PocDeduplicator.De
 import com.potato.potatotool.content.redTeam.vulnScanner.util.TagNormalizer;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +33,8 @@ public class SmartPocSelector {
     private final PocDeduplicator deduplicator;
     private final ScanEventDispatcher eventDispatcher;
     private String scanId;
+    private BiConsumer<Integer, Integer> fingerprintProgressCallback;
+    private ScanProgressTracker progressTracker;
 
     public SmartPocSelector(PocRepository pocRepository, PocExecutor pocExecutor,
                             ScanEventDispatcher eventDispatcher) {
@@ -44,10 +48,22 @@ public class SmartPocSelector {
         this.scanId = scanId;
     }
 
+    public void setFingerprintProgressCallback(BiConsumer<Integer, Integer> fingerprintProgressCallback) {
+        this.fingerprintProgressCallback = fingerprintProgressCallback;
+    }
+
+    public void setProgressTracker(ScanProgressTracker progressTracker) {
+        this.progressTracker = progressTracker;
+    }
+
     /**
      * 完整筛选流程：输入类型检测 → 指纹识别 → selectPocs → 去重
      */
     public PocSelectionResult selectAndFilterPocs(String target, ScanConfig config) {
+        if (progressTracker != null) {
+            progressTracker.startPhase(ScanPhase.PREPARING, 1, "准备扫描目标");
+            progressTracker.setPhaseProgress(1, 1, "目标准备完成");
+        }
         // 1. 检测输入类型
         InputType inputType;
         if (config.isAutoDetectInputType()) {
@@ -61,9 +77,13 @@ public class SmartPocSelector {
         FingerprintResult fingerprint = null;
         Set<String> fingerprintTags = Collections.emptySet();
         if (config.isSmartMode()) {
+            if (progressTracker != null) {
+                progressTracker.startPhase(ScanPhase.FINGERPRINTING,
+                        fingerprintService.countFingerprintPocs(inputType), "开始指纹识别");
+            }
             fireInfo(InfoType.FINGERPRINT_STARTED, "开始指纹识别...");
             fingerprintService.setFingerprintTimeout(config.getFingerprintTimeout());
-            fingerprint = fingerprintService.identify(target, inputType);
+            fingerprint = fingerprintService.identify(target, inputType, fingerprintProgressCallback, progressTracker);
             if (fingerprint.hasFingerprint()) {
                 fingerprintTags = fingerprint.getNormalizedTags();
                 fireInfo(InfoType.FINGERPRINT_COMPLETED,
@@ -76,6 +96,9 @@ public class SmartPocSelector {
         }
 
         // 3. 选择 POC
+        if (progressTracker != null) {
+            progressTracker.startPhase(ScanPhase.SELECTING_POCS, 1, "筛选 POC");
+        }
         List<PocObj.Poc> selectedPocs = selectPocs(config, inputType, fingerprintTags);
 
         // 4. 去重
@@ -87,6 +110,10 @@ public class SmartPocSelector {
                         dedupeResult.getUniqueCount(), dedupeResult.getSkippedCount()));
             }
             selectedPocs = dedupeResult.getUniquePocs();
+        }
+
+        if (progressTracker != null) {
+            progressTracker.setPhaseProgress(1, 1, "POC 筛选完成");
         }
 
         return new PocSelectionResult(selectedPocs, fingerprint);
@@ -230,15 +257,11 @@ public class SmartPocSelector {
                     continue;
                 }
 
-                if (!fingerprintTags.isEmpty()) {
-                    if (category.requiresFingerprint()) {
-                        if (!TagNormalizer.matchesFingerprint(poc, fingerprintTags)) {
-                            filteredByFingerprint++;
-                            continue;
-                        }
-                    }
-                } else {
-                    if (category.requiresFingerprint()) {
+                boolean fingerprintRequired = category.requiresFingerprint()
+                        || requiresFingerprintByMetadata(poc);
+                if (fingerprintRequired) {
+                    if (fingerprintTags.isEmpty()
+                            || !TagNormalizer.matchesFingerprint(poc, fingerprintTags)) {
                         filteredByFingerprint++;
                         continue;
                     }
@@ -271,7 +294,7 @@ public class SmartPocSelector {
                     targetedVulnCount, genericAuditCount, result.size()));
         } else if (config.isSmartMode()) {
             fireInfo(InfoType.INFO,
-                String.format("智能模式: 未识别出指纹，仅执行通用审计类 POC (%d 个)", result.size()));
+                String.format("智能模式: 未提供可用指纹，仅执行通用审计类与显式允许分类 POC (%d 个)", result.size()));
             fireInfo(InfoType.INFO,
                 "通用审计包括: 配置错误(misconfiguration)、信息泄露(exposures)、杂项检测(miscellaneous)");
         }
@@ -339,6 +362,19 @@ public class SmartPocSelector {
         }
     }
 
+    private boolean requiresFingerprintByMetadata(PocObj.Poc poc) {
+        if (poc == null) {
+            return false;
+        }
+        PocCategory category = poc.getCategory();
+        if (category != PocCategory.MISCONFIGURATION
+                && category != PocCategory.EXPOSURES
+                && category != PocCategory.NETWORK_MISCONFIG) {
+            return false;
+        }
+        return poc.getProduct() != null && !poc.getProduct().trim().isEmpty();
+    }
+
     private void fireInfo(InfoType type, String message) {
         eventDispatcher.dispatchScanInfo(new ScanInfoEvent(this, scanId, type, message));
     }
@@ -347,11 +383,34 @@ public class SmartPocSelector {
      * 多目标筛选：逐目标指纹识别，POC 取并集去重
      */
     public MultiTargetSelectionResult selectAndFilterPocsMultiTarget(List<String> targets, ScanConfig config) {
+        if (progressTracker != null) {
+            progressTracker.startPhase(ScanPhase.PREPARING, Math.max(1, targets == null ? 0 : targets.size()), "准备扫描目标");
+            progressTracker.setPhaseProgress(Math.max(1, targets == null ? 0 : targets.size()),
+                    Math.max(1, targets == null ? 0 : targets.size()), "目标准备完成");
+        }
         Map<String, FingerprintResult> fpMap = new LinkedHashMap<>();
         Map<String, PocObj.Poc> mergedPocs = new LinkedHashMap<>();
+        Map<String, List<PocObj.Poc>> pocsByTarget = new LinkedHashMap<>();
+
+        Map<String, InputType> inputTypes = new LinkedHashMap<String, InputType>();
+        int fingerprintTotal = 0;
+        if (targets != null) {
+            for (String target : targets) {
+                InputType inputType = config.isAutoDetectInputType() ? InputTypeDetector.detect(target) : config.getInputType();
+                inputTypes.put(target, inputType);
+                if (config.isSmartMode()) {
+                    fingerprintTotal += fingerprintService.countFingerprintPocs(inputType);
+                }
+            }
+        }
+
+        if (config.isSmartMode() && progressTracker != null) {
+            progressTracker.startPhase(ScanPhase.FINGERPRINTING, fingerprintTotal, "开始指纹识别");
+        }
 
         for (String target : targets) {
-            PocSelectionResult result = selectAndFilterPocs(target, config);
+            PocSelectionResult result = selectAndFilterPocsSingleTarget(target, config, inputTypes.get(target));
+            pocsByTarget.put(target, new ArrayList<>(result.getPocs()));
             if (result.getFingerprint() != null) {
                 fpMap.put(target, result.getFingerprint());
             }
@@ -360,7 +419,53 @@ public class SmartPocSelector {
             }
         }
 
-        return new MultiTargetSelectionResult(new ArrayList<>(mergedPocs.values()), fpMap);
+        if (progressTracker != null) {
+            progressTracker.startPhase(ScanPhase.SELECTING_POCS, Math.max(1, targets == null ? 0 : targets.size()), "筛选 POC");
+            progressTracker.setPhaseProgress(Math.max(1, targets == null ? 0 : targets.size()),
+                    Math.max(1, targets == null ? 0 : targets.size()), "多目标 POC 筛选完成");
+        }
+
+        return new MultiTargetSelectionResult(new ArrayList<>(mergedPocs.values()), fpMap, pocsByTarget);
+    }
+
+    private PocSelectionResult selectAndFilterPocsSingleTarget(String target, ScanConfig config, InputType inputType) {
+        InputType resolvedInputType = inputType;
+        if (resolvedInputType == null) {
+            resolvedInputType = config.isAutoDetectInputType() ? InputTypeDetector.detect(target) : config.getInputType();
+        }
+        if (config.isAutoDetectInputType()) {
+            fireInfo(InfoType.INFO, "检测到输入类型: " + resolvedInputType);
+        }
+
+        FingerprintResult fingerprint = null;
+        Set<String> fingerprintTags = Collections.emptySet();
+        if (config.isSmartMode()) {
+            fireInfo(InfoType.FINGERPRINT_STARTED, "开始指纹识别...");
+            fingerprintService.setFingerprintTimeout(config.getFingerprintTimeout());
+            fingerprint = fingerprintService.identify(target, resolvedInputType, fingerprintProgressCallback, progressTracker);
+            if (fingerprint.hasFingerprint()) {
+                fingerprintTags = fingerprint.getNormalizedTags();
+                fireInfo(InfoType.FINGERPRINT_COMPLETED,
+                    String.format("指纹识别完成: %s (识别出 %d 个技术栈)",
+                        fingerprint.getFingerprintInfo().getProductName(), fingerprintTags.size()));
+            } else {
+                fireInfo(InfoType.FINGERPRINT_COMPLETED,
+                    "指纹识别完成: 未识别出技术栈，将使用通用审计类 POC");
+            }
+        }
+
+        List<PocObj.Poc> selectedPocs = selectPocs(config, resolvedInputType, fingerprintTags);
+        if (config.isEnableDeduplication() && selectedPocs.size() > 1) {
+            DeduplicationResult dedupeResult = deduplicator.deduplicate(selectedPocs);
+            if (dedupeResult.getSkippedCount() > 0) {
+                fireInfo(InfoType.DEDUPLICATION,
+                    String.format("去重完成: 保留 %d 个，跳过 %d 个重复 POC",
+                        dedupeResult.getUniqueCount(), dedupeResult.getSkippedCount()));
+            }
+            selectedPocs = dedupeResult.getUniquePocs();
+        }
+
+        return new PocSelectionResult(selectedPocs, fingerprint);
     }
 
     /**
@@ -390,10 +495,18 @@ public class SmartPocSelector {
     public static class MultiTargetSelectionResult {
         private final List<PocObj.Poc> pocs;
         private final Map<String, FingerprintResult> fingerprintMap;
+        private final Map<String, List<PocObj.Poc>> pocsByTarget;
 
         public MultiTargetSelectionResult(List<PocObj.Poc> pocs, Map<String, FingerprintResult> fingerprintMap) {
+            this(pocs, fingerprintMap, Collections.<String, List<PocObj.Poc>>emptyMap());
+        }
+
+        public MultiTargetSelectionResult(List<PocObj.Poc> pocs,
+                                          Map<String, FingerprintResult> fingerprintMap,
+                                          Map<String, List<PocObj.Poc>> pocsByTarget) {
             this.pocs = pocs;
             this.fingerprintMap = fingerprintMap;
+            this.pocsByTarget = pocsByTarget;
         }
 
         public List<PocObj.Poc> getPocs() {
@@ -402,6 +515,10 @@ public class SmartPocSelector {
 
         public Map<String, FingerprintResult> getFingerprintMap() {
             return fingerprintMap;
+        }
+
+        public Map<String, List<PocObj.Poc>> getPocsByTarget() {
+            return pocsByTarget;
         }
     }
 }

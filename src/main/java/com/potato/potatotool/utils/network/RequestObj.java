@@ -71,6 +71,11 @@ public class RequestObj {
     private String method = "GET";
     private String url;
     private Map<String, String> headers;
+    /**
+     * 请求复用/聚合签名使用的 header 快照。
+     * 运行时动态占位符会在真实发送前替换，签名必须保留占位符归一化结果，避免报告与缓存互相污染。
+     */
+    private Map<String, String> requestSignatureHeaders;
     private String bearerToken = "";
     private boolean randomUserAgent = true;
     private boolean followRedirects = false;
@@ -192,6 +197,19 @@ public class RequestObj {
 
     public Map<String, String> getHeaders() {
         return this.headers;
+    }
+
+    public RequestObj setRequestSignatureHeaders(Map<String, String> requestSignatureHeaders) {
+        if (requestSignatureHeaders == null) {
+            this.requestSignatureHeaders = null;
+        } else {
+            this.requestSignatureHeaders = new LinkedHashMap<>(requestSignatureHeaders);
+        }
+        return this;
+    }
+
+    public Map<String, String> getRequestSignatureHeaders() {
+        return this.requestSignatureHeaders;
     }
 
     public RequestObj setRandomUserAgent(boolean randomUserAgent) {

@@ -41,6 +41,7 @@ public class ExcelReportGenerator {
     private static final byte[] COLOR_ROW_EVEN = new byte[]{(byte)248, (byte)250, (byte)252};  // #F8FAFC slate-50
     
     public File generate(List<ScanResult> results, String outputPath) throws IOException {
+        results = ReportDataSanitizer.sanitizeResults(results);
         Workbook workbook = new XSSFWorkbook();
         
         // 创建各个Sheet
@@ -673,4 +674,3 @@ public class ExcelReportGenerator {
         }
     }
 }
-

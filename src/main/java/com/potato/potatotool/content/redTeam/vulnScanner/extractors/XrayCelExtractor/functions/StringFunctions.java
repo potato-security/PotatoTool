@@ -1,5 +1,7 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors.XrayCelExtractor.functions;
 
+import com.potato.potatotool.content.redTeam.vulnScanner.util.RegexCompat;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -309,7 +311,7 @@ public class StringFunctions {
         }
         
         try {
-            Pattern pattern = Pattern.compile(regex);
+            Pattern pattern = RegexCompat.compile(regex);
             Matcher matcher = pattern.matcher(str);
             
             if (matcher.find()) {
@@ -349,7 +351,7 @@ public class StringFunctions {
         try {
             // 使用 Matcher.find() 而不是 String.matches()
             // 这样可以实现部分匹配，与 Xray CEL 的语义一致
-            Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+            Pattern pattern = RegexCompat.compile(regex, Pattern.DOTALL);
             Matcher matcher = pattern.matcher(str);
             return matcher.find();
         } catch (Exception e) {
@@ -398,4 +400,3 @@ public class StringFunctions {
         return result;
     }
 }
-

@@ -35,6 +35,7 @@ public class JsonReportGenerator {
     }
 
     public File generate(List<ScanResult> results, String outputPath, boolean auditMode) throws IOException {
+        results = ReportDataSanitizer.sanitizeResults(results);
         JsonObject report = new JsonObject();
 
         // 报告元信息
@@ -339,5 +340,4 @@ public class JsonReportGenerator {
         }
     }
 }
-
 

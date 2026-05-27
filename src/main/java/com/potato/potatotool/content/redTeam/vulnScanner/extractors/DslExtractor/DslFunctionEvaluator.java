@@ -1,5 +1,7 @@
 package com.potato.potatotool.content.redTeam.vulnScanner.extractors.DslExtractor;
 
+import com.potato.potatotool.content.redTeam.vulnScanner.util.RegexCompat;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -67,7 +69,7 @@ public class DslFunctionEvaluator {
                 return false;
             }
 
-            boolean result = Pattern.compile(pattern).matcher(target).find();
+            boolean result = RegexCompat.compile(pattern).matcher(target).find();
             
             // 处理剩余的比较操作
             if (args.length > 2) {
@@ -592,12 +594,35 @@ public class DslFunctionEvaluator {
                 return null;
             }
 
-            byte[] decodedBytes = Base64.getDecoder().decode(target);
+            byte[] decodedBytes = decodeBase64Flexible(target);
             return new String(decodedBytes, DslConstants.DEFAULT_CHARSET);
             
         } catch (Exception e) {
             System.err.println("评估base64_decode函数失败: " + e.getMessage());
             return null;
+        }
+    }
+
+    private static byte[] decodeBase64Flexible(String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("base64 输入不能为空");
+        }
+
+        String normalized = value.trim().replaceAll("\\s+", "");
+        if (normalized.isEmpty()) {
+            throw new IllegalArgumentException("base64 输入不能为空");
+        }
+
+        String padded = normalized;
+        int remainder = padded.length() % 4;
+        if (remainder != 0) {
+            padded = padded + "====".substring(remainder);
+        }
+
+        try {
+            return Base64.getDecoder().decode(padded);
+        } catch (IllegalArgumentException ignored) {
+            return Base64.getUrlDecoder().decode(padded);
         }
     }
 
@@ -811,14 +836,14 @@ public class DslFunctionEvaluator {
         try {
             String[] args = DslExpressionParser.parseContainsFunction(expression);
             if (args.length < 2) {
-                System.err.println("regex函数需要至少2个参数: pattern, target");
+                System.err.println("regex函数需要至少2个参数: pattern, target; expression=" + expression);
                 return false;
             }
 
             String pattern = args[0].trim();
             String target = DslEvaluatorRefactored.resolveValueOrFunction(args[1], context);
-            
-            System.out.println("[DEBUG] regex函数: pattern原始=" + pattern + ", target前30字符=" + 
+
+            DslLogContext.debug("regex函数: pattern原始=" + pattern + ", target前30字符=" +
                 (target != null ? target.substring(0, Math.min(30, target.length())) : "null"));
             
             if (target == null) {
@@ -832,13 +857,13 @@ public class DslFunctionEvaluator {
                 pattern = pattern.substring(1, pattern.length() - 1);
             }
             
-            System.out.println("[DEBUG] regex函数: pattern去引号后=" + pattern);
+            DslLogContext.debug("regex函数: pattern去引号后=" + pattern);
             
             // 编译并匹配正则表达式
-            Pattern regexPattern = Pattern.compile(pattern);
+            Pattern regexPattern = RegexCompat.compile(pattern);
             boolean matches = regexPattern.matcher(target).find();
             
-            System.out.println("[DEBUG] regex函数: 匹配结果=" + matches);
+            DslLogContext.debug("regex函数: 匹配结果=" + matches);
             
             return matches;
             
@@ -959,13 +984,18 @@ public class DslFunctionEvaluator {
 
             // 获取版本号
             String versionStr = DslEvaluatorRefactored.resolveValueOrFunction(args[0], context);
-            if (versionStr == null || versionStr.isEmpty()) {
+            if (!isComparableVersion(versionStr)) {
                 return false;
             }
 
             // 处理多个比较条件（AND关系）
             for (int i = 1; i < args.length; i++) {
-                String comparison = DslUtils.cleanStringValue(args[i]).trim();
+                String comparison = DslEvaluatorRefactored.resolveValueOrFunction(args[i], context);
+                comparison = DslUtils.cleanStringValue(comparison);
+                if (comparison == null || comparison.trim().isEmpty()) {
+                    return false;
+                }
+                comparison = comparison.trim();
                 if (!compareVersion(versionStr, comparison)) {
                     return false;
                 }
@@ -1014,6 +1044,10 @@ public class DslFunctionEvaluator {
                 targetVersion = comparison.trim();
             }
 
+            if (!isComparableVersion(version) || !isComparableVersion(targetVersion)) {
+                return false;
+            }
+
             // 比较版本号
             int compareResult = compareVersionStrings(version, targetVersion);
             
@@ -1031,6 +1065,22 @@ public class DslFunctionEvaluator {
             System.err.println("版本比较失败: " + version + " " + comparison);
             return false;
         }
+    }
+
+    private static boolean isComparableVersion(String version) {
+        if (version == null) {
+            return false;
+        }
+        String cleaned = DslUtils.cleanStringValue(version);
+        if (cleaned == null) {
+            return false;
+        }
+        cleaned = cleaned.trim();
+        if (cleaned.isEmpty()) {
+            return false;
+        }
+        String withoutPrefix = cleaned.replaceFirst("^[vV]", "");
+        return withoutPrefix.matches(".*\\d.*");
     }
 
     /**

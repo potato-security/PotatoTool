@@ -9,6 +9,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.GobyFunctionProcessor;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpLogService;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.InteractshClient;
+import com.potato.potatotool.content.redTeam.vulnScanner.util.RegexCompat;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.content.redTeam.vulnScanner.classObj.PocObj;
 import net.sf.saxon.xpath.XPathFactoryImpl;
@@ -576,7 +577,7 @@ public class ResponseMatcher {
         }
 
         try {
-            InteractshClient.Interaction interaction = HttpLogService.waitForInteraction(interactshUrl, 8);
+            InteractshClient.Interaction interaction = HttpLogService.waitForConfiguredInteraction(interactshUrl);
             if (interaction != null) {
                 return valuesContainProtocol(values, interaction.getProtocol());
             }
@@ -611,7 +612,14 @@ public class ResponseMatcher {
         if (value == null) {
             value = pocVariables.get("interactsh_url");
         }
-        return value == null ? null : String.valueOf(value);
+        String interactshUrl = value == null ? null : String.valueOf(value);
+        if (interactshUrl == null || interactshUrl.trim().isEmpty()) {
+            return interactshUrl;
+        }
+        if (interactshUrl.startsWith("http://") || interactshUrl.startsWith("https://")) {
+            return interactshUrl;
+        }
+        return "http://" + interactshUrl;
     }
 
     private static boolean valuesContainProtocol(List<String> values, String protocol) {
@@ -817,9 +825,9 @@ public class ResponseMatcher {
         for (String regex : values) {
             boolean valueMatched = false;
             try {
-                Pattern pattern = caseInsensitive 
-                        ? Pattern.compile(regex, Pattern.CASE_INSENSITIVE) 
-                        : Pattern.compile(regex);
+                Pattern pattern = caseInsensitive
+                        ? RegexCompat.compile(regex, Pattern.CASE_INSENSITIVE)
+                        : RegexCompat.compile(regex);
                 
                 if (pattern.matcher(content).find()) {
                     valueMatched = true;

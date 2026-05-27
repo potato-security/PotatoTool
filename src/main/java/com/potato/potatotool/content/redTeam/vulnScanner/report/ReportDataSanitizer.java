@@ -6,9 +6,11 @@ import com.potato.potatotool.content.redTeam.vulnScanner.model.StepExecutionReco
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +26,8 @@ final class ReportDataSanitizer {
             Pattern.compile("(?i)(^|[?&;\\s])([A-Za-z0-9_-]+)(=)([^&;\\s]*)");
     private static final Pattern AUTH_SCHEME_PATTERN =
             Pattern.compile("(?i)\\b(Bearer|Basic)\\s+([^\\s,;]+)");
+    private static final Pattern UNRESOLVED_TEMPLATE_PLACEHOLDER_PATTERN =
+            Pattern.compile("\\{\\{[^{}\\r\\n]{1,160}\\}\\}");
 
     private ReportDataSanitizer() {
     }
@@ -51,24 +55,24 @@ final class ReportDataSanitizer {
         target.setVulnerable(source.isVulnerable());
         target.setTimestamp(source.getTimestamp());
         target.setDetails(sanitizeObjectMap(source.getDetails()));
-        target.setFingerprint(source.getFingerprint());
+        target.setFingerprint(sanitizeFingerprint(source.getFingerprint()));
         target.setInputType(source.getInputType());
         target.setMatchedPath(sanitizeText(source.getMatchedPath()));
         target.setMatchedPayload(sanitizeText(source.getMatchedPayload()));
         target.setExtractedData(sanitizeStringList(source.getExtractedData()));
         target.setRawRequest(sanitizeText(source.getRawRequest()));
         target.setRawResponseSnippet(sanitizeText(source.getRawResponseSnippet()));
-        target.setPocSource(source.getPocSource());
+        target.setPocSource(sanitizeText(source.getPocSource()));
         target.setDuplicate(source.isDuplicate());
         target.setDuplicateReason(sanitizeText(source.getDuplicateReason()));
         target.setStepRecords(sanitizeStepRecords(source.getStepRecords()));
         target.setRecommendation(sanitizeText(source.getRecommendation()));
-        target.setParamKeys(copyStringList(source.getParamKeys()));
+        target.setParamKeys(sanitizeStringList(source.getParamKeys()));
         target.setVariableValues(sanitizeStringMap(source.getVariableValues()));
         target.setOutputData(sanitizeObjectMap(source.getOutputData()));
-        target.setCveId(source.getCveId());
-        target.setCweId(source.getCweId());
-        target.setCvssScore(source.getCvssScore());
+        target.setCveId(sanitizeText(source.getCveId()));
+        target.setCweId(sanitizeText(source.getCweId()));
+        target.setCvssScore(sanitizeText(source.getCvssScore()));
         return target;
     }
 
@@ -78,45 +82,45 @@ final class ReportDataSanitizer {
             return target;
         }
 
-        target.setId(source.getId());
-        target.setName(source.getName());
-        target.setAuthor(source.getAuthor());
+        target.setId(sanitizeText(source.getId()));
+        target.setName(sanitizeText(source.getName()));
+        target.setAuthor(sanitizeText(source.getAuthor()));
         target.setSeverity(source.getSeverity());
-        target.setDescription(source.getDescription());
-        target.setReferences(copyStringList(source.getReferences()));
-        target.setProduct(source.getProduct());
-        target.setVersion(source.getVersion());
-        target.setTags(copyStringList(source.getTags()));
-        target.setCreateTime(source.getCreateTime());
-        target.setUpdateTime(source.getUpdateTime());
-        target.setProtocol(source.getProtocol());
-        target.setAppPowerLink(source.getAppPowerLink());
-        target.setPocDesc(source.getPocDesc());
+        target.setDescription(sanitizeText(source.getDescription()));
+        target.setReferences(sanitizeStringList(source.getReferences()));
+        target.setProduct(sanitizeText(source.getProduct()));
+        target.setVersion(sanitizeText(source.getVersion()));
+        target.setTags(sanitizeStringList(source.getTags()));
+        target.setCreateTime(sanitizeText(source.getCreateTime()));
+        target.setUpdateTime(sanitizeText(source.getUpdateTime()));
+        target.setProtocol(sanitizeText(source.getProtocol()));
+        target.setAppPowerLink(sanitizeText(source.getAppPowerLink()));
+        target.setPocDesc(sanitizeText(source.getPocDesc()));
         target.setSelfContained(source.isSelfContained());
-        target.setFlow(source.getFlow());
-        target.setImpact(source.getImpact());
-        target.setRecommendation(source.getRecommendation());
-        target.setHomepage(source.getHomepage());
-        target.setSearchQueries(copyStringMap(source.getSearchQueries()));
-        target.setVariables(copyVariables(source.getVariables()));
+        target.setFlow(sanitizeText(source.getFlow()));
+        target.setImpact(sanitizeText(source.getImpact()));
+        target.setRecommendation(sanitizeText(source.getRecommendation()));
+        target.setHomepage(sanitizeText(source.getHomepage()));
+        target.setSearchQueries(sanitizeStringMap(source.getSearchQueries()));
+        target.setVariables(sanitizeVariables(source.getVariables()));
         target.setVariablesType(source.getVariablesType());
         target.setContinueOnMatch(source.isContinueOnMatch());
-        target.setCveId(source.getCveId());
-        target.setCweId(source.getCweId());
-        target.setVulType(source.getVulType());
-        target.setCvssScore(source.getCvssScore());
-        target.setCvssMetrics(source.getCvssMetrics());
-        target.setOriginalFormat(source.getOriginalFormat());
+        target.setCveId(sanitizeText(source.getCveId()));
+        target.setCweId(sanitizeText(source.getCweId()));
+        target.setVulType(sanitizeText(source.getVulType()));
+        target.setCvssScore(sanitizeText(source.getCvssScore()));
+        target.setCvssMetrics(sanitizeText(source.getCvssMetrics()));
+        target.setOriginalFormat(sanitizeText(source.getOriginalFormat()));
         target.setInputType(source.getInputType());
         target.setCategory(source.getCategory());
-        target.setNormalizedTags(source.getNormalizedTags());
-        target.setFingerprint(source.getFingerprint());
+        target.setNormalizedTags(sanitizeStringSet(source.getNormalizedTags()));
+        target.setFingerprint(sanitizeFingerprint(source.getFingerprint()));
         target.setRequiresHeadless(source.isRequiresHeadless());
         target.setRequiresCode(source.isRequiresCode());
         target.setRequiresFuzz(source.isRequiresFuzz());
         target.setFileTargetType(source.getFileTargetType());
-        target.setSpecificFilePath(source.getSpecificFilePath());
-        target.setFileExtensions(copyStringList(source.getFileExtensions()));
+        target.setSpecificFilePath(sanitizeText(source.getSpecificFilePath()));
+        target.setFileExtensions(sanitizeStringList(source.getFileExtensions()));
         return target;
     }
 
@@ -130,10 +134,10 @@ final class ReportDataSanitizer {
             StepExecutionRecord sanitized = new StepExecutionRecord();
             if (record != null) {
                 sanitized.setStepIndex(record.getStepIndex());
-                sanitized.setStepId(record.getStepId());
-                sanitized.setStepType(record.getStepType());
+                sanitized.setStepId(sanitizeText(record.getStepId()));
+                sanitized.setStepType(sanitizeText(record.getStepType()));
                 sanitized.setRequestUrl(sanitizeText(record.getRequestUrl()));
-                sanitized.setRequestMethod(record.getRequestMethod());
+                sanitized.setRequestMethod(sanitizeText(record.getRequestMethod()));
                 sanitized.setRequestHeaders(sanitizeStringMap(record.getRequestHeaders()));
                 sanitized.setRequestBody(sanitizeText(record.getRequestBody()));
                 sanitized.setRawRequest(sanitizeText(record.getRawRequest()));
@@ -186,18 +190,7 @@ final class ReportDataSanitizer {
     }
 
     private static Map<String, List<String>> copyVariables(Map<String, List<String>> source) {
-        Map<String, List<String>> target = new LinkedHashMap<String, List<String>>();
-        if (source == null) {
-            return target;
-        }
-
-        for (Map.Entry<String, List<String>> entry : source.entrySet()) {
-            if (entry == null || entry.getKey() == null) {
-                continue;
-            }
-            target.put(entry.getKey(), copyStringList(entry.getValue()));
-        }
-        return target;
+        return sanitizeVariables(source);
     }
 
     private static Map<String, String> copyStringMap(Map<String, String> source) {
@@ -210,7 +203,7 @@ final class ReportDataSanitizer {
             if (entry == null || entry.getKey() == null) {
                 continue;
             }
-            target.put(entry.getKey(), entry.getValue());
+            target.put(entry.getKey(), sanitizeText(entry.getValue()));
         }
         return target;
     }
@@ -222,7 +215,7 @@ final class ReportDataSanitizer {
         }
 
         for (String item : source) {
-            target.add(item);
+            target.add(sanitizeText(item));
         }
         return target;
     }
@@ -236,6 +229,53 @@ final class ReportDataSanitizer {
         for (String item : source) {
             target.add(sanitizeText(item));
         }
+        return target;
+    }
+
+    private static Set<String> sanitizeStringSet(Set<String> source) {
+        Set<String> target = new LinkedHashSet<String>();
+        if (source == null) {
+            return target;
+        }
+
+        for (String item : source) {
+            target.add(sanitizeText(item));
+        }
+        return target;
+    }
+
+    private static Map<String, List<String>> sanitizeVariables(Map<String, List<String>> source) {
+        Map<String, List<String>> target = new LinkedHashMap<String, List<String>>();
+        if (source == null) {
+            return target;
+        }
+
+        for (Map.Entry<String, List<String>> entry : source.entrySet()) {
+            if (entry == null || entry.getKey() == null) {
+                continue;
+            }
+            target.put(entry.getKey(), sanitizeStringList(entry.getValue()));
+        }
+        return target;
+    }
+
+    private static PocObj.FingerprintInfo sanitizeFingerprint(PocObj.FingerprintInfo source) {
+        if (source == null) {
+            return null;
+        }
+
+        PocObj.FingerprintInfo target = new PocObj.FingerprintInfo();
+        target.setProductName(sanitizeText(source.getProductName()));
+        target.setVersion(sanitizeText(source.getVersion()));
+        target.setTechnology(sanitizeText(source.getTechnology()));
+        target.setServer(sanitizeText(source.getServer()));
+        target.setOs(sanitizeText(source.getOs()));
+        target.setDetectedTags(sanitizeStringList(source.getDetectedTags()));
+        target.setNormalizedTags(sanitizeStringSet(source.getNormalizedTags()));
+        target.setBanner(sanitizeText(source.getBanner()));
+        target.setDetectedAt(source.getDetectedAt());
+        target.setSource(sanitizeText(source.getSource()));
+        target.setConfidence(source.getConfidence());
         return target;
     }
 
@@ -292,6 +332,23 @@ final class ReportDataSanitizer {
         sanitized = maskJsonFields(sanitized);
         sanitized = maskPairs(sanitized);
         sanitized = maskAuthSchemes(sanitized);
+        return removeUnresolvedTemplatePlaceholders(sanitized);
+    }
+
+    static String removeUnresolvedTemplatePlaceholders(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+
+        String sanitized = text;
+        for (int i = 0; i < 5; i++) {
+            Matcher matcher = UNRESOLVED_TEMPLATE_PLACEHOLDER_PATTERN.matcher(sanitized);
+            String replaced = matcher.replaceAll("[UNRESOLVED_TEMPLATE]");
+            if (replaced.equals(sanitized)) {
+                break;
+            }
+            sanitized = replaced;
+        }
         return sanitized;
     }
 
