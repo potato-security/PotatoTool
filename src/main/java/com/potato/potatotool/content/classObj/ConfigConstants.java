@@ -14,6 +14,7 @@ public interface ConfigConstants {
     String UPDATE = "UpDate";  // 注意：配置文件中拼写为 UpDate
     String START_PASSWORD = "StartPassword";
     String LANGUAGE = "Language";
+    String BOOT_ANIMATION = "BootAnimation";        // 启动动画模式：full / minimal / off（默认 full）
     String HTTP_HEADERS = "HttpHeaders";
     String ENV_PATH = "EnvPath";
 
@@ -65,7 +66,16 @@ public interface ConfigConstants {
     // ========== VulnScan 漏洞扫描配置相关 ==========
     String VULNSCAN = "VulnScan";
     String VULNSCAN_SERVICE = "VulnScan";                 // Proxy.services 下漏洞扫描服务键
-    String BLOCKCHAIN_SERVICE = "Blockchain";             // Proxy.services 下区块链溯源服务键
+    String PORTSCAN_SERVICE = "PortScan";                 // Proxy.services 下端口扫描服务键（v1 默认不走代理，仅预留配置键）
+    String PORTSCAN_BATCH_SIZE = "batchSize";
+    String PORTSCAN_CONNECT_TIMEOUT = "connectTimeout";
+    String PORTSCAN_READ_TIMEOUT = "readTimeout";
+    String PORTSCAN_RETRIES = "retries";
+    String PORTSCAN_SERVICE_PROBE = "serviceProbe";
+    String PORTSCAN_TLS_PROBE = "tlsProbe";
+    String PORTSCAN_PTR_LOOKUP = "ptrLookup";
+    String PORTSCAN_AUTO_HANDOFF = "autoHandoff";
+    String PORTSCAN_PUBLIC_MODE = "publicMode";
     String VULNSCAN_POC_DIR = "pocDir";
     String VULNSCAN_REPORT_DIR = "reportDir";
     String VULNSCAN_THREADS = "threads";

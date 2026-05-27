@@ -76,6 +76,18 @@
                                                 </HBox>
                                             </StackPane>
                                             <HBox alignment="CENTER" spacing="10">
+                                                <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="启动动画：" userData="i18n:setting.basic.bootAnimation">
+                                                    <tooltip>
+                                                        <Tooltip text="完整版：5 秒指挥舱仪式。极简版：约 2 秒只显示 Logo。关闭：跳过启动页直接进入主界面。" userData="i18n:setting.basic.bootAnimation.tooltip"/>
+                                                    </tooltip>
+                                                </Label>
+                                                <ComboBox fx:id="bootAnimationComboBox" prefHeight="20.0" prefWidth="250">
+                                                    <tooltip>
+                                                        <Tooltip text="完整版：5 秒指挥舱仪式。极简版：约 2 秒只显示 Logo。关闭：跳过启动页直接进入主界面。" userData="i18n:setting.basic.bootAnimation.tooltip"/>
+                                                    </tooltip>
+                                                </ComboBox>
+                                            </HBox>
+                                            <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="设置总代理：" userData="i18n:setting.basic.proxy">
                                                     <tooltip>
                                                         <Tooltip text="主代理为总开关，关闭后子服务代理不可用；开启后按子开关决定是否使用代理" userData="i18n:setting.basic.proxy.tooltip"/>
@@ -400,17 +412,6 @@
                                                     </tooltip>
                                                 </CFSwitch>
                                             </HBox>
-                                            <HBox alignment="TOP_CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}"/>
-                                                <Label minWidth="250" alignment="CENTER" text="区块链溯源服务" userData="i18n:setting.asset.blockchain"/>
-                                                <Label minWidth="20"/>
-                                                <CFSwitch fx:id="blockchainProxy">
-                                                    <tooltip>
-                                                        <Tooltip text="默认建议直连，仅在区块链服务必须经代理访问时开启" userData="i18n:setting.asset.blockchain.proxy.tooltip"/>
-                                                    </tooltip>
-                                                </CFSwitch>
-                                            </HBox>
-
                                             <HBox alignment="CENTER">
                                                 <Button minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#saveAsset">
                                                     <effect>

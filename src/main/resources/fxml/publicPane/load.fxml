@@ -1,53 +1,183 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
 <StackPane fx:id="root"
            alignment="CENTER"
            maxHeight="-Infinity" maxWidth="-Infinity"
            minHeight="-Infinity" minWidth="-Infinity"
            prefHeight="720"
            prefWidth="1280"
+           styleClass="deck-root"
+           stylesheets="@../../css/load.css"
            xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
-           stylesheets="@../../css/load.css"
            fx:controller="com.potato.potatotool.controller.publicPane.PaneLoad">
-    <StackPane fx:id="codePane"/>
 
-    <Label>
-        <graphic>
-            <Region styleClass="loadImg"/>
-        </graphic>
-    </Label>
+    <Region fx:id="voidLayer" styleClass="deck-void"/>
+    <Pane fx:id="ambientLayer" mouseTransparent="true" pickOnBounds="false"/>
+    <Pane fx:id="coordinateLayer" mouseTransparent="true" pickOnBounds="false"/>
+    <Pane fx:id="binaryLayer" mouseTransparent="true" pickOnBounds="false"/>
+    <Pane fx:id="dualChannelLayer" mouseTransparent="true" pickOnBounds="false"/>
+    <Pane fx:id="dustLayer" mouseTransparent="true" pickOnBounds="false"/>
+    <Pane fx:id="connectionLayer" mouseTransparent="true" pickOnBounds="false"/>
+    <Pane fx:id="globalScanLayer" mouseTransparent="true" pickOnBounds="false"/>
 
+    <BorderPane fx:id="deckFrame" mouseTransparent="true" pickOnBounds="false">
+        <top>
+            <HBox fx:id="topRail" alignment="CENTER" spacing="18" styleClass="top-rail">
+                <padding>
+                    <Insets top="24" right="36" bottom="0" left="36"/>
+                </padding>
+                <Label fx:id="topInstanceLabel" styleClass="rail-label rail-main" text="POTATOTOOL / LOCAL INSTANCE"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="topPhaseLabel" styleClass="rail-label rail-phase" text="BOOTSTRAP"/>
+                <Region fx:id="topRailPulse" styleClass="rail-pulse"/>
+                <Label fx:id="topSessionLabel" styleClass="rail-label" text="SESSION // LOCAL"/>
+                <Label fx:id="topTimeLabel" styleClass="rail-label rail-time" text="--:--:--"/>
+            </HBox>
+        </top>
+        <center>
+            <HBox fx:id="commandRow" alignment="CENTER" spacing="44">
+                <VBox fx:id="leftWing" alignment="TOP_LEFT" spacing="16" styleClass="data-wing left-wing">
+                    <!-- [R3] MODULE CHECK 子模块 · 6 行模块自检条 -->
+                    <VBox fx:id="moduleBlock" spacing="8" styleClass="wing-block module-block">
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <Label fx:id="moduleTitleLabel" styleClass="wing-title" text="MODULE CHECK"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="moduleStateLabel" styleClass="wing-tag" text="[CHECK]"/>
+                        </HBox>
+                        <VBox fx:id="moduleList" spacing="8"/>
+                    </VBox>
+                    <!-- [R3] FINGERPRINT MAP 子模块 · 16 柱指纹索引热度图（科技感升级 · 选项 B） -->
+                    <VBox fx:id="spectrumBlock" spacing="8" styleClass="wing-block spectrum-block">
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <Label fx:id="spectrumTitleLabel" styleClass="wing-title" text="FINGERPRINT MAP"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="spectrumStateLabel" styleClass="wing-tag" text="[LIVE]"/>
+                        </HBox>
+                        <Pane fx:id="spectrumPane" styleClass="spectrum-pane"/>
+                        <HBox fx:id="spectrumScale" alignment="CENTER_LEFT" spacing="0" styleClass="spectrum-scale"/>
+                    </VBox>
+                </VBox>
 
-    <Label fx:id="blueImg" translateX="-200" translateY="-100">
-        <graphic>
-            <Region styleClass="blueImg"/>
-        </graphic>
-    </Label>
+                <StackPane fx:id="glassDeck" alignment="CENTER" styleClass="glass-deck">
+                    <Region fx:id="glassBack" styleClass="glass-back"/>
+                    <StackPane fx:id="glassSurfaceLayer" alignment="CENTER" styleClass="glass-surface-layer" mouseTransparent="true" pickOnBounds="false">
+                        <Region fx:id="glassMist" styleClass="glass-mist"/>
+                        <Pane fx:id="glassTextureLayer" mouseTransparent="true" pickOnBounds="false"/>
+                        <Pane fx:id="glassProbeLayer" mouseTransparent="true" pickOnBounds="false"/>
+                        <Region fx:id="glassSpectrum" styleClass="glass-spectrum"/>
+                        <Region fx:id="glassHighlight" styleClass="glass-highlight"/>
+                    </StackPane>
+                    <Region fx:id="glassTopEdge" styleClass="glass-edge glass-edge-top"/>
+                    <Region fx:id="glassBottomEdge" styleClass="glass-edge glass-edge-bottom"/>
+                    <Region fx:id="glassLeftEdge" styleClass="glass-edge glass-edge-left"/>
+                    <Region fx:id="glassRightEdge" styleClass="glass-edge glass-edge-right"/>
 
-    <Label fx:id="redImg" translateX="175" translateY="100">
-        <graphic>
-            <Region styleClass="redImg"/>
-        </graphic>
-    </Label>
+                    <VBox fx:id="coreStack" alignment="CENTER" spacing="20">
+                        <StackPane fx:id="logoArea" alignment="CENTER" styleClass="logo-area">
+                            <Region fx:id="logoLens" styleClass="logo-lens"/>
+                            <Region fx:id="logoReticleOuter" styleClass="logo-reticle logo-reticle-outer"/>
+                            <Region fx:id="logoReticleInner" styleClass="logo-reticle logo-reticle-inner"/>
+                            <ImageView fx:id="logoImage" fitHeight="126" fitWidth="126" preserveRatio="true" pickOnBounds="false">
+                                <image>
+                                    <Image url="@../../img/logo.png"/>
+                                </image>
+                            </ImageView>
+                            <Region fx:id="logoScanLine" styleClass="logo-scan-line"/>
+                        </StackPane>
+                        <StackPane fx:id="titleStack" alignment="CENTER">
+                            <Label fx:id="titleShadowLabel" styleClass="title-shadow" text="POTATOTOOL"/>
+                            <HBox fx:id="titleMainBox" alignment="CENTER" spacing="0">
+                                <Label fx:id="titlePotatoLabel" styleClass="title-main title-potato" text="POTATO"/>
+                                <Region styleClass="title-gap"/>
+                                <Label fx:id="titleToolLabel" styleClass="title-main title-tool" text="TOOL"/>
+                            </HBox>
+                        </StackPane>
+                        <Region fx:id="titleLockLine" styleClass="title-lock-line"/>
+                        <VBox alignment="CENTER" spacing="5">
+                            <Label fx:id="statusPrimaryLabel" styleClass="status-primary" text=" "/>
+                            <Label fx:id="statusSecondaryLabel" styleClass="status-secondary" text=" "/>
+                        </VBox>
+                    </VBox>
+                </StackPane>
 
-    <ImageView fx:id="potatoImg" fitHeight="100.0" fitWidth="1000.0" translateX="100" translateY="-150" pickOnBounds="true" preserveRatio="true">
-        <image>
-            <Image url="@../../img/potato.png" />
-        </image>
-    </ImageView>
+                <VBox fx:id="rightWing" alignment="CENTER_LEFT" spacing="12" styleClass="data-wing right-wing">
+                    <!-- [R3] RULE HITMAP 子模块 · 5x9 规则命中矩阵 + burst 闪火 -->
+                    <VBox fx:id="matrixBlock" spacing="7" styleClass="wing-block matrix-block">
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <Label fx:id="telemetryTitleLabel" styleClass="wing-title" text="RULE HITMAP"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="matrixStateLabel" styleClass="wing-tag" text="[SCAN]"/>
+                        </HBox>
+                        <Pane fx:id="telemetryMatrix" styleClass="telemetry-matrix"/>
+                    </VBox>
+                    <!-- [R3] TELEMETRY 子模块 · 4 行 CPU/NET/MEM/I/O 数值 -->
+                    <VBox fx:id="valueBlock" spacing="6" styleClass="wing-block value-block">
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <Label fx:id="telemetryListTitleLabel" styleClass="wing-title" text="TELEMETRY"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="valueStateLabel" styleClass="wing-tag" text="[LIVE]"/>
+                        </HBox>
+                        <VBox fx:id="telemetryList" spacing="5"/>
+                    </VBox>
+                    <!-- [R3] SURFACE MAP 子模块 · 90x90 攻击面雷达 + 旋转扫描臂 + 3 个 target（科技感升级 · 选项 A） -->
+                    <VBox fx:id="radarBlock" spacing="6" styleClass="wing-block radar-block">
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <Label fx:id="radarTitleLabel" styleClass="wing-title" text="SURFACE MAP"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="radarStateLabel" styleClass="wing-tag" text="[ACTIVE]"/>
+                        </HBox>
+                        <StackPane alignment="CENTER" styleClass="radar-wrap">
+                            <StackPane fx:id="radarPane" alignment="CENTER" styleClass="radar-pane"/>
+                        </StackPane>
+                        <HBox alignment="CENTER" spacing="10" styleClass="radar-metrics">
+                            <Label fx:id="radarAzimKey" styleClass="telemetry-name radar-key" text="AZIM"/>
+                            <Label fx:id="radarAzimValue" styleClass="telemetry-value radar-value" text="000°"/>
+                            <Label fx:id="radarRngKey" styleClass="telemetry-name radar-key" text="RNG"/>
+                            <Label fx:id="radarRngValue" styleClass="telemetry-value radar-value" text="0.0km"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </HBox>
+        </center>
+        <bottom>
+            <VBox fx:id="bottomRail" alignment="CENTER" spacing="14" styleClass="bottom-rail">
+                <HBox fx:id="phaseTrack" alignment="CENTER" spacing="10"/>
+                <StackPane fx:id="energyRail" alignment="CENTER_LEFT" styleClass="energy-rail">
+                    <Region fx:id="energyTrack" styleClass="energy-track"/>
+                    <Region fx:id="energyFill" styleClass="energy-fill"/>
+                    <Region fx:id="energyShine" styleClass="energy-shine"/>
+                </StackPane>
+                <HBox alignment="CENTER" spacing="10">
+                    <StackPane alignment="CENTER" pickOnBounds="false">
+                        <Region fx:id="terminalRipple1" styleClass="terminal-ripple" mouseTransparent="true"/>
+                        <Region fx:id="terminalRipple2" styleClass="terminal-ripple" mouseTransparent="true"/>
+                        <Region fx:id="terminalDot" styleClass="terminal-dot"/>
+                    </StackPane>
+                    <Label fx:id="terminalPrimaryLabel" styleClass="terminal-primary" text=" "/>
+                    <Label fx:id="terminalSecondaryLabel" styleClass="terminal-secondary" text=" "/>
+                </HBox>
+                <padding>
+                    <Insets top="0" right="36" bottom="28" left="36"/>
+                </padding>
+            </VBox>
+        </bottom>
+    </BorderPane>
 
-    <ImageView fx:id="toolImg" fitHeight="150.0" fitWidth="1000.0" translateX="-150"  translateY="150" pickOnBounds="true" preserveRatio="true">
-        <image>
-            <Image url="@../../img/tool.png" />
-        </image>
-    </ImageView>
+    <!-- HUD 拐角十字瞄准星层（方案2）· 在 deckFrame 上方绘制，覆盖左右翼外角 -->
+    <Pane fx:id="cornerReticleLayer" mouseTransparent="true" pickOnBounds="false"/>
 
-
+    <Region fx:id="readyFlash" styleClass="ready-flash" mouseTransparent="true"/>
+    <Region fx:id="cutLayer" styleClass="cut-layer" mouseTransparent="true"/>
 </StackPane>

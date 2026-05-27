@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.controller.MainController;
 import com.potato.potatotool.controller.publicPane.PaneLoad;
-import com.potato.potatotool.controller.publicPane.PanePasswd;
 import com.potato.potatotool.controller.publicPane.PaneUpdateDialog;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
@@ -25,11 +25,12 @@ import com.potato.potatotool.utils.crypto.SecurityInitializer;
 import com.potato.potatotool.utils.data.GzipUtils;
 import com.potato.potatotool.utils.network.ProxyUtils;
 import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.PerspectiveCamera;
@@ -48,6 +49,8 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.potato.potatotool.ToStart.debugMode;
@@ -55,7 +58,41 @@ import static com.potato.potatotool.utils.core.Constants.*;
 
 public class MainApplication extends Application {
     private static final ExecutorService executor = Executors.newCachedThreadPool();
+    private static final double SPLASH_BACKGROUND_INIT_DELAY_MS = 350;
+    private static final double SPLASH_MAIN_SCENE_FALLBACK_DELAY_MS = 6500;
+    /**
+     * [BOOT-L2 第 2 层] 主界面加载专用低优先级单线程池。
+     * 关键：setPriority(Thread.MIN_PRIORITY) → OS 调度永远优先 JavaFX UI 线程，
+     * 即使主界面 20+ FXML 同步加载吃满 CPU，也不会让启动动画 Pulse 掉帧。
+     * 单线程是因为 main.fxml 的加载本身串行（MainController.initialize 内串行 load 子 FXML），
+     * 不需要并发；并发反而会和 UI 线程抢更多核。
+     */
+    private static final ExecutorService mainSceneLoader = Executors.newSingleThreadExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r, "potato-main-loader");
+            t.setPriority(Thread.MIN_PRIORITY);
+            t.setDaemon(true);
+            return t;
+        }
+    });
     private static volatile String startupProxyWarningMessage;
+    private static volatile MainController mainController;
+
+    // ============================================================
+    // [启动期更新对话框延后展示]
+    //   原行为：checkForUpdatesOnStartup 一旦发现更新就立刻 Platform.runLater 弹窗，
+    //          可能落在 PaneLoad 5s 启动动画期间，或主舞台 stage.show() 后 fadeIn 还没起来时，
+    //          视觉上是"启动页/黑屏 + 更新弹窗抢焦点"。
+    //   现在：发现更新先写入 pendingStartupUpdateInfo，等到主界面真正进入 fadeIn 时
+    //        （playSplashFadeOut 触发主舞台 fadeIn / showMainStage 触发 fadeIn）
+    //        再异步消费，保证：
+    //          1) 与主界面同时激活展示；
+    //          2) 通过 Platform.runLater 排到下一个 Pulse，不阻塞 fadeIn 关键帧。
+    // ============================================================
+    private static volatile UpdateInfo pendingStartupUpdateInfo;
+    private static volatile boolean mainStagePresentedForStartupUpdate = false;
+    private static final Object startupUpdateLock = new Object();
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -63,15 +100,141 @@ public class MainApplication extends Application {
         Thread.currentThread().setContextClassLoader(appClassLoader);
         FXMLLoader.setDefaultClassLoader(appClassLoader);
         hostServices = getHostServices();
+        // [F1] 启动页独立预览模式：仅渲染 PaneLoad，跳过所有主界面初始化，动画结束即退出 JVM
+        if (ToStart.isLoadPagePreviewMode()) {
+            showLoadPagePreviewOnly(stage);
+            return;
+        }
         final boolean skipStartupPages = ToStart.isStartupPageTestEnabled();
+        final String effectiveBootMode = resolveBootMode();
+        // useSplash = true 表示启用 PaneLoad；skipStartupPages / off 模式跳过 splash，原同步路径
+        final boolean useSplash = !skipStartupPages && !"off".equals(effectiveBootMode);
 
-//        double screenWidth = Screen.getPrimary().getVisualBounds().getWidth();
-//        double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
-//        Screen screen = Screen.getPrimary();
-//        double dpi = screen.getDpi();
-//        double scale = dpi / 151; // 测试机DPI为151
+        // 设置主窗口图标（原本在密码页/skip 两个分支各做一次，密码门取消后在此统一设置）
+        {
+            String iconPath = "/img/logo.png";
+            try {
+                InputStream iconStream = getClass().getResourceAsStream(iconPath);
+                if (iconStream != null) {
+                    Image image = new Image(iconStream);
+                    stage.getIcons().add(image);
+                    stage.setTitle("PotatoTool");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
-        // 初始化配置及BC.jar文件
+        // ============================================================
+        // [密码门已废弃 2026-05-25]
+        //   passwd 是硬编码 "potato520"（见 PanePasswd.start），对桌面安全工具无实际防护意义；
+        //   取消密码门后启动页 PaneLoad 成为用户第一接触点，节省一次点击。
+        //   原代码已整段删除，如需恢复请从 git 历史回溯（2026-05-25 之前版本）。
+        // ============================================================
+
+        // 共享状态：mainSceneReady = main.fxml 加载完成且 setScene 成功；mainStageShown = stage.show() 已执行
+        // 用 AtomicBoolean 而不是 BooleanProperty，因为 setter 不依赖 JavaFX 线程
+        final AtomicReference<FadeTransition> fadeTransition1 = new AtomicReference<FadeTransition>();
+        final AtomicBoolean mainSceneReady = new AtomicBoolean(false);
+        final AtomicBoolean mainStageShown = new AtomicBoolean(false);
+        final AtomicBoolean mainSceneLoadSubmitted = new AtomicBoolean(false);
+        final AtomicReference<Stage> loadStageRef = new AtomicReference<Stage>();
+        final AtomicReference<PaneLoad> loadCtrlRef = new AtomicReference<PaneLoad>();
+
+        // ============================================================
+        // 启动顺序倒置：在 start() 入口立即创建并 show PaneLoad，
+        // 不等任何后台任务，让用户在 100ms 内看到启动动画首帧。
+        // ============================================================
+        if (useSplash) {
+            try {
+                Stage loadStage = new Stage();
+                loadStage.initStyle(StageStyle.TRANSPARENT);
+                loadStage.setAlwaysOnTop(true);
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/publicPane/load.fxml"));
+                Scene loadScene = new Scene(loader.load());
+                loadScene.setCamera(new PerspectiveCamera());
+                loadScene.setFill(null);
+                loadStage.setScene(loadScene);
+                try {
+                    InputStream iconStream = getClass().getResourceAsStream("/img/logo.png");
+                    if (iconStream != null) {
+                        Image image = new Image(iconStream);
+                        loadStage.getIcons().add(image);
+                        loadStage.setTitle("PotatoTool");
+                    }
+                } catch (Exception ignored) {}
+                PaneLoad loadController = loader.getController();
+                loadController.setBootMode(effectiveBootMode);
+                loadStage.show();
+                loadStageRef.set(loadStage);
+                loadCtrlRef.set(loadController);
+            } catch (Exception e) {
+                if (debugMode) e.printStackTrace();
+            }
+        }
+
+        // ============================================================
+        // [BOOT-L6 第 6 层] 正常 splash 模式下不再提前 show 主舞台。
+        //                  main.fxml 延后到 PaneLoad loadedProperty=true 后再加载，
+        //                  避免启动动画期间被主界面 FXML/CSS/Controller 初始化抢占 Pulse。
+        // ============================================================
+        final Runnable maybeShowMainStage = new Runnable() {
+            @Override public void run() {
+                if (mainStageShown.get()) return;
+                if (!mainSceneReady.get()) return;
+                if (useSplash) {
+                    PaneLoad pl = loadCtrlRef.get();
+                    if (pl != null && !pl.loadedProperty().get()) return;
+                }
+                Runnable showAction = new Runnable() {
+                    @Override public void run() {
+                        if (mainStageShown.get()) return;
+                        try {
+                            stage.show();
+                            mainStageShown.set(true);
+                        } catch (Exception e) {
+                            if (debugMode) e.printStackTrace();
+                        }
+                    }
+                };
+                if (Platform.isFxApplicationThread()) showAction.run();
+                else Platform.runLater(showAction);
+            }
+        };
+
+        if (useSplash) {
+            final PaneLoad pl = loadCtrlRef.get();
+            if (pl != null) {
+                // PaneLoad loadedProperty 触发 = 启动动画结束（full +5000ms / minimal +2200ms），需要切场
+                pl.loadedProperty().addListener(new ChangeListener<Boolean>() {
+                    @Override public void changed(ObservableValue<? extends Boolean> obs, Boolean ov, Boolean nv) {
+                        if (!Boolean.TRUE.equals(nv)) return;
+                        Runnable swap = new Runnable() {
+                            @Override public void run() {
+                                // 兜底 1：主舞台 scene 还没就绪（极慢机器 / L3 性能降级提前触发）→ 等
+                                if (!mainSceneReady.get()) {
+                                    return;
+                                }
+                                // 兜底 2：强制 show（即使 maybeShowMainStage 路径错过也保底）
+                                if (!mainStageShown.get()) {
+                                    try {
+                                        stage.show();
+                                        mainStageShown.set(true);
+                                    } catch (Exception ex) {
+                                        if (debugMode) ex.printStackTrace();
+                                    }
+                                }
+                                playSplashFadeOut(loadStageRef.get(), loadCtrlRef.get(), fadeTransition1);
+                            }
+                        };
+                        if (Platform.isFxApplicationThread()) swap.run();
+                        else Platform.runLater(swap);
+                    }
+                });
+            }
+        }
+
+        // 初始化配置 / 网络 / 更新检查任务（IO/网络任务，与 UI 线程关系不大，沿用 cached pool）
         Task<Void> taskInit = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -91,110 +254,177 @@ public class MainApplication extends Application {
             }
         };
 
-        executor.submit(taskInit);
-
-        BooleanProperty preload = new SimpleBooleanProperty(false);
-        AtomicReference<FadeTransition> fadeTransition1 = new AtomicReference<FadeTransition>();
-        if (!skipStartupPages) {
-            //  输入密码界面stage
-            Stage passwdStage = new Stage();
-            passwdStage.setAlwaysOnTop(true);
-            passwdStage.initStyle(StageStyle.TRANSPARENT);
-            FXMLLoader passwdLoader = new FXMLLoader(getClass().getResource("/fxml/publicPane/passwd.fxml"));
-            Scene passwdScene = new Scene(passwdLoader.load());
-            passwdScene.setCamera(new PerspectiveCamera());
-            passwdScene.setFill(null);
-            passwdStage.setScene(passwdScene);
-            String iconPath = "/img/logo.png";
-            try {
-                // 为 JavaFX 窗口设置图标（这会影响 Windows 任务栏和 Linux 的dock）
-                InputStream iconStream = getClass().getResourceAsStream(iconPath);
-                if (iconStream != null) {
-                    Image image = new Image(iconStream);
-                    passwdStage.getIcons().add(image);
-                    passwdStage.setTitle("PotatoTool");
-                    stage.getIcons().add(image);
-                    stage.setTitle("PotatoTool");
+        // scene 完成后的回调：标记 mainSceneReady=true，并按情况触发 show / 切场
+        final Runnable onSceneAttached = new Runnable() {
+            @Override public void run() {
+                mainSceneReady.set(true);
+                if (!useSplash) {
+                    // skipStartupPages / off 模式：原行为 - 直接 show 主舞台
+                    if (!mainStageShown.get()) {
+                        showMainStage(stage, fadeTransition1);
+                        mainStageShown.set(true);
+                    }
+                    return;
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+                PaneLoad pl = loadCtrlRef.get();
+                // 兜底 3：极快机器场景 - PaneLoad 动画在 mainSceneReady 之前就到了结束 / 闸门已开
+                if (pl != null && pl.loadedProperty().get()) {
+                    if (!mainStageShown.get()) {
+                        try {
+                            stage.show();
+                            mainStageShown.set(true);
+                        } catch (Exception ex) {
+                            if (debugMode) ex.printStackTrace();
+                        }
+                    }
+                    playSplashFadeOut(loadStageRef.get(), pl, fadeTransition1);
+                } else {
+                    // 正常路径：主舞台等待 PaneLoad 完成后再展示
+                    maybeShowMainStage.run();
+                }
             }
-            passwdStage.show();
+        };
 
-            PanePasswd pwdController = passwdLoader.getController();
-            pwdController.passwdProperty().addListener((obs_x, oldValue_x, newValue_x) -> {
-                // 提前隐藏展示，防止动画卡顿
-                if(preload.get()) {
-                    stage.show();
-                    loadMainStage(passwdStage, fadeTransition1);
-                }else {
-                    preload.addListener((observable_y, oldValue_y, newValue_y) -> {
-                        stage.show();
-                        loadMainStage(passwdStage, fadeTransition1);
-                    });
-                }
-            });
-        } else {
-            String iconPath = "/img/logo.png";
-            try {
-                InputStream iconStream = getClass().getResourceAsStream(iconPath);
-                if (iconStream != null) {
-                    Image image = new Image(iconStream);
-                    stage.getIcons().add(image);
-                    stage.setTitle("PotatoTool");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-
-        // 提前加载主界面
-        Task<Void> task = new Task<Void>() {
+        // UI 线程操作分帧：原 task 里一个大 runLater 拆成 4 步嵌套 runLater，
+        // 每步落在不同 Pulse，避免单帧承担全部 stage.setScene + CSS apply 开销
+        // 主界面加载任务
+        Task<Void> taskMain = new Task<Void>() {
             @Override
             protected Void call() throws IOException {
-
                 FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
-                Scene scene = new Scene(fxmlLoader.load());
-                Platform.runLater(() -> {
-                    try {
-//                        scene.getRoot().setScaleX(scale);
-//                        scene.getRoot().setScaleY(scale);
-
-                        stage.setFullScreenExitHint("");
-
-                        scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
-                        scene.setCamera(new PerspectiveCamera());   //  添加摄像机
-                        stage.initStyle(StageStyle.TRANSPARENT);    //  边框透明
-                        scene.setFill(null);    //  背景透明
-                        scene.getRoot().getStyleClass().add("blueStyle");   //  默认蓝队样式
-                        stage.setScene(scene);
-                        scene.getRoot().setOpacity(0);
-                        fadeTransition1.set(new FadeTransition(Duration.seconds(0.3), scene.getRoot()));
-                        fadeTransition1.get().setFromValue(0);
-                        fadeTransition1.get().setToValue(1);
-                        fadeTransition1.get().setCycleCount(1);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
+                final Scene scene = new Scene(fxmlLoader.load());
+                mainController = fxmlLoader.getController();
+                applySceneToStageInSteps(stage, scene, fadeTransition1, onSceneAttached);
                 return null;
             }
         };
-        task.setOnFailed(e -> {
+        taskMain.setOnFailed(e -> {
             ExecutorServiceManager.shutdownAll();
-            Throwable error = task.getException();
+            Throwable error = taskMain.getException();
             error.printStackTrace();
             System.exit(0);
         });
-        task.setOnSucceeded(e -> {
-            if (skipStartupPages) {
-                Platform.runLater(() -> showMainStage(stage, fadeTransition1));
+
+        final Runnable submitMainSceneLoad = new Runnable() {
+            @Override public void run() {
+                if (!mainSceneLoadSubmitted.compareAndSet(false, true)) return;
+                PaneLoad pl = loadCtrlRef.get();
+                if (pl != null) pl.enterMainLoadHold();
+                // 主界面 FXML/CSS/Controller 构建延后到 PaneLoad 完成后，避免正常启动时抢占启动动画的 Pulse。
+                mainSceneLoader.submit(taskMain);
+            }
+        };
+
+        if (useSplash) {
+            // 配置、代理、更新检查仍可后台进行；主界面树构建延后，保证 0~5s 动画窗口稳定。
+            PauseTransition initDelay = new PauseTransition(Duration.millis(SPLASH_BACKGROUND_INIT_DELAY_MS));
+            initDelay.setOnFinished(e -> {
+                executor.submit(taskInit);
+            });
+            initDelay.play();
+
+            final PaneLoad pl = loadCtrlRef.get();
+            if (pl != null) {
+                pl.loadedProperty().addListener(new ChangeListener<Boolean>() {
+                    @Override public void changed(ObservableValue<? extends Boolean> obs, Boolean oldValue, Boolean newValue) {
+                        if (Boolean.TRUE.equals(newValue)) {
+                            submitMainSceneLoad.run();
+                        }
+                    }
+                });
+                // 极端异常兜底：如果 PaneLoad 信号没有触发，也不要让主程序永远停在启动页。
+                PauseTransition mainLoadFallback = new PauseTransition(Duration.millis(SPLASH_MAIN_SCENE_FALLBACK_DELAY_MS));
+                mainLoadFallback.setOnFinished(e -> {
+                    if (!pl.loadedProperty().get()) pl.forceCompleteForStartupFallback();
+                    submitMainSceneLoad.run();
+                });
+                mainLoadFallback.play();
             } else {
-                preload.set(true);
+                submitMainSceneLoad.run();
+            }
+        } else {
+            // off / skipStartupPages 模式：原行为，无 splash，立即开始
+            executor.submit(taskInit);
+            submitMainSceneLoad.run();
+        }
+    }
+
+    /**
+     * UI 线程操作分帧执行：把原本一个大 Platform.runLater 中的操作
+     * 拆成 4 个嵌套 runLater，每步落在不同的 Pulse，避免单帧承担全部 CSS apply + 整树首次 layout 开销。
+     *
+     * step1: 基础属性设置
+     * step2: 样式表注册
+     * step3: 窗口透明度、样式和 Scene 绑定（触发 heaviest CSS apply）
+     * step4: 淡入动画创建并触发回调
+     */
+    private void applySceneToStageInSteps(final Stage stage, final Scene scene,
+                                          final AtomicReference<FadeTransition> fadeTransition1,
+                                          final Runnable onComplete) {
+        Platform.runLater(new Runnable() {
+            @Override public void run() {
+                try {
+                    stage.setFullScreenExitHint("");
+                    scene.setCamera(new PerspectiveCamera());
+                    scene.setFill(null);
+                } catch (Exception e) { if (debugMode) e.printStackTrace(); }
+                Platform.runLater(new Runnable() {
+                    @Override public void run() {
+                        try {
+                            scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+                        } catch (Exception e) { if (debugMode) e.printStackTrace(); }
+                        Platform.runLater(new Runnable() {
+                            @Override public void run() {
+                                try {
+                                    stage.initStyle(StageStyle.TRANSPARENT);
+                                    scene.getRoot().getStyleClass().add("blueStyle");
+                                    scene.getRoot().setOpacity(0);
+                                    stage.setScene(scene);
+                                } catch (Exception e) { if (debugMode) e.printStackTrace(); }
+                                Platform.runLater(new Runnable() {
+                                    @Override public void run() {
+                                        try {
+                                            FadeTransition ft = new FadeTransition(Duration.seconds(0.3), scene.getRoot());
+                                            ft.setFromValue(0);
+                                            ft.setToValue(1);
+                                            ft.setCycleCount(1);
+                                            fadeTransition1.set(ft);
+                                            if (onComplete != null) onComplete.run();
+                                        } catch (Exception e) { if (debugMode) e.printStackTrace(); }
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
             }
         });
-        executor.submit(task);
+    }
+
+    /**
+     * 启动页淡出 + 主舞台淡入。
+     * 顺序：PaneLoad fadeOut(300ms) -> close loadStage -> controller.stopAnimations() -> 主舞台 fadeIn(300ms)
+     */
+    private void playSplashFadeOut(final Stage loadStage, final PaneLoad controller,
+                                   final AtomicReference<FadeTransition> fadeTransition1) {
+        if (loadStage == null || controller == null) return;
+        Scene loadScene = loadStage.getScene();
+        if (loadScene == null) return;
+        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.3), loadScene.getRoot());
+        fadeTransition.setFromValue(1);
+        fadeTransition.setToValue(0);
+        fadeTransition.setCycleCount(1);
+        fadeTransition.setOnFinished(event -> {
+            loadStage.close();
+            controller.stopAnimations();
+            FadeTransition ft = fadeTransition1.get();
+            if (ft != null) ft.play();
+            // 主舞台 fadeIn 已经在 UI 线程触发，可以释放启动期暂存的更新对话框。
+            // onMainStagePresentedForStartupUpdate 内部用 Platform.runLater 异步排到下一帧，
+            // 不阻塞当前 fadeIn 的关键帧。
+            onMainStagePresentedForStartupUpdate();
+        });
+        fadeTransition.play();
     }
 
     private void showMainStage(Stage stage, AtomicReference<FadeTransition> fadeTransition1) {
@@ -209,52 +439,85 @@ public class MainApplication extends Application {
         } else if (stage.getScene() != null && stage.getScene().getRoot() != null) {
             stage.getScene().getRoot().setOpacity(1);
         }
+        // 非 splash 路径（off / skipStartupPages 模式）此处即"主界面激活展示"时机，
+        // 同样消费启动期暂存的更新对话框，保证两端路径行为一致。
+        onMainStagePresentedForStartupUpdate();
     }
 
-    private void loadMainStage(Stage passwdStage, AtomicReference<FadeTransition> fadeTransition1) {
+    /**
+     * 启动页独立预览：仅渲染 PaneLoad，跳过所有主界面初始化，动画结束即退出 JVM。
+     * 不切换主舞台、不进行渐变淡入。
+     */
+    private void showLoadPagePreviewOnly(Stage stage) {
         try {
             Stage loadStage = new Stage();
             loadStage.initStyle(StageStyle.TRANSPARENT);
-            loadStage.setAlwaysOnTop(true);  // 加载页面置顶
+            loadStage.setAlwaysOnTop(true);
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/publicPane/load.fxml"));
             Scene loadScene = new Scene(loader.load());
             loadScene.setCamera(new PerspectiveCamera());
             loadScene.setFill(null);
             loadStage.setScene(loadScene);
-            String iconPath = "/img/logo.png";
             try {
-                // 为 JavaFX 窗口设置图标（这会影响 Windows 任务栏和 Linux 的dock）
-                InputStream iconStream = getClass().getResourceAsStream(iconPath);
+                InputStream iconStream = getClass().getResourceAsStream("/img/logo.png");
                 if (iconStream != null) {
                     Image image = new Image(iconStream);
                     loadStage.getIcons().add(image);
-                    loadStage.setTitle("PotatoTool");
+                    loadStage.setTitle("PotatoTool · LoadPage Preview");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            passwdStage.close();
+            } catch (Exception ignored) {}
             loadStage.show();
 
             PaneLoad controller = loader.getController();
-            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.3), loadScene.getRoot());
-            fadeTransition.setFromValue(1);
-            fadeTransition.setToValue(0);
-            fadeTransition.setCycleCount(1);
+            String previewMode = resolveBootMode();
+            if ("off".equals(previewMode)) previewMode = "full";
+            controller.setBootMode(previewMode);
 
-            fadeTransition.setOnFinished(event -> {
+            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.3), loadScene.getRoot());
+            fadeOut.setFromValue(1);
+            fadeOut.setToValue(0);
+            fadeOut.setCycleCount(1);
+            fadeOut.setOnFinished(event -> {
                 loadStage.close();
                 controller.stopAnimations();
-                fadeTransition1.get().play();
+                Platform.exit();
+                System.exit(0);
             });
-
-            controller.loadedProperty().addListener((obs, oldValue, newValue) -> {
-                fadeTransition.play();
-            });
-        }catch (Exception e){
-            if(debugMode)e.printStackTrace();
+            controller.loadedProperty().addListener((obs, oldValue, newValue) -> fadeOut.play());
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
+
+    /**
+     * 解析有效启动动画模式：full / minimal / off，默认 full。
+     * 仅读取用户主动设定的 BOOT_ANIMATION 配置；任何异常都安全回退到 full。
+     * 不做基于历史启动次数或时间间隔的自动降级。
+     */
+    private String resolveBootMode() {
+        String mode = "full";
+        try {
+            Object modeObj = Constants.getOutsideConfig(ConfigConstants.BOOT_ANIMATION);
+            if (modeObj instanceof JsonElement) {
+                JsonElement el = (JsonElement) modeObj;
+                if (el.isJsonPrimitive()) {
+                    String v = el.getAsString();
+                    if ("minimal".equals(v) || "off".equals(v) || "full".equals(v)) {
+                        mode = v;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            if (debugMode) e.printStackTrace();
+        }
+        return mode;
+    }
+
+    // [BOOT-L1/L6 重构] 旧 loadMainStage
+    //   1. start() 入口直接 show PaneLoad（不再等密码页或 preload）
+    //   2. applySceneToStageInSteps：UI 线程操 主舞台淡入
+    // 历史代码请从 git 回溯 2026-05-25 之前版本。
 
 
     private void initEnvFile() {
@@ -624,8 +887,10 @@ public class MainApplication extends Application {
                         }
                     }
                     
-                    // 在UI线程显示更新对话框
-                    Platform.runLater(() -> showUpdateDialogOnStartup(updateInfo));
+                    // 不再立刻弹窗：缓存到 pendingStartupUpdateInfo，等主界面 fadeIn 触发时
+                    // 由 onMainStagePresentedForStartupUpdate 异步消费，
+                    // 避免在 PaneLoad 启动动画期间或主舞台 fadeIn 之前抢焦点。
+                    deferStartupUpdateDialog(updateInfo);
                 } else {
                     if (debugMode) System.out.println("所有更新都已被跳过，不显示更新窗口");
                 }
@@ -740,6 +1005,49 @@ public class MainApplication extends Application {
         return false;
     }
     
+    /**
+     * 把启动期检测到的更新信息延后到主界面 fadeIn 触发时再展示。
+     *   - 主界面尚未激活：写入 pendingStartupUpdateInfo，等待 onMainStagePresentedForStartupUpdate 消费；
+     *   - 主界面已激活（例如检查更新比 fadeIn 慢）：直接通过 Platform.runLater 异步展示。
+     * 全程非阻塞：调用方（taskInit 后台线程）无需等待。
+     */
+    private void deferStartupUpdateDialog(UpdateInfo updateInfo) {
+        if (updateInfo == null) return;
+        boolean showNow = false;
+        synchronized (startupUpdateLock) {
+            if (mainStagePresentedForStartupUpdate) {
+                showNow = true;
+            } else {
+                pendingStartupUpdateInfo = updateInfo;
+            }
+        }
+        if (showNow) {
+            final UpdateInfo info = updateInfo;
+            Platform.runLater(() -> showUpdateDialogOnStartup(info));
+        }
+    }
+
+    /**
+     * 主界面 fadeIn 触发时调用，消费 pendingStartupUpdateInfo。
+     * 必须保持非阻塞：弹窗本身通过 Platform.runLater 排到下一个 Pulse，
+     * 让主界面 fadeIn 的关键帧先排出去，避免对话框 FXML.load + CSS apply 吃掉首帧。
+     * 重入安全：mainStagePresentedForStartupUpdate 一旦为 true，后续调用立即返回，
+     * 不会因 maybeShowMainStage / playSplashFadeOut / showMainStage 多路径触发而重复弹窗。
+     */
+    private void onMainStagePresentedForStartupUpdate() {
+        UpdateInfo pending;
+        synchronized (startupUpdateLock) {
+            if (mainStagePresentedForStartupUpdate) return;
+            mainStagePresentedForStartupUpdate = true;
+            pending = pendingStartupUpdateInfo;
+            pendingStartupUpdateInfo = null;
+        }
+        if (pending != null) {
+            final UpdateInfo info = pending;
+            Platform.runLater(() -> showUpdateDialogOnStartup(info));
+        }
+    }
+
     /**
      * 启动时显示更新对话框
      */
@@ -862,6 +1170,10 @@ public class MainApplication extends Application {
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
+    }
+
+    public static MainController getMainController() {
+        return mainController;
     }
 }

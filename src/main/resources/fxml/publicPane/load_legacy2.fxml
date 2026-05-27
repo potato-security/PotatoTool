@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<!--
+  第二版历史启动加载页 - cinematic boot sequence
+  视觉分层（自底向上）：
+    L0  bgLayer       深空径向背景渐变
+    L1  gridLayer     极淡网格
+    L2  auroraLayer   极光光晕（代码动态注入 3 个 GaussianBlur Region）
+    L3  particleLayer 粒子层（代码动态注入 ~80 个 Region）
+    L4  scanLayer     扫描线（代码动态注入水平扫描带）
+    L5  glassPanel    玻璃拟态主面板（Logo + 标题 + 副标题 + 进度 + 阶段）
+    L6  hudLayer      四角 HUD 装饰
+
+  该文件为 2026-05-24 重写前当前激活版备份，可随时回退。
+-->
+<StackPane fx:id="root"
+           alignment="CENTER"
+           maxHeight="-Infinity" maxWidth="-Infinity"
+           minHeight="-Infinity" minWidth="-Infinity"
+           prefHeight="720"
+           prefWidth="1280"
+           xmlns="http://javafx.com/javafx/"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../../css/load_legacy2.css"
+           styleClass="load-root"
+           fx:controller="com.potato.potatotool.controller.publicPane.PaneLoadLegacy2">
+
+    <!-- L0: 深空径向背景 -->
+    <Region fx:id="bgLayer" styleClass="load-bg" mouseTransparent="true"
+            minWidth="1280" prefWidth="1280" maxWidth="1280"
+            minHeight="720" prefHeight="720" maxHeight="720"/>
+
+    <!-- L1: 极淡科技网格 -->
+    <Region fx:id="gridLayer" styleClass="load-grid" mouseTransparent="true"
+            minWidth="1280" prefWidth="1280" maxWidth="1280"
+            minHeight="720" prefHeight="720" maxHeight="720"/>
+
+    <!-- L2: Aurora 极光光晕（代码注入） -->
+    <Pane fx:id="auroraLayer" pickOnBounds="false" mouseTransparent="true"
+          minWidth="1280" prefWidth="1280" maxWidth="1280"
+          minHeight="720" prefHeight="720" maxHeight="720"/>
+
+    <!-- L3: 粒子（代码注入） -->
+    <Pane fx:id="particleLayer" pickOnBounds="false" mouseTransparent="true"
+          minWidth="1280" prefWidth="1280" maxWidth="1280"
+          minHeight="720" prefHeight="720" maxHeight="720"/>
+
+    <!-- L4: 扫描线（代码注入） -->
+    <Pane fx:id="scanLayer" pickOnBounds="false" mouseTransparent="true"
+          minWidth="1280" prefWidth="1280" maxWidth="1280"
+          minHeight="720" prefHeight="720" maxHeight="720"/>
+
+    <!-- L5: 玻璃拟态主面板 -->
+    <StackPane fx:id="glassPanel"
+               alignment="CENTER"
+               maxWidth="-Infinity" maxHeight="-Infinity"
+               styleClass="load-glass">
+        <VBox fx:id="glassContent" alignment="CENTER" spacing="28" styleClass="load-glass-inner">
+            <padding>
+                <Insets top="48" right="72" bottom="42" left="72"/>
+            </padding>
+
+            <!-- Logo + 光环 -->
+            <StackPane fx:id="logoStack" alignment="CENTER"
+                       maxWidth="-Infinity" maxHeight="-Infinity">
+                <Region fx:id="logoHaloOuter" styleClass="load-halo-outer" mouseTransparent="true"/>
+                <Region fx:id="logoHaloInner" styleClass="load-halo-inner" mouseTransparent="true"/>
+                <Region fx:id="logoRingOuter" styleClass="load-ring-outer" mouseTransparent="true"/>
+                <Region fx:id="logoRingInner" styleClass="load-ring-inner" mouseTransparent="true"/>
+                <Region fx:id="logoCore" styleClass="load-logo-core" mouseTransparent="true"/>
+                <ImageView fx:id="logoImage" fitHeight="118.0" fitWidth="118.0"
+                           preserveRatio="true" pickOnBounds="false">
+                    <image>
+                        <Image url="@../../img/logo.png"/>
+                    </image>
+                </ImageView>
+            </StackPane>
+
+            <!-- 主标题（字符容器，代码注入字符 Label） -->
+            <HBox fx:id="titleBox" alignment="CENTER" spacing="0" styleClass="load-title-box"/>
+
+            <!-- 副标题：上下两行 + 中间一条渐变分隔光线 -->
+            <VBox fx:id="subtitleBox" alignment="CENTER" spacing="12">
+                <Label fx:id="subtitleLine1" styleClass="load-subtitle" text=" "/>
+                <HBox alignment="CENTER" spacing="14">
+                    <Region fx:id="subtitleDividerLeft" styleClass="load-subtitle-divider"/>
+                    <Region fx:id="subtitleDiamond" styleClass="load-subtitle-diamond"/>
+                    <Region fx:id="subtitleDividerRight" styleClass="load-subtitle-divider"/>
+                </HBox>
+                <Label fx:id="subtitleLine2" styleClass="load-subtitle-tag" text=" "/>
+            </VBox>
+
+            <!-- 进度条 -->
+            <StackPane fx:id="progressContainer" alignment="CENTER_LEFT"
+                       maxWidth="-Infinity" maxHeight="-Infinity"
+                       styleClass="load-progress">
+                <Region fx:id="progressTrack" styleClass="load-progress-track"/>
+                <Region fx:id="progressFill" styleClass="load-progress-fill"/>
+                <Region fx:id="progressShine" styleClass="load-progress-shine"/>
+            </StackPane>
+
+            <!-- 阶段文本 -->
+            <HBox alignment="CENTER" spacing="12" styleClass="load-stage-row">
+                <Region fx:id="stageDot" styleClass="load-stage-dot"/>
+                <Label fx:id="stageLabel" styleClass="load-stage-text" text=" "/>
+                <Region fx:id="stageDotMirror" styleClass="load-stage-dot-dim"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+
+    <!-- L6: 四角 HUD -->
+    <BorderPane fx:id="hudLayer" pickOnBounds="false" mouseTransparent="true"
+                styleClass="load-hud"
+                minWidth="1280" prefWidth="1280" maxWidth="1280"
+                minHeight="720" prefHeight="720" maxHeight="720">
+        <top>
+            <HBox alignment="CENTER" styleClass="load-hud-row" pickOnBounds="false">
+                <padding>
+                    <Insets top="26" right="32" bottom="0" left="32"/>
+                </padding>
+                <VBox fx:id="hudTopLeft" spacing="4"
+                      styleClass="load-hud-cell load-hud-tl">
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Region fx:id="hudStatusDot" styleClass="load-hud-status-dot"/>
+                        <Label styleClass="load-hud-tag" text="SYSTEM ID"/>
+                    </HBox>
+                    <Label fx:id="hudVersionLabel" styleClass="load-hud-value" text="POTATOTOOL // 2.5"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <VBox fx:id="hudTopRight" spacing="4" alignment="TOP_RIGHT"
+                      styleClass="load-hud-cell load-hud-tr">
+                    <Label styleClass="load-hud-tag" text="SESSION // UTC+08"/>
+                    <Label fx:id="hudTimeLabel" styleClass="load-hud-value" text="--:--:--"/>
+                </VBox>
+            </HBox>
+        </top>
+        <bottom>
+            <HBox alignment="CENTER" styleClass="load-hud-row" pickOnBounds="false">
+                <padding>
+                    <Insets top="0" right="32" bottom="26" left="32"/>
+                </padding>
+                <VBox fx:id="hudBottomLeft" spacing="4"
+                      styleClass="load-hud-cell load-hud-bl">
+                    <Label styleClass="load-hud-tag" text="PROCESS"/>
+                    <Label fx:id="hudPhaseLabel" styleClass="load-hud-value" text="STAND_BY"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <VBox fx:id="hudBottomRight" spacing="4" alignment="TOP_RIGHT"
+                      styleClass="load-hud-cell load-hud-br">
+                    <Label styleClass="load-hud-tag" text="READY"/>
+                    <Label fx:id="hudPercentLabel" styleClass="load-hud-value" text="0%"/>
+                </VBox>
+            </HBox>
+        </bottom>
+    </BorderPane>
+</StackPane>

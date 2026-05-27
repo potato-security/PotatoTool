@@ -25,7 +25,11 @@ public class ToStart {
      * testPage=scan
      */
     private static final String TEST_PAGE_ARG_PREFIX = "testPage=";
+    // 启动页独立预览模式，两个别名都可以，高频视觉迭代专用
+    private static final String LOAD_PREVIEW_SHORT_ALIAS = "load";
+    private static final String LOAD_PREVIEW_FULL_ALIAS = "__loadpage__";
     private static StartupPage startupTestPage;
+    private static boolean loadPagePreviewMode = false;
 
     public enum StartupPage {
         BLUE_WEBSHELL_DECODE(true, 0, "web", "蓝队 / 一键解密"),
@@ -38,17 +42,18 @@ public class ToStart {
         BLUE_EXIF(true, 7, "exif", "蓝队 / 文件元信息"),
         BLUE_EXTENSION(true, 8, "ext", "蓝队 / 扩展模块"),
         BLUE_ABOUT(true, 9, "about", "蓝队 / 关于"),
-        RED_INFO_SEARCH(false, 10, "info", "红队 / 信息收集"),
-        RED_VUL_SCAN(false, 11, "scan", "红队 / 漏洞扫描"),
-        RED_FREE_KILL(false, 12, "kill", "红队 / 免杀"),
-        RED_CUSTOM_MEMORY_CODE(false, 13, "mem", "红队 / 自定义内存马"),
-        RED_CUSTOM_COMMAND_GENERATION(false, 14, "cmdg", "红队 / 命令生成"),
-        RED_COMMAND_QUERY(false, 15, "cmd", "红队 / 命令查询"),
-        RED_KB_ROOT_QUERY(false, 16, "kb", "红队 / KB提权查询"),
-        RED_PROCESS_QUERY(false, 17, "proc", "红队 / 进程分析"),
-        RED_INFO_GENERATION(false, 18, "gen", "红队 / 信息生成"),
-        RED_EXTENSION(false, 19, "rext", "红队 / 扩展模块"),
-        RED_ABOUT(false, 20, "rabout", "红队 / 关于");
+        RED_INFO_SEARCH(false, 10, "info", "红队 / 资产测绘"),
+        RED_PORT_SCAN(false, 11, "port", "红队 / 端口扫描"),
+        RED_VUL_SCAN(false, 12, "scan", "红队 / 漏洞扫描"),
+        RED_FREE_KILL(false, 13, "kill", "红队 / 免杀"),
+        RED_CUSTOM_MEMORY_CODE(false, 14, "mem", "红队 / 自定义内存马"),
+        RED_CUSTOM_COMMAND_GENERATION(false, 15, "cmdg", "红队 / 命令生成"),
+        RED_COMMAND_QUERY(false, 16, "cmd", "红队 / 命令查询"),
+        RED_KB_ROOT_QUERY(false, 17, "kb", "红队 / KB提权查询"),
+        RED_PROCESS_QUERY(false, 18, "proc", "红队 / 进程分析"),
+        RED_INFO_GENERATION(false, 19, "gen", "红队 / 信息生成"),
+        RED_EXTENSION(false, 20, "rext", "红队 / 扩展模块"),
+        RED_ABOUT(false, 21, "rabout", "红队 / 关于");
 
         private final boolean blueMode;
         private final int navIndex;
@@ -109,6 +114,9 @@ public class ToStart {
                 String pageValue = arg.substring(TEST_PAGE_ARG_PREFIX.length());
                 if (isHelpArg(pageValue)) {
                     shouldShowGuide = true;
+                } else if (isLoadPreviewArg(pageValue)) {
+                    // 启动页独立预览：仅渲染 PaneLoad，不加载主界面，fade out 后退出 JVM
+                    loadPagePreviewMode = true;
                 } else {
                     StartupPage parsedPage = parseStartupPage(pageValue);
                     if (parsedPage == null) {
@@ -128,6 +136,9 @@ public class ToStart {
             isBlueMode = startupTestPage.isBlueMode();
             System.out.println("------------已启用内部测试页面直达：" + startupTestPage.name() + "------------");
         }
+        if (loadPagePreviewMode) {
+            System.out.println("------------[F1] 启动页独立预览模式：仅渲染 PaneLoad、动画结束后退出------------");
+        }
         MainApplication.main(args);
     }
 
@@ -137,6 +148,21 @@ public class ToStart {
 
     public static StartupPage getStartupTestPage() {
         return startupTestPage;
+    }
+
+    /**
+     * 是否在启动页独立预览模式。
+     * MainApplication 检测到后只渲染 PaneLoad，动画结束即退出 JVM。
+     */
+    public static boolean isLoadPagePreviewMode() {
+        return loadPagePreviewMode;
+    }
+
+    private static boolean isLoadPreviewArg(String arg) {
+        if (arg == null) return false;
+        String trimmed = arg.trim();
+        return LOAD_PREVIEW_SHORT_ALIAS.equalsIgnoreCase(trimmed)
+                || LOAD_PREVIEW_FULL_ALIAS.equalsIgnoreCase(trimmed);
     }
 
     private static StartupPage parseStartupPage(String pageName) {
@@ -185,6 +211,8 @@ public class ToStart {
         builder.append("  testPage=ai\n");
         builder.append("  testPage=scan\n");
         builder.append("  testPage=BLUE_AI_ANSWER\n");
+        builder.append("  testPage=load        # 启动页独立预览，动画结束即退出\n");
+        builder.append("  testPage=__loadpage__ # 同上，完整别名\n");
         builder.append("\n");
         builder.append("帮助:\n");
         builder.append("  help\n");

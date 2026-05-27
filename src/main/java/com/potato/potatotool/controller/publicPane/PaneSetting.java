@@ -101,6 +101,10 @@ public class PaneSetting {
     @FXML
     private ComboBox<String> languageComboBox;
 
+    // [B1 启动动画三选一] 三个选项：完整 5s 仪式 / 极简 2s / 关闭（不显示 PaneLoad）
+    @FXML
+    private ComboBox<String> bootAnimationComboBox;
+
     @FXML
     private TextField aiApiBase;
     @FXML
@@ -177,8 +181,6 @@ public class PaneSetting {
     private CFSwitch crawlProxy;
     @FXML
     private CFSwitch sslProxy;
-    @FXML
-    private CFSwitch blockchainProxy;
     
     @FXML
     private Accordion settingAccordion;
@@ -334,6 +336,7 @@ public class PaneSetting {
         // 在所有组件初始化完成后再绑定国际化
         Platform.runLater(() -> {
             initLanguage();
+            initBootAnimation(); // 启动动画设置
             I18nUtils.bindComponents(an);
             // 国际化绑定后再初始化存储管理（避免按钮文本被绑定）
             initStorageManagement();
@@ -384,7 +387,7 @@ public class PaneSetting {
         }
         
         // 异步计算占用空间
-        new Thread(() -> {
+        Thread sizeCalcThread = new Thread(() -> {
             long currentSize = pathManager.getDirectorySize(pathManager.getResourceBasePath());
             long availableSpace = pathManager.getAvailableSpace(pathManager.getResourceBasePath());
             
@@ -392,7 +395,9 @@ public class PaneSetting {
                 currentSizeLabel.setText(PathManager.formatSize(currentSize));
                 availableSizeLabel.setText(PathManager.formatSize(availableSpace));
             });
-        }).start();
+        });
+        sizeCalcThread.setDaemon(true);
+        sizeCalcThread.start();
     }
     
     /**
@@ -421,6 +426,49 @@ public class PaneSetting {
         } else if ("English".equals(language)) {
             i18n.switchLanguage("en_US");
         }
+    }
+
+    /**
+     * [B1] 初始化启动动画下拉框：从配置读取当前模式（默认 full），渲染为本地化显示文案。
+     * 三个选项：完整版（5s 仪式） / 极简版（~2s） / 关闭（不显示 PaneLoad）。
+     */
+    private void initBootAnimation() {
+        if (bootAnimationComboBox == null) return;
+        bootAnimationComboBox.getItems().setAll(
+                i18n.getString("setting.basic.bootAnimation.full"),
+                i18n.getString("setting.basic.bootAnimation.minimal"),
+                i18n.getString("setting.basic.bootAnimation.off")
+        );
+        String currentMode = "full";
+        try {
+            Object obj = Constants.getOutsideConfig(ConfigConstants.BOOT_ANIMATION);
+            if (obj instanceof JsonElement) {
+                JsonElement el = (JsonElement) obj;
+                if (el.isJsonPrimitive()) {
+                    String v = el.getAsString();
+                    if ("minimal".equals(v) || "off".equals(v) || "full".equals(v)) {
+                        currentMode = v;
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        bootAnimationComboBox.setValue(bootAnimationCodeToDisplay(currentMode));
+    }
+
+    /**
+     * 启动动画 display ↔ config code 互转。
+     */
+    private String bootAnimationCodeToDisplay(String code) {
+        if ("minimal".equals(code)) return i18n.getString("setting.basic.bootAnimation.minimal");
+        if ("off".equals(code)) return i18n.getString("setting.basic.bootAnimation.off");
+        return i18n.getString("setting.basic.bootAnimation.full");
+    }
+
+    private String bootAnimationDisplayToCode(String display) {
+        if (display == null) return "full";
+        if (display.equals(i18n.getString("setting.basic.bootAnimation.minimal"))) return "minimal";
+        if (display.equals(i18n.getString("setting.basic.bootAnimation.off"))) return "off";
+        return "full";
     }
     
     /**
@@ -519,7 +567,6 @@ public class PaneSetting {
         proxyMap.put(githubProxy, AssetConstants.GITHUB_TOKEN);
         proxyMap.put(sslProxy, AssetConstants.SSL);
         proxyMap.put(crawlProxy, AssetConstants.CRAWL);
-        proxyMap.put(blockchainProxy, ConfigConstants.BLOCKCHAIN_SERVICE);
         proxyMap.put(vulnScanProxySwitch, ConfigConstants.VULNSCAN_SERVICE);
     }
 
@@ -963,6 +1010,12 @@ public class PaneSetting {
         String pythonPath = pythonRuntimePath == null ? "" : pythonRuntimePath.getText().trim();
         BrowserRuntimeConfig.applyBrowserSettings(rootConfig, browserPath);
         EnvPathConfig.applyPythonPath(rootConfig, pythonPath);
+
+        // 写入启动动画模式（顶层 String 字段）
+        if (bootAnimationComboBox != null) {
+            String bootCode = bootAnimationDisplayToCode(bootAnimationComboBox.getValue());
+            rootConfig.addProperty(ConfigConstants.BOOT_ANIMATION, bootCode);
+        }
 
         if(Constants.saveConfig(rootConfig)){
             tmpJsonObj_AI = aiConfig.deepCopy();
@@ -1450,7 +1503,7 @@ public class PaneSetting {
                 migrateButton.setDisable(true);
                 
                 // 异步迁移
-                new Thread(() -> {
+                Thread migrateThread = new Thread(() -> {
                     try {
                         pathManager.migrateResources(
                             java.nio.file.Paths.get(newPath),
@@ -1488,7 +1541,9 @@ public class PaneSetting {
                             migrateButton.setDisable(false);
                         });
                     }
-                }).start();
+                });
+                migrateThread.setDaemon(true);
+                migrateThread.start();
             }
         );
     }
@@ -1517,7 +1572,7 @@ public class PaneSetting {
         checkAppUpdateButton.setDisable(true);
         checkAppUpdateButton.setText(i18n.getString("update.check.checking"));
         
-        new Thread(() -> {
+        Thread checkUpdateThread = new Thread(() -> {
             try {
                 UpdateManager updateManager = UpdateManager.getInstance();
                 
@@ -1544,7 +1599,9 @@ public class PaneSetting {
                     e.printStackTrace();
                 });
             }
-        }).start();
+        });
+        checkUpdateThread.setDaemon(true);
+        checkUpdateThread.start();
     }
     
     /**

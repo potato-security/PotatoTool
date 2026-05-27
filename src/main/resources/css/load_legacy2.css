@@ -1,0 +1,335 @@
+/*
+ * PotatoTool 第二版历史启动加载页样式 - Cinematic Boot Sequence
+ *
+ * 配套：
+ *   - fxml/publicPane/load.fxml
+ *   - controller/publicPane/PaneLoad.java
+ *
+ * 设计语言：
+ *   深空蓝黑 + 玻璃拟态 + Aurora 渐变光晕 + 极淡科技网格 + 粒子光点 + 扫描线
+ *   主色 #3ECEE3 (cyan, 项目蓝队主色) / 辅色 #7B5BFF (violet) / 点缀 #D85550 (rose)
+ *
+ * 该文件为 2026-05-24 重写前当前激活版样式备份。
+ */
+
+/* ===================== 根 ===================== */
+#root.load-root,
+.load-root {
+    -fx-background-color: transparent;
+}
+
+/* ===================== L0 深空径向背景 ===================== */
+.load-bg {
+    -fx-background-color:
+        radial-gradient(center 50% 38%, radius 78%,
+            #0e1530 0%,
+            #070b1c 55%,
+            #02040c 100%);
+}
+
+/* ===================== L1 极淡科技网格 ===================== */
+.load-grid {
+    -fx-background-color:
+        linear-gradient(from 0px 0px to 64px 0px, repeat,
+            rgba(140, 200, 255, 0.055) 0%,
+            rgba(140, 200, 255, 0.055) 1.4%,
+            transparent 1.8%,
+            transparent 100%),
+        linear-gradient(from 0px 0px to 0px 64px, repeat,
+            rgba(140, 200, 255, 0.055) 0%,
+            rgba(140, 200, 255, 0.055) 1.4%,
+            transparent 1.8%,
+            transparent 100%);
+}
+
+/* ===================== L2 Aurora 极光球 ===================== */
+.load-aurora-orb {
+    -fx-background-radius: 360;
+}
+.load-aurora-cyan {
+    -fx-background-color:
+        radial-gradient(center 50% 50%, radius 50%,
+            rgba(62, 206, 227, 0.55) 0%,
+            rgba(62, 206, 227, 0.18) 38%,
+            transparent 72%);
+}
+.load-aurora-violet {
+    -fx-background-color:
+        radial-gradient(center 50% 50%, radius 50%,
+            rgba(123, 91, 255, 0.5) 0%,
+            rgba(123, 91, 255, 0.14) 38%,
+            transparent 72%);
+}
+.load-aurora-rose {
+    -fx-background-color:
+        radial-gradient(center 50% 50%, radius 50%,
+            rgba(216, 85, 80, 0.4) 0%,
+            rgba(216, 85, 80, 0.10) 38%,
+            transparent 72%);
+}
+
+/* ===================== L3 粒子 ===================== */
+.load-particle-base {
+    -fx-background-radius: 50;
+}
+.load-particle-white {
+    -fx-background-color: rgba(255, 255, 255, 0.75);
+    -fx-effect: dropshadow(gaussian, rgba(180, 215, 255, 0.65), 8, 0.35, 0, 0);
+}
+.load-particle-cyan {
+    -fx-background-color: rgba(124, 220, 240, 0.85);
+    -fx-effect: dropshadow(gaussian, rgba(62, 206, 227, 0.78), 10, 0.45, 0, 0);
+}
+.load-particle-violet {
+    -fx-background-color: rgba(170, 145, 255, 0.78);
+    -fx-effect: dropshadow(gaussian, rgba(123, 91, 255, 0.72), 10, 0.45, 0, 0);
+}
+
+/* ===================== L4 扫描线 ===================== */
+.load-scan-line {
+    -fx-background-color:
+        linear-gradient(from 0% 0% to 100% 0%,
+            transparent 0%,
+            rgba(62, 206, 227, 0.0) 5%,
+            rgba(62, 206, 227, 0.55) 50%,
+            rgba(62, 206, 227, 0.0) 95%,
+            transparent 100%);
+    -fx-effect: dropshadow(gaussian, rgba(62, 206, 227, 0.45), 28, 0.4, 0, 0);
+}
+
+/* ===================== L5 玻璃面板 ===================== */
+.load-glass {
+    -fx-min-width: 750;
+    -fx-background-color:
+        linear-gradient(to bottom right, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.01)),
+        linear-gradient(to bottom right, rgba(16, 22, 40, 0.78), rgba(8, 14, 28, 0.62));
+    -fx-background-radius: 24;
+    -fx-border-radius: 24;
+    -fx-border-color: linear-gradient(to bottom right,
+        rgba(140, 200, 255, 0.48),
+        rgba(140, 200, 255, 0.05));
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(62, 206, 227, 0.28), 64, 0.18, 0, 18);
+}
+.load-glass-inner {
+    -fx-background-color: transparent;
+}
+
+/* ===================== Logo 光环 ===================== */
+.load-halo-outer {
+    -fx-min-width: 260;  -fx-min-height: 260;
+    -fx-pref-width: 260; -fx-pref-height: 260;
+    -fx-max-width: 260;  -fx-max-height: 260;
+    -fx-background-color:
+        radial-gradient(center 50% 50%, radius 50%,
+            rgba(62, 206, 227, 0.0) 0%,
+            rgba(62, 206, 227, 0.22) 42%,
+            rgba(123, 91, 255, 0.0) 72%);
+    -fx-background-radius: 130;
+}
+.load-halo-inner {
+    -fx-min-width: 180;  -fx-min-height: 180;
+    -fx-pref-width: 180; -fx-pref-height: 180;
+    -fx-max-width: 180;  -fx-max-height: 180;
+    -fx-background-color:
+        radial-gradient(center 50% 50%, radius 50%,
+            rgba(62, 206, 227, 0.42) 0%,
+            transparent 65%);
+    -fx-background-radius: 90;
+}
+.load-ring-outer {
+    -fx-min-width: 174;  -fx-min-height: 174;
+    -fx-pref-width: 174; -fx-pref-height: 174;
+    -fx-max-width: 174;  -fx-max-height: 174;
+    -fx-background-color: transparent;
+    -fx-border-color: linear-gradient(to bottom right,
+        rgba(62, 206, 227, 0.65),
+        transparent 55%,
+        rgba(123, 91, 255, 0.55));
+    -fx-border-width: 1;
+    -fx-border-radius: 87;
+}
+.load-ring-inner {
+    -fx-min-width: 156;  -fx-min-height: 156;
+    -fx-pref-width: 156; -fx-pref-height: 156;
+    -fx-max-width: 156;  -fx-max-height: 156;
+    -fx-background-color: transparent;
+    -fx-border-color: linear-gradient(to top right,
+        rgba(62, 206, 227, 0.4),
+        transparent 50%,
+        rgba(216, 85, 80, 0.32));
+    -fx-border-width: 1;
+    -fx-border-radius: 78;
+}
+.load-logo-core {
+    -fx-min-width: 134;  -fx-min-height: 134;
+    -fx-pref-width: 134; -fx-pref-height: 134;
+    -fx-max-width: 134;  -fx-max-height: 134;
+    -fx-background-color:
+        radial-gradient(center 50% 50%, radius 50%,
+            rgba(8, 14, 28, 0.55) 0%,
+            rgba(8, 14, 28, 0.10) 72%,
+            transparent 100%);
+    -fx-background-radius: 67;
+}
+
+/* ===================== 主标题 ===================== */
+.load-title-box {
+    -fx-padding: 6 0 6 0;
+}
+.load-title-char {
+    -fx-font-family: "Microsoft YaHei Bold", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+    -fx-font-size: 56;
+    -fx-font-weight: bold;
+    -fx-text-fill: linear-gradient(to bottom, #ffffff 0%, #d9eaff 100%);
+    -fx-padding: 0 5 0 5;
+}
+.load-title-char-accent {
+    -fx-text-fill: linear-gradient(to bottom,
+        #87ecf6 0%,
+        #3ECEE3 55%,
+        #29b1c8 100%);
+}
+.load-title-gap {
+    -fx-min-width: 28;
+    -fx-pref-width: 28;
+}
+
+/* ===================== 副标题 ===================== */
+.load-subtitle {
+    -fx-text-fill: #b8c8e6;
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+    -fx-font-size: 13;
+}
+.load-subtitle-divider {
+    -fx-min-width: 88;  -fx-pref-width: 88;  -fx-max-width: 88;
+    -fx-min-height: 1;  -fx-pref-height: 1;  -fx-max-height: 1;
+    -fx-background-color: linear-gradient(to right,
+        transparent 0%,
+        rgba(62, 206, 227, 0.55) 50%,
+        transparent 100%);
+}
+.load-subtitle-diamond {
+    -fx-min-width: 6;  -fx-pref-width: 6;  -fx-max-width: 6;
+    -fx-min-height: 6; -fx-pref-height: 6; -fx-max-height: 6;
+    -fx-background-color: #3ECEE3;
+    -fx-background-radius: 1;
+    -fx-rotate: 45;
+    -fx-effect: dropshadow(gaussian, rgba(62, 206, 227, 0.7), 10, 0.4, 0, 0);
+}
+.load-subtitle-tag {
+    -fx-text-fill: #6f80a1;
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10.5;
+}
+
+/* ===================== 进度条 ===================== */
+.load-progress {
+    -fx-min-width: 440;  -fx-pref-width: 440;  -fx-max-width: 440;
+    -fx-min-height: 3;   -fx-pref-height: 3;   -fx-max-height: 3;
+    -fx-background-color: transparent;
+}
+.load-progress-track {
+    -fx-min-width: 440;  -fx-pref-width: 440;  -fx-max-width: 440;
+    -fx-min-height: 3;   -fx-pref-height: 3;   -fx-max-height: 3;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 2;
+}
+.load-progress-fill {
+    -fx-min-width: 0;   -fx-pref-width: 0;   -fx-max-width: 0;
+    -fx-min-height: 3;  -fx-pref-height: 3;  -fx-max-height: 3;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%,
+        rgba(62, 206, 227, 0.0) 0%,
+        #3ECEE3 35%,
+        #7B5BFF 100%);
+    -fx-background-radius: 2;
+    -fx-effect: dropshadow(gaussian, rgba(62, 206, 227, 0.78), 16, 0.35, 0, 0);
+}
+.load-progress-shine {
+    -fx-min-width: 64;  -fx-pref-width: 64;  -fx-max-width: 64;
+    -fx-min-height: 3;  -fx-pref-height: 3;  -fx-max-height: 3;
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 0%,
+        transparent 0%,
+        rgba(255, 255, 255, 0.9) 50%,
+        transparent 100%);
+    -fx-background-radius: 2;
+}
+
+/* ===================== 阶段文本 ===================== */
+.load-stage-row {
+    -fx-padding: 8 0 0 0;
+}
+.load-stage-dot {
+    -fx-min-width: 8;  -fx-pref-width: 8;  -fx-max-width: 8;
+    -fx-min-height: 8; -fx-pref-height: 8; -fx-max-height: 8;
+    -fx-background-color: #3ECEE3;
+    -fx-background-radius: 4;
+    -fx-effect: dropshadow(gaussian, #3ECEE3, 14, 0.4, 0, 0);
+}
+.load-stage-dot-dim {
+    -fx-min-width: 6;  -fx-pref-width: 6;  -fx-max-width: 6;
+    -fx-min-height: 6; -fx-pref-height: 6; -fx-max-height: 6;
+    -fx-background-color: rgba(123, 91, 255, 0.6);
+    -fx-background-radius: 3;
+    -fx-effect: dropshadow(gaussian, rgba(123, 91, 255, 0.65), 12, 0.4, 0, 0);
+}
+.load-stage-text {
+    -fx-text-fill: #c2d2ee;
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 12;
+}
+
+/* ===================== 四角 HUD ===================== */
+.load-hud {
+    -fx-background-color: transparent;
+}
+.load-hud-row {
+    -fx-background-color: transparent;
+}
+.load-hud-cell {
+    -fx-padding: 10 16 10 16;
+    -fx-background-color:
+        linear-gradient(to bottom right,
+            rgba(20, 28, 50, 0.72),
+            rgba(10, 16, 32, 0.56));
+    -fx-background-radius: 6;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+}
+.load-hud-tl {
+    -fx-border-color: linear-gradient(to bottom right,
+        rgba(62, 206, 227, 0.55),
+        rgba(62, 206, 227, 0.05));
+}
+.load-hud-tr {
+    -fx-border-color: linear-gradient(to bottom left,
+        rgba(123, 91, 255, 0.45),
+        rgba(123, 91, 255, 0.05));
+}
+.load-hud-bl {
+    -fx-border-color: linear-gradient(to top right,
+        rgba(62, 206, 227, 0.45),
+        rgba(62, 206, 227, 0.05));
+}
+.load-hud-br {
+    -fx-border-color: linear-gradient(to top left,
+        rgba(123, 91, 255, 0.55),
+        rgba(123, 91, 255, 0.05));
+}
+.load-hud-tag {
+    -fx-text-fill: #5d6b86;
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 9;
+}
+.load-hud-value {
+    -fx-text-fill: #d2dff5;
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 11;
+}
+.load-hud-status-dot {
+    -fx-min-width: 6;  -fx-pref-width: 6;  -fx-max-width: 6;
+    -fx-min-height: 6; -fx-pref-height: 6; -fx-max-height: 6;
+    -fx-background-color: #3ee390;
+    -fx-background-radius: 3;
+    -fx-effect: dropshadow(gaussian, #3ee390, 10, 0.6, 0, 0);
+}

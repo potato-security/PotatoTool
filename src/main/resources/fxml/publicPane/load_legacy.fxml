@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  旧版启动加载页（已被新版 cinematic load.fxml + PaneLoad 替换）。
+  保留作为历史参考与回退方案：
+    - 如需切回旧版，将 MainApplication.loadMainStage 中加载的资源改为
+      "/fxml/publicPane/load_legacy.fxml" 即可，对应控制器为
+      com.potato.potatotool.controller.publicPane.PaneLoadLegacy。
+-->
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<StackPane fx:id="root"
+           alignment="CENTER"
+           maxHeight="-Infinity" maxWidth="-Infinity"
+           minHeight="-Infinity" minWidth="-Infinity"
+           prefHeight="720"
+           prefWidth="1280"
+           xmlns="http://javafx.com/javafx/"
+           xmlns:fx="http://javafx.com/fxml/1"
+           stylesheets="@../../css/load_legacy.css"
+           fx:controller="com.potato.potatotool.controller.publicPane.PaneLoadLegacy">
+    <StackPane fx:id="codePane"/>
+
+    <Label>
+        <graphic>
+            <Region styleClass="loadImg"/>
+        </graphic>
+    </Label>
+
+
+    <Label fx:id="blueImg" translateX="-200" translateY="-100">
+        <graphic>
+            <Region styleClass="blueImg"/>
+        </graphic>
+    </Label>
+
+    <Label fx:id="redImg" translateX="175" translateY="100">
+        <graphic>
+            <Region styleClass="redImg"/>
+        </graphic>
+    </Label>
+
+    <ImageView fx:id="potatoImg" fitHeight="100.0" fitWidth="1000.0" translateX="100" translateY="-150" pickOnBounds="true" preserveRatio="true">
+        <image>
+            <Image url="@../../img/potato.png" />
+        </image>
+    </ImageView>
+
+    <ImageView fx:id="toolImg" fitHeight="150.0" fitWidth="1000.0" translateX="-150"  translateY="150" pickOnBounds="true" preserveRatio="true">
+        <image>
+            <Image url="@../../img/tool.png" />
+        </image>
+    </ImageView>
+
+
+</StackPane>
