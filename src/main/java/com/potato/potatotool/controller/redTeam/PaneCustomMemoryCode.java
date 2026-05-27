@@ -179,7 +179,9 @@ public class PaneCustomMemoryCode {
             Throwable error = task.getException();
             error.printStackTrace();
         });
-        new Thread(task).start();
+        Thread customMemoryCodeThread = new Thread(task);
+        customMemoryCodeThread.setDaemon(true);
+        customMemoryCodeThread.start();
 
     }
 

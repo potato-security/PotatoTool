@@ -108,11 +108,21 @@ public class PaneLocationQuery {
 
         task.setOnFailed(e -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (debugMode && error != null) {
+                error.printStackTrace();
+            }
+            String detail = error == null || error.getMessage() == null ? "" : error.getMessage();
+            Platform.runLater(() -> {
+                idCardTF_born.setText(I18nUtils.getString("common.task.failed", detail));
+                idCardTF_sex.setText("");
+                idCardTF_att.setText("");
+            });
         });
 
         // 启动任务
-        new Thread(task).start();
+        Thread idCardThread = new Thread(task);
+        idCardThread.setDaemon(true);
+        idCardThread.start();
 
     }
 
@@ -201,11 +211,17 @@ public class PaneLocationQuery {
         };
         task.setOnFailed(e -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (debugMode && error != null) {
+                error.printStackTrace();
+            }
+            String detail = error == null || error.getMessage() == null ? "" : error.getMessage();
+            Platform.runLater(() -> idCardInput.setText(I18nUtils.getString("common.task.failed", detail)));
         });
 
         // 启动任务
-        new Thread(task).start();
+        Thread idCardBatchThread = new Thread(task);
+        idCardBatchThread.setDaemon(true);
+        idCardBatchThread.start();
 
     }
 
@@ -243,11 +259,21 @@ public class PaneLocationQuery {
 
         task.setOnFailed(e -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (debugMode && error != null) {
+                error.printStackTrace();
+            }
+            String detail = error == null || error.getMessage() == null ? "" : error.getMessage();
+            Platform.runLater(() -> {
+                bankCardTF_bank.setText(I18nUtils.getString("common.task.failed", detail));
+                bankCardTF_type.setText("");
+                bankCardTF_position.setText("");
+            });
         });
 
         // 启动任务
-        new Thread(task).start();
+        Thread bankCardThread = new Thread(task);
+        bankCardThread.setDaemon(true);
+        bankCardThread.start();
 
     }
 
@@ -336,11 +362,17 @@ public class PaneLocationQuery {
         };
         task.setOnFailed(e -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (debugMode && error != null) {
+                error.printStackTrace();
+            }
+            String detail = error == null || error.getMessage() == null ? "" : error.getMessage();
+            Platform.runLater(() -> bankCardInput.setText(I18nUtils.getString("common.task.failed", detail)));
         });
 
         // 启动任务
-        new Thread(task).start();
+        Thread bankCardBatchThread = new Thread(task);
+        bankCardBatchThread.setDaemon(true);
+        bankCardBatchThread.start();
     }
 
     @FXML
@@ -449,11 +481,17 @@ public class PaneLocationQuery {
         };
         task.setOnFailed(e -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (debugMode && error != null) {
+                error.printStackTrace();
+            }
+            String detail = error == null || error.getMessage() == null ? "" : error.getMessage();
+            Platform.runLater(() -> phoneInput.setText(I18nUtils.getString("common.task.failed", detail)));
         });
 
         // 启动任务
-        new Thread(task).start();
+        Thread phoneBatchThread = new Thread(task);
+        phoneBatchThread.setDaemon(true);
+        phoneBatchThread.start();
     }
 
 }

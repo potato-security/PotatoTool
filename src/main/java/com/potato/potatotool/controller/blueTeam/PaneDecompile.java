@@ -165,11 +165,17 @@ public class PaneDecompile {
         };
         task.setOnFailed(event -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (debugMode && error != null) {
+                error.printStackTrace();
+            }
+            String detail = error == null || error.getMessage() == null ? "" : error.getMessage();
+            Platform.runLater(() -> result.replaceText(I18nUtils.getString("common.task.failed", detail)));
         });
 
         // 启动任务
-        new Thread(task).start();
+        Thread decompileThread = new Thread(task);
+        decompileThread.setDaemon(true);
+        decompileThread.start();
     }
 
 
@@ -212,11 +218,17 @@ public class PaneDecompile {
         };
         task.setOnFailed(event -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (debugMode && error != null) {
+                error.printStackTrace();
+            }
+            String detail = error == null || error.getMessage() == null ? "" : error.getMessage();
+            Platform.runLater(() -> result.replaceText(I18nUtils.getString("common.task.failed", detail)));
         });
 
         // 启动任务
-        new Thread(task).start();
+        Thread decompileBatThread = new Thread(task);
+        decompileBatThread.setDaemon(true);
+        decompileBatThread.start();
     }
 
 

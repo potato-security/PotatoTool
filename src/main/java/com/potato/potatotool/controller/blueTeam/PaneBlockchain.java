@@ -2785,7 +2785,13 @@ public class PaneBlockchain {
         };
         task.setOnFailed(e -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (debugMode && error != null) {
+                error.printStackTrace();
+            }
+            String detail = error == null || error.getMessage() == null
+                ? I18nUtils.getString("blockchain.error.query")
+                : error.getMessage();
+            showErrorPrompt(I18nUtils.getString("common.task.failed", detail));
         });
         // 启动任务
         Thread thread = new Thread(task);
@@ -3500,7 +3506,13 @@ public class PaneBlockchain {
         };
         task.setOnFailed(e -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (debugMode && error != null) {
+                error.printStackTrace();
+            }
+            String detail = error == null || error.getMessage() == null
+                ? I18nUtils.getString("blockchain.error.query")
+                : error.getMessage();
+            showErrorPrompt(I18nUtils.getString("common.task.failed", detail));
         });
         // 启动任务
         Thread thread = new Thread(task);

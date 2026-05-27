@@ -400,6 +400,7 @@ public class PaneInfoSearch {
         };
         bindTaskLifecycle(currentTask, searchToken);
         currentThread = new Thread(currentTask);
+        currentThread.setDaemon(true);
         currentThread.start();
     }
 
@@ -556,7 +557,9 @@ public class PaneInfoSearch {
                 Throwable exception = task.getException();
                 if (exception != null) exception.printStackTrace();
             });
-            new Thread(task).start();
+            Thread iconTaskThread = new Thread(task);
+            iconTaskThread.setDaemon(true);
+            iconTaskThread.start();
         }
     }
 
@@ -1024,6 +1027,10 @@ public class PaneInfoSearch {
     }
 
     private void startCountdown(Button button, String baseText, Runnable onCountdownComplete) {
+        // 避免连续触发倒计时时旧 Timeline 仍在 JavaFX 调度器中运行造成按钮文字闪烁与 Timeline 泄漏
+        if (countdownTimeline != null) {
+            countdownTimeline.stop();
+        }
         countdown = COUNTDOWN_TIME;
         countdownTimeline = new Timeline(
                 new KeyFrame(Duration.seconds(1), event -> {
@@ -1989,6 +1996,7 @@ public class PaneInfoSearch {
             };
             bindTaskLifecycle(currentTask, exportToken);
             currentThread = new Thread(currentTask);
+            currentThread.setDaemon(true);
             currentThread.start();
         } else {
             interruptCurrentSearch();

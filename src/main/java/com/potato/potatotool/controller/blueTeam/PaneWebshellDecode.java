@@ -322,7 +322,9 @@ public class PaneWebshellDecode {
             isAiCD = false;
             setAiAnalysisState(lastAiTaskSuccess ? AiAnalysisState.SUCCESS : AiAnalysisState.FAILED);
         });
-        new Thread(task).start();
+        Thread aiTaskThread = new Thread(task);
+        aiTaskThread.setDaemon(true);
+        aiTaskThread.start();
     }
 
     private void showAiUnavailable(String message) {
@@ -457,7 +459,9 @@ public class PaneWebshellDecode {
             showErrorPrompt(I18nUtils.getString("webshell.report.export.failed",
                     error == null ? I18nUtils.getString("app.unknown") : error.getMessage()));
         });
-        new Thread(exportTask).start();
+        Thread exportTaskThread = new Thread(exportTask);
+        exportTaskThread.setDaemon(true);
+        exportTaskThread.start();
     }
 
     private WebshellAnalysisWordReportGenerator.ReportData buildReportData() {
@@ -676,6 +680,7 @@ public class PaneWebshellDecode {
         });
         // 启动任务
         currentThread = new Thread(currentTask);
+        currentThread.setDaemon(true);
         currentThread.start();
     }
 
@@ -906,6 +911,7 @@ public class PaneWebshellDecode {
         });
         // 启动任务
         currentThread = new Thread(currentTask);
+        currentThread.setDaemon(true);
         currentThread.start();
     }
 }

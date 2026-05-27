@@ -373,7 +373,9 @@ public class PaneExtension {
                     Throwable error = task.getException();
                     error.printStackTrace();
                 });
-                new Thread(task).start();
+                Thread extensionTaskThread = new Thread(task);
+                extensionTaskThread.setDaemon(true);
+                extensionTaskThread.start();
             });
 
             VBox regionVBox = new VBox();

@@ -5,7 +5,6 @@ import com.potato.potatotool.content.redTeam.infoGathering.utils.Utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Base64;
 import java.util.Map;
 
 /**
@@ -107,13 +106,35 @@ public class ImgSimilarity {
 
     public static void main(String[] args) throws Exception {
 
-        Map<String, Object> webInfoMap = Utils.getWebBaseInfo("https://211.160.72.129", true, true);
-        Map<String, Object> webInfoMap1 = Utils.getWebBaseInfo("https://43.143.141.199:8443", true, true);
-        boolean similarity = new ImgSimilarity().matchSimilar(new URL(webInfoMap.get("iconUrl").toString()), new URL(webInfoMap1.get("iconUrl").toString()));
-        System.out.println("是否相似: " + similarity);
+//        Map<String, Object> webInfoMap = Utils.getWebBaseInfo("https://211.160.72.129", true, true);
+//        Map<String, Object> webInfoMap1 = Utils.getWebBaseInfo("https://43.143.141.199:8443", true, true);
+//        boolean similarity = new ImgSimilarity().matchSimilar(new URL(webInfoMap.get("iconUrl").toString()), new URL(webInfoMap1.get("iconUrl").toString()));
+//        System.out.println("是否相似: " + similarity);
+//
+//
+//        double similarity1 = new ImgSimilarity().match(new URL("https://t8.baidu.com/it/u=3036650915,1842869833&fm=193"), new URL("https://t9.baidu.com/it/u=140484125,2114791292&fm=193"));
+//        System.out.println("综合相似度: " + similarity1);
+        File srcFile = new File("4.jpg");
+        File canFile = new File("5.png");
 
+        if (!srcFile.isFile() || !canFile.isFile()) {
+            System.err.println("未在当前工作目录找到 1.jpg 或 2.jpg");
+            System.err.println("当前工作目录: " + new File(".").getAbsoluteFile().getParent());
+            return;
+        }
 
-        double similarity1 = new ImgSimilarity().match(new URL("https://t8.baidu.com/it/u=3036650915,1842869833&fm=193"), new URL("https://t9.baidu.com/it/u=140484125,2114791292&fm=193"));
-        System.out.println("综合相似度: " + similarity1);
+        ImgHistogram imgHistogram = new ImgHistogram();
+        ImgPHsh imgPHsh = new ImgPHsh();
+        ImgSimilarity imgSimilarity = new ImgSimilarity();
+
+        double histogramSimilarity = imgHistogram.match(srcFile, canFile);
+        double phashSimilarity = imgPHsh.match(srcFile, canFile);
+        double finalSimilarity = imgSimilarity.match(srcFile, canFile);
+
+        System.out.println("图片1: " + srcFile.getAbsolutePath());
+        System.out.println("图片2: " + canFile.getAbsolutePath());
+        System.out.println("pHash相似度: " + phashSimilarity);
+        System.out.println("直方图相似度: " + histogramSimilarity);
+        System.out.println("综合相似度: " + finalSimilarity);
     }
 }

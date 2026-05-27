@@ -129,7 +129,9 @@ public class PaneSeparateDecode {
             }
         };
 
-        new Thread(task).start();
+        Thread separateDecodeThread = new Thread(task);
+        separateDecodeThread.setDaemon(true);
+        separateDecodeThread.start();
     }
 
     // 检查内容及模式

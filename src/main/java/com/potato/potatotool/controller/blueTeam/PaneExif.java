@@ -148,9 +148,23 @@ public class PaneExif {
         };
         task.setOnFailed(er -> {
             Throwable error = task.getException();
-            error.printStackTrace();
+            if (debugMode && error != null) {
+                error.printStackTrace();
+            }
+            Platform.runLater(() -> {
+                listView.getItems().clear();
+                String detail = error == null || error.getMessage() == null ? "" : error.getMessage();
+                Label tipLabel_tmp = new Label(I18nUtils.getString("common.task.failed", detail));
+                tipLabel_tmp.setId("tipTitle");
+                HBox hbox_tmp = new HBox(tipLabel_tmp);
+                hbox_tmp.setPrefHeight(sPane.getHeight() - 220);
+                hbox_tmp.setAlignment(Pos.CENTER);
+                listView.getItems().add(hbox_tmp);
+            });
         });
-        new Thread(task).start();
+        Thread exifTaskThread = new Thread(task);
+        exifTaskThread.setDaemon(true);
+        exifTaskThread.start();
 
     }
 }

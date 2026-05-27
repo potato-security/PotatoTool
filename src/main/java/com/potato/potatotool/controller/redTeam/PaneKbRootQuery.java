@@ -271,6 +271,7 @@ public class PaneKbRootQuery {
                 });
             }
         });
+        currentThread.setDaemon(true);
         currentThread.start();
     }
 

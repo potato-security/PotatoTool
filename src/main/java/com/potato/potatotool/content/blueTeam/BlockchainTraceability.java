@@ -3,7 +3,6 @@ package com.potato.potatotool.content.blueTeam;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
-import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.network.CustomHttpResponse;
 import com.potato.potatotool.utils.network.ProxyUtils;
 import com.potato.potatotool.utils.network.RequestObj;
@@ -36,7 +35,7 @@ public class BlockchainTraceability {
                 .setReadTimeout(45)
                 .setCallTimeout(55)
                 .setRetries(0);
-        ProxyUtils.applyServiceProxy(obj, ConfigConstants.BLOCKCHAIN_SERVICE);
+        ProxyUtils.applyProxy(obj, true);
         return obj;
     }
 

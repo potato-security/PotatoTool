@@ -395,7 +395,9 @@ public class PaneCommandQuery {
                 Throwable error = task.getException();
                 error.printStackTrace();
             });
-            new Thread(task).start();
+            Thread commandQueryThread = new Thread(task);
+            commandQueryThread.setDaemon(true);
+            commandQueryThread.start();
 
             listView.setItems(contentObj);
         }else {

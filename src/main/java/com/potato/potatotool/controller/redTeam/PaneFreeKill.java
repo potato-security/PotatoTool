@@ -580,7 +580,9 @@ public class PaneFreeKill {
         });
 
         // 启动任务
-        new Thread(task).start();
+        Thread freeKillTaskThread = new Thread(task);
+        freeKillTaskThread.setDaemon(true);
+        freeKillTaskThread.start();
     }
 
     @FXML
@@ -653,6 +655,8 @@ public class PaneFreeKill {
         });
 
         // 启动任务
-        new Thread(task).start();
+        Thread freeKillTaskThread2 = new Thread(task);
+        freeKillTaskThread2.setDaemon(true);
+        freeKillTaskThread2.start();
     }
 }
