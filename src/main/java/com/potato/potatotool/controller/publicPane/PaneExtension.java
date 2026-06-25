@@ -7,6 +7,11 @@ import com.google.gson.JsonObject;
 import com.potato.potatotool.MainApplication;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.content.classObj.ExtensionConstants;
+import com.potato.potatotool.content.redTeam.aiPentest.skill.SkillCategory;
+import com.potato.potatotool.content.redTeam.aiPentest.skill.SkillRiskLevel;
+import com.potato.potatotool.content.redTeam.aiPentest.skill.extension.ExtensionSkillCandidate;
+import com.potato.potatotool.content.redTeam.aiPentest.skill.extension.ExtensionSkillDescriptorEditor;
+import com.potato.potatotool.content.redTeam.aiPentest.skill.extension.ExtensionSkillIndexer;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.ui.PaneFactory;
@@ -19,6 +24,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
@@ -36,9 +42,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -394,7 +403,18 @@ public class PaneExtension {
             Tooltip tooltipDel = new Tooltip(I18nUtils.getString("tooltip.delete"));
             Tooltip.install(regionDel, tooltipDel);
             regionDel.setOnMouseClicked(even->delDialog(even));
-            regionVBox.getChildren().addAll(regionChange, regionDel);
+
+            Region regionSkill = new Region();
+            regionSkill.getStyleClass().add("skillIcon");
+            Tooltip tooltipSkill = new Tooltip(I18nUtils.getString("tooltip.generate.skill"));
+            Tooltip.install(regionSkill, tooltipSkill);
+            JsonObject skillItem = tmpDictData.deepCopy();
+            regionSkill.setOnMouseClicked(even -> {
+                even.consume();
+                generateSkillDialog(key, skillItem);
+            });
+
+            regionVBox.getChildren().addAll(regionSkill, regionChange, regionDel);
             regionVBox.getStyleClass().add("regionVBox");
             StackPane stackPane = new StackPane(hBox,regionVBox);
             StackPane.setAlignment(regionVBox, Pos.TOP_RIGHT);  // 改为 TOP_RIGHT，与 card 对齐
@@ -447,6 +467,164 @@ public class PaneExtension {
             }
         }
         return commands.toArray(new String[0]);
+    }
+
+    private void generateSkillDialog(String key, JsonObject item) {
+        try {
+            ExtensionSkillCandidate candidate = new ExtensionSkillIndexer().candidateFromItem(key, item);
+            if (candidate == null) {
+                showTip(I18nUtils.getString("extension.skill.invalid"));
+                return;
+            }
+            ExtensionSkillDescriptorEditor editor = new ExtensionSkillDescriptorEditor();
+            if (!reviewSkillDraftDialog(candidate, editor)) {
+                return;
+            }
+            if (editor.saveDraftDefinition(candidate)) {
+                showTip(I18nUtils.getString("extension.skill.saved", candidate.getSkillId()));
+            } else {
+                showTip(I18nUtils.getString("extension.skill.failed"));
+            }
+        } catch (Exception e) {
+            showTip(I18nUtils.getString("extension.skill.failed"));
+            e.printStackTrace();
+        }
+    }
+
+    private boolean reviewSkillDraftDialog(ExtensionSkillCandidate candidate, ExtensionSkillDescriptorEditor editor) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.initOwner(sPane.getScene().getWindow());
+        dialog.setTitle(I18nUtils.getString("extension.skill.dialog.title"));
+        dialog.setHeaderText(I18nUtils.getString("extension.skill.dialog.header", candidate.getTitle()));
+        dialog.getDialogPane().getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+
+        ComboBox<SkillCategory> categoryBox = new ComboBox<>(FXCollections.observableArrayList(SkillCategory.values()));
+        categoryBox.setValue(candidate.getSuggestedCategory());
+        ComboBox<SkillRiskLevel> riskBox = new ComboBox<>(FXCollections.observableArrayList(SkillRiskLevel.values()));
+        riskBox.setValue(candidate.getSuggestedRiskLevel());
+        CheckBox scopeRequired = new CheckBox(I18nUtils.getString("extension.skill.review.scopeRequired"));
+        scopeRequired.setSelected(candidate.isScopeRequired());
+        CheckBox approvalRequired = new CheckBox(I18nUtils.getString("extension.skill.review.approvalRequired"));
+        approvalRequired.setSelected(candidate.isApprovalRequired());
+
+        TextField matchHints = new TextField(joinValues(candidate.getMatchHints(), ", "));
+        TextArea inputSchema = smallTextArea(schemaToText(candidate.getInputSchema()));
+        TextArea outputSchema = smallTextArea(schemaToText(candidate.getOutputSchema()));
+        TextArea reviewNote = smallTextArea(candidate.getReviewNote());
+        reviewNote.setPrefRowCount(4);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(8);
+        grid.setPadding(new Insets(8, 0, 0, 0));
+        int row = 0;
+        grid.add(new Label(I18nUtils.getString("extension.skill.review.category")), 0, row);
+        grid.add(categoryBox, 1, row++);
+        grid.add(new Label(I18nUtils.getString("extension.skill.review.risk")), 0, row);
+        grid.add(riskBox, 1, row++);
+        grid.add(scopeRequired, 1, row++);
+        grid.add(approvalRequired, 1, row++);
+        grid.add(new Label(I18nUtils.getString("extension.skill.review.matchHints")), 0, row);
+        grid.add(matchHints, 1, row++);
+        grid.add(new Label(I18nUtils.getString("extension.skill.review.inputSchema")), 0, row);
+        grid.add(inputSchema, 1, row++);
+        grid.add(new Label(I18nUtils.getString("extension.skill.review.outputSchema")), 0, row);
+        grid.add(outputSchema, 1, row++);
+        grid.add(new Label(I18nUtils.getString("extension.skill.review.note")), 0, row);
+        grid.add(reviewNote, 1, row);
+
+        Label boundary = new Label(I18nUtils.getString("extension.skill.dialog.content"));
+        boundary.setWrapText(true);
+        Label schemaHelp = new Label(I18nUtils.getString("extension.skill.review.schemaHelp"));
+        schemaHelp.setWrapText(true);
+        TextArea preview = smallTextArea(new Gson().toJson(editor.toDraftRow(candidate)));
+        preview.setEditable(false);
+        preview.setPrefRowCount(6);
+        VBox content = new VBox(8, boundary, grid, schemaHelp,
+                new Label(I18nUtils.getString("extension.skill.review.preview")), preview);
+        content.setPrefWidth(720);
+        dialog.getDialogPane().setContent(content);
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (!result.orElse(ButtonType.CANCEL).equals(ButtonType.OK)) {
+            return false;
+        }
+        editor.applyReviewMetadata(candidate, categoryBox.getValue(), riskBox.getValue(),
+                scopeRequired.isSelected(), approvalRequired.isSelected(),
+                splitValues(matchHints.getText()), parseSchemaText(inputSchema.getText()),
+                parseSchemaText(outputSchema.getText()), reviewNote.getText());
+        return true;
+    }
+
+    private TextArea smallTextArea(String value) {
+        TextArea textArea = new TextArea(value == null ? "" : value);
+        textArea.setWrapText(true);
+        textArea.setPrefRowCount(3);
+        textArea.setPrefColumnCount(48);
+        return textArea;
+    }
+
+    private String schemaToText(Map<String, String> schema) {
+        StringBuilder builder = new StringBuilder();
+        if (schema != null) {
+            for (Map.Entry<String, String> entry : schema.entrySet()) {
+                if (builder.length() > 0) {
+                    builder.append("\n");
+                }
+                builder.append(entry.getKey()).append("=").append(entry.getValue());
+            }
+        }
+        return builder.toString();
+    }
+
+    private Map<String, String> parseSchemaText(String text) {
+        Map<String, String> schema = new LinkedHashMap<>();
+        if (text == null || text.trim().isEmpty()) {
+            return schema;
+        }
+        for (String line : text.split("\\r?\\n")) {
+            String trimmed = line == null ? "" : line.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            int index = trimmed.indexOf('=');
+            if (index <= 0) {
+                schema.put(trimmed, "string");
+            } else {
+                schema.put(trimmed.substring(0, index).trim(), trimmed.substring(index + 1).trim());
+            }
+        }
+        return schema;
+    }
+
+    private List<String> splitValues(String text) {
+        List<String> values = new ArrayList<>();
+        if (text == null || text.trim().isEmpty()) {
+            return values;
+        }
+        for (String value : Arrays.asList(text.split(","))) {
+            String trimmed = value == null ? "" : value.trim();
+            if (!trimmed.isEmpty()) {
+                values.add(trimmed);
+            }
+        }
+        return values;
+    }
+
+    private String joinValues(List<String> values, String delimiter) {
+        StringBuilder builder = new StringBuilder();
+        if (values != null) {
+            for (String value : values) {
+                if (value == null || value.trim().isEmpty()) {
+                    continue;
+                }
+                if (builder.length() > 0) {
+                    builder.append(delimiter);
+                }
+                builder.append(value.trim());
+            }
+        }
+        return builder.toString();
     }
 
 

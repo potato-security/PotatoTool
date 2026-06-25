@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.animation.FadeTransition;
@@ -107,7 +108,54 @@ public class PaneCustomCommandGeneration {
         });
         
         // 绑定国际化
-        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
+        });
+    }
+
+    private void applyStartupPreviewState() {
+        ToStart.StartupPage startupPage = ToStart.getStartupTestPage();
+        if (startupPage == null) {
+            return;
+        }
+        if (startupPage == ToStart.StartupPage.RED_CUSTOM_COMMAND_GENERATION_OPTIONS) {
+            prepareOptionsPreview();
+            return;
+        }
+        if (startupPage == ToStart.StartupPage.RED_CUSTOM_COMMAND_GENERATION_RESULT) {
+            prepareResultPreview();
+        }
+    }
+
+    private void prepareOptionsPreview() {
+        ipField.setText("10.10.10.8");
+        portField.setText("4444");
+        selectShellValue("bash -i");
+        replaceTips();
+        redirect("ReverseShell");
+        redirectContent("Bash -i");
+    }
+
+    private void prepareResultPreview() {
+        ipField.setText("172.16.10.55");
+        portField.setText("8443");
+        selectShellValue("powershell");
+        replaceTips();
+        redirect("Listener");
+        redirectContent("nc -lvnp");
+    }
+
+    private void selectShellValue(String expectedShell) {
+        for (Object item : shellComboBox.getItems()) {
+            if (expectedShell.equals(String.valueOf(item))) {
+                shellComboBox.setValue(item);
+                return;
+            }
+        }
+        if (!shellComboBox.getItems().isEmpty()) {
+            shellComboBox.getSelectionModel().selectFirst();
+        }
     }
 
     private void replaceTips(){

@@ -103,6 +103,21 @@
 .changeIcon:pressed{
     -fx-background-color: -main-borderHover-color;
 }
+.skillIcon{
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
+    -fx-shape: "M512 64 944 256v512L512 960 80 768V256L512 64zM512 144 176 293.333 512 442.667 848 293.333 512 144zM144 345.6v381.867l336 149.333V494.933L144 345.6zM544 876.8l336-149.333V345.6L544 494.933V876.8z";
+    -fx-background-color: -main-font-color;
+    -fx-cursor: hand;
+}
+.skillIcon:hover{
+    -fx-background-color: -main-border-color;
+}
+.skillIcon:pressed{
+    -fx-background-color: -main-borderHover-color;
+}
 .delIcon{
     -fx-pref-width: 20;
     -fx-pref-height: 20;

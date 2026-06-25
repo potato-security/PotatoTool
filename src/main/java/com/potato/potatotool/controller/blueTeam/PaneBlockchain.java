@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.content.blueTeam.blockchain.report.BlockchainWordReportGenerator;
 import com.potato.potatotool.utils.ai.model.AiStreamEvent;
 import com.potato.potatotool.utils.ai.service.AiChatService;
@@ -669,10 +670,15 @@ public class PaneBlockchain {
         detailedListView.getItems().clear();
         accordionPane.getPanes().clear();
         accordionPane.setVisible(true);
+        detailedPane.setMaxWidth(listViewCell.getWidth());
 
         Timeline animation = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(detailedListView.prefWidthProperty(), 0)),
-                new KeyFrame(Duration.seconds(0.2), new KeyValue(detailedListView.prefWidthProperty(), listViewCell.getWidth()))
+                new KeyFrame(Duration.ZERO,
+                        new KeyValue(detailedPane.maxWidthProperty(), 0),
+                        new KeyValue(detailedListView.prefWidthProperty(), 0)),
+                new KeyFrame(Duration.seconds(0.2),
+                        new KeyValue(detailedPane.maxWidthProperty(), listViewCell.getWidth()),
+                        new KeyValue(detailedListView.prefWidthProperty(), listViewCell.getWidth()))
         );
         animation.play();
     }
@@ -2241,7 +2247,28 @@ public class PaneBlockchain {
         listenSearch();
 
         // 绑定国际化
-        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
+        });
+    }
+
+    private void applyStartupPreviewState() {
+        ToStart.StartupPage startupPage = ToStart.getStartupTestPage();
+        if (startupPage == null) {
+            return;
+        }
+        if (startupPage == ToStart.StartupPage.BLUE_BLOCKCHAIN_RESULT_LIST) {
+            renderStartupResultList();
+            return;
+        }
+        if (startupPage == ToStart.StartupPage.BLUE_BLOCKCHAIN_DETAIL) {
+            renderStartupDetail();
+            return;
+        }
+        if (startupPage == ToStart.StartupPage.BLUE_BLOCKCHAIN_EMPTY) {
+            renderStartupEmpty();
+        }
     }
 
     // 初始化样本数据
@@ -2269,6 +2296,176 @@ public class PaneBlockchain {
         }
         contentObj.add(gallery);
         listViewCell.setItems(contentObj);
+    }
+
+    private void renderStartupResultList() {
+        question.setText("Nomad Bridge 样例案件");
+        backClearLabel.setVisible(true);
+        contentObj.clear();
+        listViewCell.getItems().clear();
+
+        contentObj.add(createPreviewResultCard(
+                "ETH",
+                I18nUtils.getString("blockchain.sample.nomad.title"),
+                "交易哈希：0xa5fe9d044e4f3e5aa5bc4c0709333cd2190cba0f4e7f16bcf73f49f83e4a5460",
+                new String[]{
+                        "标签：Nomad Bridge 攻击复核",
+                        "类型：transaction",
+                        "关键点：跨链桥复制型攻击 / 证据边界 / 多段资金流",
+                        "状态：样例预置结果，适合截图查询结果列表态"
+                }
+        ));
+        contentObj.add(createPreviewResultCard(
+                "ETH",
+                "Euler Finance 攻击追踪",
+                "交易哈希：0x47ac3527d02e6b9631c77fad1cdee7bfa77a8a7bfd4880dccbda5146ace4088f",
+                new String[]{
+                        "标签：公开恶意场景",
+                        "类型：transaction",
+                        "关键点：闪电贷 / 多协议交互 / 风险提示"
+                }
+        ));
+        contentObj.add(createPreviewResultCard(
+                "ETH",
+                "可疑地址画像",
+                "地址：0x3f5CE5FBFe3E9af3971dD833D26BA9b5C936f0bE",
+                new String[]{
+                        "标签：address",
+                        "余额：125.42 ETH",
+                        "交易数：482",
+                        "说明：用于展示混合列表中的地址卡片样式"
+                }
+        ));
+        listViewCell.setItems(contentObj);
+    }
+
+    private VBox createPreviewResultCard(String network, String title, String targetLine, String[] detailLines) {
+        VBox card = new VBox();
+        card.setSpacing(8);
+        card.setPrefWidth(sampleContentWidth());
+        card.setMaxWidth(sampleContentWidth());
+        card.getStyleClass().addAll("cellVBox", "sampleCard");
+
+        HBox header = new HBox();
+        header.setSpacing(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label titleLabel = new Label(title);
+        titleLabel.setWrapText(true);
+        titleLabel.getStyleClass().add("sampleCardTitle");
+        HBox.setHgrow(titleLabel, Priority.ALWAYS);
+        Label badgeLabel = new Label(network);
+        badgeLabel.getStyleClass().add("sampleBadge");
+        header.getChildren().addAll(titleLabel, badgeLabel);
+
+        Label targetLabel = new Label(targetLine);
+        targetLabel.setWrapText(true);
+        targetLabel.getStyleClass().add("sampleDescription");
+        card.getChildren().addAll(header, targetLabel);
+        if (detailLines != null) {
+            for (String line : detailLines) {
+                Label lineLabel = new Label(line);
+                lineLabel.setWrapText(true);
+                lineLabel.getStyleClass().add("sampleCapability");
+                card.getChildren().add(lineLabel);
+            }
+        }
+        return card;
+    }
+
+    private void renderStartupDetail() {
+        question.setText("0xa5fe9d044e4f3e5aa5bc4c0709333cd2190cba0f4e7f16bcf73f49f83e4a5460");
+        backClearLabel.setVisible(true);
+        clearCurrentReportContext();
+        detailedPane.setVisible(false);
+        accordionPane.getPanes().clear();
+        accordionPane.setVisible(true);
+
+        contentObj.clear();
+        listViewCell.getItems().clear();
+        listViewCell.setVisible(true);
+        listViewCell.setManaged(true);
+
+        String analysisKey = I18nUtils.getString("blockchain.report.section.analysis");
+        String findingsKey = I18nUtils.getString("blockchain.report.section.findings");
+        String overviewKey = I18nUtils.getString("blockchain.report.section.overview");
+        String timelineKey = I18nUtils.getString("blockchain.report.section.timeline");
+        String evidenceKey = I18nUtils.getString("blockchain.report.section.evidence");
+        addReportNav(analysisKey);
+        addReportNav(findingsKey);
+        addReportNav(overviewKey);
+        addReportNav(timelineKey);
+        addReportNav(evidenceKey);
+
+        VBox page = new VBox();
+        page.setSpacing(16);
+        page.setPrefWidth(sampleContentWidth());
+        page.setMaxWidth(sampleContentWidth());
+        page.getStyleClass().addAll("cellVBox", "sampleCard");
+        page.getChildren().add(createAnalysisHeadline("Nomad Bridge 攻击复核"));
+        page.getChildren().add(createAnalysisLabel("该预置态用于展示区块链详情页排版，固定展示摘要、发现、概览、时间线和证据。"));
+
+        page.getChildren().add(createPreviewSection(analysisKey, new String[]{
+                "网络：ETH",
+                "对象类型：transaction",
+                "标签：跨链桥复制型异常",
+                "摘要：目标交易与公开披露案例一致，适合详情页截图。"
+        }));
+        page.getChildren().add(createPreviewSection(findingsKey, new String[]{
+                "关键发现 1：攻击面命中跨链桥复制路径。",
+                "关键发现 2：资产路径跨越多个交互节点。",
+                "关键发现 3：链上事件日志形成连续证据链。"
+        }));
+        page.getChildren().add(createPreviewSection(overviewKey, new String[]{
+                "交易哈希：0xa5fe9d044e4f3e5aa5bc4c0709333cd2190cba0f4e7f16bcf73f49f83e4a5460",
+                "区块高度：15259101",
+                "时间：2022-08-02 09:32:11 UTC",
+                "From：0x4f3a120e72c76c22ae802d129f599bfdbcfb1c17",
+                "To：0x5d94309e5a0090f0fc8317d0c0ad6f6d34c4c3bb",
+                "金额：100.00 WBTC"
+        }));
+        page.getChildren().add(createPreviewSection(timelineKey, new String[]{
+                "1. 触发跨链桥消息处理逻辑。",
+                "2. 目标地址接收桥接资产后快速分发。",
+                "3. 多个事件日志与资金流节点形成连续证据链。"
+        }));
+        page.getChildren().add(createPreviewSection(evidenceKey, new String[]{
+                "Event[0] Transfer / Bridge / 跨链桥资产转出到目标地址",
+                "Event[1] Swap / Dex / 目标地址随后发起兑换行为",
+                "Event[2] Transfer / Routing / 部分资产继续分发到二级地址",
+                "Raw: {\"preview\":true,\"network\":\"eth\",\"type\":\"transaction\"}"
+        }));
+
+        contentObj.add(page);
+        listViewCell.setItems(contentObj);
+    }
+
+    private VBox createPreviewSection(String title, String[] lines) {
+        VBox section = new VBox();
+        section.setSpacing(8);
+        section.getStyleClass().add("analysisSection");
+
+        Label titleLabel = createAnalysisHeadline(title);
+        section.getChildren().add(titleLabel);
+        if (lines != null) {
+            for (String line : lines) {
+                section.getChildren().add(createAnalysisLabel(line));
+            }
+        }
+        return section;
+    }
+
+    private JsonObject createPreviewFinding(String title, String description, String evidence) {
+        JsonObject finding = new JsonObject();
+        finding.addProperty("title", title);
+        finding.addProperty("description", description);
+        finding.addProperty("evidence", evidence);
+        return finding;
+    }
+
+    private void renderStartupEmpty() {
+        question.setText("0x0000000000000000000000000000000000000000");
+        backClearLabel.setVisible(true);
+        showListTip(I18nUtils.getString("blockchain.error.query"));
     }
 
     void writeTestData(String data) {
@@ -4686,8 +4883,12 @@ public class PaneBlockchain {
     void goBack(){
         clearCurrentReportContext();
         Timeline animation = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(detailedListView.prefWidthProperty(), listViewCell.getWidth())),
-                new KeyFrame(Duration.seconds(0.2), new KeyValue(detailedListView.prefWidthProperty(), 0))
+                new KeyFrame(Duration.ZERO,
+                        new KeyValue(detailedPane.maxWidthProperty(), listViewCell.getWidth()),
+                        new KeyValue(detailedListView.prefWidthProperty(), listViewCell.getWidth())),
+                new KeyFrame(Duration.seconds(0.2),
+                        new KeyValue(detailedPane.maxWidthProperty(), 0),
+                        new KeyValue(detailedListView.prefWidthProperty(), 0))
         );
         animation.setOnFinished(event -> {
             accordionPane.getPanes().clear();

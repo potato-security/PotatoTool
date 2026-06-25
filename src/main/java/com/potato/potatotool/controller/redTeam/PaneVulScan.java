@@ -1,5 +1,6 @@
 package com.potato.potatotool.controller.redTeam;
 
+import com.potato.potatotool.ToStart;
 import com.dlsc.gemsfx.CFCheckBox;
 import com.sun.javafx.scene.control.skin.DatePickerSkin;
 import com.google.gson.Gson;
@@ -77,6 +78,7 @@ public class PaneVulScan {
     @FXML private Label resumeScanLabel;
     @FXML private Label stopScanLabel;
     @FXML private Label scanStateLabel;
+    @FXML private TitledPane configTitledPane;
     
     // POC格式选择
     @FXML private CFCheckBox nucleiCheckBox;
@@ -221,6 +223,7 @@ public class PaneVulScan {
         loadPocs();
         
         // 绑定国际化
+        promptDefaultContent = promptLabel;
         Platform.runLater(() -> I18nUtils.bindComponents(sPane));
         // 二次保险：i18n 完成 setItems 后再强制选回默认值，避免被 i18n 绑定副作用回退到 select(0)
         Platform.runLater(() -> {
@@ -230,11 +233,173 @@ public class PaneVulScan {
             if (inputTypeComboBox != null && inputTypeComboBox.getSelectionModel().getSelectedIndex() < 0) {
                 inputTypeComboBox.getSelectionModel().select(0); // 自动检测
             }
+            applyStartupPreviewState();
         });
-        promptDefaultContent = promptLabel;
         
         // 检查未完成的扫描-暂时跳过
         // checkPausedScans();
+    }
+
+    private void applyStartupPreviewState() {
+        PaneVulScanPreviewSupport.PreviewState state =
+                PaneVulScanPreviewSupport.buildPreviewState(ToStart.getStartupTestPage());
+        if (state == null) {
+            return;
+        }
+
+        targetField.setText(state.getTargetText());
+        if (configTitledPane != null) {
+            configTitledPane.setExpanded(state.isConfigExpanded());
+        }
+
+        selectComboIndex(scanModeComboBox, state.getScanModeIndex());
+        selectComboIndex(inputTypeComboBox, state.getInputTypeIndex());
+        selectComboIndex(exportFormatComboBox, state.getExportFormatIndex());
+
+        nucleiCheckBox.setSelected(state.isNucleiSelected());
+        gobyCheckBox.setSelected(state.isGobySelected());
+        xrayCheckBox.setSelected(state.isXraySelected());
+        pocsuiteCheckBox.setSelected(state.isPocsuiteSelected());
+        verboseLogBox.setSelected(state.isVerboseLogSelected());
+        autoSaveBox.setSelected(state.isAutoSaveSelected());
+        enableHeadlessBox.setSelected(state.isEnableHeadlessSelected());
+        enableCodeBox.setSelected(state.isEnableCodeSelected());
+        if (enableFuzzBox != null) {
+            enableFuzzBox.setSelected(state.isEnableFuzzSelected());
+        }
+        if (includeOsintBox != null) {
+            includeOsintBox.setSelected(state.isIncludeOsintSelected());
+        }
+        if (includeTokenSprayBox != null) {
+            includeTokenSprayBox.setSelected(state.isIncludeTokenSpraySelected());
+        }
+        tagsField.setText(state.getTagsText());
+
+        if (pocTotalLabel != null) pocTotalLabel.setText(state.getPocTotal());
+        if (pocNucleiLabel != null) pocNucleiLabel.setText(state.getPocNuclei());
+        if (pocGobyLabel != null) pocGobyLabel.setText(state.getPocGoby());
+        if (pocXrayLabel != null) pocXrayLabel.setText(state.getPocXray());
+        if (pocPocsuiteLabel != null) pocPocsuiteLabel.setText(state.getPocPocsuite());
+
+        progressBar.setProgress(state.getProgressValue());
+        progressLabel.setText(state.getProgressText());
+        timeLabel.setText(state.getTimeText());
+        progressBox.setVisible(state.isShowProgress());
+        progressBox.setManaged(state.isShowProgress());
+
+        scanStateLabel.setText(state.getScanStateText());
+        criticalCountLabel.setText(state.getCriticalCount());
+        highCountLabel.setText(state.getHighCount());
+        mediumCountLabel.setText(state.getMediumCount());
+        lowCountLabel.setText(state.getLowCount());
+        infoCountLabel.setText(state.getInfoCount());
+        statsPane.setVisible(state.isShowStats());
+        statsPane.setManaged(state.isShowStats());
+
+        scanResults.clear();
+        resultVBox.getChildren().clear();
+        currentLoadingBox = null;
+        vulnCountLabel.setText(I18nUtils.getString("vulnscan.vuln.count", 0));
+        for (ScanResult result : state.getResultItems()) {
+            scanResults.add(result);
+            resultVBox.getChildren().add(createVulnDetailPane(result));
+        }
+        if (state.getSummaryMessage() != null && !state.getSummaryMessage().isEmpty()) {
+            updateResultUI(state.getSummaryMessage(), state.isSummaryComplete(), null);
+        }
+        vulnCountLabel.setText(I18nUtils.getString("vulnscan.vuln.count", scanResults.size()));
+
+        updateButtonsForStatus(parsePreviewStatus(state.getButtonStatus()));
+
+        allPocItems.setAll(state.getPocItems());
+        pocTableView.setItems(allPocItems);
+        updatePocCountLabel();
+        if (state.getSelectedPocCount() > 0 && !allPocItems.isEmpty()) {
+            pocTableView.getSelectionModel().clearSelection();
+            for (int i = 0; i < Math.min(state.getSelectedPocCount(), allPocItems.size()); i++) {
+                pocTableView.getSelectionModel().select(i);
+            }
+        }
+        updateSelectedPocLabel();
+
+        if (state.isPocManageVisible()) {
+            pocManageMask.setVisible(true);
+            pocManageMask.setManaged(true);
+            pocManageMask.toFront();
+        }
+
+        if (state.isPocDetailVisible()) {
+            applyPreviewPocDetail(state);
+        }
+
+        if (state.isLogViewerVisible()) {
+            logTextArea.setText(state.getLogText());
+            if (logCountLabel != null) {
+                int count = state.getLogText().isEmpty() ? 0 : state.getLogText().split("\\n").length;
+                logCountLabel.setText(I18nUtils.getString("vulnscan.log.count", count));
+            }
+            logViewerMask.setVisible(true);
+            logViewerMask.setManaged(true);
+            logViewerMask.toFront();
+        }
+
+        if (state.isHistoryVisible()) {
+            historyTableView.getItems().setAll(state.getHistoryItems());
+            historyMask.setVisible(true);
+            historyMask.setManaged(true);
+            historyMask.toFront();
+        }
+    }
+
+    private void selectComboIndex(ComboBox<String> comboBox, int index) {
+        if (comboBox == null || comboBox.getItems().isEmpty()) {
+            return;
+        }
+        if (index < 0 || index >= comboBox.getItems().size()) {
+            comboBox.getSelectionModel().select(0);
+            return;
+        }
+        comboBox.getSelectionModel().select(index);
+    }
+
+    private ScanState.Status parsePreviewStatus(String statusName) {
+        if (statusName == null || statusName.trim().isEmpty()) {
+            return ScanState.Status.STOPPED;
+        }
+        try {
+            return ScanState.Status.valueOf(statusName);
+        } catch (IllegalArgumentException ignored) {
+            return ScanState.Status.STOPPED;
+        }
+    }
+
+    private void applyPreviewPocDetail(PaneVulScanPreviewSupport.PreviewState state) {
+        if (pocDetailContent == null) {
+            return;
+        }
+        pocDetailContent.getChildren().clear();
+        addDetailField(I18nUtils.getString("vulnscan.detail.originalfile"), state.getPocDetailFilename());
+        if (state.getPocDetailItem() != null) {
+            addDetailField(I18nUtils.getString("vulnscan.detail.pocid"), state.getPocDetailItem().getId());
+            addDetailField(I18nUtils.getString("vulnscan.detail.pocformat"), state.getPocDetailItem().getFormat());
+            addDetailField(I18nUtils.getString("vulnscan.detail.severity"), state.getPocDetailItem().getSeverity());
+        }
+
+        Label contentLabel = new Label(I18nUtils.getString("vulnscan.detail.originalcontent"));
+        contentLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: -fx-accent;");
+        TextArea contentArea = new TextArea(state.getPocDetailContentText());
+        contentArea.setWrapText(false);
+        contentArea.setEditable(false);
+        contentArea.setPrefRowCount(20);
+        contentArea.setStyle("-fx-font-family: monospace; -fx-font-size: 11px;");
+
+        VBox contentBox = new VBox(3);
+        contentBox.getChildren().addAll(contentLabel, contentArea);
+        pocDetailContent.getChildren().add(contentBox);
+
+        pocDetailMask.setVisible(true);
+        pocDetailMask.setManaged(true);
+        pocDetailMask.toFront();
     }
     
     /**

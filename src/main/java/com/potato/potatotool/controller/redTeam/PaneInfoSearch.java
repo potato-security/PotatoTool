@@ -4,6 +4,7 @@ import com.dlsc.gemsfx.CFCheckBox;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.content.redTeam.infoGathering.AssetMapper;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetConstants;
 import com.potato.potatotool.content.redTeam.infoGathering.classObj.AssetObj;
@@ -226,7 +227,151 @@ public class PaneInfoSearch {
         checkBoxList.add(shodanBox);
         
         // 绑定国际化
-        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
+        });
+    }
+
+    private void applyStartupPreviewState() {
+        PaneInfoSearchPreviewSupport.PreviewState previewState =
+                PaneInfoSearchPreviewSupport.buildPreviewState(ToStart.getStartupTestPage());
+        if (previewState == null) {
+            return;
+        }
+
+        if (previewState.getSearchModeIndex() >= 0 && previewState.getSearchModeIndex() < searchModeBox.getItems().size()) {
+            searchModeBox.getSelectionModel().select(previewState.getSearchModeIndex());
+            chooseSearcchMode(null);
+        }
+        if (previewState.getQuestion() != null) {
+            question.setText(previewState.getQuestion());
+        }
+
+        applyCheckboxSelections(previewState.getPlatformSelections());
+        applyCheckboxSelections(previewState.getAdvancedSelections());
+        applyTextValues(previewState.getTextValues());
+        refreshAdvancedVisibility();
+        renderPreviewEntries(previewState.getResultEntries());
+
+        if (previewState.getWarningTip() != null && !previewState.getWarningTip().trim().isEmpty()) {
+            if (ToStart.getStartupTestPage() == ToStart.StartupPage.RED_INFO_SEARCH_PROXY_WARNING) {
+                showPersistentPreviewTip(previewState.getWarningTip());
+            } else {
+                showTip(previewState.getWarningTip(), false);
+            }
+        }
+    }
+
+    private void showPersistentPreviewTip(String tip) {
+        if (prompt == null || promptPane == null) {
+            return;
+        }
+        if (promptFadeIn != null) {
+            promptFadeIn.stop();
+        }
+        if (promptFadeOut != null) {
+            promptFadeOut.stop();
+        }
+        prompt.setText(tip);
+        promptPane.setVisible(true);
+        promptPane.setManaged(true);
+        promptPane.setOpacity(1);
+        promptPane.toFront();
+    }
+
+    private void applyCheckboxSelections(Map<String, Boolean> selections) {
+        if (selections == null || selections.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, Boolean> entry : selections.entrySet()) {
+            CFCheckBox checkBox = resolvePreviewCheckbox(entry.getKey());
+            if (checkBox != null) {
+                checkBox.setSelected(Boolean.TRUE.equals(entry.getValue()));
+            }
+        }
+    }
+
+    private CFCheckBox resolvePreviewCheckbox(String key) {
+        if ("fofa".equals(key)) return fofaBox;
+        if ("hunter".equals(key)) return hunterBox;
+        if ("quake".equals(key)) return quakeBox;
+        if ("zoomeye".equals(key)) return zoomeyeBox;
+        if ("shodan".equals(key)) return shodanBox;
+        if ("google".equals(key)) return googleBox;
+        if ("github".equals(key)) return githubBox;
+        if ("weight".equals(key)) return weightBox;
+        if ("searchSslSubdomain".equals(key)) return searchSslSubdomainBox;
+        if ("bruteForceSubdomain".equals(key)) return bruteForceSubdomainBox;
+        if ("searchShadowAssets".equals(key)) return searchShadowAssetsBox;
+        if ("hasLocalFullDetection".equals(key)) return hasLocalFullDetectionBox;
+        if ("hasIconSearch".equals(key)) return hasIconSearchBox;
+        if ("hasCrawlLinks".equals(key)) return hasCrawlLinksBox;
+        if ("hasFindSensitiveInfo".equals(key)) return hasFindSensitiveInfoBox;
+        if ("hasCipAggregator".equals(key)) return hasCipAggregatorBox;
+        return null;
+    }
+
+    private void applyTextValues(Map<String, String> values) {
+        if (values == null || values.isEmpty()) {
+            return;
+        }
+        setPreviewText(weightStr, values.get("weightStr"));
+        setPreviewText(maxDepth, values.get("maxDepth"));
+        setPreviewText(maxSubPathCount, values.get("maxSubPathCount"));
+        setPreviewText(maxGoogleSearchCount, values.get("maxGoogleSearchCount"));
+        setPreviewText(maxGithubSearchCount, values.get("maxGithubSearchCount"));
+        setPreviewText(cipThreshold, values.get("cipThreshold"));
+        setPreviewText(localFullDetectionThreshold, values.get("localFullDetectionThreshold"));
+        setPreviewText(shadowAssetsThreshold, values.get("shadowAssetsThreshold"));
+    }
+
+    private void setPreviewText(TextField field, String value) {
+        if (field != null && value != null) {
+            field.setText(value);
+        }
+    }
+
+    private void refreshAdvancedVisibility() {
+        boolean isIntelligentMode = searchModeBox.getSelectionModel().getSelectedIndex() == 0;
+        advancedSetting.setManaged(isIntelligentMode);
+        advancedSetting.setVisible(isIntelligentMode);
+        googleBox.setManaged(isIntelligentMode);
+        googleBox.setVisible(isIntelligentMode);
+        githubBox.setManaged(isIntelligentMode);
+        githubBox.setVisible(isIntelligentMode);
+        uploadLabel.setVisible(isIntelligentMode);
+        uploadLabel.setManaged(isIntelligentMode);
+
+        weightHBox.setManaged(weightBox.isSelected());
+        weightHBox.setVisible(weightBox.isSelected());
+        maxDepthHBox.setManaged(hasCrawlLinksBox.isSelected());
+        maxDepthHBox.setVisible(hasCrawlLinksBox.isSelected());
+        maxSubPathCountHBox.setManaged(hasCrawlLinksBox.isSelected());
+        maxSubPathCountHBox.setVisible(hasCrawlLinksBox.isSelected());
+        shadowAssetsThresholdHBox.setManaged(searchShadowAssetsBox.isSelected());
+        shadowAssetsThresholdHBox.setVisible(searchShadowAssetsBox.isSelected());
+        maxGoogleSearchCountHBox.setManaged(googleBox.isSelected() && isIntelligentMode);
+        maxGoogleSearchCountHBox.setVisible(googleBox.isSelected() && isIntelligentMode);
+        maxGithubSearchCountHBox.setManaged(githubBox.isSelected() && isIntelligentMode);
+        maxGithubSearchCountHBox.setVisible(githubBox.isSelected() && isIntelligentMode);
+        cipThresholdHBox.setManaged(hasCipAggregatorBox.isSelected());
+        cipThresholdHBox.setVisible(hasCipAggregatorBox.isSelected());
+        localFullDetectionThresholdHBox.setManaged(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+        localFullDetectionThresholdHBox.setVisible(!hasLocalFullDetectionBox.isSelected() && hasIconSearchBox.isSelected());
+    }
+
+    private void renderPreviewEntries(List<PaneInfoSearchPreviewSupport.ResultEntry> resultEntries) {
+        if (resultEntries == null || resultEntries.isEmpty()) {
+            return;
+        }
+        echoVbox.getChildren().clear();
+        for (PaneInfoSearchPreviewSupport.ResultEntry entry : resultEntries) {
+            Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
+            dataMap.put("type", entry.getType());
+            dataMap.put("data", entry.getData());
+            updateEchoVBox(entry.getMessage(), true, dataMap);
+        }
     }
 
     //  监听输入时回车

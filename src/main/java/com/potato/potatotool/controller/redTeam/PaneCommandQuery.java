@@ -3,6 +3,7 @@ package com.potato.potatotool.controller.redTeam;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.content.redTeam.CommandHelp;
 import com.potato.potatotool.utils.ai.service.AiChatService;
 import com.potato.potatotool.utils.core.I18nUtils;
@@ -77,7 +78,18 @@ public class PaneCommandQuery {
         listenSearch();
         
         // 绑定国际化
-        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
+        });
+    }
+
+    private void applyStartupPreviewState() {
+        ToStart.StartupPage startupPage = ToStart.getStartupTestPage();
+        if (startupPage == ToStart.StartupPage.RED_COMMAND_QUERY_RESULT) {
+            question.setText("ssh");
+            searchInput(null);
+        }
     }
 
     //  监听输入时回车

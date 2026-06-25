@@ -1,5 +1,6 @@
 package com.potato.potatotool.controller.blueTeam;
 
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import com.potato.potatotool.utils.ui.DefaultContextMenu;
@@ -9,6 +10,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.StackPane;
 import org.fxmisc.flowless.VirtualizedScrollPane;
@@ -23,6 +25,9 @@ import java.util.function.Function;
  * @date 2023/10/24 16:51
  */
 public class PaneSeparateDecode {
+    private static final String SEPARATE_ENCODE_PREVIEW_INPUT = "cmd /c whoami && ipconfig /all";
+    private static final String SEPARATE_DECODE_PREVIEW_INPUT = "Y21kIC9jIHdob2FtaSAmJiBpcGNvbmZpZyAvYWxs";
+    private static final String SEPARATE_CHECKED_PREVIEW_INPUT = "%63%6d%64%20%2f%63%20%77%68%6f%61%6d%69";
 
     @FXML
     private StackPane sPane;
@@ -75,7 +80,44 @@ public class PaneSeparateDecode {
         encodeMap.put("Html", StrUtils::htmlEncode);
         
         // 绑定国际化
-        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
+        });
+    }
+
+    private void applyStartupPreviewState() {
+        ToStart.StartupPage startupPage = ToStart.getStartupTestPage();
+        if (startupPage != ToStart.StartupPage.BLUE_SEPARATE_DECODE_CHECKED
+                && startupPage != ToStart.StartupPage.BLUE_SEPARATE_DECODE_ENCODE_RESULT
+                && startupPage != ToStart.StartupPage.BLUE_SEPARATE_DECODE_DECODE_RESULT) {
+            return;
+        }
+
+        if (startupPage == ToStart.StartupPage.BLUE_SEPARATE_DECODE_CHECKED) {
+            selectMode("URL");
+            inputText.setText(SEPARATE_CHECKED_PREVIEW_INPUT);
+        } else if (startupPage == ToStart.StartupPage.BLUE_SEPARATE_DECODE_ENCODE_RESULT) {
+            selectMode("Base64");
+            inputText.setText(SEPARATE_ENCODE_PREVIEW_INPUT);
+            toEncode(null);
+        } else {
+            selectMode("Base64");
+            inputText.setText(SEPARATE_DECODE_PREVIEW_INPUT);
+            toDecode(null);
+        }
+    }
+
+    private void selectMode(String modeText) {
+        for (Toggle toggle : checkboxGroup.getToggles()) {
+            if (toggle instanceof RadioButton) {
+                RadioButton radioButton = (RadioButton) toggle;
+                if (modeText.equals(radioButton.getText())) {
+                    checkboxGroup.selectToggle(radioButton);
+                    return;
+                }
+            }
+        }
     }
 
     @FXML

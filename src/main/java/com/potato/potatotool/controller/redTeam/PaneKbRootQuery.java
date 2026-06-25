@@ -2,6 +2,7 @@ package com.potato.potatotool.controller.redTeam;
 
 import com.dlsc.gemsfx.CFCheckBox;
 import com.dlsc.gemsfx.FilterView;
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.content.redTeam.kbRootQuery.classObj.KbInfo;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.core.I18nUtils;
@@ -28,6 +29,58 @@ import static com.potato.potatotool.content.redTeam.kbRootQuery.KbCheck.*;
  * @date 2023/3/21 17:14
  */
 public class PaneKbRootQuery {
+
+    private static final String KB_RESULT_PREVIEW_TEXT = "主机名:           DESKTOP-EMGF5BE\n" +
+            "OS 名称:          Microsoft Windows 10 专业版\n" +
+            "OS 版本:          10.0.18363 暂缺 Build 18363\n" +
+            "OS 制造商:        Microsoft Corporation\n" +
+            "OS 配置:          独立工作站\n" +
+            "OS 构建类型:      Multiprocessor Free\n" +
+            "注册的所有人:     Windows 用户\n" +
+            "注册的组织:\n" +
+            "产品 ID:          00331-10000-00001-AA265\n" +
+            "初始安装日期:     2021-9-17, 21:46:11\n" +
+            "系统启动时间:     2024-4-24, 22:45:05\n" +
+            "系统制造商:       VMware, Inc.\n" +
+            "系统型号:         VMware7,1\n" +
+            "系统类型:         x64-based PC\n" +
+            "处理器:           安装了 2 个处理器。\n" +
+            "                  [01]: Intel64 Family 6 Model 158 Stepping 10 GenuineIntel ~2592 Mhz\n" +
+            "                  [02]: Intel64 Family 6 Model 158 Stepping 10 GenuineIntel ~2592 Mhz\n" +
+            "BIOS 版本:        VMware, Inc. VMW71.00V.18452719.B64.2108091906, 2021-8-9\n" +
+            "Windows 目录:     C:\\Windows\n" +
+            "系统目录:         C:\\Windows\\system32\n" +
+            "启动设备:         \\Device\\HarddiskVolume1\n" +
+            "系统区域设置:     zh-cn;中文(中国)\n" +
+            "输入法区域设置:   zh-cn;中文(中国)\n" +
+            "时区:             (UTC+08:00) 北京，重庆，香港特别行政区，乌鲁木齐\n" +
+            "物理内存总量:     5,119 MB\n" +
+            "可用的物理内存:   2,885 MB\n" +
+            "虚拟内存: 最大值: 5,439 MB\n" +
+            "虚拟内存: 可用:   3,403 MB\n" +
+            "虚拟内存: 使用中: 2,036 MB\n" +
+            "页面文件位置:     C:\\pagefile.sys\n" +
+            "域:               WORKGROUP\n" +
+            "登录服务器:       \\\\DESKTOP-EMGF5BE\n" +
+            "修补程序:         安装了 6 个修补程序。\n" +
+            "                  [01]: KB4601556\n" +
+            "                  [02]: KB4513661\n" +
+            "                  [03]: KB4516115\n" +
+            "                  [04]: KB4517245\n" +
+            "                  [05]: KB4521863\n" +
+            "                  [06]: KB4517389\n" +
+            "网卡:             安装了 2 个 NIC。\n" +
+            "                  [01]: Intel(R) 82574L Gigabit Network Connection\n" +
+            "                      连接名:      Ethernet0\n" +
+            "                      启用 DHCP:   是\n" +
+            "                      DHCP 服务器: 172.16.246.254\n" +
+            "                      IP 地址\n" +
+            "                        [01]: 172.16.246.250\n" +
+            "                        [02]: fe80::8403:21ce:5678:4ec6\n" +
+            "                  [02]: Bluetooth Device (Personal Area Network)\n" +
+            "                      连接名:      蓝牙网络连接\n" +
+            "                      状态:        媒体连接已中断\n" +
+            "Hyper-V 要求:     已检测到虚拟机监控程序。将不显示 Hyper-V 所需的功能。";
 
     @FXML
     private StackPane sPane;
@@ -132,7 +185,18 @@ public class PaneKbRootQuery {
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         
         // 绑定国际化
-        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
+        });
+    }
+
+    private void applyStartupPreviewState() {
+        ToStart.StartupPage startupPage = ToStart.getStartupTestPage();
+        if (startupPage == ToStart.StartupPage.RED_KB_ROOT_QUERY_RESULT) {
+            inputText.setText(KB_RESULT_PREVIEW_TEXT);
+            searchKb(null);
+        }
     }
 
     private Thread currentThread;
@@ -277,59 +341,7 @@ public class PaneKbRootQuery {
 
 
     public static void main(String []args) {
-        String systeminfo = "主机名:           DESKTOP-EMGF5BE\n" +
-                "OS 名称:          Microsoft Windows 10 专业版\n" +
-                "OS 版本:          10.0.18363 暂缺 Build 18363\n" +
-                "OS 制造商:        Microsoft Corporation\n" +
-                "OS 配置:          独立工作站\n" +
-                "OS 构建类型:      Multiprocessor Free\n" +
-                "注册的所有人:     Windows 用户\n" +
-                "注册的组织:\n" +
-                "产品 ID:          00331-10000-00001-AA265\n" +
-                "初始安装日期:     2021-9-17, 21:46:11\n" +
-                "系统启动时间:     2024-4-24, 22:45:05\n" +
-                "系统制造商:       VMware, Inc.\n" +
-                "系统型号:         VMware7,1\n" +
-                "系统类型:         x64-based PC\n" +
-                "处理器:           安装了 2 个处理器。\n" +
-                "                  [01]: Intel64 Family 6 Model 158 Stepping 10 GenuineIntel ~2592 Mhz\n" +
-                "                  [02]: Intel64 Family 6 Model 158 Stepping 10 GenuineIntel ~2592 Mhz\n" +
-                "BIOS 版本:        VMware, Inc. VMW71.00V.18452719.B64.2108091906, 2021-8-9\n" +
-                "Windows 目录:     C:\\Windows\n" +
-                "系统目录:         C:\\Windows\\system32\n" +
-                "启动设备:         \\Device\\HarddiskVolume1\n" +
-                "系统区域设置:     zh-cn;中文(中国)\n" +
-                "输入法区域设置:   zh-cn;中文(中国)\n" +
-                "时区:             (UTC+08:00) 北京，重庆，香港特别行政区，乌鲁木齐\n" +
-                "物理内存总量:     5,119 MB\n" +
-                "可用的物理内存:   2,885 MB\n" +
-                "虚拟内存: 最大值: 5,439 MB\n" +
-                "虚拟内存: 可用:   3,403 MB\n" +
-                "虚拟内存: 使用中: 2,036 MB\n" +
-                "页面文件位置:     C:\\pagefile.sys\n" +
-                "域:               WORKGROUP\n" +
-                "登录服务器:       \\\\DESKTOP-EMGF5BE\n" +
-                "修补程序:         安装了 6 个修补程序。\n" +
-                "                  [01]: KB4601556\n" +
-                "                  [02]: KB4513661\n" +
-                "                  [03]: KB4516115\n" +
-                "                  [04]: KB4517245\n" +
-                "                  [05]: KB4521863\n" +
-                "                  [06]: KB4517389\n" +
-                "网卡:             安装了 2 个 NIC。\n" +
-                "                  [01]: Intel(R) 82574L Gigabit Network Connection\n" +
-                "                      连接名:      Ethernet0\n" +
-                "                      启用 DHCP:   是\n" +
-                "                      DHCP 服务器: 172.16.246.254\n" +
-                "                      IP 地址\n" +
-                "                        [01]: 172.16.246.250\n" +
-                "                        [02]: fe80::8403:21ce:5678:4ec6\n" +
-                "                  [02]: Bluetooth Device (Personal Area Network)\n" +
-                "                      连接名:      蓝牙网络连接\n" +
-                "                      状态:        媒体连接已中断\n" +
-                "Hyper-V 要求:     已检测到虚拟机监控程序。将不显示 Hyper-V 所需的功能。";
-
-        List<Map<String, String>> filteredKB = filterKB(systeminfo, true);
+        List<Map<String, String>> filteredKB = filterKB(KB_RESULT_PREVIEW_TEXT, true);
         System.out.println(filteredKB);
     }
 

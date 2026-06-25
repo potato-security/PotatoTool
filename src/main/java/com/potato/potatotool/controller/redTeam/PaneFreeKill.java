@@ -1,5 +1,7 @@
 package com.potato.potatotool.controller.redTeam;
 
+import com.dlsc.gemsfx.CFCheckBox;
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.application.Platform;
@@ -116,6 +118,42 @@ public class PaneFreeKill {
 
     @FXML
     private VBox vBoxBarFunc;
+    @FXML
+    private TextField filePath;
+    @FXML
+    private Label filePos;
+    @FXML
+    private Label fileCreateTime;
+    @FXML
+    private Label fileChangeTime;
+    @FXML
+    private Label fileRunTime;
+    @FXML
+    private Label fileType;
+    @FXML
+    private Label funcSize;
+    @FXML
+    private Label confusionSize;
+    @FXML
+    private Label virtualizationSize;
+    @FXML
+    private Label encodeSize;
+    @FXML
+    private CFCheckBox isImportPro;
+    @FXML
+    private CFCheckBox isMemoryPro;
+    @FXML
+    private CFCheckBox isCompressPro;
+    @FXML
+    private CFCheckBox isResPro;
+    @FXML
+    private CFCheckBox isDebuggerDetection;
+    @FXML
+    private CFCheckBox isVirtualDetection;
+    @FXML
+    private ComboBox getMode;
+    @FXML
+    private VBox assemblyCode;
 
     public void initialize() {
         SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(10.0);
@@ -144,7 +182,118 @@ public class PaneFreeKill {
         // 绑定国际化
         Platform.runLater(() -> {
             I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
         });
+    }
+
+    private void applyStartupPreviewState() {
+        PaneFreeKillPreviewSupport.PreviewState previewState =
+                PaneFreeKillPreviewSupport.buildPreviewState(ToStart.getStartupTestPage());
+        if (previewState == null) {
+            return;
+        }
+
+        if (previewState.getMode() == PaneFreeKillPreviewSupport.PreviewMode.SIGNATURE) {
+            toSignature(null);
+            if (sigFilePath != null) {
+                sigFilePath.setText(previewState.getSigFilePath());
+            }
+            if (exePath != null) {
+                exePath.setText(previewState.getExePath());
+            }
+            if (tipTitleSigna != null) {
+                tipTitleSigna.setVisible(false);
+            }
+            return;
+        }
+
+        if (previewState.getMode() == PaneFreeKillPreviewSupport.PreviewMode.QR) {
+            toQR(null);
+            if (contentQR != null) {
+                contentQR.setText(previewState.getContentQR());
+            }
+            if (widthQR != null) {
+                widthQR.setText(previewState.getWidthQR());
+            }
+            if (logoPath != null) {
+                logoPath.setText(previewState.getLogoPath());
+            }
+            if (widthLogo != null) {
+                widthLogo.setText(previewState.getWidthLogo());
+            }
+            if (tipTitleQR != null) {
+                if (previewState.getTipTitleQR() != null) {
+                    tipTitleQR.setText(previewState.getTipTitleQR());
+                    tipTitleQR.setVisible(true);
+                } else {
+                    tipTitleQR.setVisible(false);
+                }
+            }
+            return;
+        }
+
+        if (previewState.getMode() == PaneFreeKillPreviewSupport.PreviewMode.PROTECT) {
+            toSecureProtect(null);
+            if (filePath != null) {
+                filePath.setText(previewState.getProtectFilePath());
+            }
+            if (filePos != null) {
+                filePos.setText(previewState.getFilePos());
+            }
+            if (fileCreateTime != null) {
+                fileCreateTime.setText(previewState.getFileCreateTime());
+            }
+            if (fileChangeTime != null) {
+                fileChangeTime.setText(previewState.getFileChangeTime());
+            }
+            if (fileRunTime != null) {
+                fileRunTime.setText(previewState.getFileRunTime());
+            }
+            if (fileType != null) {
+                fileType.setText(previewState.getFileType());
+            }
+            if (funcSize != null) {
+                funcSize.setText(previewState.getFuncSize());
+            }
+            if (confusionSize != null) {
+                confusionSize.setText(previewState.getConfusionSize());
+            }
+            if (virtualizationSize != null) {
+                virtualizationSize.setText(previewState.getVirtualizationSize());
+            }
+            if (encodeSize != null) {
+                encodeSize.setText(previewState.getEncodeSize());
+            }
+            if (isImportPro != null) {
+                isImportPro.setSelected(previewState.isImportProtect());
+            }
+            if (isMemoryPro != null) {
+                isMemoryPro.setSelected(previewState.isMemoryProtect());
+            }
+            if (isCompressPro != null) {
+                isCompressPro.setSelected(previewState.isCompressProtect());
+            }
+            if (isResPro != null) {
+                isResPro.setSelected(previewState.isResourceProtect());
+            }
+            if (isDebuggerDetection != null) {
+                isDebuggerDetection.setSelected(previewState.isDebuggerDetection());
+            }
+            if (isVirtualDetection != null) {
+                isVirtualDetection.setSelected(previewState.isVirtualDetection());
+            }
+            if (getMode != null && previewState.getProtectMode() != null) {
+                getMode.getSelectionModel().select(previewState.getProtectMode());
+            }
+            if (assemblyCode != null) {
+                assemblyCode.getChildren().clear();
+                for (String line : previewState.getAssemblyLines()) {
+                    Label label = new Label(line);
+                    label.setWrapText(true);
+                    assemblyCode.getChildren().add(label);
+                }
+            }
+        }
     }
 
     @FXML

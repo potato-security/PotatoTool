@@ -1,6 +1,7 @@
 package com.potato.potatotool.controller.redTeam;
 
 import com.dlsc.gemsfx.CFCheckBox;
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.content.redTeam.portScanner.bridge.HandoffPolicy;
 import com.potato.potatotool.content.redTeam.portScanner.bridge.HandoffResult;
 import com.potato.potatotool.content.redTeam.portScanner.bridge.VulnScanBridge;
@@ -127,7 +128,82 @@ public class PanePortScan {
         if (promptPane != null && promptLabel != null) {
             promptDefaultContent = promptLabel;
         }
-        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
+        });
+    }
+
+    private void applyStartupPreviewState() {
+        PanePortScanPreviewSupport.PreviewState previewState =
+                PanePortScanPreviewSupport.buildPreviewState(ToStart.getStartupTestPage());
+        if (previewState == null) {
+            return;
+        }
+
+        if (targetField != null) {
+            targetField.setText(previewState.getTargetText());
+        }
+        if (portPresetComboBox != null && previewState.getPortPreset() != null) {
+            portPresetComboBox.getSelectionModel().select(previewState.getPortPreset());
+        }
+        if (customPortsField != null) {
+            customPortsField.setText(previewState.getCustomPorts());
+        }
+        if (timeoutField != null) {
+            timeoutField.setText(previewState.getTimeout());
+        }
+        if (batchSizeField != null) {
+            batchSizeField.setText(previewState.getBatchSize());
+        }
+        if (serviceProbeBox != null) {
+            serviceProbeBox.setSelected(previewState.isServiceProbe());
+        }
+        if (publicModeBox != null) {
+            publicModeBox.setSelected(previewState.isPublicMode());
+        }
+        if (autoHandoffBox != null) {
+            autoHandoffBox.setSelected(previewState.isAutoHandoff());
+        }
+        if (configTitledPane != null) {
+            configTitledPane.setExpanded(previewState.isConfigExpanded());
+        }
+        if (scanStateLabel != null) {
+            scanStateLabel.setText(previewState.getScanState());
+        }
+        if (progressLabel != null) {
+            progressLabel.setText(previewState.getProgressText());
+        }
+        if (progressBar != null) {
+            progressBar.setProgress(previewState.getProgressValue());
+        }
+        if (openCountLabel != null) {
+            openCountLabel.setText(previewState.getOpenCount());
+        }
+        resultItems.setAll(previewState.getResultItems());
+        lastResult = previewState.toResult();
+        if (historyTableView != null) {
+            historyTableView.getItems().setAll(previewState.getHistoryItems());
+        }
+        updateHistoryCountLabel(previewState.getHistoryItems().size());
+        if (previewState.isHistoryVisible()) {
+            showPreviewHistoryMask();
+        } else {
+            hideHistoryMask();
+        }
+        updateButtons(previewState.isScanning(), false);
+    }
+
+    private void showPreviewHistoryMask() {
+        if (historyMask == null) {
+            return;
+        }
+        historyMask.setVisible(true);
+        historyMask.setManaged(true);
+        historyMask.toFront();
+        if (historyTableView != null && !historyTableView.getItems().isEmpty()) {
+            historyTableView.getSelectionModel().selectFirst();
+        }
     }
 
     private void setupTable() {

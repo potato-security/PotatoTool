@@ -1,5 +1,6 @@
 package com.potato.potatotool.controller.blueTeam;
 
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.content.blueTeam.IpInfo;
 import com.potato.potatotool.utils.core.I18nUtils;
 import javafx.application.Platform;
@@ -26,6 +27,16 @@ import static com.potato.potatotool.utils.data.StrUtils.joinList_r;
  * @date 2023/10/7 16:46
  */
 public class PaneGetIpInfo {
+    private static final String PREVIEW_INPUT_WITH_IPS =
+            "tcp        0      0 192.168.1.10:49732      8.8.8.8:53             ESTABLISHED\n" +
+            "tcp        0      0 10.0.0.15:51514         1.1.1.1:443            ESTABLISHED\n" +
+            "tcp        0      0 172.16.8.23:61200       114.114.114.114:53     ESTABLISHED\n" +
+            "tcp        0      0 203.0.113.9:443         198.51.100.22:52344    TIME_WAIT";
+    private static final String PREVIEW_INPUT_NO_IP =
+            "Active Connections\n" +
+            "Proto  Local Address          Foreign Address        State\n" +
+            "tcp    localhost:app          remote:service         ESTABLISHED";
+
     @FXML
     private StackPane sPane;
 
@@ -121,7 +132,39 @@ public class PaneGetIpInfo {
         });
         
         // 绑定国际化
-        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
+        });
+    }
+
+    private void applyStartupPreviewState() {
+        ToStart.StartupPage startupPage = ToStart.getStartupTestPage();
+        if (startupPage == null) {
+            return;
+        }
+        try {
+            if (startupPage == ToStart.StartupPage.BLUE_GET_IP_INFO_EMPTY) {
+                inputText.setText(PREVIEW_INPUT_NO_IP);
+                getIpInfo(null);
+                return;
+            }
+            if (startupPage == ToStart.StartupPage.BLUE_GET_IP_INFO_EXTRACT_RESULT
+                    || startupPage == ToStart.StartupPage.BLUE_GET_IP_INFO_LOCATION_RESULT
+                    || startupPage == ToStart.StartupPage.BLUE_GET_IP_INFO_RULES) {
+                inputText.setText(PREVIEW_INPUT_WITH_IPS);
+                getIpInfo(null);
+            }
+            if (startupPage == ToStart.StartupPage.BLUE_GET_IP_INFO_RULES) {
+                rulesComboBox.getSelectionModel().select("国外IP");
+                rulesComboChoose(null);
+                Platform.runLater(() -> rulesComboBox.show());
+            }
+        } catch (Exception e) {
+            if (ToStart.debugMode) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private LinkedHashMap<String, String> ipPosDict;

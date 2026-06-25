@@ -2,6 +2,7 @@ package com.potato.potatotool.controller.blueTeam;
 
 import com.google.gson.JsonObject;
 import com.opencsv.CSVWriter;
+import com.potato.potatotool.ToStart;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.application.Platform;
@@ -9,6 +10,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
@@ -30,9 +32,13 @@ import static com.potato.potatotool.content.blueTeam.PhoneToRegionUtil.*;
  * @date 2024/4/21 16:23
  */
 public class PaneLocationQuery {
+    private static final String PREVIEW_BANKCARD = "6222021001116249";
+    private static final String PREVIEW_PHONE = "13800138000";
 
     @FXML
     private StackPane sPane;
+    @FXML
+    private ScrollPane scrollPane;
 
     @FXML
     private TextField idCardInput;
@@ -68,7 +74,36 @@ public class PaneLocationQuery {
     @FXML
     void initialize(){
         // 绑定国际化
-        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
+        Platform.runLater(() -> {
+            I18nUtils.bindComponents(sPane);
+            applyStartupPreviewState();
+        });
+    }
+
+    private void applyStartupPreviewState() {
+        ToStart.StartupPage startupPage = ToStart.getStartupTestPage();
+        if (startupPage == ToStart.StartupPage.BLUE_LOCATION_QUERY_BANKCARD) {
+            bankCardInput.setText(PREVIEW_BANKCARD);
+            bankCardTF_position.setText("中国工商银行");
+            bankCardTF_bank.setText("工商银行");
+            bankCardTF_type.setText("借记卡");
+            scrollTo(0.45);
+        } else if (startupPage == ToStart.StartupPage.BLUE_LOCATION_QUERY_PHONE) {
+            phoneInput.setText(PREVIEW_PHONE);
+            phoneTF_Province.setText("北京");
+            phoneTF_City.setText("北京");
+            phoneTF_Operator.setText("中国移动");
+            phoneTF_AreaCode.setText("010");
+            phoneTF_PostalCode.setText("100000");
+            scrollTo(1.0);
+        }
+    }
+
+    private void scrollTo(double value) {
+        if (scrollPane == null) {
+            return;
+        }
+        Platform.runLater(() -> scrollPane.setVvalue(value));
     }
 
     @FXML

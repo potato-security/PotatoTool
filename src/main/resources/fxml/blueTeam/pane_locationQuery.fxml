@@ -14,7 +14,7 @@
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneLocationQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}">
+    <SmoothScrollPane fx:id="scrollPane" prefHeight="${sPane.height}" prefWidth="${sPane.width}">
         <VBox spacing="30" alignment="CENTER"  prefWidth="${sPane.width - 15}">
 
         <VBox styleClass="vBox" spacing="20">
