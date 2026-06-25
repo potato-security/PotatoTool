@@ -60,7 +60,7 @@ public class GodzillaWebFluxHandlerMethod {
         String value = null;
         try {
             base64 = Class.forName("java.util.Base64");
-            Object Encoder = base64.getMethod("getEncoder", null).invoke(base64, null);
+            Object Encoder = base64.getMethod("getEncoder", new Class[0]).invoke(base64, new Object[0]);
             value = (String) Encoder.getClass().getMethod("encodeToString", new Class[]{byte[].class}).invoke(Encoder, new Object[]{bs});
         } catch (Exception e) {
             try {
@@ -78,7 +78,7 @@ public class GodzillaWebFluxHandlerMethod {
         byte[] value = null;
         try {
             base64 = Class.forName("java.util.Base64");
-            Object decoder = base64.getMethod("getDecoder", null).invoke(base64, null);
+            Object decoder = base64.getMethod("getDecoder", new Class[0]).invoke(base64, new Object[0]);
             value = (byte[]) decoder.getClass().getMethod("decode", new Class[]{String.class}).invoke(decoder, new Object[]{bs});
         } catch (Exception e) {
             try {

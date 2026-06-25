@@ -21,6 +21,25 @@ public class InjectorUtil {
         Glassfish_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_FILTER, GlassFishFilterInjector.class.getName());
         INJECTOR_CLASSNAME_MAP.put(MemoryShellConstants.SERVER_GLASSFISH, Glassfish_CLASSNAME_MAP);
 
+        Map<String, String> Apusic_CLASSNAME_MAP = new HashMap();
+        Apusic_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, ApusicListenerInjector.class.getName());
+        Apusic_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_FILTER, ApusicFilterInjector.class.getName());
+        INJECTOR_CLASSNAME_MAP.put(MemoryShellConstants.SERVER_APUSIC, Apusic_CLASSNAME_MAP);
+
+        Map<String, String> BES_CLASSNAME_MAP = new HashMap();
+        BES_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, BESListenerInjector.class.getName());
+        BES_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_FILTER, BESFilterInjector.class.getName());
+        INJECTOR_CLASSNAME_MAP.put(MemoryShellConstants.SERVER_BES, BES_CLASSNAME_MAP);
+
+        Map<String, String> InforSuite_CLASSNAME_MAP = new HashMap();
+        InforSuite_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, InforSuiteListenerInjector.class.getName());
+        InforSuite_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_FILTER, InforSuiteFilterInjector.class.getName());
+        INJECTOR_CLASSNAME_MAP.put(MemoryShellConstants.SERVER_INFORSUITE, InforSuite_CLASSNAME_MAP);
+
+        Map<String, String> TongWeb_CLASSNAME_MAP = new HashMap();
+        TongWeb_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, TongWebListenerInjector.class.getName());
+        INJECTOR_CLASSNAME_MAP.put(MemoryShellConstants.SERVER_TONGWEB, TongWeb_CLASSNAME_MAP);
+
         Map<String, String> Jetty_CLASSNAME_MAP = new HashMap();
         Jetty_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, JettyListenerInjector.class.getName());
         Jetty_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_FILTER, JettyFilterInjector.class.getName());
@@ -34,6 +53,9 @@ public class InjectorUtil {
         Map<String, String> Tomcat_CLASSNAME_MAP = new HashMap();
         Tomcat_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, TomcatListenerInjector.class.getName());
         Tomcat_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_FILTER, TomcatFilterInjector.class.getName());
+        Tomcat_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_LISTENER, TomcatListenerInjector.class.getName());
+        Tomcat_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_FILTER, TomcatFilterInjector.class.getName());
+        Tomcat_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_VALVE, TomcatValveInjector.class.getName());
         INJECTOR_CLASSNAME_MAP.put(MemoryShellConstants.SERVER_TOMCAT, Tomcat_CLASSNAME_MAP);
 
         Map<String, String> Undertow_CLASSNAME_MAP = new HashMap();
@@ -69,7 +91,15 @@ public class InjectorUtil {
     // 根据 中间件/框架名称 及 shell类型 获取对应 注入器类名
     // serverType="Tomcat"  shellType="Listener"
     public static String getInjectorClassName(String serverType, String shellType) throws Exception {
-        return INJECTOR_CLASSNAME_MAP.get(serverType).get(shellType);
+        Map<String, String> injectorMap = INJECTOR_CLASSNAME_MAP.get(serverType);
+        if (injectorMap == null) {
+            throw new IllegalArgumentException("Unsupported server type: " + serverType);
+        }
+        String injectorClassName = injectorMap.get(shellType);
+        if (injectorClassName == null) {
+            throw new IllegalArgumentException("Unsupported shell type: " + serverType + "/" + shellType);
+        }
+        return injectorClassName;
     }
 
 }

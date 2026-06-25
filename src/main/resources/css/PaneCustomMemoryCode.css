@@ -13,3 +13,49 @@
     -fx-border-width: 1;
     -fx-border-radius: 8;
 }
+
+.payload-toolbox-tab-pane {
+    -fx-background-color: transparent;
+}
+
+.payload-toolbox-tab-pane .tab-header-area {
+    -fx-padding: 0 0 8 0;
+}
+
+.payload-toolbox-tab-pane .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.payload-toolbox-tab-pane .tab {
+    -fx-background-color: derive(-main-topBar-color, 4%);
+    -fx-background-insets: 0;
+    -fx-background-radius: 10 10 0 0;
+    -fx-border-color: derive(-main-border-color, -18%);
+    -fx-border-width: 1 1 0 1;
+    -fx-border-radius: 10 10 0 0;
+    -fx-padding: 8 18 8 18;
+}
+
+.payload-toolbox-tab-pane .tab:hover {
+    -fx-background-color: derive(-main-topBar-color, 8%);
+}
+
+.payload-toolbox-tab-pane .tab:selected {
+    -fx-background-color: -main-topBar-color;
+    -fx-border-color: -main-border-color;
+}
+
+.payload-toolbox-tab-pane .tab .tab-label {
+    -fx-text-fill: -main-font-color;
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+}
+
+.payload-toolbox-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: -main-border-color;
+}
+
+.payload-toolbox-tab-pane .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}

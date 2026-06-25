@@ -146,12 +146,17 @@ public class WebLogicFilterInjector {
         return webappContexts.toArray();
     }
 
-    private Object getFilter(Object context) {
-        Object filter = null;
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (classLoader == null) {
-            classLoader = context.getClass().getClassLoader();
+    public ClassLoader getWebAppClassLoader(Object context) throws Exception {
+        try {
+            return (ClassLoader) invokeMethod(context, "getClassLoader", null, null);
+        } catch (Exception ignored) {
+            return (ClassLoader) getFieldValue(context, "classLoader");
         }
+    }
+
+    private Object getFilter(Object context) throws Exception {
+        Object filter = null;
+        ClassLoader classLoader = getWebAppClassLoader(context);
         try {
             filter = classLoader.loadClass(getClassName()).newInstance();
         } catch (Exception e) {

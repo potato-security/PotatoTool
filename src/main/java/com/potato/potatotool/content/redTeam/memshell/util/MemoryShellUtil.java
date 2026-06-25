@@ -24,6 +24,9 @@ public class MemoryShellUtil {
         Behinder_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_FILTER, BehinderFilter.class.getName());
         Behinder_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, BehinderListener.class.getName());
         Behinder_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_INTERCEPTOR, BehinderInterceptor.class.getName());
+        Behinder_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_FILTER, BehinderJakartaFilter.class.getName());
+        Behinder_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_LISTENER, BehinderJakartaListener.class.getName());
+        Behinder_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_VALVE, BehinderValve.class.getName());
 
         TOOL_CLASSNAME_MAP.put(MemoryShellConstants.TOOL_BEHINDER, Behinder_CLASSNAME_MAP);
 
@@ -31,6 +34,9 @@ public class MemoryShellUtil {
         Map<String, String> AntSword_CLASSNAME_MAP = new HashMap();
         AntSword_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_FILTER, AntSwordFilter.class.getName());
         AntSword_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, AntSwordListener.class.getName());
+        AntSword_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_FILTER, AntSwordJakartaFilter.class.getName());
+        AntSword_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_LISTENER, AntSwordJakartaListener.class.getName());
+        AntSword_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_VALVE, AntSwordValve.class.getName());
 
         TOOL_CLASSNAME_MAP.put(MemoryShellConstants.TOOL_ANTSWORD, AntSword_CLASSNAME_MAP);
 
@@ -40,6 +46,9 @@ public class MemoryShellUtil {
         Godzilla_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, GodzillaListener.class.getName());
         Godzilla_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_INTERCEPTOR, GodzillaInterceptor.class.getName());
         Godzilla_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_WFHANDLERMETHOD, GodzillaWebFluxHandlerMethod.class.getName());
+        Godzilla_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_FILTER, GodzillaJakartaFilter.class.getName());
+        Godzilla_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_LISTENER, GodzillaJakartaListener.class.getName());
+        Godzilla_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_VALVE, GodzillaValve.class.getName());
 
         TOOL_CLASSNAME_MAP.put(MemoryShellConstants.TOOL_GODZILLA, Godzilla_CLASSNAME_MAP);
 
@@ -48,6 +57,8 @@ public class MemoryShellUtil {
         Suo5_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_FILTER, Suo5Filter.class.getName());
         Suo5_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, Suo5Listener.class.getName());
         Suo5_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_INTERCEPTOR, Suo5Interceptor.class.getName());
+        Suo5_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_FILTER, Suo5JakartaFilter.class.getName());
+        Suo5_CLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_LISTENER, Suo5JakartaListener.class.getName());
 
         TOOL_CLASSNAME_MAP.put(MemoryShellConstants.TOOL_SUO5, Suo5_CLASSNAME_MAP);
 
@@ -56,13 +67,23 @@ public class MemoryShellUtil {
         NeoreGeorgCLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_FILTER, NeoreGeorgFilter.class.getName());
         NeoreGeorgCLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_LISTENER, NeoreGeorgListener.class.getName());
         NeoreGeorgCLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_INTERCEPTOR, NeoreGeorgInterceptor.class.getName());
+        NeoreGeorgCLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_FILTER, NeoreGeorgJakartaFilter.class.getName());
+        NeoreGeorgCLASSNAME_MAP.put(MemoryShellConstants.SHELLTYPE_JAKARTA_LISTENER, NeoreGeorgJakartaListener.class.getName());
 
         TOOL_CLASSNAME_MAP.put(MemoryShellConstants.TOOL_NEOREGEORG, NeoreGeorgCLASSNAME_MAP);
     }
 
     // 根据 工具名称 及 shelll类型 获取对应 shell类名
     public static String getShellClassName(String toolType, String shellType) {
-        return TOOL_CLASSNAME_MAP.get(toolType).get(shellType);
+        Map<String, String> shellMap = TOOL_CLASSNAME_MAP.get(toolType);
+        if (shellMap == null) {
+            throw new IllegalArgumentException("Unsupported tool type: " + toolType);
+        }
+        String shellClassName = shellMap.get(shellType);
+        if (shellClassName == null) {
+            throw new IllegalArgumentException("Unsupported shell type: " + toolType + "/" + shellType);
+        }
+        return shellClassName;
     }
 
 }

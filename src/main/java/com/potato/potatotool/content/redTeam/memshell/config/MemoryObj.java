@@ -2,6 +2,7 @@ package com.potato.potatotool.content.redTeam.memshell.config;
 
 import com.potato.potatotool.content.redTeam.memshell.factory.InjectorFactory;
 import com.potato.potatotool.content.redTeam.memshell.factory.MemoryShellFactory;
+import com.potato.potatotool.content.redTeam.memshell.util.MemoryShellOptionUtil;
 import com.potato.potatotool.content.redTeam.memshell.util.ShowResultsUtil;
 
 import java.util.HashMap;
@@ -40,6 +41,7 @@ public class MemoryObj {
     private String loaderClassName;
     private String classFilePath;
     private Map<String, String> showResultMap;
+    private boolean enableBypassJDKModule;
 
 
     public String getInjectorClassName() {
@@ -268,6 +270,13 @@ public class MemoryObj {
         this.classFilePath = classFilePath;
     }
 
+    public boolean isEnableBypassJDKModule() {
+        return enableBypassJDKModule;
+    }
+
+    public void setEnableBypassJDKModule(boolean enableBypassJDKModule) {
+        this.enableBypassJDKModule = enableBypassJDKModule;
+    }
 
     public Map<String, String> getShowResultMap() {
         return showResultMap;
@@ -279,6 +288,7 @@ public class MemoryObj {
 
 
     public void buildMemoryShellAndInjector() throws Exception {
+        MemoryShellOptionUtil.normalizeAndPrepareForGeneration(this);
         new MemoryShellFactory().generateShell(this);
         new InjectorFactory().generateInjector(this);
         this.setShowResultMap( ShowResultsUtil.generateShowResultMap(this) );

@@ -18,11 +18,27 @@ public class ResponseCodeUtil {
         RESPONSE_CODE_MAP.put(MemoryShellConstants.SERVER_JETTY, generateJettyResponseCode());
         RESPONSE_CODE_MAP.put(MemoryShellConstants.SERVER_WEBSPHERE, generateWebsphereResponseCode());
         RESPONSE_CODE_MAP.put(MemoryShellConstants.SERVER_UNDERTOW, generateUndertowResponseCode());
+        RESPONSE_CODE_MAP.put(MemoryShellConstants.SERVER_INFORSUITE, generateCommonResponseCode());
+        RESPONSE_CODE_MAP.put(MemoryShellConstants.SERVER_BES, generateCommonResponseCode());
+        RESPONSE_CODE_MAP.put(MemoryShellConstants.SERVER_TONGWEB, generateTongwebResponseCode());
+        RESPONSE_CODE_MAP.put(MemoryShellConstants.SERVER_APUSIC, generateApusicResponseCode());
     }
 
     // 根据服务器类型返回相应的HTTP响应获取方法体。
     public static String getResponseCode(String serverType) {
-        return RESPONSE_CODE_MAP.getOrDefault(serverType, "");
+        String responseCode = RESPONSE_CODE_MAP.get(serverType);
+        if (responseCode == null || responseCode.isEmpty()) {
+            throw new IllegalArgumentException("Unsupported response code server type: " + serverType);
+        }
+        return responseCode;
+    }
+
+    public static String getResponseCode(String serverType, String shellType) {
+        String responseCode = getResponseCode(serverType);
+        if (MemoryShellConstants.SHELLTYPE_JAKARTA_LISTENER.equals(shellType)) {
+            return responseCode.replace("javax.servlet.http.HttpServletResponse", "jakarta.servlet.http.HttpServletResponse");
+        }
+        return responseCode;
     }
 
     // 返回通用的HTTP响应获取方法体。
@@ -84,6 +100,18 @@ public class ResponseCodeUtil {
                 "            break;\n" +
                 "        }\n" +
                 "    }\n" +
+                "    return response;\n" +
+                "}";
+    }
+
+    private static String generateTongwebResponseCode() {
+        return generateCommonResponseCode();
+    }
+
+    private static String generateApusicResponseCode() {
+        return "{\n" +
+                "    javax.servlet.http.HttpServletResponse response;\n" +
+                "    response = (javax.servlet.http.HttpServletResponse) getFieldValue(getFieldValue($1, \"http\"), \"response\");\n" +
                 "    return response;\n" +
                 "}";
     }

