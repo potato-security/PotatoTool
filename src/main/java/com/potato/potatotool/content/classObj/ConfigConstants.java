@@ -40,6 +40,10 @@ public interface ConfigConstants {
     String AI_LOCAL_API_KEY = "local_api_key";
     String AI_LOCAL_MODEL_NAME = "local_model_name";
 
+    // ========== AI 自动渗透配置相关 ==========
+    String AI_PENTEST = "AiPentest";
+    String AI_PENTEST_EXTENSION_SKILLS = "extensionSkills";
+
     // ========== Decompile 反编译配置相关 ==========
     String DECOMPILE_MODE = "decompileMode";
     String DECOMPILE_AI_OPTIMIZATION = "AI_optimization";

@@ -380,6 +380,7 @@ public class MainApplication extends Application {
                                     scene.getRoot().getStyleClass().add("blueStyle");
                                     scene.getRoot().setOpacity(0);
                                     stage.setScene(scene);
+                                    applyStartupTestWindowSize(stage);
                                 } catch (Exception e) { if (debugMode) e.printStackTrace(); }
                                 Platform.runLater(new Runnable() {
                                     @Override public void run() {
@@ -399,6 +400,16 @@ public class MainApplication extends Application {
                 });
             }
         });
+    }
+
+    private void applyStartupTestWindowSize(Stage stage) {
+        ToStart.TestWindowSize windowSize = ToStart.getStartupTestWindowSize();
+        if (windowSize == null) {
+            return;
+        }
+        stage.setWidth(windowSize.getWidth());
+        stage.setHeight(windowSize.getHeight());
+        stage.centerOnScreen();
     }
 
     /**

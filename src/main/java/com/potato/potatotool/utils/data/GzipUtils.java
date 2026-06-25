@@ -115,6 +115,7 @@ public class GzipUtils {
              GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)) {
 
             gzipOutputStream.write(data);
+            gzipOutputStream.finish();
 
             return outputStream.toByteArray();
         } catch (IOException e) {

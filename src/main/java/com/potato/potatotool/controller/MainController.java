@@ -197,6 +197,14 @@ public class MainController {
         PaneAbout PaneAbout = aboutResult.controller;
         yieldToUi();
 
+        FXMLLoader aiPentestLoader = new FXMLLoader(getClass().getResource("/fxml/redTeam/pane_aiPentest.fxml"));
+        Pane pAiPentest = aiPentestLoader.load();
+        RXCarouselPane aiPentestPane = new RXCarouselPane(pAiPentest);
+        aiPentestPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
+        pAiPentest.prefWidthProperty().bind(topBar.widthProperty().multiply(0.86));
+        pAiPentest.prefHeightProperty().bind(mainCarousel.heightProperty());
+        yieldToUi();
+
         Pane p11 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_infoSearch.fxml"));
         RXCarouselPane infoSearchPane = new RXCarouselPane(p11);
         infoSearchPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
@@ -234,6 +242,13 @@ public class MainController {
         customMemoryCodePane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
         p14.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
         p14.prefHeightProperty().bind(mainCarousel.heightProperty());
+        yieldToUi();
+
+        Pane pPayloadToolbox = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_payloadToolbox.fxml"));
+        RXCarouselPane payloadToolboxPane = new RXCarouselPane(pPayloadToolbox);
+        payloadToolboxPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
+        pPayloadToolbox.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        pPayloadToolbox.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p15 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_customCommandGeneration.fxml"));
@@ -282,7 +297,7 @@ public class MainController {
         yieldToUi();
 
         mainCarousel.setPaneList(webshellDecodePane, separateDecodePane, ipInFoPane, aiAnswerPane, decompilePane, blockchainPane, locationQueryPane, exifPane, extensionPane, aboutPane,
-                infoSearchPane, portScanPane, vulScanPane, freeKillPane, customMemoryCodePane, customCommandGenerationPane, commandQueryPane, kbRootQueryPane, processQueryPane, infoGenerationPane, extensionPane_1, aboutPane_1);
+                aiPentestPane, infoSearchPane, portScanPane, vulScanPane, freeKillPane, customMemoryCodePane, payloadToolboxPane, customCommandGenerationPane, commandQueryPane, kbRootQueryPane, processQueryPane, infoGenerationPane, extensionPane_1, aboutPane_1);
         mainCarousel.setCarouselAnimation(new AnimNone());  // AnimFade
         mainCarousel.setAnimationTime(Duration.seconds(0));  // 0.2
 

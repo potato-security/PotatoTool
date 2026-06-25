@@ -184,11 +184,13 @@
                               <!-- 红队导航 -->
                               <FlowPane fx:id="redBar" alignment="CENTER" hgap="10" vgap="10" prefHeight="80.0" styleClass="box-nav-red">
                                  <children>
+                                    <RXToggleButton text="AI自动渗透" userData="i18n:main.red.aipentest" toggleGroup="$navGroup" />
                                     <RXToggleButton text="资产测绘" userData="i18n:main.red.infosearch" toggleGroup="$navGroup" />
                                     <RXToggleButton text="端口扫描" userData="i18n:main.red.portscan" toggleGroup="$navGroup" />
                                     <RXToggleButton text="漏洞扫描" userData="i18n:main.red.vulnscan" toggleGroup="$navGroup" />
                                     <RXToggleButton text="免杀" userData="i18n:main.red.freekill" toggleGroup="$navGroup" />
                                     <RXToggleButton text="自定义内存马" userData="i18n:main.red.memshell" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="Payload 工具箱" userData="i18n:main.red.payload" toggleGroup="$navGroup" />
                                     <RXToggleButton text="命令生成" userData="i18n:main.red.cmdgen" toggleGroup="$navGroup" />
                                     <RXToggleButton text="命令查询" userData="i18n:main.red.cmdquery" toggleGroup="$navGroup" />
                                     <RXToggleButton text="KB提权查询" userData="i18n:main.red.kbquery" toggleGroup="$navGroup" />
