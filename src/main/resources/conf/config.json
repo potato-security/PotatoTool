@@ -140,7 +140,7 @@
     "verbose": false,
     "maxConnections": 100,
     "connectionTimeout": 30000,
-    "maxPayloadCombinations": 1000,
+    "maxPayloadCombinations": 2000,
     "threadPool": {
       "coreThreads": 10,
       "maxThreads": 50,
