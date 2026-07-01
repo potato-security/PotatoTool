@@ -218,6 +218,17 @@ public class IpInfo {
 
     }
 
+    /** 返回 ip → ip2region 原始字符串字典，供 result4/8 的 "地区 | ISP" 注释格式使用 */
+    public static LinkedHashMap<String, String> getIpRawDict(Searcher searcher, Set<String> ipList) {
+        LinkedHashMap<String, String> dict = new LinkedHashMap<>();
+        for (String ip : ipList) {
+            String raw = "内网|0|0|0|0";
+            try { raw = searcher.search(ip); } catch (Exception e) {}
+            dict.put(ip, raw);
+        }
+        return dict;
+    }
+
     // 根据pos出现的次数排序，剔除pos为"内网IP"
     public static Set<String> getSortedPosList(LinkedHashMap<String, String> ipPosDict) {
         // 统计次数并排序，同时过滤掉为"内网"的值

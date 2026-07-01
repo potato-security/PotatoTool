@@ -168,6 +168,7 @@ public class PaneGetIpInfo {
     }
 
     private LinkedHashMap<String, String> ipPosDict;
+    private LinkedHashMap<String, String> ipRawDict;
     @FXML
     void getIpInfo(ActionEvent event) throws Exception {
 
@@ -175,6 +176,7 @@ public class PaneGetIpInfo {
 
         Set<String> ipList = (LinkedHashSet) IpInfo.getIpListFromReg(inputStr);
         ipPosDict = IpInfo.getIpPosDict(searcher, ipList);
+        ipRawDict = IpInfo.getIpRawDict(searcher, ipList);
         Set<String> posList = IpInfo.getSortedPosList(ipPosDict);
 
         result3.replaceText(inputStr);
@@ -199,11 +201,10 @@ public class PaneGetIpInfo {
         ArrayList<String> newPosList = new ArrayList<>(posList);
         Collections.sort(newPosList);
 
-        // 筛选栏
+        // 筛选栏（固定选项文本硬编码不可换）
         rulesComboBox.getItems().clear();
-        rulesComboBox.getItems().addAll("自定义筛选:头部包含","国内IP","国外IP","内网IP","外网IP");
+        rulesComboBox.getItems().addAll("自定义筛选:全部包含","国内IP","国外IP","内网IP","外网IP");
         rulesComboBox.getItems().addAll(newPosList);
-//        rulesComboBox.setValue(rulesComboBox.getItems().get(0));
         rulesComboBox.getSelectionModel().selectFirst();
 
         // result1 IP抽取
@@ -224,10 +225,10 @@ public class PaneGetIpInfo {
         }
 
 
-        // result3 IP标记   result4 IP标记+pos标记
+        // result3 IP高亮   result4 IP高亮 + 归属注释（[地区 | ISP] 格式）
         Pattern pattern = Pattern.compile("\\b(" + String.join("|", ipList) + ")\\b");
         Matcher matcher = pattern.matcher(inputStr);
-        int offset = 0; // 插入文本的偏移量
+        int offset = 0;
         while (matcher.find()) {
             int startIndex = matcher.start() + offset;
             int endIndex = matcher.end() + offset;
@@ -235,14 +236,21 @@ public class PaneGetIpInfo {
             result3.setStyleClass(matcher.start(), matcher.end(), "ipData");
             result4.setStyleClass(startIndex, endIndex, "ipData");
 
-            // 获取匹配到的键对应的值
-            String pos = "[" + ipPosDict.get(matcher.group()) + "]";
-
-            result4.insert(endIndex, pos,"posData");
-
-            offset += pos.length();
+            String posAnnotation = "[" + formatPosAnnotation(ipRawDict.get(matcher.group())) + "]";
+            result4.insert(endIndex, posAnnotation, "posData");
+            offset += posAnnotation.length();
         }
 
+    }
+
+    private String formatPosAnnotation(String raw) {
+        if (raw == null) return "未知";
+        String[] parts = raw.split("\\|");
+        List<String> keep = new ArrayList<>();
+        for (int i = 1; i < parts.length; i++) {
+            if (!"0".equals(parts[i]) && !parts[i].isEmpty()) keep.add(parts[i]);
+        }
+        return keep.isEmpty() ? "内网" : String.join(" | ", keep);
     }
 
     //    筛选栏事件
@@ -266,8 +274,9 @@ public class PaneGetIpInfo {
             customTextField.setManaged(false);
         }
         if (selectedIndex == 0){
-            //  自定义筛选:IP/Pos头部包含
-            newTmpipPosDict = IpInfo.filterIpPos(ipPosDict, customTextField.getText().trim());
+            //  自定义筛选:全部包含（IP或归属地含关键词即可）
+            String keyword = customTextField.getText().trim();
+            newTmpipPosDict = filterIpPosContains(ipPosDict, keyword);
         }else{
             newTmpipPosDict = IpInfo.filterIpPos(ipPosDict, selectedValue);
         }
@@ -298,7 +307,7 @@ public class PaneGetIpInfo {
 
         Pattern pattern = Pattern.compile("\\b(" + String.join("|", newTmpipPosDict.keySet()) + ")\\b");
         Matcher matcher = pattern.matcher(inputStr);
-        int offset = 0; // 插入文本的偏移量
+        int offset = 0;
         while (matcher.find()) {
             int startIndex = matcher.start() + offset;
             int endIndex = matcher.end() + offset;
@@ -306,17 +315,22 @@ public class PaneGetIpInfo {
             result7.setStyleClass(matcher.start(), matcher.end(), "ipData");
             result8.setStyleClass(startIndex, endIndex, "ipData");
 
-
-            // 获取匹配到的键对应的值
-            String pos = "[" + newTmpipPosDict.get(matcher.group()) + "]";
-
-            result8.insert(endIndex, pos,"posData");
-
-            offset += pos.length();
+            String posAnnotation = "[" + formatPosAnnotation(ipRawDict != null ? ipRawDict.get(matcher.group()) : null) + "]";
+            result8.insert(endIndex, posAnnotation, "posData");
+            offset += posAnnotation.length();
         }
 
 
     }
 
+    /** 自定义筛选：IP 或归属地包含关键词（全部包含，不区分大小写） */
+    private LinkedHashMap<String, String> filterIpPosContains(LinkedHashMap<String, String> dict, String keyword) {
+        LinkedHashMap<String, String> result = new LinkedHashMap<>(dict);
+        if (keyword == null || keyword.isEmpty()) return result;
+        String lc = keyword.toLowerCase();
+        result.entrySet().removeIf(entry ->
+                !entry.getKey().toLowerCase().contains(lc) && !entry.getValue().toLowerCase().contains(lc));
+        return result;
+    }
 
 }

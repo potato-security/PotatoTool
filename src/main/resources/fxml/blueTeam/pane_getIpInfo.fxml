@@ -32,7 +32,8 @@
             <!-- 过滤规则 -->
             <HBox spacing="12" alignment="CENTER_LEFT">
                <Label text="过滤规则" styleClass="pt-section-label" minWidth="72" userData="i18n:ipinfo.filter.label"/>
-               <ComboBox fx:id="rulesComboBox" prefHeight="30.0" prefWidth="240" onAction="#rulesComboChoose"/>
+               <ComboBox fx:id="rulesComboBox" prefHeight="30.0" prefWidth="240" onAction="#rulesComboChoose"
+                         promptText="提取后可用" userData="i18n-prompt:ipinfo.filter.prompt"/>
                <TextField fx:id="customTextField" styleClass="pt-input" prefHeight="30.0" prefWidth="240" promptText="IP/Pos前缀内容" userData="i18n-prompt:ipinfo.filter.placeholder"/>
             </HBox>
 
