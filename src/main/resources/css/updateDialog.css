@@ -1,4 +1,4 @@
-/* 更新弹窗 —— 迁移到 -pt-* token 体系 */
+/* 更新弹窗 —— Penpot V8 重构 */
 
 .upd-dialog {
     -fx-background-color: -pt-bg-panel;
@@ -8,6 +8,7 @@
     -fx-border-width: 1;
 }
 
+/* ── 标题栏 ── */
 .upd-header {
     -fx-background-color: -pt-bg-elevated;
     -fx-border-color: -pt-border-subtle;
@@ -23,23 +24,29 @@
 }
 
 .upd-close-btn {
-    -fx-background-color: transparent;
+    -fx-background-color: -pt-bg-panel;
     -fx-text-fill: -pt-text-secondary;
-    -fx-font-size: 13;
+    -fx-font-size: 12;
     -fx-cursor: hand;
-    -fx-border-color: transparent;
-    -fx-background-radius: 4;
-    -fx-padding: 2 6 2 6;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 50%;
+    -fx-background-radius: 50%;
+    -fx-border-width: 1;
+    -fx-padding: 0;
 }
 
 .upd-close-btn:hover {
-    -fx-background-color: derive(-pt-danger, -55%);
+    -fx-background-color: derive(-pt-danger, -45%);
     -fx-text-fill: -pt-danger;
+    -fx-border-color: derive(-pt-danger, -20%);
 }
 
-.upd-body {
-    -fx-background-color: -pt-bg-panel;
-    -fx-background-radius: 0 0 10 10;
+/* ── 版本信息条 ── */
+.upd-version-bar {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 10 12 10 20;
 }
 
 .upd-version-info {
@@ -48,29 +55,119 @@
     -fx-font-family: "JetBrains Mono", "Consolas", monospace;
 }
 
-.upd-section-label {
-    -fx-padding: 0 0 8 0;
+.upd-count-chip {
+    -fx-background-color: derive(-pt-accent-teal, -55%);
+    -fx-text-fill: -pt-accent-teal;
+    -fx-border-color: derive(-pt-accent-teal, -35%);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 2 8 2 8;
     -fx-font-size: 11;
     -fx-font-weight: bold;
+}
+
+/* ── 主体 ── */
+.upd-body {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 0 0 10 10;
+}
+
+/* ── 更新项行 ── */
+.upd-item-row {
+    -fx-background-color: transparent;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.upd-item-row-required {
+    -fx-background-color: derive(-pt-accent-teal, -72%);
+    -fx-border-color: transparent transparent -pt-border-subtle -pt-accent-teal;
+    -fx-border-width: 0 0 1 3;
+}
+
+.upd-item-name {
+    -fx-text-fill: -pt-text;
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+}
+
+.upd-item-version {
     -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 11;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
 }
 
-.upd-items-card {
-    -fx-background-color: -pt-bg-elevated;
-    -fx-background-radius: 8;
-    -fx-border-color: -pt-border-subtle;
-    -fx-border-radius: 8;
+.upd-item-size {
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 11;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+}
+
+.upd-item-desc {
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 11;
+}
+
+/* ── 徽章 ── */
+.upd-badge-required {
+    -fx-background-color: derive(-pt-success, -52%);
+    -fx-text-fill: -pt-success;
+    -fx-border-color: derive(-pt-success, -30%);
     -fx-border-width: 1;
-    -fx-padding: 12 14 8 14;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 2 6 2 6;
+    -fx-font-size: 10;
+    -fx-font-weight: bold;
 }
 
+.upd-badge-optional {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text-muted;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 2 6 2 6;
+    -fx-font-size: 10;
+}
+
+/* ── 更新日志折叠区 ── */
 .upd-changelog-card {
-    -fx-background-color: -pt-bg-elevated;
-    -fx-background-radius: 8;
     -fx-border-color: -pt-border-subtle;
-    -fx-border-radius: 8;
-    -fx-border-width: 1;
-    -fx-padding: 12 14 12 14;
+    -fx-border-width: 1 0 0 0;
+}
+
+.upd-changelog-header {
+    -fx-padding: 10 16 10 20;
+    -fx-cursor: hand;
+}
+
+.upd-changelog-header:hover {
+    -fx-background-color: derive(-pt-accent-teal, -72%);
+}
+
+.upd-changelog-arrow {
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 10;
+}
+
+.upd-changelog-title {
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+}
+
+.upd-changelog-toggle-btn {
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 11;
+    -fx-cursor: hand;
+    -fx-padding: 0 4 0 0;
+}
+
+.upd-changelog-content {
+    -fx-padding: 0 14 12 14;
 }
 
 .upd-changelog-text {
@@ -78,13 +175,11 @@
     -fx-font-family: "JetBrains Mono", "Consolas", monospace;
 }
 
+/* ── 进度条 ── */
 .upd-progress-card {
-    -fx-background-color: -pt-bg-elevated;
-    -fx-background-radius: 8;
     -fx-border-color: -pt-border-subtle;
-    -fx-border-radius: 8;
-    -fx-border-width: 1;
-    -fx-padding: 12 14 12 14;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 12 16 12 20;
 }
 
 .upd-progress-bar {
@@ -105,6 +200,7 @@
     -fx-background-insets: 0;
 }
 
+/* ── 重启提示 ── */
 .upd-restart-row {
     -fx-padding: 10 14 10 14;
     -fx-background-color: derive(-pt-success, -60%);
@@ -119,6 +215,13 @@
     -fx-font-size: 12;
 }
 
+/* ── 按钮区 ── */
+.upd-btn-area {
+    -fx-padding: 16 20 20 20;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+
 .upd-primary-btn {
     -fx-font-size: 14;
     -fx-font-weight: bold;
@@ -126,4 +229,12 @@
 
 .upd-secondary-btn {
     -fx-font-size: 12;
+}
+
+/* ── 兼容旧类名 ── */
+.upd-section-label {
+    -fx-padding: 0 0 8 0;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
 }

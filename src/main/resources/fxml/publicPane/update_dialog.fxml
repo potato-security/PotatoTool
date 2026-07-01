@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 
 <?import javafx.scene.control.*?>
@@ -12,7 +11,7 @@
             maxHeight="-Infinity" maxWidth="-Infinity"
             minHeight="-Infinity" minWidth="-Infinity"
             prefHeight="580"
-            prefWidth="560"
+            prefWidth="520"
             style="-fx-background-color: transparent"
             xmlns="http://javafx.com/javafx/"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -37,38 +36,66 @@
                         <HBox alignment="CENTER" prefHeight="${topBar.height}" spacing="0">
                             <Button styleClass="upd-close-btn" mnemonicParsing="false"
                                     onAction="#exitAction" text="✕"
-                                    prefHeight="24" prefWidth="24"/>
+                                    prefHeight="28" prefWidth="28"/>
                             <Pane minWidth="12"/>
                         </HBox>
                     </right>
                 </BorderPane>
 
-                <!-- 主体内容 -->
-                <VBox styleClass="upd-body" VBox.vgrow="ALWAYS" spacing="14"
-                      style="-fx-padding: 20 22 20 22;">
-
-                    <!-- 版本信息 -->
-                    <VBox spacing="4" fx:id="versionInfoBox">
+                <!-- 版本信息条 -->
+                <BorderPane styleClass="upd-version-bar">
+                    <left>
                         <Label fx:id="versionInfoLabel"
                                styleClass="upd-version-info"
-                               text="正在检查更新..." wrapText="true"/>
-                    </VBox>
+                               text="正在检查更新..." wrapText="true"
+                               BorderPane.alignment="CENTER"/>
+                    </left>
+                    <right>
+                        <HBox alignment="CENTER_RIGHT">
+                            <Label fx:id="updateCountLabel"
+                                   styleClass="upd-count-chip"
+                                   text="" visible="false" managed="false"/>
+                            <Pane minWidth="4"/>
+                        </HBox>
+                    </right>
+                </BorderPane>
+
+                <!-- 主体内容 -->
+                <VBox styleClass="upd-body" VBox.vgrow="ALWAYS">
 
                     <!-- 更新项列表 -->
-                    <VBox spacing="0" fx:id="updateItemsBox" managed="false" visible="false"
-                          styleClass="upd-items-card">
-                        <Label styleClass="pt-section-label,upd-section-label"
-                               text="可用更新" userData="i18n:update.available.items"/>
+                    <VBox fx:id="updateItemsBox" managed="false" visible="false">
                         <VBox fx:id="updateItemsContainer" spacing="0"/>
                     </VBox>
 
-                    <!-- 更新日志 -->
-                    <VBox spacing="6" fx:id="changelogBox" managed="false" visible="false"
+                    <!-- 更新日志 - 可折叠 -->
+                    <VBox fx:id="changelogBox" managed="false" visible="false"
                           styleClass="upd-changelog-card">
-                        <Label styleClass="pt-section-label,upd-section-label"
-                               text="更新日志" userData="i18n:update.available.changelog"/>
-                        <SmoothTextArea fx:id="changelogText" editable="false" wrapText="true"
-                                        prefHeight="90" styleClass="pt-input,upd-changelog-text"/>
+                        <BorderPane styleClass="upd-changelog-header"
+                                    onMouseClicked="#toggleChangelog">
+                            <left>
+                                <HBox spacing="6" alignment="CENTER_LEFT"
+                                      BorderPane.alignment="CENTER">
+                                    <Label fx:id="changelogArrow" text="▶"
+                                           styleClass="upd-changelog-arrow"/>
+                                    <Label text="更新日志"
+                                           styleClass="upd-changelog-title"
+                                           userData="i18n:update.available.changelog"/>
+                                </HBox>
+                            </left>
+                            <right>
+                                <Label fx:id="changelogToggleBtn"
+                                       text="展开"
+                                       styleClass="upd-changelog-toggle-btn"
+                                       userData="i18n:update.changelog.expand"
+                                       BorderPane.alignment="CENTER"/>
+                            </right>
+                        </BorderPane>
+                        <VBox fx:id="changelogContent" visible="false" managed="false"
+                              styleClass="upd-changelog-content">
+                            <SmoothTextArea fx:id="changelogText" editable="false" wrapText="true"
+                                            prefHeight="90" styleClass="pt-input,upd-changelog-text"/>
+                        </VBox>
                     </VBox>
 
                     <!-- 下载进度 -->
@@ -86,40 +113,50 @@
 
                     <Region VBox.vgrow="ALWAYS"/>
 
-                    <!-- 重启提示 -->
-                    <HBox spacing="10" alignment="CENTER_LEFT" fx:id="restartBox"
-                          managed="false" visible="false" styleClass="upd-restart-row">
-                        <Label fx:id="restartLabel" text="更新已就绪，点击重启应用完成更新"
-                               userData="i18n:update.install.app.message"
-                               styleClass="upd-restart-text" HBox.hgrow="ALWAYS" wrapText="true"/>
-                        <Button fx:id="restartNowButton" text="立即重启"
-                                styleClass="pt-btn-primary"
-                                userData="i18n:update.install.app.restart.now"
-                                onAction="#onRestartNowClick" minWidth="100" minHeight="38"/>
-                    </HBox>
+                    <!-- 底部按钮区 -->
+                    <VBox spacing="10" styleClass="upd-btn-area">
 
-                    <!-- 主按钮 -->
-                    <HBox fx:id="buttonBox" alignment="CENTER" spacing="10">
-                        <Button fx:id="updateButton" text="更新选中项"
-                                styleClass="pt-btn-primary,upd-primary-btn"
-                                userData="i18n:update.available.button.update.selected"
-                                onAction="#onUpdateClick"
-                                maxWidth="Infinity" minHeight="40" HBox.hgrow="ALWAYS"/>
-                    </HBox>
+                        <!-- 重启提示 -->
+                        <HBox spacing="10" alignment="CENTER_LEFT" fx:id="restartBox"
+                              managed="false" visible="false" styleClass="upd-restart-row">
+                            <Label fx:id="restartLabel"
+                                   text="更新已就绪，点击重启应用完成更新"
+                                   userData="i18n:update.install.app.message"
+                                   styleClass="upd-restart-text"
+                                   HBox.hgrow="ALWAYS" wrapText="true"/>
+                            <Button fx:id="restartNowButton" text="立即重启"
+                                    styleClass="pt-btn-primary"
+                                    userData="i18n:update.install.app.restart.now"
+                                    onAction="#onRestartNowClick"
+                                    minWidth="100" minHeight="38"/>
+                        </HBox>
 
-                    <!-- 次要按钮 -->
-                    <HBox alignment="CENTER" spacing="10">
-                        <Button fx:id="laterButton" text="稍后提醒"
-                                styleClass="pt-btn,upd-secondary-btn"
-                                userData="i18n:update.available.button.later"
-                                onAction="#onLaterClick"
-                                maxWidth="Infinity" minHeight="36" HBox.hgrow="ALWAYS"/>
-                        <Button fx:id="skipButton" text="跳过选中项"
-                                styleClass="pt-btn,upd-secondary-btn"
-                                userData="i18n:update.available.button.skip.selected"
-                                onAction="#onSkipClick"
-                                maxWidth="Infinity" minHeight="36" HBox.hgrow="ALWAYS"/>
-                    </HBox>
+                        <!-- 主按钮 -->
+                        <HBox fx:id="buttonBox" alignment="CENTER">
+                            <Button fx:id="updateButton" text="立即更新"
+                                    styleClass="pt-btn-primary,upd-primary-btn"
+                                    userData="i18n:update.available.button.update.selected"
+                                    onAction="#onUpdateClick"
+                                    maxWidth="Infinity" minHeight="42"
+                                    HBox.hgrow="ALWAYS"/>
+                        </HBox>
+
+                        <!-- 次要按钮 -->
+                        <HBox alignment="CENTER" spacing="10">
+                            <Button fx:id="laterButton" text="稍后提醒"
+                                    styleClass="pt-btn,upd-secondary-btn"
+                                    userData="i18n:update.available.button.later"
+                                    onAction="#onLaterClick"
+                                    maxWidth="Infinity" minHeight="36"
+                                    HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="skipButton" text="跳过选中项"
+                                    styleClass="pt-btn,upd-secondary-btn"
+                                    userData="i18n:update.available.button.skip.selected"
+                                    onAction="#onSkipClick"
+                                    maxWidth="Infinity" minHeight="36"
+                                    HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                    </VBox>
 
                 </VBox>
             </VBox>

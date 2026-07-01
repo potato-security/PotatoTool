@@ -14,6 +14,7 @@ import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.I18nManager;
 import com.potato.potatotool.utils.core.I18nUtils;
 import javafx.animation.FadeTransition;
+import javafx.geometry.Pos;
 
 import static com.potato.potatotool.ToStart.debugMode;
 import javafx.application.Platform;
@@ -45,33 +46,44 @@ public class PaneUpdateDialog {
     
     @FXML
     private AnchorPane an;
-    
+
     @FXML
     private BorderPane topBar;
-    
+
     @FXML
     private Label titleLabel;
-    
-    @FXML
-    private VBox versionInfoBox;
-    
+
     @FXML
     private Label versionInfoLabel;
-    
+
+    @FXML
+    private Label updateCountLabel;
+
     @FXML
     private VBox changelogBox;
-    
+
+    @FXML
+    private VBox changelogContent;
+
+    @FXML
+    private Label changelogArrow;
+
+    @FXML
+    private Label changelogToggleBtn;
+
     @FXML
     private TextArea changelogText;
-    
+
     @FXML
     private VBox updateItemsBox;
-    
+
     @FXML
     private VBox updateItemsContainer;
-    
+
     // 更新项checkbox映射
     private Map<CFCheckBox, UpdateItem> updateItemsMap = new LinkedHashMap<>();
+
+    private boolean isChangelogExpanded = false;
     
     @FXML
     private VBox progressBox;
@@ -149,117 +161,168 @@ public class PaneUpdateDialog {
      * 显示所有可用更新（软件+资源，使用checkbox）
      */
     private void showAllUpdates() {
-        // 动态设置版本信息标签
         updateVersionInfoLabel();
-        
+
         updateItemsBox.setVisible(true);
         updateItemsBox.setManaged(true);
         updateItemsContainer.getChildren().clear();
         updateItemsMap.clear();
-        
+        isChangelogExpanded = false;
+
         // 添加软件更新checkbox
         if (updateInfo.isAppNeedUpdate()) {
             String localVersion = updateInfo.getLocalAppVersion();
             String remoteVersion = updateInfo.getAppVersion().getVersion();
-            
-            // 检查该版本是否已被跳过
             boolean isSkipped = isAppVersionSkipped(remoteVersion);
+            boolean isRequired = updateInfo.getAppVersion().isRequired();
+
+            long appSize = getCurrentPlatformAppSize(updateInfo.getAppVersion());
+            String sizeText = appSize > 0 ? formatSize(appSize) : "";
+
+            String description = "";
+            List<String> cl = updateInfo.getAppVersion().getChangelog();
+            if (cl != null && !cl.isEmpty()) {
+                description = cl.get(0);
+            }
 
             CFCheckBox appCheckBox = new CFCheckBox();
-            String appInfo = String.format("%s: %s → %s",
-                    i18n.getString("update.available.app"), localVersion, remoteVersion);
-            appCheckBox.setText(appInfo);
-            appCheckBox.setSelected(!isSkipped); // 如果被跳过则默认不选中
-            appCheckBox.setStyle("-fx-font-size: 13px;");
+            appCheckBox.setSelected(!isSkipped);
 
             UpdateItem appItem = new UpdateItem(
-                    "app", null, null, remoteVersion, buildAppDetailText(updateInfo.getAppVersion()));
+                    "app", null, i18n.getString("update.available.app"), remoteVersion,
+                    isRequired, localVersion, sizeText, description);
             updateItemsMap.put(appCheckBox, appItem);
-            updateItemsContainer.getChildren().add(createUpdateItemNode(appCheckBox, appItem.detailText));
-            
-            // 显示更新日志
-            if (updateInfo.getAppVersion().getChangelog() != null && 
-                !updateInfo.getAppVersion().getChangelog().isEmpty()) {
+            updateItemsContainer.getChildren().add(createUpdateItemNode(appCheckBox, appItem));
+
+            // 显示更新日志（折叠状态）
+            if (cl != null && !cl.isEmpty()) {
                 changelogBox.setVisible(true);
                 changelogBox.setManaged(true);
-                
+                if (changelogContent != null) {
+                    changelogContent.setVisible(false);
+                    changelogContent.setManaged(false);
+                }
+                if (changelogArrow != null) changelogArrow.setText("▶");
+                if (changelogToggleBtn != null) {
+                    changelogToggleBtn.setText(i18n.getString("update.changelog.expand"));
+                }
                 StringBuilder changelog = new StringBuilder();
-                for (String line : updateInfo.getAppVersion().getChangelog()) {
+                for (String line : cl) {
                     changelog.append("• ").append(line).append("\n");
                 }
                 changelogText.setText(changelog.toString());
             }
         }
-        
+
         // 添加资源更新checkbox
         if (updateInfo.hasResourceUpdates()) {
             List<ResourceUpdate> updates = updateInfo.getResourceUpdates();
             for (ResourceUpdate update : updates) {
-                // 检查该资源版本是否已被跳过
                 boolean isSkipped = isResourceVersionSkipped(update.getResourceName(), update.getRemoteVersion());
+                boolean isRequired = update.getResource().isRequired();
+                String sizeText = update.getFileSize() > 0 ? formatSize(update.getFileSize()) : "";
+                String description = update.getDescription() != null ? update.getDescription().trim() : "";
 
                 CFCheckBox resourceCheckBox = new CFCheckBox();
-                String info = String.format("%s: %s → %s",
-                        update.getDisplayName(),
-                        update.getLocalVersion(),
-                        update.getRemoteVersion()
-                );
-                resourceCheckBox.setText(info);
-                resourceCheckBox.setSelected(!isSkipped); // 如果被跳过则默认不选中
-                resourceCheckBox.setStyle("-fx-font-size: 13px;");
+                resourceCheckBox.setSelected(!isSkipped);
 
-                UpdateItem resourceItem = new UpdateItem("resource",
-                        update.getResourceName(), update.getDisplayName(),
-                        update.getRemoteVersion(), buildResourceDetailText(update));
+                UpdateItem resourceItem = new UpdateItem(
+                        "resource", update.getResourceName(), update.getDisplayName(),
+                        update.getRemoteVersion(), isRequired, update.getLocalVersion(),
+                        sizeText, description);
                 updateItemsMap.put(resourceCheckBox, resourceItem);
-                updateItemsContainer.getChildren().add(createUpdateItemNode(resourceCheckBox, resourceItem.detailText));
+                updateItemsContainer.getChildren().add(createUpdateItemNode(resourceCheckBox, resourceItem));
             }
         }
     }
     
     /**
-     * 动态更新版本信息标签
+     * 动态更新版本信息标签和数量徽章
      */
     private void updateVersionInfoLabel() {
-        StringBuilder info = new StringBuilder();
-        
-        // 如果有软件更新，显示软件版本信息
         if (updateInfo.isAppNeedUpdate()) {
             String localVersion = updateInfo.getLocalAppVersion();
             String remoteVersion = updateInfo.getAppVersion().getVersion();
-            info.append(I18nUtils.getString("update.available.message", remoteVersion, localVersion));
-        }
-        
-        // 如果有资源更新，添加资源更新信息
-        if (updateInfo.hasResourceUpdates()) {
-            if (info.length() > 0) {
-                info.append("\n"); // 如果前面有软件更新信息，换行
-            }
+            versionInfoLabel.setText("PotatoTool " + localVersion + " → " + remoteVersion);
+        } else if (updateInfo.hasResourceUpdates()) {
             int count = updateInfo.getResourceUpdates().size();
-            info.append(I18nUtils.getString("update.available.resources.count", count));
+            versionInfoLabel.setText(I18nUtils.getString("update.available.resources.count", count));
+        } else {
+            versionInfoLabel.setText(i18n.getString("update.available.found"));
         }
 
-        // 如果没有任何更新信息（理论上不会出现，因为有更新才会显示对话框）
-        if (info.length() == 0) {
-            info.append(i18n.getString("update.available.found"));
+        // 数量徽章
+        int totalCount = (updateInfo.isAppNeedUpdate() ? 1 : 0)
+                + (updateInfo.hasResourceUpdates() ? updateInfo.getResourceUpdates().size() : 0);
+        if (updateCountLabel != null) {
+            updateCountLabel.setText(I18nUtils.getString("update.available.count", totalCount));
+            updateCountLabel.setVisible(totalCount > 0);
+            updateCountLabel.setManaged(totalCount > 0);
         }
-
-        versionInfoLabel.setText(info.toString());
     }
 
-    private VBox createUpdateItemNode(CFCheckBox checkBox, String detailText) {
-        VBox container = new VBox(4);
-        container.setStyle("-fx-border-color: -main-border-color; -fx-border-radius: 6; "
-                + "-fx-background-radius: 6; -fx-padding: 8;");
-        container.getChildren().add(checkBox);
+    private VBox createUpdateItemNode(CFCheckBox checkBox, UpdateItem item) {
+        checkBox.setText("");
 
-        if (detailText != null && !detailText.trim().isEmpty()) {
-            Label detailLabel = new Label(detailText);
-            detailLabel.setWrapText(true);
-            detailLabel.setStyle("-fx-font-size: 11px; -fx-opacity: 0.75;");
-            container.getChildren().add(detailLabel);
+        Label nameLabel = new Label(item.displayName != null ? item.displayName : "");
+        nameLabel.getStyleClass().add("upd-item-name");
+
+        String versionStr = (item.localVersion != null ? item.localVersion : "—")
+                + " → " + (item.version != null ? item.version : "");
+        Label versionLabel = new Label(versionStr);
+        versionLabel.getStyleClass().add("upd-item-version");
+
+        VBox nameBox = new VBox(2, nameLabel, versionLabel);
+        nameBox.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(nameBox, Priority.ALWAYS);
+
+        Label badge = new Label(item.isRequired
+                ? i18n.getString("update.available.required")
+                : i18n.getString("update.available.optional"));
+        badge.getStyleClass().add(item.isRequired ? "upd-badge-required" : "upd-badge-optional");
+
+        VBox rightBox = new VBox(4, badge);
+        rightBox.setAlignment(Pos.CENTER_RIGHT);
+        if (item.sizeText != null && !item.sizeText.isEmpty()) {
+            Label szLabel = new Label(item.sizeText);
+            szLabel.getStyleClass().add("upd-item-size");
+            rightBox.getChildren().add(szLabel);
         }
+
+        HBox mainRow = new HBox(10, checkBox, nameBox, rightBox);
+        mainRow.setAlignment(Pos.CENTER_LEFT);
+        mainRow.setStyle("-fx-padding: 12 14 8 14;");
+
+        VBox container = new VBox(0);
+        container.getStyleClass().add("upd-item-row");
+        if (item.isRequired) container.getStyleClass().add("upd-item-row-required");
+        container.getChildren().add(mainRow);
+
+        if (item.description != null && !item.description.trim().isEmpty()) {
+            Label descLabel = new Label(item.description);
+            descLabel.getStyleClass().add("upd-item-desc");
+            descLabel.setWrapText(true);
+            descLabel.setStyle("-fx-padding: 0 14 10 46;");
+            container.getChildren().add(descLabel);
+        }
+
         return container;
+    }
+
+    @FXML
+    private void toggleChangelog() {
+        isChangelogExpanded = !isChangelogExpanded;
+        if (changelogContent != null) {
+            changelogContent.setVisible(isChangelogExpanded);
+            changelogContent.setManaged(isChangelogExpanded);
+        }
+        if (changelogArrow != null) {
+            changelogArrow.setText(isChangelogExpanded ? "▼" : "▶");
+        }
+        if (changelogToggleBtn != null) {
+            changelogToggleBtn.setText(i18n.getString(
+                    isChangelogExpanded ? "update.changelog.collapse" : "update.changelog.expand"));
+        }
     }
 
     private String buildAppDetailText(Manifest.AppVersion appVersion) {
@@ -324,15 +387,22 @@ public class PaneUpdateDialog {
         String type; // "app" or "resource"
         String resourceName; // 资源名称（如"md5"）
         String displayName; // 显示名称
-        String version; // 版本号
-        String detailText; // 详情文本
+        String version; // 远程版本号（用于跳过逻辑）
+        boolean isRequired;
+        String localVersion;
+        String sizeText;
+        String description;
 
-        UpdateItem(String type, String resourceName, String displayName, String version, String detailText) {
+        UpdateItem(String type, String resourceName, String displayName, String version,
+                   boolean isRequired, String localVersion, String sizeText, String description) {
             this.type = type;
             this.resourceName = resourceName;
             this.displayName = displayName;
             this.version = version;
-            this.detailText = detailText;
+            this.isRequired = isRequired;
+            this.localVersion = localVersion;
+            this.sizeText = sizeText;
+            this.description = description;
         }
     }
     
