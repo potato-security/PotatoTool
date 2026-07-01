@@ -46,3 +46,26 @@
     -fx-border-color: -pt-border;
     -fx-padding: 10 14 12 14;
 }
+
+.infogen-field {
+    -fx-background-radius: 6 0 0 6;
+    -fx-border-radius: 6 0 0 6;
+}
+
+.infogen-copy-btn {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 0 6 6 0;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1 1 1 0;
+    -fx-border-radius: 0 6 6 0;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 11px;
+    -fx-padding: 0 10 0 10;
+    -fx-pref-height: 34;
+    -fx-cursor: hand;
+}
+.infogen-copy-btn:hover {
+    -fx-background-color: -pt-accent-red;
+    -fx-text-fill: white;
+    -fx-border-color: -pt-accent-red;
+}

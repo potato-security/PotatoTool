@@ -69,3 +69,94 @@
 .titledPane_4 > .title {
     -fx-background-color: -pt-text-secondary;
 }
+
+/* ===== COMMAND right panel ===== */
+.cmd-panel-root {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 0 0 0 1;
+    -fx-min-height: 100%;
+}
+.cmd-panel-header-section {
+    -fx-padding: 14 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-spacing: 4;
+}
+.cmd-panel-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-letter-spacing: 1.5px;
+}
+.cmd-panel-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.cmd-panel-variants {
+    -fx-padding: 0;
+}
+.cmd-variant-item {
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-cursor: hand;
+}
+.cmd-variant-item:hover {
+    -fx-background-color: -pt-bg-elevated;
+}
+.cmd-variant-platform {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 1 6 1 6;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+.cmd-variant-windows {
+    -fx-background-color: derive(-pt-warning, -55%);
+    -fx-text-fill: -pt-warning;
+    -fx-border-color: -pt-warning;
+    -fx-border-width: 1;
+}
+.cmd-variant-linux {
+    -fx-background-color: derive(-pt-success, -55%);
+    -fx-text-fill: -pt-success;
+    -fx-border-color: -pt-success;
+    -fx-border-width: 1;
+}
+.cmd-variant-cmd {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-family: "Monospaced";
+}
+.cmd-panel-states-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-letter-spacing: 1.5px;
+    -fx-padding: 10 16 4 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+.cmd-panel-states {
+    -fx-padding: 8 16 16 16;
+}
+.cmd-state-chip {
+    -fx-padding: 4 0 4 0;
+}
+.cmd-state-dot {
+    -fx-pref-width: 8;
+    -fx-pref-height: 8;
+    -fx-min-width: 8;
+    -fx-min-height: 8;
+    -fx-max-width: 8;
+    -fx-max-height: 8;
+    -fx-background-radius: 50%;
+}
+.cmd-state-dot-windows { -fx-background-color: -pt-warning; }
+.cmd-state-dot-linux   { -fx-background-color: -pt-success; }
+.cmd-state-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text;
+}

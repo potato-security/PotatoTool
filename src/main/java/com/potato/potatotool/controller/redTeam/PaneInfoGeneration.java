@@ -5,7 +5,12 @@ import com.potato.potatotool.utils.core.I18nUtils;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 
 import static com.potato.potatotool.content.redTeam.InfoGeneration.*;
@@ -80,6 +85,25 @@ public class PaneInfoGeneration {
             postalCodeTF.setText(PREVIEW_POSTAL_CODE);
             unifiedSocialCreditCodeTF.setText(PREVIEW_CREDIT_CODE);
             organizationCodeTF.setText(PREVIEW_ORG_CODE);
+        }
+    }
+
+    @FXML
+    void copyFieldValue(ActionEvent e) {
+        if (!(e.getSource() instanceof Button)) return;
+        Button btn = (Button) e.getSource();
+        if (!(btn.getParent() instanceof HBox)) return;
+        HBox hbox = (HBox) btn.getParent();
+        for (Node node : hbox.getChildren()) {
+            if (node instanceof TextField) {
+                String text = ((TextField) node).getText();
+                if (text != null && !text.isEmpty()) {
+                    ClipboardContent content = new ClipboardContent();
+                    content.putString(text);
+                    Clipboard.getSystemClipboard().setContent(content);
+                }
+                break;
+            }
         }
     }
 

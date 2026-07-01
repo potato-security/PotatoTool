@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import com.dlsc.gemsfx.CFCheckBox?>
@@ -48,5 +49,22 @@
         <!-- FilterView + TableView are added here dynamically by the controller -->
 
     </VBox>
+
+    <!-- Right CVE DETAIL panel (slides in from right via translateX animation) -->
+    <SmoothScrollPane fx:id="cveDetailScrollPane"
+                      maxHeight="${sPane.height}" maxWidth="210"
+                      translateX="210" hbarPolicy="NEVER"
+                      StackPane.alignment="TOP_RIGHT"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox fx:id="cvePanelBox" styleClass="cve-panel-root" spacing="0">
+            <VBox styleClass="cve-panel-header-section">
+                <Label text="CVE DETAIL" styleClass="cve-panel-section-label"/>
+                <Label fx:id="cvePanelId" styleClass="cve-panel-cve-id" text="" wrapText="true"/>
+            </VBox>
+            <VBox fx:id="cvePanelInfo" styleClass="cve-panel-info" spacing="0"/>
+            <Label text="STATES" styleClass="cve-panel-states-label" userData="i18n:kb.states"/>
+            <VBox fx:id="cvePanelStates" styleClass="cve-panel-states" spacing="8"/>
+        </VBox>
+    </SmoothScrollPane>
 
 </StackPane>

@@ -1,6 +1,7 @@
 package com.potato.potatotool.controller.redTeam;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.leewyatt.rxcontrols.controls.RXLineButton;
 import com.potato.potatotool.ToStart;
@@ -9,6 +10,9 @@ import com.potato.potatotool.utils.ai.service.AiChatService;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
@@ -60,6 +64,12 @@ public class PaneCommandQuery {
     private Pane promptPane;
     private FadeTransition promptFadeIn;
     private FadeTransition promptFadeOut;
+
+    @FXML private ScrollPane commandScrollPane;
+    @FXML private Label commandTitle;
+    @FXML private VBox commandVariantBox;
+    @FXML private VBox commandStatesBox;
+    private boolean commandPanelVisible = false;
 
     CommandHelp commandHelp = new CommandHelp();
 
@@ -299,10 +309,87 @@ public class PaneCommandQuery {
                 String key = ((Label) ((HBox) node).getChildrenUnmodifiable().get(1)).getText();
                 if(key.equals(newKey)){
                     listView.scrollTo(i);
-                    return;
+                    break;
                 }
             }
         }
+        JsonObject cmdData = findCommandData(newKey, jsonData);
+        if (cmdData != null) {
+            populateCommandPanel(newKey, cmdData);
+            showCommandPanel();
+        }
+    }
+
+    private JsonObject findCommandData(String key, JsonObject root) {
+        for (String k : root.keySet()) {
+            JsonElement el = root.get(k);
+            if (!el.isJsonObject()) continue;
+            JsonObject obj = el.getAsJsonObject();
+            if (k.equals(key) && (obj.has("Windows") || obj.has("Linux"))) {
+                return obj;
+            }
+            JsonObject found = findCommandData(key, obj);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private void populateCommandPanel(String key, JsonObject cmdData) {
+        commandTitle.setText(key);
+        commandVariantBox.getChildren().clear();
+        commandStatesBox.getChildren().clear();
+
+        for (String platform : cmdData.keySet()) {
+            if (!cmdData.get(platform).isJsonArray()) continue;
+            JsonArray arr = cmdData.getAsJsonArray(platform);
+            if (arr.size() == 0) continue;
+
+            VBox item = new VBox(3);
+            item.getStyleClass().add("cmd-variant-item");
+            JsonObject first = arr.get(0).getAsJsonObject();
+            String cmd = first.get("command").getAsString();
+            String desc = first.get("describe").getAsString();
+            Label platformLbl = new Label(platform);
+            platformLbl.getStyleClass().add("cmd-variant-platform");
+            platformLbl.getStyleClass().add("Windows".equals(platform) ? "cmd-variant-windows" : "cmd-variant-linux");
+            Label cmdLbl = new Label(cmd.length() > 28 ? cmd.substring(0, 28) + "…" : cmd);
+            cmdLbl.getStyleClass().add("cmd-variant-cmd");
+            cmdLbl.setWrapText(false);
+            item.getChildren().addAll(platformLbl, cmdLbl);
+            commandVariantBox.getChildren().add(item);
+
+            // States
+            HBox stateChip = new HBox(6);
+            stateChip.setAlignment(Pos.CENTER_LEFT);
+            stateChip.getStyleClass().add("cmd-state-chip");
+            Region dot = new Region();
+            dot.getStyleClass().add("cmd-state-dot");
+            dot.getStyleClass().add("Windows".equals(platform) ? "cmd-state-dot-windows" : "cmd-state-dot-linux");
+            Label stateLbl = new Label(platform);
+            stateLbl.getStyleClass().add("cmd-state-label");
+            stateChip.getChildren().addAll(dot, stateLbl);
+            commandStatesBox.getChildren().add(stateChip);
+        }
+    }
+
+    private void showCommandPanel() {
+        if (commandScrollPane == null) return;
+        if (commandPanelVisible) return;
+        commandPanelVisible = true;
+        new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(commandScrollPane.translateXProperty(), 190)),
+            new KeyFrame(Duration.millis(200), new KeyValue(commandScrollPane.translateXProperty(), 0))
+        ).play();
+    }
+
+    private void hideCommandPanel() {
+        if (commandScrollPane == null) return;
+        if (!commandPanelVisible) return;
+        commandPanelVisible = false;
+        new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(commandScrollPane.translateXProperty(), 0)),
+            new KeyFrame(Duration.millis(200), new KeyValue(commandScrollPane.translateXProperty(), 190))
+        ).play();
     }
 
     private void handleMouseEntered(MouseEvent event, Button tipTitleCopy) {

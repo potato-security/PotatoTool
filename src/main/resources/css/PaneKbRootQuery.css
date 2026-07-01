@@ -27,3 +27,86 @@
     -fx-font-size: 11;
     -fx-font-weight: bold;
 }
+
+/* ===== CVE DETAIL right panel ===== */
+.cve-panel-root {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 0 0 0 1;
+    -fx-min-height: 100%;
+}
+.cve-panel-header-section {
+    -fx-padding: 14 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-spacing: 6;
+}
+.cve-panel-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+}
+.cve-panel-cve-id {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent-red;
+}
+.cve-panel-info {
+    -fx-padding: 0;
+}
+.cve-info-row {
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+.cve-info-key {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+}
+.cve-info-val {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text;
+    -fx-font-weight: bold;
+}
+.cve-info-severity { -fx-text-fill: -pt-danger; }
+.cve-info-poc-danger {
+    -fx-background-color: derive(-pt-danger, -50%);
+    -fx-text-fill: -pt-danger;
+    -fx-background-radius: 4;
+    -fx-padding: 1 6 1 6;
+}
+.cve-info-poc-safe {
+    -fx-background-color: derive(-pt-success, -55%);
+    -fx-text-fill: -pt-success;
+    -fx-background-radius: 4;
+    -fx-padding: 1 6 1 6;
+}
+.cve-panel-states-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-padding: 10 16 4 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+.cve-panel-states {
+    -fx-padding: 8 16 16 16;
+}
+.cve-state-chip {
+    -fx-padding: 4 0 4 0;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 6;
+    -fx-padding: 6 12 6 12;
+}
+.cve-state-dot {
+    -fx-pref-width: 8; -fx-pref-height: 8;
+    -fx-min-width: 8; -fx-min-height: 8;
+    -fx-max-width: 8; -fx-max-height: 8;
+    -fx-background-radius: 50%;
+}
+.cve-state-dot-danger { -fx-background-color: -pt-danger; }
+.cve-state-dot-safe   { -fx-background-color: -pt-success; }
+.cve-state-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text;
+}

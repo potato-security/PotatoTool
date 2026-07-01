@@ -7,17 +7,20 @@ import com.potato.potatotool.content.redTeam.kbRootQuery.classObj.KbInfo;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.ui.SmoothTableView;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.util.Duration;
 
 import java.util.*;
 
@@ -82,17 +85,15 @@ public class PaneKbRootQuery {
             "                      状态:        媒体连接已中断\n" +
             "Hyper-V 要求:     已检测到虚拟机监控程序。将不显示 Hyper-V 所需的功能。";
 
-    @FXML
-    private StackPane sPane;
-
-    @FXML
-    private VBox vBox;
-
-    @FXML
-    private TextArea inputText;
-
-    @FXML
-    private CFCheckBox mucFilter;
+    @FXML private StackPane sPane;
+    @FXML private VBox vBox;
+    @FXML private TextArea inputText;
+    @FXML private CFCheckBox mucFilter;
+    @FXML private ScrollPane cveDetailScrollPane;
+    @FXML private Label cvePanelId;
+    @FXML private VBox cvePanelInfo;
+    @FXML private VBox cvePanelStates;
+    private boolean cvePanelVisible = false;
 
     FilterView<KbInfo> filterView;
 
@@ -205,12 +206,85 @@ public class PaneKbRootQuery {
 
         // 列宽自动
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        
+
+        // 选中行时显示 CVE DETAIL 面板
+        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal instanceof KbInfo) {
+                populateCvePanel((KbInfo) newVal);
+                showCvePanel();
+            }
+        });
+
         // 绑定国际化
         Platform.runLater(() -> {
             I18nUtils.bindComponents(sPane);
             applyStartupPreviewState();
         });
+    }
+
+    private void populateCvePanel(KbInfo info) {
+        cvePanelId.setText(info.getCve() != null && !info.getCve().isEmpty() ? info.getCve() : "N/A");
+        cvePanelInfo.getChildren().clear();
+        cvePanelStates.getChildren().clear();
+
+        addCveInfoRow("kb.severity", info.getSeverity(), "cve-info-severity");
+        addCveInfoRow("kb.component", info.getComponent(), null);
+        addCveInfoRow("kb.impact", info.getImpact(), null);
+        String poc = info.getPoc();
+        if (poc != null && !poc.isEmpty() && !poc.equals("-")) {
+            addCveInfoRow("kb.poc", poc, "存在".equals(poc) ? "cve-info-poc-danger" : "cve-info-poc-safe");
+        }
+        String kb = info.getKb();
+        if (kb != null && !kb.isEmpty() && !kb.equals("-")) {
+            addCveInfoRow("kb.kb", kb, null);
+        }
+        String repKb = info.getRepKb();
+        if (repKb != null && !repKb.isEmpty() && !repKb.equals("-")) {
+            addCveInfoRow("kb.repkb", repKb, null);
+        }
+
+        // States
+        String pocState = info.getPoc();
+        if ("存在".equals(pocState)) {
+            addCveStateChip(I18nUtils.getString("kb.state.poc.exists"), "cve-state-dot-danger");
+        } else {
+            addCveStateChip(I18nUtils.getString("kb.state.poc.none"), "cve-state-dot-safe");
+        }
+    }
+
+    private void addCveInfoRow(String i18nKey, String value, String extraStyle) {
+        if (value == null || value.isEmpty()) return;
+        VBox row = new VBox(2);
+        row.getStyleClass().add("cve-info-row");
+        Label keyLbl = new Label(I18nUtils.getString(i18nKey));
+        keyLbl.getStyleClass().add("cve-info-key");
+        Label valLbl = new Label(value);
+        valLbl.getStyleClass().add("cve-info-val");
+        valLbl.setWrapText(true);
+        if (extraStyle != null) valLbl.getStyleClass().add(extraStyle);
+        row.getChildren().addAll(keyLbl, valLbl);
+        cvePanelInfo.getChildren().add(row);
+    }
+
+    private void addCveStateChip(String label, String dotStyle) {
+        HBox chip = new HBox(6);
+        chip.setAlignment(Pos.CENTER_LEFT);
+        chip.getStyleClass().add("cve-state-chip");
+        Region dot = new Region();
+        dot.getStyleClass().addAll("cve-state-dot", dotStyle);
+        Label lbl = new Label(label);
+        lbl.getStyleClass().add("cve-state-label");
+        chip.getChildren().addAll(dot, lbl);
+        cvePanelStates.getChildren().add(chip);
+    }
+
+    private void showCvePanel() {
+        if (cveDetailScrollPane == null || cvePanelVisible) return;
+        cvePanelVisible = true;
+        new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(cveDetailScrollPane.translateXProperty(), 210)),
+            new KeyFrame(Duration.millis(200), new KeyValue(cveDetailScrollPane.translateXProperty(), 0))
+        ).play();
     }
 
     private void applyStartupPreviewState() {

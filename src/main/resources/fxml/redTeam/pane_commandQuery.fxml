@@ -61,6 +61,22 @@
         </VBox>
     </SmoothScrollPane>
 
+    <!-- Right COMMAND panel (slides in from right via translateX animation) -->
+    <SmoothScrollPane fx:id="commandScrollPane"
+                      maxHeight="${sPane.height}" maxWidth="190"
+                      translateX="190" hbarPolicy="NEVER"
+                      StackPane.alignment="TOP_RIGHT"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox fx:id="commandPanelBox" styleClass="cmd-panel-root" spacing="0">
+            <VBox styleClass="cmd-panel-header-section">
+                <Label text="COMMAND" styleClass="cmd-panel-section-label"/>
+                <Label fx:id="commandTitle" styleClass="cmd-panel-title" text="" wrapText="true"/>
+            </VBox>
+            <VBox fx:id="commandVariantBox" styleClass="cmd-panel-variants" spacing="0"/>
+            <Label text="STATES" styleClass="cmd-panel-states-label" userData="i18n:cmdquery.states"/>
+            <VBox fx:id="commandStatesBox" styleClass="cmd-panel-states" spacing="8"/>
+        </VBox>
+    </SmoothScrollPane>
 
     <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
         <Label fx:id="prompt" text="复制成功" wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="600"/>
