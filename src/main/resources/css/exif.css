@@ -93,3 +93,79 @@
     -fx-font-size: 12;
     -fx-padding: 0;
 }
+
+/* ===== EXIF right summary panel ===== */
+.exif-panel-root {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 0 0 0 1;
+    -fx-min-height: 100%;
+}
+.exif-panel-header {
+    -fx-padding: 14 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-spacing: 4;
+}
+.exif-panel-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+}
+.exif-panel-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.exif-summary-items {
+    -fx-padding: 0;
+}
+.exif-summary-item {
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+.exif-summary-item-selected {
+    -fx-background-color: derive(-pt-accent-teal, -70%);
+    -fx-border-color: -pt-accent-teal;
+    -fx-border-width: 0 0 1 2;
+}
+.exif-summary-label {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+}
+.exif-summary-value {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text;
+    -fx-font-weight: bold;
+}
+.exif-summary-item-selected .exif-summary-label { -fx-text-fill: -pt-accent-teal; }
+.exif-summary-item-selected .exif-summary-value { -fx-text-fill: -pt-text; }
+.exif-panel-states-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-padding: 10 16 4 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+.exif-panel-states {
+    -fx-padding: 8 16 16 16;
+}
+.exif-state-chip {
+    -fx-padding: 6 12 6 12;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 6;
+}
+.exif-state-dot {
+    -fx-pref-width: 8; -fx-pref-height: 8;
+    -fx-min-width: 8; -fx-min-height: 8;
+    -fx-max-width: 8; -fx-max-height: 8;
+    -fx-background-radius: 50%;
+}
+.exif-state-dot-success { -fx-background-color: -pt-success; }
+.exif-state-dot-info    { -fx-background-color: -pt-accent-teal; }
+.exif-state-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text;
+}

@@ -3,6 +3,9 @@ package com.potato.potatotool.controller.blueTeam;
 import com.potato.potatotool.ToStart;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.misc.QRCodeDecoder;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -11,13 +14,16 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.util.Map;
@@ -27,11 +33,12 @@ import static com.potato.potatotool.content.blueTeam.ExifUtils.*;
 
 public class PaneExif {
 
-    @FXML
-    private StackPane sPane;
-
-    @FXML
-    private ListView listView;
+    @FXML private StackPane sPane;
+    @FXML private ListView listView;
+    @FXML private ScrollPane exifPanelScrollPane;
+    @FXML private VBox exifSummaryBox;
+    @FXML private VBox exifStatesBox;
+    private boolean exifPanelVisible = false;
 
     @FXML
     void initialize() {
@@ -101,6 +108,83 @@ public class PaneExif {
                 addTableRow(entry.getKey(), entry.getValue());
             }
         }
+
+        populateExifPanel(qrText, metadataMap);
+        showExifPanel();
+    }
+
+    private void populateExifPanel(String qrText, Map<String, String> metadataMap) {
+        if (exifSummaryBox == null) return;
+        exifSummaryBox.getChildren().clear();
+        exifStatesBox.getChildren().clear();
+
+        // Device info
+        String model = metadataMap.getOrDefault("机型", metadataMap.getOrDefault("Model", null));
+        if (model != null && !model.isEmpty()) {
+            addExifSummaryItem(I18nUtils.getString("exif.panel.device"), model, true);
+        }
+
+        // GPS
+        if (metadataMap.containsKey("GPS经度") && metadataMap.containsKey("GPS纬度")) {
+            String gps = getPosition(metadataMap.get("GPS经度"), metadataMap.get("GPS纬度"));
+            addExifSummaryItem(I18nUtils.getString("exif.panel.gps"), gps, false);
+        }
+
+        // QR
+        if (!qrText.equals("读取错误") && !qrText.isEmpty()) {
+            String displayQr = qrText.length() > 30 ? qrText.substring(0, 30) + "…" : qrText;
+            addExifSummaryItem(I18nUtils.getString("exif.panel.qr"), displayQr, false);
+        }
+
+        // Photo params
+        String iso = metadataMap.get("ISO感光度");
+        String aperture = metadataMap.getOrDefault("光圈", metadataMap.get("光圈值"));
+        if (iso != null || aperture != null) {
+            String params = (iso != null ? "ISO " + iso : "") +
+                            (iso != null && aperture != null ? " / " : "") +
+                            (aperture != null ? "f/" + aperture : "");
+            addExifSummaryItem(I18nUtils.getString("exif.panel.params"), params, false);
+        }
+
+        // States
+        addExifStateChip(I18nUtils.getString("exif.panel.state.parsed"), "exif-state-dot-success");
+        if (!metadataMap.isEmpty()) {
+            addExifStateChip(metadataMap.size() + " " + I18nUtils.getString("exif.section.fields"), "exif-state-dot-info");
+        }
+    }
+
+    private void addExifSummaryItem(String label, String value, boolean highlighted) {
+        VBox item = new VBox(2);
+        item.getStyleClass().add("exif-summary-item");
+        if (highlighted) item.getStyleClass().add("exif-summary-item-selected");
+        Label lbl = new Label(label);
+        lbl.getStyleClass().add("exif-summary-label");
+        Label val = new Label(value);
+        val.getStyleClass().add("exif-summary-value");
+        val.setWrapText(true);
+        item.getChildren().addAll(lbl, val);
+        exifSummaryBox.getChildren().add(item);
+    }
+
+    private void addExifStateChip(String text, String dotStyle) {
+        HBox chip = new HBox(6);
+        chip.setAlignment(Pos.CENTER_LEFT);
+        chip.getStyleClass().add("exif-state-chip");
+        Region dot = new Region();
+        dot.getStyleClass().addAll("exif-state-dot", dotStyle);
+        Label lbl = new Label(text);
+        lbl.getStyleClass().add("exif-state-label");
+        chip.getChildren().addAll(dot, lbl);
+        exifStatesBox.getChildren().add(chip);
+    }
+
+    private void showExifPanel() {
+        if (exifPanelScrollPane == null || exifPanelVisible) return;
+        exifPanelVisible = true;
+        new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(exifPanelScrollPane.translateXProperty(), 200)),
+            new KeyFrame(Duration.millis(200), new KeyValue(exifPanelScrollPane.translateXProperty(), 0))
+        ).play();
     }
 
     private void addChipRow(String title, String value, String chipStyle) {

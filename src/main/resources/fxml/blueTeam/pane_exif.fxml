@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.potato.potatotool.utils.ui.SmoothListView?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Cursor?>
@@ -33,7 +34,21 @@
 
     </VBox>
 
-
-
+    <!-- Right EXIF summary panel (slides in from right) -->
+    <SmoothScrollPane fx:id="exifPanelScrollPane"
+                      maxHeight="${sPane.height}" maxWidth="200"
+                      translateX="200" hbarPolicy="NEVER"
+                      StackPane.alignment="TOP_RIGHT"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox styleClass="exif-panel-root" spacing="0">
+            <VBox styleClass="exif-panel-header">
+                <Label text="EXIF" styleClass="exif-panel-section-label"/>
+                <Label text="EXIF 文件元信息" styleClass="exif-panel-title" userData="i18n:exif.panel.title"/>
+            </VBox>
+            <VBox fx:id="exifSummaryBox" styleClass="exif-summary-items" spacing="0"/>
+            <Label text="STATES" styleClass="exif-panel-states-label" userData="i18n:exif.panel.states"/>
+            <VBox fx:id="exifStatesBox" styleClass="exif-panel-states" spacing="8"/>
+        </VBox>
+    </SmoothScrollPane>
 
 </StackPane>
