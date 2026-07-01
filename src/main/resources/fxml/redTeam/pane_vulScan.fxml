@@ -115,18 +115,18 @@
             <HBox alignment="CENTER_LEFT" spacing="12" maxWidth="Infinity">
                 <Label text="特殊类别" styleClass="pt-section-label" minWidth="72" userData="i18n:vulnscan.group.special"/>
                 <FlowPane hgap="14" vgap="8" alignment="CENTER_LEFT">
-                    <CFCheckBox fx:id="includeOsintBox" text="OSINT" selected="false">
+                    <CFCheckBox fx:id="includeOsintBox" text="OSINT 收集" selected="false" userData="i18n:vulnscan.ui.osint">
                         <tooltip><Tooltip text="开源情报收集（需要API密钥）" userData="i18n:vulnscan.ui.osint.tooltip"/></tooltip>
                     </CFCheckBox>
-                    <CFCheckBox fx:id="includeTokenSprayBox" text="凭证喷射" selected="false" userData="i18n:vulnscan.ui.tokenspray">
+                    <CFCheckBox fx:id="includeTokenSprayBox" text="Token 噴洒" selected="false" userData="i18n:vulnscan.ui.tokenspray">
                         <tooltip><Tooltip text="密码喷射/凭证测试" userData="i18n:vulnscan.ui.tokenspray.tooltip"/></tooltip>
                     </CFCheckBox>
                 </FlowPane>
                 <Separator orientation="VERTICAL"/>
                 <Label text="特殊模板" styleClass="pt-section-label" minWidth="72" userData="i18n:vulnscan.group.template"/>
                 <FlowPane HBox.hgrow="ALWAYS" hgap="14" vgap="8" alignment="CENTER_LEFT">
-                    <CFCheckBox fx:id="enableHeadlessBox" text="Headless" selected="false"/>
-                    <CFCheckBox fx:id="enableCodeBox" text="Code" selected="false"/>
+                    <CFCheckBox fx:id="enableHeadlessBox" text="无头浏览器" selected="false" userData="i18n:vulnscan.ui.headless"/>
+                    <CFCheckBox fx:id="enableCodeBox" text="代码执行" selected="false" userData="i18n:vulnscan.ui.code"/>
                     <CFCheckBox fx:id="enableFuzzBox" text="Fuzz" selected="false"/>
                 </FlowPane>
             </HBox>
@@ -235,6 +235,45 @@
                     <!-- 动态内容 -->
                 </VBox>
             </SmoothScrollPane>
+
+            <!-- 漏洞详情双态：实时扫描 / 历史回溯 -->
+            <HBox spacing="0" styleClass="vuln-dual-detail">
+                <!-- 左: 实时扫描 -->
+                <VBox HBox.hgrow="ALWAYS" styleClass="vuln-detail-col" spacing="3">
+                    <Label text="实时扫描" styleClass="vuln-detail-col-title" userData="i18n:vulnscan.detail.live"/>
+                    <HBox styleClass="vuln-detail-row"><Label text="目标" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.target"/><Label fx:id="liveTargetVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="POC名称" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.pocname"/><Label fx:id="livePocNameVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="严重度" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.severity"/><Label fx:id="liveSeverityVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="POC格式" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.pocformat"/><Label fx:id="livePocFormatVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="协议" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.protocol"/><Label fx:id="liveProtocolVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="漏洞类型" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.vulntype"/><Label fx:id="liveVulnTypeVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="描述" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.description"/><Label fx:id="liveDescriptionVal" text="—" styleClass="vuln-detail-val" HBox.hgrow="ALWAYS" wrapText="true"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="检测路径" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.matchpath"/><Label fx:id="liveMatchedPathVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="Payload" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.payload"/><Label fx:id="livePayloadVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox spacing="8" style="-fx-padding: 2 0 0 0;">
+                        <Button fx:id="liveRawRequestBtn" text="HTTP 请求" styleClass="pt-btn" disable="true" userData="i18n:vulnscan.detail.httprequest" onAction="#showLiveRawRequest"/>
+                        <Button fx:id="liveRawResponseBtn" text="HTTP 响应" styleClass="pt-btn" disable="true" userData="i18n:vulnscan.detail.httpresponse" onAction="#showLiveRawResponse"/>
+                    </HBox>
+                </VBox>
+                <Separator orientation="VERTICAL" style="-fx-padding: 0 8 0 8;"/>
+                <!-- 右: 历史回溯 -->
+                <VBox HBox.hgrow="ALWAYS" styleClass="vuln-detail-col" spacing="3">
+                    <Label text="历史回溯" styleClass="vuln-detail-col-title" userData="i18n:vulnscan.detail.hist"/>
+                    <HBox styleClass="vuln-detail-row"><Label text="目标" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.target"/><Label fx:id="histTargetVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="POC名称" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.pocname"/><Label fx:id="histPocNameVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="严重度" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.severity"/><Label fx:id="histSeverityVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="POC格式" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.pocformat"/><Label fx:id="histPocFormatVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="协议" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.protocol"/><Label fx:id="histProtocolVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="漏洞类型" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.vulntype"/><Label fx:id="histVulnTypeVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="描述" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.description"/><Label fx:id="histDescriptionVal" text="—" styleClass="vuln-detail-val" HBox.hgrow="ALWAYS" wrapText="true"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="检测路径" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.matchpath"/><Label fx:id="histMatchedPathVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox styleClass="vuln-detail-row"><Label text="Payload" styleClass="vuln-detail-key" minWidth="76" userData="i18n:vulnscan.detail.payload"/><Label fx:id="histPayloadVal" text="—" styleClass="vuln-detail-val"/></HBox>
+                    <HBox spacing="8" style="-fx-padding: 2 0 0 0;">
+                        <Button fx:id="histRawRequestBtn" text="HTTP 请求" styleClass="pt-btn" disable="true" userData="i18n:vulnscan.detail.httprequest" onAction="#showHistRawRequest"/>
+                        <Button fx:id="histRawResponseBtn" text="HTTP 响应" styleClass="pt-btn" disable="true" userData="i18n:vulnscan.detail.httpresponse" onAction="#showHistRawResponse"/>
+                    </HBox>
+                </VBox>
+            </HBox>
         </VBox>
         
     </VBox>
@@ -357,12 +396,13 @@
             </HBox>
             <SmoothTableView fx:id="historyTableView" VBox.vgrow="ALWAYS" styleClass="pt-table,poc-table">
                  <columns>
-                    <TableColumn fx:id="historyTimeColumn" text="扫描时间" prefWidth="160"/>
-                    <TableColumn fx:id="historyTargetColumn" text="目标数" prefWidth="90" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="historyPocColumn" text="POC数" prefWidth="90" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="historyVulnCountColumn" text="漏洞数" prefWidth="90" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="historyDurationColumn" text="耗时" prefWidth="100" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="historyStatusColumn" text="状态" prefWidth="110" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="historyTimeColumn" text="扫描时间" prefWidth="145"/>
+                    <TableColumn fx:id="historyCritColumn" text="开放数" prefWidth="70" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="historyTargetColumn" text="扫描数" prefWidth="70" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="historyPocColumn" text="POC数" prefWidth="70" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="historyVulnCountColumn" text="漏洞数" prefWidth="70" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="historyDurationColumn" text="耗时" prefWidth="90" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="historyStatusColumn" text="状态" prefWidth="100" style="-fx-alignment: CENTER;"/>
                 </columns>
                 <contextMenu>
                     <ContextMenu>

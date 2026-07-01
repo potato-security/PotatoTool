@@ -665,4 +665,46 @@
 /* STATS 行 (CRIT/HIGH/MED/LOW/INFO) */
 .stat-chip { -fx-spacing: 6; }
 .stat-tag  { -fx-font-size: 11px; -fx-font-weight: bold; }
+
+/* ========================================
+   漏洞详情双态
+   ======================================== */
+
+.vuln-dual-detail {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 6;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 10 12 10 12;
+}
+
+.vuln-detail-col {
+    -fx-padding: 0 12 0 0;
+}
+
+.vuln-detail-col-title {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+    -fx-padding: 0 0 4 0;
+}
+
+.vuln-detail-row {
+    -fx-spacing: 6;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.vuln-detail-key {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+}
+
+.vuln-detail-val {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+}
 .stat-num  { -fx-font-size: 18px; -fx-font-weight: bold; }

@@ -173,6 +173,7 @@ public class PaneVulScan {
     @FXML private DatePicker endDatePicker;
     @FXML private TableView<HistoryItem> historyTableView;
     @FXML private TableColumn<HistoryItem, String> historyTimeColumn;
+    @FXML private TableColumn<HistoryItem, String> historyCritColumn;
     @FXML private TableColumn<HistoryItem, String> historyTargetColumn;
     @FXML private TableColumn<HistoryItem, String> historyPocColumn;
     @FXML private TableColumn<HistoryItem, String> historyVulnCountColumn;
@@ -182,6 +183,30 @@ public class PaneVulScan {
     // 提示框
     @FXML private StackPane promptPane;
     @FXML private Label promptLabel;
+
+    // 漏洞详情双态
+    @FXML private Label liveTargetVal;
+    @FXML private Label livePocNameVal;
+    @FXML private Label liveSeverityVal;
+    @FXML private Label livePocFormatVal;
+    @FXML private Label liveProtocolVal;
+    @FXML private Label liveVulnTypeVal;
+    @FXML private Label liveDescriptionVal;
+    @FXML private Label liveMatchedPathVal;
+    @FXML private Label livePayloadVal;
+    @FXML private Button liveRawRequestBtn;
+    @FXML private Button liveRawResponseBtn;
+    @FXML private Label histTargetVal;
+    @FXML private Label histPocNameVal;
+    @FXML private Label histSeverityVal;
+    @FXML private Label histPocFormatVal;
+    @FXML private Label histProtocolVal;
+    @FXML private Label histVulnTypeVal;
+    @FXML private Label histDescriptionVal;
+    @FXML private Label histMatchedPathVal;
+    @FXML private Label histPayloadVal;
+    @FXML private Button histRawRequestBtn;
+    @FXML private Button histRawResponseBtn;
     
     // ==================== 服务层 ====================
     private VulnScanService scanService;
@@ -192,6 +217,7 @@ public class PaneVulScan {
     private Task<Void> currentTask;
     private Thread currentThread;
     private List<ScanResult> scanResults = new ArrayList<>();
+    private ScanResult liveCurrentResult = null;
     private long scanStartTime = 0;
     private String currentScanDuration = null; // 当前扫描耗时（用于历史记录导出）
     private HBox currentLoadingBox = null;
@@ -642,12 +668,14 @@ public class PaneVulScan {
 
         // 初始化历史记录表格
         historyTimeColumn.setText(I18nUtils.getString("vulnscan.column.scantime"));
+        historyCritColumn.setText(I18nUtils.getString("vulnscan.column.opencount"));
         historyTargetColumn.setText(I18nUtils.getString("vulnscan.column.targets"));
         historyPocColumn.setText(I18nUtils.getString("vulnscan.column.pocs"));
         historyVulnCountColumn.setText(I18nUtils.getString("vulnscan.column.vulncount"));
         historyDurationColumn.setText(I18nUtils.getString("vulnscan.column.duration"));
         historyStatusColumn.setText(I18nUtils.getString("vulnscan.column.status"));
         historyTimeColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getScanTime()));
+        historyCritColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCrit()));
         historyTargetColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTargets()));
         historyPocColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPocs()));
         historyVulnCountColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getVulns()));
@@ -1055,6 +1083,9 @@ public class PaneVulScan {
         if (rotateTransition != null) {
             rotateTransition.stop();
         }
+        statsPane.setVisible(false);
+        statsPane.setManaged(false);
+        resetLiveDetail();
         showPrompt(I18nUtils.getString("vulnscan.msg.results.cleared"), false);
     }
     
@@ -1822,6 +1853,9 @@ public class PaneVulScan {
         pane.setExpanded(false);
         pane.getStyleClass().add("vuln-titled-pane");
         pane.getStyleClass().add("severity-" + severity.toLowerCase());
+        pane.expandedProperty().addListener((obs, oldVal, newVal) -> {
+            if (Boolean.TRUE.equals(newVal)) updateLiveDetail(result);
+        });
         return pane;
     }
 
@@ -1857,7 +1891,81 @@ public class PaneVulScan {
         box.getChildren().addAll(labelNode, textArea);
         return box;
     }
-    
+
+    // ==================== 漏洞详情双态 ====================
+
+    private void updateLiveDetail(ScanResult result) {
+        liveCurrentResult = result;
+        PocObj.Poc poc = result.getPoc();
+        liveTargetVal.setText(nvl(result.getTarget()));
+        livePocNameVal.setText(poc != null ? nvl(poc.getName()) : "—");
+        liveSeverityVal.setText(poc != null && poc.getSeverity() != null ? poc.getSeverity().name() : "—");
+        livePocFormatVal.setText(poc != null ? nvl(poc.getOriginalFormat()) : "—");
+        liveProtocolVal.setText(poc != null ? nvl(poc.getProtocol()) : "—");
+        liveVulnTypeVal.setText(poc != null ? nvl(poc.getVulType()) : "—");
+        liveDescriptionVal.setText(poc != null ? nvl(poc.getDescription()) : "—");
+        liveMatchedPathVal.setText(nvl(result.getMatchedPath()));
+        livePayloadVal.setText(nvl(result.getMatchedPayload()));
+        liveRawRequestBtn.setDisable(result.getRawRequest() == null || result.getRawRequest().isEmpty());
+        liveRawResponseBtn.setDisable(result.getRawResponseSnippet() == null || result.getRawResponseSnippet().isEmpty());
+    }
+
+    private void resetLiveDetail() {
+        liveCurrentResult = null;
+        liveTargetVal.setText("—");
+        livePocNameVal.setText("—");
+        liveSeverityVal.setText("—");
+        livePocFormatVal.setText("—");
+        liveProtocolVal.setText("—");
+        liveVulnTypeVal.setText("—");
+        liveDescriptionVal.setText("—");
+        liveMatchedPathVal.setText("—");
+        livePayloadVal.setText("—");
+        liveRawRequestBtn.setDisable(true);
+        liveRawResponseBtn.setDisable(true);
+    }
+
+    private String nvl(String s) {
+        return (s == null || s.isEmpty()) ? "—" : s;
+    }
+
+    @FXML
+    public void showLiveRawRequest(ActionEvent event) {
+        if (liveCurrentResult != null) {
+            String raw = liveCurrentResult.getRawRequest();
+            if (raw != null && !raw.isEmpty()) showRawDataDialog(I18nUtils.getString("vulnscan.detail.httprequest"), raw);
+        }
+    }
+
+    @FXML
+    public void showLiveRawResponse(ActionEvent event) {
+        if (liveCurrentResult != null) {
+            String raw = liveCurrentResult.getRawResponseSnippet();
+            if (raw != null && !raw.isEmpty()) showRawDataDialog(I18nUtils.getString("vulnscan.detail.httpresponse"), raw);
+        }
+    }
+
+    @FXML
+    public void showHistRawRequest(ActionEvent event) { }
+
+    @FXML
+    public void showHistRawResponse(ActionEvent event) { }
+
+    private void showRawDataDialog(String title, String content) {
+        Stage stage = (Stage) sPane.getScene().getWindow();
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.initOwner(stage);
+        dialog.setTitle(title);
+        TextArea ta = new TextArea(content);
+        ta.setEditable(false);
+        ta.setWrapText(false);
+        ta.setPrefSize(640, 420);
+        ta.setStyle("-fx-font-family: 'Courier New', monospace; -fx-font-size: 11px;");
+        dialog.getDialogPane().setContent(ta);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.showAndWait();
+    }
+
     // ==================== 报告导出 ====================
     
     @FXML
@@ -2010,6 +2118,7 @@ public class PaneVulScan {
                             item.setId(state.getScanId());
                             // 格式化开始时间
                             item.setScanTime(sdf.format(new Date(state.getStartTime())));
+                            item.setCrit(String.valueOf(state.getCriticalCount()));
                             // 目标数量
                             List<String> targets = state.getTargets();
                             item.setTargets(String.valueOf(targets != null ? targets.size() : 0));
@@ -3906,16 +4015,19 @@ public class PaneVulScan {
     public static class HistoryItem {
         private String id;
         private String scanTime;
+        private String crit;
         private String targets;
         private String pocs;
         private String vulns;
         private String duration;
         private String status;
-        
+
         public String getId() { return id; }
         public void setId(String id) { this.id = id; }
         public String getScanTime() { return scanTime; }
         public void setScanTime(String scanTime) { this.scanTime = scanTime; }
+        public String getCrit() { return crit; }
+        public void setCrit(String crit) { this.crit = crit; }
         public String getTargets() { return targets; }
         public void setTargets(String targets) { this.targets = targets; }
         public String getPocs() { return pocs; }
