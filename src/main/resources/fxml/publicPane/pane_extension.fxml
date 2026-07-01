@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
-
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<?import javafx.scene.control.Accordion?>
-<?import com.potato.potatotool.utils.ui.SmoothListView?>
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.effect.DropShadow?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
@@ -14,25 +11,108 @@
            fx:id="sPane"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <BorderPane>
+    <HBox prefHeight="${sPane.height}" prefWidth="${sPane.width}">
 
-        <left>
-            <SmoothScrollPane styleClass="pt-scroll" maxHeight="${sPane.height - 10}" hbarPolicy="NEVER">
-                <VBox fx:id="vBoxBar">
-                    <Accordion fx:id="accordionPane"/>
+        <!-- 主内容区 -->
+        <VBox HBox.hgrow="ALWAYS">
+
+            <!-- 统计栏 -->
+            <HBox styleClass="ext-stats-bar" alignment="CENTER_LEFT" spacing="0">
+                <HBox styleClass="ext-stat-cell" alignment="CENTER" spacing="6">
+                    <Label text="INSTALLED" styleClass="ext-stat-key"/>
+                    <Label fx:id="statInstalled" text="0" styleClass="ext-stat-val"/>
+                </HBox>
+                <Region styleClass="ext-stat-sep"/>
+                <HBox styleClass="ext-stat-cell" alignment="CENTER" spacing="6">
+                    <Label text="ENABLED" styleClass="ext-stat-key"/>
+                    <Label fx:id="statEnabled" text="0" styleClass="ext-stat-val"/>
+                </HBox>
+                <Region styleClass="ext-stat-sep"/>
+                <HBox styleClass="ext-stat-cell" alignment="CENTER" spacing="6">
+                    <Label text="UPDATES" styleClass="ext-stat-key"/>
+                    <Label fx:id="statUpdates" text="0" styleClass="ext-stat-val"/>
+                </HBox>
+                <Region styleClass="ext-stat-sep"/>
+                <HBox styleClass="ext-stat-cell" alignment="CENTER" spacing="6">
+                    <Label text="REGISTRY" styleClass="ext-stat-key"/>
+                    <Label text="LOCAL" styleClass="ext-stat-val,ext-registry-status"/>
+                </HBox>
+                <Region HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <!-- 标题栏 -->
+            <HBox styleClass="ext-title-bar" alignment="CENTER_LEFT" spacing="12">
+                <VBox spacing="3" HBox.hgrow="ALWAYS">
+                    <Label text="扩展模块" styleClass="ext-page-title" userData="i18n:extension.title"/>
+                    <Label text="系统插件中心 · 管理安装与扩展" styleClass="pt-caption"
+                           userData="i18n:extension.subtitle"/>
                 </VBox>
+                <Button fx:id="addExtBtn" styleClass="pt-btn-primary" text="+ 添加扩展"
+                        userData="i18n:extension.add.btn" onAction="#addGlobalExtension" minWidth="100" minHeight="30">
+                    <cursor><Cursor fx:constant="HAND"/></cursor>
+                </Button>
+                <Button styleClass="pt-btn" text="刷新"
+                        userData="i18n:extension.refresh" onAction="#refreshData" minHeight="30">
+                    <cursor><Cursor fx:constant="HAND"/></cursor>
+                </Button>
+            </HBox>
+
+            <!-- 搜索 + 过滤 -->
+            <HBox styleClass="ext-filter-bar" alignment="CENTER_LEFT" spacing="10">
+                <HBox styleClass="ext-search-box" alignment="CENTER_LEFT" spacing="6" HBox.hgrow="ALWAYS">
+                    <Region styleClass="ext-search-icon"/>
+                    <TextField fx:id="searchField" styleClass="pt-input" HBox.hgrow="ALWAYS"
+                               promptText="搜索扩展 / 分类…"
+                               userData="i18n-prompt:extension.search.prompt"
+                               onKeyReleased="#filterExtensions"/>
+                </HBox>
+                <HBox fx:id="filterChips" spacing="6" alignment="CENTER_LEFT"/>
+            </HBox>
+
+            <!-- 卡片网格 -->
+            <SmoothScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" hbarPolicy="NEVER">
+                <FlowPane fx:id="cardGrid" hgap="14" vgap="14" style="-fx-padding: 16;"/>
             </SmoothScrollPane>
-        </left>
 
-        <right>
-            <SmoothListView fx:id="listView" styleClass="pt-scroll" prefWidth="${sPane.width - 210}" maxHeight="${sPane.height - 10}" />
-        </right>
-    </BorderPane>
+        </VBox>
 
-    <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
-        <effect>
-            <DropShadow/>
-        </effect>
+        <!-- 分隔线 -->
+        <Region minWidth="1" maxWidth="1" style="-fx-background-color: -pt-border;"/>
+
+        <!-- 右侧 CATEGORIES 面板 -->
+        <SmoothScrollPane fx:id="categoriesPane" minWidth="210" maxWidth="210"
+                          hbarPolicy="NEVER" fitToWidth="true">
+            <VBox styleClass="ext-cat-root" spacing="0">
+                <VBox styleClass="ext-cat-header">
+                    <Label text="CATEGORIES" styleClass="ext-cat-section-label"/>
+                    <Label text="分类导航" styleClass="ext-cat-title" userData="i18n:extension.categories.title"/>
+                </VBox>
+                <VBox fx:id="categoryNavList" spacing="0"/>
+                <Label text="STATES" styleClass="ext-cat-states-label" userData="i18n:extension.states.title"/>
+                <VBox styleClass="ext-cat-states" spacing="6">
+                    <HBox styleClass="ext-state-chip" alignment="CENTER_LEFT" spacing="8">
+                        <Region styleClass="ext-state-dot,ext-state-running"/>
+                        <Label fx:id="stateRunning" text="运行中: 0" styleClass="ext-state-label"/>
+                    </HBox>
+                    <HBox styleClass="ext-state-chip" alignment="CENTER_LEFT" spacing="8">
+                        <Region styleClass="ext-state-dot,ext-state-update"/>
+                        <Label fx:id="stateUpdate" text="可更新: 0" styleClass="ext-state-label"/>
+                    </HBox>
+                    <HBox styleClass="ext-state-chip" alignment="CENTER_LEFT" spacing="8">
+                        <Region styleClass="ext-state-dot,ext-state-error"/>
+                        <Label fx:id="stateError" text="错误: 0" styleClass="ext-state-label"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </SmoothScrollPane>
+
+    </HBox>
+
+    <!-- 提示 Toast -->
+    <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"
+               maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER"
+               StackPane.alignment="CENTER">
+        <effect><DropShadow/></effect>
         <Label fx:id="prompt" wrapText="true" textAlignment="CENTER" alignment="CENTER" maxWidth="600"/>
     </StackPane>
 

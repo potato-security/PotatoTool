@@ -1,3 +1,277 @@
+/* ============================================================
+   扩展模块 新版 UI
+   ============================================================ */
+
+/* 统计栏 */
+.ext-stats-bar {
+    -fx-background-color: -pt-bg-base;
+    -fx-border-color: transparent transparent -pt-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0;
+    -fx-min-height: 36;
+    -fx-max-height: 36;
+}
+.ext-stat-cell {
+    -fx-padding: 0 18 0 18;
+}
+.ext-stat-key {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Monospace";
+}
+.ext-stat-val {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+    -fx-font-family: "Monospace";
+}
+.ext-registry-status {
+    -fx-text-fill: -pt-accent-teal;
+}
+.ext-stat-sep {
+    -fx-background-color: -pt-border;
+    -fx-min-width: 1;
+    -fx-max-width: 1;
+    -fx-min-height: 14;
+    -fx-max-height: 14;
+}
+
+/* 标题栏 */
+.ext-title-bar {
+    -fx-padding: 14 16 14 16;
+    -fx-border-color: transparent transparent -pt-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-color: -pt-bg-base;
+}
+.ext-page-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+
+/* 搜索过滤栏 */
+.ext-filter-bar {
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: transparent transparent -pt-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-color: -pt-bg-base;
+}
+.ext-search-box {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 0 8 0 10;
+    -fx-min-height: 30;
+    -fx-max-height: 30;
+}
+.ext-search-box .pt-input {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.ext-search-icon {
+    -fx-min-width: 14;
+    -fx-max-width: 14;
+    -fx-min-height: 14;
+    -fx-max-height: 14;
+    -fx-shape: "M637 612c54.2-69.4 86.5-156.5 86.5-251C723.5 159.5 561.5 0 360 0S-3.5 162.5-3.5 361 158.5 722 360 722c96.1 0 183.5-36.5 249.1-96L816 832.9c15.6 15.6 40.9 15.6 56.5 0s15.6-40.9 0-56.5L637 612zm-277-10C192 602 38.5 449.5 38.5 360S192.5 118 360 118s321.5 153.5 321.5 342S528 602 360 602z";
+    -fx-background-color: -pt-text-muted;
+}
+
+/* 过滤 chip */
+.ext-filter-chip {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-padding: 3 12 3 12;
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-cursor: hand;
+}
+.ext-filter-chip:hover {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border-subtle;
+    -fx-text-fill: -pt-text;
+}
+.ext-filter-chip-selected {
+    -fx-background-color: derive(-pt-accent, -60%);
+    -fx-border-color: -pt-accent;
+    -fx-text-fill: -pt-accent;
+    -fx-font-weight: bold;
+}
+
+/* 扩展卡片 */
+.ext-card {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 14 14 12 14;
+    -fx-cursor: hand;
+}
+.ext-card:hover {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border-subtle;
+}
+.ext-card-icon-box {
+    -fx-background-color: derive(-pt-accent-teal, -65%);
+    -fx-border-color: derive(-pt-accent-teal, -40%);
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-min-width: 38;
+    -fx-max-width: 38;
+    -fx-min-height: 38;
+    -fx-max-height: 38;
+    -fx-alignment: center;
+}
+.ext-card-name {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.ext-card-version {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Monospace";
+}
+.ext-card-desc {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-wrap-text: true;
+}
+.ext-cat-chip {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-accent-teal;
+    -fx-background-color: derive(-pt-accent-teal, -70%);
+    -fx-border-color: derive(-pt-accent-teal, -40%);
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 1 6 1 6;
+    -fx-font-weight: bold;
+}
+.ext-toggle-on {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent-teal;
+    -fx-background-color: derive(-pt-accent-teal, -70%);
+    -fx-border-color: -pt-accent-teal;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 2 8 2 8;
+}
+.ext-toggle-off {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent;
+    -fx-background-color: derive(-pt-accent, -65%);
+    -fx-border-color: -pt-accent;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 2 8 2 8;
+}
+.ext-update-badge {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-warning;
+    -fx-background-color: derive(-pt-warning, -70%);
+    -fx-border-color: -pt-warning;
+    -fx-border-width: 1;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 1 6 1 6;
+}
+
+/* 右侧分类面板 */
+.ext-cat-root {
+    -fx-background-color: -pt-bg-base;
+    -fx-min-height: -Infinity;
+}
+.ext-cat-header {
+    -fx-padding: 16 14 12 14;
+    -fx-border-color: transparent transparent -pt-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+.ext-cat-section-label {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Monospace";
+    -fx-letter-spacing: 1px;
+}
+.ext-cat-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.ext-cat-nav-item {
+    -fx-padding: 9 14 9 14;
+    -fx-border-color: transparent transparent -pt-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-cursor: hand;
+}
+.ext-cat-nav-item:hover {
+    -fx-background-color: -pt-bg-panel;
+}
+.ext-cat-nav-selected {
+    -fx-background-color: derive(-pt-accent, -72%);
+    -fx-border-color: transparent transparent -pt-border transparent;
+}
+.ext-cat-nav-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text;
+    -fx-font-weight: bold;
+}
+.ext-cat-nav-count {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 1 6 1 6;
+}
+.ext-cat-states-label {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Monospace";
+    -fx-padding: 14 14 6 14;
+    -fx-border-color: -pt-border transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+.ext-cat-states {
+    -fx-padding: 0 14 14 14;
+}
+.ext-state-chip {
+    -fx-padding: 3 0 3 0;
+}
+.ext-state-dot {
+    -fx-min-width: 8;
+    -fx-max-width: 8;
+    -fx-min-height: 8;
+    -fx-max-height: 8;
+    -fx-background-radius: 4;
+}
+.ext-state-running { -fx-background-color: -pt-accent-teal; }
+.ext-state-update  { -fx-background-color: -pt-warning; }
+.ext-state-error   { -fx-background-color: -pt-error; }
+.ext-state-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+}
+
+/* 旧版兼容 */
 .vBox {
     -fx-padding: 0;
 }
