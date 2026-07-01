@@ -2,22 +2,28 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.effect.DropShadow?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.potato.potatotool.controller.publicPane.PaneDeleteConfirmDialog"
             fx:id="an"
-            stylesheets="@../../css/common.css, @../../css/deleteConfirm.css"
+            stylesheets="@../../css/common.css, @../../css/components.css, @../../css/deleteConfirm.css"
             style="-fx-background-color: transparent;"
             onMouseDragged="#topBarDraggedAction"
             onMousePressed="#topBarPressedAction"
             prefWidth="400"
             prefHeight="310">
 
-    <Pane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0">
-        <effect><DropShadow/></effect>
+    <StackPane AnchorPane.topAnchor="9" AnchorPane.bottomAnchor="9"
+               AnchorPane.leftAnchor="9" AnchorPane.rightAnchor="9">
+        <effect><DropShadow color="#00000080" radius="18" spread="0.08"/></effect>
+
+        <!-- 危险角标 (红色) -->
+        <Region styleClass="pt-corner-tl-danger" StackPane.alignment="TOP_LEFT"/>
+        <Region styleClass="pt-corner-tr-danger" StackPane.alignment="TOP_RIGHT"/>
+        <Region styleClass="pt-corner-bl-danger" StackPane.alignment="BOTTOM_LEFT"/>
+        <Region styleClass="pt-corner-br-danger" StackPane.alignment="BOTTOM_RIGHT"/>
+
         <VBox>
             <!-- Title bar -->
             <BorderPane fx:id="topBar" styleClass="del-topbar"
@@ -30,7 +36,7 @@
                 <right>
                     <HBox alignment="CENTER" prefHeight="${topBar.height}">
                         <Button styleClass="del-close-btn" mnemonicParsing="false" onAction="#exitAction"
-                                prefHeight="25.0" prefWidth="25.0" text="✕"/>
+                                text="✕"/>
                         <Pane minWidth="10"/>
                     </HBox>
                 </right>
@@ -67,6 +73,6 @@
 
             </VBox>
         </VBox>
-    </Pane>
+    </StackPane>
 
 </AnchorPane>

@@ -125,6 +125,15 @@
     -fx-alignment: CENTER_LEFT;
 }
 
+.ai-composer-meta-row-error {
+    -fx-background-color: derive(-pt-danger, -72%);
+    -fx-background-radius: 8;
+    -fx-border-color: -pt-danger;
+    -fx-border-radius: 8;
+    -fx-border-width: 0 0 0 3;
+    -fx-padding: 8 12 8 10;
+}
+
 .ai-icon-button {
     -fx-min-width: 36;
     -fx-min-height: 36;

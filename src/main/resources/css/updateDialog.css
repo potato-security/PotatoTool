@@ -24,21 +24,25 @@
 }
 
 .upd-close-btn {
-    -fx-background-color: -pt-bg-panel;
-    -fx-text-fill: -pt-text-secondary;
-    -fx-font-size: 12;
+    -fx-background-color: -pt-danger;
+    -fx-text-fill: white;
+    -fx-font-size: 11;
     -fx-cursor: hand;
-    -fx-border-color: -pt-border-subtle;
+    -fx-border-color: transparent;
     -fx-border-radius: 50%;
     -fx-background-radius: 50%;
-    -fx-border-width: 1;
+    -fx-border-width: 0;
     -fx-padding: 0;
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-min-width: 20;
+    -fx-min-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
 }
 
 .upd-close-btn:hover {
-    -fx-background-color: derive(-pt-danger, -45%);
-    -fx-text-fill: -pt-danger;
-    -fx-border-color: derive(-pt-danger, -20%);
+    -fx-background-color: derive(-pt-danger, -15%);
 }
 
 /* ── 版本信息条 ── */

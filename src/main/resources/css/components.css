@@ -210,10 +210,24 @@
 }
 
 /* ========== 四角取景框 (设计标志性元素) ========== */
-/* 用法: 容器加 .pt-frame，其内放 4 个带此类的小 Region 作角标 */
-.pt-frame-corner {
+/* 用法: StackPane 内放 4 个 Region(styleClass="pt-corner-tl" 等)置于四角 */
+.pt-corner-tl, .pt-corner-tr, .pt-corner-bl, .pt-corner-br {
     -fx-border-color: -pt-accent;
-    -fx-border-width: 1px;
     -fx-min-width: 12px; -fx-min-height: 12px;
     -fx-max-width: 12px; -fx-max-height: 12px;
 }
+.pt-corner-tl { -fx-border-width: 2 0 0 2; }
+.pt-corner-tr { -fx-border-width: 2 2 0 0; }
+.pt-corner-bl { -fx-border-width: 0 0 2 2; }
+.pt-corner-br { -fx-border-width: 0 2 2 0; }
+
+/* 危险版 (红色角标) */
+.pt-corner-tl-danger, .pt-corner-tr-danger, .pt-corner-bl-danger, .pt-corner-br-danger {
+    -fx-border-color: -pt-danger;
+    -fx-min-width: 12px; -fx-min-height: 12px;
+    -fx-max-width: 12px; -fx-max-height: 12px;
+}
+.pt-corner-tl-danger { -fx-border-width: 2 0 0 2; }
+.pt-corner-tr-danger { -fx-border-width: 2 2 0 0; }
+.pt-corner-bl-danger { -fx-border-width: 0 0 2 2; }
+.pt-corner-br-danger { -fx-border-width: 0 2 2 0; }

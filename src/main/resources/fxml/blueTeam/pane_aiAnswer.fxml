@@ -80,8 +80,9 @@
                                visible="false"
                                managed="false"
                                styleClass="ai-thinking-badge"/>
-                        <Label fx:id="statusLabel" text="" visible="false" managed="false"/>
-                        <Pane HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="statusLabel" text="" visible="false" managed="false"
+                               HBox.hgrow="ALWAYS" maxWidth="Infinity" wrapText="false"/>
+                        <Pane/>
                         <Hyperlink fx:id="clearAttachmentLink"
                                    text="清空附件"
                                    userData="i18n:ai.attach.clear"

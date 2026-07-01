@@ -1076,6 +1076,7 @@ public class PaneAiAnswer {
                     "ai-status-error",
                     "ai-status-completed"
             ));
+            composerMetaRow.getStyleClass().remove("ai-composer-meta-row-error");
             switch (newState) {
                 case LOADING:
                     statusLabel.getStyleClass().add("ai-status-loading");
@@ -1091,6 +1092,7 @@ public class PaneAiAnswer {
                     break;
                 case ERROR:
                     statusLabel.getStyleClass().add("ai-status-error");
+                    composerMetaRow.getStyleClass().add("ai-composer-meta-row-error");
                     break;
                 case COMPLETED:
                     statusLabel.getStyleClass().add("ai-status-completed");
