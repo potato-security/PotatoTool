@@ -239,6 +239,12 @@ public class PaneSetting {
     @FXML
     private ComboBox<String> oobHttpPlatform;
     @FXML
+    private ToggleGroup oobPlatformGroup;
+    @FXML
+    private ToggleButton oobInteractshBtn;
+    @FXML
+    private ToggleButton oobCustomBtn;
+    @FXML
     private TextField oobInteractshServer;
     @FXML
     private TextField oobInteractshToken;
@@ -1827,12 +1833,36 @@ public class PaneSetting {
                     : "");
         }
 
+        syncOobChipsFromComboBox(httpPlatform);
         updateOobFieldState();
         if (oobHttpPlatform != null) {
             oobHttpPlatform.valueProperty().addListener((obs, oldVal, newVal) -> updateOobFieldState());
         }
+        if (oobPlatformGroup != null) {
+            oobPlatformGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
+                if (newT == null && oldT != null) {
+                    oldT.setSelected(true);
+                }
+            });
+        }
         if (oobDnsPlatform != null) {
             oobDnsPlatform.valueProperty().addListener((obs, oldVal, newVal) -> updateOobFieldState());
+        }
+    }
+
+    private void syncOobChipsFromComboBox(String platform) {
+        boolean isCustom = HttpLogService.Platform.CUSTOM.name().equalsIgnoreCase(platform);
+        if (oobInteractshBtn != null) oobInteractshBtn.setSelected(!isCustom);
+        if (oobCustomBtn != null) oobCustomBtn.setSelected(isCustom);
+    }
+
+    @FXML
+    public void onOobPlatformToggle(ActionEvent e) {
+        if (!(e.getSource() instanceof ToggleButton)) return;
+        ToggleButton btn = (ToggleButton) e.getSource();
+        String value = btn.getUserData() != null ? btn.getUserData().toString() : "";
+        if (oobHttpPlatform != null) {
+            oobHttpPlatform.setValue(value);
         }
     }
 

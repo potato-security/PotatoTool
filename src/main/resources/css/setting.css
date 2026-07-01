@@ -261,3 +261,28 @@
 .setting-font-12 {
     -fx-font-size: 12px;
 }
+
+/* OOB 平台选择 chip */
+.oob-chip {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 6;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+    -fx-padding: 4 14 4 14;
+    -fx-cursor: hand;
+}
+
+.oob-chip:hover {
+    -fx-border-color: -pt-accent-teal;
+    -fx-text-fill: -pt-accent-teal;
+}
+
+.oob-chip:selected {
+    -fx-background-color: derive(-pt-accent-teal, -55%);
+    -fx-border-color: -pt-accent-teal;
+    -fx-text-fill: -pt-accent-teal;
+}

@@ -587,9 +587,18 @@
                                                     <Label styleClass="pt-h2"
                                                           text="HTTP OOB" userData="i18n:setting.oob.http.title"/>
                                                 </HBox>
-                                                <HBox alignment="CENTER" spacing="10">
+                                                <ComboBox fx:id="oobHttpPlatform" visible="false" managed="false"/>
+                                                <HBox alignment="CENTER_LEFT" spacing="8">
                                                     <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="平台：" userData="i18n:setting.oob.http.platform"/>
-                                                    <ComboBox fx:id="oobHttpPlatform" prefWidth="250"/>
+                                                    <fx:define><ToggleGroup fx:id="oobPlatformGroup"/></fx:define>
+                                                    <ToggleButton fx:id="oobInteractshBtn" text="INTERACTSH"
+                                                                  styleClass="oob-chip" selected="true"
+                                                                  toggleGroup="$oobPlatformGroup"
+                                                                  onAction="#onOobPlatformToggle" userData="INTERACTSH"/>
+                                                    <ToggleButton fx:id="oobCustomBtn" text="CUSTOM"
+                                                                  styleClass="oob-chip"
+                                                                  toggleGroup="$oobPlatformGroup"
+                                                                  onAction="#onOobPlatformToggle" userData="CUSTOM"/>
                                                 </HBox>
                                                 <VBox fx:id="oobInteractshGroup" spacing="10" managed="true" visible="true">
                                                     <HBox alignment="CENTER" spacing="10">

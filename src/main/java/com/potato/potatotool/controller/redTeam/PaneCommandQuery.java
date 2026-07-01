@@ -244,6 +244,11 @@ public class PaneCommandQuery {
 
             Label sysTitle = new Label(key);
             sysTitle.getStyleClass().add("sysTitle");
+            if ("Windows".equals(key)) {
+                sysTitle.getStyleClass().add("sysTitle-windows");
+            } else if ("Linux".equals(key)) {
+                sysTitle.getStyleClass().add("sysTitle-linux");
+            }
             contentObj.add(sysTitle);
 
             VBox vBoxs = new VBox();
@@ -272,7 +277,7 @@ public class PaneCommandQuery {
 
                 Label describeLabel = new Label(describe);
                 describeLabel.setWrapText(true);
-                describeLabel.setStyle("-fx-text-fill: -main-linenoText-color;");
+                describeLabel.getStyleClass().add("cmd-describe");
 
                 vBox.setAlignment(Pos.CENTER);
                 vBox.getChildren().addAll(commandSP, describeLabel);
