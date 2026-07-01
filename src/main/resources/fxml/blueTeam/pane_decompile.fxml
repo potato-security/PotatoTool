@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.dlsc.gemsfx.CFSwitch?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
@@ -72,7 +73,19 @@
             </RXTranslationButton>
         </HBox>
 
-        <Pane minHeight="20"/>
+        <Pane minHeight="10"/>
+
+        <!-- AI 面板工具栏 -->
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 4 8 4;">
+            <Label text="显示 AI 分析面板" styleClass="pt-body" userData="i18n:decompile.ai.label"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <CFSwitch fx:id="showAI" onAction="#showAI">
+                <tooltip>
+                    <Tooltip text="AI分析" userData="i18n:decompile.ai"/>
+                </tooltip>
+            </CFSwitch>
+        </HBox>
+
         <StackPane>
             <VBox styleClass="codeAreaPane">
                 <VirtualizedScrollPane fx:id="virScrollPane" styleClass="virtualizedScrollPane">
@@ -81,18 +94,10 @@
                     </content>
                 </VirtualizedScrollPane>
             </VBox>
-            <Pane  maxWidth="0" StackPane.alignment="CENTER_RIGHT">
-                <Button fx:id="showAI" layoutX="-1" layoutY="20" mnemonicParsing="false" onAction="#showAI">
-                    <graphic>
-                        <Region styleClass="AiImg"/>
-                    </graphic>
-                    <tooltip>
-                        <Tooltip text="AI分析" userData="i18n:decompile.ai"/>
-                    </tooltip>
-                </Button>
+            <Pane maxWidth="0" StackPane.alignment="CENTER_RIGHT">
                 <Pane fx:id="aiPane" visible="false" maxWidth="0">
-                    <SmoothTextArea fx:id="aiTextArea" styleClass="pt-input" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height - 138}" maxHeight="${sPane.height - 138}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:decompile.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
-                    <Button fx:id="refreshAI" layoutX="-60" layoutY="6"  mnemonicParsing="false" onAction="#refreshAI">
+                    <SmoothTextArea fx:id="aiTextArea" styleClass="pt-input" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height - 150}" maxHeight="${sPane.height - 150}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:decompile.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
+                    <Button fx:id="refreshAI" layoutX="-60" layoutY="6" mnemonicParsing="false" onAction="#refreshAI">
                         <graphic>
                             <ImageView fitHeight="17.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
                                 <image>
@@ -105,21 +110,6 @@
                         </cursor>
                         <tooltip>
                             <Tooltip text="重新进行AI分析" userData="i18n:decompile.ai.refresh"/>
-                        </tooltip>
-                    </Button>
-                    <Button fx:id="closeAI" layoutX="-35" layoutY="6"  mnemonicParsing="false" onAction="#showAI">
-                        <graphic>
-                            <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                <image>
-                                    <Image url="@../../img/close2.png" />
-                                </image>
-                            </ImageView>
-                        </graphic>
-                        <cursor>
-                            <Cursor fx:constant="HAND" />
-                        </cursor>
-                        <tooltip>
-                            <Tooltip text="关闭" userData="i18n:tooltip.close"/>
                         </tooltip>
                     </Button>
                 </Pane>

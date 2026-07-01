@@ -16,7 +16,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
+import com.dlsc.gemsfx.CFSwitch;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
@@ -54,7 +54,7 @@ public class PaneDecompile {
     @FXML
     private Pane aiPane;
     @FXML
-    private Button showAI;
+    private CFSwitch showAI;
 
 
     String res = "";
@@ -243,14 +243,12 @@ public class PaneDecompile {
     @FXML
     void showAI(ActionEvent e) throws Exception {
 
-        double targetWidth = isAiVisible ? 0 : sPane.getPrefWidth() * 0.8;
+        boolean wantVisible = (showAI != null) ? showAI.isSelected() : !isAiVisible;
+        double targetWidth = wantVisible ? sPane.getPrefWidth() * 0.8 : 0;
         Duration duration = Duration.seconds(0.2);
 
-        if (!isAiVisible){
+        if (wantVisible) {
             aiPane.setVisible(true);
-            showAI.setStyle("-fx-background-color: #87CEFA");
-        }else {
-            showAI.setStyle("-fx-background-color: transparent");
         }
 
         Timeline animation = new Timeline(
@@ -259,8 +257,7 @@ public class PaneDecompile {
         );
 
         animation.setOnFinished(event -> {
-            isAiVisible = !isAiVisible;
-
+            isAiVisible = wantVisible;
             if (!isAiVisible) {
                 aiPane.setVisible(false);
             }
