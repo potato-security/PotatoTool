@@ -80,15 +80,15 @@ public class PaneInfoSearch {
     @FXML
     private TextField question;
     @FXML
-    private CFCheckBox fofaBox;
+    private ToggleButton fofaBox;
     @FXML
-    private CFCheckBox hunterBox;
+    private ToggleButton hunterBox;
     @FXML
-    private CFCheckBox quakeBox;
+    private ToggleButton quakeBox;
     @FXML
     private CFCheckBox zoomeyeBox;
     @FXML
-    private CFCheckBox shodanBox;
+    private ToggleButton shodanBox;
     @FXML
     private CFCheckBox googleBox;
     @FXML
@@ -200,11 +200,11 @@ public class PaneInfoSearch {
     @FXML
     private HBox advancedSetting;
     @FXML
-    private Label uploadLabel;
+    private Button uploadBtn;
     @FXML
-    private Label sendLabel;
+    private Button searchBtn;
     @FXML
-    private Label stopLabel;
+    private Button stopBtn;
     @FXML
     private ScrollPane scroll;
 
@@ -229,8 +229,28 @@ public class PaneInfoSearch {
 
     @FXML
     private VBox echoVbox;
+    @FXML
+    private Label statDomains;
+    @FXML
+    private Label statSubs;
+    @FXML
+    private Label statIps;
+    @FXML
+    private Label statPorts;
+    @FXML
+    private Label statApis;
+    @FXML
+    private Label statCardSubs;
+    @FXML
+    private Label statCardIps;
+    @FXML
+    private Label statCardPorts;
+    @FXML
+    private Label statCardFps;
+    @FXML
+    private VBox contextList;
 
-    private final List<CFCheckBox> checkBoxList = new ArrayList<>();
+    private final List<ToggleButton> checkBoxList = new ArrayList<>();
 
     public void initialize() {
         listenSearch();
@@ -239,7 +259,6 @@ public class PaneInfoSearch {
         checkBoxList.add(fofaBox);
         checkBoxList.add(hunterBox);
         checkBoxList.add(quakeBox);
-        checkBoxList.add(zoomeyeBox);
         checkBoxList.add(shodanBox);
         
         // 绑定国际化
@@ -301,19 +320,30 @@ public class PaneInfoSearch {
             return;
         }
         for (Map.Entry<String, Boolean> entry : selections.entrySet()) {
-            CFCheckBox checkBox = resolvePreviewCheckbox(entry.getKey());
+            String key = entry.getKey();
+            boolean value = Boolean.TRUE.equals(entry.getValue());
+            ToggleButton chip = resolvePreviewChip(key);
+            if (chip != null) {
+                chip.setSelected(value);
+                continue;
+            }
+            CFCheckBox checkBox = resolvePreviewCheckbox(key);
             if (checkBox != null) {
-                checkBox.setSelected(Boolean.TRUE.equals(entry.getValue()));
+                checkBox.setSelected(value);
             }
         }
     }
 
-    private CFCheckBox resolvePreviewCheckbox(String key) {
+    private ToggleButton resolvePreviewChip(String key) {
         if ("fofa".equals(key)) return fofaBox;
         if ("hunter".equals(key)) return hunterBox;
         if ("quake".equals(key)) return quakeBox;
-        if ("zoomeye".equals(key)) return zoomeyeBox;
         if ("shodan".equals(key)) return shodanBox;
+        return null;
+    }
+
+    private CFCheckBox resolvePreviewCheckbox(String key) {
+        if ("zoomeye".equals(key)) return zoomeyeBox;
         if ("google".equals(key)) return googleBox;
         if ("github".equals(key)) return githubBox;
         if ("weight".equals(key)) return weightBox;
@@ -356,8 +386,8 @@ public class PaneInfoSearch {
         googleBox.setVisible(isIntelligentMode);
         githubBox.setManaged(isIntelligentMode);
         githubBox.setVisible(isIntelligentMode);
-        uploadLabel.setVisible(isIntelligentMode);
-        uploadLabel.setManaged(isIntelligentMode);
+        uploadBtn.setVisible(isIntelligentMode);
+        uploadBtn.setManaged(isIntelligentMode);
 
         weightHBox.setManaged(weightBox.isSelected());
         weightHBox.setVisible(weightBox.isSelected());
@@ -393,7 +423,7 @@ public class PaneInfoSearch {
     //  监听输入时回车
     private void listenSearch() {
         question.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER && !stopLabel.isVisible()) {
+            if (event.getCode() == KeyCode.ENTER && !stopBtn.isVisible()) {
                 searchInput(null);
             }
         });
@@ -411,35 +441,35 @@ public class PaneInfoSearch {
         googleBox.setVisible(isIntelligentMode);
         githubBox.setManaged(isIntelligentMode);
         githubBox.setVisible(isIntelligentMode);
-        uploadLabel.setVisible(isIntelligentMode);
+        uploadBtn.setVisible(isIntelligentMode);
+        uploadBtn.setManaged(isIntelligentMode);
 
-        for (CFCheckBox checkbox : checkBoxList) {
+        for (ToggleButton checkbox : checkBoxList) {
             checkbox.setSelected(false);
         }
 
         if (isIntelligentMode) {
-            for (CFCheckBox checkbox : checkBoxList) {
-                checkbox.selectedProperty().removeListener(singleSelectListener); // 移除监听器
+            for (ToggleButton checkbox : checkBoxList) {
+                checkbox.selectedProperty().removeListener(singleSelectListener);
             }
         } else {
-            for (CFCheckBox checkbox : checkBoxList) {
-                checkbox.selectedProperty().addListener(singleSelectListener); // 添加监听器
+            for (ToggleButton checkbox : checkBoxList) {
+                checkbox.selectedProperty().addListener(singleSelectListener);
             }
         }
 
     }
 
     private final ChangeListener<Boolean> singleSelectListener = (observable, oldValue, newValue) -> {
-        CFCheckBox currentCheckbox = (CFCheckBox) ((ReadOnlyBooleanProperty) observable).getBean();
+        ToggleButton current = (ToggleButton) ((ReadOnlyBooleanProperty) observable).getBean();
 
-        if (newValue) { // 当前复选框被选中时
-            for (CFCheckBox checkbox : checkBoxList) {
-                if (checkbox != currentCheckbox) {
-                    checkbox.setSelected(false); // 取消其他复选框选中状态
+        if (newValue) {
+            for (ToggleButton btn : checkBoxList) {
+                if (btn != current) {
+                    btn.setSelected(false);
                 }
             }
-            // 再次确保当前复选框的选中状态为 true，防止状态被覆盖
-            currentCheckbox.setSelected(true);
+            current.setSelected(true);
         }
     };
 
@@ -499,12 +529,14 @@ public class PaneInfoSearch {
 
     private void restoreSearchControls() {
         Platform.runLater(() -> {
-            uploadLabel.setVisible(true);
-            sendLabel.setVisible(true);
-            sendLabel.setManaged(true);
-            stopLabel.setVisible(false);
-            stopLabel.setManaged(false);
-            stopLabel.setDisable(false);
+            boolean smart = searchModeBox.getSelectionModel().getSelectedIndex() == 0;
+            uploadBtn.setVisible(smart);
+            uploadBtn.setManaged(smart);
+            searchBtn.setVisible(true);
+            searchBtn.setManaged(true);
+            stopBtn.setVisible(false);
+            stopBtn.setManaged(false);
+            stopBtn.setDisable(false);
         });
     }
 
@@ -539,13 +571,14 @@ public class PaneInfoSearch {
     }
 
     @FXML
-    public void searchInput(MouseEvent mouseEvent) {
+    public void searchInput(ActionEvent event) {
         echoVbox.getChildren().clear();
-        uploadLabel.setVisible(false);
-        sendLabel.setVisible(false);
-        sendLabel.setManaged(false);
-        stopLabel.setVisible(true);
-        stopLabel.setManaged(true);
+        uploadBtn.setVisible(false);
+        uploadBtn.setManaged(false);
+        searchBtn.setVisible(false);
+        searchBtn.setManaged(false);
+        stopBtn.setVisible(true);
+        stopBtn.setManaged(true);
 
         // 初始化任务状态
         interruptCurrentSearch();
@@ -566,13 +599,13 @@ public class PaneInfoSearch {
     }
 
     @FXML
-    public void searchUploadInput(MouseEvent event) {
+    public void searchUploadInput(ActionEvent event) {
         FileChooser chooser = new FileChooser();
         FileChooser.ExtensionFilter filter =
                 new FileChooser.ExtensionFilter("TXT文件", "*.txt");
         chooser.getExtensionFilters().add(filter);
 
-        Stage stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+        Stage stage = (Stage) sPane.getScene().getWindow();
         String path = null;
         try {
             path = chooser.showOpenDialog(stage).getAbsolutePath();
@@ -587,11 +620,12 @@ public class PaneInfoSearch {
         }
 
         echoVbox.getChildren().clear();
-        uploadLabel.setVisible(false);
-        sendLabel.setVisible(false);
-        sendLabel.setManaged(false);
-        stopLabel.setVisible(true);
-        stopLabel.setManaged(true);
+        uploadBtn.setVisible(false);
+        uploadBtn.setManaged(false);
+        searchBtn.setVisible(false);
+        searchBtn.setManaged(false);
+        stopBtn.setVisible(true);
+        stopBtn.setManaged(true);
 
         // 初始化任务状态
         interruptCurrentSearch();
@@ -691,8 +725,7 @@ public class PaneInfoSearch {
     }
 
     @FXML
-    public void checkFofa(MouseEvent event) {
-        fofaBox.setSelected(!fofaBox.isSelected());
+    public void checkFofa(ActionEvent event) {
         if(fofaBox.isSelected()){
             Task<Void> task = new Task<Void>() {
                 @Override
@@ -706,7 +739,7 @@ public class PaneInfoSearch {
                         String error = getError_Fofa();
                         if (error != null) {
                             Platform.runLater(() -> {
-                                fofaBox.setSelected(!fofaBox.isSelected());
+                                fofaBox.setSelected(false);
                                 showTip(error, true, AssetConstants.FOFA_KEY);
                             });
                         }
@@ -725,8 +758,7 @@ public class PaneInfoSearch {
     }
 
     @FXML
-    public void checkHunter(MouseEvent event) {
-        hunterBox.setSelected(!hunterBox.isSelected());
+    public void checkHunter(ActionEvent event) {
         if(hunterBox.isSelected()){
             Task<Void> task = new Task<Void>() {
                 @Override
@@ -740,7 +772,7 @@ public class PaneInfoSearch {
                         String error = getError_Hunter();
                         if (error != null) {
                             Platform.runLater(() -> {
-                                hunterBox.setSelected(!hunterBox.isSelected());
+                                hunterBox.setSelected(false);
                                 showTip(error, true, AssetConstants.HUNTER_KEY);
                             });
                         }
@@ -753,8 +785,7 @@ public class PaneInfoSearch {
     }
 
     @FXML
-    public void checkQuake(MouseEvent event) {
-        quakeBox.setSelected(!quakeBox.isSelected());
+    public void checkQuake(ActionEvent event) {
         if(quakeBox.isSelected()){
             Task<Void> task = new Task<Void>() {
                 @Override
@@ -768,7 +799,7 @@ public class PaneInfoSearch {
                         String error = getError_Quake();
                         if (error != null) {
                             Platform.runLater(() -> {
-                                quakeBox.setSelected(!quakeBox.isSelected());
+                                quakeBox.setSelected(false);
                                 showTip(error, true, AssetConstants.QUAKE_KEY);
                             });
                         }
@@ -809,8 +840,7 @@ public class PaneInfoSearch {
     }
 
     @FXML
-    public void checkShodan(MouseEvent event) {
-        shodanBox.setSelected(!shodanBox.isSelected());
+    public void checkShodan(ActionEvent event) {
         if(shodanBox.isSelected()){
             Task<Void> task = new Task<Void>() {
                 @Override
@@ -824,7 +854,7 @@ public class PaneInfoSearch {
                         String error = getError_Shodan();
                         if (error != null) {
                             Platform.runLater(() -> {
-                                shodanBox.setSelected(!shodanBox.isSelected());
+                                shodanBox.setSelected(false);
                                 showTip(error, true, AssetConstants.SHODAN_KEY);
                             });
                         }
@@ -2209,9 +2239,9 @@ public class PaneInfoSearch {
     private String currentInput = "";
 
     @FXML
-    public void stopSearch(MouseEvent event) {
+    public void stopSearch(ActionEvent event) {
         updateEchoVBox("主动结束查询", !generateRepIng, null);
-        stopLabel.setDisable(true);
+        stopBtn.setDisable(true);
 
         if(!generateRepIng) {
             interruptCurrentSearch();

@@ -203,6 +203,153 @@
     -fx-border-width: 0;
 }
 
+/* ===== 信息收集 V8 新布局 ===== */
+
+.is-stats-bar {
+    -fx-padding: 6 16 6 16;
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+.is-stat-key {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-letter-spacing: 1;
+    -fx-padding: 0 4 0 0;
+}
+.is-stat-val {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-padding: 0 0 0 2;
+}
+
+.is-header-row {
+    -fx-padding: 14 16 12 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+.is-h1 {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.is-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+}
+
+.is-target-row {
+    -fx-padding: 10 16 8 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+.is-target-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-min-width: 32;
+}
+.is-target-input {
+    -fx-padding: 8 12 8 12;
+    -fx-font-size: 13px;
+}
+
+.is-sources-row {
+    -fx-padding: 8 16 8 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+.is-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+}
+
+.is-source-chip {
+    -fx-background-color: transparent;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 4 14 4 14;
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-cursor: hand;
+}
+.is-source-chip:hover {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text;
+}
+.is-source-chip:selected {
+    -fx-background-color: derive(-pt-accent, -65%);
+    -fx-border-color: -pt-accent;
+    -fx-text-fill: -pt-accent;
+    -fx-font-weight: bold;
+}
+
+.is-stat-cards {
+    -fx-padding: 8 16 8 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+.is-stat-card {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12 8 12;
+    -fx-spacing: 4;
+}
+.is-stat-card-label {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+}
+.is-stat-card-val {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+}
+
+.is-advanced-row {
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+.is-advanced-panel {
+    -fx-padding: 10 16 10 16;
+    -fx-background-color: -pt-bg-panel;
+}
+
+.is-ctx-panel {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-width: 0 0 0 1;
+    -fx-border-color: -pt-border;
+    -fx-padding: 0;
+}
+.is-ctx-header {
+    -fx-padding: 14 16 12 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+    -fx-spacing: 4;
+}
+.is-ctx-section-label {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+}
+.is-ctx-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+
 /* ===== 信息收集修正版：双模式切换 / OR条件 ===== */
 .is-dual-mode-badge {
     -fx-background-color: derive(-pt-accent-teal, -65%);
