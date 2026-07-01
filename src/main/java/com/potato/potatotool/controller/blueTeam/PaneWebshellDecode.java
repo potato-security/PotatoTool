@@ -99,7 +99,7 @@ public class PaneWebshellDecode {
     @FXML
     private Button tipTitleCopy;
     @FXML
-    private ComboBox rulesComboBox;
+    private ToggleGroup rulesToggleGroup;
     @FXML
     private ComboBox modeComboBox;
     @FXML
@@ -129,7 +129,20 @@ public class PaneWebshellDecode {
     @FXML
     private Label prompt;
 
+    private static final String[] RULE_FULL_LABELS = {
+        "使用默认Key快速解密",
+        "指定Key快速解密",
+        "使用内置50万Key字典解密-Webshell专用",
+        "上传Key字典解密"
+    };
+
     Map<String, Object> res = new HashMap<>();
+
+    private int getRuleIndex() {
+        if (rulesToggleGroup == null) return 0;
+        int idx = rulesToggleGroup.getToggles().indexOf(rulesToggleGroup.getSelectedToggle());
+        return idx < 0 ? 0 : idx;
+    }
 
     private double aiTextAreaStartX, aiTextAreaStartY;
     private DoubleProperty aiTextAreWidthProperty = new SimpleDoubleProperty(0);
@@ -221,7 +234,7 @@ public class PaneWebshellDecode {
         initStateInvalidationListeners();
 
         //  设置默认第一个选项
-        rulesComboBox.getSelectionModel().selectFirst();
+        rulesToggleGroup.selectToggle(rulesToggleGroup.getToggles().get(0));
         modeComboBox.getSelectionModel().selectFirst();
         
         // 绑定国际化
@@ -238,14 +251,14 @@ public class PaneWebshellDecode {
         }
 
         if (startupPage == ToStart.StartupPage.BLUE_WEBSHELL_DECODE_RULES) {
-            rulesComboBox.getSelectionModel().select(2);
+            rulesToggleGroup.selectToggle(rulesToggleGroup.getToggles().get(2));
             rulesComboChoose(null);
             inputText.setText(WEBSHELL_RESULT_PREVIEW_INPUT);
             return;
         }
 
         if (startupPage == ToStart.StartupPage.BLUE_WEBSHELL_DECODE_OPTIONS) {
-            rulesComboBox.getSelectionModel().select(1);
+            rulesToggleGroup.selectToggle(rulesToggleGroup.getToggles().get(1));
             rulesComboChoose(null);
             inputText.setText(WEBSHELL_RESULT_PREVIEW_INPUT);
             customKey.setText(WEBSHELL_OPTION_PREVIEW_KEY);
@@ -255,7 +268,7 @@ public class PaneWebshellDecode {
 
         if (startupPage == ToStart.StartupPage.BLUE_WEBSHELL_DECODE_RESULT
                 || startupPage == ToStart.StartupPage.BLUE_WEBSHELL_DECODE_AI) {
-            rulesComboBox.getSelectionModel().selectFirst();
+            rulesToggleGroup.selectToggle(rulesToggleGroup.getToggles().get(0));
             modeComboBox.getSelectionModel().selectFirst();
             inputText.setText(WEBSHELL_RESULT_PREVIEW_INPUT);
             result.replaceText(WEBSHELL_RESULT_PREVIEW_OUTPUT);
@@ -346,7 +359,7 @@ public class PaneWebshellDecode {
         customKey.textProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
         customIv.textProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
         customPath.textProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
-        rulesComboBox.valueProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
+        rulesToggleGroup.selectedToggleProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
         modeComboBox.valueProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
     }
 
@@ -554,7 +567,7 @@ public class PaneWebshellDecode {
     }
 
     private String resolveDecryptRuleSummary() {
-        String rule = getComboBoxSelection(rulesComboBox);
+        String rule = RULE_FULL_LABELS[getRuleIndex()];
         String mode = (modeComboBox.isManaged() || modeComboBox.isVisible()) ? getComboBoxSelection(modeComboBox) : "";
 
         if (rule == null || rule.trim().isEmpty()) {
@@ -679,7 +692,7 @@ public class PaneWebshellDecode {
         tipTitle.setManaged(false);
 
         //  配置参数
-        int selectedIndex = rulesComboBox.getSelectionModel().getSelectedIndex();
+        int selectedIndex = getRuleIndex();
         int modeIndex = modeComboBox.getSelectionModel().getSelectedIndex();
 
         if(modeIndex == 0){
@@ -769,7 +782,7 @@ public class PaneWebshellDecode {
 
         // 0-使用默认Key快速解密 1-指定Key快速解密 2-使用内置50wKey字典解密 3-指定Key字典解密ƒ
 
-        int selectedIndex = rulesComboBox.getSelectionModel().getSelectedIndex();
+        int selectedIndex = getRuleIndex();
 
         customKey.setVisible(selectedIndex==1? true : false);
         customKey.setManaged(selectedIndex==1? true : false);
@@ -935,7 +948,7 @@ public class PaneWebshellDecode {
         tipTitle.setManaged(false);
 
         //  配置参数
-        int selectedIndex = rulesComboBox.getSelectionModel().getSelectedIndex();
+        int selectedIndex = getRuleIndex();
         int modeIndex = modeComboBox.getSelectionModel().getSelectedIndex();
 
         if(modeIndex == 0){

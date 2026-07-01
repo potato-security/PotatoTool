@@ -25,6 +25,9 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.FlowPane?>
 <StackPane fx:id="sPane"
            stylesheets="@../../css/webshellDecode.css"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
@@ -45,19 +48,21 @@
             <Label fx:id="tipTitle" visible="false" managed="false"/>
             <Button styleClass="pt-btn" fx:id="tipTitleCopy" text="复制" userData="i18n:app.copy" visible="false" managed="false" onAction="#copyTip" StackPane.alignment="CENTER_RIGHT"/>
          </StackPane>
-         <ComboBox fx:id="rulesComboBox" prefHeight="30.0" minWidth="250" prefWidth="250" userData="i18n-combobox:webshell.decrypt.rules" onAction="#rulesComboChoose">
-            <items>
-               <FXCollections fx:factory="observableArrayList">
-                  <String fx:value="使用默认Key快速解密" />
-                  <String fx:value="指定Key快速解密" />
-                  <String fx:value="使用内置50万Key字典解密-Webshell专用" />
-                  <String fx:value="上传Key字典解密" />
-               </FXCollections>
-            </items>
-            <cursor>
-               <Cursor fx:constant="HAND" />
-            </cursor>
-         </ComboBox>
+         <FlowPane hgap="8" vgap="8" alignment="CENTER_LEFT">
+            <ToggleButton styleClass="pt-toggle-chip" text="默认密钥" onAction="#rulesComboChoose">
+               <toggleGroup><ToggleGroup fx:id="rulesToggleGroup"/></toggleGroup>
+               <tooltip><Tooltip text="使用默认Key快速解密"/></tooltip>
+            </ToggleButton>
+            <ToggleButton styleClass="pt-toggle-chip" text="指定密钥" onAction="#rulesComboChoose" toggleGroup="$rulesToggleGroup">
+               <tooltip><Tooltip text="指定Key快速解密"/></tooltip>
+            </ToggleButton>
+            <ToggleButton styleClass="pt-toggle-chip" text="内置字典" onAction="#rulesComboChoose" toggleGroup="$rulesToggleGroup">
+               <tooltip><Tooltip text="使用内置50万Key字典解密（Webshell专用）"/></tooltip>
+            </ToggleButton>
+            <ToggleButton styleClass="pt-toggle-chip" text="上传字典" onAction="#rulesComboChoose" toggleGroup="$rulesToggleGroup">
+               <tooltip><Tooltip text="上传自定义Key字典解密"/></tooltip>
+            </ToggleButton>
+         </FlowPane>
          <ComboBox fx:id="modeComboBox" visible="false" managed="false" prefHeight="30.0" minWidth="90" prefWidth="90" >
             <items>
                <FXCollections fx:factory="observableArrayList">
