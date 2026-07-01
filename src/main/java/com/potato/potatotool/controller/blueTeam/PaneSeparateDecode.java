@@ -8,9 +8,9 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.StackPane;
 import org.fxmisc.flowless.VirtualizedScrollPane;
@@ -110,10 +110,10 @@ public class PaneSeparateDecode {
 
     private void selectMode(String modeText) {
         for (Toggle toggle : checkboxGroup.getToggles()) {
-            if (toggle instanceof RadioButton) {
-                RadioButton radioButton = (RadioButton) toggle;
-                if (modeText.equals(radioButton.getText())) {
-                    checkboxGroup.selectToggle(radioButton);
+            if (toggle instanceof ToggleButton) {
+                ToggleButton btn = (ToggleButton) toggle;
+                if (modeText.equals(btn.getText())) {
+                    checkboxGroup.selectToggle(btn);
                     return;
                 }
             }
@@ -126,7 +126,7 @@ public class PaneSeparateDecode {
 
         result.clear();
         String content = inputText.getText();
-        String mode = ((RadioButton) checkboxGroup.getSelectedToggle()).getText();
+        String mode = ((ToggleButton) checkboxGroup.getSelectedToggle()).getText();
 
         executeTask(decodeMap.get(mode), content, mode, "解密");
 
@@ -138,7 +138,7 @@ public class PaneSeparateDecode {
 
         result.clear();
         String content = inputText.getText();
-        String mode = ((RadioButton) checkboxGroup.getSelectedToggle()).getText();
+        String mode = ((ToggleButton) checkboxGroup.getSelectedToggle()).getText();
 
         executeTask(encodeMap.get(mode), content, mode, "加密");
 
@@ -181,7 +181,7 @@ public class PaneSeparateDecode {
 
         String mode = null;
         try {
-            mode = ((RadioButton) checkboxGroup.getSelectedToggle()).getText();
+            mode = ((ToggleButton) checkboxGroup.getSelectedToggle()).getText();
         }catch (Exception e){
             result.replaceText(I18nUtils.getString("separate.error.selectmode"));
             return false;

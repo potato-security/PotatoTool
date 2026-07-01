@@ -11,7 +11,9 @@
            fx:controller="com.potato.potatotool.controller.redTeam.PaneInfoGeneration"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox alignment="CENTER" spacing="30">
+    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}" hbarPolicy="NEVER"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+    <VBox alignment="TOP_CENTER" spacing="30" style="-fx-padding: 20 0 40 0;" prefWidth="${sPane.width}">
 
         <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width}" text="生成信息" userData="i18n:infogen.generate" onAction="#generation">
             <effect>
@@ -74,5 +76,6 @@
         <Pane minHeight="40"/>
 
     </VBox>
+    </SmoothScrollPane>
 
 </StackPane>

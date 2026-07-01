@@ -14,33 +14,35 @@
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneSeparateDecode"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox alignment="CENTER" prefWidth="${sPane.width}">
+    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}" hbarPolicy="NEVER"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+    <VBox alignment="TOP_CENTER" prefWidth="${sPane.width}" style="-fx-padding: 15 0 20 0;" spacing="0">
 
         <Pane style="-fx-background-radius: 10;-fx-background-color: null">
             <SmoothTextArea  fx:id="inputText" styleClass="pt-input" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入明文/密文" userData="i18n-prompt:separate.input.placeholder"/>
         </Pane>
 
         <Pane minHeight="15"/>
-        <FlowPane alignment="CENTER" hgap="20" vgap="10" prefHeight="50.0" prefWidth="${sPane.width}">
-            <RadioButton text="Base64">
+        <FlowPane alignment="CENTER" hgap="10" vgap="10" prefHeight="40.0" prefWidth="${sPane.width}">
+            <ToggleButton text="Base64" styleClass="pt-toggle-chip">
                 <toggleGroup>
                     <ToggleGroup fx:id="checkboxGroup"/>
                 </toggleGroup>
-            </RadioButton>
-            <RadioButton text="Unicode" toggleGroup="$checkboxGroup"/>
-            <RadioButton text="Hex" toggleGroup="$checkboxGroup"/>
-            <RadioButton text="URL" toggleGroup="$checkboxGroup"/>
-            <RadioButton text="Html" toggleGroup="$checkboxGroup"/>
-            <RadioButton text="Rot13" toggleGroup="$checkboxGroup"/>
-            <RadioButton text="Chr" toggleGroup="$checkboxGroup"/>
-            <RadioButton text="strRev" toggleGroup="$checkboxGroup"/>
-            <Label style="-fx-padding: 0;-fx-text-fill:grey;-fx-font-size: 13 " text="注：byte \ bcel \ cas \ log4j \ shiro \ gzip \ aes \ xor 等加解密暂时内置第一个模块内" userData="i18n:separate.note"/>
+            </ToggleButton>
+            <ToggleButton text="Unicode" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
+            <ToggleButton text="Hex" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
+            <ToggleButton text="URL" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
+            <ToggleButton text="Html" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
+            <ToggleButton text="Rot13" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
+            <ToggleButton text="Chr" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
+            <ToggleButton text="strRev" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
         </FlowPane>
+        <Label styleClass="pt-caption" style="-fx-padding: 6 0 0 0;" text="注：byte · bcel · cas · log4j · shiro · gzip · aes · xor 等加解密内置第一个模块" userData="i18n:separate.note"/>
 
         <Pane minHeight="15"/>
         <HBox alignment="CENTER" spacing="20" prefWidth="${sPane.width}">
+            <Button styleClass="pt-btn-solid" minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="解密" userData="i18n:separate.decode" onAction="#toDecode"/>
             <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="加密" userData="i18n:separate.encode" onAction="#toEncode"/>
-            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="解密" userData="i18n:separate.decode" onAction="#toDecode"/>
         </HBox>
         <Pane minHeight="20"/>
 
@@ -53,6 +55,7 @@
         </VBox>
 
     </VBox>
+    </SmoothScrollPane>
 
 
 

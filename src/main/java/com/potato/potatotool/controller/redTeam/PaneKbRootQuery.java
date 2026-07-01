@@ -164,7 +164,29 @@ public class PaneKbRootQuery {
         componentColumn.setCellValueFactory(new PropertyValueFactory<>("component"));
         componentColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         severityColumn.setCellValueFactory(new PropertyValueFactory<>("severity"));
-        severityColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        severityColumn.setCellFactory(col -> new TableCell<KbInfo, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null || item.isEmpty()) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    String color;
+                    switch (item.toLowerCase()) {
+                        case "critical":               color = "#FF5C66"; break;
+                        case "important": case "high": color = "#F48C42"; break;
+                        case "moderate": case "medium":color = "#F4B740"; break;
+                        case "low":                    color = "#5BF0B4"; break;
+                        default:                       color = null; break;
+                    }
+                    setStyle(color != null
+                            ? "-fx-text-fill: " + color + "; -fx-font-weight: bold;"
+                            : "");
+                }
+            }
+        });
         impactColumn.setCellValueFactory(new PropertyValueFactory<>("impact"));
         impactColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         repKbColumn.setCellValueFactory(new PropertyValueFactory<>("repKb"));

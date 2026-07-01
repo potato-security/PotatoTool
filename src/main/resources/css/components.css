@@ -185,6 +185,30 @@
 .pt-progress-bar.success > .bar { -fx-background-color: -pt-success; }
 .pt-progress-bar.danger  > .bar { -fx-background-color: -pt-danger; }
 
+/* ========== 可选择 chip (ToggleButton 形态) ========== */
+/* 用法: ToggleButton styleClass="pt-toggle-chip" — 未选: ghost border; 已选: accent fill */
+.pt-toggle-chip {
+    -fx-background-radius: 999px;
+    -fx-border-radius: 999px;
+    -fx-border-width: 1px;
+    -fx-font-size: 12px;
+    -fx-padding: 4px 14px;
+    -fx-cursor: hand;
+    -fx-background-color: transparent !important;
+    -fx-border-color: -pt-border !important;
+    -fx-text-fill: -pt-text-secondary !important;
+}
+.pt-toggle-chip:hover {
+    -fx-border-color: -pt-accent !important;
+    -fx-text-fill: -pt-accent !important;
+}
+.pt-toggle-chip:selected {
+    -fx-background-color: -pt-accent-soft !important;
+    -fx-border-color: -pt-accent !important;
+    -fx-text-fill: -pt-accent !important;
+    -fx-font-weight: bold;
+}
+
 /* ========== 四角取景框 (设计标志性元素) ========== */
 /* 用法: 容器加 .pt-frame，其内放 4 个带此类的小 Region 作角标 */
 .pt-frame-corner {
