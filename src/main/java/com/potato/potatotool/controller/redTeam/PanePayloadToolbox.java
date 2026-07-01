@@ -36,6 +36,9 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -61,7 +64,7 @@ public class PanePayloadToolbox {
     @FXML
     private Tab ysoTab;
     @FXML
-    private ComboBox detectorTypeBox;
+    private ToggleGroup detectorTypeGroup;
     @FXML
     private Label leftLabel;
     @FXML
@@ -108,8 +111,7 @@ public class PanePayloadToolbox {
     private boolean outputFormatsInitialized;
 
     public void initialize() {
-        detectorTypeBox.setItems(FXCollections.observableArrayList(DetectorType.values()));
-        detectorTypeBox.setValue(DetectorType.DFSECHO);
+        detectorTypeGroup.selectToggle(detectorTypeGroup.getToggles().get(0));
         serverTypeBox.setItems(FXCollections.observableArrayList(MemoryShellConstants.SERVER_TOMCAT,
                 MemoryShellConstants.SERVER_WEBLOGIC,
                 MemoryShellConstants.SERVER_RESIN,
@@ -136,9 +138,9 @@ public class PanePayloadToolbox {
                 refreshOutputPathState();
             }
         });
-        detectorTypeBox.valueProperty().addListener(new ChangeListener<Object>() {
+        detectorTypeGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
             @Override
-            public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+            public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) {
                 refreshDetectorInputs();
             }
         });
@@ -337,22 +339,21 @@ public class PanePayloadToolbox {
     }
 
     private DetectorType selectedDetectorType() {
-        Object value = detectorTypeBox.getValue();
-        if (value instanceof DetectorType) {
-            return (DetectorType) value;
-        }
-        return DetectorPayloadService.parseType(selectedText(detectorTypeBox));
+        DetectorType t = selectedDetectorTypeOrNull();
+        if (t == null) throw new IllegalArgumentException(I18nUtils.getString("memshell.error.invalid.option"));
+        return t;
     }
 
     private DetectorType selectedDetectorTypeOrNull() {
-        Object value = detectorTypeBox.getValue();
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof DetectorType) {
-            return (DetectorType) value;
-        }
-        return DetectorPayloadService.parseType(value.toString());
+        if (detectorTypeGroup == null) return null;
+        int idx = detectorTypeGroup.getToggles().indexOf(detectorTypeGroup.getSelectedToggle());
+        DetectorType[] values = DetectorType.values();
+        return (idx >= 0 && idx < values.length) ? values[idx] : null;
+    }
+
+    @FXML
+    void onDetectorTypeChanged(ActionEvent e) {
+        refreshDetectorInputs();
     }
 
     private PayloadFormat selectedPayloadFormat() {

@@ -24,7 +24,21 @@
                                 <HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label fx:id="leftLabel" text="探测方式：" userData="i18n:payload.detector.type"/>
-                                        <ComboBox fx:id="detectorTypeBox" prefHeight="20.0" prefWidth="250"/>
+                                        <FlowPane hgap="8" vgap="6" alignment="CENTER_LEFT">
+                                            <ToggleButton styleClass="pt-toggle-chip" text="DFS/Echo" onAction="#onDetectorTypeChanged">
+                                                <toggleGroup><ToggleGroup fx:id="detectorTypeGroup"/></toggleGroup>
+                                                <tooltip><Tooltip text="DFS文件系统/Echo回显探测"/></tooltip>
+                                            </ToggleButton>
+                                            <ToggleButton styleClass="pt-toggle-chip" text="DNSLog" toggleGroup="$detectorTypeGroup" onAction="#onDetectorTypeChanged">
+                                                <tooltip><Tooltip text="DNS外带探测（需要DNSLog域名）"/></tooltip>
+                                            </ToggleButton>
+                                            <ToggleButton styleClass="pt-toggle-chip" text="HTTPLog" toggleGroup="$detectorTypeGroup" onAction="#onDetectorTypeChanged">
+                                                <tooltip><Tooltip text="HTTP外带探测（需要HTTPLog URL）"/></tooltip>
+                                            </ToggleButton>
+                                            <ToggleButton styleClass="pt-toggle-chip" text="Sleep" toggleGroup="$detectorTypeGroup" onAction="#onDetectorTypeChanged">
+                                                <tooltip><Tooltip text="Sleep时间延迟探测"/></tooltip>
+                                            </ToggleButton>
+                                        </FlowPane>
                                     </HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="类名：" userData="i18n:payload.classname"/>
