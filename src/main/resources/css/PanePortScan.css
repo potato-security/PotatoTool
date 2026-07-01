@@ -134,6 +134,24 @@
     -fx-spacing: 4;
 }
 
+/* 底部工具栏 */
+.portscan-footer {
+    -fx-padding: 6 12 8 12;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 0 0;
+    -fx-background-color: -pt-bg-elevated;
+}
+
+.portscan-format-combo {
+    -fx-font-size: 11;
+    -fx-pref-height: 28;
+}
+
+.portscan-hist-count-footer {
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 11;
+}
+
 #targetField {
     -fx-background-color: -pt-bg-inset;
     -fx-background-radius: 8;
