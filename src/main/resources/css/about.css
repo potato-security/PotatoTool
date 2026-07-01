@@ -1,45 +1,165 @@
-/* 关于页 —— 已迁移到统一设计体系 (theme.css token + components.css)
- * 规则: 不再用 -main-* 灰色 token / 不硬编码色值，一律引用 -pt-*。
- * 圆角/间距对齐 8pt 与 4/8/16 圆角规范。 */
+/* 关于页 - 1:1 Penpot 设计还原 */
 
-.wxImg {
-    -fx-border-color: -pt-border;
-    -fx-border-width: 1;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
+.about-content {
+    -fx-background-color: transparent;
 }
 
-/* 右侧栏目导航 (工具信息/鸣谢/反馈/交流群) */
-.bar {
-    -fx-background-color: -pt-bg-panel;
+/* 版本信息条 */
+.about-info-bar {
+    -fx-background-color: -pt-bg-elevated;
     -fx-background-radius: 8;
     -fx-border-color: -pt-border;
-    -fx-border-width: 1;
     -fx-border-radius: 8;
-    -fx-padding: 16;
-}
-
-/* 主滚动内容面板 */
-#mainScrollPane {
-    -fx-background-color: -pt-bg-panel;
-    -fx-background-radius: 8;
-    -fx-padding: 24;
-    -fx-border-color: -pt-border;
     -fx-border-width: 1;
-    -fx-border-radius: 8;
-}
-#mainScrollPane > .viewport { -fx-background-color: transparent; }
-
-/* 分段分隔线 */
-.linenoPane {
-    -fx-border-width: 0 0 1 0;
-    -fx-border-color: linear-gradient(to right, transparent 0%, -pt-border-subtle 20%, -pt-border-subtle 80%, transparent 100%);
+    -fx-padding: 12 16 12 0;
 }
 
-/* 栏目标题 (工具信息/公告/鸣谢/建议反馈) */
-.titleText, .titleText .text {
-    -fx-fill: -pt-accent;
-    -fx-text-fill: -pt-accent;
-    -fx-font-size: 16px;
+.about-bar-cell {
+    -fx-padding: 0 24 0 24;
+}
+
+.about-bar-sep {
+    -fx-pref-width: 1;
+    -fx-min-width: 1;
+    -fx-max-width: 1;
+    -fx-pref-height: 36;
+    -fx-min-height: 36;
+    -fx-background-color: -pt-border-subtle;
+}
+
+.about-bar-key {
+    -fx-font-size: 9px;
+    -fx-text-fill: -pt-text-muted;
     -fx-font-weight: bold;
+}
+
+.about-bar-value {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text;
+    -fx-font-weight: bold;
+}
+
+/* 页面标题 */
+.about-page-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+
+/* 品牌卡片 */
+.about-brand-card {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 10;
+    -fx-border-color: -pt-border;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 20 24 20 24;
+}
+
+.about-pt-logo {
+    -fx-background-color: -pt-accent;
+    -fx-background-radius: 14;
+}
+
+.about-pt-logo-text {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-bg-base;
+}
+
+.about-brand-name {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+
+.about-brand-subtitle {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent;
+}
+
+.about-status-chip-latest {
+    -fx-padding: 3 12 3 12;
+    -fx-background-color: derive(-pt-success, -60%);
+    -fx-background-radius: 999;
+    -fx-border-color: -pt-success;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-text-fill: -pt-success;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.about-license-badge {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+}
+
+/* 信息面板 */
+.about-panel {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 10;
+    -fx-border-color: -pt-border;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-padding: 0 0 8 0;
+}
+
+.about-panel-header {
+    -fx-padding: 14 16 12 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+
+.about-panel-tag {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent;
+}
+
+.about-panel-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+
+.about-info-row {
+    -fx-padding: 10 16 10 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+
+.about-info-key {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text-muted;
+}
+
+.about-info-value {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+
+.about-info-link {
+    -fx-padding: 0;
+    -fx-text-fill: -pt-accent;
+    -fx-font-size: 12px;
+    -fx-underline: false;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.about-info-link:hover {
+    -fx-text-fill: -pt-accent-teal;
+    -fx-underline: true;
+}
+
+/* 滚动面板透明 */
+#mainScrollPane,
+#mainScrollPane .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
 }

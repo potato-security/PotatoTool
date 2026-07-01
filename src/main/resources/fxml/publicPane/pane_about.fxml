@@ -1,14 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
-
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.text.Text?>
-<?import com.leewyatt.rxcontrols.controls.RXLineButton?>
-<?import javafx.scene.effect.DropShadow?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../../css/about.css"
@@ -16,113 +10,149 @@
            fx:id="sPane"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox StackPane.alignment="TOP_RIGHT" translateX="170" maxWidth="160" maxHeight="180" styleClass="bar" alignment="CENTER_LEFT">
-        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="工具信息" userData="i18n:about.menu.info" alignment="CENTER_LEFT"/>
-        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="鸣谢" userData="i18n:about.menu.thanks" alignment="CENTER_LEFT"/>
-        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="150" spacing="3.0" text="建议/BUG反馈" userData="i18n:about.menu.feedback" alignment="CENTER_LEFT"/>
-        <RXLineButton onAction="#redirect" prefHeight="40.0" prefWidth="100" spacing="3.0" text="交流群" userData="i18n:about.menu.group" alignment="CENTER_LEFT"/>
-    </VBox>
+    <SmoothScrollPane fx:id="mainScrollPane" fitToWidth="true" hbarPolicy="NEVER"
+                      prefHeight="${sPane.height}" prefWidth="${sPane.width}">
+        <VBox fx:id="contentVBox" styleClass="about-content" spacing="20" style="-fx-padding: 20 28 28 28;">
 
-    <SmoothScrollPane fx:id="mainScrollPane" fitToWidth="true" hbarPolicy="NEVER" prefHeight="${sPane.height}" prefWidth="${sPane.width}">
-        <VBox fx:id="contentVBox">
-
-        <Text fx:id="info" text="工具信息" userData="i18n:about.info.title" styleClass="titleText"/>
-        <HBox alignment="CENTER">
-            <VBox alignment="CENTER">
-                <ImageView fitHeight="200" fitWidth="200" pickOnBounds="true" preserveRatio="true">
-                    <image>
-                        <Image url="@../../img/work.png" />
-                    </image>
-                </ImageView>
-            </VBox>
-            <Pane minWidth="20"/>
-            <VBox alignment="CENTER_LEFT">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label id="tipTitle" text="版本" userData="i18n:about.version"/>
-                    <Label wrapText="true" id="tipSymbol" text="："/>
-                    <RXLineButton prefHeight="40.0" prefWidth="150" spacing="3.0" text="V1.0（社区版）" userData="i18n:about.version.value" alignment="CENTER_LEFT"/>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label id="tipTitle" text="作者" userData="i18n:about.author"/>
-                    <Label wrapText="true" id="tipSymbol" text="："/>
-                    <RXLineButton  onAction="#openBlog" prefHeight="40.0" prefWidth="70.0" spacing="3.0" text="Potato" alignment="CENTER_LEFT"/>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label id="tipTitle" text="仓库" userData="i18n:about.repo"/>
-                    <Label wrapText="true" id="tipSymbol" text="："/>
-                    <RXLineButton onAction="#openGitHub" prefHeight="40.0" prefWidth="300.0" spacing="3.0" text="https://github.com/ljy1058318852"  alignment="CENTER_LEFT"/>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label id="tipTitle" text="CSDN" />
-                    <Label wrapText="true" id="tipSymbol" text="："/>
-                    <RXLineButton  onAction="#openCSDN" prefHeight="40.0" prefWidth="300.0" spacing="3.0" text="https://blog.csdn.net/weixin_43526443" alignment="CENTER_LEFT"/>
-                </HBox>
-            </VBox>
-        </HBox>
-        <Pane minHeight="15" styleClass="linenoPane"/>
-        <Pane minHeight="15"/>
-
-        <Text fx:id="notice" text="公告" userData="i18n:about.notice.title" styleClass="titleText"/>
-        <HBox alignment="CENTER" style="-fx-padding: 10">
-            <Label id="tipTitle" text="目前本项目由本人独立维护，持续招募维护人员，宁缺毋滥" userData="i18n:about.notice.content"/>
-        </HBox>
-        <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 0 120"  prefWidth="${sPane.width - 270}">
-            <Label id="tipTitle"  text="招募要求" userData="i18n:about.recruit"/>
-            <Label wrapText="true" id="tipSymbol" text="："/>
-            <Pane minWidth="10"/>
-            <VBox spacing="10">
-                <Label wrapText="true" text="·精通 Java 编程语言及相关技术栈，具有扎实的面向对象编程(OOP)基础。" userData="i18n:about.recruit.1"/>
-                <Label wrapText="true" text="·在 JavaFX 中有丰富的开发经验，能够设计和实现复杂的用户界面(UI)。" userData="i18n:about.recruit.2"/>
-                <Label wrapText="true" text="·至少五年以上红蓝攻防领域相关工作经验。" userData="i18n:about.recruit.3"/>
-                <Label wrapText="true" text="·对网络安全充满热情，并具有创新意识。" userData="i18n:about.recruit.4"/>
-                <Label wrapText="true" text="·具备充足的空余时间来投入项目维护工作。" userData="i18n:about.recruit.5"/>
-            </VBox>
-        </HBox>
-        <Pane minHeight="15" styleClass="linenoPane"/>
-        <Pane minHeight="15"/>
-
-        <Text fx:id="thanks" text="鸣谢" userData="i18n:about.thanks.title" styleClass="titleText"/>
-        <HBox>
-            <VBox alignment="CENTER">
-                <ImageView fitHeight="200" fitWidth="200" pickOnBounds="true" preserveRatio="true">
-                    <image>
-                        <Image url="@../../img/speak.png" />
-                    </image>
-                </ImageView>
-            </VBox>
-            <Pane minWidth="20"/>
-            <SmoothScrollPane fx:id="thanksScrollPane" vbarPolicy="NEVER" hbarPolicy="NEVER" prefWidth="${sPane.width - 270}" prefHeight="260">
-                <VBox fx:id="thanksVBox" spacing="10">
+            <!-- 版本信息条 -->
+            <HBox styleClass="about-info-bar" alignment="CENTER_LEFT" spacing="0">
+                <VBox styleClass="about-bar-cell" alignment="CENTER" spacing="2">
+                    <Label text="VERSION" styleClass="about-bar-key"/>
+                    <Label fx:id="versionLabel" text="v8.0.0" styleClass="about-bar-value"/>
                 </VBox>
-            </SmoothScrollPane>
-        </HBox>
-        <Pane minHeight="15" styleClass="linenoPane"/>
-        <Pane minHeight="15"/>
+                <Region styleClass="about-bar-sep"/>
+                <VBox styleClass="about-bar-cell" alignment="CENTER" spacing="2">
+                    <Label text="BUILD" styleClass="about-bar-key"/>
+                    <Label fx:id="buildLabel" text="—" styleClass="about-bar-value"/>
+                </VBox>
+                <Region styleClass="about-bar-sep"/>
+                <VBox styleClass="about-bar-cell" alignment="CENTER" spacing="2">
+                    <Label text="CHANNEL" styleClass="about-bar-key"/>
+                    <Label fx:id="channelLabel" text="stable" styleClass="about-bar-value"/>
+                </VBox>
+                <Region styleClass="about-bar-sep"/>
+                <VBox styleClass="about-bar-cell" alignment="CENTER" spacing="2">
+                    <Label text="LICENSE" styleClass="about-bar-key"/>
+                    <Label text="MIT" styleClass="about-bar-value"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="checkUpdateBtn" styleClass="pt-btn" text="检查更新"
+                        userData="i18n:about.check.update" onAction="#checkUpdate" minHeight="30" minWidth="90">
+                    <cursor><Cursor fx:constant="HAND"/></cursor>
+                </Button>
+            </HBox>
 
-        <Text fx:id="bug" text="建议/BUG反馈" userData="i18n:about.feedback.title" styleClass="titleText"/>
-        <Pane minHeight="40"/>
-        <VBox fx:id="noWebBox" alignment="CENTER">
-            <Button fx:id="viewProfileButton" styleClass="pt-btn-primary" text="打开GitHub，在线提交建议" userData="i18n:about.feedback.button" onAction="#openGitHubIssues"/>
-            <Pane minHeight="10"/>
-            <ImageView styleClass="wxImg" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
-                <image>
-                    <Image url="@../../img/wx.jpg" />
-                </image>
-            </ImageView>
-            <Pane minHeight="20"/>
-            <Label text="或扫描二维码添加微信进行反馈，备注PotatoTool建议反馈" userData="i18n:about.feedback.wechat"/>
-            <Label text="加交流群，备注PotatoTool交流群" userData="i18n:about.feedback.group"/>
-        </VBox>
-        <VBox fx:id="webBox" alignment="CENTER"/>
-        <Pane minHeight="15" styleClass="linenoPane"/>
-        <Pane minHeight="15"/>
+            <!-- 页面标题 -->
+            <VBox spacing="4">
+                <Label text="关于" styleClass="about-page-title" userData="i18n:about.title"/>
+                <Label text="系统身份与维护信息 · 版本 / 许可 / 反馈渠道" styleClass="pt-caption"
+                       userData="i18n:about.subtitle"/>
+            </VBox>
+
+            <!-- 品牌卡片 -->
+            <HBox styleClass="about-brand-card" alignment="CENTER_LEFT" spacing="20">
+                <StackPane styleClass="about-pt-logo" alignment="CENTER" minWidth="72" maxWidth="72"
+                           minHeight="72" maxHeight="72">
+                    <Label text="PT" styleClass="about-pt-logo-text"/>
+                </StackPane>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="PotatoTool" styleClass="about-brand-name"/>
+                    <Label text="RED &amp; BLUE SECURITY TOOLKIT" styleClass="about-brand-subtitle"/>
+                    <Label fx:id="buildInfoLabel" text="v8.0.0 · build —" styleClass="pt-caption"/>
+                </VBox>
+                <VBox alignment="CENTER_RIGHT" spacing="8">
+                    <Label fx:id="updateStatusChip" text="已是最新" styleClass="about-status-chip-latest"
+                           userData="i18n:about.status.latest"/>
+                    <Label text="MIT LICENSE" styleClass="about-license-badge"/>
+                </VBox>
+            </HBox>
+
+            <!-- 信息面板行 -->
+            <HBox spacing="16">
+                <!-- 基本信息 -->
+                <VBox styleClass="about-panel" HBox.hgrow="ALWAYS" spacing="0">
+                    <HBox styleClass="about-panel-header" alignment="CENTER_LEFT" spacing="8">
+                        <Label text="BASIC" styleClass="about-panel-tag"/>
+                        <Label text="基本信息" styleClass="about-panel-title" userData="i18n:about.basic.title"/>
+                    </HBox>
+                    <HBox styleClass="about-info-row" alignment="CENTER_LEFT">
+                        <Label text="作者" styleClass="about-info-key" userData="i18n:about.basic.author" minWidth="72"/>
+                        <Label text="HotBoy" styleClass="about-info-value"/>
+                    </HBox>
+                    <HBox styleClass="about-info-row" alignment="CENTER_LEFT">
+                        <Label text="许可" styleClass="about-info-key" userData="i18n:about.basic.license" minWidth="72"/>
+                        <Label text="MIT" styleClass="about-info-value"/>
+                    </HBox>
+                    <HBox styleClass="about-info-row" alignment="CENTER_LEFT">
+                        <Label text="官网" styleClass="about-info-key" userData="i18n:about.basic.site" minWidth="72"/>
+                        <Hyperlink text="HotBoy-java/PotatoTool" onAction="#openGitHub" styleClass="about-info-link">
+                            <cursor><Cursor fx:constant="HAND"/></cursor>
+                        </Hyperlink>
+                    </HBox>
+                    <HBox styleClass="about-info-row" alignment="CENTER_LEFT">
+                        <Label text="更新通道" styleClass="about-info-key" userData="i18n:about.basic.channel" minWidth="72"/>
+                        <Label fx:id="channelInfoLabel" text="stable" styleClass="about-info-value"/>
+                    </HBox>
+                </VBox>
+
+                <!-- 运行环境 -->
+                <VBox styleClass="about-panel" HBox.hgrow="ALWAYS" spacing="0">
+                    <HBox styleClass="about-panel-header" alignment="CENTER_LEFT" spacing="8">
+                        <Label text="RUNTIME" styleClass="about-panel-tag"/>
+                        <Label text="运行环境" styleClass="about-panel-title" userData="i18n:about.runtime.title"/>
+                    </HBox>
+                    <HBox styleClass="about-info-row" alignment="CENTER_LEFT">
+                        <Label text="平台" styleClass="about-info-key" userData="i18n:about.runtime.platform" minWidth="72"/>
+                        <Label fx:id="platformLabel" text="—" styleClass="about-info-value"/>
+                    </HBox>
+                    <HBox styleClass="about-info-row" alignment="CENTER_LEFT">
+                        <Label text="JDK" styleClass="about-info-key" userData="i18n:about.runtime.jdk" minWidth="72"/>
+                        <Label fx:id="jdkLabel" text="—" styleClass="about-info-value"/>
+                    </HBox>
+                    <HBox styleClass="about-info-row" alignment="CENTER_LEFT">
+                        <Label text="内核" styleClass="about-info-key" userData="i18n:about.runtime.kernel" minWidth="72"/>
+                        <Label text="JavaFX" styleClass="about-info-value"/>
+                    </HBox>
+                    <HBox styleClass="about-info-row" alignment="CENTER_LEFT">
+                        <Label text="数据目录" styleClass="about-info-key" userData="i18n:about.runtime.datadir" minWidth="72"/>
+                        <Label fx:id="dataPathLabel" text="~/.potatotool" styleClass="about-info-value" wrapText="true"/>
+                    </HBox>
+                </VBox>
+            </HBox>
+
+            <!-- 反馈与社区 -->
+            <VBox styleClass="about-panel" spacing="12">
+                <HBox styleClass="about-panel-header" alignment="CENTER_LEFT" spacing="8">
+                    <Label text="FEEDBACK" styleClass="about-panel-tag"/>
+                    <Label text="反馈与社区" styleClass="about-panel-title" userData="i18n:about.feedback.title"/>
+                </HBox>
+                <Label text="通过以下渠道反馈问题、获取文档或加入社区交流。" styleClass="pt-caption"
+                       userData="i18n:about.feedback.desc" wrapText="true"/>
+                <Label text="CHANNELS" styleClass="about-panel-tag" style="-fx-padding: 4 0 0 0;"/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button styleClass="pt-btn" text="GitHub Issues" onAction="#openGitHubIssues" minHeight="30">
+                        <cursor><Cursor fx:constant="HAND"/></cursor>
+                    </Button>
+                    <Button styleClass="pt-btn" text="官方文档" userData="i18n:about.feedback.docs"
+                            onAction="#openDocs" minHeight="30">
+                        <cursor><Cursor fx:constant="HAND"/></cursor>
+                    </Button>
+                    <Button styleClass="pt-btn" text="QQ 群" userData="i18n:about.feedback.qq"
+                            onAction="#openQQGroup" minHeight="30">
+                        <cursor><Cursor fx:constant="HAND"/></cursor>
+                    </Button>
+                    <Button styleClass="pt-btn" text="Telegram" onAction="#openTelegram" minHeight="30">
+                        <cursor><Cursor fx:constant="HAND"/></cursor>
+                    </Button>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button styleClass="pt-btn-primary" text="提交反馈" userData="i18n:about.feedback.submit"
+                            onAction="#openGitHubIssues" minHeight="30" minWidth="88">
+                        <cursor><Cursor fx:constant="HAND"/></cursor>
+                    </Button>
+                </HBox>
+            </VBox>
 
         </VBox>
     </SmoothScrollPane>
 
-    <ImageView fitHeight="230" fitWidth="230" pickOnBounds="true" preserveRatio="true" translateX="250" scaleX="-1" StackPane.alignment="BOTTOM_RIGHT">
-        <image>
-            <Image url="@../../img/police.png" />
-        </image>
-    </ImageView>
 </StackPane>
