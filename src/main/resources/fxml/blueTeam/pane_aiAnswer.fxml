@@ -80,6 +80,7 @@
                                visible="false"
                                managed="false"
                                styleClass="ai-thinking-badge"/>
+                        <Label fx:id="statusLabel" text="" visible="false" managed="false"/>
                         <Pane HBox.hgrow="ALWAYS"/>
                         <Hyperlink fx:id="clearAttachmentLink"
                                    text="清空附件"
@@ -88,13 +89,13 @@
                                    managed="false"
                                    onAction="#clearAttachments"
                                    styleClass="ai-clear-link"/>
-                        <Label fx:id="statusLabel" text="" visible="false" managed="false"/>
                         <Hyperlink fx:id="retryLink"
                                    text="重试"
                                    visible="false"
                                    managed="false"
                                    onAction="#retryLastQuestion"
-                                   userData="i18n:common.retry"/>
+                                   userData="i18n:common.retry"
+                                   styleClass="ai-retry-link"/>
                     </HBox>
                 </VBox>
 

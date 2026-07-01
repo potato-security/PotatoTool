@@ -275,14 +275,17 @@
     -fx-text-fill: -pt-accent;
 }
 
-#retryLink {
+#retryLink,
+.ai-retry-link {
     -fx-padding: 0;
     -fx-text-fill: -pt-accent;
     -fx-underline: true;
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
 }
 
-#retryLink:hover {
+#retryLink:hover,
+.ai-retry-link:hover {
     -fx-text-fill: -pt-accent-teal;
 }
 
@@ -430,7 +433,9 @@
 
 .ai-status-error {
     -fx-text-fill: -pt-danger;
-    -fx-background-color: -pt-danger-soft;
+    -fx-background-color: transparent;
+    -fx-padding: 2 4 2 0;
+    -fx-font-size: 12px;
 }
 
 .ai-status-completed {
