@@ -15,9 +15,6 @@
     <VBox fx:id="rootContainer" spacing="18" styleClass="ai-answer-root">
         <StackPane alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
             <VBox fx:id="chatColumn" spacing="16" maxWidth="780" fillWidth="true">
-                <HBox alignment="CENTER">
-                    <Label fx:id="tipTitleLabel" id="tipTitle" styleClass="pt-caption" text=" 为保留算力，暂留5轮会话记忆 " userData="i18n:ai.note"/>
-                </HBox>
                 <SmoothScrollPane fx:id="scrollPane"
                                   fitToWidth="true"
                                   vvalue="1.0"

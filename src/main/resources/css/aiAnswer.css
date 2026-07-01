@@ -275,6 +275,17 @@
     -fx-text-fill: -pt-accent;
 }
 
+#retryLink {
+    -fx-padding: 0;
+    -fx-text-fill: -pt-accent;
+    -fx-underline: true;
+    -fx-font-size: 11px;
+}
+
+#retryLink:hover {
+    -fx-text-fill: -pt-accent-teal;
+}
+
 .ai-attachment-pane {
     -fx-padding: 2 0 0 0;
 }
