@@ -374,17 +374,19 @@
     -fx-border-width: 1;
 }
 
+/* 交易 chip: 琥珀/警告色 (Penpot 设计: 卡片2 amber chip) */
 .bc-chip-tx {
-    -fx-background-color: derive(-pt-success, -55%);
-    -fx-text-fill: -pt-success;
-    -fx-border-color: -pt-success;
-    -fx-border-width: 1;
-}
-
-.bc-chip-block {
     -fx-background-color: derive(-pt-warning, -55%);
     -fx-text-fill: -pt-warning;
     -fx-border-color: -pt-warning;
+    -fx-border-width: 1;
+}
+
+/* 区块 chip: 主强调色/青色 (Penpot 设计: 卡片3 accent chip) */
+.bc-chip-block {
+    -fx-background-color: derive(-pt-accent, -55%);
+    -fx-text-fill: -pt-accent;
+    -fx-border-color: -pt-accent;
     -fx-border-width: 1;
 }
 

@@ -104,6 +104,9 @@ public class PaneBlockchain {
     @FXML
     private Label prompt;
 
+    @FXML
+    private ScrollPane accordionScrollPane;
+
     private final BlockchainWordReportGenerator reportGenerator = new BlockchainWordReportGenerator();
     private JsonObject currentReportData;
     private String currentReportType = "";
@@ -664,6 +667,32 @@ public class PaneBlockchain {
         addReportNav(key);
     }
 
+    private void slideAccordionIn() {
+        if (accordionScrollPane == null) return;
+        Timeline t = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(accordionScrollPane.translateXProperty(), -210)),
+            new KeyFrame(Duration.millis(200), new KeyValue(accordionScrollPane.translateXProperty(), 0))
+        );
+        t.play();
+    }
+
+    private void slideAccordionOut(Runnable onFinished) {
+        if (accordionScrollPane == null) {
+            if (onFinished != null) onFinished.run();
+            return;
+        }
+        Timeline t = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(accordionScrollPane.translateXProperty(), 0)),
+            new KeyFrame(Duration.millis(200), new KeyValue(accordionScrollPane.translateXProperty(), -210))
+        );
+        if (onFinished != null) t.setOnFinished(e -> onFinished.run());
+        t.play();
+    }
+
+    private void resetAccordionPosition() {
+        if (accordionScrollPane != null) accordionScrollPane.setTranslateX(-210);
+    }
+
     private void openReportDetailPane() {
         detailedPane.setVisible(true);
         detailedContentObj.clear();
@@ -681,6 +710,7 @@ public class PaneBlockchain {
                         new KeyValue(detailedListView.prefWidthProperty(), listViewCell.getWidth()))
         );
         animation.play();
+        slideAccordionIn();
     }
 
     private HBox buildCardHeader(String typeLabel, String networkLabel, String chipStyle) {
@@ -2398,6 +2428,7 @@ public class PaneBlockchain {
         detailedPane.setVisible(false);
         accordionPane.getPanes().clear();
         accordionPane.setVisible(true);
+        if (accordionScrollPane != null) accordionScrollPane.setTranslateX(0);
 
         contentObj.clear();
         listViewCell.getItems().clear();
@@ -2640,6 +2671,7 @@ public class PaneBlockchain {
         clearCurrentReportContext();
         accordionPane.getPanes().clear();
         detailedPane.setVisible(false);
+        resetAccordionPosition();
         listViewCell.getItems().clear();
         detailedListView.getItems().clear();
         contentObj.clear();
@@ -2993,6 +3025,7 @@ public class PaneBlockchain {
 
         accordionPane.getPanes().clear();
         accordionPane.setVisible(true);
+        slideAccordionIn();
 
         Task<Void> task = new Task<Void>() {
             @Override
@@ -4868,7 +4901,7 @@ public class PaneBlockchain {
             detailedListView.getItems().clear();
         });
         animation.play();
-
+        slideAccordionOut(null);
     }
 
     @FXML

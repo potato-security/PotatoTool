@@ -1,84 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
-
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.effect.DropShadow?>
-<?import com.leewyatt.rxcontrols.controls.RXPasswordField?>
 <?import com.dlsc.gemsfx.CFCheckBox?>
+<?import com.leewyatt.rxcontrols.controls.RXPasswordField?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.*?>
 <AnchorPane fx:id="an"
             onMouseDragged="#topBarDraggedAction"
             onMousePressed="#topBarPressedAction"
             maxHeight="-Infinity" maxWidth="-Infinity"
             minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="245"
-            prefWidth="510"
+            prefHeight="268"
+            prefWidth="380"
             style="-fx-background-color: transparent"
             xmlns="http://javafx.com/javafx/"
             xmlns:fx="http://javafx.com/fxml/1"
             stylesheets="@../../css/common.css, @../../css/passwd.css"
             fx:controller="com.potato.potatotool.controller.publicPane.PanePasswd">
-    <children>
-        <Pane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0">
-            <effect>
-                <DropShadow/>
-            </effect>
+    <VBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
+          styleClass="passwd-card" spacing="0">
+        <effect>
+            <DropShadow color="#000000" radius="28" spread="0.08"/>
+        </effect>
 
-            <VBox>
-                <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="57" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
-                    <center>
-                        <HBox style="-fx-padding: 0 0 0 45;" alignment="CENTER">
-                            <ImageView fitHeight="30.0" fitWidth="300.0"  pickOnBounds="true" preserveRatio="true">
-                                <image>
-                                    <Image url="@../../img/PotatoTool.png" />
-                                </image>
-                            </ImageView>
-                        </HBox>
-                    </center>
-                    <right>
-                        <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
-                            <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction" prefHeight="25.0" prefWidth="25.0">
-                                <graphic>
-                                    <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
-                                        <image>
-                                            <Image url="@../../img/close.png" />
-                                        </image>
-                                    </ImageView>
-                                </graphic>
-                                <tooltip>
-                                    <Tooltip text="关闭" userData="i18n:tooltip.close"/>
-                                </tooltip>
-                            </Button>
-                            <Pane minWidth="15"/>
-                        </HBox>
-                    </right>
-                </BorderPane>
+        <!-- 标题行 -->
+        <BorderPane fx:id="topBar" styleClass="passwd-header">
+            <left>
+                <Label text="启动验证" styleClass="passwd-title" userData="i18n:passwd.dialog.title"/>
+            </left>
+            <right>
+                <HBox alignment="CENTER" spacing="10">
+                    <Label text="关闭即退出应用" styleClass="passwd-exit-hint" userData="i18n:passwd.exit.hint"/>
+                    <Button id="passwdCloseBtn" onAction="#exitAction" text="✕" styleClass="passwd-close-btn">
+                        <cursor>
+                            <Cursor fx:constant="HAND"/>
+                        </cursor>
+                    </Button>
+                </HBox>
+            </right>
+        </BorderPane>
 
-                <VBox alignment="CENTER" spacing="10" prefWidth="${an.width - 18}" style="-fx-padding: 16;-fx-background-color: -pt-bg-panel;-fx-background-radius: 0 0 8 8;">
+        <Region styleClass="passwd-divider"/>
 
-                    <HBox alignment="CENTER" spacing="10">
-                        <Label text="启动密码：" styleClass="pt-body" userData="i18n:passwd.label"/>
-                        <RXPasswordField fx:id="passwd" styleClass="pt-input" buttonDisplayMode="AUTO" promptText="请输入密码……" userData="i18n-prompt:passwd.placeholder" prefWidth="200" />
-                    </HBox>
+        <!-- 内容 -->
+        <VBox spacing="12" styleClass="passwd-content">
+            <Label text="启动密码" styleClass="pt-caption" userData="i18n:passwd.label"/>
+            <RXPasswordField fx:id="passwd" styleClass="pt-input" buttonDisplayMode="AUTO"
+                             promptText="请输入密码……" userData="i18n-prompt:passwd.placeholder"
+                             maxWidth="Infinity"/>
+            <CFCheckBox fx:id="checkBox" mnemonicParsing="false" selected="false"
+                        text="记住密码" userData="i18n:passwd.remember"/>
+            <Button fx:id="startButton" styleClass="pt-btn-primary" minHeight="42" maxWidth="Infinity"
+                    text="启 动" userData="i18n:passwd.start" onAction="#start">
+                <cursor>
+                    <Cursor fx:constant="HAND"/>
+                </cursor>
+            </Button>
+            <Label fx:id="tipTitle" styleClass="passwd-error-label" maxWidth="Infinity" alignment="CENTER"/>
+        </VBox>
 
-                    <CFCheckBox fx:id="checkBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="记住密码" userData="i18n:passwd.remember" VBox.vgrow="ALWAYS" />
-
-                    <StackPane>
-                        <Button fx:id="startButton" styleClass="pt-btn-primary" minHeight="35.0" minWidth="100" text="启动" userData="i18n:passwd.start" onAction="#start">
-                            <effect>
-                                <DropShadow />
-                            </effect>
-                        </Button>
-                        <Label fx:id="tipTitle" styleClass="pt-caption" StackPane.alignment="CENTER_RIGHT"/>
-                    </StackPane>
-
-                </VBox>
-
-            </VBox>
-
-        </Pane>
-    </children>
+    </VBox>
 </AnchorPane>

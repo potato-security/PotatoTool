@@ -1,3 +1,65 @@
+/* ===== 启动验证对话框 (对齐 Penpot: 深色卡片 + 红色关闭 + 主色按钮) ===== */
+.passwd-card {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-border-color: -pt-border;
+}
+
+.passwd-header {
+    -fx-padding: 14 16 12 16;
+    -fx-background-color: -pt-bg-surface;
+    -fx-background-radius: 10 10 0 0;
+}
+
+.passwd-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+
+.passwd-exit-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+}
+
+.passwd-close-btn {
+    -fx-background-color: -pt-danger;
+    -fx-background-radius: 50%;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-min-width: 20;
+    -fx-min-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
+    -fx-padding: 0;
+}
+
+.passwd-close-btn:hover {
+    -fx-background-color: derive(-pt-danger, -15%);
+}
+
+.passwd-divider {
+    -fx-pref-height: 1;
+    -fx-min-height: 1;
+    -fx-max-height: 1;
+    -fx-background-color: -pt-border;
+}
+
+.passwd-content {
+    -fx-padding: 16 20 20 20;
+}
+
+.passwd-error-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-danger;
+    -fx-min-height: 18;
+}
+
+/* RXPasswordField 眼睛按钮 */
 .rx-password-field .tf-button-shape {
     -fx-background-color: -pt-border;
 }
