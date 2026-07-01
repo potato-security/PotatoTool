@@ -61,6 +61,7 @@
                     <Label text="手机号查询" styleClass="loc-card-title" userData="i18n:location.card.phone"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Label text="SYNC" styleClass="pt-caption"/>
+                    <Label text=" · 批量进度→输入栏" styleClass="pt-caption" style="-fx-text-fill: -pt-text-tertiary;"/>
                 </HBox>
                 <HBox spacing="12" alignment="CENTER_LEFT">
                     <TextField styleClass="pt-input" HBox.hgrow="ALWAYS" maxWidth="Infinity" fx:id="phoneInput" promptText="请输入手机号" userData="i18n-prompt:location.phone.placeholder"/>
