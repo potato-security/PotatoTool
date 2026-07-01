@@ -22,6 +22,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -54,6 +55,10 @@ public class PaneDecompile {
     @FXML
     private Pane aiPane;
     @FXML
+    private VBox aiStateNoFile;
+    @FXML
+    private VBox aiStateNotAnalyzed;
+    @FXML
     private CFSwitch showAI;
 
 
@@ -80,6 +85,10 @@ public class PaneDecompile {
 
         aiTextArea.prefWidthProperty().bind(aiTextAreWidthProperty);
         aiTextArea.layoutXProperty().bind(aiTextAreWidthProperty.negate());
+        aiStateNoFile.prefWidthProperty().bind(aiTextAreWidthProperty);
+        aiStateNoFile.layoutXProperty().bind(aiTextAreWidthProperty.negate());
+        aiStateNotAnalyzed.prefWidthProperty().bind(aiTextAreWidthProperty);
+        aiStateNotAnalyzed.layoutXProperty().bind(aiTextAreWidthProperty.negate());
 
         aiTextArea.setOnMouseMoved(event -> {
             if (isInLeftResizeZone(aiTextArea, event)) {
@@ -159,6 +168,8 @@ public class PaneDecompile {
                 res = DecompileUtils.Decompile(finalPath, decompileMode);
                 Platform.runLater(() -> {
                     result.replaceText(res);
+                    oldData = "";
+                    if (showAI != null && showAI.isSelected()) showAiState();
                 });
                 return null;
             }
@@ -212,6 +223,8 @@ public class PaneDecompile {
                 res = DecompileUtils.Decompile(finalPath, decompileMode);
                 Platform.runLater(() -> {
                     result.replaceText(res);
+                    oldData = "";
+                    if (showAI != null && showAI.isSelected()) showAiState();
                 });
                 return null;
             }
@@ -265,97 +278,73 @@ public class PaneDecompile {
 
         animation.play();
 
-        String resultStr = result.getText();
-        //  结果非空 且 结果更新 且 未到AI冷却CD 才触发AI接口
-        if(res.isEmpty()){
-
-            aiTextArea.clear();
-            aiTextArea.appendText(I18nUtils.getString("decompile.ai.empty"));
-            oldData = "";
-
-        }else if (!resultStr.equals(oldData) && !isAiCD){
-
-            oldData = resultStr;
-            isAiCD = true;
-
-            aiTextArea.clear();
-            aiTextArea.appendText(I18nUtils.getString("decompile.ai.analyzing"));
-
-            // 另起线程调用AI接口
-            Task<Void> task = new Task<Void>() {
-                @Override
-                protected Void call() throws Exception {
-                    CodeAnalyzerUtils.streamOptimizedCode(resultStr, aiTextArea);
-                    return null;
-                }
-            };
-            task.setOnFailed(event -> {
-                Throwable error = task.getException();
-                if (debugMode && error != null) {
-                    error.printStackTrace();
-                }
-                Platform.runLater(() -> {
-                    isAiCD = false;
-                    String message = error == null || error.getMessage() == null || error.getMessage().trim().isEmpty()
-                            ? I18nUtils.getString("ai.status.error")
-                            : error.getMessage();
-                    aiTextArea.setText(message);
-                });
-            });
-            task.setOnSucceeded(event -> {
-                isAiCD = false;
-            });
-            new Thread(task).start();
-
+        if (wantVisible) {
+            showAiState();
+        } else {
+            aiStateNoFile.setVisible(false);
+            aiStateNotAnalyzed.setVisible(false);
+            aiTextArea.setVisible(false);
         }
 
     }
 
-    @FXML
-    void refreshAI(ActionEvent e) throws Exception { //结果未更新也可以强行重新调用AI
-        String resultStr = result.getText();
-        //  结果非空 且 未到AI冷却CD 才触发AI接口
-        if(res.isEmpty()){
-
-            aiTextArea.clear();
-            aiTextArea.appendText(I18nUtils.getString("decompile.ai.analyze.empty"));
-            oldData = "";
-
-        }else if (!isAiCD){
-
-            oldData = resultStr;
-            isAiCD = true;
-
-            aiTextArea.clear();
-            aiTextArea.appendText(I18nUtils.getString("decompile.ai.analyzing"));
-
-            // 另起线程调用AI接口
-            Task<Void> task = new Task<Void>() {
-                @Override
-                protected Void call() throws Exception {
-                    CodeAnalyzerUtils.streamOptimizedCode(resultStr, aiTextArea);
-                    return null;
-                }
-            };
-            task.setOnFailed(event -> {
-                Throwable error = task.getException();
-                if (debugMode && error != null) {
-                    error.printStackTrace();
-                }
-                Platform.runLater(() -> {
-                    isAiCD = false;
-                    String message = error == null || error.getMessage() == null || error.getMessage().trim().isEmpty()
-                            ? I18nUtils.getString("ai.status.error")
-                            : error.getMessage();
-                    aiTextArea.setText(message);
-                });
-            });
-            task.setOnSucceeded(event -> {
-                isAiCD = false;
-            });
-            new Thread(task).start();
-
+    private void showAiState() {
+        if (res.isEmpty()) {
+            aiStateNoFile.setVisible(true);
+            aiStateNotAnalyzed.setVisible(false);
+            aiTextArea.setVisible(false);
+        } else if (!oldData.equals(result.getText())) {
+            aiStateNoFile.setVisible(false);
+            aiStateNotAnalyzed.setVisible(true);
+            aiTextArea.setVisible(false);
+        } else {
+            aiStateNoFile.setVisible(false);
+            aiStateNotAnalyzed.setVisible(false);
+            aiTextArea.setVisible(true);
         }
+    }
+
+    @FXML
+    void startAiAnalysis(ActionEvent e) {
+        String resultStr = result.getText();
+        if (res.isEmpty() || isAiCD) return;
+        aiStateNoFile.setVisible(false);
+        aiStateNotAnalyzed.setVisible(false);
+        aiTextArea.setVisible(true);
+        oldData = resultStr;
+        isAiCD = true;
+        aiTextArea.clear();
+        aiTextArea.appendText(I18nUtils.getString("decompile.ai.analyzing"));
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                CodeAnalyzerUtils.streamOptimizedCode(resultStr, aiTextArea);
+                return null;
+            }
+        };
+        task.setOnFailed(event -> {
+            Throwable error = task.getException();
+            if (debugMode && error != null) error.printStackTrace();
+            Platform.runLater(() -> {
+                isAiCD = false;
+                String message = error == null || error.getMessage() == null || error.getMessage().trim().isEmpty()
+                        ? I18nUtils.getString("ai.status.error")
+                        : error.getMessage();
+                aiTextArea.setText(message);
+            });
+        });
+        task.setOnSucceeded(event -> isAiCD = false);
+        new Thread(task).start();
+    }
+
+    @FXML
+    void refreshAI(ActionEvent e) throws Exception {
+        if (res.isEmpty()) {
+            showAiState();
+            return;
+        }
+        oldData = "";
+        startAiAnalysis(e);
     }
 
 }

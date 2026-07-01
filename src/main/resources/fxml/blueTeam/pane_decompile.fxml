@@ -96,7 +96,15 @@
             </VBox>
             <Pane maxWidth="0" StackPane.alignment="CENTER_RIGHT">
                 <Pane fx:id="aiPane" visible="false" maxWidth="0">
-                    <SmoothTextArea fx:id="aiTextArea" styleClass="pt-input" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height - 150}" maxHeight="${sPane.height - 150}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:decompile.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
+                    <VBox fx:id="aiStateNoFile" visible="false" prefWidth="0" prefHeight="${sPane.height - 150}" alignment="CENTER" spacing="16" style="-fx-padding: 24 16 24 16;" layoutX="0" layoutY="0">
+                        <Label text="请先打开 .jar / .class 文件" userData="i18n:decompile.ai.state.nofile" styleClass="pt-body" wrapText="true" textAlignment="CENTER" maxWidth="240"/>
+                        <Button text="打开文件" userData="i18n:decompile.ai.openfile" onAction="#toDecompile" styleClass="pt-btn-primary" minWidth="120" minHeight="32"/>
+                    </VBox>
+                    <VBox fx:id="aiStateNotAnalyzed" visible="false" prefWidth="0" prefHeight="${sPane.height - 150}" alignment="CENTER" spacing="16" style="-fx-padding: 24 16 24 16;" layoutX="0" layoutY="0">
+                        <Label text="已选择文件，点击「AI 分析」开始智能分析" userData="i18n:decompile.ai.state.notanalyzed" styleClass="pt-body" wrapText="true" textAlignment="CENTER" maxWidth="240"/>
+                        <Button text="AI 分析" userData="i18n:decompile.ai.start" onAction="#startAiAnalysis" styleClass="pt-btn-primary" minWidth="120" minHeight="32"/>
+                    </VBox>
+                    <SmoothTextArea fx:id="aiTextArea" styleClass="pt-input" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height - 150}" maxHeight="${sPane.height - 150}" minHeight="100" text="AI分析中，请稍等……" userData="i18n:decompile.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
                     <Button fx:id="refreshAI" layoutX="-60" layoutY="6" mnemonicParsing="false" onAction="#refreshAI">
                         <graphic>
                             <ImageView fitHeight="17.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
