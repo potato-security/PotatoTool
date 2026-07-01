@@ -6,9 +6,8 @@
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<?import javafx.collections.FXCollections?>
 <?import javafx.scene.effect.DropShadow?>
+<?import javafx.collections.FXCollections?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
 <AnchorPane xmlns="http://javafx.com/javafx/"
@@ -22,80 +21,85 @@
             prefWidth="340"
             prefHeight="450"
 >
-    <children>
-    <Pane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0">
-    <effect>
-        <DropShadow/>
-    </effect>
-    <VBox>
-    <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
-        <center>
-            <Label styleClass="pt-h2" style="-fx-padding: 0 0 0 30;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="添加项目" userData="i18n:addbar.title" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-        </center>
-        <right>
-            <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
-                <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction" prefHeight="25.0" prefWidth="25.0">
-                    <graphic>
-                        <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../../img/close.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                    <tooltip>
-                        <Tooltip text="关闭" userData="i18n:tooltip.close"/>
-                    </tooltip>
-                </Button>
-                <Pane minWidth="10"/>
-            </HBox>
-        </right>
-    </BorderPane>
-    <VBox styleClass="pt-panel" alignment="CENTER_LEFT" spacing="20" prefWidth="${an.width - 18}">
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label styleClass="pt-body" text="名称：" userData="i18n:addbar.name"/>
-            <TextField styleClass="pt-input" fx:id="title" prefWidth="200"/>
-        </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label styleClass="pt-body" text="描述：" userData="i18n:addbar.description"/>
-            <TextField styleClass="pt-input" fx:id="describe"  prefWidth="200"/>
-        </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label styleClass="pt-body" text="类型：" userData="i18n:addbar.type"/>
-            <ComboBox fx:id="type" prefHeight="20.0" prefWidth="200" userData="i18n-combobox:addbar.type">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="执行命令" />
-                        <String fx:value="打开Web" />
-                    </FXCollections>
-                </items>
-                <cursor>
-                    <Cursor fx:constant="HAND" />
-                </cursor>
-            </ComboBox>
-        </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label styleClass="pt-body" text="操作：" userData="i18n:addbar.action"/>
-            <TextField styleClass="pt-input" fx:id="content" prefWidth="200"/>
-        </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label styleClass="pt-body" text="图标：" userData="i18n:addbar.icon"/>
-            <StackPane>
-                <TextField styleClass="pt-input" style="-fx-padding: 5 80 5 5;" fx:id="icon" promptText="可为空" userData="i18n-prompt:addbar.icon.placeholder" prefWidth="200" StackPane.alignment="CENTER"/>
-                <Button styleClass="pt-btn" text="选择图片" userData="i18n:addbar.selectimage" onAction="#getImg" StackPane.alignment="CENTER_RIGHT"/>
-            </StackPane>
-        </HBox>
+    <StackPane AnchorPane.topAnchor="9" AnchorPane.bottomAnchor="9"
+               AnchorPane.leftAnchor="9" AnchorPane.rightAnchor="9">
+        <effect>
+            <DropShadow color="#00000080" radius="18" spread="0.08"/>
+        </effect>
+        <!-- 四角取景框 -->
+        <Region styleClass="pt-corner-tl" StackPane.alignment="TOP_LEFT"/>
+        <Region styleClass="pt-corner-tr" StackPane.alignment="TOP_RIGHT"/>
+        <Region styleClass="pt-corner-bl" StackPane.alignment="BOTTOM_LEFT"/>
+        <Region styleClass="pt-corner-br" StackPane.alignment="BOTTOM_RIGHT"/>
 
-        <HBox alignment="CENTER">
-            <Button styleClass="pt-btn-primary" fx:id="addBtn" minHeight="48.0" minWidth="150" text="修改/添加" userData="i18n:addbar.submit" onAction="#addBar">
-                <effect>
-                    <DropShadow />
-                </effect>
-            </Button>
-        </HBox>
+        <VBox>
+            <BorderPane fx:id="topBar"
+                        style="-fx-background-color: -pt-bg-elevated; -fx-border-color: transparent transparent -pt-border-subtle transparent; -fx-border-width: 0 0 1 0;"
+                        prefHeight="45" BorderPane.alignment="CENTER">
+                <center>
+                    <Label styleClass="pt-h2" style="-fx-padding: 0 0 0 30;" alignment="CENTER"
+                           prefHeight="${topBar.height}" prefWidth="${topBar.width}"
+                           text="添加项目" userData="i18n:addbar.title"/>
+                </center>
+                <right>
+                    <HBox alignment="CENTER" fx:id="appController" prefHeight="${topBar.height}">
+                        <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction"
+                                styleClass="setting-close-btn" text="✕"
+                                style="-fx-background-color: -pt-danger; -fx-background-radius: 50%; -fx-text-fill: white; -fx-font-size: 11; -fx-pref-width: 20; -fx-pref-height: 20; -fx-min-width: 20; -fx-min-height: 20; -fx-max-width: 20; -fx-max-height: 20; -fx-padding: 0; -fx-cursor: hand;">
+                            <tooltip>
+                                <Tooltip text="关闭" userData="i18n:tooltip.close"/>
+                            </tooltip>
+                        </Button>
+                        <Pane minWidth="10"/>
+                    </HBox>
+                </right>
+            </BorderPane>
 
-    </VBox>
-    </VBox>
-    </Pane>
-    </children>
+            <VBox styleClass="pt-panel" alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 20;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label styleClass="pt-body" text="名称：" userData="i18n:addbar.name"/>
+                    <TextField styleClass="pt-input" fx:id="title" prefWidth="200"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label styleClass="pt-body" text="描述：" userData="i18n:addbar.description"/>
+                    <TextField styleClass="pt-input" fx:id="describe" prefWidth="200"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label styleClass="pt-body" text="类型：" userData="i18n:addbar.type"/>
+                    <ComboBox fx:id="type" prefHeight="20.0" prefWidth="200" userData="i18n-combobox:addbar.type">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <String fx:value="执行命令" />
+                                <String fx:value="打开Web" />
+                            </FXCollections>
+                        </items>
+                        <cursor>
+                            <Cursor fx:constant="HAND" />
+                        </cursor>
+                    </ComboBox>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label styleClass="pt-body" text="操作：" userData="i18n:addbar.action"/>
+                    <TextField styleClass="pt-input" fx:id="content" prefWidth="200"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label styleClass="pt-body" text="图标：" userData="i18n:addbar.icon"/>
+                    <StackPane>
+                        <TextField styleClass="pt-input" style="-fx-padding: 5 80 5 5;" fx:id="icon"
+                                   promptText="可为空" userData="i18n-prompt:addbar.icon.placeholder"
+                                   prefWidth="200" StackPane.alignment="CENTER"/>
+                        <Button styleClass="pt-btn" text="选择图片" userData="i18n:addbar.selectimage"
+                                onAction="#getImg" StackPane.alignment="CENTER_RIGHT"/>
+                    </StackPane>
+                </HBox>
 
+                <HBox alignment="CENTER">
+                    <Button styleClass="pt-btn-primary" fx:id="addBtn" minHeight="40" minWidth="150"
+                            text="修改/添加" userData="i18n:addbar.submit" onAction="#addBar">
+                        <cursor><Cursor fx:constant="HAND"/></cursor>
+                    </Button>
+                </HBox>
+            </VBox>
+        </VBox>
+    </StackPane>
 </AnchorPane>
