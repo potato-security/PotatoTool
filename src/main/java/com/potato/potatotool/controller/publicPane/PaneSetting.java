@@ -11,6 +11,7 @@ import com.potato.potatotool.content.redTeam.vulnScanner.http.DnsLogService;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.HttpLogService;
 import com.potato.potatotool.content.redTeam.vulnScanner.http.PythonHandler;
 import com.potato.potatotool.storage.PathManager;
+import com.potato.potatotool.update.ResourceUpdate;
 import com.potato.potatotool.update.UpdateInfo;
 import com.potato.potatotool.update.UpdateManager;
 import com.potato.potatotool.utils.ai.model.AiThinkingConfig;
@@ -50,6 +51,7 @@ import javafx.util.Duration;
 
 import java.io.File;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.potato.potatotool.ToStart.isBlueMode;
@@ -2414,6 +2416,214 @@ public class PaneSetting {
             }
         }
         return headers;
+    }
+
+    // ── MD5 数据库 ────────────────────────────────────────────
+
+    @FXML
+    public void checkMd5(ActionEvent event) {
+        md5CheckButton.setDisable(true);
+        md5CheckButton.setText(I18nUtils.getString("setting.update.md5.checking"));
+        md5Tips.setText("");
+        new Thread(() -> {
+            File md5File = PathManager.getInstance().getMd5DatabasePath().toFile();
+            boolean exists = md5File.exists() && md5File.length() >= PathManager.MD5_DB_MIN_SIZE;
+            Platform.runLater(() -> {
+                md5Tips.setText(I18nUtils.getString(
+                        exists ? "setting.update.md5.exists" : "setting.update.md5.notexists"));
+                md5UpdateButton.setVisible(!exists);
+                md5UpdateButton.setManaged(!exists);
+                md5CheckButton.setText(I18nUtils.getString("setting.update.md5.check"));
+                md5CheckButton.setDisable(false);
+            });
+        }).start();
+    }
+
+    @FXML
+    public void updateMd5(ActionEvent event) {
+        setMd5State(true);
+        new Thread(() -> {
+            try {
+                UpdateInfo info = UpdateManager.getInstance().checkForUpdates();
+                ResourceUpdate target = null;
+                if (info != null && info.getResourceUpdates() != null) {
+                    for (ResourceUpdate ru : info.getResourceUpdates()) {
+                        String name = ru.getResourceName();
+                        if ("md5".equalsIgnoreCase(name) || "MD5Database".equalsIgnoreCase(name)) {
+                            target = ru;
+                            break;
+                        }
+                    }
+                }
+                if (target == null) {
+                    Platform.runLater(() -> {
+                        md5Tips.setText(I18nUtils.getString("setting.update.md5.exists"));
+                        setMd5State(false);
+                    });
+                    return;
+                }
+                final ResourceUpdate finalTarget = target;
+                UpdateManager.getInstance().updateResource(finalTarget, new UpdateManager.UpdateCallback() {
+                    @Override public void onStart(String message) {
+                        Platform.runLater(() -> md5ProgressLabel.setText(message));
+                    }
+                    @Override public void onProgress(long current, long total, int pct, String speed) {
+                        Platform.runLater(() -> {
+                            md5ProgressBar.setProgress(pct / 100.0);
+                            md5ProgressLabel.setText(I18nUtils.getString(
+                                    "setting.update.md5.progress", pct + "%", speed, ""));
+                        });
+                    }
+                    @Override public void onComplete(String message) {
+                        Platform.runLater(() -> {
+                            md5Tips.setText(I18nUtils.getString("setting.update.md5.exists"));
+                            setMd5State(false);
+                        });
+                    }
+                    @Override public void onError(String error) {
+                        Platform.runLater(() -> {
+                            md5Tips.setText(error);
+                            setMd5State(false);
+                        });
+                    }
+                    @Override public void onCancel() {
+                        Platform.runLater(() -> setMd5State(false));
+                    }
+                    @Override public void onReadyToInstall() {}
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    md5Tips.setText(e.getMessage());
+                    setMd5State(false);
+                });
+            }
+        }).start();
+    }
+
+    @FXML
+    public void stopMd5(ActionEvent event) {
+        UpdateManager.getInstance().cancelResourceUpdate();
+    }
+
+    private void setMd5State(boolean downloading) {
+        md5ProgressVBox.setVisible(downloading);
+        md5ProgressVBox.setManaged(downloading);
+        md5StopUpdateButton.setVisible(downloading);
+        md5StopUpdateButton.setManaged(downloading);
+        md5UpdateButton.setVisible(!downloading);
+        md5UpdateButton.setManaged(!downloading);
+        md5CheckButton.setDisable(downloading);
+        if (!downloading) {
+            md5ProgressBar.setProgress(0);
+            md5ProgressLabel.setText("");
+        }
+    }
+
+    // ── KB 数据库 ────────────────────────────────────────────
+
+    @FXML
+    public void checkKb(ActionEvent event) {
+        kbCheckButton.setDisable(true);
+        kbCheckButton.setText(I18nUtils.getString("setting.update.kb.checking"));
+        kbTips.setText("");
+        new Thread(() -> {
+            File resourceDir = PathManager.getInstance().getResourceBasePath().toFile();
+            boolean exists = false;
+            if (resourceDir.exists() && resourceDir.isDirectory()) {
+                File[] files = resourceDir.listFiles(
+                        (dir, name) -> name.startsWith("winKbInfo") && name.endsWith(".csv"));
+                exists = files != null && files.length > 0;
+            }
+            final boolean found = exists;
+            Platform.runLater(() -> {
+                kbTips.setText(I18nUtils.getString(
+                        found ? "setting.update.kb.latest" : "setting.update.kb.notexists"));
+                kbUpdateButton.setVisible(!found);
+                kbUpdateButton.setManaged(!found);
+                kbCheckButton.setText(I18nUtils.getString("setting.update.kb.check"));
+                kbCheckButton.setDisable(false);
+            });
+        }).start();
+    }
+
+    @FXML
+    public void updateKb(ActionEvent event) {
+        setKbState(true);
+        new Thread(() -> {
+            try {
+                UpdateInfo info = UpdateManager.getInstance().checkForUpdates();
+                ResourceUpdate target = null;
+                if (info != null && info.getResourceUpdates() != null) {
+                    for (ResourceUpdate ru : info.getResourceUpdates()) {
+                        String name = ru.getResourceName();
+                        if ("winKbInfo".equalsIgnoreCase(name) || name.toLowerCase().contains("winkb")) {
+                            target = ru;
+                            break;
+                        }
+                    }
+                }
+                if (target == null) {
+                    Platform.runLater(() -> {
+                        kbTips.setText(I18nUtils.getString("setting.update.kb.latest"));
+                        setKbState(false);
+                    });
+                    return;
+                }
+                final ResourceUpdate finalTarget = target;
+                UpdateManager.getInstance().updateResource(finalTarget, new UpdateManager.UpdateCallback() {
+                    @Override public void onStart(String message) {
+                        Platform.runLater(() -> kbProgressLabel.setText(message));
+                    }
+                    @Override public void onProgress(long current, long total, int pct, String speed) {
+                        Platform.runLater(() -> {
+                            kbProgressBar.setProgress(pct / 100.0);
+                            kbProgressLabel.setText(I18nUtils.getString(
+                                    "setting.update.kb.progress", pct + "%", speed, ""));
+                        });
+                    }
+                    @Override public void onComplete(String message) {
+                        Platform.runLater(() -> {
+                            kbTips.setText(I18nUtils.getString("setting.update.kb.latest"));
+                            setKbState(false);
+                        });
+                    }
+                    @Override public void onError(String error) {
+                        Platform.runLater(() -> {
+                            kbTips.setText(error);
+                            setKbState(false);
+                        });
+                    }
+                    @Override public void onCancel() {
+                        Platform.runLater(() -> setKbState(false));
+                    }
+                    @Override public void onReadyToInstall() {}
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    kbTips.setText(e.getMessage());
+                    setKbState(false);
+                });
+            }
+        }).start();
+    }
+
+    @FXML
+    public void stopKb(ActionEvent event) {
+        UpdateManager.getInstance().cancelResourceUpdate();
+    }
+
+    private void setKbState(boolean downloading) {
+        kbProgressVBox.setVisible(downloading);
+        kbProgressVBox.setManaged(downloading);
+        kbStopUpdateButton.setVisible(downloading);
+        kbStopUpdateButton.setManaged(downloading);
+        kbUpdateButton.setVisible(!downloading);
+        kbUpdateButton.setManaged(!downloading);
+        kbCheckButton.setDisable(downloading);
+        if (!downloading) {
+            kbProgressBar.setProgress(0);
+            kbProgressLabel.setText("");
+        }
     }
 
 }

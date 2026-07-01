@@ -474,6 +474,13 @@ public class ResourceUpdater {
     }
     
     /**
+     * 取消当前下载
+     */
+    public void cancel() {
+        downloader.cancel();
+    }
+
+    /**
      * 批量更新回调接口
      */
     public interface BatchUpdateCallback {

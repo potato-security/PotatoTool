@@ -249,6 +249,13 @@ public class UpdateManager {
     }
     
     /**
+     * 取消当前资源下载
+     */
+    public void cancelResourceUpdate() {
+        resourceUpdater.cancel();
+    }
+
+    /**
      * 更新回调接口
      */
     public interface UpdateCallback {

@@ -730,6 +730,73 @@
 
                                             <Separator prefWidth="${an.width - 58}"/>
 
+                                            <!-- MD5 / KB 数据库更新 -->
+                                            <VBox spacing="8" styleClass="pt-panel">
+                                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M20 6h-2.18c.07-.44.18-.86.18-1 0-2.21-1.79-4-4-4s-4 1.79-4 4c0 .14.11.56.18 1H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-3c1.1 0 2 .9 2 2 0 .14-.05.42-.1.69l-.08.31h-3.64l-.08-.31A3.25 3.25 0 0 1 12 5c0-1.1.9-2 2-2zm6 17H8V8h2v2h8V8h2v12z'; -fx-background-color: -pt-accent;"/>
+                                                    <Label styleClass="pt-h2" text="数据库更新" userData="i18n:setting.update.db.title"/>
+                                                </HBox>
+                                                <HBox spacing="24">
+                                                    <!-- MD5 库 -->
+                                                    <VBox HBox.hgrow="ALWAYS" spacing="6">
+                                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                                            <Label text="本地MD5库：" userData="i18n:setting.update.md5"/>
+                                                            <Label fx:id="md5Tips" text="" styleClass="pt-caption" style="-fx-text-fill: -pt-text-tertiary;"/>
+                                                        </HBox>
+                                                        <HBox spacing="8" alignment="CENTER_LEFT">
+                                                            <Button fx:id="md5CheckButton" text="检测"
+                                                                    userData="i18n:setting.update.md5.check"
+                                                                    styleClass="pt-btn" onAction="#checkMd5"
+                                                                    minWidth="72" minHeight="28"/>
+                                                            <Button fx:id="md5UpdateButton" text="下载"
+                                                                    userData="i18n:setting.update.md5.download"
+                                                                    styleClass="pt-btn-primary" onAction="#updateMd5"
+                                                                    minWidth="72" minHeight="28"
+                                                                    visible="false" managed="false"/>
+                                                            <Button fx:id="md5StopUpdateButton" text="取消"
+                                                                    userData="i18n:setting.update.md5.cancel"
+                                                                    styleClass="pt-btn" onAction="#stopMd5"
+                                                                    minWidth="72" minHeight="28"
+                                                                    visible="false" managed="false"/>
+                                                        </HBox>
+                                                        <VBox fx:id="md5ProgressVBox" spacing="4" visible="false" managed="false">
+                                                            <ProgressBar fx:id="md5ProgressBar" maxWidth="Infinity" prefHeight="6" progress="0"/>
+                                                            <Label fx:id="md5ProgressLabel" text="" styleClass="pt-caption"/>
+                                                        </VBox>
+                                                    </VBox>
+                                                    <Separator orientation="VERTICAL"/>
+                                                    <!-- KB 库 -->
+                                                    <VBox HBox.hgrow="ALWAYS" spacing="6">
+                                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                                            <Label text="微软kb库：" userData="i18n:setting.update.kb"/>
+                                                            <Label fx:id="kbTips" text="" styleClass="pt-caption" style="-fx-text-fill: -pt-text-tertiary;"/>
+                                                        </HBox>
+                                                        <HBox spacing="8" alignment="CENTER_LEFT">
+                                                            <Button fx:id="kbCheckButton" text="检测"
+                                                                    userData="i18n:setting.update.kb.check"
+                                                                    styleClass="pt-btn" onAction="#checkKb"
+                                                                    minWidth="72" minHeight="28"/>
+                                                            <Button fx:id="kbUpdateButton" text="下载"
+                                                                    userData="i18n:setting.update.kb.download"
+                                                                    styleClass="pt-btn-primary" onAction="#updateKb"
+                                                                    minWidth="72" minHeight="28"
+                                                                    visible="false" managed="false"/>
+                                                            <Button fx:id="kbStopUpdateButton" text="取消"
+                                                                    userData="i18n:setting.update.kb.cancel"
+                                                                    styleClass="pt-btn" onAction="#stopKb"
+                                                                    minWidth="72" minHeight="28"
+                                                                    visible="false" managed="false"/>
+                                                        </HBox>
+                                                        <VBox fx:id="kbProgressVBox" spacing="4" visible="false" managed="false">
+                                                            <ProgressBar fx:id="kbProgressBar" maxWidth="Infinity" prefHeight="6" progress="0"/>
+                                                            <Label fx:id="kbProgressLabel" text="" styleClass="pt-caption"/>
+                                                        </VBox>
+                                                    </VBox>
+                                                </HBox>
+                                            </VBox>
+
+                                            <Separator prefWidth="${an.width - 58}"/>
+
                                             <!-- 存储位置管理 -->
                                             <VBox spacing="8" styleClass="pt-panel">
                                                 <HBox alignment="CENTER_LEFT" spacing="8">
