@@ -1,0 +1,129 @@
+/* 更新弹窗 —— 迁移到 -pt-* token 体系 */
+
+.upd-dialog {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 10;
+    -fx-border-color: -pt-border;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+.upd-header {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-radius: 10 10 0 0;
+    -fx-padding: 0 0 0 20;
+}
+
+.upd-title {
+    -fx-text-fill: -pt-text;
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+}
+
+.upd-close-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 13;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 2 6 2 6;
+}
+
+.upd-close-btn:hover {
+    -fx-background-color: derive(-pt-danger, -55%);
+    -fx-text-fill: -pt-danger;
+}
+
+.upd-body {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 0 0 10 10;
+}
+
+.upd-version-info {
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 12;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+}
+
+.upd-section-label {
+    -fx-padding: 0 0 8 0;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+}
+
+.upd-items-card {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 8;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 12 14 8 14;
+}
+
+.upd-changelog-card {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 8;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 12 14 12 14;
+}
+
+.upd-changelog-text {
+    -fx-font-size: 12;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+}
+
+.upd-progress-card {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 8;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 12 14 12 14;
+}
+
+.upd-progress-bar {
+    -fx-accent: -pt-accent-teal;
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 3;
+}
+
+.upd-progress-bar > .bar {
+    -fx-background-color: -pt-accent-teal;
+    -fx-background-radius: 3;
+    -fx-background-insets: 0;
+}
+
+.upd-progress-bar > .track {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 3;
+    -fx-background-insets: 0;
+}
+
+.upd-restart-row {
+    -fx-padding: 10 14 10 14;
+    -fx-background-color: derive(-pt-success, -60%);
+    -fx-background-radius: 8;
+    -fx-border-color: -pt-success;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.upd-restart-text {
+    -fx-text-fill: -pt-text;
+    -fx-font-size: 12;
+}
+
+.upd-primary-btn {
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+}
+
+.upd-secondary-btn {
+    -fx-font-size: 12;
+}

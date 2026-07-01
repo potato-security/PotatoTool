@@ -637,3 +637,32 @@
 }
 </content>
 </invoke>
+
+/* ========================================
+   探测方式卡片 (对齐 Penpot: 名称 + POC 计数 + format 色下划线)
+   ======================================== */
+.vulscan-methods { -fx-padding: 2 0 0 0; }
+.detect-card {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: -pt-border;
+    -fx-padding: 8 12 6 12;
+}
+.detect-nuclei   { -fx-border-color: -pt-accent-teal; }
+.detect-goby     { -fx-border-color: -pt-danger; }
+.detect-xray     { -fx-border-color: -pt-info; }
+.detect-pocsuite { -fx-border-color: -pt-success; }
+.detect-count {
+    -fx-font-family: "Consolas", "SF Mono", "Menlo", "Courier New", monospace;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-fill: -pt-text-secondary;
+}
+
+/* STATS 行 (CRIT/HIGH/MED/LOW/INFO) */
+.stat-chip { -fx-spacing: 6; }
+.stat-tag  { -fx-font-size: 11px; -fx-font-weight: bold; }
+.stat-num  { -fx-font-size: 18px; -fx-font-weight: bold; }

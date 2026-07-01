@@ -8,6 +8,7 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
@@ -43,8 +44,14 @@ public class PaneSeparateDecode {
     @FXML
     private ToggleGroup checkboxGroup;
 
+    @FXML
+    private Label modeHint;
+    @FXML
+    private Label statusLabel;
+
     private final Map<String, Function<String, String>> decodeMap = new HashMap<>();
     private final Map<String, Function<String, String>> encodeMap = new HashMap<>();
+    private final Map<String, String> hintKeyMap = new HashMap<>();
 
     public void initialize() {
 
@@ -78,12 +85,41 @@ public class PaneSeparateDecode {
         encodeMap.put("strRev", StrUtils::strRev);
         encodeMap.put("Hex", StrUtils::hexEncode);
         encodeMap.put("Html", StrUtils::htmlEncode);
-        
+
+        // 编码方式说明 (随选中动态更新)
+        hintKeyMap.put("Base64", "separate.hint.base64");
+        hintKeyMap.put("URL", "separate.hint.url");
+        hintKeyMap.put("Unicode", "separate.hint.unicode");
+        hintKeyMap.put("Hex", "separate.hint.hex");
+        hintKeyMap.put("Html", "separate.hint.html");
+        hintKeyMap.put("Rot13", "separate.hint.rot13");
+        hintKeyMap.put("Chr", "separate.hint.chr");
+        hintKeyMap.put("strRev", "separate.hint.strrev");
+
+        // 选中编码方式时更新说明条
+        checkboxGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> updateModeHint());
+
         // 绑定国际化
         Platform.runLater(() -> {
             I18nUtils.bindComponents(sPane);
+            // 默认选中 Base64, 同步说明条
+            if (checkboxGroup.getSelectedToggle() == null) {
+                selectMode("Base64");
+            }
+            updateModeHint();
+            if (statusLabel != null) statusLabel.setText(I18nUtils.getString("separate.status.ready"));
             applyStartupPreviewState();
         });
+    }
+
+    private void updateModeHint() {
+        if (modeHint == null) return;
+        Toggle sel = checkboxGroup.getSelectedToggle();
+        if (sel instanceof ToggleButton) {
+            String mode = ((ToggleButton) sel).getText();
+            String key = hintKeyMap.get(mode);
+            if (key != null) modeHint.setText(I18nUtils.getString(key));
+        }
     }
 
     private void applyStartupPreviewState() {
@@ -160,6 +196,10 @@ public class PaneSeparateDecode {
             protected void succeeded() {
                 try {
                     result.replaceText((String) getValue());
+                    if (statusLabel != null) {
+                        statusLabel.setText(I18nUtils.getString(
+                                "解密".equals(operation) ? "separate.status.decoded" : "separate.status.encoded"));
+                    }
                 }catch (Exception e){
                     result.replaceText(I18nUtils.getString("separate.error.notmode", mode, operation));
                 }

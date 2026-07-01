@@ -113,14 +113,14 @@ public class PaneGetIpInfo {
 
         //  CodeArea添加宽高自适应
         sPane.widthProperty().addListener((obs, oldValue, newValue) -> {
-            double prefWidth = newValue.doubleValue() * 0.5 - 35;
+            double prefWidth = newValue.doubleValue() * 0.5 - 80;
             for (VirtualizedScrollPane virScrollPane : virScrollPanes) {
                 virScrollPane.setMinWidth(prefWidth);
                 virScrollPane.setMaxWidth(prefWidth);
             }
         });
         sPane.heightProperty().addListener((obs, oldValue, newValue) -> {
-            double prefHeight = newValue.doubleValue() * 0.4;
+            double prefHeight = newValue.doubleValue() * 0.25;
             for (VirtualizedScrollPane virScrollPane : virScrollPanes) {
                 virScrollPane.setMinHeight(prefHeight);
             }

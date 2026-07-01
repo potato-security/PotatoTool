@@ -1,4 +1,84 @@
+/* PaneProcessQuery — 版式对齐 Penpot「进程分析(修正版)」中央内容列
+ * 设计实测: 面板仅描边(#2A3B49@.6, r16) + 顶部青色高光线(#4FE3FF@.14);
+ *           内凹结果区 fill #040810 / 描边 #1A2630@.5 / r8; 等宽字体输出。 */
+
+.proc-root {
+    -fx-padding: 20 24 24 24;
+}
+
+/* 输入带占位标题 */
 #tipTitle {
     -fx-pref-width: 126;
     -fx-min-width: 126;
+}
+
+/* 外层结果面板：透明底 + 描边卡片，顶部一道极淡青色高光 */
+.proc-panel {
+    -fx-background-color: transparent;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    /* top right bottom left —— 顶边取青色高光, 其余常规边框 */
+    -fx-border-color: rgba(79, 227, 255, 0.14) -pt-border -pt-border -pt-border;
+    -fx-padding: 14 16 16 16;
+    -fx-spacing: 10;
+}
+
+.proc-panel-title {
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+
+.proc-panel-divider {
+    -fx-pref-height: 1;
+    -fx-min-height: 1;
+    -fx-max-height: 1;
+    -fx-background-color: rgba(26, 38, 48, 0.4);
+}
+
+/* 内凹结果区 */
+.proc-inset {
+    -fx-background-color: -pt-bg-inset;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-border-color: -pt-border-subtle;
+    -fx-padding: 10 12 12 12;
+    -fx-spacing: 8;
+}
+
+/* 列头提示 (等宽, 弱化) */
+.proc-col-header {
+    -fx-font-family: "Consolas", "SF Mono", "Menlo", "Courier New", monospace;
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-fill: -pt-text-muted;
+}
+
+/* 等宽输出区: 透明融入内凹底 */
+.proc-output,
+.proc-output .content,
+.proc-output .viewport,
+.proc-output .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.proc-output {
+    -fx-text-fill: -pt-text;
+    -fx-fill: -pt-text;
+    -fx-padding: 0;
+    -fx-font-size: 12.5px;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: null;
+}
+
+.proc-output:focused,
+.proc-output .content:focused {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
 }

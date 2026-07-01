@@ -348,3 +348,54 @@
 #promptPane.prompt-error .label {
     -fx-text-fill: -pt-text;
 }
+
+/* ========================================
+   搜索结果卡片 chip 标签
+   ======================================== */
+
+.bc-card-header {
+    -fx-padding: 0 0 8 0;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.bc-chip {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 2 8 2 8;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+}
+
+.bc-chip-address {
+    -fx-background-color: derive(-pt-accent-teal, -55%);
+    -fx-text-fill: -pt-accent-teal;
+    -fx-border-color: -pt-accent-teal;
+    -fx-border-width: 1;
+}
+
+.bc-chip-tx {
+    -fx-background-color: derive(-pt-success, -55%);
+    -fx-text-fill: -pt-success;
+    -fx-border-color: -pt-success;
+    -fx-border-width: 1;
+}
+
+.bc-chip-block {
+    -fx-background-color: derive(-pt-warning, -55%);
+    -fx-text-fill: -pt-warning;
+    -fx-border-color: -pt-warning;
+    -fx-border-width: 1;
+}
+
+.bc-chip-network {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1;
+}
+
+.bc-card-arrow {
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 16;
+}

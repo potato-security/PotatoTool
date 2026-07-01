@@ -1,0 +1,61 @@
+.del-topbar {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.del-title {
+    -fx-text-fill: -pt-text;
+    -fx-font-size: 14;
+}
+
+.del-close-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 14;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-padding: 2 6 2 6;
+}
+
+.del-close-btn:hover {
+    -fx-background-color: derive(-pt-danger, -55%);
+    -fx-text-fill: -pt-danger;
+    -fx-background-radius: 4;
+}
+
+.del-body {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-danger;
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 8 8;
+    -fx-background-radius: 0 0 8 8;
+}
+
+.del-warn-icon {
+    -fx-text-fill: -pt-danger;
+    -fx-font-size: 20;
+}
+
+.del-warn-text {
+    -fx-text-fill: -pt-text-muted;
+}
+
+.del-item-title {
+    -fx-text-fill: -pt-text;
+    -fx-font-size: 18;
+    -fx-font-weight: bold;
+}
+
+.del-item-desc {
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 12;
+}
+
+.del-cancel-btn {
+    -fx-min-width: 120;
+}
+
+.del-confirm-btn {
+    -fx-min-width: 120;
+}

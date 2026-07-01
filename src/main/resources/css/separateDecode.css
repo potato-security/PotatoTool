@@ -1,0 +1,16 @@
+
+/* ===== 版式对齐 Penpot: chip 选择 → 说明条 → 输入 → 操作 → 结果 ===== */
+.sep-root { -fx-padding: 16 20 20 20; }
+.sep-chips { -fx-alignment: CENTER_LEFT; }
+.sep-hint {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-border-color: -pt-border-subtle;
+    -fx-padding: 8 12 8 12;
+}
+.sep-hint-dot {
+    -fx-background-color: -pt-accent;
+    -fx-background-radius: 4;
+}

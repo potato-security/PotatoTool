@@ -2,13 +2,11 @@
 <?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 
-<?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import org.fxmisc.richtext.CodeArea?>
@@ -22,93 +20,104 @@
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneGetIpInfo">
    <children>
-      <VBox alignment="CENTER">
+      <VBox styleClass="ipinfo-root" spacing="14">
          <children>
-            <Pane>
-               <SmoothTextArea fx:id="inputText" styleClass="pt-input" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入netstat -ano或者net -pantu执行后的内容" userData="i18n-prompt:ipinfo.input.placeholder"/>
-            </Pane>
-            <Pane minHeight="15"/>
-            <HBox alignment="CENTER">
-               <Button minHeight="48.0" minWidth="${sPane.width}" styleClass="pt-btn-primary" text="开始提取" userData="i18n:ipinfo.extract" onAction="#getIpInfo">
-                  <effect>
-                     <DropShadow />
-                  </effect>
-               </Button>
+
+            <!-- 输入 + 提取按钮 -->
+            <HBox spacing="12" alignment="CENTER_LEFT">
+               <SmoothTextArea fx:id="inputText" styleClass="pt-input,pt-mono" wrapText="true" prefHeight="76" minHeight="76" HBox.hgrow="ALWAYS" maxWidth="Infinity" promptText="请输入netstat -ano或者net -pantu执行后的内容" userData="i18n-prompt:ipinfo.input.placeholder"/>
+               <Button minHeight="76.0" minWidth="104" styleClass="pt-btn-primary" text="提取 IP" userData="i18n:ipinfo.extract" onAction="#getIpInfo"/>
             </HBox>
-            <Pane minHeight="20"/>
-            <SmoothScrollPane prefHeight="${sPane.height * 0.6 - 83}">
-                <FlowPane fx:id="flowPane" alignment="CENTER" hgap="20"  vgap="20"  prefWidth="${sPane.width - 20}">
-                   <children>
-                       <StackPane styleClass="codeAreaPane">
-                           <VirtualizedScrollPane fx:id="virScrollPane1" styleClass="virtualizedScrollPane">
-                               <content>
-                                   <CodeArea fx:id="result1" editable="false" styleClass="codeArea"/>
-                               </content>
-                           </VirtualizedScrollPane>
-                           <Label fx:id="ipLabel" styleClass="titleText" translateY="-21" text="IP提取" userData="i18n:ipinfo.extract.title" StackPane.alignment="TOP_CENTER"/>
-                       </StackPane>
-                       <StackPane styleClass="codeAreaPane">
-                           <VirtualizedScrollPane fx:id="virScrollPane2" styleClass="virtualizedScrollPane">
-                               <content>
-                                   <CodeArea fx:id="result2" editable="false" styleClass="codeArea"/>
-                               </content>
-                           </VirtualizedScrollPane>
-                           <Label styleClass="titleText" translateY="-21" text="IP提取+归属" userData="i18n:ipinfo.extract.location" StackPane.alignment="TOP_CENTER"/>
-                       </StackPane>
-                       <StackPane styleClass="codeAreaPane">
-                           <VirtualizedScrollPane fx:id="virScrollPane3" styleClass="virtualizedScrollPane">
-                               <content>
-                                   <CodeArea fx:id="result3" editable="false"  styleClass="codeArea"/>
-                               </content>
-                           </VirtualizedScrollPane>
-                           <Label styleClass="titleText" translateY="-21" text="原文标识IP" userData="i18n:ipinfo.mark.ip" StackPane.alignment="TOP_CENTER"/>
-                       </StackPane>
-                       <StackPane styleClass="codeAreaPane">
-                           <VirtualizedScrollPane fx:id="virScrollPane4" styleClass="virtualizedScrollPane">
-                               <content>
-                                   <CodeArea fx:id="result4" editable="false" styleClass="codeArea"/>
-                               </content>
-                           </VirtualizedScrollPane>
-                           <Label styleClass="titleText" translateY="-21" text="原文标识IP+归属" userData="i18n:ipinfo.mark.location" StackPane.alignment="TOP_CENTER"/>
-                       </StackPane>
-                       <HBox alignment="CENTER" spacing="20" prefWidth="${sPane.width - 40}">
-                           <ComboBox fx:id="rulesComboBox" prefHeight="30.0" prefWidth="250" onAction="#rulesComboChoose"/>
-                           <TextField fx:id="customTextField" styleClass="pt-input" prefHeight="30.0" prefWidth="250" promptText="IP/Pos前缀内容" userData="i18n-prompt:ipinfo.filter.placeholder"/>
-                       </HBox>
-                       <StackPane styleClass="codeAreaPane">
-                           <VirtualizedScrollPane fx:id="virScrollPane5" styleClass="virtualizedScrollPane">
-                               <content>
-                                   <CodeArea fx:id="result5" editable="false" styleClass="codeArea"/>
-                               </content>
-                           </VirtualizedScrollPane>
-                           <Label fx:id="ipLabelSelect" styleClass="titleText" translateY="-21" text="筛选-IP提取" userData="i18n:ipinfo.filter.extract" StackPane.alignment="TOP_CENTER"/>
-                       </StackPane>
-                       <StackPane styleClass="codeAreaPane">
-                           <VirtualizedScrollPane fx:id="virScrollPane6" styleClass="virtualizedScrollPane">
-                               <content>
-                                   <CodeArea fx:id="result6" editable="false" styleClass="codeArea"/>
-                               </content>
-                           </VirtualizedScrollPane>
-                           <Label styleClass="titleText" translateY="-21" text="筛选-IP提取+归属" userData="i18n:ipinfo.filter.location" StackPane.alignment="TOP_CENTER"/>
-                       </StackPane>
-                       <StackPane styleClass="codeAreaPane">
-                           <VirtualizedScrollPane fx:id="virScrollPane7" styleClass="virtualizedScrollPane">
-                               <content>
-                                   <CodeArea fx:id="result7" editable="false" styleClass="codeArea"/>
-                               </content>
-                           </VirtualizedScrollPane>
-                           <Label styleClass="titleText" translateY="-21" text="筛选-原文标识IP" userData="i18n:ipinfo.filter.mark" StackPane.alignment="TOP_CENTER"/>
-                       </StackPane>
-                       <StackPane styleClass="codeAreaPane">
-                           <VirtualizedScrollPane fx:id="virScrollPane8" styleClass="virtualizedScrollPane">
-                               <content>
-                                   <CodeArea fx:id="result8" editable="false" styleClass="codeArea"/>
-                               </content>
-                           </VirtualizedScrollPane>
-                           <Label styleClass="titleText" translateY="-21" text="筛选-原文标识IP+归属" userData="i18n:ipinfo.filter.mark.location" StackPane.alignment="TOP_CENTER"/>
-                       </StackPane>
-                   </children>
-                </FlowPane>
+
+            <!-- 过滤规则 -->
+            <HBox spacing="12" alignment="CENTER_LEFT">
+               <Label text="过滤规则" styleClass="pt-section-label" minWidth="72" userData="i18n:ipinfo.filter.label"/>
+               <ComboBox fx:id="rulesComboBox" prefHeight="30.0" prefWidth="240" onAction="#rulesComboChoose"/>
+               <TextField fx:id="customTextField" styleClass="pt-input" prefHeight="30.0" prefWidth="240" promptText="IP/Pos前缀内容" userData="i18n-prompt:ipinfo.filter.placeholder"/>
+            </HBox>
+
+            <!-- 结果双面板: 左 IP 列表 / 右 原始文本 -->
+            <SmoothScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" hbarPolicy="NEVER"
+                              style="-fx-background-color: transparent; -fx-background: transparent;">
+               <FlowPane fx:id="flowPane" hgap="16" vgap="16" prefWidth="${sPane.width - 20}">
+                  <children>
+
+                     <!-- 左: IP 列表 (result1/2/5/6) -->
+                     <VBox styleClass="ipinfo-panel" spacing="10">
+                        <Label text="IP 列表" styleClass="ipinfo-panel-title" userData="i18n:ipinfo.panel.iplist"/>
+                        <VBox spacing="3">
+                           <Label fx:id="ipLabel" styleClass="ipinfo-cap" text="IP提取" userData="i18n:ipinfo.extract.title"/>
+                           <StackPane styleClass="codeAreaPane">
+                              <VirtualizedScrollPane fx:id="virScrollPane1" styleClass="virtualizedScrollPane">
+                                 <content><CodeArea fx:id="result1" editable="false" styleClass="codeArea"/></content>
+                              </VirtualizedScrollPane>
+                           </StackPane>
+                        </VBox>
+                        <VBox spacing="3">
+                           <Label styleClass="ipinfo-cap" text="IP提取+归属" userData="i18n:ipinfo.extract.location"/>
+                           <StackPane styleClass="codeAreaPane">
+                              <VirtualizedScrollPane fx:id="virScrollPane2" styleClass="virtualizedScrollPane">
+                                 <content><CodeArea fx:id="result2" editable="false" styleClass="codeArea"/></content>
+                              </VirtualizedScrollPane>
+                           </StackPane>
+                        </VBox>
+                        <VBox spacing="3">
+                           <Label fx:id="ipLabelSelect" styleClass="ipinfo-cap" text="筛选-IP提取" userData="i18n:ipinfo.filter.extract"/>
+                           <StackPane styleClass="codeAreaPane">
+                              <VirtualizedScrollPane fx:id="virScrollPane5" styleClass="virtualizedScrollPane">
+                                 <content><CodeArea fx:id="result5" editable="false" styleClass="codeArea"/></content>
+                              </VirtualizedScrollPane>
+                           </StackPane>
+                        </VBox>
+                        <VBox spacing="3">
+                           <Label styleClass="ipinfo-cap" text="筛选-IP提取+归属" userData="i18n:ipinfo.filter.location"/>
+                           <StackPane styleClass="codeAreaPane">
+                              <VirtualizedScrollPane fx:id="virScrollPane6" styleClass="virtualizedScrollPane">
+                                 <content><CodeArea fx:id="result6" editable="false" styleClass="codeArea"/></content>
+                              </VirtualizedScrollPane>
+                           </StackPane>
+                        </VBox>
+                     </VBox>
+
+                     <!-- 右: 原始文本 (result3/4/7/8) -->
+                     <VBox styleClass="ipinfo-panel" spacing="10">
+                        <Label text="原始文本" styleClass="ipinfo-panel-title" userData="i18n:ipinfo.panel.rawtext"/>
+                        <VBox spacing="3">
+                           <Label styleClass="ipinfo-cap" text="原文标识IP" userData="i18n:ipinfo.mark.ip"/>
+                           <StackPane styleClass="codeAreaPane">
+                              <VirtualizedScrollPane fx:id="virScrollPane3" styleClass="virtualizedScrollPane">
+                                 <content><CodeArea fx:id="result3" editable="false" styleClass="codeArea"/></content>
+                              </VirtualizedScrollPane>
+                           </StackPane>
+                        </VBox>
+                        <VBox spacing="3">
+                           <Label styleClass="ipinfo-cap" text="原文标识IP+归属" userData="i18n:ipinfo.mark.location"/>
+                           <StackPane styleClass="codeAreaPane">
+                              <VirtualizedScrollPane fx:id="virScrollPane4" styleClass="virtualizedScrollPane">
+                                 <content><CodeArea fx:id="result4" editable="false" styleClass="codeArea"/></content>
+                              </VirtualizedScrollPane>
+                           </StackPane>
+                        </VBox>
+                        <VBox spacing="3">
+                           <Label styleClass="ipinfo-cap" text="筛选-原文标识IP" userData="i18n:ipinfo.filter.mark"/>
+                           <StackPane styleClass="codeAreaPane">
+                              <VirtualizedScrollPane fx:id="virScrollPane7" styleClass="virtualizedScrollPane">
+                                 <content><CodeArea fx:id="result7" editable="false" styleClass="codeArea"/></content>
+                              </VirtualizedScrollPane>
+                           </StackPane>
+                        </VBox>
+                        <VBox spacing="3">
+                           <Label styleClass="ipinfo-cap" text="筛选-原文标识IP+归属" userData="i18n:ipinfo.filter.mark.location"/>
+                           <StackPane styleClass="codeAreaPane">
+                              <VirtualizedScrollPane fx:id="virScrollPane8" styleClass="virtualizedScrollPane">
+                                 <content><CodeArea fx:id="result8" editable="false" styleClass="codeArea"/></content>
+                              </VirtualizedScrollPane>
+                           </StackPane>
+                        </VBox>
+                     </VBox>
+
+                  </children>
+               </FlowPane>
             </SmoothScrollPane>
          </children>
       </VBox>

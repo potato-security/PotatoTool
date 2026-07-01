@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 
 <?import javafx.scene.control.*?>
@@ -11,26 +10,43 @@
            fx:controller="com.potato.potatotool.controller.redTeam.PaneProcessQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox alignment="CENTER" spacing="15">
+    <VBox styleClass="proc-root" spacing="16">
 
-        <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-            <SmoothTextArea  fx:id="inputText" styleClass="pt-input" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入tasklist或者ps aux执行后的内容" userData="i18n-prompt:process.input.placeholder"/>
-        </Pane>
+        <!-- 1. 输入区：紧凑输入带 + 右侧动作按钮 (对齐 Penpot 设计) -->
+        <VBox spacing="6">
+            <Label text="进程列表输入" styleClass="pt-section-label" userData="i18n:process.input.caption"/>
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <SmoothTextArea fx:id="inputText" styleClass="pt-input,pt-mono" wrapText="true"
+                                prefHeight="52" minHeight="52" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                promptText="请输入tasklist或者ps aux执行后的内容"
+                                userData="i18n-prompt:process.input.placeholder"/>
+                <Button text="开始提取" styleClass="pt-btn-primary" minWidth="104" prefHeight="52"
+                        userData="i18n:process.extract" onAction="#getInfo"/>
+            </HBox>
+        </VBox>
 
-        <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width}" text="开始提取" userData="i18n:process.extract" onAction="#getInfo"/>
+        <!-- 2. 结果双面板：等宽字体输出 -->
+        <HBox spacing="20" VBox.vgrow="ALWAYS">
 
-        <HBox spacing="20" style="-fx-padding: 10 0 0 0">
-            <StackPane>
-                <SmoothTextArea fx:id="antivirus" styleClass="pt-input" prefWidth="${sPane.width * 0.5 - 10}" prefHeight="${sPane.height * 0.6 - 83}"/>
-                <Label styleClass="titleText" translateY="-15" text="杀软进程" userData="i18n:process.antivirus" StackPane.alignment="TOP_CENTER"/>
-            </StackPane>
+            <VBox styleClass="proc-panel" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                <Label text="杀软进程" styleClass="proc-panel-title" userData="i18n:process.antivirus"/>
+                <Region styleClass="proc-panel-divider" maxWidth="Infinity"/>
+                <VBox styleClass="proc-inset" VBox.vgrow="ALWAYS">
+                    <Label text="NAME        TYPE" styleClass="proc-col-header" userData="i18n:process.antivirus.cols"/>
+                    <SmoothTextArea fx:id="antivirus" styleClass="proc-output,pt-mono" wrapText="false" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </VBox>
 
-            <StackPane>
-                <SmoothTextArea fx:id="canRoot" styleClass="pt-input" prefWidth="${sPane.width * 0.5 - 10}" prefHeight="${sPane.height * 0.6 - 83}"/>
-                <Label styleClass="titleText" translateY="-15" text="其他进程" userData="i18n:process.other" StackPane.alignment="TOP_CENTER"/>
-            </StackPane>
+            <VBox styleClass="proc-panel" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                <Label text="其他进程" styleClass="proc-panel-title" userData="i18n:process.other"/>
+                <Region styleClass="proc-panel-divider" maxWidth="Infinity"/>
+                <VBox styleClass="proc-inset" VBox.vgrow="ALWAYS">
+                    <Label text="PROCESS        PID" styleClass="proc-col-header" userData="i18n:process.other.cols"/>
+                    <SmoothTextArea fx:id="canRoot" styleClass="proc-output,pt-mono" wrapText="false" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </VBox>
+
         </HBox>
-
 
     </VBox>
 

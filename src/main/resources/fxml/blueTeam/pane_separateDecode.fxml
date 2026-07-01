@@ -14,50 +14,64 @@
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneSeparateDecode"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}" hbarPolicy="NEVER"
+    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}" hbarPolicy="NEVER" fitToWidth="true"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
-    <VBox alignment="TOP_CENTER" prefWidth="${sPane.width}" style="-fx-padding: 15 0 20 0;" spacing="0">
+    <VBox styleClass="sep-root" prefWidth="${sPane.width}" spacing="14">
 
-        <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-            <SmoothTextArea  fx:id="inputText" styleClass="pt-input" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入明文/密文" userData="i18n-prompt:separate.input.placeholder"/>
-        </Pane>
-
-        <Pane minHeight="15"/>
-        <FlowPane alignment="CENTER" hgap="10" vgap="10" prefHeight="40.0" prefWidth="${sPane.width}">
-            <ToggleButton text="Base64" styleClass="pt-toggle-chip">
+        <!-- 1. 编码方式 chip 选择 (Base64 默认选中) -->
+        <FlowPane styleClass="sep-chips" hgap="10" vgap="10">
+            <ToggleButton text="Base64" selected="true" styleClass="pt-toggle-chip">
                 <toggleGroup>
                     <ToggleGroup fx:id="checkboxGroup"/>
                 </toggleGroup>
             </ToggleButton>
-            <ToggleButton text="Unicode" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
-            <ToggleButton text="Hex" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
             <ToggleButton text="URL" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
-            <ToggleButton text="Html" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
             <ToggleButton text="Rot13" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
+            <ToggleButton text="Unicode" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
             <ToggleButton text="Chr" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
             <ToggleButton text="strRev" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
+            <ToggleButton text="Hex" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
+            <ToggleButton text="Html" styleClass="pt-toggle-chip" toggleGroup="$checkboxGroup"/>
         </FlowPane>
-        <Label styleClass="pt-caption" style="-fx-padding: 6 0 0 0;" text="注：byte · bcel · cas · log4j · shiro · gzip · aes · xor 等加解密内置第一个模块" userData="i18n:separate.note"/>
 
-        <Pane minHeight="15"/>
-        <HBox alignment="CENTER" spacing="20" prefWidth="${sPane.width}">
-            <Button styleClass="pt-btn-solid" minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="解密" userData="i18n:separate.decode" onAction="#toDecode"/>
-            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width / 2 -15}" text="加密" userData="i18n:separate.encode" onAction="#toEncode"/>
+        <!-- 2. 当前编码说明条 (随选中动态更新) -->
+        <HBox styleClass="sep-hint" alignment="CENTER_LEFT" spacing="8" maxWidth="Infinity">
+            <Region styleClass="sep-hint-dot" minWidth="7" minHeight="7" maxWidth="7" maxHeight="7"/>
+            <Label fx:id="modeHint" styleClass="pt-caption"
+                   text="Base64 · RFC 4648 标准编码，用于 HTTP 传输、JWT、数据 URI 等场景"/>
         </HBox>
-        <Pane minHeight="20"/>
 
-        <VBox styleClass="codeAreaPane">
-            <VirtualizedScrollPane fx:id="virScrollPane" styleClass="virtualizedScrollPane">
-                <content>
-                    <CodeArea fx:id="result" editable="false" wrapText="true" styleClass="codeArea"/>
-                </content>
-            </VirtualizedScrollPane>
+        <!-- 3. 输入 -->
+        <VBox spacing="6">
+            <Label text="输入" styleClass="pt-section-label" userData="i18n:separate.input.label"/>
+            <SmoothTextArea fx:id="inputText" styleClass="pt-input,pt-mono" wrapText="true"
+                            prefHeight="${sPane.height * 0.3}" prefWidth="${sPane.width}"
+                            promptText="请输入明文/密文" userData="i18n-prompt:separate.input.placeholder"/>
+        </VBox>
+
+        <!-- 4. 操作 + 状态 -->
+        <HBox spacing="14" alignment="CENTER_LEFT">
+            <Button styleClass="pt-btn-solid" minHeight="42.0" minWidth="120" text="解密" userData="i18n:separate.decode" onAction="#toDecode"/>
+            <Button styleClass="pt-btn" minHeight="42.0" minWidth="120" text="加密" userData="i18n:separate.encode" onAction="#toEncode"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="statusLabel" styleClass="pt-text-success" text="就绪"/>
+        </HBox>
+
+        <!-- 5. 结果 -->
+        <VBox spacing="6" VBox.vgrow="ALWAYS">
+            <Label text="结果" styleClass="pt-section-label" userData="i18n:separate.result.label"/>
+            <VBox styleClass="codeAreaPane" VBox.vgrow="ALWAYS">
+                <VirtualizedScrollPane fx:id="virScrollPane" styleClass="virtualizedScrollPane">
+                    <content>
+                        <CodeArea fx:id="result" editable="false" wrapText="true" styleClass="codeArea"/>
+                    </content>
+                </VirtualizedScrollPane>
+            </VBox>
+            <Label styleClass="pt-caption" text="右键菜单可复制全文" userData="i18n:separate.note.copy"
+                   maxWidth="Infinity" alignment="CENTER_RIGHT"/>
         </VBox>
 
     </VBox>
     </SmoothScrollPane>
-
-
-
 
 </StackPane>

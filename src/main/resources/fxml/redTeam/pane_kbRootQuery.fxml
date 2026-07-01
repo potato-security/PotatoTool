@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.effect.DropShadow?>
 <?import com.dlsc.gemsfx.CFCheckBox?>
+
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../../css/PaneKbRootQuery.css"
@@ -13,27 +11,41 @@
            fx:controller="com.potato.potatotool.controller.redTeam.PaneKbRootQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox fx:id="vBox" alignment="CENTER" prefWidth="${sPane.width}" prefHeight="${sPane.height}" spacing="15">
+    <VBox fx:id="vBox" styleClass="kb-root" spacing="12"
+          prefWidth="${sPane.width}" prefHeight="${sPane.height}">
 
-        <Pane style="-fx-background-radius: 10;-fx-background-color: null" minHeight="${sPane.height * 0.4 - 75}">
-            <SmoothTextArea  fx:id="inputText" styleClass="pt-input" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请粘贴完整的systeminfo信息" userData="i18n-prompt:kb.input.placeholder"/>
-        </Pane>
+        <!-- Top: input (left) + controls (right) -->
+        <HBox spacing="12" prefWidth="${sPane.width - 32}">
 
-        <HBox alignment="CENTER_LEFT">
-            <HBox alignment="CENTER" minWidth="${sPane.width / 4}">
-                <CFCheckBox fx:id="mucFilter" alignment="CENTER" mnemonicParsing="false" selected="false" text="检测平替KB编号" userData="i18n:kb.mucfilter" VBox.vgrow="ALWAYS">
-                    <tooltip>
-                        <Tooltip text="『较慢』通过Microsoft Update在线对比可替换的KB编号，减少误报，提升准确性" userData="i18n:kb.mucfilter.tooltip"/>
-                    </tooltip>
-                </CFCheckBox>
-            </HBox>
+            <!-- systeminfo textarea (grows) -->
+            <SmoothTextArea fx:id="inputText" styleClass="pt-input,kb-input"
+                            HBox.hgrow="ALWAYS" prefHeight="180" wrapText="true"
+                            promptText="请粘贴完整的systeminfo信息"
+                            userData="i18n-prompt:kb.input.placeholder"/>
 
-            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width / 2}" text="提取查询" userData="i18n:kb.extract" onAction="#searchKb">
-                <effect>
-                    <DropShadow />
-                </effect>
-            </Button>
+            <!-- Right: MUC toggle + extract button -->
+            <VBox spacing="10" alignment="TOP_LEFT" prefWidth="178" minWidth="178">
+
+                <!-- MUC card -->
+                <VBox styleClass="kb-control-card" spacing="6">
+                    <Label styleClass="pt-caption,kb-ctrl-title" text="MUC 在线校验"/>
+                    <CFCheckBox fx:id="mucFilter" alignment="CENTER_LEFT" mnemonicParsing="false"
+                                selected="false" text="检测平替KB编号" userData="i18n:kb.mucfilter">
+                        <tooltip>
+                            <Tooltip text="『较慢』通过Microsoft Update在线对比可替换的KB编号，减少误报，提升准确性"
+                                     userData="i18n:kb.mucfilter.tooltip"/>
+                        </tooltip>
+                    </CFCheckBox>
+                </VBox>
+
+                <!-- Extract button -->
+                <Button styleClass="pt-btn-primary" maxWidth="Infinity" minHeight="48"
+                        text="提取漏洞" userData="i18n:kb.extract" onAction="#searchKb"/>
+
+            </VBox>
         </HBox>
+
+        <!-- FilterView + TableView are added here dynamically by the controller -->
 
     </VBox>
 

@@ -13,6 +13,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -23,10 +25,6 @@ import java.util.Map;
 import static com.potato.potatotool.ToStart.debugMode;
 import static com.potato.potatotool.content.blueTeam.ExifUtils.*;
 
-/**
- * @author Potato
- * @date 2024/4/27 19:14
- */
 public class PaneExif {
 
     @FXML
@@ -34,10 +32,9 @@ public class PaneExif {
 
     @FXML
     private ListView listView;
-    
+
     @FXML
     void initialize() {
-        // 绑定国际化
         Platform.runLater(() -> {
             I18nUtils.bindComponents(sPane);
             applyStartupPreviewState();
@@ -56,49 +53,111 @@ public class PaneExif {
     private void renderPreviewState(PaneExifPreviewSupport.PreviewState previewState) {
         listView.getItems().clear();
         if (previewState.isUnsupported()) {
-            Label tipLabel = new Label(I18nUtils.getString("exif.unsupported"));
-            tipLabel.setId("tipTitle");
-            HBox hbox = new HBox(tipLabel);
-            hbox.setPrefHeight(sPane.getHeight() - 220);
-            hbox.setAlignment(Pos.CENTER);
-            listView.getItems().add(hbox);
+            listView.getItems().add(buildCenterLabel(I18nUtils.getString("exif.unsupported")));
             return;
         }
 
+        boolean hasSpecial = false;
         String qrText = previewState.getQrText();
         if (qrText != null && !"读取错误".equals(qrText)) {
-            addResultRow(I18nUtils.getString("exif.qrcode"), qrText, false);
+            addChipRow(I18nUtils.getString("exif.qrcode"), qrText, "exif-chip-qr");
+            hasSpecial = true;
         }
 
         Map<String, String> metadataMap = previewState.getMetadataMap();
         if (metadataMap.containsKey("GPS经度") && metadataMap.containsKey("GPS纬度")) {
-            addResultRow("GPS具体定位", getPosition(metadataMap.get("GPS经度"), metadataMap.get("GPS纬度")), false);
+            addChipRow("GPS具体定位", getPosition(metadataMap.get("GPS经度"), metadataMap.get("GPS纬度")), "exif-chip-gps");
+            hasSpecial = true;
         }
 
-        for (Map.Entry<String, String> entry : metadataMap.entrySet()) {
-            addResultRow(entry.getKey(), entry.getValue(), true);
+        if (!metadataMap.isEmpty()) {
+            addSectionHeader(I18nUtils.getString("exif.section.metadata"), metadataMap.size());
+            for (Map.Entry<String, String> entry : metadataMap.entrySet()) {
+                addTableRow(entry.getKey(), entry.getValue());
+            }
         }
     }
 
-    private void addResultRow(String title, String value, boolean fixedTitleWidth) {
-        Label tipLabel = new Label(title);
+    private void populateFromResult(String qrText, Map<String, String> metadataMap) {
+        listView.getItems().clear();
+        if (metadataMap.isEmpty() && qrText.equals("读取错误")) {
+            listView.getItems().add(buildCenterLabel(I18nUtils.getString("exif.unsupported")));
+            return;
+        }
+
+        if (!qrText.equals("读取错误")) {
+            addChipRow(I18nUtils.getString("exif.qrcode"), qrText, "exif-chip-qr");
+        }
+
+        if (metadataMap.containsKey("GPS经度") && metadataMap.containsKey("GPS纬度")) {
+            addChipRow("GPS具体定位",
+                    getPosition(metadataMap.get("GPS经度"), metadataMap.get("GPS纬度")),
+                    "exif-chip-gps");
+        }
+
+        if (!metadataMap.isEmpty()) {
+            addSectionHeader(I18nUtils.getString("exif.section.metadata"), metadataMap.size());
+            for (Map.Entry<String, String> entry : metadataMap.entrySet()) {
+                addTableRow(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    private void addChipRow(String title, String value, String chipStyle) {
+        Label chipLabel = new Label(title);
+        chipLabel.getStyleClass().addAll("exif-chip", chipStyle);
+
+        TextField valueField = new TextField(value);
+        valueField.setEditable(false);
+        valueField.getStyleClass().add("exif-value-field");
+        HBox.setHgrow(valueField, Priority.ALWAYS);
+
+        HBox row = new HBox(10, chipLabel, valueField);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add("exif-chip-row");
+        listView.getItems().add(row);
+    }
+
+    private void addSectionHeader(String title, int count) {
+        Label titleLabel = new Label(title);
+        titleLabel.getStyleClass().add("exif-section-title");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Label countLabel = new Label(count + " " + I18nUtils.getString("exif.section.fields"));
+        countLabel.getStyleClass().add("exif-section-count");
+
+        HBox header = new HBox(8, titleLabel, spacer, countLabel);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.getStyleClass().add("exif-section-header");
+        listView.getItems().add(header);
+    }
+
+    private void addTableRow(String field, String value) {
+        Label fieldLabel = new Label(field);
+        fieldLabel.getStyleClass().add("exif-field-label");
+        fieldLabel.setMinWidth(160);
+        fieldLabel.setMaxWidth(160);
+
+        TextField valueField = new TextField(value);
+        valueField.setEditable(false);
+        valueField.getStyleClass().add("exif-value-field");
+        HBox.setHgrow(valueField, Priority.ALWAYS);
+
+        HBox row = new HBox(16, fieldLabel, valueField);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add("exif-table-row");
+        listView.getItems().add(row);
+    }
+
+    private HBox buildCenterLabel(String text) {
+        Label tipLabel = new Label(text);
         tipLabel.setId("tipTitle");
-        if (fixedTitleWidth) {
-            tipLabel.setPrefWidth(200);
-            tipLabel.setAlignment(Pos.CENTER);
-        }
-        Label tipSymbolLabel = new Label("：");
-        tipSymbolLabel.setId("tipSymbol");
-        TextField tipTextField = new TextField(value);
-        double availableWidth = sPane.getWidth() > 0 ? sPane.getWidth() : sPane.getPrefWidth();
-        tipTextField.setPrefWidth(Math.max(320, availableWidth / 2 - 200));
-        HBox hbox = new HBox(tipLabel, tipSymbolLabel, tipTextField);
-        hbox.setSpacing(20);
+        HBox hbox = new HBox(tipLabel);
+        hbox.setPrefHeight(sPane.getHeight() - 220);
         hbox.setAlignment(Pos.CENTER);
-        if (!fixedTitleWidth) {
-            hbox.getStyleClass().add("linenoPane");
-        }
-        listView.getItems().add(hbox);
+        return hbox;
     }
 
     @FXML
@@ -106,104 +165,29 @@ public class PaneExif {
         listView.getItems().clear();
 
         FileChooser chooser = new FileChooser();
-
-        Stage stage = (Stage) ((Node)e.getSource()).getScene().getWindow();
+        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
         String path = null;
         try {
             path = chooser.showOpenDialog(stage).getAbsolutePath();
-        }catch (Exception exception){
-            if(debugMode) System.out.println("没有文件被选择");
+        } catch (Exception exception) {
+            if (debugMode) System.out.println("没有文件被选择");
             return;
         }
 
         if (path == null) {
-            if(debugMode) System.out.println("没有文件被选择");
+            if (debugMode) System.out.println("没有文件被选择");
             return;
         }
 
-        Label tipLabel = new Label(I18nUtils.getString("exif.querying"));
-        tipLabel.setId("tipTitle");
-        HBox hbox = new HBox(tipLabel);
-        hbox.setPrefHeight(sPane.getHeight()-220);
-        hbox.setAlignment(Pos.CENTER);
-        listView.getItems().add(hbox);
-
+        listView.getItems().add(buildCenterLabel(I18nUtils.getString("exif.querying")));
 
         String finalPath = path;
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws IOException {
-
                 String qrText = QRCodeDecoder.qrToText(finalPath);
                 Map<String, String> metadataMap = getExif(finalPath);
-
-
-                Platform.runLater(() -> {
-                    if (metadataMap.isEmpty() && qrText.equals("读取错误")) {
-                        listView.getItems().clear();
-                        Label tipLabel_tmp = new Label(I18nUtils.getString("exif.unsupported"));
-                        tipLabel_tmp.setId("tipTitle");
-                        HBox hbox_tmp = new HBox(tipLabel_tmp);
-                        hbox_tmp.setPrefHeight(sPane.getHeight() - 220);
-                        hbox_tmp.setAlignment(Pos.CENTER);
-                        listView.getItems().add(hbox_tmp);
-
-                        return;
-                    } else {
-                        listView.getItems().clear();
-                    }
-
-                    if (!qrText.equals("读取错误")) {
-                        Label tipLabel_tmp = new Label(I18nUtils.getString("exif.qrcode"));
-                        tipLabel_tmp.setId("tipTitle");
-                        Label tipSymbolLabel = new Label("：");
-                        tipSymbolLabel.setId("tipSymbol");
-                        TextField tipTextField = new TextField(qrText);
-                        tipTextField.setPrefWidth((sPane.getWidth() / 2 - 200));
-                        HBox hbox_tmp = new HBox(tipLabel_tmp, tipSymbolLabel, tipTextField);
-                        hbox_tmp.setSpacing(20);
-                        hbox_tmp.setAlignment(Pos.CENTER);
-                        hbox_tmp.getStyleClass().add("linenoPane");
-
-                        listView.getItems().add(hbox_tmp);
-                    }
-
-                    if (metadataMap.containsKey("GPS经度") && metadataMap.containsKey("GPS纬度")) {
-                        String position = getPosition(metadataMap.get("GPS经度"), metadataMap.get("GPS纬度"));
-
-                        Label tipLabel_tmp = new Label("GPS具体定位");
-                        tipLabel_tmp.setId("tipTitle");
-                        Label tipSymbolLabel = new Label("：");
-                        tipSymbolLabel.setId("tipSymbol");
-                        TextField tipTextField = new TextField(position);
-                        tipTextField.setPrefWidth(sPane.getWidth() / 2 - 200);
-                        HBox hbox_tmp = new HBox(tipLabel_tmp, tipSymbolLabel, tipTextField);
-                        hbox_tmp.setSpacing(20);
-                        hbox_tmp.setAlignment(Pos.CENTER);
-                        hbox_tmp.getStyleClass().add("linenoPane");
-
-                        listView.getItems().add(hbox_tmp);
-                    }
-
-                    for (Map.Entry<String, String> entry : metadataMap.entrySet()) {
-                        String key = entry.getKey();
-                        String value = entry.getValue();
-
-                        Label tipLabel_tmp = new Label(key);
-                        tipLabel_tmp.setId("tipTitle");
-                        tipLabel_tmp.setPrefWidth(200);
-                        tipLabel_tmp.setAlignment(Pos.CENTER);
-                        Label tipSymbolLabel = new Label("：");
-                        tipSymbolLabel.setId("tipSymbol");
-                        TextField tipTextField = new TextField(value);
-                        tipTextField.setPrefWidth(sPane.getWidth() / 2 - 200);
-                        HBox hbox_tmp = new HBox(tipLabel_tmp, tipSymbolLabel, tipTextField);
-                        hbox_tmp.setSpacing(20);
-                        hbox_tmp.setAlignment(Pos.CENTER);
-
-                        listView.getItems().add(hbox_tmp);
-                    }
-                });
+                Platform.runLater(() -> populateFromResult(qrText, metadataMap));
                 return null;
             }
         };
@@ -215,17 +199,11 @@ public class PaneExif {
             Platform.runLater(() -> {
                 listView.getItems().clear();
                 String detail = error == null || error.getMessage() == null ? "" : error.getMessage();
-                Label tipLabel_tmp = new Label(I18nUtils.getString("common.task.failed", detail));
-                tipLabel_tmp.setId("tipTitle");
-                HBox hbox_tmp = new HBox(tipLabel_tmp);
-                hbox_tmp.setPrefHeight(sPane.getHeight() - 220);
-                hbox_tmp.setAlignment(Pos.CENTER);
-                listView.getItems().add(hbox_tmp);
+                listView.getItems().add(buildCenterLabel(I18nUtils.getString("common.task.failed", detail)));
             });
         });
         Thread exifTaskThread = new Thread(task);
         exifTaskThread.setDaemon(true);
         exifTaskThread.start();
-
     }
 }

@@ -3,3 +3,27 @@
     -fx-pref-width: 300;
     -fx-min-width: 300;
 }
+
+.kb-root {
+    -fx-padding: 16 18 16 18;
+}
+
+.kb-input {
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size: 12;
+}
+
+.kb-control-card {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 8;
+    -fx-border-color: -pt-border;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 10 12 10 12;
+}
+
+.kb-ctrl-title {
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+}

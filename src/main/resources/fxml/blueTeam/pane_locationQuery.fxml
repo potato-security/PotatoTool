@@ -13,123 +13,73 @@
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneLocationQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <SmoothScrollPane fx:id="scrollPane" prefHeight="${sPane.height}" prefWidth="${sPane.width}">
-        <VBox spacing="30" alignment="CENTER"  prefWidth="${sPane.width - 15}">
+    <SmoothScrollPane fx:id="scrollPane" fitToWidth="true" prefHeight="${sPane.height}" prefWidth="${sPane.width}"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox spacing="20" style="-fx-padding: 18 20 20 20;">
 
-        <VBox styleClass="vBox" spacing="20">
-            <HBox styleClass="linenoPane" spacing="20" alignment="CENTER">
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle_input" text="身份证号：" userData="i18n:location.idcard"/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="idCardInput" promptText="请输入身份证号" userData="i18n-prompt:location.idcard.placeholder"/>
+            <!-- 身份证查询 -->
+            <VBox styleClass="loc-card" spacing="12">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="身份证查询" styleClass="loc-card-title" userData="i18n:location.card.idcard"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="SYNC" styleClass="pt-caption"/>
                 </HBox>
-                <Button styleClass="pt-btn-primary" minHeight="35.0" minWidth="200" text="查询" userData="i18n:location.query" onAction="#getIdCardInfoFx"/>
-                <Button styleClass="pt-btn-primary" minHeight="35.0" minWidth="200" text="批量" userData="i18n:location.batch" onAction="#getIdCardInfoFx_batch"/>
-            </HBox>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <TextField styleClass="pt-input" HBox.hgrow="ALWAYS" maxWidth="Infinity" fx:id="idCardInput" promptText="请输入身份证号" userData="i18n-prompt:location.idcard.placeholder"/>
+                    <Button styleClass="pt-btn-primary" minHeight="36.0" minWidth="96" text="查询" userData="i18n:location.query" onAction="#getIdCardInfoFx"/>
+                    <Button styleClass="pt-btn" minHeight="36.0" minWidth="96" text="批量导出" userData="i18n:location.batch" onAction="#getIdCardInfoFx_batch"/>
+                </HBox>
+                <HBox spacing="16">
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="生日" styleClass="loc-field-label" userData="i18n:location.birthday"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="idCardTF_born"/></VBox>
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="性别" styleClass="loc-field-label" userData="i18n:location.gender"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="idCardTF_sex"/></VBox>
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="地区" styleClass="loc-field-label" userData="i18n:location.region"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="idCardTF_att"/></VBox>
+                </HBox>
+            </VBox>
 
-            <FlowPane alignment="CENTER" hgap="20"  vgap="20" style="-fx-padding: 10;" prefWidth="${sPane.width - 20}">
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="生日" userData="i18n:location.birthday"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="idCardTF_born"/>
+            <!-- 银行卡查询 -->
+            <VBox styleClass="loc-card" spacing="12">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="银行卡查询" styleClass="loc-card-title" userData="i18n:location.card.bankcard"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="SYNC" styleClass="pt-caption"/>
                 </HBox>
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="性别" userData="i18n:location.gender"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="idCardTF_sex"/>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <TextField styleClass="pt-input" HBox.hgrow="ALWAYS" maxWidth="Infinity" fx:id="bankCardInput" promptText="请输入银行卡号" userData="i18n-prompt:location.bankcard.placeholder"/>
+                    <Button styleClass="pt-btn-primary" minHeight="36.0" minWidth="96" text="查询" userData="i18n:location.query" onAction="#getBankCardInfoFx"/>
+                    <Button styleClass="pt-btn" minHeight="36.0" minWidth="96" text="批量导出" userData="i18n:location.batch" onAction="#getBankCardInfoFx_batch"/>
                 </HBox>
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="地区" userData="i18n:location.region"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="idCardTF_att"/>
+                <HBox spacing="16">
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="归属" styleClass="loc-field-label" userData="i18n:location.attribution"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="bankCardTF_position"/></VBox>
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="银行" styleClass="loc-field-label" userData="i18n:location.bank"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="bankCardTF_bank"/></VBox>
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="类型" styleClass="loc-field-label" userData="i18n:location.type"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="bankCardTF_type"/></VBox>
                 </HBox>
-                <HBox visible="false" alignment="CENTER">
-                    <Label id="tipTitle" text="占位" userData="i18n:location.placeholder"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField prefWidth="${sPane.width / 2 -200}"  maxWidth="300"/>
+            </VBox>
+
+            <!-- 手机号查询 -->
+            <VBox styleClass="loc-card" spacing="12">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="手机号查询" styleClass="loc-card-title" userData="i18n:location.card.phone"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="SYNC" styleClass="pt-caption"/>
                 </HBox>
-            </FlowPane>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <TextField styleClass="pt-input" HBox.hgrow="ALWAYS" maxWidth="Infinity" fx:id="phoneInput" promptText="请输入手机号" userData="i18n-prompt:location.phone.placeholder"/>
+                    <Button styleClass="pt-btn-primary" minHeight="36.0" minWidth="96" text="查询" userData="i18n:location.query" onAction="#getPhoneInfoFx"/>
+                    <Button styleClass="pt-btn" minHeight="36.0" minWidth="96" text="批量导出" userData="i18n:location.batch" onAction="#getPhoneInfoFx_batch"/>
+                </HBox>
+                <HBox spacing="16">
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="省份" styleClass="loc-field-label" userData="i18n:location.province"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_Province"/></VBox>
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="城市" styleClass="loc-field-label" userData="i18n:location.city"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_City"/></VBox>
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="运商" styleClass="loc-field-label" userData="i18n:location.operator"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_Operator"/></VBox>
+                </HBox>
+                <HBox spacing="16">
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="区号" styleClass="loc-field-label" userData="i18n:location.areacode"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_AreaCode"/></VBox>
+                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="邮编" styleClass="loc-field-label" userData="i18n:location.zipcode"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_PostalCode"/></VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                </HBox>
+            </VBox>
+
         </VBox>
-
-        <VBox styleClass="vBox" spacing="20">
-            <HBox styleClass="linenoPane" spacing="20" alignment="CENTER">
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle_input" text="银行卡号：" userData="i18n:location.bankcard"/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="bankCardInput"  promptText="请输入银行卡号" userData="i18n-prompt:location.bankcard.placeholder"/>
-                </HBox>
-                <Button styleClass="pt-btn-primary" minHeight="35.0" minWidth="200" text="查询" userData="i18n:location.query" onAction="#getBankCardInfoFx"/>
-                <Button styleClass="pt-btn-primary" minHeight="35.0" minWidth="200" text="批量" userData="i18n:location.batch" onAction="#getBankCardInfoFx_batch"/>
-            </HBox>
-
-            <FlowPane alignment="CENTER" hgap="20"  vgap="20" style="-fx-padding: 10;"  prefWidth="${sPane.width - 20}">
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="归属" userData="i18n:location.attribution"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="bankCardTF_position"/>
-                </HBox>
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="银行" userData="i18n:location.bank"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="bankCardTF_bank"/>
-                </HBox>
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="类型" userData="i18n:location.type"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="bankCardTF_type"/>
-                </HBox>
-                <HBox visible="false" alignment="CENTER">
-                    <Label id="tipTitle" text="占位" userData="i18n:location.placeholder"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField prefWidth="${sPane.width / 2 -200}"  maxWidth="300"/>
-                </HBox>
-            </FlowPane>
-        </VBox>
-
-        <VBox styleClass="vBox" spacing="20">
-            <HBox styleClass="linenoPane" spacing="20" alignment="CENTER">
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle_input" text="手机卡号：" userData="i18n:location.phone"/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="phoneInput"  promptText="请输入手机号" userData="i18n-prompt:location.phone.placeholder"/>
-                </HBox>
-                <Button styleClass="pt-btn-primary" minHeight="35.0" minWidth="200" text="查询" userData="i18n:location.query" onAction="#getPhoneInfoFx"/>
-                <Button styleClass="pt-btn-primary" minHeight="35.0" minWidth="200" text="批量" userData="i18n:location.batch" onAction="#getPhoneInfoFx_batch"/>
-            </HBox>
-
-            <FlowPane alignment="CENTER" hgap="20"  vgap="20" style="-fx-padding: 10;" prefWidth="${sPane.width - 20}">
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="省份" userData="i18n:location.province"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="phoneTF_Province"/>
-                </HBox>
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="城市" userData="i18n:location.city"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="phoneTF_City"/>
-                </HBox>
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="运商" userData="i18n:location.operator"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="phoneTF_Operator"/>
-                </HBox>
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="区号" userData="i18n:location.areacode"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="phoneTF_AreaCode"/>
-                </HBox>
-                <HBox alignment="CENTER">
-                    <Label id="tipTitle" text="邮编" userData="i18n:location.zipcode"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField styleClass="pt-input" prefWidth="${sPane.width / 2 -200}"  maxWidth="300" fx:id="phoneTF_PostalCode"/>
-                </HBox>
-                <HBox visible="false" alignment="CENTER">
-                    <Label id="tipTitle" text="占位" userData="i18n:location.placeholder"/>
-                    <Label id="tipSymbol" text="："/>
-                    <TextField prefWidth="${sPane.width / 2 -200}"  maxWidth="300"/>
-                </HBox>
-            </FlowPane>
-        </VBox>
-
-
-    </VBox>
     </SmoothScrollPane>
 
 </StackPane>

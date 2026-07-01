@@ -683,6 +683,25 @@ public class PaneBlockchain {
         animation.play();
     }
 
+    private HBox buildCardHeader(String typeLabel, String networkLabel, String chipStyle) {
+        Label typeChip = new Label(typeLabel);
+        typeChip.getStyleClass().addAll("bc-chip", chipStyle);
+
+        Label networkChip = new Label(networkLabel);
+        networkChip.getStyleClass().addAll("bc-chip", "bc-chip-network");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Label arrow = new Label("›");
+        arrow.getStyleClass().add("bc-card-arrow");
+
+        HBox header = new HBox(8, typeChip, networkChip, spacer, arrow);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.getStyleClass().add("bc-card-header");
+        return header;
+    }
+
     private HBox createMetricRow(String key, String value) {
         double rowWidth = detailContentWidth();
         double keyWidth = Math.min(150D, Math.max(112D, rowWidth * 0.24D));
@@ -2728,7 +2747,6 @@ public class PaneBlockchain {
                     } else if(type.equals("address")){
 
                         String network = getAsString(jsonObject, "network");
-                        String icon = network.toLowerCase();
                         String hash = getAsString(jsonObject, "hash");
                         String addrAlias = getAsString(jsonObject, "addrAlias");
                         String txCount = getAsString(jsonObject, "txCount");
@@ -2743,26 +2761,11 @@ public class PaneBlockchain {
                         vBoxConent.setAlignment(Pos.CENTER);
                         vBoxConent.setCursor(Cursor.HAND);
 
-                        HBox hBox = new HBox();
-                        hBox.getStyleClass().add("cellHBox");
-                        hBox.setAlignment(Pos.CENTER);
-
-                        Image image = loadBlockchainIcon(icon);
-                        ImageView imageView = new ImageView(image);
-                        imageView.setFitHeight(35.0);
-                        imageView.setFitWidth(35.0);
-                        SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(35.0);
-                        Rectangle clip = clipRect(
-                                imageView, arcProperty
+                        HBox hBox = buildCardHeader(
+                                I18nUtils.getString("blockchain.type.address"),
+                                network.toUpperCase(),
+                                "bc-chip-address"
                         );
-                        imageView.setClip(clip);
-                        imageView.setPreserveRatio(true);
-                        imageView.setPickOnBounds(true);
-
-                        Label label1 = new Label(network);
-
-                        hBox.getChildren().addAll(imageView, label1);
-                        hBox.setSpacing(10);
 
                         Label label2 = new Label(I18nUtils.getString("blockchain.addr.hash", hash));
                         vBoxConent.getChildren().addAll(hBox, label2);
@@ -2806,7 +2809,6 @@ public class PaneBlockchain {
 
                     } else if(type.equals("block")) {
                         String network = getAsString(jsonObject, "network");
-                        String icon = network;
                         String block_no = getAsString(jsonObject, "block_no");
 
                         String fee = getAsString(jsonObject, "fee");
@@ -2821,26 +2823,11 @@ public class PaneBlockchain {
                         vBoxConent.setAlignment(Pos.CENTER);
                         vBoxConent.setCursor(Cursor.HAND);
 
-                        HBox hBox = new HBox();
-                        hBox.getStyleClass().add("cellHBox");
-                        hBox.setAlignment(Pos.CENTER);
-
-                        Image image = loadBlockchainIcon(icon);
-                        ImageView imageView = new ImageView(image);
-                        imageView.setFitHeight(35.0);
-                        imageView.setFitWidth(35.0);
-                        SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(35.0);
-                        Rectangle clip = clipRect(
-                                imageView, arcProperty
+                        HBox hBox = buildCardHeader(
+                                I18nUtils.getString("blockchain.type.block"),
+                                network.toUpperCase(),
+                                "bc-chip-block"
                         );
-                        imageView.setClip(clip);
-                        imageView.setPreserveRatio(true);
-                        imageView.setPickOnBounds(true);
-
-                        Label label1 = new Label(network);
-
-                        hBox.getChildren().addAll(imageView, label1);
-                        hBox.setSpacing(10);
 
                         Label label2 = new Label(I18nUtils.getString("blockchain.block.id", block_no));
                         vBoxConent.getChildren().addAll(hBox, label2);
@@ -2875,7 +2862,6 @@ public class PaneBlockchain {
                     } else if(type.equals("tx")){
 
                         String network = getAsString(jsonObject, "network");
-                        String icon = network;
                         String block_no = getAsString(jsonObject, "block_no");
                         String txid = getAsString(jsonObject, "txid");
 
@@ -2893,26 +2879,11 @@ public class PaneBlockchain {
                         vBoxConent.setAlignment(Pos.CENTER);
                         vBoxConent.setCursor(Cursor.HAND);
 
-                        HBox hBox = new HBox();
-                        hBox.getStyleClass().add("cellHBox");
-                        hBox.setAlignment(Pos.CENTER);
-
-                        Image image = loadBlockchainIcon(icon);
-                        ImageView imageView = new ImageView(image);
-                        imageView.setFitHeight(35.0);
-                        imageView.setFitWidth(35.0);
-                        SimpleDoubleProperty arcProperty = new SimpleDoubleProperty(35.0);
-                        Rectangle clip = clipRect(
-                                imageView, arcProperty
+                        HBox hBox = buildCardHeader(
+                                I18nUtils.getString("blockchain.type.tx"),
+                                network.toUpperCase(),
+                                "bc-chip-tx"
                         );
-                        imageView.setClip(clip);
-                        imageView.setPreserveRatio(true);
-                        imageView.setPickOnBounds(true);
-
-                        Label label1 = new Label(network);
-
-                        hBox.getChildren().addAll(imageView, label1);
-                        hBox.setSpacing(10);
 
                         Label label2 = new Label(I18nUtils.getString("blockchain.block.id", block_no));
                         Label label3 = new Label(I18nUtils.getString("blockchain.tx.hash", txid));

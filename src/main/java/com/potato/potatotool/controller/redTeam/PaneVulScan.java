@@ -174,7 +174,9 @@ public class PaneVulScan {
     @FXML private TableView<HistoryItem> historyTableView;
     @FXML private TableColumn<HistoryItem, String> historyTimeColumn;
     @FXML private TableColumn<HistoryItem, String> historyTargetColumn;
+    @FXML private TableColumn<HistoryItem, String> historyPocColumn;
     @FXML private TableColumn<HistoryItem, String> historyVulnCountColumn;
+    @FXML private TableColumn<HistoryItem, String> historyDurationColumn;
     @FXML private TableColumn<HistoryItem, String> historyStatusColumn;
     
     // 提示框
@@ -640,12 +642,16 @@ public class PaneVulScan {
 
         // 初始化历史记录表格
         historyTimeColumn.setText(I18nUtils.getString("vulnscan.column.scantime"));
-        historyTargetColumn.setText(I18nUtils.getString("vulnscan.column.target"));
+        historyTargetColumn.setText(I18nUtils.getString("vulnscan.column.targets"));
+        historyPocColumn.setText(I18nUtils.getString("vulnscan.column.pocs"));
         historyVulnCountColumn.setText(I18nUtils.getString("vulnscan.column.vulncount"));
+        historyDurationColumn.setText(I18nUtils.getString("vulnscan.column.duration"));
         historyStatusColumn.setText(I18nUtils.getString("vulnscan.column.status"));
         historyTimeColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getScanTime()));
         historyTargetColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTargets()));
+        historyPocColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPocs()));
         historyVulnCountColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getVulns()));
+        historyDurationColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDuration()));
         historyStatusColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus()));
         historyTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 

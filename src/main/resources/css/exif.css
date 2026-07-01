@@ -14,3 +14,82 @@
     -fx-border-width: 0 0 1 0;
     -fx-border-color: linear-gradient(to right,transparent 0%, -pt-border-subtle 20%, -pt-border-subtle 80%, transparent 100%);
 }
+
+/* SOURCE FILE 卡片 (对齐 Penpot) */
+.exif-source {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-border-color: -pt-border;
+    -fx-padding: 14 16 16 16;
+}
+
+/* ========================================
+   EXIF 结果行样式
+   ======================================== */
+
+.exif-chip-row {
+    -fx-padding: 8 12 8 12;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.exif-chip {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 3 8 3 8;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+}
+
+.exif-chip-qr {
+    -fx-background-color: derive(-pt-accent-teal, -50%);
+    -fx-text-fill: -pt-accent-teal;
+    -fx-border-color: -pt-accent-teal;
+    -fx-border-width: 1;
+}
+
+.exif-chip-gps {
+    -fx-background-color: derive(-pt-success, -55%);
+    -fx-text-fill: -pt-success;
+    -fx-border-color: -pt-success;
+    -fx-border-width: 1;
+}
+
+.exif-section-header {
+    -fx-padding: 10 12 6 12;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 1 0;
+}
+
+.exif-section-title {
+    -fx-text-fill: -pt-text;
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+}
+
+.exif-section-count {
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 11;
+}
+
+.exif-table-row {
+    -fx-padding: 6 12 6 12;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.exif-field-label {
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 12;
+}
+
+.exif-value-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -pt-text;
+    -fx-font-size: 12;
+    -fx-padding: 0;
+}

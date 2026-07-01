@@ -31,6 +31,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -41,6 +42,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -62,6 +66,8 @@ public class PanePortScan {
     @FXML private TextArea targetField;
     @FXML private TextField customPortsField;
     @FXML private ComboBox<String> portPresetComboBox;
+    @FXML private ToggleGroup presetGroup;
+    private int presetIndex = 0;
     @FXML private TextField timeoutField;
     @FXML private TextField batchSizeField;
     @FXML private CFCheckBox serviceProbeBox;
@@ -112,8 +118,15 @@ public class PanePortScan {
 
     @FXML
     void initialize() {
-        portPresetComboBox.getItems().setAll("Top100", "Top1000", "All", "Custom");
-        portPresetComboBox.getSelectionModel().select(0);
+        if (portPresetComboBox != null) {
+            portPresetComboBox.getItems().setAll("Top100", "Top1000", "All", "Custom");
+            portPresetComboBox.getSelectionModel().select(0);
+        }
+        if (presetGroup != null) {
+            presetGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
+                if (newT == null && oldT != null) presetGroup.selectToggle(oldT);
+            });
+        }
         timeoutField.setText("1500");
         batchSizeField.setText("1024");
         serviceProbeBox.setSelected(true);
@@ -146,6 +159,13 @@ public class PanePortScan {
         }
         if (portPresetComboBox != null && previewState.getPortPreset() != null) {
             portPresetComboBox.getSelectionModel().select(previewState.getPortPreset());
+        }
+        if (previewState.getPortPreset() != null && presetGroup != null) {
+            int idx = java.util.Arrays.asList("Top100", "Top1000", "All", "Custom")
+                    .indexOf(previewState.getPortPreset());
+            if (idx >= 0 && idx < presetGroup.getToggles().size()) {
+                presetGroup.selectToggle(presetGroup.getToggles().get(idx));
+            }
         }
         if (customPortsField != null) {
             customPortsField.setText(previewState.getCustomPorts());
@@ -696,8 +716,21 @@ public class PanePortScan {
         return config;
     }
 
+    @FXML
+    public void onPresetChip(ActionEvent e) {
+        ToggleButton btn = (ToggleButton) e.getSource();
+        try {
+            presetIndex = Integer.parseInt((String) btn.getUserData());
+        } catch (Exception ignored) {}
+        if (portPresetComboBox != null) {
+            portPresetComboBox.getSelectionModel().select(presetIndex);
+        }
+    }
+
     private int[] resolvePorts() {
-        int index = portPresetComboBox.getSelectionModel().getSelectedIndex();
+        int index = portPresetComboBox != null
+                ? portPresetComboBox.getSelectionModel().getSelectedIndex()
+                : presetIndex;
         if (index == 1) {
             return PortPresets.top1000();
         }

@@ -4,3 +4,23 @@
 .posData{
     -fx-fill: -pt-warning;
 }
+
+/* ===== 版式对齐 Penpot: 输入+提取 / 过滤规则 / IP列表·原始文本 双面板 ===== */
+.ipinfo-root { -fx-padding: 18 20 20 20; }
+.ipinfo-panel {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-border-color: -pt-border;
+    -fx-padding: 12 14 14 14;
+}
+.ipinfo-panel-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.ipinfo-cap {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+}

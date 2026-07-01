@@ -1,95 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+
 <AnchorPane xmlns="http://javafx.com/javafx/"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.potato.potatotool.controller.publicPane.PaneDeleteConfirmDialog"
             fx:id="an"
-            stylesheets="@../../css/common.css"
+            stylesheets="@../../css/common.css, @../../css/deleteConfirm.css"
             style="-fx-background-color: transparent;"
             onMouseDragged="#topBarDraggedAction"
             onMousePressed="#topBarPressedAction"
-            prefWidth="380"
-            prefHeight="430"
->
-    <children>
+            prefWidth="400"
+            prefHeight="310">
+
     <Pane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0">
-    <effect>
-        <DropShadow/>
-    </effect>
-    <VBox>
-    <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
-        <center>
-            <Label styleClass="pt-h2" style="-fx-padding: 0 0 0 30;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="删除确认" userData="i18n:delete.title" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-        </center>
-        <right>
-            <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
-                <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction" prefHeight="25.0" prefWidth="25.0">
-                    <graphic>
-                        <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="@../../img/close.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                    <tooltip>
-                        <Tooltip text="关闭" userData="i18n:tooltip.close"/>
-                    </tooltip>
-                </Button>
-                <Pane minWidth="10"/>
-            </HBox>
-        </right>
-    </BorderPane>
-    <VBox alignment="CENTER" spacing="25" prefWidth="${an.width - 18}" prefHeight="235" styleClass="pt-panel" style="-fx-padding: 30;-fx-background-radius: 0 0 4 4;">
-        <VBox alignment="CENTER" spacing="15">
-            <!-- 警告图标 -->
-            <Label styleClass="pt-text-danger" style="-fx-font-size: 48;">⚠</Label>
+        <effect><DropShadow/></effect>
+        <VBox>
+            <!-- Title bar -->
+            <BorderPane fx:id="topBar" styleClass="del-topbar"
+                        prefHeight="45" prefWidth="${an.width - 18}">
+                <center>
+                    <Label styleClass="pt-h2,del-title" alignment="CENTER"
+                           prefHeight="${topBar.height}" prefWidth="${topBar.width}"
+                           text="危险操作确认" userData="i18n:delete.title"/>
+                </center>
+                <right>
+                    <HBox alignment="CENTER" prefHeight="${topBar.height}">
+                        <Button styleClass="del-close-btn" mnemonicParsing="false" onAction="#exitAction"
+                                prefHeight="25.0" prefWidth="25.0" text="✕"/>
+                        <Pane minWidth="10"/>
+                    </HBox>
+                </right>
+            </BorderPane>
 
-            <!-- 确认信息 -->
-            <Label styleClass="pt-h2" text="您确定要删除以下模块吗？" userData="i18n:delete.confirm"/>
-            
-            <!-- 显示要删除的项目信息 -->
-            <VBox alignment="CENTER_LEFT" spacing="8" styleClass="pt-inset" style="-fx-padding: 15;">
-                <HBox spacing="10">
-                    <Label style="-fx-font-weight: bold; -fx-min-width: 60;" text="名称：" userData="i18n:delete.name"/>
-                    <Label fx:id="titleLabel" styleClass="pt-body"/>
+            <!-- Content area -->
+            <VBox alignment="CENTER" spacing="16" prefWidth="${an.width - 18}"
+                  styleClass="del-body" style="-fx-padding: 28 32 24 32;">
+
+                <!-- Warning row -->
+                <HBox alignment="CENTER" spacing="10">
+                    <Label styleClass="del-warn-icon" text="⚠"/>
+                    <Label styleClass="pt-caption,del-warn-text"
+                           text="此操作不可撤销" userData="i18n:delete.warning"/>
                 </HBox>
-                <HBox spacing="10">
-                    <Label style="-fx-font-weight: bold; -fx-min-width: 60;" text="描述：" userData="i18n:delete.description"/>
-                    <Label fx:id="describeLabel" styleClass="pt-body"/>
+
+                <!-- Item title (dynamic) -->
+                <Label fx:id="titleLabel" styleClass="pt-h2,del-item-title"
+                       maxWidth="Infinity" alignment="CENTER"/>
+
+                <!-- Item description (dynamic) -->
+                <Label fx:id="describeLabel" styleClass="pt-caption,del-item-desc"
+                       wrapText="true" maxWidth="Infinity" alignment="CENTER"/>
+
+                <!-- Buttons -->
+                <HBox alignment="CENTER" spacing="16" style="-fx-padding: 8 0 0 0;">
+                    <Button styleClass="pt-btn,del-cancel-btn" minHeight="40" minWidth="120"
+                            text="取消" userData="i18n:app.cancel" onAction="#exitAction"/>
+                    <Button fx:id="deleteBtn" styleClass="pt-btn-danger,del-confirm-btn"
+                            minHeight="40" minWidth="120"
+                            text="确认删除" userData="i18n:delete.confirm.button"
+                            onAction="#confirmDelete"/>
                 </HBox>
+
             </VBox>
-
-            <Label styleClass="pt-caption" text="此操作无法撤销，请谨慎操作！" userData="i18n:delete.warning"/>
         </VBox>
-
-        <!-- 按钮区域 -->
-        <HBox alignment="CENTER" spacing="20">
-            <Button styleClass="pt-btn" minHeight="40.0" minWidth="120" text="取消" userData="i18n:app.cancel" onAction="#exitAction">
-                <effect>
-                    <DropShadow />
-                </effect>
-            </Button>
-            <Button fx:id="deleteBtn" styleClass="pt-btn-danger" minHeight="40.0" minWidth="120" text="确认删除" userData="i18n:delete.confirm.button" onAction="#confirmDelete">
-                <effect>
-                    <DropShadow />
-                </effect>
-            </Button>
-        </HBox>
-
-    </VBox>
-    </VBox>
     </Pane>
-    </children>
 
 </AnchorPane>
-

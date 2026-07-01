@@ -3,10 +3,10 @@
 }
 
 #promptPane{
-    -fx-background-color: rgba(17, 22, 28, 0.94), rgba(255, 255, 255, 0.035);
+    -fx-background-color: -pt-bg-panel, -pt-bg-elevated;
     -fx-background-radius: 16, 15;
     -fx-background-insets: 0, 1;
-    -fx-border-color: rgba(255, 255, 255, 0.16);
+    -fx-border-color: -pt-border;
     -fx-border-radius: 16;
     -fx-border-width: 1;
     -fx-padding: 0;

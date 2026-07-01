@@ -20,25 +20,32 @@
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneExif"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox fx:id="paneBox" alignment="CENTER" spacing="20">
+    <VBox fx:id="paneBox" alignment="CENTER" spacing="16" style="-fx-padding: 18 20 20 20;">
 
-        <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width}" styleClass="pt-btn-primary" text="选择图片/文件" userData="i18n:exif.selectfile" onAction="#getExifFx" translationDir="BOTTOM_TO_TOP">
-            <graphic>
-                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
-                    <image>
-                        <Image url="@../../img/codeFile.png" />
-                    </image>
-                </ImageView>
-            </graphic>
-            <effect>
-                <DropShadow />
-            </effect>
-            <cursor>
-                <Cursor fx:constant="HAND" />
-            </cursor>
-        </RXTranslationButton>
+        <!-- SOURCE FILE 卡片 (对齐 Penpot: 标题 + 选择按钮 + 支持格式提示) -->
+        <VBox styleClass="exif-source" spacing="10" alignment="CENTER" maxWidth="Infinity">
+            <HBox alignment="CENTER_LEFT" maxWidth="Infinity">
+                <Label text="SOURCE FILE" styleClass="pt-section-label" userData="i18n:exif.source.title"/>
+            </HBox>
+            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.5}" styleClass="pt-btn-primary" text="选择图片/文件" userData="i18n:exif.selectfile" onAction="#getExifFx" translationDir="BOTTOM_TO_TOP">
+                <graphic>
+                    <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@../../img/codeFile.png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+                <effect>
+                    <DropShadow />
+                </effect>
+                <cursor>
+                    <Cursor fx:constant="HAND" />
+                </cursor>
+            </RXTranslationButton>
+            <Label text="不支持拖拽 · JPG / PNG / TIFF / HEIC / RAW" styleClass="pt-caption" userData="i18n:exif.formats"/>
+        </VBox>
 
-        <SmoothListView fx:id="listView"  prefWidth="${sPane.width - 20}" prefHeight="${sPane.height - 150}">
+        <SmoothListView fx:id="listView"  prefWidth="${sPane.width - 20}" prefHeight="${sPane.height - 200}">
             <HBox prefHeight="${sPane.height - 220}"  alignment="CENTER">
                 <Label id="tipTitle" text="请上传需要获取元信息的文件……" userData="i18n:exif.tip"/>
             </HBox>
