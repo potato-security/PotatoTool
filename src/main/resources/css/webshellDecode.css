@@ -83,6 +83,10 @@
     -fx-background-color: -pt-accent-soft;
     -fx-text-fill: -pt-accent;
 }
+.wd-badge-disabled {
+    -fx-background-color: -pt-warning-soft;
+    -fx-text-fill: -pt-warning;
+}
 .wd-status-key {
     -fx-font-size: 10px;
     -fx-text-fill: -pt-text-muted;

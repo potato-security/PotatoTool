@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
-<?import com.potato.potatotool.utils.ui.SmoothListView?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
@@ -187,6 +186,11 @@
                                            text="AI分析中，请稍等……"
                                            userData="i18n:webshell.ai.analyzing"
                                            StackPane.alignment="CENTER_RIGHT"/>
+                            <!-- AI state badges -->
+                            <Label fx:id="aiSuccessBadge" layoutX="-148" layoutY="8"
+                                   styleClass="wd-badge,wd-badge-ok" text="SUCCESS" visible="false"/>
+                            <Label fx:id="aiDisabledBadge" layoutX="-148" layoutY="8"
+                                   styleClass="wd-badge,wd-badge-disabled" text="DISABLED" visible="false"/>
                             <Button fx:id="downloadAI" layoutX="-88" layoutY="6"
                                     mnemonicParsing="false" onAction="#downloadAIReport" disable="true">
                                 <cursor><Cursor fx:constant="HAND"/></cursor>
@@ -228,7 +232,11 @@
                 <Label text="历史与状态" styleClass="wd-ctx-title"
                        userData="i18n:webshell.ctx.title"/>
             </VBox>
-            <SmoothListView fx:id="testDataList" VBox.vgrow="ALWAYS" styleClass="wd-ctx-list"/>
+            <SmoothScrollPane VBox.vgrow="ALWAYS" hbarPolicy="NEVER" fitToWidth="true"
+                              styleClass="wd-ctx-scroll">
+                <FlowPane fx:id="testDataFlow" hgap="6" vgap="6"
+                          style="-fx-padding: 8 6 8 6;"/>
+            </SmoothScrollPane>
         </VBox>
 
     </HBox>

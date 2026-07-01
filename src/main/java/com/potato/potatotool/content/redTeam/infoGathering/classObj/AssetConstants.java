@@ -14,7 +14,9 @@ public interface AssetConstants {
     String AIQICHA_COOKIE = "Aiqicha_Cookie";
     String FOFA_KEY = "Fofa_Key";
     String HUNTER_KEY = "Hunter_Key";
+    String HUNTER_QUOTA = "Hunter_Quota";
     String QUAKE_KEY = "Quake_Key";
+    String QUAKE_QUOTA = "Quake_Quota";
     String SHODAN_KEY = "Shodan_Key";
     String ZOOMEYE_KEY = "Zoomeye_Key";
     String GOOGLE_API = "Google_API";

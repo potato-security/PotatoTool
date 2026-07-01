@@ -83,7 +83,11 @@ public class PaneSetting {
     @FXML
     private VBox hunterVBox;
     @FXML
+    private TextField hunterQuota;
+    @FXML
     private VBox quakeVBox;
+    @FXML
+    private TextField quakeQuota;
     @FXML
     private TextField shodanKey;
     @FXML
@@ -772,6 +776,10 @@ public class PaneSetting {
         JsonArray Google_API_List = tmpJsonObj_Asset.getAsJsonArray(AssetConstants.GOOGLE_API);
         setTextArrayData(Hunter_Key_List, hunterVBox);
         setTextArrayData(Quake_Key_List, quakeVBox);
+        hunterQuota.setText(tmpJsonObj_Asset.has(AssetConstants.HUNTER_QUOTA)
+                ? tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.HUNTER_QUOTA).getAsString() : "");
+        quakeQuota.setText(tmpJsonObj_Asset.has(AssetConstants.QUAKE_QUOTA)
+                ? tmpJsonObj_Asset.getAsJsonPrimitive(AssetConstants.QUAKE_QUOTA).getAsString() : "");
         setTextArrayData(GitHub_Token_List, githubVBox);
         setTextArrayData(Google_API_List, googleVBox);
         
@@ -1207,7 +1215,9 @@ public class PaneSetting {
         assetMap.put(AssetConstants.AIQICHA_COOKIE, Aiqicha_Cookie);
         assetMap.put(AssetConstants.FOFA_KEY, Fofa_Key);
         assetMap.put(AssetConstants.HUNTER_KEY, Hunter_Key);
+        assetMap.put(AssetConstants.HUNTER_QUOTA, hunterQuota.getText().trim());
         assetMap.put(AssetConstants.QUAKE_KEY, Quake_Key);
+        assetMap.put(AssetConstants.QUAKE_QUOTA, quakeQuota.getText().trim());
         assetMap.put(AssetConstants.ZOOMEYE_KEY, Zoomeye_Key);
         assetMap.put(AssetConstants.SHODAN_KEY, Shodan_Key);
         assetMap.put(AssetConstants.GITHUB_TOKEN, GitHub_Token);

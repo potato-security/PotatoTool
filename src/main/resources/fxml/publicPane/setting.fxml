@@ -283,45 +283,60 @@
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="fofaProxy"/>
                                             </HBox>
-                                            <HBox alignment="TOP_CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Hunter_Key：" userData="i18n:setting.asset.hunter"/>
-                                                <VBox fx:id="hunterVBox" alignment="CENTER_LEFT"  spacing="10">
-                                                    <StackPane>
-                                                        <TextField styleClass="paddingRightButton" prefWidth="250" StackPane.alignment="CENTER"/>
-                                                        <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
-                                                            <graphic>
-                                                                <Region styleClass="addIcon"/>
-                                                            </graphic>
-                                                            <tooltip>
-                                                                <Tooltip text="添加" userData="i18n:tooltip.add"/>
-                                                            </tooltip>
-                                                        </Label>
-                                                    </StackPane>
+                                            <!-- Hunter + Quake 展开卡片 -->
+                                            <HBox alignment="TOP_CENTER" spacing="12">
+                                                <!-- Hunter 卡片 -->
+                                                <VBox HBox.hgrow="ALWAYS" styleClass="pt-panel" spacing="8">
+                                                    <Label text="Hunter" styleClass="pt-h2" style="-fx-text-fill: -pt-accent;"/>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="API Key" styleClass="pt-caption" minWidth="72"/>
+                                                        <VBox fx:id="hunterVBox" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="8">
+                                                            <StackPane>
+                                                                <TextField styleClass="paddingRightButton" StackPane.alignment="CENTER"/>
+                                                                <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
+                                                                    <graphic><Region styleClass="addIcon"/></graphic>
+                                                                    <tooltip><Tooltip text="添加" userData="i18n:tooltip.add"/></tooltip>
+                                                                </Label>
+                                                            </StackPane>
+                                                        </VBox>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="配额(月)" styleClass="pt-caption" minWidth="72" userData="i18n:setting.asset.hunter.quota"/>
+                                                        <TextField fx:id="hunterQuota" styleClass="pt-input" HBox.hgrow="ALWAYS"
+                                                                   promptText="月度配额上限" userData="i18n-prompt:setting.asset.hunter.quota.placeholder"/>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="代理子开关" styleClass="pt-caption" minWidth="72" userData="i18n:setting.asset.proxy.sub"/>
+                                                        <CFSwitch fx:id="hunterProxy">
+                                                            <tooltip><Tooltip text="需要中国IP,建议关闭代理" userData="i18n:setting.asset.hunter.proxy.tooltip"/></tooltip>
+                                                        </CFSwitch>
+                                                    </HBox>
                                                 </VBox>
-                                                <Label minWidth="20"/>
-                                                <CFSwitch fx:id="hunterProxy">
-                                                    <tooltip>
-                                                        <Tooltip text="需要中国IP,建议关闭代理" userData="i18n:setting.asset.hunter.proxy.tooltip"/>
-                                                    </tooltip>
-                                                </CFSwitch>
-                                            </HBox>
-                                            <HBox alignment="TOP_CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Quake_Key：" userData="i18n:setting.asset.quake"/>
-                                                <VBox fx:id="quakeVBox" alignment="CENTER_LEFT"  spacing="10">
-                                                    <StackPane>
-                                                        <TextField styleClass="paddingRightButton" prefWidth="250" StackPane.alignment="CENTER"/>
-                                                        <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
-                                                            <graphic>
-                                                                <Region styleClass="addIcon"/>
-                                                            </graphic>
-                                                            <tooltip>
-                                                                <Tooltip text="添加" userData="i18n:tooltip.add"/>
-                                                            </tooltip>
-                                                        </Label>
-                                                    </StackPane>
+                                                <!-- Quake 卡片 -->
+                                                <VBox HBox.hgrow="ALWAYS" styleClass="pt-panel" spacing="8">
+                                                    <Label text="Quake" styleClass="pt-h2" style="-fx-text-fill: -pt-accent;"/>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="API Key" styleClass="pt-caption" minWidth="72"/>
+                                                        <VBox fx:id="quakeVBox" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="8">
+                                                            <StackPane>
+                                                                <TextField styleClass="paddingRightButton" StackPane.alignment="CENTER"/>
+                                                                <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
+                                                                    <graphic><Region styleClass="addIcon"/></graphic>
+                                                                    <tooltip><Tooltip text="添加" userData="i18n:tooltip.add"/></tooltip>
+                                                                </Label>
+                                                            </StackPane>
+                                                        </VBox>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="配额(月)" styleClass="pt-caption" minWidth="72" userData="i18n:setting.asset.quake.quota"/>
+                                                        <TextField fx:id="quakeQuota" styleClass="pt-input" HBox.hgrow="ALWAYS"
+                                                                   promptText="月度配额上限" userData="i18n-prompt:setting.asset.quake.quota.placeholder"/>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="代理子开关" styleClass="pt-caption" minWidth="72" userData="i18n:setting.asset.proxy.sub"/>
+                                                        <CFSwitch fx:id="quakeProxy"/>
+                                                    </HBox>
                                                 </VBox>
-                                                <Label minWidth="20"/>
-                                                <CFSwitch fx:id="quakeProxy"/>
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Shodan_Key：" userData="i18n:setting.asset.shodan"/>

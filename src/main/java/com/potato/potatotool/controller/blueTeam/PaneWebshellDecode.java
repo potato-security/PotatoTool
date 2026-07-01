@@ -32,6 +32,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -89,7 +90,7 @@ public class PaneWebshellDecode {
     private StackPane sPane;
 
     @FXML
-    private ListView testDataList;
+    private FlowPane testDataFlow;
 
     @FXML
     private TextArea inputText;
@@ -121,6 +122,10 @@ public class PaneWebshellDecode {
     private Button showAI;
     @FXML
     private Button downloadAI;
+    @FXML
+    private Label aiSuccessBadge;
+    @FXML
+    private Label aiDisabledBadge;
     @FXML
     private Button refreshAI;
 
@@ -325,7 +330,7 @@ public class PaneWebshellDecode {
 
         }
 
-        testDataList.setItems(contentObj);
+        testDataFlow.getChildren().setAll(contentObj);
 
     }
 
@@ -373,6 +378,10 @@ public class PaneWebshellDecode {
         aiAnalysisState = state;
         refreshAI.setDisable(state == AiAnalysisState.ANALYZING);
         downloadAI.setDisable(state != AiAnalysisState.SUCCESS);
+        boolean success = state == AiAnalysisState.SUCCESS;
+        boolean disabled = !success && lastAiTaskSuccess;
+        aiSuccessBadge.setVisible(success);
+        aiDisabledBadge.setVisible(disabled);
     }
 
     private void executeAiAnalysis(String resultStr) {
