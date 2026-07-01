@@ -54,3 +54,190 @@
 #promptPane.prompt-error .label {
     -fx-text-fill: -pt-text;
 }
+
+/* ===== 一键解密 重构布局 ===== */
+
+.wd-root {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+/* Status bar */
+.wd-status-bar {
+    -fx-padding: 6 16 6 16;
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+.wd-badge {
+    -fx-padding: 2 8 2 8;
+    -fx-background-radius: 4;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.wd-badge-ok {
+    -fx-background-color: -pt-success-soft;
+    -fx-text-fill: -pt-success;
+}
+.wd-badge-ready {
+    -fx-background-color: -pt-accent-soft;
+    -fx-text-fill: -pt-accent;
+}
+.wd-status-key {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+}
+.wd-status-val {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+}
+.wd-status-muted {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+}
+
+/* Header row */
+.wd-header-row {
+    -fx-padding: 14 16 12 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+.wd-h1 {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.wd-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+}
+
+/* Section headers & labels */
+.wd-section-header {
+    -fx-padding: 10 16 6 16;
+}
+.wd-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+}
+.wd-tip-title {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-accent;
+}
+.wd-copy-btn {
+    -fx-font-size: 11px;
+    -fx-padding: 2 8 2 8;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+.wd-copy-btn:hover {
+    -fx-background-color: -pt-border;
+}
+
+/* Input */
+.wd-input {
+    -fx-padding: 8 16 0 16;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-font-size: 12px;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+}
+
+/* Type chips row */
+.wd-type-row {
+    -fx-padding: 10 16 8 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+
+/* Decode chain */
+.wd-chain-bar {
+    -fx-padding: 8 16 8 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+}
+.wd-chain-nodes {
+    -fx-alignment: CENTER_LEFT;
+}
+.wd-chain-node {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 50%;
+    -fx-background-radius: 50%;
+    -fx-pref-width: 56;
+    -fx-pref-height: 28;
+    -fx-alignment: CENTER;
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-weight: bold;
+}
+.wd-chain-node-done {
+    -fx-background-color: -pt-accent-soft;
+    -fx-border-color: -pt-accent;
+    -fx-text-fill: -pt-accent;
+}
+.wd-chain-line {
+    -fx-pref-width: 32;
+    -fx-pref-height: 2;
+    -fx-max-height: 2;
+    -fx-background-color: -pt-border;
+}
+
+/* Output header */
+.wd-output-header {
+    -fx-padding: 8 16 6 16;
+}
+
+/* Right panel: decode context */
+.wd-context-panel {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-width: 0 0 0 1;
+    -fx-border-color: -pt-border;
+    -fx-padding: 0;
+}
+.wd-ctx-header {
+    -fx-padding: 14 16 12 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -pt-border-subtle;
+    -fx-spacing: 4;
+}
+.wd-ctx-section-label {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-letter-spacing: 1;
+}
+.wd-ctx-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.wd-ctx-list {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 8;
+}
+.wd-ctx-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 12px;
+    -fx-padding: 8 12 8 12;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+.wd-ctx-list .list-cell:hover {
+    -fx-background-color: -pt-bg-elevated;
+}
+.wd-ctx-list .list-cell:selected {
+    -fx-background-color: -pt-accent-soft;
+    -fx-text-fill: -pt-accent;
+}

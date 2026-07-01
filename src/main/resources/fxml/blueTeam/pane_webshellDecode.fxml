@@ -2,170 +2,243 @@
 <?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 <?import com.potato.potatotool.utils.ui.SmoothListView?>
-
 <?import javafx.scene.layout.StackPane?>
-
 <?import javafx.scene.layout.VBox?>
-
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.effect.DropShadow?>
-<?import org.fxmisc.flowless.VirtualizedScrollPane?>
-<?import org.fxmisc.richtext.CodeArea?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ComboBox?>
-<?import javafx.collections.FXCollections?>
-<?import java.lang.String?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.Cursor?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import org.fxmisc.flowless.VirtualizedScrollPane?>
+<?import org.fxmisc.richtext.CodeArea?>
+
 <StackPane fx:id="sPane"
            stylesheets="@../../css/webshellDecode.css"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
            xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneWebshellDecode">
-   <SmoothListView fx:id="testDataList" translateX="180" maxWidth="160" maxHeight="300" StackPane.alignment="TOP_RIGHT"/>
 
-   <VBox alignment="CENTER" >
+    <!-- Hidden ToggleGroup definition -->
+    <fx:define>
+        <ToggleGroup fx:id="rulesToggleGroup"/>
+    </fx:define>
 
-      <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-         <SmoothTextArea  fx:id="inputText" styleClass="pt-input" wrapText="true" prefHeight="${sPane.height * 0.4 - 75}" prefWidth="${sPane.width}" promptText="请输入存在加密的文本/流量包" userData="i18n-prompt:webshell.input.placeholder"/>
-      </Pane>
+    <!-- Main two-column layout: content left + context panel right -->
+    <HBox spacing="0" prefWidth="${sPane.width}" prefHeight="${sPane.height}">
 
-      <Pane minHeight="15"/>
-      <HBox alignment="CENTER" spacing="20">
-         <StackPane  onMouseEntered="#handleMouseEntered" onMouseExited="#handleMouseExited">
-            <Label fx:id="tipTitle" visible="false" managed="false"/>
-            <Button styleClass="pt-btn" fx:id="tipTitleCopy" text="复制" userData="i18n:app.copy" visible="false" managed="false" onAction="#copyTip" StackPane.alignment="CENTER_RIGHT"/>
-         </StackPane>
-         <FlowPane hgap="8" vgap="8" alignment="CENTER_LEFT">
-            <ToggleButton styleClass="pt-toggle-chip" text="默认密钥" onAction="#rulesComboChoose">
-               <toggleGroup><ToggleGroup fx:id="rulesToggleGroup"/></toggleGroup>
-               <tooltip><Tooltip text="使用默认Key快速解密"/></tooltip>
-            </ToggleButton>
-            <ToggleButton styleClass="pt-toggle-chip" text="指定密钥" onAction="#rulesComboChoose" toggleGroup="$rulesToggleGroup">
-               <tooltip><Tooltip text="指定Key快速解密"/></tooltip>
-            </ToggleButton>
-            <ToggleButton styleClass="pt-toggle-chip" text="内置字典" onAction="#rulesComboChoose" toggleGroup="$rulesToggleGroup">
-               <tooltip><Tooltip text="使用内置50万Key字典解密（Webshell专用）"/></tooltip>
-            </ToggleButton>
-            <ToggleButton styleClass="pt-toggle-chip" text="上传字典" onAction="#rulesComboChoose" toggleGroup="$rulesToggleGroup">
-               <tooltip><Tooltip text="上传自定义Key字典解密"/></tooltip>
-            </ToggleButton>
-         </FlowPane>
-         <ComboBox fx:id="modeComboBox" visible="false" managed="false" prefHeight="30.0" minWidth="90" prefWidth="90" >
-            <items>
-               <FXCollections fx:factory="observableArrayList">
-                  <String fx:value="AES" />
-                  <String fx:value="DES" />
-                  <String fx:value="XOR" />
-                  <String fx:value="ALL" />
-               </FXCollections>
-            </items>
-            <cursor>
-               <Cursor fx:constant="HAND" />
-            </cursor>
-         </ComboBox>
-         <TextField fx:id="customKey" styleClass="pt-input" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Key" userData="i18n-prompt:webshell.key"/>
-         <TextField fx:id="customIv" styleClass="pt-input" visible="false" managed="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="Iv" userData="i18n-prompt:webshell.iv"/>
-         <TextField fx:id="customPath" styleClass="pt-input" visible="false" managed="false" editable="false" prefHeight="30.0" minWidth="250" prefWidth="250" promptText="自定义字典路径" userData="i18n-prompt:webshell.dictpath"/>
-      </HBox>
+        <!-- ===== LEFT: main decode content ===== -->
+        <VBox styleClass="wd-root" HBox.hgrow="ALWAYS" spacing="0">
 
-      <Pane minHeight="15"/>
-      <HBox alignment="CENTER">
-         <Button styleClass="pt-btn" minHeight="48.0" minWidth="${sPane.width * 0.4}" text="上传流量包" userData="i18n:webshell.upload" onAction="#toDecodePcap">
-            <effect>
-               <DropShadow />
-            </effect>
-            <tooltip>
-               <Tooltip text="应对多种加密组合、数据混淆轻松推理还原（非CTF版）&#10;&#10;注：反序列化/class数据等中间产物会在程序根目录保存" userData="i18n:webshell.upload.tooltip"/>
-            </tooltip>
-         </Button>
-         <Label minWidth="${sPane.width * 0.1}"/>
-         <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width * 0.4}" text="一键解密" userData="i18n:webshell.decrypt" onAction="#toDecode">
-            <effect>
-               <DropShadow />
-            </effect>
-            <tooltip>
-               <Tooltip text="应对多种加密组合、数据混淆轻松推理还原（非CTF版）&#10;&#10;注：反序列化/class数据等中间产物会在程序根目录保存" userData="i18n:webshell.decrypt.tooltip"/>
-            </tooltip>
-         </Button>
-      </HBox>
-      <Pane minHeight="20"/>
+            <!-- Status bar -->
+            <HBox styleClass="wd-status-bar" spacing="6" alignment="CENTER_LEFT">
+                <Label text="就绪" styleClass="wd-badge,wd-badge-ok"/>
+                <Label text="类型" styleClass="wd-status-key"/>
+                <Label text="auto" styleClass="wd-status-val"/>
+                <Label text="引擎" styleClass="wd-status-key"/>
+                <Label text="multi" styleClass="wd-status-val"/>
+                <Label text="层数" styleClass="wd-status-key"/>
+                <Label text="—" styleClass="wd-status-val"/>
+                <Label text="结果" styleClass="wd-status-key"/>
+                <Label text="—" styleClass="wd-status-val"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="输入 —" styleClass="wd-status-muted"/>
+            </HBox>
 
-      <StackPane>
-         <VBox styleClass="codeAreaPane">
-            <VirtualizedScrollPane fx:id="virScrollPane" styleClass="virtualizedScrollPane">
-               <content>
-                  <CodeArea fx:id="result" editable="false" wrapText="true" styleClass="codeArea,pt-mono"/>
-               </content>
-            </VirtualizedScrollPane>
-         </VBox>
-         <Pane  maxWidth="0" StackPane.alignment="CENTER_RIGHT">
-            <Button fx:id="showAI" layoutX="-1" layoutY="20" mnemonicParsing="false" onAction="#showAI">
-               <graphic>
-                  <Region styleClass="AiImg"/>
-               </graphic>
-               <tooltip>
-                  <Tooltip text="AI分析" userData="i18n:webshell.ai"/>
-               </tooltip>
-            </Button>
-            <Pane fx:id="aiPane" visible="false" maxWidth="0">
-               <SmoothTextArea fx:id="aiTextArea" styleClass="pt-input" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height * 0.43 + 12}" maxHeight="${sPane.height * 0.43 + 12}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:webshell.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
-               <Button fx:id="downloadAI" layoutX="-88" layoutY="6" mnemonicParsing="false" onAction="#downloadAIReport" disable="true">
-                  <cursor>
-                     <Cursor fx:constant="HAND" />
-                  </cursor>
-                  <tooltip>
-                     <Tooltip text="下载分析报告" userData="i18n:webshell.ai.download"/>
-                  </tooltip>
-               </Button>
-               <Button fx:id="refreshAI" layoutX="-60" layoutY="6"  mnemonicParsing="false" onAction="#refreshAI">
-                  <graphic>
-                     <ImageView fitHeight="17.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
-                        <image>
-                           <Image url="@../../img/refresh.png" />
-                        </image>
-                     </ImageView>
-                  </graphic>
-                  <cursor>
-                     <Cursor fx:constant="HAND" />
-                  </cursor>
-                  <tooltip>
-                     <Tooltip text="重新进行AI分析" userData="i18n:webshell.ai.refresh"/>
-                  </tooltip>
-               </Button>
-               <Button fx:id="closeAI" layoutX="-35" layoutY="6"  mnemonicParsing="false" onAction="#showAI">
-                  <graphic>
-                     <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                        <image>
-                           <Image url="@../../img/close2.png" />
-                        </image>
-                     </ImageView>
-                  </graphic>
-                  <cursor>
-                     <Cursor fx:constant="HAND" />
-                  </cursor>
-                  <tooltip>
-                     <Tooltip text="关闭" userData="i18n:tooltip.close"/>
-                  </tooltip>
-               </Button>
-            </Pane>
-         </Pane>
-      </StackPane>
-   </VBox>
+            <!-- Page header row -->
+            <HBox styleClass="wd-header-row" alignment="CENTER_LEFT" spacing="12">
+                <VBox spacing="3" HBox.hgrow="ALWAYS">
+                    <Label text="一键解密" styleClass="wd-h1" userData="i18n:webshell.page.title"/>
+                    <Label text="Webshell / 编码解密工作台 · 自动识别与链式解码"
+                           styleClass="wd-subtitle" userData="i18n:webshell.page.subtitle"/>
+                </VBox>
+                <Button styleClass="pt-btn-primary" minHeight="36" minWidth="96"
+                        text="一键识别" userData="i18n:webshell.decrypt" onAction="#toDecode"/>
+                <Button styleClass="pt-btn" minHeight="36" minWidth="96"
+                        text="上传流量包" userData="i18n:webshell.upload" onAction="#toDecodePcap"/>
+            </HBox>
 
-   <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
-      <Label fx:id="prompt" text="复制成功" wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="600"/>
-   </StackPane>
+            <!-- Input section label + tipTitle copy row -->
+            <HBox styleClass="wd-section-header" alignment="CENTER_LEFT" spacing="8">
+                <Label text="输入 / INPUT" styleClass="wd-section-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <StackPane onMouseEntered="#handleMouseEntered" onMouseExited="#handleMouseExited">
+                    <Label fx:id="tipTitle" visible="false" managed="false" styleClass="wd-tip-title"/>
+                    <Button fx:id="tipTitleCopy" text="复制" userData="i18n:app.copy"
+                            visible="false" managed="false"
+                            onAction="#copyTip" styleClass="wd-copy-btn"
+                            StackPane.alignment="CENTER_RIGHT"/>
+                </StackPane>
+            </HBox>
+
+            <!-- Input textarea -->
+            <SmoothTextArea fx:id="inputText" styleClass="pt-input,wd-input" wrapText="true"
+                            prefHeight="160" minHeight="100"
+                            promptText="输入 Webshell / 流量 / 加密数据，支持多层嵌套编码"
+                            userData="i18n-prompt:webshell.input.placeholder"/>
+
+            <!-- Decode type chips + hidden conditional fields -->
+            <HBox styleClass="wd-type-row" spacing="8" alignment="CENTER_LEFT">
+                <Label text="解码类型" styleClass="wd-section-label"/>
+                <FlowPane hgap="8" vgap="6">
+                    <ToggleButton styleClass="pt-toggle-chip" text="默认密钥"
+                                  toggleGroup="$rulesToggleGroup" selected="true"
+                                  onAction="#rulesComboChoose"
+                                  userData="i18n:webshell.rule.default">
+                        <tooltip><Tooltip text="使用默认Key快速解密"/></tooltip>
+                    </ToggleButton>
+                    <ToggleButton styleClass="pt-toggle-chip" text="指定密钥"
+                                  toggleGroup="$rulesToggleGroup"
+                                  onAction="#rulesComboChoose"
+                                  userData="i18n:webshell.rule.custom">
+                        <tooltip><Tooltip text="指定Key快速解密"/></tooltip>
+                    </ToggleButton>
+                    <ToggleButton styleClass="pt-toggle-chip" text="内置字典"
+                                  toggleGroup="$rulesToggleGroup"
+                                  onAction="#rulesComboChoose"
+                                  userData="i18n:webshell.rule.dict">
+                        <tooltip><Tooltip text="使用内置50万Key字典解密（Webshell专用）"/></tooltip>
+                    </ToggleButton>
+                    <ToggleButton styleClass="pt-toggle-chip" text="上传字典"
+                                  toggleGroup="$rulesToggleGroup"
+                                  onAction="#rulesComboChoose"
+                                  userData="i18n:webshell.rule.upload">
+                        <tooltip><Tooltip text="上传自定义Key字典解密"/></tooltip>
+                    </ToggleButton>
+                </FlowPane>
+                <!-- Hidden: AES/DES/XOR combo (shown for rule 0 mode) -->
+                <ComboBox fx:id="modeComboBox" visible="false" managed="false"
+                          prefHeight="30" minWidth="90" prefWidth="90">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="AES"/>
+                            <String fx:value="DES"/>
+                            <String fx:value="XOR"/>
+                            <String fx:value="ALL"/>
+                        </FXCollections>
+                    </items>
+                    <cursor><Cursor fx:constant="HAND"/></cursor>
+                </ComboBox>
+                <!-- Hidden: key/iv/path fields (shown for rule 1/3) -->
+                <TextField fx:id="customKey" styleClass="pt-input" visible="false" managed="false"
+                           prefHeight="30" minWidth="200" prefWidth="200"
+                           promptText="Key" userData="i18n-prompt:webshell.key"/>
+                <TextField fx:id="customIv" styleClass="pt-input" visible="false" managed="false"
+                           prefHeight="30" minWidth="200" prefWidth="200"
+                           promptText="Iv" userData="i18n-prompt:webshell.iv"/>
+                <TextField fx:id="customPath" styleClass="pt-input" visible="false" managed="false"
+                           editable="false" prefHeight="30" minWidth="200" prefWidth="200"
+                           promptText="自定义字典路径" userData="i18n-prompt:webshell.dictpath"/>
+            </HBox>
+
+            <!-- Decode CHAIN visualization -->
+            <HBox styleClass="wd-chain-bar" alignment="CENTER_LEFT" spacing="0">
+                <Label text="解码链 / CHAIN" styleClass="wd-section-label" style="-fx-padding: 0 20 0 0;"/>
+                <HBox styleClass="wd-chain-nodes" alignment="CENTER_LEFT" spacing="0">
+                    <Label text="识别" styleClass="wd-chain-node,wd-chain-node-done"/>
+                    <Region styleClass="wd-chain-line"/>
+                    <Label text="解码" styleClass="wd-chain-node,wd-chain-node-done"/>
+                    <Region styleClass="wd-chain-line"/>
+                    <Label text="美化" styleClass="wd-chain-node"/>
+                </HBox>
+            </HBox>
+
+            <!-- Output section -->
+            <VBox spacing="0" VBox.vgrow="ALWAYS">
+                <HBox styleClass="wd-output-header" alignment="CENTER_LEFT" spacing="8">
+                    <Label text="输出 / OUTPUT" styleClass="wd-section-label"/>
+                    <Label text="READY" styleClass="wd-badge,wd-badge-ready"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <!-- CodeArea + AI floating panel -->
+                <StackPane VBox.vgrow="ALWAYS">
+                    <VBox styleClass="codeAreaPane" VBox.vgrow="ALWAYS">
+                        <VirtualizedScrollPane fx:id="virScrollPane" styleClass="virtualizedScrollPane">
+                            <content>
+                                <CodeArea fx:id="result" editable="false" wrapText="true"
+                                          styleClass="codeArea,pt-mono"/>
+                            </content>
+                        </VirtualizedScrollPane>
+                    </VBox>
+                    <!-- AI side panel (slides in from right) -->
+                    <Pane maxWidth="0" StackPane.alignment="CENTER_RIGHT">
+                        <Button fx:id="showAI" layoutX="-1" layoutY="20"
+                                mnemonicParsing="false" onAction="#showAI">
+                            <graphic><Region styleClass="AiImg"/></graphic>
+                            <tooltip><Tooltip text="AI分析" userData="i18n:webshell.ai"/></tooltip>
+                        </Button>
+                        <Pane fx:id="aiPane" visible="false" maxWidth="0">
+                            <SmoothTextArea fx:id="aiTextArea" styleClass="pt-input" editable="false"
+                                           wrapText="true" prefWidth="0"
+                                           maxWidth="${sPane.width * 0.9}" minWidth="0"
+                                           prefHeight="${sPane.height * 0.43 + 12}"
+                                           maxHeight="${sPane.height * 0.43 + 12}"
+                                           minHeight="0"
+                                           text="AI分析中，请稍等……"
+                                           userData="i18n:webshell.ai.analyzing"
+                                           StackPane.alignment="CENTER_RIGHT"/>
+                            <Button fx:id="downloadAI" layoutX="-88" layoutY="6"
+                                    mnemonicParsing="false" onAction="#downloadAIReport" disable="true">
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
+                                <tooltip><Tooltip text="下载分析报告" userData="i18n:webshell.ai.download"/></tooltip>
+                            </Button>
+                            <Button fx:id="refreshAI" layoutX="-60" layoutY="6"
+                                    mnemonicParsing="false" onAction="#refreshAI">
+                                <graphic>
+                                    <ImageView fitHeight="17.0" fitWidth="17.0"
+                                               pickOnBounds="true" preserveRatio="true">
+                                        <image><Image url="@../../img/refresh.png"/></image>
+                                    </ImageView>
+                                </graphic>
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
+                                <tooltip><Tooltip text="重新进行AI分析" userData="i18n:webshell.ai.refresh"/></tooltip>
+                            </Button>
+                            <Button fx:id="closeAI" layoutX="-35" layoutY="6"
+                                    mnemonicParsing="false" onAction="#showAI">
+                                <graphic>
+                                    <ImageView fitHeight="20.0" fitWidth="20.0"
+                                               pickOnBounds="true" preserveRatio="true">
+                                        <image><Image url="@../../img/close2.png"/></image>
+                                    </ImageView>
+                                </graphic>
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
+                                <tooltip><Tooltip text="关闭" userData="i18n:tooltip.close"/></tooltip>
+                            </Button>
+                        </Pane>
+                    </Pane>
+                </StackPane>
+            </VBox>
+
+        </VBox>
+
+        <!-- ===== RIGHT: decode context panel ===== -->
+        <VBox styleClass="wd-context-panel" prefWidth="200" minWidth="180">
+            <VBox styleClass="wd-ctx-header">
+                <Label text="DECODE CONTEXT" styleClass="wd-ctx-section-label"/>
+                <Label text="历史与状态" styleClass="wd-ctx-title"
+                       userData="i18n:webshell.ctx.title"/>
+            </VBox>
+            <SmoothListView fx:id="testDataList" VBox.vgrow="ALWAYS" styleClass="wd-ctx-list"/>
+        </VBox>
+
+    </HBox>
+
+    <!-- Prompt overlay -->
+    <StackPane fx:id="promptPane" visible="false" managed="false"
+               maxHeight="-Infinity" maxWidth="-Infinity"
+               alignment="CENTER" StackPane.alignment="CENTER">
+        <Label fx:id="prompt" text="" wrapText="true" textAlignment="CENTER"
+               alignment="CENTER" minHeight="-Infinity" maxWidth="600"/>
+    </StackPane>
+
 </StackPane>
