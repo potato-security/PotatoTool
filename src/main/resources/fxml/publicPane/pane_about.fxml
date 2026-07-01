@@ -10,6 +10,7 @@
            fx:id="sPane"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
+
     <SmoothScrollPane fx:id="mainScrollPane" fitToWidth="true" hbarPolicy="NEVER"
                       prefHeight="${sPane.height}" prefWidth="${sPane.width}">
         <VBox fx:id="contentVBox" styleClass="about-content" spacing="20" style="-fx-padding: 20 28 28 28;">
@@ -152,6 +153,48 @@
                 </HBox>
             </VBox>
 
+        </VBox>
+    </SmoothScrollPane>
+
+    <!-- Right CONTENTS panel -->
+    <SmoothScrollPane fx:id="contentsPane"
+                      maxHeight="${sPane.height}" maxWidth="190"
+                      translateX="190" hbarPolicy="NEVER"
+                      StackPane.alignment="TOP_RIGHT"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox styleClass="about-contents-root" spacing="0">
+            <VBox styleClass="about-contents-header">
+                <Label text="CONTENTS" styleClass="about-contents-section-label"/>
+                <Label text="目录" styleClass="about-contents-title" userData="i18n:about.contents.title"/>
+            </VBox>
+            <VBox styleClass="about-contents-nav" spacing="0">
+                <Label text="版本信息" styleClass="about-nav-item,about-nav-selected"
+                       userData="i18n:about.nav.version" onMouseClicked="#scrollToVersion"/>
+                <Label text="更新日志" styleClass="about-nav-item"
+                       userData="i18n:about.nav.changelog" onMouseClicked="#scrollToChangelog"/>
+                <Label text="反馈渠道" styleClass="about-nav-item"
+                       userData="i18n:about.nav.feedback" onMouseClicked="#scrollToFeedback"/>
+                <Label text="开源许可" styleClass="about-nav-item"
+                       userData="i18n:about.nav.license" onMouseClicked="#scrollToLicense"/>
+                <Label text="致谢" styleClass="about-nav-item"
+                       userData="i18n:about.nav.credits" onMouseClicked="#scrollToCredits"/>
+            </VBox>
+            <Label text="STATES" styleClass="about-contents-states-label" userData="i18n:about.contents.states"/>
+            <VBox styleClass="about-contents-states" spacing="8">
+                <HBox styleClass="about-state-chip" alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="about-state-dot,about-state-dot-latest"/>
+                    <Label fx:id="aboutStateVersion" text="版本：最新" styleClass="about-state-label"
+                           userData="i18n:about.state.latest"/>
+                </HBox>
+                <HBox styleClass="about-state-chip" alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="about-state-dot,about-state-dot-none"/>
+                    <Label text="更新：无" styleClass="about-state-label" userData="i18n:about.state.noupdate"/>
+                </HBox>
+                <HBox styleClass="about-state-chip" alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="about-state-dot,about-state-dot-mit"/>
+                    <Label text="许可：MIT" styleClass="about-state-label" userData="i18n:about.state.license"/>
+                </HBox>
+            </VBox>
         </VBox>
     </SmoothScrollPane>
 

@@ -5,20 +5,27 @@ import com.potato.potatotool.MainApplication;
 import com.potato.potatotool.content.classObj.ConfigConstants;
 import com.potato.potatotool.utils.core.Constants;
 import com.potato.potatotool.utils.core.I18nUtils;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.HostServices;
 import javafx.application.Platform;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.ScrollPane;
+import javafx.util.Duration;
 
 public class PaneAbout {
 
     @FXML private StackPane sPane;
     @FXML private ScrollPane mainScrollPane;
     @FXML private VBox contentVBox;
+    @FXML private ScrollPane contentsPane;
+    @FXML private Label aboutStateVersion;
 
     @FXML private Label versionLabel;
     @FXML private Label buildLabel;
@@ -31,17 +38,27 @@ public class PaneAbout {
     @FXML private Label dataPathLabel;
     @FXML private Button checkUpdateBtn;
 
+    private boolean contentsPaneVisible = false;
     private final HostServices services = MainApplication.letGetHostServices();
 
     public void initialize() {
         Platform.runLater(() -> {
             I18nUtils.bindComponents(sPane);
             populateDynamicInfo();
+            showContentsPanel();
         });
     }
 
+    private void showContentsPanel() {
+        if (contentsPane == null || contentsPaneVisible) return;
+        contentsPaneVisible = true;
+        new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(contentsPane.translateXProperty(), 190)),
+            new KeyFrame(Duration.millis(250), new KeyValue(contentsPane.translateXProperty(), 0))
+        ).play();
+    }
+
     private void populateDynamicInfo() {
-        // Version from config
         try {
             String configStr = Constants.getResourceString("config");
             if (configStr != null) {
@@ -56,7 +73,6 @@ public class PaneAbout {
             }
         } catch (Exception ignored) {}
 
-        // Runtime info
         String os = System.getProperty("os.name", "—") + " " + System.getProperty("os.arch", "");
         String jdk = System.getProperty("java.version", "—");
         String home = System.getProperty("user.home", "~");
@@ -79,11 +95,14 @@ public class PaneAbout {
         return "—";
     }
 
-    /** Keep for PaneFactory / MainController compatibility */
     public void startScrolling() {}
-
-    /** Keep for PaneFactory / MainController compatibility */
     public void pauseScrolling() {}
+
+    @FXML void scrollToVersion(Event e) { if (mainScrollPane != null) mainScrollPane.setVvalue(0); }
+    @FXML void scrollToChangelog(Event e) { if (mainScrollPane != null) mainScrollPane.setVvalue(0.3); }
+    @FXML void scrollToFeedback(Event e) { if (mainScrollPane != null) mainScrollPane.setVvalue(0.7); }
+    @FXML void scrollToLicense(Event e) { if (mainScrollPane != null) mainScrollPane.setVvalue(1.0); }
+    @FXML void scrollToCredits(Event e) { if (mainScrollPane != null) mainScrollPane.setVvalue(1.0); }
 
     @FXML
     void checkUpdate() {

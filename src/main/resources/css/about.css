@@ -163,3 +163,78 @@
     -fx-padding: 0;
     -fx-border-color: transparent;
 }
+
+/* ===== Right CONTENTS panel ===== */
+.about-contents-root {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 0 0 0 1;
+    -fx-min-height: 100%;
+}
+.about-contents-header {
+    -fx-padding: 14 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-spacing: 4;
+}
+.about-contents-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+}
+.about-contents-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.about-contents-nav {
+    -fx-padding: 0;
+}
+.about-nav-item {
+    -fx-padding: 11 16 11 16;
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-cursor: hand;
+}
+.about-nav-item:hover {
+    -fx-text-fill: -pt-text;
+    -fx-background-color: -pt-bg-elevated;
+}
+.about-nav-selected {
+    -fx-text-fill: -pt-accent-teal;
+    -fx-border-color: -pt-accent-teal;
+    -fx-border-width: 0 0 1 2;
+    -fx-background-color: derive(-pt-accent-teal, -70%);
+    -fx-font-weight: bold;
+}
+.about-contents-states-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-padding: 10 16 4 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+.about-contents-states {
+    -fx-padding: 8 16 16 16;
+}
+.about-state-chip {
+    -fx-padding: 6 12 6 12;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 6;
+}
+.about-state-dot {
+    -fx-pref-width: 8; -fx-pref-height: 8;
+    -fx-min-width: 8; -fx-min-height: 8;
+    -fx-max-width: 8; -fx-max-height: 8;
+    -fx-background-radius: 50%;
+}
+.about-state-dot-latest { -fx-background-color: -pt-success; }
+.about-state-dot-none   { -fx-background-color: -pt-text-muted; }
+.about-state-dot-mit    { -fx-background-color: -pt-accent-teal; }
+.about-state-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text;
+}
