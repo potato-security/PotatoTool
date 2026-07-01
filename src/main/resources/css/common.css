@@ -163,6 +163,10 @@
 #root{
     -fx-background-color: transparent;
 }
+/* 所有页面根 StackPane 统一深色底，确保快照与真实 app 一致 */
+#sPane {
+    -fx-background-color: -pt-bg-base;
+}
 #outerBorderPane{
     -fx-background-radius: 12;
 }
@@ -452,15 +456,20 @@
     -fx-stroke: -main-font-color;
 }
 .codeAreaPane{
-    -fx-background-color: -main-topBar-color;
-    -fx-border-color: -main-border-color;
+    -fx-background-color: -pt-bg-inset;
+    -fx-border-color: -pt-border;
     -fx-background-radius: 10;
     -fx-border-radius: 10;
     -fx-padding: 5;
 }
 .codeArea {
-    -fx-background-color: null;
+    -fx-background-color: transparent;
     -fx-padding: 15;
+}
+/* RichTextFX 内部节点透明，显示 codeAreaPane 的深色底 */
+.styled-text-area,
+.styled-text-area .content {
+    -fx-background-color: transparent;
 }
 .lineno {  /*针对于行数cell样式*/
     -fx-background-color: -main-cell-color;
@@ -894,6 +903,9 @@
 }
 .scroll-pane{
     -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+.scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
 .scroll-pane .corner {
