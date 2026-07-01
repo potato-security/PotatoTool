@@ -1,17 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothListView?>
-
-<?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
-<?import com.leewyatt.rxcontrols.controls.RXTranslationButton?>
-<?import javafx.scene.effect.DropShadow?>
-<?import org.fxmisc.richtext.CodeArea?>
-<?import org.fxmisc.flowless.VirtualizedScrollPane?>
-<?import javafx.collections.FXCollections?>
 <?import javafx.scene.Cursor?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
@@ -27,21 +17,11 @@
             <HBox alignment="CENTER_LEFT" maxWidth="Infinity">
                 <Label text="SOURCE FILE" styleClass="pt-section-label" userData="i18n:exif.source.title"/>
             </HBox>
-            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.5}" styleClass="pt-btn-primary" text="选择图片/文件" userData="i18n:exif.selectfile" onAction="#getExifFx" translationDir="BOTTOM_TO_TOP">
-                <graphic>
-                    <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
-                        <image>
-                            <Image url="@../../img/codeFile.png" />
-                        </image>
-                    </ImageView>
-                </graphic>
-                <effect>
-                    <DropShadow />
-                </effect>
+            <Button prefHeight="44.0" prefWidth="240" styleClass="pt-btn-primary" text="选择文件" userData="i18n:exif.selectfile" onAction="#getExifFx">
                 <cursor>
                     <Cursor fx:constant="HAND" />
                 </cursor>
-            </RXTranslationButton>
+            </Button>
             <Label text="不支持拖拽 · JPG / PNG / TIFF / HEIC / RAW" styleClass="pt-caption" userData="i18n:exif.formats"/>
         </VBox>
 
