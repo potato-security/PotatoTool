@@ -4,7 +4,6 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.effect.DropShadow?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
            stylesheets="@../../css/PaneProcessQuery.css"
@@ -15,23 +14,19 @@
     <VBox alignment="CENTER" spacing="15">
 
         <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-            <SmoothTextArea  fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入tasklist或者ps aux执行后的内容" userData="i18n-prompt:process.input.placeholder"/>
+            <SmoothTextArea  fx:id="inputText" styleClass="pt-input" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入tasklist或者ps aux执行后的内容" userData="i18n-prompt:process.input.placeholder"/>
         </Pane>
 
-        <Button minHeight="48.0" minWidth="${sPane.width}" text="开始提取" userData="i18n:process.extract" onAction="#getInfo">
-            <effect>
-                <DropShadow />
-            </effect>
-        </Button>
+        <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width}" text="开始提取" userData="i18n:process.extract" onAction="#getInfo"/>
 
         <HBox spacing="20" style="-fx-padding: 10 0 0 0">
             <StackPane>
-                <SmoothTextArea fx:id="antivirus" prefWidth="${sPane.width * 0.5 - 10}" prefHeight="${sPane.height * 0.6 - 83}"/>
+                <SmoothTextArea fx:id="antivirus" styleClass="pt-input" prefWidth="${sPane.width * 0.5 - 10}" prefHeight="${sPane.height * 0.6 - 83}"/>
                 <Label styleClass="titleText" translateY="-15" text="杀软进程" userData="i18n:process.antivirus" StackPane.alignment="TOP_CENTER"/>
             </StackPane>
 
             <StackPane>
-                <SmoothTextArea fx:id="canRoot" prefWidth="${sPane.width * 0.5 - 10}" prefHeight="${sPane.height * 0.6 - 83}"/>
+                <SmoothTextArea fx:id="canRoot" styleClass="pt-input" prefWidth="${sPane.width * 0.5 - 10}" prefHeight="${sPane.height * 0.6 - 83}"/>
                 <Label styleClass="titleText" translateY="-15" text="其他进程" userData="i18n:process.other" StackPane.alignment="TOP_CENTER"/>
             </StackPane>
         </HBox>

@@ -1,6 +1,6 @@
 /*
  * PotatoTool - 漏洞扫描器 UI
- * 使用全局 -main-* 变量体系，与其他页面风格统一
+ * 统一到设计系统 token（-pt-*）+ pt-* 组件类
  */
 
 /* ========================================
@@ -9,47 +9,26 @@
 
 #sPane {
     -fx-background-color: transparent;
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
 }
 
 .vulscan-root {
-    -fx-background-color: -main-topBar-color;
-    -fx-background-radius: 10;
-    -fx-border-color: -main-border-color;
-    -fx-border-radius: 10;
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 8;
+    -fx-border-color: -pt-accent;
+    -fx-border-radius: 8;
     -fx-border-width: 1;
-    -fx-padding: 15;
+    -fx-padding: 16;
 }
 
 /* 结果区域圆角框 */
 .result-area {
-    -fx-background-color: -main-cell-color;
+    -fx-background-color: -pt-bg-elevated;
     -fx-background-radius: 8;
-    -fx-border-color: -main-lineno-color;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-radius: 8;
     -fx-border-width: 1;
-    -fx-padding: 10;
-}
-
-/* ========================================
-   2. 目标输入框
-   ======================================== */
-
-#targetField {
-    -fx-background-color: -main-topBar-color;
-    -fx-background-radius: 8;
-    -fx-border-color: -main-lineno-color;
-    -fx-border-radius: 8;
-    -fx-border-width: 1;
-    -fx-padding: 12;
-    -fx-text-fill: -main-font-color;
-    -fx-font-size: 14;
-    -fx-font-family: "JetBrains Mono", "Consolas", "Courier New", monospace;
-    -fx-prompt-text-fill: -main-linenoText-color;
-}
-
-#targetField:focused {
-    -fx-border-color: -main-border-color;
+    -fx-padding: 8;
 }
 
 /* ========================================
@@ -59,8 +38,8 @@
 .small-button {
     -fx-background-color: transparent;
     -fx-background-radius: 4;
-    -fx-text-fill: -main-font-color;
-    -fx-border-color: -main-lineno-color;
+    -fx-text-fill: -pt-text;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-radius: 4;
     -fx-border-width: 1;
     -fx-font-size: 12;
@@ -69,15 +48,15 @@
 }
 
 .small-button:hover {
-    -fx-border-color: -main-border-color;
-    -fx-text-fill: -main-border-color;
+    -fx-border-color: -pt-accent;
+    -fx-text-fill: -pt-accent;
 }
 
 .tiny-button {
     -fx-background-color: transparent;
     -fx-background-radius: 4;
-    -fx-text-fill: -main-linenoText-color;
-    -fx-border-color: -main-lineno-color;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-radius: 4;
     -fx-border-width: 1;
     -fx-font-size: 11;
@@ -86,15 +65,15 @@
 }
 
 .tiny-button:hover {
-    -fx-text-fill: -main-border-color;
-    -fx-border-color: -main-border-color;
+    -fx-text-fill: -pt-accent;
+    -fx-border-color: -pt-accent;
 }
 
 .danger-button {
     -fx-background-color: transparent;
     -fx-background-radius: 4;
-    -fx-text-fill: #e74c3c;
-    -fx-border-color: #e74c3c;
+    -fx-text-fill: -pt-danger;
+    -fx-border-color: -pt-danger;
     -fx-border-radius: 4;
     -fx-border-width: 1;
     -fx-font-size: 12;
@@ -103,18 +82,18 @@
 }
 
 .danger-button:hover {
-    -fx-background-color: rgba(231, 76, 60, 0.15);
+    -fx-background-color: -pt-danger-soft;
 }
 
 /* 操作图标 */
 .action-icon {
     -fx-cursor: hand;
-    -fx-padding: 6;
-    -fx-background-radius: 6;
+    -fx-padding: 8;
+    -fx-background-radius: 8;
 }
 
 .action-icon:hover {
-    -fx-background-color: rgba(62, 206, 227, 0.15);
+    -fx-background-color: -pt-accent-soft;
 }
 
 /* ========================================
@@ -122,45 +101,45 @@
    ======================================== */
 
 #settingVbox {
-    -fx-border-color: -main-border-color;
-    -fx-border-radius: 5;
+    -fx-border-color: -pt-accent;
+    -fx-border-radius: 4;
     -fx-border-width: 1;
 }
 
 #topLeftTitle, #smartScanLeftTitle {
-    -fx-background-color: -main-topBar-color;
-    -fx-background-radius: 5;
-    -fx-border-color: -main-lineno-color;
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 4;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 0 1 1 0;
-    -fx-padding: 10;
+    -fx-padding: 8;
     -fx-pref-width: 140;
     -fx-min-width: 140;
     -fx-alignment: center;
 }
 
 #bottomLeftTitle {
-    -fx-background-color: -main-topBar-color;
-    -fx-background-radius: 5;
-    -fx-border-color: -main-lineno-color;
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 4;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 0 1 0 0;
-    -fx-padding: 10;
+    -fx-padding: 8;
     -fx-pref-width: 140;
     -fx-min-width: 140;
     -fx-alignment: center;
 }
 
 #topRightTitle, #smartScanRightTitle {
-    -fx-border-color: -main-lineno-color;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 0 0 1 0;
-    -fx-padding: 10;
+    -fx-padding: 8;
 }
 
 #bottomRightTitle {
-    -fx-padding: 10;
+    -fx-padding: 8;
 }
 
 .title-label {
-    -fx-text-fill: -main-border-color;
+    -fx-text-fill: -pt-accent;
     -fx-font-weight: bold;
     -fx-font-size: 13;
 }
@@ -170,9 +149,9 @@
    ======================================== */
 
 .result-item-pane {
-    -fx-background-color: -main-cell-color;
+    -fx-background-color: -pt-bg-elevated;
     -fx-background-radius: 8;
-    -fx-border-color: -main-lineno-color;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-radius: 8;
     -fx-border-width: 1;
     -fx-padding: 16;
@@ -180,36 +159,36 @@
 }
 
 .result-item-pane:hover {
-    -fx-border-color: -main-border-color;
-    -fx-background-color: derive(-main-cell-color, 5%);
+    -fx-border-color: -pt-accent;
+    -fx-background-color: derive(-pt-bg-elevated, 8%);
 }
 
 #promptPane.vulscan-prompt-info {
-    -fx-background-color: rgba(17, 22, 28, 0.94), rgba(62, 206, 227, 0.08);
+    -fx-background-color: -pt-bg-panel, -pt-accent-soft;
     -fx-background-insets: 0, 1;
-    -fx-border-color: rgba(62, 206, 227, 0.46);
+    -fx-border-color: -pt-accent;
     -fx-border-width: 1;
-    -fx-border-radius: 14;
-    -fx-background-radius: 14, 13;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16, 15;
 }
 
 #promptPane.vulscan-prompt-info .label {
-    -fx-text-fill: #f8fafc;
+    -fx-text-fill: -pt-text;
     -fx-font-weight: bold;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 2, 0, 0, 1);
 }
 
 #promptPane.vulscan-prompt-error {
-    -fx-background-color: rgba(44, 16, 18, 0.95), rgba(255, 76, 63, 0.16);
+    -fx-background-color: -pt-bg-panel, -pt-danger-soft;
     -fx-background-insets: 0, 1;
-    -fx-border-color: rgba(255, 118, 108, 0.72);
+    -fx-border-color: -pt-danger;
     -fx-border-width: 1;
-    -fx-border-radius: 14;
-    -fx-background-radius: 14, 13;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16, 15;
 }
 
 #promptPane.vulscan-prompt-error .label {
-    -fx-text-fill: #ffe6e2;
+    -fx-text-fill: -pt-text;
     -fx-font-weight: bold;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 2, 0, 0, 1);
 }
@@ -230,17 +209,17 @@
 }
 
 .prompt-dialog {
-    -fx-background-color: -main-btnContent-color;
-    -fx-background-radius: 14;
-    -fx-border-color: -main-lineno-color;
-    -fx-border-radius: 14;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 16;
     -fx-border-width: 1;
-    -fx-padding: 20;
+    -fx-padding: 16;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.46), 24, 0, 0, 6);
 }
 
 .prompt-dialog-text {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
     -fx-font-size: 13;
     -fx-padding: 0;
     -fx-alignment: center-left;
@@ -251,7 +230,7 @@
 .prompt-dialog-title {
     -fx-font-size: 18;
     -fx-font-weight: bold;
-    -fx-text-fill: -main-border-color;
+    -fx-text-fill: -pt-accent;
 }
 
 .prompt-dialog-header {
@@ -271,74 +250,74 @@
 
 .prompt-dialog-secondary {
     -fx-background-color: transparent;
-    -fx-border-color: -main-lineno-color;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
 }
 
 .scan-progress {
-    -fx-background-radius: 9999;
+    -fx-background-radius: 999;
 }
 
 .scan-progress .track {
-    -fx-background-color: -main-cell-color;
-    -fx-background-radius: 9999;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 999;
     -fx-pref-height: 8;
 }
 
 .scan-progress .bar {
-    -fx-background-color: linear-gradient(to right, #3B82F6 0%, #60A5FA 100%);
-    -fx-background-radius: 9999;
+    -fx-background-color: linear-gradient(to right, -pt-info 0%, derive(-pt-info, 25%) 100%);
+    -fx-background-radius: 999;
     -fx-background-insets: 0;
     -fx-padding: 8;
 }
 
 .stat-label {
     -fx-font-size: 12;
-    -fx-text-fill: -main-linenoText-color;
+    -fx-text-fill: -pt-text-secondary;
 }
 
 .stat-value {
     -fx-font-size: 20;
     -fx-font-weight: bold;
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
 }
 
 /* POC 格式统计颜色 */
 .stat-value-nuclei {
     -fx-font-size: 16;
     -fx-font-weight: 600;
-    -fx-text-fill: #00B8D9;
+    -fx-text-fill: -pt-accent-teal;
 }
 
 .stat-value-goby {
     -fx-font-size: 16;
     -fx-font-weight: 600;
-    -fx-text-fill: #FF5630;
+    -fx-text-fill: -pt-danger;
 }
 
 .stat-value-xray {
     -fx-font-size: 16;
     -fx-font-weight: 600;
-    -fx-text-fill: #6554C0;
+    -fx-text-fill: -pt-info;
 }
 
 .stat-value-pocsuite {
     -fx-font-size: 16;
     -fx-font-weight: 600;
-    -fx-text-fill: #36B37E;
+    -fx-text-fill: -pt-success;
 }
 
 .result-title {
     -fx-font-size: 18;
     -fx-font-weight: bold;
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
 }
 
 .vuln-count {
     -fx-font-size: 16;
     -fx-font-weight: 600;
-    -fx-text-fill: #DC2626;
+    -fx-text-fill: -pt-danger;
 }
 
 /* 严重度指示点 */
@@ -348,11 +327,11 @@
     -fx-padding: 0 2 0 2;
 }
 
-.severity-dot-critical { -fx-text-fill: #e74c3c; }
-.severity-dot-high { -fx-text-fill: #e67e22; }
-.severity-dot-medium { -fx-text-fill: #f39c12; }
-.severity-dot-low { -fx-text-fill: #27ae60; }
-.severity-dot-info { -fx-text-fill: #3498db; }
+.severity-dot-critical { -fx-text-fill: -pt-crit; }
+.severity-dot-high { -fx-text-fill: -pt-danger; }
+.severity-dot-medium { -fx-text-fill: -pt-warning; }
+.severity-dot-low { -fx-text-fill: -pt-success; }
+.severity-dot-info { -fx-text-fill: -pt-info; }
 
 /* ========================================
    7. 严重度徽章
@@ -360,23 +339,23 @@
 
 .severity-label {
     -fx-padding: 4 10 4 10;
-    -fx-background-radius: 9999;
-    -fx-text-fill: white;
+    -fx-background-radius: 999;
+    -fx-text-fill: -pt-text;
     -fx-font-size: 11;
     -fx-font-weight: bold;
 }
 
-.severity-critical { -fx-background-color: #DC2626; }
-.severity-high { -fx-background-color: #EA580C; }
-.severity-medium { -fx-background-color: #F59E0B; }
-.severity-low { -fx-background-color: #3B82F6; }
-.severity-info { -fx-background-color: #6B7280; }
+.severity-critical { -fx-background-color: -pt-crit; }
+.severity-high { -fx-background-color: -pt-danger; }
+.severity-medium { -fx-background-color: -pt-warning; }
+.severity-low { -fx-background-color: -pt-info; }
+.severity-info { -fx-background-color: -pt-text-muted; }
 
-.severity-card-critical { -fx-background-color: rgba(220, 38, 38, 0.15); -fx-border-color: #DC2626; }
-.severity-card-high { -fx-background-color: rgba(234, 88, 12, 0.15); -fx-border-color: #EA580C; }
-.severity-card-medium { -fx-background-color: rgba(245, 158, 11, 0.15); -fx-border-color: #F59E0B; }
-.severity-card-low { -fx-background-color: rgba(59, 130, 246, 0.15); -fx-border-color: #3B82F6; }
-.severity-card-info { -fx-background-color: rgba(107, 114, 128, 0.15); -fx-border-color: #6B7280; }
+.severity-card-critical { -fx-background-color: -pt-danger-soft; -fx-border-color: -pt-crit; }
+.severity-card-high { -fx-background-color: -pt-danger-soft; -fx-border-color: -pt-danger; }
+.severity-card-medium { -fx-background-color: -pt-warning-soft; -fx-border-color: -pt-warning; }
+.severity-card-low { -fx-background-color: derive(-pt-info, -55%); -fx-border-color: -pt-info; }
+.severity-card-info { -fx-background-color: -pt-bg-elevated; -fx-border-color: -pt-text-muted; }
 
 /* ========================================
    8. 对话框 & 模态框
@@ -387,38 +366,38 @@
 }
 
 .manage-pane, .detail-pane {
-    -fx-background-color: -main-btnContent-color;
-    -fx-background-radius: 12;
-    -fx-border-color: -main-lineno-color;
-    -fx-border-radius: 12;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 16;
     -fx-border-width: 1;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 40, 0, 0, 10);
 }
 
 .manage-header {
     -fx-padding: 24;
-    -fx-border-color: -main-lineno-color;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 0 0 1 0;
-    -fx-background-radius: 12 12 0 0;
+    -fx-background-radius: 16 16 0 0;
 }
 
 .manage-title {
     -fx-font-size: 20;
     -fx-font-weight: bold;
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
 }
 
 .close-button {
     -fx-font-size: 20;
-    -fx-text-fill: -main-linenoText-color;
+    -fx-text-fill: -pt-text-secondary;
     -fx-cursor: hand;
     -fx-padding: 0 10 0 10;
-    -fx-background-radius: 9999;
+    -fx-background-radius: 999;
 }
 
 .close-button:hover {
-    -fx-background-color: rgba(62, 206, 227, 0.15);
-    -fx-text-fill: -main-font-color;
+    -fx-background-color: -pt-accent-soft;
+    -fx-text-fill: -pt-text;
 }
 
 .manage-search {
@@ -436,33 +415,33 @@
 }
 
 .poc-table .column-header {
-    -fx-background-color: -main-cell-color;
-    -fx-text-fill: -main-font-color;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text;
     -fx-font-weight: 600;
     -fx-font-size: 12;
     -fx-padding: 12;
-    -fx-border-color: -main-lineno-color;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 0 0 1 0;
 }
 
 .poc-table .table-row-cell {
     -fx-background-color: transparent;
-    -fx-border-color: -main-lineno-color;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 0 0 1 0;
     -fx-cell-size: 48;
 }
 
 .poc-table .table-row-cell:hover {
-    -fx-background-color: rgba(62, 206, 227, 0.1);
+    -fx-background-color: -pt-accent-soft;
 }
 
 .poc-table .table-row-cell:selected {
-    -fx-background-color: rgba(62, 206, 227, 0.2);
-    -fx-border-color: -main-border-color;
+    -fx-background-color: -pt-accent-soft;
+    -fx-border-color: -pt-accent;
 }
 
 .poc-table .table-cell {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
     -fx-padding: 8 12 8 12;
 }
 
@@ -476,11 +455,11 @@
     -fx-max-width: 20;
     -fx-max-height: 20;
     -fx-shape: "M109.714286 950.710857c0-0.146286 74.605714-0.073143 223.817143 0.146286v73.142857H110.08A73.728 73.728 0 0 1 36.571429 950.710857V73.069714C36.571429 32.694857 69.705143 0 109.494857 0h439.296c40.228571 0 90.843429 26.916571 113.664 61.147429L719.213714 146.285714H1133.714286c40.448 0 73.216 33.353143 73.216 73.289143v731.136c0 40.448-33.353143 73.289143-73.435429 73.289143h-217.526857v-73.142857h217.526857s0-243.785143 0.292572-731.282286c0 0.146286-151.186286 0-453.632-0.146286L601.6 101.668571C592.457143 87.990857 564.809143 73.142857 548.790857 73.142857H109.494857c0.146286 0 0.219429 292.498286 0.219429 877.568z";
-    -fx-background-color: -main-border-color;
+    -fx-background-color: -pt-accent;
 }
 
 .upload:hover {
-    -fx-background-color: -main-borderHover-color;
+    -fx-background-color: derive(-pt-accent, -25%);
 }
 
 .send {
@@ -489,11 +468,11 @@
     -fx-max-width: 20;
     -fx-max-height: 20;
     -fx-shape: "M216.8 781.3C55.7 620.2 55.7 358 216.8 196.9s423.2-161.1 584.3 0 161.1 423.2 0 584.3-423.2 161.2-584.3 0.1z m530.9-530.9c-131.6-131.6-345.7-131.6-477.4 0-131.6 131.6-131.6 345.7 0 477.3 131.6 131.6 345.7 131.6 477.3 0 131.7-131.5 131.7-345.7 0.1-477.3zM890.2 947.9c-9.6 0-19.2-3.6-26.5-10.9L741.2 816.5c-14.9-14.7-15.1-38.6-0.4-53.5 14.7-14.9 38.6-15.1 53.5-0.4l122.5 120.5c14.9 14.7 15.1 38.6 0.4 53.5-7.5 7.5-17.2 11.3-27 11.3zM487.4 275.6c-7.1-7.1-11.3-16.9-11.1-27.7 0.6-20.9 17.9-37.4 38.8-36.8 72.9 1.9 141.5 31.4 193.1 83 14.8 14.8 14.8 38.7 0 53.5-14.8 14.8-38.7 14.8-53.5 0-37.8-37.8-88.1-59.5-141.6-60.8-10.1-0.4-19.1-4.6-25.7-11.2zM723.9 484.2c-5.5-5.5-9.4-12.8-10.6-21.1-1.5-10.2-3.9-20.5-7-30.5-6.2-20 4.9-41.2 24.9-47.4 20-6.2 41.2 4.9 47.4 24.9 4.3 13.7 7.5 27.7 9.6 41.7 3.1 20.6-11.1 39.9-31.7 43-12.5 1.9-24.4-2.4-32.6-10.6z";
-    -fx-background-color: -main-border-color;
+    -fx-background-color: -pt-accent;
 }
 
 .send:hover {
-    -fx-background-color: -main-borderHover-color;
+    -fx-background-color: derive(-pt-accent, -25%);
 }
 
 .pause {
@@ -502,7 +481,7 @@
     -fx-max-width: 20;
     -fx-max-height: 20;
     -fx-shape: "M300 200h150v600h-150v-600zM550 200h150v600h-150v-600z";
-    -fx-background-color: #F59E0B;
+    -fx-background-color: -pt-warning;
 }
 
 .resume {
@@ -511,7 +490,7 @@
     -fx-max-width: 20;
     -fx-max-height: 20;
     -fx-shape: "M300 200l500 300-500 300v-600z";
-    -fx-background-color: #10B981;
+    -fx-background-color: -pt-success;
 }
 
 .stop {
@@ -520,7 +499,7 @@
     -fx-max-width: 20;
     -fx-max-height: 20;
     -fx-shape: "M924.8 337.6c-22.6-53.3-54.9-101.3-96-142.4-41.1-41.1-89.1-73.4-142.4-96C631.1 75.8 572.5 64 512 64S392.9 75.8 337.6 99.2c-53.3 22.6-101.3 54.9-142.4 96s-73.4 89.1-96 142.4C75.8 392.9 64 451.5 64 512s11.8 119.1 35.2 174.4c22.6 53.3 54.9 101.3 96 142.4 41.1 41.1 89.1 73.4 142.4 96C392.9 948.2 451.5 960 512 960s119.1-11.8 174.4-35.2c53.3-22.6 101.3-54.9 142.4-96 41.1-41.1 73.4-89.1 96-142.4C948.2 631.1 960 572.5 960 512s-11.8-119.1-35.2-174.4zM662 867.1c-47.5 20.1-98 30.3-150 30.3s-102.5-10.2-150-30.2c-45.8-19.3-87-47.1-122.5-82.6-35.5-35.5-63.3-76.7-82.6-122.5-20.1-47.5-30.3-98-30.3-150s10.2-102.5 30.2-150c19.3-45.8 47.1-87 82.6-122.5 35.5-35.5 76.7-63.3 122.5-82.6 47.5-20.1 98-30.3 150-30.3s102.5 10.2 150 30.2c45.8 19.3 87 47.1 122.5 82.6C819.9 275 847.7 316.2 867 362c20.1 47.5 30.3 98 30.3 150s-10.2 102.5-30.2 150c-19.3 45.8-47.1 87-82.6 122.5-35.5 35.4-76.7 63.2-122.5 82.6zM621.7 326.1H402.3c-42 0-76.2 34.2-76.2 76.2v219.3c0 42 34.2 76.2 76.2 76.2h219.3c42 0 76.2-34.2 76.2-76.2V402.3c0.1-42-34.1-76.2-76.1-76.2z m12.6 76.2v219.3c0 6.9-5.7 12.6-12.6 12.6H402.3c-6.9 0-12.6-5.7-12.6-12.6V402.3c0-6.9 5.7-12.6 12.6-12.6h219.3c7 0 12.7 5.7 12.7 12.6z";
-    -fx-background-color: #EF4444;
+    -fx-background-color: -pt-danger;
 }
 
 /* ========================================
@@ -528,33 +507,33 @@
    ======================================== */
 
 .vuln-titled-pane {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
 }
 
 .vuln-titled-pane .title {
-    -fx-background-color: -main-cell-color;
-    -fx-text-fill: -main-font-color;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text;
     -fx-font-size: 14;
     -fx-font-weight: 600;
     -fx-padding: 12;
 }
 
 .vuln-titled-pane .content {
-    -fx-background-color: -main-topBar-color;
-    -fx-border-color: -main-lineno-color;
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 1;
     -fx-padding: 16;
 }
 
 .vuln-titled-pane:expanded .title {
-    -fx-background-color: derive(-main-cell-color, 5%);
+    -fx-background-color: derive(-pt-bg-elevated, 8%);
 }
 
-.vuln-titled-pane.severity-critical .title { -fx-border-color: #DC2626; -fx-border-width: 0 0 0 4; }
-.vuln-titled-pane.severity-high .title { -fx-border-color: #EA580C; -fx-border-width: 0 0 0 4; }
-.vuln-titled-pane.severity-medium .title { -fx-border-color: #F59E0B; -fx-border-width: 0 0 0 4; }
-.vuln-titled-pane.severity-low .title { -fx-border-color: #3B82F6; -fx-border-width: 0 0 0 4; }
-.vuln-titled-pane.severity-info .title { -fx-border-color: #6B7280; -fx-border-width: 0 0 0 4; }
+.vuln-titled-pane.severity-critical .title { -fx-border-color: -pt-crit; -fx-border-width: 0 0 0 4; }
+.vuln-titled-pane.severity-high .title { -fx-border-color: -pt-danger; -fx-border-width: 0 0 0 4; }
+.vuln-titled-pane.severity-medium .title { -fx-border-color: -pt-warning; -fx-border-width: 0 0 0 4; }
+.vuln-titled-pane.severity-low .title { -fx-border-color: -pt-info; -fx-border-width: 0 0 0 4; }
+.vuln-titled-pane.severity-info .title { -fx-border-color: -pt-text-muted; -fx-border-width: 0 0 0 4; }
 
 .vuln-detail-content {
     -fx-spacing: 12;
@@ -562,21 +541,21 @@
 }
 
 .detail-label {
-    -fx-text-fill: -main-linenoText-color;
+    -fx-text-fill: -pt-text-secondary;
     -fx-font-size: 12;
     -fx-font-weight: 600;
     -fx-min-width: 80;
 }
 
 .detail-value {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
     -fx-font-size: 13;
 }
 
 /* 加载/完成图标 */
 .loaddingImg {
-    -fx-background-color: -main-border-color;
-    -fx-background-radius: 9999;
+    -fx-background-color: -pt-accent;
+    -fx-background-radius: 999;
     -fx-pref-width: 20;
     -fx-pref-height: 20;
     -fx-min-width: 20;
@@ -584,8 +563,8 @@
 }
 
 .endImg {
-    -fx-background-color: #10B981;
-    -fx-background-radius: 9999;
+    -fx-background-color: -pt-success;
+    -fx-background-radius: 999;
     -fx-pref-width: 20;
     -fx-pref-height: 20;
     -fx-min-width: 20;
@@ -597,24 +576,24 @@
    ======================================== */
 
 .date-picker {
-    -fx-background-color: -main-cell-color;
-    -fx-border-color: -main-lineno-color;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
 }
 
 .date-picker .text-field {
-    -fx-background-color: -main-cell-color;
-    -fx-text-fill: -main-font-color;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text;
     -fx-border-width: 0;
 }
 
 .date-picker .arrow-button {
-    -fx-background-color: -main-cell-color;
+    -fx-background-color: -pt-bg-elevated;
 }
 
 .date-picker .arrow-button .arrow {
-    -fx-background-color: -main-font-color;
+    -fx-background-color: -pt-text;
 }
 
 /* ========================================
@@ -623,36 +602,38 @@
 
 .compact-config-pane {
     -fx-background-color: transparent;
-    -fx-text-fill: -main-font-color;
-    -fx-border-color: -main-lineno-color;
-    -fx-border-radius: 6;
-    -fx-background-radius: 6;
+    -fx-text-fill: -pt-text;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
     -fx-border-width: 1;
 }
 
 .compact-config-pane > .title {
-    -fx-background-color: -main-cell-color;
-    -fx-background-radius: 6 6 0 0;
-    -fx-padding: 6 12 6 12;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 8 8 0 0;
+    -fx-padding: 8 12 8 12;
     -fx-font-size: 13;
     -fx-font-weight: 600;
 }
 
 .compact-config-pane:collapsed > .title {
-    -fx-background-radius: 6;
+    -fx-background-radius: 8;
 }
 
 .compact-config-pane > .title > .text {
-    -fx-fill: -main-border-color;
+    -fx-fill: -pt-accent;
 }
 
 .compact-config-pane > .title > .arrow-button > .arrow {
-    -fx-background-color: -main-border-color;
+    -fx-background-color: -pt-accent;
 }
 
 .compact-config-pane > .content {
     -fx-background-color: transparent;
-    -fx-border-color: -main-lineno-color;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 1 0 0 0;
     -fx-padding: 0;
 }
+</content>
+</invoke>

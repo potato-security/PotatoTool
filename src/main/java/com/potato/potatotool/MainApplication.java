@@ -371,7 +371,9 @@ public class MainApplication extends Application {
                 Platform.runLater(new Runnable() {
                     @Override public void run() {
                         try {
+                            scene.getStylesheets().add(Constants.getResourceUrl("/css/theme.css"));
                             scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+                            scene.getStylesheets().add(Constants.getResourceUrl("/css/components.css"));
                         } catch (Exception e) { if (debugMode) e.printStackTrace(); }
                         Platform.runLater(new Runnable() {
                             @Override public void run() {
@@ -1069,8 +1071,10 @@ public class MainApplication extends Application {
             Scene scene = new Scene(loader.load());
             
             scene.setFill(null);
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/theme.css"));
             scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
-            
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/components.css"));
+
             Stage updateStage = new Stage();
             updateStage.initStyle(StageStyle.TRANSPARENT);
             updateStage.setScene(scene);

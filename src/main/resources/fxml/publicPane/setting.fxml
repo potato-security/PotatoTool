@@ -30,9 +30,9 @@
                 <DropShadow/>
             </effect>
             <VBox>
-                <BorderPane fx:id="topBar" style="-fx-background-color: -main-btnContent-color;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
+                <BorderPane fx:id="topBar" style="-fx-background-color: -pt-bg-elevated;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
                     <center>
-                        <Label styleClass="setting-page-title" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="修改配置" userData="i18n:setting.title" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                        <Label styleClass="pt-h1" style="-fx-padding: 0 0 0 30;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="修改配置" userData="i18n:setting.title" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
                     </center>
                     <right>
                         <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
@@ -61,8 +61,8 @@
                                     <TitledPane fx:id="basicPane" text="基础配置" userData="i18n:setting.basic.title">
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="20" style="-fx-padding: 15;">
                                             <StackPane>
-                                                <Label fx:id="maxWidthlabel" style="-fx-text-fill: -main-topBar-color;" textAlignment="RIGHT" text="长格式占位符：" userData="i18n:setting.basic.placeholder.long"/>
-                                                <Label fx:id="maxWidthlabelSuper" style="-fx-text-fill: -main-topBar-color;" textAlignment="RIGHT" text="超长版格式占位符：" userData="i18n:setting.basic.placeholder.long"/>
+                                                <Label fx:id="maxWidthlabel" style="-fx-text-fill: -pt-bg-panel;" textAlignment="RIGHT" text="长格式占位符：" userData="i18n:setting.basic.placeholder.long"/>
+                                                <Label fx:id="maxWidthlabelSuper" style="-fx-text-fill: -pt-bg-panel;" textAlignment="RIGHT" text="超长版格式占位符：" userData="i18n:setting.basic.placeholder.long"/>
                                                 <HBox alignment="CENTER" spacing="10">
                                                     <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="语言设置：" userData="i18n:setting.basic.language"/>
                                                     <ComboBox fx:id="languageComboBox" prefHeight="20.0" prefWidth="250">
@@ -94,7 +94,7 @@
                                                     </tooltip>
                                                 </Label>
                                                 <StackPane>
-                                                    <TextField fx:id="proxy" prefWidth="250" promptText="[http/socks]://IP:端口" userData="i18n-prompt:setting.basic.proxy.placeholder" StackPane.alignment="CENTER">
+                                                    <TextField fx:id="proxy" styleClass="pt-input" prefWidth="250" promptText="[http/socks]://IP:端口" userData="i18n-prompt:setting.basic.proxy.placeholder" StackPane.alignment="CENTER">
                                                         <tooltip>
                                                             <Tooltip text="主代理为总开关，关闭后子服务代理不可用；开启后按子开关决定是否使用代理" userData="i18n:setting.basic.proxy.tooltip"/>
                                                         </tooltip>
@@ -120,15 +120,15 @@
 
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="浏览器路径：" userData="i18n:setting.browser.path"/>
-                                                <TextField fx:id="browserRuntimePath" prefWidth="250" promptText="留空则启动后自动探测并保存 Chrome/Chromium" userData="i18n-prompt:setting.browser.path.placeholder"/>
-                                                <Button text="浏览" minHeight="28" minWidth="72" prefWidth="72" onAction="#browseBrowserRuntimePath" userData="i18n:app.browse"/>
-                                                <Button text="检测" minHeight="28" minWidth="72" prefWidth="72" onAction="#testBrowserRuntimeCompatibility" userData="i18n:setting.browser.test"/>
+                                                <TextField fx:id="browserRuntimePath" styleClass="pt-input" prefWidth="250" promptText="留空则启动后自动探测并保存 Chrome/Chromium" userData="i18n-prompt:setting.browser.path.placeholder"/>
+                                                <Button styleClass="pt-btn" text="浏览" minHeight="28" minWidth="72" prefWidth="72" onAction="#browseBrowserRuntimePath" userData="i18n:app.browse"/>
+                                                <Button styleClass="pt-btn" text="检测" minHeight="28" minWidth="72" prefWidth="72" onAction="#testBrowserRuntimeCompatibility" userData="i18n:setting.browser.test"/>
                                             </HBox>
 
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${maxWidthlabel.width}" textAlignment="RIGHT" text="Python 路径：" userData="i18n:setting.python.path"/>
-                                                <TextField fx:id="pythonRuntimePath" prefWidth="250" promptText="留空则启动后自动探测并保存 Python" userData="i18n-prompt:setting.python.path.placeholder"/>
-                                                <Button text="浏览" minHeight="28" minWidth="72" prefWidth="72" onAction="#browsePythonRuntimePath" userData="i18n:app.browse"/>
+                                                <TextField fx:id="pythonRuntimePath" styleClass="pt-input" prefWidth="250" promptText="留空则启动后自动探测并保存 Python" userData="i18n-prompt:setting.python.path.placeholder"/>
+                                                <Button styleClass="pt-btn" text="浏览" minHeight="28" minWidth="72" prefWidth="72" onAction="#browsePythonRuntimePath" userData="i18n:app.browse"/>
                                             </HBox>
 
         <!--                            <HBox alignment="CENTER" spacing="10">-->
@@ -140,7 +140,7 @@
         <!--                            </HBox>-->
 
                                             <HBox alignment="CENTER">
-                                                <Button minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#save">
+                                                <Button styleClass="pt-btn-primary" minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#save">
                                                     <effect>
                                                         <DropShadow />
                                                     </effect>
@@ -169,7 +169,7 @@
                                                         <Tooltip text="自定义模式下填写完整 API Base；启用内置 AI 网关时此项无需填写。" userData="i18n:setting.ai.api.base.tooltip"/>
                                                     </tooltip>
                                                 </Label>
-                                                <TextField fx:id="aiApiBase" promptText="自定义模式下填写" prefWidth="250" userData="i18n-prompt:setting.ai.api.base.placeholder">
+                                                <TextField fx:id="aiApiBase" styleClass="pt-input" promptText="自定义模式下填写" prefWidth="250" userData="i18n-prompt:setting.ai.api.base.placeholder">
                                                     <tooltip>
                                                         <Tooltip text="自定义模式下填写完整 API Base；启用内置 AI 网关时此项无需填写。" userData="i18n:setting.ai.api.base.tooltip"/>
                                                     </tooltip>
@@ -182,7 +182,7 @@
                                                         <Tooltip text="自定义模式下填写 API Key；启用内置 AI 网关时此项无需填写。" userData="i18n:setting.ai.api.key.tooltip"/>
                                                     </tooltip>
                                                 </Label>
-                                                <TextField fx:id="aiApiKey" promptText="自定义模式下填写" prefWidth="250" userData="i18n-prompt:setting.ai.api.key.placeholder">
+                                                <TextField fx:id="aiApiKey" styleClass="pt-input" promptText="自定义模式下填写" prefWidth="250" userData="i18n-prompt:setting.ai.api.key.placeholder">
                                                     <tooltip>
                                                         <Tooltip text="自定义模式下填写 API Key；启用内置 AI 网关时此项无需填写。" userData="i18n:setting.ai.api.key.tooltip"/>
                                                     </tooltip>
@@ -195,7 +195,7 @@
                                                         <Tooltip text="自定义模式下填写模型名；启用内置 AI 网关时使用内置 alias，无需填写。" userData="i18n:setting.ai.model.tooltip"/>
                                                     </tooltip>
                                                 </Label>
-                                                <TextField fx:id="aiModel" promptText="自定义模式下填写" prefWidth="250" userData="i18n-prompt:setting.ai.model.placeholder">
+                                                <TextField fx:id="aiModel" styleClass="pt-input" promptText="自定义模式下填写" prefWidth="250" userData="i18n-prompt:setting.ai.model.placeholder">
                                                     <tooltip>
                                                         <Tooltip text="自定义模式下填写模型名；启用内置 AI 网关时使用内置 alias，无需填写。" userData="i18n:setting.ai.model.tooltip"/>
                                                     </tooltip>
@@ -217,7 +217,7 @@
 
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label  minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="Timeout(ms)：" userData="i18n:setting.ai.timeout"/>
-                                                <TextField fx:id="aiTimeoutMs" promptText="60000" prefWidth="250" userData="i18n-prompt:setting.ai.timeout.placeholder"/>
+                                                <TextField fx:id="aiTimeoutMs" styleClass="pt-input" promptText="60000" prefWidth="250" userData="i18n-prompt:setting.ai.timeout.placeholder"/>
                                             </HBox>
 
                                             <HBox alignment="CENTER" spacing="10">
@@ -229,7 +229,7 @@
 
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label  minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="Thinking Budget：" userData="i18n:setting.ai.thinking.budget"/>
-                                                <TextField fx:id="aiThinkingBudgetTokens" promptText="1024" prefWidth="250" userData="i18n-prompt:setting.ai.thinking.budget.placeholder"/>
+                                                <TextField fx:id="aiThinkingBudgetTokens" styleClass="pt-input" promptText="1024" prefWidth="250" userData="i18n-prompt:setting.ai.thinking.budget.placeholder"/>
                                             </HBox>
 
                                             <HBox alignment="CENTER" spacing="10">
@@ -240,7 +240,7 @@
                                             </HBox>
 
                                             <HBox alignment="CENTER">
-                                                <Button minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#save">
+                                                <Button styleClass="pt-btn-primary" minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#save">
                                                     <effect>
                                                         <DropShadow />
                                                     </effect>
@@ -264,7 +264,7 @@
                                                         <Tooltip text="使用BP直接抓包获取，或浏览器访问view-source:https://aiqicha.baidu.com获取Cookie" userData="i18n:setting.asset.aiqicha.tooltip"/>
                                                     </tooltip>
                                                 </Label>
-                                                <TextField fx:id="aiqichaCookie" prefWidth="250">
+                                                <TextField fx:id="aiqichaCookie" styleClass="pt-input" prefWidth="250">
                                                     <tooltip>
                                                         <Tooltip text="使用BP直接抓包获取，或浏览器访问view-source:https://aiqicha.baidu.com获取Cookie" userData="i18n:setting.asset.aiqicha.tooltip"/>
                                                     </tooltip>
@@ -278,13 +278,13 @@
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Chinaz_Cookie：" userData="i18n:setting.asset.chinaz"/>
-                                                <TextField fx:id="chinazCookie" prefWidth="250"/>
+                                                <TextField fx:id="chinazCookie" styleClass="pt-input" prefWidth="250"/>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="chinazProxy"/>
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Fofa_Key：" userData="i18n:setting.asset.fofa"/>
-                                                <TextField fx:id="fofaKey" prefWidth="250"/>
+                                                <TextField fx:id="fofaKey" styleClass="pt-input" prefWidth="250"/>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="fofaProxy"/>
                                             </HBox>
@@ -330,13 +330,13 @@
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Shodan_Key：" userData="i18n:setting.asset.shodan"/>
-                                                <TextField fx:id="shodanKey" prefWidth="250"/>
+                                                <TextField fx:id="shodanKey" styleClass="pt-input" prefWidth="250"/>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="shodanProxy"/>
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Zoomeye_Key：" userData="i18n:setting.asset.zoomeye"/>
-                                                <TextField fx:id="zoomeyeKey" prefWidth="250"/>
+                                                <TextField fx:id="zoomeyeKey" styleClass="pt-input" prefWidth="250"/>
                                                 <Label minWidth="20"/>
                                                 <CFSwitch fx:id="zoomeyeProxy">
                                                     <tooltip>
@@ -413,7 +413,7 @@
                                                 </CFSwitch>
                                             </HBox>
                                             <HBox alignment="CENTER">
-                                                <Button minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#saveAsset">
+                                                <Button styleClass="pt-btn-primary" minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#saveAsset">
                                                     <effect>
                                                         <DropShadow />
                                                     </effect>
@@ -427,28 +427,28 @@
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="12" style="-fx-padding: 14 15 12 15;">
                                             
                                             <!-- 性能配置区 -->
-                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                            <VBox spacing="8" styleClass="pt-panel">
                                                 <HBox alignment="CENTER_LEFT" spacing="8">
-                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M11.11 23.569a1.2 1.2 0 0 1-.447-.087 1.19 1.19 0 0 1-.741-1.074l-.545-7.569H3.2a1.2 1.2 0 0 1-1.056-1.776l8.4-15.6a1.2 1.2 0 0 1 2.244.696l-.545 7.569h6.157a1.2 1.2 0 0 1 1.056 1.776l-8.4 15.6a1.2 1.2 0 0 1-.946.465z'; -fx-background-color: -main-border-color;"/>
-                                                    <Label styleClass="setting-section-title"
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M11.11 23.569a1.2 1.2 0 0 1-.447-.087 1.19 1.19 0 0 1-.741-1.074l-.545-7.569H3.2a1.2 1.2 0 0 1-1.056-1.776l8.4-15.6a1.2 1.2 0 0 1 2.244.696l-.545 7.569h6.157a1.2 1.2 0 0 1 1.056 1.776l-8.4 15.6a1.2 1.2 0 0 1-.946.465z'; -fx-background-color: -pt-accent;"/>
+                                                    <Label styleClass="pt-h2"
                                                           text="性能配置" userData="i18n:setting.vulnscan.performance"/>
                                                 </HBox>
                                                 <FlowPane hgap="25" vgap="12" alignment="CENTER_LEFT">
                                                     <HBox alignment="CENTER_LEFT" spacing="8">
-                                                        <Label text="核心线程:" styleClass="setting-field-label" userData="i18n:setting.vulnscan.core.threads"/>
-                                                        <TextField fx:id="vulnScanCoreThreads" prefWidth="70" promptText="10" styleClass="setting-field-input">
+                                                        <Label text="核心线程:" styleClass="pt-caption" userData="i18n:setting.vulnscan.core.threads"/>
+                                                        <TextField fx:id="vulnScanCoreThreads" prefWidth="70" promptText="10" styleClass="pt-input">
                                                             <tooltip><Tooltip text="并发扫描的基础线程数 (建议: 2-20)" userData="i18n:setting.vulnscan.core.threads.tip"/></tooltip>
                                                         </TextField>
                                                     </HBox>
                                                     <HBox alignment="CENTER_LEFT" spacing="8">
-                                                        <Label text="最大线程:" styleClass="setting-field-label" userData="i18n:setting.vulnscan.max.threads"/>
-                                                        <TextField fx:id="vulnScanMaxThreads" prefWidth="70" promptText="50" styleClass="setting-field-input">
+                                                        <Label text="最大线程:" styleClass="pt-caption" userData="i18n:setting.vulnscan.max.threads"/>
+                                                        <TextField fx:id="vulnScanMaxThreads" prefWidth="70" promptText="50" styleClass="pt-input">
                                                             <tooltip><Tooltip text="高负载时的最大线程数 (建议: 10-100)" userData="i18n:setting.vulnscan.max.threads.tip"/></tooltip>
                                                         </TextField>
                                                     </HBox>
                                                     <HBox alignment="CENTER_LEFT" spacing="8">
-                                                        <Label text="队列容量:" styleClass="setting-field-label" userData="i18n:setting.vulnscan.queue.size"/>
-                                                        <TextField fx:id="vulnScanQueueSize" prefWidth="80" promptText="1000" styleClass="setting-field-input">
+                                                        <Label text="队列容量:" styleClass="pt-caption" userData="i18n:setting.vulnscan.queue.size"/>
+                                                        <TextField fx:id="vulnScanQueueSize" prefWidth="80" promptText="1000" styleClass="pt-input">
                                                             <tooltip><Tooltip text="等待执行的任务队列大小" userData="i18n:setting.vulnscan.queue.size.tip"/></tooltip>
                                                         </TextField>
                                                     </HBox>
@@ -457,27 +457,27 @@
                                             <Separator prefWidth="${an.width - 58}"/>
 
                                             <!-- 网络配置区 -->
-                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                            <VBox spacing="8" styleClass="pt-panel">
                                                 <HBox alignment="CENTER_LEFT" spacing="8">
-                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'; -fx-background-color: -main-border-color;"/>
-                                                    <Label styleClass="setting-section-title"
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'; -fx-background-color: -pt-accent;"/>
+                                                    <Label styleClass="pt-h2"
                                                           text="网络配置" userData="i18n:setting.vulnscan.network"/>
                                                 </HBox>
                                                 <FlowPane hgap="25" vgap="12" alignment="CENTER_LEFT">
                                                     <HBox alignment="CENTER_LEFT" spacing="8">
-                                                        <Label text="超时(秒):" styleClass="setting-field-label" userData="i18n:setting.vulnscan.timeout"/>
-                                                        <TextField fx:id="vulnScanTimeout" prefWidth="60" promptText="15" styleClass="setting-field-input">
+                                                        <Label text="超时(秒):" styleClass="pt-caption" userData="i18n:setting.vulnscan.timeout"/>
+                                                        <TextField fx:id="vulnScanTimeout" prefWidth="60" promptText="15" styleClass="pt-input">
                                                             <tooltip><Tooltip text="HTTP请求超时时间" userData="i18n:setting.vulnscan.timeout.tip"/></tooltip>
                                                         </TextField>
                                                     </HBox>
                                                     <HBox alignment="CENTER_LEFT" spacing="8">
-                                                        <Label text="重试次数:" styleClass="setting-field-label" userData="i18n:setting.vulnscan.retries"/>
-                                                        <TextField fx:id="vulnScanRetries" prefWidth="50" promptText="2" styleClass="setting-field-input">
+                                                        <Label text="重试次数:" styleClass="pt-caption" userData="i18n:setting.vulnscan.retries"/>
+                                                        <TextField fx:id="vulnScanRetries" prefWidth="50" promptText="2" styleClass="pt-input">
                                                             <tooltip><Tooltip text="请求失败后的重试次数" userData="i18n:setting.vulnscan.retries.tip"/></tooltip>
                                                         </TextField>
                                                     </HBox>
                                                     <HBox alignment="CENTER_LEFT" spacing="8">
-                                                        <Label text="使用代理:" styleClass="setting-field-label" userData="i18n:setting.vulnscan.proxy"/>
+                                                        <Label text="使用代理:" styleClass="pt-caption" userData="i18n:setting.vulnscan.proxy"/>
                                                         <CFSwitch fx:id="vulnScanProxySwitch">
                                                             <tooltip><Tooltip text="需先启用主代理，开启后将使用全局代理进行扫描" userData="i18n:setting.vulnscan.proxy.tip"/></tooltip>
                                                         </CFSwitch>
@@ -487,21 +487,21 @@
 
                                             <Separator prefWidth="${an.width - 58}"/>
 
-                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                            <VBox spacing="8" styleClass="pt-panel">
                                                 <HBox alignment="CENTER_LEFT" spacing="8">
-                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z'; -fx-background-color: -main-border-color;"/>
-                                                    <Label styleClass="setting-section-title"
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z'; -fx-background-color: -pt-accent;"/>
+                                                    <Label styleClass="pt-h2"
                                                           text="报告配置" userData="i18n:setting.vulnscan.report"/>
                                                 </HBox>
                                                 <FlowPane hgap="25" vgap="12" alignment="CENTER_LEFT">
                                                     <HBox alignment="CENTER_LEFT" spacing="8">
-                                                        <Label text="输出目录:" styleClass="setting-field-label" userData="i18n:setting.vulnscan.report.dir"/>
-                                                        <TextField fx:id="vulnScanReportDir" prefWidth="150" promptText="reports" styleClass="setting-field-input">
+                                                        <Label text="输出目录:" styleClass="pt-caption" userData="i18n:setting.vulnscan.report.dir"/>
+                                                        <TextField fx:id="vulnScanReportDir" prefWidth="150" promptText="reports" styleClass="pt-input">
                                                             <tooltip><Tooltip text="扫描报告的保存目录" userData="i18n:setting.vulnscan.report.dir.tip"/></tooltip>
                                                         </TextField>
                                                     </HBox>
                                                     <HBox alignment="CENTER_LEFT" spacing="8">
-                                                        <Label text="导出格式:" styleClass="setting-field-label" userData="i18n:setting.vulnscan.report.format"/>
+                                                        <Label text="导出格式:" styleClass="pt-caption" userData="i18n:setting.vulnscan.report.format"/>
                                                         <ComboBox fx:id="vulnScanReportFormat" prefWidth="90" styleClass="setting-field-input">
                                                             <items>
                                                                 <FXCollections fx:factory="observableArrayList">
@@ -514,7 +514,7 @@
                                                         </ComboBox>
                                                     </HBox>
                                                     <HBox alignment="CENTER_LEFT" spacing="8">
-                                                        <Label text="自动导出:" styleClass="setting-field-label" userData="i18n:setting.vulnscan.auto.export"/>
+                                                        <Label text="自动导出:" styleClass="pt-caption" userData="i18n:setting.vulnscan.auto.export"/>
                                                         <CFSwitch fx:id="vulnScanAutoExport">
                                                             <tooltip><Tooltip text="扫描完成后自动生成报告" userData="i18n:setting.vulnscan.auto.export.tip"/></tooltip>
                                                         </CFSwitch>
@@ -524,11 +524,11 @@
                                             
                                             <!-- 操作按钮 -->
                                             <HBox alignment="CENTER" spacing="15" style="-fx-padding: 5 0 0 0;">
-                                                <Button minHeight="32" minWidth="100" text="恢复默认" onAction="#resetVulnScanDefaults" styleClass="setting-action-button" userData="i18n:setting.vulnscan.reset">
+                                                <Button minHeight="32" minWidth="100" text="恢复默认" onAction="#resetVulnScanDefaults" styleClass="pt-btn" userData="i18n:setting.vulnscan.reset">
                                                     <tooltip><Tooltip text="将所有配置恢复为默认值" userData="i18n:setting.vulnscan.reset.tip"/></tooltip>
                                                     <effect><DropShadow color="#00000020" radius="3" offsetY="1"/></effect>
                                                 </Button>
-                                                <Button minHeight="32" minWidth="100" text="保存配置" userData="i18n:app.save" onAction="#saveVulnScan" styleClass="setting-action-button" style="-fx-base: -main-border-color;">
+                                                <Button minHeight="32" minWidth="100" text="保存配置" userData="i18n:app.save" onAction="#saveVulnScan" styleClass="pt-btn-primary">
                                                     <effect><DropShadow color="#00000030" radius="3" offsetY="1"/></effect>
                                                 </Button>
                                             </HBox>
@@ -540,10 +540,10 @@
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="15" style="-fx-padding: 15;">
 
                                             <!-- Header模板 -->
-                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                            <VBox spacing="8" styleClass="pt-panel">
                                                 <HBox alignment="CENTER_LEFT" spacing="8">
-                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z'; -fx-background-color: -main-border-color;"/>
-                                                    <Label styleClass="setting-section-title"
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z'; -fx-background-color: -pt-accent;"/>
+                                                    <Label styleClass="pt-h2"
                                                           text="Header 模板" userData="i18n:setting.headers.template"/>
                                                 </HBox>
                                                 <FlowPane fx:id="headerTemplatePane" hgap="10" vgap="8">
@@ -551,26 +551,26 @@
                                             </VBox>
 
                                             <!-- Headers 编辑区 -->
-                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                            <VBox spacing="8" styleClass="pt-panel">
                                                 <HBox alignment="CENTER_LEFT" spacing="8">
-                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'; -fx-background-color: -main-border-color;"/>
-                                                    <Label styleClass="setting-section-title"
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'; -fx-background-color: -pt-accent;"/>
+                                                    <Label styleClass="pt-h2"
                                                           text="Headers 配置（全局生效）" userData="i18n:setting.headers.edit"/>
                                                 </HBox>
                                                 <Label styleClass="setting-note-text"
                                                       text="提示：如果自定义了 User-Agent 则会覆盖随机UA；此处配置对所有HTTP请求全局生效" userData="i18n:setting.headers.edit.tip"/>
                                                 <SmoothTextArea fx:id="defaultHeadersArea" prefHeight="120" promptText="Accept: */*&#10;Accept-Language: zh-CN,zh;q=0.9,en;q=0.8&#10;User-Agent: 自定义UA（可选，会覆盖随机UA）"
-                                                          styleClass="setting-code-input">
+                                                          styleClass="pt-input,pt-mono">
                                                     <tooltip><Tooltip text="每行一个Header，格式: Header-Name: Header-Value" userData="i18n:setting.headers.default.tip"/></tooltip>
                                                 </SmoothTextArea>
                                             </VBox>
 
                                             <!-- 操作按钮 -->
                                             <HBox alignment="CENTER" spacing="15" style="-fx-padding: 5 0 0 0;">
-                                                <Button minHeight="32" minWidth="100" text="重置为默认" onAction="#resetHeaders" styleClass="setting-action-button" userData="i18n:setting.headers.reset">
+                                                <Button minHeight="32" minWidth="100" text="重置为默认" onAction="#resetHeaders" styleClass="pt-btn" userData="i18n:setting.headers.reset">
                                                     <effect><DropShadow color="#00000020" radius="3" offsetY="1"/></effect>
                                                 </Button>
-                                                <Button minHeight="32" minWidth="100" text="保存" onAction="#saveHeaders" styleClass="setting-action-button" style="-fx-base: -main-border-color;" userData="i18n:setting.headers.save">
+                                                <Button minHeight="32" minWidth="100" text="保存" onAction="#saveHeaders" styleClass="pt-btn-primary" userData="i18n:setting.headers.save">
                                                     <effect><DropShadow color="#00000030" radius="3" offsetY="1"/></effect>
                                                 </Button>
                                             </HBox>
@@ -581,10 +581,10 @@
                                     <TitledPane fx:id="oobPane" text="OOB配置" userData="i18n:setting.oob.title">
                                         <VBox styleClass="contentCell" alignment="CENTER" spacing="12" style="-fx-padding: 14 15 12 15;">
 
-                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                            <VBox spacing="8" styleClass="pt-panel">
                                                 <HBox alignment="CENTER_LEFT" spacing="8">
-                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z'; -fx-background-color: -main-border-color;"/>
-                                                    <Label styleClass="setting-section-title"
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z'; -fx-background-color: -pt-accent;"/>
+                                                    <Label styleClass="pt-h2"
                                                           text="HTTP OOB" userData="i18n:setting.oob.http.title"/>
                                                 </HBox>
                                                 <HBox alignment="CENTER" spacing="10">
@@ -594,32 +594,32 @@
                                                 <VBox fx:id="oobInteractshGroup" spacing="10" managed="true" visible="true">
                                                     <HBox alignment="CENTER" spacing="10">
                                                         <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="Interactsh服务器：" userData="i18n:setting.oob.http.interactsh.server"/>
-                                                        <TextField fx:id="oobInteractshServer" prefWidth="250" promptText="oast.pro" userData="i18n-prompt:setting.oob.http.interactsh.server.placeholder"/>
+                                                        <TextField fx:id="oobInteractshServer" styleClass="pt-input" prefWidth="250" promptText="oast.pro" userData="i18n-prompt:setting.oob.http.interactsh.server.placeholder"/>
                                                     </HBox>
                                                     <HBox alignment="CENTER" spacing="10">
                                                         <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="Interactsh Token：" userData="i18n:setting.oob.http.interactsh.token"/>
-                                                        <TextField fx:id="oobInteractshToken" prefWidth="250" promptText="可选" userData="i18n-prompt:setting.oob.http.interactsh.token.placeholder"/>
+                                                        <TextField fx:id="oobInteractshToken" styleClass="pt-input" prefWidth="250" promptText="可选" userData="i18n-prompt:setting.oob.http.interactsh.token.placeholder"/>
                                                     </HBox>
                                                 </VBox>
                                                 <VBox fx:id="oobCustomGroup" spacing="10" managed="false" visible="false">
                                                     <HBox alignment="CENTER" spacing="10">
                                                         <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="Custom服务器：" userData="i18n:setting.oob.http.custom.server"/>
-                                                        <TextField fx:id="oobCustomServer" prefWidth="250" promptText="https://your-oob-server" userData="i18n-prompt:setting.oob.http.custom.server.placeholder"/>
+                                                        <TextField fx:id="oobCustomServer" styleClass="pt-input" prefWidth="250" promptText="https://your-oob-server" userData="i18n-prompt:setting.oob.http.custom.server.placeholder"/>
                                                     </HBox>
                                                     <HBox alignment="CENTER" spacing="10">
                                                         <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="Custom Token：" userData="i18n:setting.oob.http.custom.token"/>
-                                                        <TextField fx:id="oobCustomToken" prefWidth="250" promptText="可选" userData="i18n-prompt:setting.oob.http.custom.token.placeholder"/>
+                                                        <TextField fx:id="oobCustomToken" styleClass="pt-input" prefWidth="250" promptText="可选" userData="i18n-prompt:setting.oob.http.custom.token.placeholder"/>
                                                     </HBox>
                                                 </VBox>
                                                 <HBox alignment="CENTER" spacing="10">
                                                     <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="缓存TTL(秒)：" userData="i18n:setting.oob.http.cache.ttl"/>
-                                                    <TextField fx:id="oobCacheTtl" prefWidth="250" promptText="3600" userData="i18n-prompt:setting.oob.http.cache.ttl.placeholder"/>
+                                                    <TextField fx:id="oobCacheTtl" styleClass="pt-input" prefWidth="250" promptText="3600" userData="i18n-prompt:setting.oob.http.cache.ttl.placeholder"/>
                                                 </HBox>
                                                 <HBox alignment="CENTER" spacing="10">
-                                                    <Button text="测试HTTP连通性" userData="i18n:setting.oob.http.test" onAction="#testOobHttpConnectivity" minWidth="140" minHeight="30">
+                                                    <Button styleClass="pt-btn" text="测试HTTP连通性" userData="i18n:setting.oob.http.test" onAction="#testOobHttpConnectivity" minWidth="140" minHeight="30">
                                                         <effect><DropShadow /></effect>
                                                     </Button>
-                                                    <Button text="清理HTTP缓存" userData="i18n:setting.oob.http.cache.clear" onAction="#clearOobHttpCache" minWidth="140" minHeight="30">
+                                                    <Button styleClass="pt-btn" text="清理HTTP缓存" userData="i18n:setting.oob.http.cache.clear" onAction="#clearOobHttpCache" minWidth="140" minHeight="30">
                                                         <effect><DropShadow /></effect>
                                                     </Button>
                                                 </HBox>
@@ -627,10 +627,10 @@
 
                                             <Separator prefWidth="${an.width - 58}"/>
 
-                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                            <VBox spacing="8" styleClass="pt-panel">
                                                 <HBox alignment="CENTER_LEFT" spacing="8">
-                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'; -fx-background-color: -main-border-color;"/>
-                                                    <Label styleClass="setting-section-title"
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'; -fx-background-color: -pt-accent;"/>
+                                                    <Label styleClass="pt-h2"
                                                           text="DNS OOB" userData="i18n:setting.oob.dns.title"/>
                                                 </HBox>
                                                 <HBox alignment="CENTER" spacing="10">
@@ -640,22 +640,22 @@
                                                 <VBox fx:id="oobCeyeGroup" spacing="10" managed="false" visible="false">
                                                     <HBox alignment="CENTER" spacing="10">
                                                         <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="Ceye Identifier：" userData="i18n:setting.oob.dns.ceye.identifier"/>
-                                                        <TextField fx:id="oobCeyeIdentifier" prefWidth="250" promptText="xxxx.ceye.io" userData="i18n-prompt:setting.oob.dns.ceye.identifier.placeholder"/>
+                                                        <TextField fx:id="oobCeyeIdentifier" styleClass="pt-input" prefWidth="250" promptText="xxxx.ceye.io" userData="i18n-prompt:setting.oob.dns.ceye.identifier.placeholder"/>
                                                     </HBox>
                                                     <HBox alignment="CENTER" spacing="10">
                                                         <Label minWidth="${maxWidthlabelSuper.width}" textAlignment="RIGHT" text="Ceye Token：" userData="i18n:setting.oob.dns.ceye.token"/>
-                                                        <TextField fx:id="oobCeyeToken" prefWidth="250" promptText="API Token" userData="i18n-prompt:setting.oob.dns.ceye.token.placeholder"/>
+                                                        <TextField fx:id="oobCeyeToken" styleClass="pt-input" prefWidth="250" promptText="API Token" userData="i18n-prompt:setting.oob.dns.ceye.token.placeholder"/>
                                                     </HBox>
                                                 </VBox>
                                                 <HBox alignment="CENTER" spacing="10">
-                                                    <Button text="测试DNS连通性" userData="i18n:setting.oob.dns.test" onAction="#testOobDnsConnectivity" minWidth="140" minHeight="30">
+                                                    <Button styleClass="pt-btn" text="测试DNS连通性" userData="i18n:setting.oob.dns.test" onAction="#testOobDnsConnectivity" minWidth="140" minHeight="30">
                                                         <effect><DropShadow /></effect>
                                                     </Button>
                                                 </HBox>
                                             </VBox>
 
                                             <HBox alignment="CENTER">
-                                                <Button minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#saveOobSettings">
+                                                <Button styleClass="pt-btn-primary" minHeight="38.0" minWidth="150" text="保存" userData="i18n:app.save" onAction="#saveOobSettings">
                                                     <effect><DropShadow /></effect>
                                                 </Button>
                                             </HBox>
@@ -666,10 +666,10 @@
                                     <TitledPane fx:id="updatePane" text="在线更新" userData="i18n:setting.update.title">
                                         <VBox styleClass="contentCellLast" alignment="CENTER" spacing="12" style="-fx-padding: 14 15 12 15;">
                                             <!-- 更新设置 -->
-                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                            <VBox spacing="8" styleClass="pt-panel">
                                                 <HBox alignment="CENTER_LEFT" spacing="8">
-                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M19 3H5c-1.1 0-2 .9-2 2v14h2V5h14V3zm3 4H9c-1.1 0-2 .9-2 2v13c0 1.1.9 2 2 2h13c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm0 15H9V9h13v13zM11 11h9v2h-9zM11 14h9v2h-9zM11 17h6v2h-6z'; -fx-background-color: -main-border-color;"/>
-                                                    <Label styleClass="setting-section-title"
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M19 3H5c-1.1 0-2 .9-2 2v14h2V5h14V3zm3 4H9c-1.1 0-2 .9-2 2v13c0 1.1.9 2 2 2h13c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm0 15H9V9h13v13zM11 11h9v2h-9zM11 14h9v2h-9zM11 17h6v2h-6z'; -fx-background-color: -pt-accent;"/>
+                                                    <Label styleClass="pt-h2"
                                                           text="更新设置" userData="i18n:update.settings.title"/>
                                                 </HBox>
                                                 <HBox alignment="CENTER_LEFT" spacing="10">
@@ -689,7 +689,7 @@
                                                            onAction="#saveUpdateSettings"
                                                            minWidth="80"
                                                            prefHeight="30"
-                                                           styleClass="checkButton">
+                                                           styleClass="pt-btn-primary">
                                                         <tooltip>
                                                             <Tooltip text="保存更新设置"
                                                                     userData="i18n:update.settings.save.tip"/>
@@ -722,25 +722,25 @@
                                             <Separator prefWidth="${an.width - 58}"/>
 
                                             <!-- 存储位置管理 -->
-                                            <VBox spacing="8" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 8; -fx-padding: 12;">
+                                            <VBox spacing="8" styleClass="pt-panel">
                                                 <HBox alignment="CENTER_LEFT" spacing="8">
-                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.89 2 1.99 2H20c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'; -fx-background-color: -main-border-color;"/>
-                                                    <Label styleClass="setting-section-title"
+                                                    <Region prefWidth="16" prefHeight="16" maxWidth="16" maxHeight="16" style="-fx-shape: 'M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.89 2 1.99 2H20c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'; -fx-background-color: -pt-accent;"/>
+                                                    <Label styleClass="pt-h2"
                                                           text="存储位置管理" userData="i18n:update.storage.title"/>
                                                 </HBox>
                                                 <HBox alignment="CENTER_LEFT" spacing="10">
                                                     <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT"
                                                           text="配置文件位置（不可修改）："
                                                           userData="i18n:update.storage.config.path"/>
-                                                    <Label fx:id="configPathLabel" style="-fx-text-fill: gray;"/>
+                                                    <Label fx:id="configPathLabel" style="-fx-text-fill: -pt-text-muted;"/>
                                                 </HBox>
 
                                                 <HBox alignment="CENTER_LEFT" spacing="10">
                                                     <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT"
                                                           text="资源文件位置："
                                                           userData="i18n:update.storage.resource.path"/>
-                                                    <TextField fx:id="resourcePathField" prefWidth="350" editable="false"/>
-                                                    <Button text="浏览..." userData="i18n:update.storage.button.browse"
+                                                    <TextField fx:id="resourcePathField" styleClass="pt-input" prefWidth="350" editable="false"/>
+                                                    <Button styleClass="pt-btn" text="浏览..." userData="i18n:update.storage.button.browse"
                                                            onAction="#browseResourcePath" minWidth="80" minHeight="25">
                                                         <effect><DropShadow /></effect>
                                                     </Button>
@@ -761,17 +761,17 @@
                                                 </HBox>
 
                                                 <HBox alignment="CENTER" spacing="10" style="-fx-padding: 10 0 0 0;">
-                                                    <Button text="迁移资源文件" userData="i18n:update.storage.button.migrate"
+                                                    <Button styleClass="pt-btn" text="迁移资源文件" userData="i18n:update.storage.button.migrate"
                                                            fx:id="migrateButton"
                                                            onAction="#migrateResources" minWidth="120" minHeight="30">
                                                         <effect><DropShadow /></effect>
                                                     </Button>
-                                                    <Button text="恢复默认位置" userData="i18n:update.storage.button.reset"
+                                                    <Button styleClass="pt-btn" text="恢复默认位置" userData="i18n:update.storage.button.reset"
                                                            fx:id="resetPathButton"
                                                            onAction="#resetResourcePath" minWidth="120" minHeight="30">
                                                         <effect><DropShadow /></effect>
                                                     </Button>
-                                                    <Button text="检查软件更新"
+                                                    <Button styleClass="pt-btn" text="检查软件更新"
                                                            fx:id="checkAppUpdateButton"
                                                            onAction="#checkAppUpdate" minWidth="120" minHeight="30">
                                                         <effect><DropShadow /></effect>

@@ -24,12 +24,12 @@
    <children>
       <VBox alignment="CENTER">
          <children>
-            <Pane style="-fx-background-radius: 10;-fx-background-color: null">
-               <SmoothTextArea fx:id="inputText" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入netstat -ano或者net -pantu执行后的内容" userData="i18n-prompt:ipinfo.input.placeholder"/>
+            <Pane>
+               <SmoothTextArea fx:id="inputText" styleClass="pt-input" wrapText="true" prefHeight="${sPane.height * 0.4 - 20}" prefWidth="${sPane.width}" promptText="请输入netstat -ano或者net -pantu执行后的内容" userData="i18n-prompt:ipinfo.input.placeholder"/>
             </Pane>
             <Pane minHeight="15"/>
             <HBox alignment="CENTER">
-               <Button minHeight="48.0" minWidth="${sPane.width}" styleClass="btnGetIpInfo" text="开始提取" userData="i18n:ipinfo.extract" onAction="#getIpInfo">
+               <Button minHeight="48.0" minWidth="${sPane.width}" styleClass="pt-btn-primary" text="开始提取" userData="i18n:ipinfo.extract" onAction="#getIpInfo">
                   <effect>
                      <DropShadow />
                   </effect>
@@ -73,7 +73,7 @@
                        </StackPane>
                        <HBox alignment="CENTER" spacing="20" prefWidth="${sPane.width - 40}">
                            <ComboBox fx:id="rulesComboBox" prefHeight="30.0" prefWidth="250" onAction="#rulesComboChoose"/>
-                           <TextField fx:id="customTextField" prefHeight="30.0" prefWidth="250" promptText="IP/Pos前缀内容" userData="i18n-prompt:ipinfo.filter.placeholder"/>
+                           <TextField fx:id="customTextField" styleClass="pt-input" prefHeight="30.0" prefWidth="250" promptText="IP/Pos前缀内容" userData="i18n-prompt:ipinfo.filter.placeholder"/>
                        </HBox>
                        <StackPane styleClass="codeAreaPane">
                            <VirtualizedScrollPane fx:id="virScrollPane5" styleClass="virtualizedScrollPane">

@@ -102,11 +102,7 @@
         <Text fx:id="bug" text="建议/BUG反馈" userData="i18n:about.feedback.title" styleClass="titleText"/>
         <Pane minHeight="40"/>
         <VBox fx:id="noWebBox" alignment="CENTER">
-            <Button fx:id="viewProfileButton" style="-fx-padding: 5 10 5 10" text="打开GitHub，在线提交建议" userData="i18n:about.feedback.button" onAction="#openGitHubIssues">
-                <effect>
-                    <DropShadow />
-                </effect>
-            </Button>
+            <Button fx:id="viewProfileButton" styleClass="pt-btn-primary" text="打开GitHub，在线提交建议" userData="i18n:about.feedback.button" onAction="#openGitHubIssues"/>
             <Pane minHeight="10"/>
             <ImageView styleClass="wxImg" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
                 <image>

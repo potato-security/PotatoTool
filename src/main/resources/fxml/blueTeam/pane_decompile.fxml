@@ -23,7 +23,7 @@
 
 
         <HBox alignment="CENTER">
-            <Label text="反编译器选择：" userData="i18n:decompile.selector"/>
+            <Label text="反编译器选择：" userData="i18n:decompile.selector" styleClass="pt-body"/>
             <ComboBox fx:id="rulesComboBox" prefHeight="30.0" prefWidth="270">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
@@ -39,7 +39,7 @@
         <Pane minHeight="20"/>
 
         <HBox alignment="CENTER">
-            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.4}" styleClass="btnDecompile" text="选择class文件" userData="i18n:decompile.selectfile" onAction="#toDecompile" translationDir="BOTTOM_TO_TOP">
+            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.4}" styleClass="pt-btn-primary" text="选择class文件" userData="i18n:decompile.selectfile" onAction="#toDecompile" translationDir="BOTTOM_TO_TOP">
                 <graphic>
                     <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                         <image>
@@ -55,7 +55,7 @@
                 </cursor>
             </RXTranslationButton>
             <Label minWidth="${sPane.width * 0.1}"/>
-            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.4}" styleClass="btnDecompile" text="选择文件夹" userData="i18n:decompile.selectfolder" onAction="#toDecompileBat" translationDir="BOTTOM_TO_TOP">
+            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.4}" styleClass="pt-btn-primary" text="选择文件夹" userData="i18n:decompile.selectfolder" onAction="#toDecompileBat" translationDir="BOTTOM_TO_TOP">
                 <graphic>
                     <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                         <image>
@@ -91,7 +91,7 @@
                     </tooltip>
                 </Button>
                 <Pane fx:id="aiPane" visible="false" maxWidth="0">
-                    <SmoothTextArea fx:id="aiTextArea" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height - 138}" maxHeight="${sPane.height - 138}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:decompile.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
+                    <SmoothTextArea fx:id="aiTextArea" styleClass="pt-input" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height - 138}" maxHeight="${sPane.height - 138}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:decompile.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
                     <Button fx:id="refreshAI" layoutX="-60" layoutY="6"  mnemonicParsing="false" onAction="#refreshAI">
                         <graphic>
                             <ImageView fitHeight="17.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">

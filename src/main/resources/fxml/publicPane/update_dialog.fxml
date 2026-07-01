@@ -66,29 +66,28 @@
                          style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
 
                         <!-- 标题 -->
-                        <Label fx:id="titleLabel" text="发现新版本"
-                              style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        <Label fx:id="titleLabel" text="发现新版本" styleClass="pt-h2"/>
 
                         <!-- 版本信息 -->
                         <VBox spacing="8" fx:id="versionInfoBox">
                             <Label fx:id="versionInfoLabel" text="新版本 2.6.0 可用，当前版本 2.5"
-                                  wrapText="true" style="-fx-font-size: 14px;"/>
+                                  wrapText="true" styleClass="pt-body"/>
                         </VBox>
 
                         <!-- 更新日志 -->
                         <VBox spacing="5" fx:id="changelogBox" managed="false" visible="false">
                             <Label text="更新日志：" userData="i18n:update.available.changelog"
-                                  style="-fx-font-weight: bold;"/>
+                                  styleClass="pt-section-label"/>
                             <SmoothTextArea fx:id="changelogText" editable="false" wrapText="true"
-                                     prefHeight="100" prefWidth="${an.width - 58}"
+                                     prefHeight="100" prefWidth="${an.width - 58}" styleClass="pt-input"
                                      style="-fx-font-family: 'Microsoft YaHei', 'SimHei', sans-serif;"/>
                         </VBox>
 
                         <!-- 更新项列表（支持单独选择） -->
                         <VBox spacing="5" fx:id="updateItemsBox" managed="false" visible="false">
                             <Label text="可用更新：" userData="i18n:update.available.items"
-                                  style="-fx-font-weight: bold;"/>
-                            <SmoothScrollPane maxHeight="100" prefWidth="${an.width - 58}" style="-fx-padding: 10; -fx-border-radius: 5;-fx-border-color: -main-border-color;">
+                                  styleClass="pt-section-label"/>
+                            <SmoothScrollPane maxHeight="100" prefWidth="${an.width - 58}" styleClass="pt-scroll" style="-fx-padding: 10; -fx-border-radius: 5;-fx-border-color: -main-border-color;">
                                 <VBox fx:id="updateItemsContainer" spacing="4" >
                                     <!-- 更新项（CheckBox）将动态添加到这里 -->
                                 </VBox>
@@ -97,28 +96,28 @@
 
                         <!-- 下载进度区域 -->
                         <VBox spacing="8" fx:id="progressBox" managed="false" visible="false">
-                            <Label fx:id="progressLabel" text="正在下载..."/>
+                            <Label fx:id="progressLabel" text="正在下载..." styleClass="pt-caption"/>
                             <ProgressBar fx:id="progressBar" prefWidth="${an.width - 58}" progress="0"/>
                             <HBox spacing="10" alignment="CENTER_LEFT">
-                                <Label fx:id="sizeLabel" text="0 MB / 0 MB"/>
+                                <Label fx:id="sizeLabel" text="0 MB / 0 MB" styleClass="pt-caption"/>
                                 <Region HBox.hgrow="ALWAYS"/>
-                                <Label fx:id="speedLabel" text="0 KB/s"/>
+                                <Label fx:id="speedLabel" text="0 KB/s" styleClass="pt-caption"/>
                             </HBox>
                         </VBox>
 
                         <!-- 按钮区域 -->
                         <HBox spacing="10" alignment="CENTER" fx:id="buttonBox">
-                            <Button fx:id="updateButton" text="更新选中项"
+                            <Button fx:id="updateButton" text="更新选中项" styleClass="pt-btn-primary"
                                    userData="i18n:update.available.button.update.selected"
                                    onAction="#onUpdateClick" minWidth="100" prefHeight="35">
                                 <effect><DropShadow /></effect>
                             </Button>
-                            <Button fx:id="skipButton" text="跳过选中项"
+                            <Button fx:id="skipButton" text="跳过选中项" styleClass="pt-btn"
                                    userData="i18n:update.available.button.skip.selected"
                                    onAction="#onSkipClick" minWidth="100" prefHeight="35">
                                 <effect><DropShadow /></effect>
                             </Button>
-                            <Button fx:id="laterButton" text="稍后提醒"
+                            <Button fx:id="laterButton" text="稍后提醒" styleClass="pt-btn-ghost"
                                    userData="i18n:update.available.button.later"
                                    onAction="#onLaterClick" minWidth="100" prefHeight="35">
                                 <effect><DropShadow /></effect>
@@ -130,12 +129,11 @@
                              managed="false" visible="false">
                             <Label fx:id="restartLabel" text="更新已就绪，点击重启应用完成更新"
                                   userData="i18n:update.install.app.message"
-                                  style="-fx-font-size: 14px;"/>
+                                  styleClass="pt-body"/>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button fx:id="restartNowButton" text="立即重启"
+                            <Button fx:id="restartNowButton" text="立即重启" styleClass="pt-btn-primary"
                                    userData="i18n:update.install.app.restart.now"
-                                   onAction="#onRestartNowClick" minWidth="120" prefHeight="35"
-                                   style="-fx-font-size: 14px;">
+                                   onAction="#onRestartNowClick" minWidth="120" prefHeight="35">
                                 <effect><DropShadow /></effect>
                             </Button>
                         </HBox>

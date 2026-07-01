@@ -57,22 +57,22 @@
                     </right>
                 </BorderPane>
 
-                <VBox alignment="CENTER" spacing="10" prefWidth="${an.width - 18}" style="-fx-padding: 20;-fx-background-color: -main-topBar-color;-fx-background-radius: 0 0 4 4;">
+                <VBox alignment="CENTER" spacing="10" prefWidth="${an.width - 18}" style="-fx-padding: 16;-fx-background-color: -pt-bg-panel;-fx-background-radius: 0 0 8 8;">
 
                     <HBox alignment="CENTER" spacing="10">
-                        <Label text="启动密码：" userData="i18n:passwd.label"/>
-                        <RXPasswordField fx:id="passwd" buttonDisplayMode="AUTO" promptText="请输入密码……" userData="i18n-prompt:passwd.placeholder" prefWidth="200" />
+                        <Label text="启动密码：" styleClass="pt-body" userData="i18n:passwd.label"/>
+                        <RXPasswordField fx:id="passwd" styleClass="pt-input" buttonDisplayMode="AUTO" promptText="请输入密码……" userData="i18n-prompt:passwd.placeholder" prefWidth="200" />
                     </HBox>
 
                     <CFCheckBox fx:id="checkBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="记住密码" userData="i18n:passwd.remember" VBox.vgrow="ALWAYS" />
 
                     <StackPane>
-                        <Button fx:id="startButton" minHeight="35.0" minWidth="100" text="启动" userData="i18n:passwd.start" onAction="#start">
+                        <Button fx:id="startButton" styleClass="pt-btn-primary" minHeight="35.0" minWidth="100" text="启动" userData="i18n:passwd.start" onAction="#start">
                             <effect>
                                 <DropShadow />
                             </effect>
                         </Button>
-                        <Label fx:id="tipTitle" StackPane.alignment="CENTER_RIGHT"/>
+                        <Label fx:id="tipTitle" styleClass="pt-caption" StackPane.alignment="CENTER_RIGHT"/>
                     </StackPane>
 
                 </VBox>

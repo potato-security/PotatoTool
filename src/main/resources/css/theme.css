@@ -1,0 +1,56 @@
+/* ============================================================
+ * PotatoTool 统一设计 token 层  (theme.css)
+ * ------------------------------------------------------------
+ * 仅定义"颜色 token"与"字体栈"。JavaFX 8 的 looked-up colors
+ * 只能承载颜色，数值(间距/圆角/字号)由 components.css 的 .pt-* 类固化。
+ *
+ * 命名空间 -pt-* 为新增，加法式，不改动现有 -main-*，
+ * 现有屏不受影响，逐屏重构时再迁移到 -pt-*。
+ *
+ * 调色板取自 Penpot 高保真稿实测值。
+ * 双模强调色 -pt-accent 默认 teal，由 redStyle/blueStyle 覆盖。
+ * ============================================================ */
+
+.root {
+    /* --- 背景层 (深 navy) --- */
+    -pt-bg-base:      #040B12;   /* 最底 */
+    -pt-bg-panel:     #0A141C;   /* 面板 */
+    -pt-bg-elevated:  #0F1A24;   /* 抬升卡片 */
+    -pt-bg-inset:     #060D14;   /* 内凹输入/代码区 */
+
+    /* --- 边框 --- */
+    -pt-border:        #2A3B49;  /* 常规边框 */
+    -pt-border-subtle: #1B2833;  /* 弱分隔线 */
+    -pt-border-strong: #3A4E5E;  /* 强调边框 */
+
+    /* --- 文字 --- */
+    -pt-text:           #E8F4F9; /* 主文字 */
+    -pt-text-secondary: #9DB2BE; /* 次文字 */
+    -pt-text-muted:     #5C6E7A; /* 弱文字/占位/微标签 */
+
+    /* --- 双模强调色 --- */
+    -pt-accent-teal: #4FE3FF;    /* Blue Team */
+    -pt-accent-red:  #FF5C66;    /* Red Team */
+    -pt-accent:      #4FE3FF;    /* 当前模式强调 (默认 teal，redStyle/blueStyle 覆盖) */
+    -pt-accent-soft: derive(-pt-accent, -60%); /* 强调色低亮度填充底 (跟随模式) */
+
+    /* --- 语义色 --- */
+    -pt-success: #5BF0B4;
+    -pt-warning: #F4B740;
+    -pt-danger:  #FF5C66;
+    -pt-info:    #4FE3FF;
+    -pt-crit:    #FF5C66;
+
+    /* --- 状态填充底 (低透明度语义底，供 chip/badge) --- */
+    -pt-success-soft: derive(#5BF0B4, -65%);
+    -pt-warning-soft: derive(#F4B740, -65%);
+    -pt-danger-soft:  derive(#FF5C66, -65%);
+
+    /* --- 阴影/辉光基色 --- */
+    -pt-glow: -pt-accent;
+
+    /* --- 字体 --- */
+    /* 注意: JavaFX looked-up 变量仅支持颜色, 字体栈无法做成 token,
+       故统一字体在 components.css 的 .pt-* 类里直接写字体栈。 */
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", "Helvetica Neue", sans-serif;
+}

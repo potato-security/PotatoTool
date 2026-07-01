@@ -1,0 +1,195 @@
+/* ============================================================
+ * PotatoTool 统一组件类库  (components.css)
+ * ------------------------------------------------------------
+ * 用 .pt-* styleClass 固化 size / 边距 / 圆角 / 字号 —— 这是
+ * JavaFX 8 里"统一组件库"的落地形态(数值无法做成 token 变量)。
+ * 颜色一律引用 theme.css 的 -pt-* looked-up colors。
+ *
+ * 尺寸规范(8pt 体系):
+ *   间距: 4 / 8 / 12 / 16 / 24 / 32
+ *   圆角: 4(sm) / 8(md) / 16(lg) / pill
+ *   字号: 20 h1 / 16 h2 / 13 body / 12 caption / 11 label
+ *
+ * 用法: 给节点 getStyleClass().add("pt-...") 或 FXML styleClass。
+ * ============================================================ */
+
+/* ========== 排版 Typography ========== */
+/* 同时设 -fx-text-fill(Label/Control) 与 -fx-fill(Text)，两种节点通用 */
+.pt-h1        { -fx-font-size: 20px; -fx-font-weight: bold;   -fx-text-fill: -pt-text; -fx-fill: -pt-text; }
+.pt-h2        { -fx-font-size: 16px; -fx-font-weight: bold;   -fx-text-fill: -pt-text; -fx-fill: -pt-text; }
+.pt-section-label { -fx-font-size: 11px; -fx-text-fill: -pt-text-muted; -fx-fill: -pt-text-muted; }
+.pt-body      { -fx-font-size: 13px; -fx-text-fill: -pt-text; -fx-fill: -pt-text; }
+.pt-caption   { -fx-font-size: 12px; -fx-text-fill: -pt-text-secondary; -fx-fill: -pt-text-secondary; }
+.pt-muted     { -fx-text-fill: -pt-text-muted;     -fx-fill: -pt-text-muted; }
+.pt-accent-text { -fx-text-fill: -pt-accent;       -fx-fill: -pt-accent; }
+.pt-mono      { -fx-font-family: "Consolas", "SF Mono", "Menlo", "Courier New", monospace; -fx-font-size: 12px; -fx-text-fill: -pt-text; -fx-fill: -pt-text; }
+.pt-mono-secondary { -fx-font-family: "Consolas", "SF Mono", "Menlo", "Courier New", monospace; -fx-font-size: 12px; -fx-text-fill: -pt-text-secondary; -fx-fill: -pt-text-secondary; }
+
+/* 语义文字 */
+.pt-text-success { -fx-text-fill: -pt-success; -fx-fill: -pt-success; }
+.pt-text-warning { -fx-text-fill: -pt-warning; -fx-fill: -pt-warning; }
+.pt-text-danger  { -fx-text-fill: -pt-danger;  -fx-fill: -pt-danger; }
+
+/* ========== 容器 Containers ========== */
+.pt-panel {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 8px;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-padding: 16px;
+}
+.pt-card {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 8px;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-padding: 12px;
+}
+.pt-inset {
+    -fx-background-color: -pt-bg-inset;
+    -fx-background-radius: 6px;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-padding: 12px;
+}
+/* 1px 分隔线: 给 Region/Separator 用 */
+.pt-divider {
+    -fx-background-color: -pt-border-subtle;
+    -fx-min-height: 1px; -fx-pref-height: 1px; -fx-max-height: 1px;
+    -fx-border-width: 0;
+}
+.pt-divider-v {
+    -fx-background-color: -pt-border-subtle;
+    -fx-min-width: 1px; -fx-pref-width: 1px; -fx-max-width: 1px;
+}
+
+/* ========== 按钮 Buttons ========== */
+/* 注: 变体自包含(单类即可用, e.g. styleClass="pt-btn-primary");
+   FXML 多类必须用【逗号】分隔(非空格!): styleClass="pt-btn,pt-mono"。
+   !important 确保覆盖 legacy common.css 的 .button 渐变。 */
+.pt-btn, .pt-btn-primary, .pt-btn-danger, .pt-btn-ghost, .pt-btn-solid {
+    -fx-background-radius: 4px;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-font-size: 13px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+.pt-btn { -fx-background-color: transparent !important; -fx-border-color: -pt-border !important; -fx-text-fill: -pt-text !important; }
+.pt-btn:hover   { -fx-border-color: -pt-border-strong !important; -fx-background-color: -pt-bg-elevated !important; }
+.pt-btn:pressed { -fx-background-color: -pt-bg-inset !important; }
+
+.pt-btn-primary { -fx-background-color: -pt-accent-soft !important; -fx-border-color: -pt-accent !important; -fx-text-fill: -pt-accent !important; }
+.pt-btn-primary:hover   { -fx-background-color: derive(-pt-accent, -45%) !important; }
+.pt-btn-primary:pressed { -fx-background-color: derive(-pt-accent, -30%) !important; }
+
+.pt-btn-danger { -fx-background-color: -pt-danger-soft !important; -fx-border-color: -pt-danger !important; -fx-text-fill: -pt-danger !important; }
+.pt-btn-danger:hover   { -fx-background-color: derive(-pt-danger, -45%) !important; }
+.pt-btn-danger:pressed { -fx-background-color: derive(-pt-danger, -30%) !important; }
+
+.pt-btn-ghost { -fx-background-color: transparent !important; -fx-border-color: -pt-border !important; -fx-text-fill: -pt-text-secondary !important; }
+.pt-btn-ghost:hover { -fx-border-color: -pt-accent !important; -fx-text-fill: -pt-accent !important; }
+
+.pt-btn-solid { -fx-background-color: -pt-accent !important; -fx-border-color: -pt-accent !important; -fx-text-fill: -pt-bg-base !important; -fx-font-weight: bold; }
+.pt-btn-solid:hover { -fx-background-color: derive(-pt-accent, 12%) !important; }
+
+/* ========== 输入 Inputs ========== */
+.pt-input {
+    -fx-background-color: -pt-bg-inset !important;
+    -fx-background-radius: 4px;
+    -fx-border-color: -pt-border !important;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-text-fill: -pt-text !important;
+    -fx-prompt-text-fill: -pt-text-muted;
+    -fx-font-size: 13px;
+    -fx-padding: 8px 12px;
+    -fx-highlight-fill: -pt-accent-soft;
+}
+.pt-input:focused { -fx-border-color: -pt-accent !important; }
+.pt-input .content { -fx-background-color: transparent; }      /* text-area 内容区透明 */
+.pt-input .text    { -fx-fill: -pt-text; }
+
+/* ========== 徽标/标签 Chip · Badge ========== */
+.pt-chip, .pt-chip-accent, .pt-chip-success, .pt-chip-warning, .pt-chip-danger {
+    -fx-background-radius: 999px;
+    -fx-border-width: 1px;
+    -fx-border-radius: 999px;
+    -fx-font-size: 11px;
+    -fx-padding: 2px 10px;
+}
+.pt-chip { -fx-background-color: transparent !important; -fx-border-color: -pt-border !important; -fx-text-fill: -pt-text-secondary !important; }
+.pt-chip-accent  { -fx-border-color: -pt-accent !important;  -fx-text-fill: -pt-accent !important;  -fx-background-color: -pt-accent-soft !important; }
+.pt-chip-success { -fx-border-color: -pt-success !important; -fx-text-fill: -pt-success !important; -fx-background-color: -pt-success-soft !important; }
+.pt-chip-warning { -fx-border-color: -pt-warning !important; -fx-text-fill: -pt-warning !important; -fx-background-color: -pt-warning-soft !important; }
+.pt-chip-danger  { -fx-border-color: -pt-danger !important;  -fx-text-fill: -pt-danger !important;  -fx-background-color: -pt-danger-soft !important; }
+
+/* 状态圆点(给小 Circle/Region) */
+.pt-dot-success { -fx-background-color: -pt-success; -fx-fill: -pt-success; }
+.pt-dot-danger  { -fx-background-color: -pt-danger;  -fx-fill: -pt-danger; }
+.pt-dot-warning { -fx-background-color: -pt-warning; -fx-fill: -pt-warning; }
+
+/* ========== 侧栏导航 Nav item ========== */
+.pt-nav-item {
+    -fx-background-color: transparent !important;
+    -fx-background-radius: 6px;
+    -fx-text-fill: -pt-text-secondary !important;
+    -fx-font-size: 13px;
+    -fx-padding: 10px 14px;
+    -fx-cursor: hand;
+}
+.pt-nav-item:hover { -fx-background-color: -pt-bg-elevated !important; -fx-text-fill: -pt-text !important; }
+.pt-nav-item-active {
+    -fx-background-color: -pt-accent-soft !important;
+    -fx-text-fill: -pt-accent !important;
+    -fx-border-color: -pt-accent transparent transparent transparent;
+    -fx-border-width: 0 0 0 3px;      /* 左侧强调条 */
+    -fx-border-radius: 6px;
+}
+
+/* ========== 表格 Table ========== */
+.pt-table { -fx-background-color: transparent; -fx-border-width: 0; }
+.pt-table .column-header-background { -fx-background-color: -pt-bg-panel; }
+.pt-table .column-header, .pt-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent -pt-border-subtle transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+.pt-table .column-header .label {
+    -fx-text-fill: -pt-text-muted; -fx-font-size: 11px; -fx-alignment: center-left;
+}
+.pt-table .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent -pt-border-subtle transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-table-cell-border-color: transparent;
+}
+.pt-table .table-row-cell:hover     { -fx-background-color: -pt-bg-elevated; }
+.pt-table .table-row-cell:selected  { -fx-background-color: -pt-accent-soft; }
+.pt-table .table-cell { -fx-text-fill: -pt-text-secondary; -fx-font-size: 12px; -fx-border-width: 0; -fx-padding: 8px 10px; }
+
+/* ========== 滚动条 Scrollbar (统一细样式) ========== */
+.pt-scroll .scroll-bar:vertical, .pt-scroll .scroll-bar:horizontal { -fx-background-color: transparent; }
+.pt-scroll .scroll-bar .thumb { -fx-background-color: -pt-border; -fx-background-radius: 999px; }
+.pt-scroll .scroll-bar .thumb:hover { -fx-background-color: -pt-border-strong; }
+.pt-scroll .scroll-bar .increment-button,
+.pt-scroll .scroll-bar .decrement-button { -fx-background-color: transparent; -fx-padding: 0; }
+
+/* ========== 进度条 Progress ========== */
+.pt-progress-bar { -fx-indeterminate-bar-animation-time: 2; }
+.pt-progress-bar > .track { -fx-background-color: -pt-bg-inset; -fx-background-radius: 999px; }
+.pt-progress-bar > .bar   { -fx-background-color: -pt-accent;  -fx-background-radius: 999px; -fx-padding: 3px; }
+.pt-progress-bar.success > .bar { -fx-background-color: -pt-success; }
+.pt-progress-bar.danger  > .bar { -fx-background-color: -pt-danger; }
+
+/* ========== 四角取景框 (设计标志性元素) ========== */
+/* 用法: 容器加 .pt-frame，其内放 4 个带此类的小 Region 作角标 */
+.pt-frame-corner {
+    -fx-border-color: -pt-accent;
+    -fx-border-width: 1px;
+    -fx-min-width: 12px; -fx-min-height: 12px;
+    -fx-max-width: 12px; -fx-max-height: 12px;
+}

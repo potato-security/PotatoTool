@@ -1,25 +1,45 @@
-.wxImg{
-    -fx-border-color: -main-border-color;
+/* 关于页 —— 已迁移到统一设计体系 (theme.css token + components.css)
+ * 规则: 不再用 -main-* 灰色 token / 不硬编码色值，一律引用 -pt-*。
+ * 圆角/间距对齐 8pt 与 4/8/16 圆角规范。 */
+
+.wxImg {
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
 }
-.label .text{
-    /*-fx-font-weight: bold;*/
-}
-.bar{
-    -fx-background-color: -main-topBar-color;
+
+/* 右侧栏目导航 (工具信息/鸣谢/反馈/交流群) */
+.bar {
+    -fx-background-color: -pt-bg-panel;
     -fx-background-radius: 8;
-    -fx-padding: 20;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-padding: 16;
 }
-#mainScrollPane{
-    -fx-background-color: -main-topBar-color;
+
+/* 主滚动内容面板 */
+#mainScrollPane {
+    -fx-background-color: -pt-bg-panel;
     -fx-background-radius: 8;
-    -fx-padding: 20;
-    -fx-border-color: -main-border-color;
+    -fx-padding: 24;
+    -fx-border-color: -pt-border;
     -fx-border-width: 1;
     -fx-border-radius: 8;
 }
-.linenoPane{
+#mainScrollPane > .viewport { -fx-background-color: transparent; }
+
+/* 分段分隔线 */
+.linenoPane {
     -fx-border-width: 0 0 1 0;
-    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right, transparent 0%, -pt-border-subtle 20%, -pt-border-subtle 80%, transparent 100%);
+}
+
+/* 栏目标题 (工具信息/公告/鸣谢/建议反馈) */
+.titleText, .titleText .text {
+    -fx-fill: -pt-accent;
+    -fx-text-fill: -pt-accent;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
 }

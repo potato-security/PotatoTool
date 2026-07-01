@@ -20,7 +20,7 @@
     <VBox prefHeight="${sPane.height}" prefWidth="${sPane.width}" alignment="TOP_CENTER" spacing="20">
         <HBox alignment="CENTER_LEFT" prefWidth="${sPane.width}" spacing="20">
             <HBox prefWidth="${sPane.width/2 - 230}" alignment="CENTER" spacing="10">
-                <Label text="模式：" userData="i18n:infosearch.mode"/>
+                <Label text="模式：" styleClass="pt-body" userData="i18n:infosearch.mode"/>
                 <ComboBox fx:id="searchModeBox" prefHeight="20.0" prefWidth="130" userData="i18n-combobox:infosearch.mode" onAction="#chooseSearcchMode">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
@@ -31,7 +31,7 @@
                 </ComboBox>
             </HBox>
             <StackPane maxWidth="${sPane.width/2}">
-                <TextField fx:id="question" prefWidth="${sPane.width / 2}" minHeight="50" promptText="请输入需要检索的IP/域名/企业名称……" userData="i18n-prompt:infosearch.input.placeholder"/>
+                <TextField fx:id="question" styleClass="pt-input" prefWidth="${sPane.width / 2}" minHeight="50" promptText="请输入需要检索的IP/域名/企业名称……" userData="i18n-prompt:infosearch.input.placeholder"/>
                 <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
                     <HBox layoutX="-70" spacing="5" layoutY="3">
                         <Label fx:id="uploadLabel" visible="true" managed="true" onMouseClicked="#searchUploadInput">
@@ -75,7 +75,7 @@
         <VBox id="settingVbox" prefWidth="${sPane.width}">
             <HBox alignment="CENTER" prefWidth="${sPane.width}">
                 <HBox alignment="CENTER" id="topLeftTitle" prefWidth="130">
-                    <Label text="平台选择：" userData="i18n:infosearch.platform"/>
+                    <Label text="平台选择：" styleClass="pt-body" userData="i18n:infosearch.platform"/>
                 </HBox>
                 <FlowPane alignment="CENTER_LEFT" id="topRightTitle" prefWidth="${sPane.width - 130}" hgap="20" vgap="10">
                     <CFCheckBox fx:id="fofaBox" alignment="CENTER" mnemonicParsing="false" selected="false" text="Fofa" VBox.vgrow="ALWAYS" onMouseClicked="#checkFofa" />
@@ -90,7 +90,7 @@
 
             <HBox fx:id="advancedSetting" alignment="CENTER" prefWidth="${sPane.width}" visible="true" managed="true">
                 <HBox alignment="CENTER" id="bottomLeftTitle" prefWidth="130">
-                    <Label text="高级设置：" userData="i18n:infosearch.advanced"/>
+                    <Label text="高级设置：" styleClass="pt-body" userData="i18n:infosearch.advanced"/>
                 </HBox>
                 <FlowPane alignment="CENTER_LEFT" id="bottomRightTitle" prefWidth="${sPane.width - 130}" hgap="20" vgap="10">
                     <CFCheckBox fx:id="weightBox" alignment="CENTER" mnemonicParsing="false" selected="true" text="连带子公司" userData="i18n:infosearch.weight" VBox.vgrow="ALWAYS" onMouseClicked="#checkWeight" >
@@ -141,36 +141,36 @@
 
                     <FlowPane alignment="CENTER_LEFT"  prefWidth="${sPane.width - 170}" hgap="20" vgap="10">
                         <HBox alignment="CENTER" fx:id="weightHBox" visible="true" managed="true">
-                            <Label text="子公司权重：" userData="i18n:infosearch.weight.value"/>
-                            <TextField fx:id="weightStr" prefWidth="150" text="100,100"/>
+                            <Label text="子公司权重：" styleClass="pt-body" userData="i18n:infosearch.weight.value"/>
+                            <TextField fx:id="weightStr" styleClass="pt-input" prefWidth="150" text="100,100"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="maxDepthHBox" visible="false" managed="false">
-                            <Label text="爬链接深度：" userData="i18n:infosearch.crawldepth"/>
-                            <TextField fx:id="maxDepth" prefWidth="150" text="2"/>
+                            <Label text="爬链接深度：" styleClass="pt-body" userData="i18n:infosearch.crawldepth"/>
+                            <TextField fx:id="maxDepth" styleClass="pt-input" prefWidth="150" text="2"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="maxSubPathCountHBox" visible="false" managed="false">
-                            <Label text="最大链接数：" userData="i18n:infosearch.maxlinks"/>
-                            <TextField fx:id="maxSubPathCount" prefWidth="150" text="30"/>
+                            <Label text="最大链接数：" styleClass="pt-body" userData="i18n:infosearch.maxlinks"/>
+                            <TextField fx:id="maxSubPathCount" styleClass="pt-input" prefWidth="150" text="30"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="localFullDetectionThresholdHBox" visible="true" managed="true">
-                            <Label text="本地探阈值：" userData="i18n:infosearch.localdetect.threshold"/>
-                            <TextField fx:id="localFullDetectionThreshold" prefWidth="150" text="20"/>
+                            <Label text="本地探阈值：" styleClass="pt-body" userData="i18n:infosearch.localdetect.threshold"/>
+                            <TextField fx:id="localFullDetectionThreshold" styleClass="pt-input" prefWidth="150" text="20"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="shadowAssetsThresholdHBox" visible="false" managed="false">
-                            <Label text="影资量阈值：" userData="i18n:infosearch.shadow.threshold"/>
-                            <TextField fx:id="shadowAssetsThreshold" prefWidth="150" text="50"/>
+                            <Label text="影资量阈值：" styleClass="pt-body" userData="i18n:infosearch.shadow.threshold"/>
+                            <TextField fx:id="shadowAssetsThreshold" styleClass="pt-input" prefWidth="150" text="50"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="maxGoogleSearchCountHBox" visible="false" managed="false">
-                            <Label text="谷歌检索数：" userData="i18n:infosearch.google.count"/>
-                            <TextField fx:id="maxGoogleSearchCount" prefWidth="150" text="10"/>
+                            <Label text="谷歌检索数：" styleClass="pt-body" userData="i18n:infosearch.google.count"/>
+                            <TextField fx:id="maxGoogleSearchCount" styleClass="pt-input" prefWidth="150" text="10"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="maxGithubSearchCountHBox" visible="false" managed="false">
-                            <Label text="仓库检索数：" userData="i18n:infosearch.github.count"/>
-                            <TextField fx:id="maxGithubSearchCount" prefWidth="150" text="10"/>
+                            <Label text="仓库检索数：" styleClass="pt-body" userData="i18n:infosearch.github.count"/>
+                            <TextField fx:id="maxGithubSearchCount" styleClass="pt-input" prefWidth="150" text="10"/>
                         </HBox>
                         <HBox alignment="CENTER" fx:id="cipThresholdHBox" visible="false" managed="false">
-                            <Label text=" C聚合阈值：" userData="i18n:infosearch.cip.threshold"/>
-                            <TextField fx:id="cipThreshold" prefWidth="150" text="4"/>
+                            <Label text=" C聚合阈值：" styleClass="pt-body" userData="i18n:infosearch.cip.threshold"/>
+                            <TextField fx:id="cipThreshold" styleClass="pt-input" prefWidth="150" text="4"/>
                         </HBox>
                     </FlowPane>
                 </FlowPane>
@@ -193,12 +193,12 @@
             </effect>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="公司别名设置" userData="i18n:infosearch.company.alias.title"/>
+                    <Label styleClass="pt-h2" text="公司别名设置" userData="i18n:infosearch.company.alias.title"/>
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
-                    <Label text="请增加/修改公司别名，将用于影子资产检索" userData="i18n:infosearch.company.alias.desc"/>
+                    <Label styleClass="pt-caption" text="请增加/修改公司别名，将用于影子资产检索" userData="i18n:infosearch.company.alias.desc"/>
                     <VBox fx:id="companyNameVbox" spacing="10" alignment="CENTER"/>
-                    <Button fx:id="companyNameSave" prefWidth="150" styleClass="buttonBox" text="下一步" userData="i18n:infosearch.next" onAction="#saveCompanyNameField"/>
+                    <Button fx:id="companyNameSave" prefWidth="150" styleClass="pt-btn-primary" text="下一步" userData="i18n:infosearch.next" onAction="#saveCompanyNameField"/>
                 </VBox>
             </VBox>
         </HBox>
@@ -211,17 +211,17 @@
             </effect>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label fx:id="companyCandidateTitle" style="-fx-font-size: 21;-fx-font-weight: bold;" text="确认根公司"/>
+                    <Label fx:id="companyCandidateTitle" styleClass="pt-h2" text="确认根公司"/>
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
-                    <Label fx:id="companyCandidateDesc" text="请确认根公司候选，未确认前不会继续企业扩展"/>
+                    <Label fx:id="companyCandidateDesc" styleClass="pt-caption" text="请确认根公司候选，未确认前不会继续企业扩展"/>
                     <SmoothScrollPane maxHeight="320" hbarPolicy="NEVER">
                         <VBox fx:id="companyCandidateVbox" spacing="10" alignment="CENTER"/>
                     </SmoothScrollPane>
                     <HBox alignment="CENTER" spacing="10">
-                        <Button fx:id="companyCandidateSave" prefWidth="150" styleClass="buttonBox" text="确认并继续" onAction="#saveCompanyCandidateField"/>
-                        <Button fx:id="companyCandidateNone" prefWidth="120" styleClass="buttonBox" text="都不是" onAction="#chooseNoneCompanyCandidate"/>
-                        <Button fx:id="companyCandidateCancel" prefWidth="120" styleClass="buttonBox" text="取消" userData="i18n:app.cancel" onAction="#cancelCompanyCandidateField"/>
+                        <Button fx:id="companyCandidateSave" prefWidth="150" styleClass="pt-btn-primary" text="确认并继续" onAction="#saveCompanyCandidateField"/>
+                        <Button fx:id="companyCandidateNone" prefWidth="120" styleClass="pt-btn" text="都不是" onAction="#chooseNoneCompanyCandidate"/>
+                        <Button fx:id="companyCandidateCancel" prefWidth="120" styleClass="pt-btn" text="取消" userData="i18n:app.cancel" onAction="#cancelCompanyCandidateField"/>
                     </HBox>
                 </VBox>
             </VBox>
@@ -235,12 +235,12 @@
             </effect>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="icon设置" userData="i18n:infosearch.icon.title"/>
+                    <Label styleClass="pt-h2" text="icon设置" userData="i18n:infosearch.icon.title"/>
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
-                    <Label text="请选择相关的icon，将用于基础检索 及 影子资产检索" userData="i18n:infosearch.icon.desc"/>
+                    <Label styleClass="pt-caption" text="请选择相关的icon，将用于基础检索 及 影子资产检索" userData="i18n:infosearch.icon.desc"/>
                     <FlowPane fx:id="iconFlowPane" vgap="10" hgap="10" alignment="CENTER"/>
-                    <Button fx:id="iconSave" prefWidth="150" styleClass="buttonBox" text="下一步" userData="i18n:infosearch.next" onAction="#saveIconField"/>
+                    <Button fx:id="iconSave" prefWidth="150" styleClass="pt-btn-primary" text="下一步" userData="i18n:infosearch.next" onAction="#saveIconField"/>
                 </VBox>
             </VBox>
         </HBox>
@@ -253,14 +253,14 @@
             </effect>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label style="-fx-font-size: 21;-fx-font-weight: bold;" text="选择域名" userData="i18n:infosearch.domain.title"/>
+                    <Label styleClass="pt-h2" text="选择域名" userData="i18n:infosearch.domain.title"/>
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
-                    <Label text="以下为反查到的域名，请选择" userData="i18n:infosearch.domain.desc"/>
+                    <Label styleClass="pt-caption" text="以下为反查到的域名，请选择" userData="i18n:infosearch.domain.desc"/>
                     <SmoothScrollPane maxHeight="300" hbarPolicy="NEVER">
                         <VBox fx:id="domainVbox" spacing="10" alignment="CENTER"/>
                     </SmoothScrollPane>
-                    <Button fx:id="domainSave" prefWidth="150" styleClass="buttonBox" text="下一步" userData="i18n:infosearch.next" onAction="#saveDomainField"/>
+                    <Button fx:id="domainSave" prefWidth="150" styleClass="pt-btn-primary" text="下一步" userData="i18n:infosearch.next" onAction="#saveDomainField"/>
                 </VBox>
             </VBox>
         </HBox>

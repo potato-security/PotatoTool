@@ -1,6 +1,6 @@
 .ipData{
-    -fx-fill: -main-border-color;
+    -fx-fill: -pt-accent;
 }
 .posData{
-    -fx-fill: -main-tips-color;
+    -fx-fill: -pt-warning;
 }

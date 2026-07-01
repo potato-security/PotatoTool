@@ -13,11 +13,11 @@
     <VBox alignment="TOP_CENTER" prefWidth="${sPane.width}" maxWidth="${sPane.width}" spacing="12" styleClass="portscan-root">
         <HBox alignment="CENTER_LEFT" spacing="12">
             <VBox spacing="5" minWidth="120">
-                <Label text="端口预设" styleClass="title-label" userData="i18n:portscan.preset"/>
+                <Label text="端口预设" styleClass="pt-section-label" userData="i18n:portscan.preset"/>
                 <ComboBox fx:id="portPresetComboBox" prefWidth="120"/>
             </VBox>
             <StackPane HBox.hgrow="ALWAYS">
-                <SmoothTextArea fx:id="targetField" prefHeight="80" wrapText="true" promptText="请输入 IP/域名/CIDR，每行一个" userData="i18n-prompt:portscan.target.placeholder" id="targetField"/>
+                <SmoothTextArea fx:id="targetField" prefHeight="80" wrapText="true" promptText="请输入 IP/域名/CIDR，每行一个" userData="i18n-prompt:portscan.target.placeholder" id="targetField" styleClass="pt-input"/>
             </StackPane>
         </HBox>
 
@@ -27,15 +27,15 @@
             <VBox id="settingVbox" maxWidth="Infinity">
                 <HBox alignment="CENTER_LEFT" maxWidth="Infinity">
                     <HBox id="topLeftTitle" alignment="CENTER">
-                        <Label text="端口配置" userData="i18n:portscan.config.ports"/>
+                        <Label text="端口配置" styleClass="pt-section-label" userData="i18n:portscan.config.ports"/>
                     </HBox>
                     <FlowPane id="topRightTitle" HBox.hgrow="ALWAYS" hgap="12" vgap="8" alignment="CENTER_LEFT">
-                        <Label text="自定义端口" userData="i18n:portscan.custom.ports"/>
-                        <TextField fx:id="customPortsField" prefWidth="160" promptText="80,443,8000-9000"/>
-                        <Label text="超时(ms)" userData="i18n:portscan.timeout"/>
-                        <TextField fx:id="timeoutField" prefWidth="70"/>
-                        <Label text="Batch" userData="i18n:portscan.batch"/>
-                        <TextField fx:id="batchSizeField" prefWidth="70"/>
+                        <Label text="自定义端口" styleClass="pt-caption" userData="i18n:portscan.custom.ports"/>
+                        <TextField fx:id="customPortsField" prefWidth="160" promptText="80,443,8000-9000" styleClass="pt-input"/>
+                        <Label text="超时(ms)" styleClass="pt-caption" userData="i18n:portscan.timeout"/>
+                        <TextField fx:id="timeoutField" prefWidth="70" styleClass="pt-input"/>
+                        <Label text="Batch" styleClass="pt-caption" userData="i18n:portscan.batch"/>
+                        <TextField fx:id="batchSizeField" prefWidth="70" styleClass="pt-input"/>
                         <CFCheckBox fx:id="serviceProbeBox" text="服务识别" userData="i18n:portscan.serviceprobe"/>
                         <CFCheckBox fx:id="publicModeBox" text="公网限速" userData="i18n:portscan.publicmode"/>
                         <CFCheckBox fx:id="autoHandoffBox" text="完成后送入漏扫" userData="i18n:portscan.autohandoff"/>
@@ -45,29 +45,29 @@
         </TitledPane>
 
         <HBox alignment="CENTER_LEFT" spacing="8" maxWidth="Infinity">
-            <Button fx:id="startButton" text="开始扫描" onMouseClicked="#startScan" styleClass="primary-button" userData="i18n:portscan.start"/>
-            <Button fx:id="pauseButton" text="暂停" onMouseClicked="#pauseScan" styleClass="small-button" userData="i18n:portscan.pause"/>
-            <Button fx:id="resumeButton" text="恢复" onMouseClicked="#resumeScan" styleClass="small-button" userData="i18n:portscan.resume"/>
-            <Button fx:id="stopButton" text="停止" onMouseClicked="#stopScan" styleClass="danger-button" userData="i18n:portscan.stop"/>
-            <Button text="清空结果" onMouseClicked="#clearResults" styleClass="small-button" userData="i18n:portscan.clear"/>
+            <Button fx:id="startButton" text="开始扫描" onMouseClicked="#startScan" styleClass="pt-btn-primary" userData="i18n:portscan.start"/>
+            <Button fx:id="pauseButton" text="暂停" onMouseClicked="#pauseScan" styleClass="pt-btn" userData="i18n:portscan.pause"/>
+            <Button fx:id="resumeButton" text="恢复" onMouseClicked="#resumeScan" styleClass="pt-btn" userData="i18n:portscan.resume"/>
+            <Button fx:id="stopButton" text="停止" onMouseClicked="#stopScan" styleClass="pt-btn-danger" userData="i18n:portscan.stop"/>
+            <Button text="清空结果" onMouseClicked="#clearResults" styleClass="pt-btn-danger" userData="i18n:portscan.clear"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="格式" userData="i18n:portscan.export.format" style="-fx-text-fill: -main-linenoText-color;"/>
+            <Label text="格式" styleClass="pt-caption" userData="i18n:portscan.export.format"/>
             <ComboBox fx:id="exportFormatComboBox" prefWidth="90"/>
-            <Button text="导出" onMouseClicked="#exportSelected" styleClass="small-button" userData="i18n:portscan.export"/>
-            <Button text="历史记录" onMouseClicked="#showHistory" styleClass="small-button" userData="i18n:portscan.history"/>
-            <Button fx:id="handoffButton" text="送入漏扫" onMouseClicked="#handoffToVulnScan" styleClass="small-button" userData="i18n:portscan.handoff"/>
+            <Button text="导出" onMouseClicked="#exportSelected" styleClass="pt-btn" userData="i18n:portscan.export"/>
+            <Button text="历史记录" onMouseClicked="#showHistory" styleClass="pt-btn" userData="i18n:portscan.history"/>
+            <Button fx:id="handoffButton" text="送入漏扫" onMouseClicked="#handoffToVulnScan" styleClass="pt-btn" userData="i18n:portscan.handoff"/>
         </HBox>
 
         <HBox spacing="16" alignment="CENTER_LEFT" prefWidth="${sPane.width}">
-            <Label text="状态:" userData="i18n:portscan.status.label"/>
-            <Label fx:id="scanStateLabel" text="Ready"/>
+            <Label text="状态:" styleClass="pt-body" userData="i18n:portscan.status.label"/>
+            <Label fx:id="scanStateLabel" text="Ready" styleClass="pt-chip"/>
             <ProgressBar fx:id="progressBar" prefWidth="260" progress="0"/>
-            <Label fx:id="progressLabel" text="0 / 0"/>
-            <Label text="开放端口:" userData="i18n:portscan.open.count"/>
-            <Label fx:id="openCountLabel" text="0"/>
+            <Label fx:id="progressLabel" text="0 / 0" styleClass="pt-mono"/>
+            <Label text="开放端口:" styleClass="pt-body" userData="i18n:portscan.open.count"/>
+            <Label fx:id="openCountLabel" text="0" styleClass="pt-mono"/>
         </HBox>
 
-        <TableView fx:id="resultTable" VBox.vgrow="ALWAYS" prefWidth="${sPane.width}" maxWidth="${sPane.width}" prefHeight="420" styleClass="portscan-result-table">
+        <TableView fx:id="resultTable" VBox.vgrow="ALWAYS" prefWidth="${sPane.width}" maxWidth="${sPane.width}" prefHeight="420" styleClass="pt-table,portscan-result-table">
             <columns>
                 <TableColumn fx:id="hostColumn" text="Host" prefWidth="150"/>
                 <TableColumn fx:id="portColumn" text="Port" prefWidth="70"/>
@@ -86,12 +86,12 @@
               onMouseClicked="#consumePromptEvent"
               prefWidth="820" prefHeight="520" maxWidth="820" maxHeight="520">
             <HBox alignment="CENTER_LEFT" styleClass="manage-header">
-                <Label text="端口扫描历史" styleClass="manage-title" userData="i18n:portscan.history.title"/>
+                <Label text="端口扫描历史" styleClass="pt-h2" userData="i18n:portscan.history.title"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="historyCountLabel" text="共 0 条" style="-fx-text-fill: -main-linenoText-color; -fx-padding: 0 12 0 0;"/>
+                <Label fx:id="historyCountLabel" text="共 0 条" styleClass="pt-caption" style="-fx-padding: 0 12 0 0;"/>
                 <Label text="✕" styleClass="close-button" onMouseClicked="#closeHistory"/>
             </HBox>
-            <SmoothTableView fx:id="historyTableView" VBox.vgrow="ALWAYS" styleClass="history-table">
+            <SmoothTableView fx:id="historyTableView" VBox.vgrow="ALWAYS" styleClass="pt-table,history-table">
                 <columns>
                     <TableColumn fx:id="historyTimeColumn" text="扫描时间" prefWidth="170" userData="i18n:portscan.column.time"/>
                     <TableColumn fx:id="historyOpenColumn" text="开放端口" prefWidth="90" style="-fx-alignment: CENTER;" userData="i18n:portscan.column.openports"/>
@@ -100,11 +100,11 @@
                     <TableColumn fx:id="historyScanIdColumn" text="ID" prefWidth="260" userData="i18n:portscan.column.scanid"/>
                 </columns>
             </SmoothTableView>
-            <HBox alignment="CENTER_RIGHT" spacing="10" style="-fx-padding: 12 16 12 16; -fx-border-color: -main-lineno-color; -fx-border-width: 1 0 0 0;">
-                <Button text="打开" onMouseClicked="#openSelectedHistory" styleClass="small-button" userData="i18n:portscan.history.open"/>
-                <Button text="删除" onMouseClicked="#deleteSelectedHistory" styleClass="small-button" userData="i18n:app.delete"/>
+            <HBox alignment="CENTER_RIGHT" spacing="10" style="-fx-padding: 12 16 12 16; -fx-border-color: -pt-border-subtle; -fx-border-width: 1 0 0 0;">
+                <Button text="打开" onMouseClicked="#openSelectedHistory" styleClass="pt-btn" userData="i18n:portscan.history.open"/>
+                <Button text="删除" onMouseClicked="#deleteSelectedHistory" styleClass="pt-btn" userData="i18n:app.delete"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="清空历史" onMouseClicked="#clearAllHistory" styleClass="danger-button" userData="i18n:portscan.history.clear"/>
+                <Button text="清空历史" onMouseClicked="#clearAllHistory" styleClass="pt-btn-danger" userData="i18n:portscan.history.clear"/>
             </HBox>
         </VBox>
     </StackPane>

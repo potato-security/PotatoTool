@@ -8,8 +8,8 @@
 }
 .tipVBox{
     -fx-padding: 20;
-    -fx-border-color: -main-border-color;
-    -fx-background-color: -main-topBar-color;
+    -fx-border-color: -pt-border;
+    -fx-background-color: -pt-bg-panel;
     -fx-border-width: 1;
     -fx-border-radius: 8;
 }
@@ -27,32 +27,32 @@
 }
 
 .payload-toolbox-tab-pane .tab {
-    -fx-background-color: derive(-main-topBar-color, 4%);
+    -fx-background-color: derive(-pt-bg-panel, 4%);
     -fx-background-insets: 0;
     -fx-background-radius: 10 10 0 0;
-    -fx-border-color: derive(-main-border-color, -18%);
+    -fx-border-color: derive(-pt-border, -18%);
     -fx-border-width: 1 1 0 1;
     -fx-border-radius: 10 10 0 0;
     -fx-padding: 8 18 8 18;
 }
 
 .payload-toolbox-tab-pane .tab:hover {
-    -fx-background-color: derive(-main-topBar-color, 8%);
+    -fx-background-color: derive(-pt-bg-panel, 8%);
 }
 
 .payload-toolbox-tab-pane .tab:selected {
-    -fx-background-color: -main-topBar-color;
-    -fx-border-color: -main-border-color;
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-accent;
 }
 
 .payload-toolbox-tab-pane .tab .tab-label {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
     -fx-font-size: 13;
     -fx-font-weight: bold;
 }
 
 .payload-toolbox-tab-pane .tab:selected .tab-label {
-    -fx-text-fill: -main-border-color;
+    -fx-text-fill: -pt-accent;
 }
 
 .payload-toolbox-tab-pane .tab-content-area {

@@ -666,7 +666,9 @@ public class PaneExtension {
             controller.setDeleteInfo(title, describe);
 
             Scene scene = new Scene(dialogRoot);
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/theme.css"));
             scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/components.css"));
             scene.setFill(null);    //  背景透明
             stage.setScene(scene);
             stage.setTitle(I18nUtils.getString("delete.window.title"));
@@ -745,7 +747,9 @@ public class PaneExtension {
             addBtn.setText(I18nUtils.getString("addbar.submit.modify"));
 
             Scene scene = new Scene(dialogRoot);
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/theme.css"));
             scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/components.css"));
             scene.setFill(null);    //  背景透明
             stage.setScene(scene);
             stage.setTitle(I18nUtils.getString("addbar.window.title.modify"));
@@ -794,7 +798,9 @@ public class PaneExtension {
             addBtn.setText(I18nUtils.getString("addbar.submit.add"));
 
             Scene scene = new Scene(dialogRoot);
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/theme.css"));
             scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+            scene.getStylesheets().add(Constants.getResourceUrl("/css/components.css"));
             scene.setFill(null);    //  背景透明
             stage.setScene(scene);
             stage.setTitle(I18nUtils.getString("addbar.window.title.add"));

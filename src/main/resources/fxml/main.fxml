@@ -240,7 +240,7 @@
                     maxHeight="-Infinity" maxWidth="-Infinity"
                     alignment="CENTER" StackPane.alignment="CENTER"
                     onMouseClicked="#closePromptPane">
-            <Label fx:id="promptLabel" wrapText="true" textAlignment="CENTER"
+            <Label fx:id="promptLabel" styleClass="pt-body" wrapText="true" textAlignment="CENTER"
                    alignment="CENTER" maxWidth="720"/>
          </StackPane>
       </StackPane>

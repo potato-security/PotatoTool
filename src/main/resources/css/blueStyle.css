@@ -1,21 +1,25 @@
 .root{
-    -main-border-color: #3ECEE3 !important;
-    -main-borderHover-color: #208e9a !important;
+    -main-border-color: #4FE3FF !important;
+    -main-borderHover-color: #2B8B95 !important;
     -main-smallbtnBg-color: #87CEFA !important;
     -main-btnTransition-color: linear-gradient(to bottom, #75D6BA, #3C85C5) !important;
     -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0) !important;
 }
 #root{
-    -main-border-color: #3ECEE3 !important;
-    -main-borderHover-color: #208e9a !important;
+    -main-border-color: #4FE3FF !important;
+    -main-borderHover-color: #2B8B95 !important;
     -main-smallbtnBg-color: #87CEFA !important;
     -main-btnTransition-color: linear-gradient(to bottom, #75D6BA, #3C85C5) !important;
     -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0) !important;
 }
 #sPane{
-    -main-border-color: #3ECEE3 !important;
-    -main-borderHover-color: #208e9a !important;
+    -main-border-color: #4FE3FF !important;
+    -main-borderHover-color: #2B8B95 !important;
     -main-smallbtnBg-color: #87CEFA !important;
     -main-btnTransition-color: linear-gradient(to bottom, #75D6BA, #3C85C5) !important;
     -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0) !important;
+}
+/* 新统一体系: Blue Team 强调色 */
+.root, #root, #sPane, .blueStyle {
+    -pt-accent: -pt-accent-teal !important;
 }

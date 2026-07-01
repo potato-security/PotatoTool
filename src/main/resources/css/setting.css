@@ -23,7 +23,7 @@
     -fx-background-radius: 0 0 4 4;
 }
 .SPane{
-    -fx-background-color: -main-topBar-color;
+    -fx-background-color: -pt-bg-panel;
     -fx-padding: 0;
     -fx-background-radius: 0 0 4 4;
 }
@@ -38,19 +38,19 @@
     -fx-max-width: 13;
     -fx-max-height: 17;
     -fx-shape: "M750.976 532.288c7.68-19.456 3.84-42.688-11.456-58.496l0 0 0 0L358.4 79.808c-20.416-21.12-53.44-21.12-73.856 0-20.416 21.12-20.416 55.232 0 76.352L628.672 512l-344.192 355.84c-20.416 21.12-20.416 55.296 0 76.352 20.416 21.056 53.44 21.056 73.856 0l381.056-393.984C744.576 544.896 748.416 538.816 750.976 532.288z";
-    -fx-background-color: -main-font-color;
+    -fx-background-color: -pt-text;
 }
 .contentCell{
     -fx-padding: 20;
-    -fx-border-color: -main-lineno-color;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 1;
     -fx-border-radius: 0;
 }
 .contentCellLast{
     -fx-padding: 20;
-    -fx-border-color: -main-lineno-color;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 1;
-    -fx-border-radius: 0 0 5 5;
+    -fx-border-radius: 0 0 4 4;
 }
 .tipTitle_input_big .text{
     -fx-font-size: 20;
@@ -58,10 +58,10 @@
 }
 .tips{
     -fx-border-width: 0 0 1 0;
-    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right,transparent 0%, -pt-border-subtle 20%, -pt-border-subtle 80%, transparent 100%);
 }
 .tips .text{
-    -fx-fill: -main-border-color;
+    -fx-fill: -pt-accent;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 .progressLabel{
@@ -69,7 +69,7 @@
 }
 .progressLabel .text{
     -fx-font-size: 11;
-    -fx-fill: -main-border-color;
+    -fx-fill: -pt-accent;
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 .delIcon{
@@ -78,14 +78,14 @@
     -fx-max-width: 20;
     -fx-max-height: 20;
     -fx-shape: "M511.7606 0.479775c282.637514 0 511.760112 229.122599 511.760112 511.760113s-229.122599 511.760112-511.760112 511.760112-511.760112-229.122599-511.760113-511.760112c0.009995-282.637514 229.132594-511.760112 511.760113-511.760113z m0 950.414493c242.266438 0 438.654381-196.387943 438.65438-438.65438 0-242.236452-196.407934-438.654381-438.65438-438.654381-242.236452 0-438.654381 196.407934-438.654381 438.654381 0.009995 242.246447 196.417929 438.654381 438.654381 438.65438zM219.337673 512.239888c0-20.18054 16.36233-36.552866 36.552866-36.552866h511.760112c20.18054 0 36.552866 16.36233 36.552866 36.552866s-16.36233 36.552866-36.552866 36.552865h-511.760112c-20.030611-0.389817-36.173044-16.522255-36.552866-36.552865z m0 0";
-    -fx-background-color: -main-font-color;
+    -fx-background-color: -pt-text;
     -fx-cursor: hand;
 }
 .delIcon:hover{
-    -fx-background-color: -main-border-color;
+    -fx-background-color: -pt-accent;
 }
 .delIcon:pressed{
-    -fx-background-color: -main-borderHover-color;
+    -fx-background-color: derive(-pt-accent, -25%);
 }
 .addIcon{
     -fx-pref-width: 20;
@@ -93,20 +93,20 @@
     -fx-max-width: 20;
     -fx-max-height: 20;
     -fx-shape: "M475.397511 475.467497V256.052496c0-20.18862 16.368881-36.5675 36.5675-36.5675s36.5675 16.368881 36.567501 36.5675V475.467497h219.415c20.18862 0 36.5675 16.368881 36.567501 36.567501s-16.368881 36.5675-36.567501 36.5675H548.532512v219.415001c0 20.18862-16.368881 36.5675-36.567501 36.5675-20.18862 0-36.5675-16.368881-36.5675-36.5675V548.602498H255.98251c-20.028631-0.389973-36.177527-16.52887-36.5675-36.5675 0-20.18862 16.368881-36.5675 36.5675-36.567501H475.397511zM511.965011 0.069995c282.750671 0 511.965002 229.214331 511.965003 511.965003s-229.214331 511.965002-511.965003 511.965002-511.965002-229.214331-511.965002-511.965002 229.214331-511.965002 511.965002-511.965003z m0 950.795004c242.363432 0 438.830002-196.46657 438.830002-438.830001 0-242.333434-196.486568-438.830002-438.830002-438.830002-242.333434 0-438.830002 196.486568-438.830002 438.830002s196.486568 438.830002 438.830002 438.830001z m0 0";
-    -fx-background-color: -main-font-color;
+    -fx-background-color: -pt-text;
     -fx-cursor: hand;
 }
 .addIcon:hover{
-    -fx-background-color: -main-border-color;
+    -fx-background-color: -pt-accent;
 }
 .addIcon:pressed{
-    -fx-background-color: -main-borderHover-color;
+    -fx-background-color: derive(-pt-accent, -25%);
 }
 .tiny-button {
     -fx-background-color: transparent;
     -fx-background-radius: 4;
-    -fx-text-fill: -main-linenoText-color;
-    -fx-border-color: -main-lineno-color;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-radius: 4;
     -fx-border-width: 1;
     -fx-font-size: 11;
@@ -114,51 +114,51 @@
     -fx-cursor: hand;
 }
 .tiny-button:hover {
-    -fx-text-fill: -main-border-color;
-    -fx-border-color: -main-border-color;
+    -fx-text-fill: -pt-accent;
+    -fx-border-color: -pt-accent;
 }
 .preset-tag {
     -fx-background-color: transparent;
-    -fx-background-radius: 12;
-    -fx-text-fill: -main-linenoText-color;
-    -fx-border-color: -main-lineno-color;
-    -fx-border-radius: 12;
+    -fx-background-radius: 8;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 8;
     -fx-border-width: 1;
     -fx-font-size: 11;
     -fx-padding: 3 10 3 10;
     -fx-cursor: hand;
 }
 .preset-tag:hover {
-    -fx-text-fill: -main-border-color;
-    -fx-border-color: -main-border-color;
+    -fx-text-fill: -pt-accent;
+    -fx-border-color: -pt-accent;
 }
 
 #promptPane.setting-prompt-info {
-    -fx-background-color: rgba(17, 22, 28, 0.94), rgba(62, 206, 227, 0.08);
+    -fx-background-color: -pt-bg-panel, -pt-accent-soft;
     -fx-background-insets: 0, 1;
-    -fx-border-color: rgba(62, 206, 227, 0.46);
+    -fx-border-color: -pt-accent;
     -fx-border-width: 1;
-    -fx-border-radius: 14;
-    -fx-background-radius: 14, 13;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16, 15;
 }
 
 #promptPane.setting-prompt-info .label {
-    -fx-text-fill: #f8fafc;
+    -fx-text-fill: -pt-text;
     -fx-font-weight: bold;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 2, 0, 0, 1);
 }
 
 #promptPane.setting-prompt-error {
-    -fx-background-color: rgba(44, 16, 18, 0.95), rgba(255, 76, 63, 0.16);
+    -fx-background-color: -pt-bg-panel, -pt-danger-soft;
     -fx-background-insets: 0, 1;
-    -fx-border-color: rgba(255, 118, 108, 0.72);
+    -fx-border-color: -pt-danger;
     -fx-border-width: 1;
-    -fx-border-radius: 14;
-    -fx-background-radius: 14, 13;
+    -fx-border-radius: 16;
+    -fx-background-radius: 16, 15;
 }
 
 #promptPane.setting-prompt-error .label {
-    -fx-text-fill: #ffe6e2;
+    -fx-text-fill: -pt-text;
     -fx-font-weight: bold;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 2, 0, 0, 1);
 }
@@ -179,17 +179,17 @@
 }
 
 .setting-confirm-dialog {
-    -fx-background-color: -main-btnContent-color;
-    -fx-background-radius: 14;
-    -fx-border-color: -main-lineno-color;
-    -fx-border-radius: 14;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 16;
+    -fx-border-color: -pt-border;
+    -fx-border-radius: 16;
     -fx-border-width: 1;
-    -fx-padding: 20;
+    -fx-padding: 16;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.46), 24, 0, 0, 6);
 }
 
 .setting-confirm-text {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
     -fx-font-size: 13;
     -fx-padding: 0;
     -fx-wrap-text: true;
@@ -198,9 +198,9 @@
 }
 
 .setting-confirm-title {
-    -fx-font-size: 18;
+    -fx-font-size: 16;
     -fx-font-weight: bold;
-    -fx-text-fill: -main-border-color;
+    -fx-text-fill: -pt-accent;
 }
 
 .setting-confirm-content {
@@ -219,21 +219,21 @@
 
 .setting-confirm-secondary {
     -fx-background-color: transparent;
-    -fx-border-color: -main-lineno-color;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
+    -fx-border-color: -pt-border;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
 }
 
 .setting-page-title {
     -fx-padding: 0 0 0 30;
-    -fx-font-size: 23;
+    -fx-font-size: 20;
     -fx-font-weight: bold;
 }
 
 .setting-section-title {
     -fx-font-size: 13px;
     -fx-font-weight: bold;
-    -fx-text-fill: -main-border-color;
+    -fx-text-fill: -pt-accent;
 }
 
 .setting-field-label {
@@ -250,7 +250,7 @@
 
 .setting-note-text {
     -fx-font-size: 11px;
-    -fx-text-fill: #888888;
+    -fx-text-fill: -pt-text-muted;
 }
 
 .setting-code-input {

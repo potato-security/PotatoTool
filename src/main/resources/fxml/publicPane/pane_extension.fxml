@@ -17,7 +17,7 @@
     <BorderPane>
 
         <left>
-            <SmoothScrollPane maxHeight="${sPane.height - 10}" hbarPolicy="NEVER">
+            <SmoothScrollPane styleClass="pt-scroll" maxHeight="${sPane.height - 10}" hbarPolicy="NEVER">
                 <VBox fx:id="vBoxBar">
                     <Accordion fx:id="accordionPane"/>
                 </VBox>
@@ -25,7 +25,7 @@
         </left>
 
         <right>
-            <SmoothListView fx:id="listView" prefWidth="${sPane.width - 210}" maxHeight="${sPane.height - 10}" />
+            <SmoothListView fx:id="listView" styleClass="pt-scroll" prefWidth="${sPane.width - 210}" maxHeight="${sPane.height - 10}" />
         </right>
     </BorderPane>
 

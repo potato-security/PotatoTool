@@ -38,8 +38,9 @@
             <!-- 目标输入框 (带右侧图标按钮) -->
             <StackPane HBox.hgrow="ALWAYS">
                 <SmoothTextArea fx:id="targetField" prefHeight="60" wrapText="true"
-                          promptText="请输入目标 URL/IP，每行一个..." 
+                          promptText="请输入目标 URL/IP，每行一个..."
                           userData="i18n-prompt:vulnscan.target.placeholder"
+                          styleClass="pt-input,pt-mono"
                           id="targetField"/>
                 
                 <Pane maxWidth="0" maxHeight="30" StackPane.alignment="TOP_RIGHT">
@@ -86,8 +87,8 @@
                     <CFCheckBox fx:id="xrayCheckBox" text="Xray" selected="true" onMouseClicked="#checkXray"/>
                     <CFCheckBox fx:id="pocsuiteCheckBox" text="Pocsuite" selected="true" onMouseClicked="#checkPocsuite"/>
                     <Region prefWidth="20"/>
-                    <Button text="全选" onAction="#selectAllFormats" styleClass="tiny-button" userData="i18n:vulnscan.selectall"/>
-                    <Button text="反选" onAction="#invertFormats" styleClass="tiny-button" userData="i18n:vulnscan.invert"/>
+                    <Button text="全选" onAction="#selectAllFormats" styleClass="pt-btn" userData="i18n:vulnscan.selectall"/>
+                    <Button text="反选" onAction="#invertFormats" styleClass="pt-btn" userData="i18n:vulnscan.invert"/>
                 </FlowPane>
             </HBox>
             
@@ -102,8 +103,8 @@
                     <CFCheckBox fx:id="autoSaveBox" text="自动保存" selected="true" userData="i18n:vulnscan.autosave"/>
 
                     <!-- 标签过滤 -->
-                    <Label text="标签:" style="-fx-text-fill: -main-linenoText-color;" userData="i18n:vulnscan.ui.tags.label"/>
-                    <TextField fx:id="tagsField" prefWidth="100" promptText="RCE,XSS" style="-fx-font-size: 12;"/>
+                    <Label text="标签:" styleClass="pt-caption" userData="i18n:vulnscan.ui.tags.label"/>
+                    <TextField fx:id="tagsField" prefWidth="100" promptText="RCE,XSS" styleClass="pt-input"/>
                 </FlowPane>
             </HBox>
             
@@ -114,13 +115,13 @@
                 </HBox>
                 <FlowPane id="bottomRightTitle" HBox.hgrow="ALWAYS" hgap="15" vgap="10" alignment="CENTER_LEFT">
                     <!-- 特殊模板 -->
-                    <Label text="模板:" style="-fx-text-fill: -main-linenoText-color;" userData="i18n:vulnscan.ui.template.label"/>
+                    <Label text="模板:" styleClass="pt-caption" userData="i18n:vulnscan.ui.template.label"/>
                     <CFCheckBox fx:id="enableHeadlessBox" text="Headless" selected="false"/>
                     <CFCheckBox fx:id="enableCodeBox" text="Code" selected="false"/>
                     <CFCheckBox fx:id="enableFuzzBox" text="Fuzz" selected="false"/>
 
                     <!-- 特殊分类 -->
-                    <Label text="特殊:" style="-fx-text-fill: -main-linenoText-color;" userData="i18n:vulnscan.ui.special.label"/>
+                    <Label text="特殊:" styleClass="pt-caption" userData="i18n:vulnscan.ui.special.label"/>
                     <CFCheckBox fx:id="includeOsintBox" text="OSINT" selected="false">
                         <tooltip><Tooltip text="开源情报收集（需要API密钥）" userData="i18n:vulnscan.ui.osint.tooltip"/></tooltip>
                     </CFCheckBox>
@@ -129,7 +130,7 @@
                     </CFCheckBox>
 
                     <!-- 输入类型 -->
-                    <Label text="输入:" style="-fx-text-fill: -main-linenoText-color;" userData="i18n:vulnscan.ui.input.label"/>
+                    <Label text="输入:" styleClass="pt-caption" userData="i18n:vulnscan.ui.input.label"/>
                     <ComboBox fx:id="inputTypeComboBox" prefWidth="100" userData="i18n-combobox:vulnscan.inputtype"/>
                 </FlowPane>
             </HBox>
@@ -140,7 +141,7 @@
         <VBox spacing="6">
             <!-- Row A: POC 统计 + 状态 -->
             <HBox alignment="CENTER_LEFT" spacing="6">
-                <Label text="POC库:" style="-fx-font-weight: bold; -fx-text-fill: -main-font-color;" userData="i18n:vulnscan.ui.poclib"/>
+                <Label text="POC库:" styleClass="pt-body" style="-fx-font-weight: bold;" userData="i18n:vulnscan.ui.poclib"/>
                 <Label fx:id="pocTotalLabel" text="0" styleClass="stat-value"/>
                 <Label text="(" styleClass="stat-label"/>
                 <Label text="N" styleClass="stat-label"/>
@@ -151,13 +152,13 @@
                 <Label fx:id="pocXrayLabel" text="0" styleClass="stat-value-xray"/>
                 <Label text=")" styleClass="stat-label"/>
 
-                <Button text="刷新" onAction="#refreshPocList" styleClass="tiny-button" userData="i18n:vulnscan.button.refresh"><tooltip><Tooltip text="刷新POC"/></tooltip></Button>
-                <Button text="管理" onAction="#managePoc" styleClass="tiny-button" userData="i18n:vulnscan.manage"><tooltip><Tooltip text="POC管理"/></tooltip></Button>
+                <Button text="刷新" onAction="#refreshPocList" styleClass="pt-btn" userData="i18n:vulnscan.button.refresh"><tooltip><Tooltip text="刷新POC"/></tooltip></Button>
+                <Button text="管理" onAction="#managePoc" styleClass="pt-btn" userData="i18n:vulnscan.manage"><tooltip><Tooltip text="POC管理"/></tooltip></Button>
 
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <!-- 状态文本（进度条已另起行，状态可完整显示） -->
-                <Label fx:id="scanStateLabel" text="准备就绪" style="-fx-text-fill: -main-border-color;"/>
+                <Label fx:id="scanStateLabel" text="准备就绪" styleClass="pt-accent-text"/>
             </HBox>
 
             <!-- Row B: 进度条 (默认隐藏，扫描时显示) -->
@@ -171,25 +172,25 @@
         <!-- 4. 结果区域 -->
         <VBox VBox.vgrow="ALWAYS" spacing="10" styleClass="result-area">
             <!-- 工具栏 -->
-            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: -main-topBar-color; -fx-background-radius: 5; -fx-padding: 8;">
-                <Label text="扫描结果" styleClass="result-title" userData="i18n:vulnscan.results"/>
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: -pt-bg-panel; -fx-background-radius: 8; -fx-padding: 8;">
+                <Label text="扫描结果" styleClass="pt-h2" userData="i18n:vulnscan.results"/>
                 <Label fx:id="vulnCountLabel" text="(0)" styleClass="vuln-count"/>
                 
                 <!-- 统计摘要 (初始隐藏) -->
                 <HBox fx:id="statsPane" spacing="10" alignment="CENTER_LEFT" visible="false" managed="false">
                     <Separator orientation="VERTICAL"/>
-                    <Label text="C:" styleClass="severity-dot,severity-dot-critical"/><Label fx:id="criticalCountLabel" text="0" style="-fx-text-fill: #e74c3c; -fx-font-weight:bold;"/>
-                    <Label text="H:" styleClass="severity-dot,severity-dot-high"/><Label fx:id="highCountLabel" text="0" style="-fx-text-fill: #e67e22; -fx-font-weight:bold;"/>
-                    <Label text="M:" styleClass="severity-dot,severity-dot-medium"/><Label fx:id="mediumCountLabel" text="0" style="-fx-text-fill: #f39c12; -fx-font-weight:bold;"/>
-                    <Label text="L:" styleClass="severity-dot,severity-dot-low"/><Label fx:id="lowCountLabel" text="0" style="-fx-text-fill: #27ae60; -fx-font-weight:bold;"/>
-                    <Label text="I:" styleClass="severity-dot,severity-dot-info"/><Label fx:id="infoCountLabel" text="0" style="-fx-text-fill: #3498db; -fx-font-weight:bold;"/>
+                    <Label text="C:" styleClass="severity-dot,severity-dot-critical"/><Label fx:id="criticalCountLabel" text="0" style="-fx-text-fill: -pt-crit; -fx-font-weight:bold;"/>
+                    <Label text="H:" styleClass="severity-dot,severity-dot-high"/><Label fx:id="highCountLabel" text="0" style="-fx-text-fill: -pt-danger; -fx-font-weight:bold;"/>
+                    <Label text="M:" styleClass="severity-dot,severity-dot-medium"/><Label fx:id="mediumCountLabel" text="0" style="-fx-text-fill: -pt-warning; -fx-font-weight:bold;"/>
+                    <Label text="L:" styleClass="severity-dot,severity-dot-low"/><Label fx:id="lowCountLabel" text="0" style="-fx-text-fill: -pt-success; -fx-font-weight:bold;"/>
+                    <Label text="I:" styleClass="severity-dot,severity-dot-info"/><Label fx:id="infoCountLabel" text="0" style="-fx-text-fill: -pt-info; -fx-font-weight:bold;"/>
                 </HBox>
                 
                 <Region HBox.hgrow="ALWAYS"/>
                 
-                <Button text="清空" onAction="#clearResults" styleClass="small-button" userData="i18n:vulnscan.clearresults"/>
-                <Button text="日志" onAction="#showScanLogs" styleClass="small-button" userData="i18n:vulnscan.ui.logs"/>
-                <Button text="历史" onAction="#showHistory" styleClass="small-button" userData="i18n:vulnscan.history"/>
+                <Button text="清空" onAction="#clearResults" styleClass="pt-btn-danger" userData="i18n:vulnscan.clearresults"/>
+                <Button text="日志" onAction="#showScanLogs" styleClass="pt-btn" userData="i18n:vulnscan.ui.logs"/>
+                <Button text="历史" onAction="#showHistory" styleClass="pt-btn" userData="i18n:vulnscan.history"/>
                 
                 <Separator orientation="VERTICAL"/>
                 
@@ -205,7 +206,7 @@
                         </FXCollections>
                     </items>
                 </ComboBox>
-                <Button text="导出报告" onAction="#exportReport" styleClass="small-button" style="-fx-border-color: -main-border-color; -fx-text-fill: -main-border-color;" userData="i18n:vulnscan.export"/>
+                <Button text="导出报告" onAction="#exportReport" styleClass="pt-btn-primary" userData="i18n:vulnscan.export"/>
             </HBox>
             
             <!-- 结果列表：内层 ScrollPane 仅负责结果列表滚动，设 minHeight=200 避免被压扣 -->
@@ -227,24 +228,24 @@
             <HBox alignment="CENTER_LEFT" styleClass="manage-header">
                 <Label text="POC 仓库管理" styleClass="manage-title" userData="i18n:vulnscan.tab.pocmanage"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="pocCountLabel" text="共 0 个POC" style="-fx-text-fill: -main-linenoText-color; -fx-padding: 0 10 0 0;"/>
+                <Label fx:id="pocCountLabel" text="共 0 个POC" styleClass="pt-caption" style="-fx-padding: 0 10 0 0;"/>
                 <Label text="✕" styleClass="close-button" onMouseClicked="#closePocManage"/>
             </HBox>
             
             <!-- 搜索工具栏 -->
             <HBox spacing="10" styleClass="manage-search" alignment="CENTER_LEFT">
-                <TextField fx:id="pocSearchField" promptText="搜索 ID / 名称 / 标签..." prefWidth="250" userData="i18n-prompt:vulnscan.search.placeholder"/>
+                <TextField fx:id="pocSearchField" promptText="搜索 ID / 名称 / 标签..." prefWidth="250" styleClass="pt-input" userData="i18n-prompt:vulnscan.search.placeholder"/>
                 <ComboBox fx:id="pocFormatFilter" prefWidth="90" userData="i18n-combobox:vulnscan.filter.formatopt"/>
                 <ComboBox fx:id="pocSeverityFilter" prefWidth="90" userData="i18n-combobox:vulnscan.filter.severityopt"/>
                 <ComboBox fx:id="pocStatusFilter" prefWidth="90" userData="i18n-combobox:vulnscan.filter.statusopt"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <CFCheckBox fx:id="selectAllCheckBox" text="全选" onMouseClicked="#toggleSelectAll"/>
-                <Button text="反选" onAction="#invertSelection" styleClass="tiny-button" userData="i18n:vulnscan.invert"/>
-                <Button text="导入POC" onAction="#importPoc" styleClass="small-button" userData="i18n:vulnscan.button.import"/>
-                <Button text="在线更新" onAction="#showPocUpdateDialog" styleClass="small-button" userData="i18n:vulnscan.ui.onlineupdate"/>
+                <Button text="反选" onAction="#invertSelection" styleClass="pt-btn" userData="i18n:vulnscan.invert"/>
+                <Button text="导入POC" onAction="#importPoc" styleClass="pt-btn" userData="i18n:vulnscan.button.import"/>
+                <Button text="在线更新" onAction="#showPocUpdateDialog" styleClass="pt-btn" userData="i18n:vulnscan.ui.onlineupdate"/>
             </HBox>
             
-            <SmoothTableView fx:id="pocTableView" VBox.vgrow="ALWAYS" styleClass="poc-table">
+            <SmoothTableView fx:id="pocTableView" VBox.vgrow="ALWAYS" styleClass="pt-table,poc-table">
                 <columns>
                     <TableColumn fx:id="pocStatusColumn" text="状态" prefWidth="60" style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="pocIdColumn" text="ID" prefWidth="150"/>
@@ -262,18 +263,18 @@
                             <SeparatorMenuItem/>
                             <MenuItem fx:id="togglePocMenuItem" text="切换状态" onAction="#togglePocStatus"/>
                             <SeparatorMenuItem/>
-                            <MenuItem text="删除" onAction="#deletePoc" style="-fx-text-fill: red;" userData="i18n:vulnscan.ctx.poc.4"/>
+                            <MenuItem text="删除" onAction="#deletePoc" style="-fx-text-fill: -pt-danger;" userData="i18n:vulnscan.ctx.poc.4"/>
                         </items>
                     </ContextMenu>
                 </contextMenu>
             </SmoothTableView>
             
             <HBox spacing="10" alignment="CENTER_RIGHT" style="-fx-padding: 10;">
-                <Label fx:id="selectedPocLabel" text="已选 0 项" style="-fx-text-fill: -main-linenoText-color;"/>
-                <Button text="批量导出" onAction="#exportSelectedPocs" styleClass="tiny-button" userData="i18n:vulnscan.ui.batchexport"/>
-                <Button text="批量启用" onAction="#enableAllPocs" styleClass="tiny-button" userData="i18n:vulnscan.ui.batchenable"/>
-                <Button text="批量禁用" onAction="#disableAllPocs" styleClass="tiny-button" userData="i18n:vulnscan.ui.batchdisable"/>
-                <Button text="批量删除" onAction="#deleteSelectedPocs" styleClass="tiny-button" style="-fx-text-fill: red; -fx-border-color: red;" userData="i18n:vulnscan.ui.batchdelete"/>
+                <Label fx:id="selectedPocLabel" text="已选 0 项" styleClass="pt-caption"/>
+                <Button text="批量导出" onAction="#exportSelectedPocs" styleClass="pt-btn" userData="i18n:vulnscan.ui.batchexport"/>
+                <Button text="批量启用" onAction="#enableAllPocs" styleClass="pt-btn" userData="i18n:vulnscan.ui.batchenable"/>
+                <Button text="批量禁用" onAction="#disableAllPocs" styleClass="pt-btn" userData="i18n:vulnscan.ui.batchdisable"/>
+                <Button text="批量删除" onAction="#deleteSelectedPocs" styleClass="pt-btn-danger" userData="i18n:vulnscan.ui.batchdelete"/>
             </HBox>
         </VBox>
     </StackPane>
@@ -291,9 +292,9 @@
                     <!-- Content populated by controller -->
                 </VBox>
             </SmoothScrollPane>
-            <HBox alignment="CENTER" spacing="15" style="-fx-padding: 15; -fx-border-color: -main-lineno-color; -fx-border-width: 1 0 0 0;">
-                <Button text="复制内容" onAction="#copyPocContent" styleClass="small-button" userData="i18n:vulnscan.ui.copycontent"/>
-                <Button text="导出文件" onAction="#exportPocFile" styleClass="small-button" userData="i18n:vulnscan.ui.exportfile"/>
+            <HBox alignment="CENTER" spacing="15" style="-fx-padding: 16; -fx-border-color: -pt-border-subtle; -fx-border-width: 1 0 0 0;">
+                <Button text="复制内容" onAction="#copyPocContent" styleClass="pt-btn" userData="i18n:vulnscan.ui.copycontent"/>
+                <Button text="导出文件" onAction="#exportPocFile" styleClass="pt-btn" userData="i18n:vulnscan.ui.exportfile"/>
             </HBox>
         </VBox>
     </StackPane>
@@ -304,17 +305,17 @@
             <HBox alignment="CENTER_LEFT" styleClass="manage-header">
                 <Label text="运行日志" styleClass="manage-title" userData="i18n:vulnscan.ui.runlog"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="logCountLabel" text="共 0 条日志" style="-fx-text-fill: -main-linenoText-color; -fx-padding: 0 10 0 0;"/>
+                <Label fx:id="logCountLabel" text="共 0 条日志" styleClass="pt-caption" style="-fx-padding: 0 10 0 0;"/>
                 <Label text="✕" styleClass="close-button" onMouseClicked="#closeLogViewer"/>
             </HBox>
             <HBox spacing="10" styleClass="manage-search" alignment="CENTER_LEFT">
                 <ComboBox fx:id="logLevelFilter" prefWidth="100" userData="i18n-combobox:vulnscan.filter.loglevel"/>
-                <TextField fx:id="logSearchField" promptText="搜索日志内容..." prefWidth="250" userData="i18n-prompt:vulnscan.ui.logsearch.placeholder"/>
+                <TextField fx:id="logSearchField" promptText="搜索日志内容..." prefWidth="250" styleClass="pt-input" userData="i18n-prompt:vulnscan.ui.logsearch.placeholder"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="刷新" onAction="#refreshLogs" styleClass="small-button" userData="i18n:vulnscan.button.refresh"/>
-                <Button text="清空" onAction="#clearLogs" styleClass="small-button" userData="i18n:vulnscan.button.clear"/>
+                <Button text="刷新" onAction="#refreshLogs" styleClass="pt-btn" userData="i18n:vulnscan.button.refresh"/>
+                <Button text="清空" onAction="#clearLogs" styleClass="pt-btn-danger" userData="i18n:vulnscan.button.clear"/>
             </HBox>
-            <SmoothTextArea fx:id="logTextArea" VBox.vgrow="ALWAYS" editable="false" wrapText="false" style="-fx-font-family: monospace;"/>
+            <SmoothTextArea fx:id="logTextArea" VBox.vgrow="ALWAYS" editable="false" wrapText="false" styleClass="pt-input,pt-mono"/>
         </VBox>
     </StackPane>
     
@@ -327,14 +328,14 @@
                 <Label text="✕" styleClass="close-button" onMouseClicked="#closeHistory"/>
             </HBox>
             <HBox spacing="10" styleClass="manage-search" alignment="CENTER_LEFT">
-                <Label text="开始" style="-fx-text-fill: -main-linenoText-color;" userData="i18n:vulnscan.ui.start"/>
+                <Label text="开始" styleClass="pt-caption" userData="i18n:vulnscan.ui.start"/>
                 <DatePicker fx:id="startDatePicker" prefWidth="140"/>
-                <Label text="结束" style="-fx-text-fill: -main-linenoText-color;" userData="i18n:vulnscan.ui.end"/>
+                <Label text="结束" styleClass="pt-caption" userData="i18n:vulnscan.ui.end"/>
                 <DatePicker fx:id="endDatePicker" prefWidth="140"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="查询" onAction="#queryHistory" styleClass="small-button" userData="i18n:vulnscan.button.query"/>
+                <Button text="查询" onAction="#queryHistory" styleClass="pt-btn" userData="i18n:vulnscan.button.query"/>
             </HBox>
-            <SmoothTableView fx:id="historyTableView" VBox.vgrow="ALWAYS" styleClass="poc-table">
+            <SmoothTableView fx:id="historyTableView" VBox.vgrow="ALWAYS" styleClass="pt-table,poc-table">
                  <columns>
                     <TableColumn fx:id="historyTimeColumn" text="扫描时间" prefWidth="150"/>
                     <TableColumn fx:id="historyTargetColumn" text="目标" prefWidth="250"/>
@@ -351,8 +352,8 @@
                 </contextMenu>
             </SmoothTableView>
             <HBox alignment="CENTER_RIGHT" style="-fx-padding: 10;" spacing="10">
-                 <Button text="导出历史" onAction="#exportHistory" styleClass="small-button" userData="i18n:vulnscan.button.exporthistory"/>
-                 <Button text="清空历史" onAction="#clearHistory" styleClass="danger-button" style="-fx-text-fill: red;" userData="i18n:vulnscan.button.clearhistory"/>
+                 <Button text="导出历史" onAction="#exportHistory" styleClass="pt-btn" userData="i18n:vulnscan.button.exporthistory"/>
+                 <Button text="清空历史" onAction="#clearHistory" styleClass="pt-btn-danger" userData="i18n:vulnscan.button.clearhistory"/>
             </HBox>
         </VBox>
     </StackPane>

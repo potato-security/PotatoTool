@@ -1,18 +1,18 @@
 .linenoPane{
     -fx-padding: 0 0 20 0;
     -fx-border-width: 0 0 1 0;
-    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right,transparent 0%, -pt-border-subtle 20%, -pt-border-subtle 80%, transparent 100%);
 }
 .vBox{
-    -fx-background-color: -main-topBar-color;
-    -fx-border-color: -main-border-color;
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
     -fx-background-radius: 10;
     -fx-border-radius: 10;
     -fx-padding: 20;
 }
 .flowPane{
-    -fx-background-color: -main-topBar-color;
-    -fx-border-color: -main-border-color;
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
     -fx-background-radius: 10;
     -fx-border-radius: 10;
     -fx-padding: 30;

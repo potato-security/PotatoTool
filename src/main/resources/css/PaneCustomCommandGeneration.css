@@ -16,25 +16,25 @@
     -fx-padding: 11 17 11 17;
     -fx-border-radius: 26 0 0 26;
     -fx-background-radius: 26 0 0 26;
-    -fx-background-color: -main-cell-color;
+    -fx-background-color: -pt-bg-elevated;
 }
 .comboBoxLeft{
-    -fx-border-color: -main-border-color;
+    -fx-border-color: -pt-border;
     -fx-padding: 11 17 11 17;
     -fx-border-radius: 26 0 0 26;
     -fx-background-radius: 26 0 0 26;
-    -fx-background-color: -main-cell-color;
+    -fx-background-color: -pt-bg-elevated;
     -fx-border-width: 1 0 1 1;
 }
 #shellComboBox{
-    -fx-background-color: -main-topBar-color;
+    -fx-background-color: -pt-bg-panel;
     -fx-background-radius: 0 26 26 0;
     -fx-border-radius: 0 26 26 0;
     -fx-border-width: 1 1 1 0;
 }
 .commandInfoHBox{
     -fx-border-width: 1;
-    -fx-border-color: -main-lineno-color;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-radius: 8;
     -fx-padding: 10;
     -fx-spacing: 10;
@@ -44,7 +44,7 @@
 }
 .sysTitle{
     -fx-border-width: 1;
-    -fx-border-color: white;
+    -fx-border-color: -pt-border;
     -fx-border-radius: 5;
     -fx-padding: 3;
 }

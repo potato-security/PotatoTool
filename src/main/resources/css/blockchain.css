@@ -2,19 +2,19 @@
     -fx-padding: 0;
 }
 .vBox > .label {
-    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 30%, -main-lineno-color 70%, transparent 100%);
-    -fx-padding: 10 10 10 20;
+    -fx-border-color: linear-gradient(to right,transparent 0%, -pt-border-subtle 30%, -pt-border-subtle 70%, transparent 100%);
+    -fx-padding: 8 8 8 16;
     -fx-border-width: 0 0 1 0;
     -fx-cursor: hand;
 }
 .vBox > .label:hover {
-    -fx-background-color: -main-menuBg-color;
+    -fx-background-color: -pt-bg-panel;
 }
 #listViewCell{
-    -fx-padding: 35 0 0 0;
+    -fx-padding: 32 0 0 0;
 }
 #listViewCell .list-cell {
-    -fx-padding: 10 20 10 20;
+    -fx-padding: 8 16 8 16;
 }
 .regionVBox{
     visibility: hidden;
@@ -23,9 +23,9 @@
     visibility: visible;
 }
 #question{
-    -fx-padding: 11 42 11 20;
-    -fx-border-radius: 26;
-    -fx-background-radius: 26;
+    -fx-padding: 12 42 12 20;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
 }
 .noContentTitlePane > .title > .arrow-button > .arrow {
     -fx-background-color:  transparent!important;
@@ -33,7 +33,7 @@
     -fx-shape: null!important;
 }
 .noContentTitlePane:hover > .title {
-    -fx-background-color: -main-menuBg-color;
+    -fx-background-color: -pt-bg-panel;
 }
 .send{
     -fx-pref-width: 26;
@@ -41,10 +41,10 @@
     -fx-max-width: 26;
     -fx-max-height: 26;
     -fx-shape: "M216.8 781.3C55.7 620.2 55.7 358 216.8 196.9s423.2-161.1 584.3 0 161.1 423.2 0 584.3-423.2 161.2-584.3 0.1z m530.9-530.9c-131.6-131.6-345.7-131.6-477.4 0-131.6 131.6-131.6 345.7 0 477.3 131.6 131.6 345.7 131.6 477.3 0 131.7-131.5 131.7-345.7 0.1-477.3zM890.2 947.9c-9.6 0-19.2-3.6-26.5-10.9L741.2 816.5c-14.9-14.7-15.1-38.6-0.4-53.5 14.7-14.9 38.6-15.1 53.5-0.4l122.5 120.5c14.9 14.7 15.1 38.6 0.4 53.5-7.5 7.5-17.2 11.3-27 11.3zM487.4 275.6c-7.1-7.1-11.3-16.9-11.1-27.7 0.6-20.9 17.9-37.4 38.8-36.8 72.9 1.9 141.5 31.4 193.1 83 14.8 14.8 14.8 38.7 0 53.5-14.8 14.8-38.7 14.8-53.5 0-37.8-37.8-88.1-59.5-141.6-60.8-10.1-0.4-19.1-4.6-25.7-11.2zM723.9 484.2c-5.5-5.5-9.4-12.8-10.6-21.1-1.5-10.2-3.9-20.5-7-30.5-6.2-20 4.9-41.2 24.9-47.4 20-6.2 41.2 4.9 47.4 24.9 4.3 13.7 7.5 27.7 9.6 41.7 3.1 20.6-11.1 39.9-31.7 43-12.5 1.9-24.4-2.4-32.6-10.6z";
-    -fx-background-color: -main-border-color;
+    -fx-background-color: -pt-accent;
 }
 .send:pressed{
-    -fx-background-color: -main-borderHover-color;
+    -fx-background-color: derive(-pt-accent, -25%);
 }
 .back{
     -fx-pref-width: 30;
@@ -52,35 +52,35 @@
     -fx-max-width: 30;
     -fx-max-height: 30;
     -fx-shape: "M675.328 117.717333A425.429333 425.429333 0 0 0 512 85.333333C276.352 85.333333 85.333333 276.352 85.333333 512s191.018667 426.666667 426.666667 426.666667 426.666667-191.018667 426.666667-426.666667c0-56.746667-11.093333-112-32.384-163.328a21.333333 21.333333 0 0 0-39.402667 16.341333A382.762667 382.762667 0 0 1 896 512c0 212.074667-171.925333 384-384 384S128 724.074667 128 512 299.925333 128 512 128c51.114667 0 100.8 9.984 146.986667 29.12a21.333333 21.333333 0 0 0 16.341333-39.402667z m-324.693333 373.013334l174.464-174.485334a21.141333 21.141333 0 0 0-0.192-29.973333 21.141333 21.141333 0 0 0-29.973334-0.192l-208.256 208.256a20.821333 20.821333 0 0 0-6.122666 14.976c0.042667 5.418667 2.133333 10.837333 6.314666 14.997333l211.178667 211.2a21.141333 21.141333 0 0 0 29.973333 0.213334 21.141333 21.141333 0 0 0-0.213333-29.973334l-172.629333-172.629333 374.997333 2.602667a20.693333 20.693333 0 0 0 21.034667-21.034667 21.482667 21.482667 0 0 0-21.333334-21.333333l-379.242666-2.624z";
-    -fx-background-color: -main-border-color;
+    -fx-background-color: -pt-accent;
 }
 .back:pressed{
-    -fx-background-color: -main-borderHover-color;
+    -fx-background-color: derive(-pt-accent, -25%);
 }
 .cellVBox{
-    -fx-background-color: -main-cell-color;
+    -fx-background-color: -pt-bg-elevated;
     -fx-background-radius: 8;
-    -fx-padding: 10;
+    -fx-padding: 12;
 }
 .cellVBox:hover {
-    -fx-background-color: -main-menuBg-color;
+    -fx-background-color: -pt-bg-panel;
 }
 #detailedListView{
     -fx-padding: 40 20 20 20;
 }
 .tableVBox{
     -fx-border-width: 1 0.5 1 0.5;
-    -fx-border-color: -main-linenoText-color;
+    -fx-border-color: -pt-text-secondary;
 }
 .tableTitle .label{
     -fx-border-width: 0 0.5 0 0.5;
-    -fx-border-color: -main-linenoText-color;
-    -fx-padding: 10;
+    -fx-border-color: -pt-text-secondary;
+    -fx-padding: 8;
 }
 /*.tableTitle .hbox{*/
 /*    -fx-border-width: 0 0.5 0 0.5;*/
-/*    -fx-border-color: -main-linenoText-color;*/
-/*    -fx-padding: 10;*/
+/*    -fx-border-color: -pt-text-secondary;*/
+/*    -fx-padding: 8;*/
 /*}*/
 .tableTitle .label .text{
     -fx-font-size: 18;
@@ -88,21 +88,21 @@
 }
 .tableTitle{
     -fx-border-width: 0 0 1 0;
-    -fx-border-color: linear-gradient(to right,transparent 0%, -main-border-color 20%, -main-border-color 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right,transparent 0%, -pt-accent 20%, -pt-accent 80%, transparent 100%);
 }
 .tableContent{
     -fx-border-width: 0 0 1 0;
-    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right,transparent 0%, -pt-border-subtle 20%, -pt-border-subtle 80%, transparent 100%);
 }
 .tableContent .label{
     -fx-border-width: 0 0.5 0 0.5;
-    -fx-border-color: -main-linenoText-color;
-    -fx-padding: 5;
+    -fx-border-color: -pt-text-secondary;
+    -fx-padding: 4;
 }
 .tableContent .hbox{
     -fx-border-width: 0 0.5 0 0.5;
-    -fx-border-color: -main-linenoText-color;
-    -fx-padding: 5;
+    -fx-border-color: -pt-text-secondary;
+    -fx-padding: 4;
 }
 .tokentransIcon{
     -fx-pref-width: 20;
@@ -110,18 +110,18 @@
     -fx-max-width: 20;
     -fx-max-height: 20;
     -fx-shape: "M576.5 930.2H163.1c-52.9 0-96-43.1-96-96v-672c0-52.9 43.1-96 96-96h672c52.9 0 96 43.1 96 96V577c0 17.7-14.3 32-32 32s-32-14.3-32-32V162.2c0-17.6-14.4-32-32-32h-672c-17.6 0-32 14.4-32 32v672c0 17.6 14.4 32 32 32h413.4c17.7 0 32 14.3 32 32s-14.3 32-32 32zM692.4 322.3H245.7c-17.7 0-32-14.3-32-32s14.3-32 32-32h446.7c17.7 0 32 14.3 32 32s-14.3 32-32 32zM388.5 530.2H245.7c-17.7 0-32-14.3-32-32s14.3-32 32-32h142.7c17.7 0 32 14.3 32 32 0.1 17.6-14.3 32-31.9 32zM388.5 738H245.7c-17.7 0-32-14.3-32-32s14.3-32 32-32h142.7c17.7 0 32 14.3 32 32 0.1 17.7-14.3 32-31.9 32zM624.1 792.5c-94.8 0-172-77.2-172-172s77.2-172 172-172 172 77.2 172 172-77.1 172-172 172z m0-280c-59.6 0-108 48.4-108 108s48.4 108 108 108 108-48.4 108-108-48.4-108-108-108zM820.8 864.2L710.5 753.9c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L866 818.9c12.5 12.5 12.5 32.8 0 45.3s-32.7 12.5-45.2 0z";
-    -fx-background-color: -main-border-color;
+    -fx-background-color: -pt-accent;
     -fx-cursor: hand;
 }
 .tokentransIcon:pressed{
-    -fx-background-color: -main-borderHover-color;
+    -fx-background-color: derive(-pt-accent, -25%);
 }
 .tableListView .list-cell {
     -fx-padding: 0;
 }
 .tableListView{
     -fx-border-width: 1 0.5 1 0.5;
-    -fx-border-color: -main-linenoText-color;
+    -fx-border-color: -pt-text-secondary;
     -fx-padding: 0;
 }
 
@@ -132,7 +132,7 @@
 }
 
 .sampleGallery {
-    -fx-padding: 4 0 18 0;
+    -fx-padding: 4 0 16 0;
 }
 
 .sampleIntro {
@@ -140,120 +140,120 @@
 }
 
 .sampleTitle {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
     -fx-font-size: 20;
     -fx-font-weight: bold;
 }
 
 .sampleSubtitle {
-    -fx-text-fill: -main-linenoText-color;
+    -fx-text-fill: -pt-text-secondary;
     -fx-font-size: 13;
     -fx-line-spacing: 3;
 }
 
 .sampleCard {
-    -fx-padding: 14 16 14 16;
+    -fx-padding: 16;
     -fx-border-width: 1;
     -fx-border-radius: 8;
-    -fx-border-color: -main-linenoText-color;
+    -fx-border-color: -pt-text-secondary;
 }
 
 .sampleCard:hover {
-    -fx-background-color: -main-menuBg-color;
-    -fx-border-color: -main-border-color;
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-accent;
 }
 
 .sampleCardTitle {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
     -fx-font-size: 15;
     -fx-font-weight: bold;
 }
 
 .sampleBadge {
-    -fx-text-fill: -main-border-color;
+    -fx-text-fill: -pt-accent;
     -fx-font-size: 12;
     -fx-font-weight: bold;
-    -fx-padding: 3 8 3 8;
-    -fx-background-color: derive(-main-menuBg-color, 8%);
+    -fx-padding: 4 8 4 8;
+    -fx-background-color: derive(-pt-bg-panel, 8%);
     -fx-background-radius: 8;
     -fx-border-width: 1;
     -fx-border-radius: 8;
-    -fx-border-color: -main-linenoText-color;
+    -fx-border-color: -pt-text-secondary;
 }
 
 .sampleDescription {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
     -fx-font-size: 13;
     -fx-line-spacing: 3;
 }
 
 .sampleCapability {
-    -fx-text-fill: -main-border-color;
+    -fx-text-fill: -pt-accent;
     -fx-font-size: 12;
     -fx-font-weight: bold;
 }
 
 .sampleMeta {
-    -fx-text-fill: -main-linenoText-color;
+    -fx-text-fill: -pt-text-secondary;
     -fx-font-size: 12;
 }
 
 .sampleTarget {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
     -fx-font-family: Consolas, "Courier New", monospace;
     -fx-font-size: 12;
 }
 
 .sampleRunHint {
-    -fx-text-fill: -main-linenoText-color;
+    -fx-text-fill: -pt-text-secondary;
     -fx-font-size: 12;
 }
 
 .analysisSection {
-    -fx-background-color: -main-cell-color;
+    -fx-background-color: -pt-bg-elevated;
     -fx-background-radius: 8;
-    -fx-padding: 12 14 14 14;
+    -fx-padding: 12 16 16 16;
     -fx-border-width: 0 0 1 0;
-    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right,transparent 0%, -pt-border-subtle 20%, -pt-border-subtle 80%, transparent 100%);
 }
 
 .analysisSection .label {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
 }
 
 .analysisLabel {
-    -fx-padding: 3 0 3 0;
+    -fx-padding: 4 0 4 0;
     -fx-line-spacing: 3;
 }
 
 .analysisHeadline {
     -fx-font-size: 16;
     -fx-font-weight: bold;
-    -fx-text-fill: -main-border-color;
+    -fx-text-fill: -pt-accent;
 }
 
 .analysisRow {
     -fx-padding: 4 0 4 0;
     -fx-border-width: 0 0 1 0;
-    -fx-border-color: linear-gradient(to right,transparent 0%, -main-linenoText-color 20%, -main-linenoText-color 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right,transparent 0%, -pt-text-secondary 20%, -pt-text-secondary 80%, transparent 100%);
 }
 
 .analysisKey {
-    -fx-text-fill: -main-border-color;
+    -fx-text-fill: -pt-accent;
     -fx-font-weight: bold;
 }
 
 .analysisValue {
-    -fx-text-fill: -main-font-color;
+    -fx-text-fill: -pt-text;
 }
 
 .analysisWarningBox {
-    -fx-padding: 8 10 8 10;
-    -fx-background-color: derive(-main-menuBg-color, 6%);
-    -fx-background-radius: 6;
+    -fx-padding: 8;
+    -fx-background-color: derive(-pt-bg-panel, 6%);
+    -fx-background-radius: 8;
     -fx-border-width: 1;
-    -fx-border-radius: 6;
-    -fx-border-color: -main-linenoText-color;
+    -fx-border-radius: 8;
+    -fx-border-color: -pt-text-secondary;
 }
 
 .analysisWarningBox .label {
@@ -261,12 +261,12 @@
 }
 
 .analysisDrawer > .title {
-    -fx-background-color: -main-menuBg-color;
+    -fx-background-color: -pt-bg-panel;
 }
 
 .analysisDrawer > .content {
-    -fx-background-color: -main-cell-color;
-    -fx-padding: 10;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-padding: 8;
 }
 
 .analysisRawText {
@@ -280,22 +280,22 @@
     -fx-min-height: 38;
     -fx-max-width: 38;
     -fx-max-height: 38;
-    -fx-background-color: -main-borderHover-color;
+    -fx-background-color: derive(-pt-accent, -25%);
     -fx-background-radius: 38;
     -fx-border-width: 1;
     -fx-border-radius: 38;
-    -fx-border-color: -main-border-color;
+    -fx-border-color: -pt-accent;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.26), 10, 0.22, 0, 2);
     -fx-cursor: hand;
 }
 
 #exportReportButton:hover{
-    -fx-background-color: derive(-main-borderHover-color, 12%);
+    -fx-background-color: derive(derive(-pt-accent, -25%), 12%);
     -fx-background-radius: 38;
 }
 
 #exportReportButton:pressed{
-    -fx-background-color: -main-smallbtnBg-color;
+    -fx-background-color: -pt-accent-soft;
     -fx-background-radius: 38;
 }
 
@@ -305,21 +305,21 @@
 }
 
 #promptPane{
-    -fx-background-color: rgba(17, 22, 28, 0.94), rgba(255, 255, 255, 0.035);
-    -fx-background-radius: 14, 13;
+    -fx-background-color: -pt-bg-panel, -pt-bg-elevated;
+    -fx-background-radius: 16, 15;
     -fx-background-insets: 0, 1;
-    -fx-border-color: rgba(255, 255, 255, 0.16);
-    -fx-border-radius: 14;
+    -fx-border-color: -pt-border;
+    -fx-border-radius: 16;
     -fx-border-width: 1;
     -fx-padding: 0;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.58), 24, 0, 0, 6);
 }
 
 #promptPane .label{
-    -fx-text-fill: #f8fafc;
+    -fx-text-fill: -pt-text;
     -fx-font-size: 13;
     -fx-font-weight: bold;
-    -fx-padding: 14 28 14 28;
+    -fx-padding: 16 24 16 24;
     -fx-alignment: center;
     -fx-text-alignment: center;
     -fx-wrap-text: true;
@@ -327,24 +327,24 @@
 }
 
 #promptPane.prompt-info {
-    -fx-background-color: rgba(17, 22, 28, 0.94), rgba(62, 206, 227, 0.08);
-    -fx-border-color: rgba(62, 206, 227, 0.46);
+    -fx-background-color: -pt-bg-panel, -pt-accent-soft;
+    -fx-border-color: -pt-accent;
 }
 
 #promptPane.prompt-success {
-    -fx-background-color: rgba(15, 35, 24, 0.94), rgba(51, 198, 81, 0.12);
-    -fx-border-color: rgba(83, 224, 115, 0.58);
+    -fx-background-color: -pt-bg-panel, -pt-success-soft;
+    -fx-border-color: -pt-success;
 }
 
 #promptPane.prompt-success .label {
-    -fx-text-fill: #e8fff0;
+    -fx-text-fill: -pt-text;
 }
 
 #promptPane.prompt-error {
-    -fx-background-color: rgba(44, 16, 18, 0.95), rgba(255, 76, 63, 0.16);
-    -fx-border-color: rgba(255, 118, 108, 0.72);
+    -fx-background-color: -pt-bg-panel, -pt-danger-soft;
+    -fx-border-color: -pt-danger;
 }
 
 #promptPane.prompt-error .label {
-    -fx-text-fill: #ffe6e2;
+    -fx-text-fill: -pt-text;
 }

@@ -1,22 +1,16 @@
-.btn{
-    -fx-background-color:-main-btnTransition-color;
-    -fx-background-radius: 5;
-    -fx-background-insets: 0 0 0 1; /*背景色溢出bug解决方式*/
-    -fx-text-fill: white;
-    -fx-font-size: 18;
-    -fx-padding: 0;
-    -fx-border-width: 0;
-    -fx-border-color: black;
-}
+/* EXIF/图片元信息页 —— 已迁移到统一设计体系 (theme.css token + components.css)
+ * 规则: 不硬编码色值 / 不再用 -main-*，一律引用 -pt-*。
+ * 圆角/间距对齐 4/8/16 与 8pt 规范。选择文件按钮改用 FXML 的 pt-btn-primary。 */
+
 #listView{
-    -fx-background-color: -main-topBar-color;
-    -fx-border-color: -main-border-color;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-padding: 20;
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 16;
 }
 .linenoPane{
-    -fx-padding: 0 0 20 0;
+    -fx-padding: 0 0 16 0;
     -fx-border-width: 0 0 1 0;
-    -fx-border-color: linear-gradient(to right,transparent 0%, -main-lineno-color 20%, -main-lineno-color 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right,transparent 0%, -pt-border-subtle 20%, -pt-border-subtle 80%, transparent 100%);
 }

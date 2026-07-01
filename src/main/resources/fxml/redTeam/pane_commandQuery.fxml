@@ -19,7 +19,7 @@
             <HBox alignment="CENTER_LEFT" prefWidth="${sPane.width - 15}">
                 <Label alignment="CENTER" prefWidth="${(sPane.width / 2) - 200}" styleClass="titleText" text="系统操作命令查询工具 " userData="i18n:cmdquery.title"/>
                 <StackPane maxWidth="${sPane.width / 2}">
-                    <TextField fx:id="question" prefWidth="${sPane.width / 2}" minHeight="0" promptText="请输入需要查询的命令/操作……" userData="i18n-prompt:cmdquery.input.placeholder"/>
+                    <TextField fx:id="question" styleClass="pt-input" prefWidth="${sPane.width / 2}" minHeight="0" promptText="请输入需要查询的命令/操作……" userData="i18n-prompt:cmdquery.input.placeholder"/>
                     <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
                         <Label layoutX="-40" layoutY="3" onMouseClicked="#searchInput">
                             <graphic>

@@ -50,7 +50,9 @@ public class DialogUtils {
                 PaneSetting setController = loader.getController();
 
                 Scene scene = new Scene(dialogRoot);
+                scene.getStylesheets().add(Constants.getResourceUrl("/css/theme.css"));
                 scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+                scene.getStylesheets().add(Constants.getResourceUrl("/css/components.css"));
                 scene.setFill(null);    //  背景透明
                 setStage.setScene(scene);
                 setStage.setTitle("修改配置信息");

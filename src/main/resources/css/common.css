@@ -14,40 +14,41 @@
 }
 
 .root{
-    -main-blue-color: #3ECEE3;
-    -main-red-color: #D85550;
-    -main-font-color: white;
-    -main-btnContent-color: #2f2f2f;
-    -main-topBar-color: #373737;
-    -main-cell-color: #414141;
-    -main-menuBg-color: #3B3F41;
-    -main-lineno-color: #595959;
-    -main-linenoText-color: #707070;
-    -main-tips-color: #F0A732;
+    /* 基座已重映射到统一 navy 调色板 (与 theme.css -pt-* 同值) */
+    -main-blue-color: #4FE3FF;
+    -main-red-color: #FF5C66;
+    -main-font-color: #E8F4F9;
+    -main-btnContent-color: #0F1A24;
+    -main-topBar-color: #0A141C;
+    -main-cell-color: #0F1A24;
+    -main-menuBg-color: #0F1A24;
+    -main-lineno-color: #2A3B49;
+    -main-linenoText-color: #9DB2BE;
+    -main-tips-color: #F4B740;
 
-    -main-border-color: #3ECEE3;
-    -main-borderHover-color: #208e9a;
-    -main-smallbtnBg-color: #87CEFA;
-    -main-btnTransition-color: linear-gradient(to bottom, #75D6BA, #3C85C5);
+    -main-border-color: #4FE3FF;
+    -main-borderHover-color: #2B8B95;
+    -main-smallbtnBg-color: #4FE3FF;
+    -main-btnTransition-color: linear-gradient(to bottom, #4FE3FF, #2FA6C9);
     -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0);
 
     -fx-font-family: "Microsoft YaHei", "PingFang SC", Consolas, "Courier New", monospace;
 }
 
 .blueStyle{
-    -main-border-color: #3ECEE3;
-    -main-borderHover-color: #208e9a;
-    -main-smallbtnBg-color: #87CEFA;
-    -main-btnTransition-color: linear-gradient(to bottom, #75D6BA, #3C85C5);
-    -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0);
+    -main-border-color: #4FE3FF;
+    -main-borderHover-color: #2B8B95;
+    -main-smallbtnBg-color: #4FE3FF;
+    -main-btnTransition-color: linear-gradient(to bottom, #4FE3FF, #2FA6C9);
+    -main-btnTransitionPressed-color: linear-gradient(to bottom, #2FA6C9, #1a7fd0);
 }
 
 .redStyle{
-    -main-border-color: #D85550;
-    -main-borderHover-color: #b04540;
-    -main-smallbtnBg-color: #ec8581;
-    -main-btnTransition-color: linear-gradient(to bottom, #FF9999, #FF6666);
-    -main-btnTransitionPressed-color: linear-gradient(to bottom, #FF4D4D, #FF1A1A);
+    -main-border-color: #FF5C66;
+    -main-borderHover-color: #C43D46;
+    -main-smallbtnBg-color: #FF5C66;
+    -main-btnTransition-color: linear-gradient(to bottom, #FF5C66, #C43D46);
+    -main-btnTransitionPressed-color: linear-gradient(to bottom, #C43D46, #A3303A);
 }
 .text{
     -fx-font-size: 16;
@@ -322,7 +323,7 @@
     -fx-max-width: 35;
     -fx-max-height: 35;
     -fx-shape: "M99.328 965.74577778c5.57511111-80.78222222 16.83911111-190.00888889 41.64266667-290.13333333 5.12-25.82755555 23.552-47.55911111 24.12088888-48.35555556 2.38933333-15.36 190.57777778-15.36 190.57777778-15.36l31.17511112-2.95822222c-4.43733333 27.53422222-7.85066667 69.51822222 4.096 105.472 15.36 47.21777778 39.936 94.09422222 73.27288888 121.96977778l7.05422222-125.4968889h64.17066667l11.03644445 117.64622223c23.32444445-33.33688889 50.51733333-85.90222222 53.36177778-152.80355556 2.27555555-52.33777778 15.36-76.23111111 26.624-87.26755555 77.93777778 3.18577778 175.78666667 17.408 215.04 38.912 37.43288889 20.48 49.152 148.48 83.05777777 338.48888888l-825.23022222-0.11377777z m0 0M527.58755555 692.79288889h-40.27733333L455.11111111 665.82755555l48.35555556-62.9191111 48.24177778 53.93066666-24.1208889 35.95377778z m213.67466667-534.18666667c-19.22844445-38.57066667-131.18577778-96.36977778-253.38311111-100.352-122.08355555-4.096-251.44888889 66.78755555-250.42488889 118.67022223 1.024 51.76888889 65.08088889 74.06933333 65.08088889 74.06933333-3.29955555 10.01244445-1.59288889 48.92444445-1.59288889 48.92444444s2.95822222 5.34755555 8.53333333 12.85688889c-18.88711111 248.832 198.656 253.04177778 198.656 253.04177778 188.52977778-19.56977778 173.51111111-224.36977778 171.69066667-253.952-0.68266667-10.80888889-2.048-19.456-3.64088889-27.19288889 2.38933333-16.72533333-4.20977778-34.01955555-4.20977778-34.01955555 27.53422222-10.92266667 88.63288889-53.58933333 69.29066667-92.04622223z m-284.21688889-19.456c-0.22755555-1.59288889-0.45511111-3.29955555-0.45511111-5.00622222 0-20.93511111 18.432-38.00177778 41.30133333-38.00177778s41.30133333 17.06666667 41.30133334 38.00177778c0 2.61688889-0.34133333 5.23377778-0.91022222 7.85066667 12.288-1.13777778 25.6-2.16177778 37.66044444-2.38933334 0 0-34.36088889 16.04266667-53.93066666 25.48622222-2.95822222 1.93422222-6.03022222 3.41333333-9.55733334 4.6648889-0.22755555 0.11377778-0.45511111 0.34133333-0.79644444 0.4551111 0 0-1.13777778 0.34133333-2.95822222 0.5688889-3.41333333 0.91022222-7.05422222 1.47911111-10.8088889 1.4791111-0.68266667 0-1.36533333-0.22755555-2.16177777-0.22755555-9.10222222 0-20.70755555-1.82044445-30.03733333-9.67111111 0 0-14.10844445-9.67111111-45.96622223-22.86933334 0 0.11377778 16.95288889-2.048 37.31911111-0.34133333z m183.86488889 109.34044445H328.704V211.62666667h312.32v36.864z m0 0";
-    -fx-background-color: #3ECEE3;
+    -fx-background-color: -pt-accent-teal;
 }
 .redImg{
     -fx-pref-width: 35;
@@ -330,7 +331,7 @@
     -fx-max-width: 35;
     -fx-max-height: 35;
     -fx-shape: "M512 32c-13.4 0-21.6-5.6-31-12.2C467.8 10.8 452 0 416 0c-61 0-104 87.4-132 178.8-94.6 17.4-156 45.6-156 77.2 0 28.6 50 54.2 129.2 71.8-0.8 8-1.2 16-1.2 24.2 0 34 6.6 66.4 18.6 96H154.8C140 448 128 460 128 474.8c0 3.4 0.6 6.8 2 10l77.6 193.8C120.4 743.6 64 847.6 64 964.6 64 997.4 90.6 1024 123.4 1024h777.2c32.8 0 59.4-26.6 59.4-59.4 0-117-56.4-220.8-143.4-286l77.4-193.8c1.2-3.2 2-6.6 2-10 0-14.8-12-26.8-26.8-26.8h-119.8c12-29.6 18.6-62 18.6-96 0-8.2-0.4-16.2-1.2-24.2C846 310.2 896 284.6 896 256c0-31.6-61.4-59.8-156-77.2C712 87.4 669 0 608 0c-36 0-51.8 10.8-65 19.8-9.6 6.6-17.6 12.2-31 12.2z m112 416h-24.8c-33 0-62.2-21.2-72.6-52.4-4.6-14-24.4-14-29 0-10.4 31.2-39.8 52.4-72.6 52.4H400c-44.2 0-80-35.8-80-80v-28.8c56.4 8.2 122 12.8 192 12.8s135.6-4.6 192-12.8V368c0 44.2-35.8 80-80 80z m-176 192l32 64-64 256-96-384 128 64z m256-64l-96 384-64-256 32-64 128-64z";
-    -fx-background-color: #D85550;
+    -fx-background-color: -pt-accent-red;
 }
 .box-nav{
     -fx-padding: 15 0 0 0;
@@ -359,7 +360,7 @@
 .box-nav-red .rx-toggle-button{
     -fx-pref-height: 35;
     -fx-background-color: null;
-    -fx-border-color: #D85550;
+    -fx-border-color: -pt-accent-red;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-text-fill: -main-font-color;
@@ -367,12 +368,12 @@
     -fx-cursor: HAND;
 }
 .box-nav-red .rx-toggle-button:hover{
-    -fx-background-color: #b04540;
-    -fx-border-color:  #D85550;
+    -fx-background-color: derive(-pt-accent-red, -30%);
+    -fx-border-color: -pt-accent-red;
 }
 .box-nav-red .rx-toggle-button:selected{
-    -fx-background-color: #D85550;
-    -fx-border-color: #D85550;
+    -fx-background-color: -pt-accent-red;
+    -fx-border-color: -pt-accent-red;
 }
 
 .header-panel {
@@ -776,6 +777,28 @@
     -fx-background-radius: 7;
     -fx-background-color: -main-menuBg-color;
 }
+/* ComboBox dropdown popup — dark theme */
+.combo-box-popup > .list-view {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 7;
+    -fx-background-radius: 7;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 12, 0, 0, 4);
+}
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -pt-text;
+    -fx-font-size: 14;
+    -fx-padding: 6 12 6 12;
+}
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:hover {
+    -fx-background-color: -pt-bg-elevated;
+}
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected {
+    -fx-background-color: -pt-accent-soft;
+    -fx-text-fill: -pt-accent;
+}
 .menu-button{
     -fx-background-radius: 7;
     -fx-background-color: -main-menuBg-color;
@@ -1008,15 +1031,15 @@
 }
 
 *{
-    -cf-primary-color: #6690FF;
-    -cf-success-color: #33C651;
-    -cf-info-color: #52A8F9;
-    -cf-warn-color: #FFA10A;
-    -cf-danger-color: #FF4C3F;
+    -cf-primary-color: -pt-accent;
+    -cf-success-color: -pt-success;
+    -cf-info-color: -pt-info;
+    -cf-warn-color: -pt-warning;
+    -cf-danger-color: -pt-danger;
 
-    -cf-text-color:#303133;
-    -cf-border-color:#CDD0D6;
-    -cf-base-color:#F2F3F5;
+    -cf-text-color: -pt-text;
+    -cf-border-color: -pt-border;
+    -cf-base-color: -pt-bg-elevated;
 }
 
 .combo-box{

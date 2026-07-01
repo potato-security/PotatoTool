@@ -20,12 +20,12 @@
                 <Label alignment="CENTER" prefWidth="${(sPane.width / 2) - 200}" styleClass="titleText" text="系统操作命令查询工具 " userData="i18n:cmdgen.title"/>
                 <HBox alignment="CENTER" prefWidth="${sPane.width / 2}">
                     <StackPane>
-                        <TextField fx:id="ipField" prefWidth="${sPane.width / 5 + 5}" minHeight="0" promptText="请输入IP……" userData="i18n-prompt:cmdgen.ip.placeholder" text="127.0.0.1" />
+                        <TextField fx:id="ipField" styleClass="pt-input" prefWidth="${sPane.width / 5 + 5}" minHeight="0" promptText="请输入IP……" userData="i18n-prompt:cmdgen.ip.placeholder" text="127.0.0.1" />
                         <Label translateX="1" prefWidth="65" styleClass="textFieldLeft" text="IP" userData="i18n:cmdgen.ip" alignment="CENTER" StackPane.alignment="CENTER_LEFT"/>
                     </StackPane>
                     <Label prefWidth="${sPane.width / 13}" />
                     <StackPane>
-                        <TextField fx:id="portField" prefWidth="${sPane.width / 5}" minHeight="0" promptText="请输入Port……" userData="i18n-prompt:cmdgen.port.placeholder" text="9001" />
+                        <TextField fx:id="portField" styleClass="pt-input" prefWidth="${sPane.width / 5}" minHeight="0" promptText="请输入Port……" userData="i18n-prompt:cmdgen.port.placeholder" text="9001" />
                         <Label translateX="1" prefWidth="70" styleClass="textFieldLeft" text="Port" userData="i18n:cmdgen.port" alignment="CENTER" StackPane.alignment="CENTER_LEFT"/>
                     </StackPane>
                     <Label prefWidth="${sPane.width / 13}" />

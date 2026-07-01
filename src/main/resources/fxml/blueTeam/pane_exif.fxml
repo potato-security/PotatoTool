@@ -22,7 +22,7 @@
 
     <VBox fx:id="paneBox" alignment="CENTER" spacing="20">
 
-        <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width}" styleClass="btn" text="选择图片/文件" userData="i18n:exif.selectfile" onAction="#getExifFx" translationDir="BOTTOM_TO_TOP">
+        <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width}" styleClass="pt-btn-primary" text="选择图片/文件" userData="i18n:exif.selectfile" onAction="#getExifFx" translationDir="BOTTOM_TO_TOP">
             <graphic>
                 <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                     <image>
