@@ -25,12 +25,19 @@
             prefHeight="620"
 >
     <children>
-        <StackPane fx:id="outerBorderPane" layoutX="9.0" layoutY="9.0">
+        <StackPane fx:id="outerBorderPane"
+                   AnchorPane.topAnchor="9" AnchorPane.bottomAnchor="9"
+                   AnchorPane.leftAnchor="9" AnchorPane.rightAnchor="9">
             <effect>
-                <DropShadow/>
+                <DropShadow color="#00000080" radius="18" spread="0.08"/>
             </effect>
+            <!-- 四角取景框 -->
+            <Region styleClass="pt-corner-tl" StackPane.alignment="TOP_LEFT"/>
+            <Region styleClass="pt-corner-tr" StackPane.alignment="TOP_RIGHT"/>
+            <Region styleClass="pt-corner-bl" StackPane.alignment="BOTTOM_LEFT"/>
+            <Region styleClass="pt-corner-br" StackPane.alignment="BOTTOM_RIGHT"/>
             <VBox>
-                <BorderPane fx:id="topBar" style="-fx-background-color: -pt-bg-elevated;" prefHeight="45" prefWidth="${an.width - 18}" BorderPane.alignment="CENTER">
+                <BorderPane fx:id="topBar" styleClass="setting-topbar" prefHeight="45" BorderPane.alignment="CENTER">
                     <center>
                         <Label styleClass="pt-h1" style="-fx-padding: 0 0 0 30;" alignment="CENTER" prefHeight="${topBar.height}" prefWidth="${topBar.width}" text="修改配置" userData="i18n:setting.title" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0"/>
                     </center>
