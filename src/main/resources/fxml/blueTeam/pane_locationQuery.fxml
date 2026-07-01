@@ -8,78 +8,227 @@
 <?import javafx.scene.control.Button?>
 <StackPane xmlns="http://javafx.com/javafx/"
            xmlns:fx="http://javafx.com/fxml/1"
-           stylesheets="@../../css/PaneInfoGeneration.css"
+           stylesheets="@../../css/PaneInfoGeneration.css,@../../css/locationQuery.css"
            fx:id="sPane"
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneLocationQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
     <SmoothScrollPane fx:id="scrollPane" fitToWidth="true" prefHeight="${sPane.height}" prefWidth="${sPane.width}"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
-        <VBox spacing="20" style="-fx-padding: 18 20 20 20;">
+        <VBox spacing="0" prefWidth="${sPane.width}">
 
-            <!-- 身份证查询 -->
-            <VBox styleClass="loc-card" spacing="12">
-                <HBox alignment="CENTER_LEFT">
-                    <Label text="身份证查询" styleClass="loc-card-title" userData="i18n:location.card.idcard"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="SYNC" styleClass="pt-caption"/>
+            <!-- ===== Top status bar ===== -->
+            <HBox styleClass="lq-statusbar" alignment="CENTER_LEFT" spacing="20">
+                <HBox alignment="CENTER_LEFT" spacing="6">
+                    <Region styleClass="lq-status-dot"/>
+                    <Label text="READY" styleClass="lq-status-label"/>
                 </HBox>
-                <HBox spacing="12" alignment="CENTER_LEFT">
-                    <TextField styleClass="pt-input" HBox.hgrow="ALWAYS" maxWidth="Infinity" fx:id="idCardInput" promptText="请输入身份证号" userData="i18n-prompt:location.idcard.placeholder"/>
-                    <Button styleClass="pt-btn-primary" minHeight="36.0" minWidth="96" text="查询" userData="i18n:location.query" onAction="#getIdCardInfoFx"/>
-                    <Button styleClass="pt-btn" minHeight="36.0" minWidth="96" text="批量导出" userData="i18n:location.batch" onAction="#getIdCardInfoFx_batch"/>
+                <Label text="类型：身份证 · 银行卡 · 手机号" styleClass="lq-status-info" userData="i18n:location.status.types"/>
+                <Label text="输入：单条 + 批量 TXT" styleClass="lq-status-info" userData="i18n:location.status.input"/>
+                <Label text="导出：CSV" styleClass="lq-status-info" userData="i18n:location.status.export"/>
+            </HBox>
+
+            <!-- ===== Main content ===== -->
+            <VBox spacing="16" style="-fx-padding: 16 20 40 20;">
+
+                <!-- 身份证归属 -->
+                <VBox styleClass="lq-card" spacing="0">
+                    <!-- Card header -->
+                    <HBox styleClass="lq-card-header" alignment="CENTER_LEFT" spacing="10">
+                        <Label text="身份证归属" styleClass="lq-card-title" userData="i18n:location.card.idcard"/>
+                        <Label text="born / sex / att" styleClass="lq-card-subtitle"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button styleClass="pt-btn" minHeight="32" minWidth="80"
+                                text="批量 TXT" userData="i18n:location.batch.txt" onAction="#getIdCardInfoFx_batch"/>
+                        <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
+                                text="查询" userData="i18n:location.query" onAction="#getIdCardInfoFx"/>
+                    </HBox>
+
+                    <!-- Input section -->
+                    <VBox styleClass="lq-card-section" spacing="6">
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <Label text="标识输入" styleClass="lq-section-label" userData="i18n:location.section.input"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="→ Location/idCard.csv" styleClass="lq-export-hint"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Region styleClass="lq-input-dot"/>
+                            <TextField styleClass="pt-input,lq-input" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                       fx:id="idCardInput" promptText="请输入 18 位身份证号码"
+                                       userData="i18n-prompt:location.idcard.placeholder"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Result section -->
+                    <VBox styleClass="lq-card-section" spacing="10">
+                        <Label text="只读结果字段 · READONLY EVIDENCE" styleClass="lq-readonly-label"
+                               userData="i18n:location.section.readonly"/>
+                        <HBox spacing="16">
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="生日" styleClass="loc-field-label" userData="i18n:location.birthday"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="idCardTF_born"/>
+                            </VBox>
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="性别" styleClass="loc-field-label" userData="i18n:location.gender"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="idCardTF_sex"/>
+                            </VBox>
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="地区" styleClass="loc-field-label" userData="i18n:location.region"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="idCardTF_att"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <!-- 银行卡归属 -->
+                <VBox styleClass="lq-card" spacing="0">
+                    <HBox styleClass="lq-card-header" alignment="CENTER_LEFT" spacing="10">
+                        <Label text="银行卡归属" styleClass="lq-card-title" userData="i18n:location.card.bankcard"/>
+                        <Label text="cardType / bank / position" styleClass="lq-card-subtitle"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button styleClass="pt-btn" minHeight="32" minWidth="80"
+                                text="批量 TXT" userData="i18n:location.batch.txt" onAction="#getBankCardInfoFx_batch"/>
+                        <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
+                                text="查询" userData="i18n:location.query" onAction="#getBankCardInfoFx"/>
+                    </HBox>
+
+                    <VBox styleClass="lq-card-section" spacing="6">
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <Label text="标识输入" styleClass="lq-section-label" userData="i18n:location.section.input"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="→ Location/bankCard.csv" styleClass="lq-export-hint"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Region styleClass="lq-input-dot"/>
+                            <TextField styleClass="pt-input,lq-input" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                       fx:id="bankCardInput" promptText="请输入银行卡号"
+                                       userData="i18n-prompt:location.bankcard.placeholder"/>
+                        </HBox>
+                    </VBox>
+
+                    <VBox styleClass="lq-card-section" spacing="10">
+                        <Label text="只读结果字段 · READONLY EVIDENCE" styleClass="lq-readonly-label"
+                               userData="i18n:location.section.readonly"/>
+                        <HBox spacing="16">
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="卡类型" styleClass="loc-field-label" userData="i18n:location.type"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="bankCardTF_type"/>
+                            </VBox>
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="银行" styleClass="loc-field-label" userData="i18n:location.bank"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="bankCardTF_bank"/>
+                            </VBox>
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="归属" styleClass="loc-field-label" userData="i18n:location.attribution"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="bankCardTF_position"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <!-- 手机号归属 -->
+                <VBox styleClass="lq-card" spacing="0">
+                    <HBox styleClass="lq-card-header" alignment="CENTER_LEFT" spacing="10">
+                        <Label text="手机号归属" styleClass="lq-card-title" userData="i18n:location.card.phone"/>
+                        <Label text="province / city / carrier" styleClass="lq-card-subtitle"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button styleClass="pt-btn" minHeight="32" minWidth="80"
+                                text="批量 TXT" userData="i18n:location.batch.txt" onAction="#getPhoneInfoFx_batch"/>
+                        <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
+                                text="查询" userData="i18n:location.query" onAction="#getPhoneInfoFx"/>
+                    </HBox>
+
+                    <VBox styleClass="lq-card-section" spacing="6">
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <Label text="标识输入" styleClass="lq-section-label" userData="i18n:location.section.input"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="→ Location/phoneInfo.csv" styleClass="lq-export-hint"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Region styleClass="lq-input-dot"/>
+                            <TextField styleClass="pt-input,lq-input" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                       fx:id="phoneInput" promptText="请输入手机号"
+                                       userData="i18n-prompt:location.phone.placeholder"/>
+                        </HBox>
+                    </VBox>
+
+                    <VBox styleClass="lq-card-section" spacing="10">
+                        <Label text="只读结果字段 · READONLY EVIDENCE" styleClass="lq-readonly-label"
+                               userData="i18n:location.section.readonly"/>
+                        <HBox spacing="16">
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="省份" styleClass="loc-field-label" userData="i18n:location.province"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_Province"/>
+                            </VBox>
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="城市" styleClass="loc-field-label" userData="i18n:location.city"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_City"/>
+                            </VBox>
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="运营商" styleClass="loc-field-label" userData="i18n:location.operator"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_Operator"/>
+                            </VBox>
+                        </HBox>
+                        <HBox spacing="16">
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="区号" styleClass="loc-field-label" userData="i18n:location.areacode"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_AreaCode"/>
+                            </VBox>
+                            <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="邮编" styleClass="loc-field-label" userData="i18n:location.zipcode"/>
+                                <TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_PostalCode"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+            </VBox>
+        </VBox>
+    </SmoothScrollPane>
+
+    <!-- Right QUERY CONTEXT panel (static) -->
+    <SmoothScrollPane fx:id="queryContextPane"
+                      maxHeight="${sPane.height}" maxWidth="200"
+                      translateX="200" hbarPolicy="NEVER"
+                      StackPane.alignment="TOP_RIGHT"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox styleClass="lq-panel-root" spacing="0">
+            <VBox styleClass="lq-panel-header">
+                <Label text="QUERY CONTEXT" styleClass="lq-panel-section-label"/>
+                <Label text="查询模式与状态" styleClass="lq-panel-title" userData="i18n:location.panel.title"/>
+            </VBox>
+            <!-- Mode cards -->
+            <VBox styleClass="lq-panel-modes" spacing="0">
+                <VBox styleClass="lq-mode-item,lq-mode-selected">
+                    <Label text="身份证归属" styleClass="lq-mode-name" userData="i18n:location.card.idcard"/>
+                    <Label text="生日 / 性别 / 地区" styleClass="lq-mode-sub"/>
+                </VBox>
+                <VBox styleClass="lq-mode-item">
+                    <Label text="银行卡归属" styleClass="lq-mode-name" userData="i18n:location.card.bankcard"/>
+                    <Label text="卡类型 / 银行 / 归属" styleClass="lq-mode-sub"/>
+                </VBox>
+                <VBox styleClass="lq-mode-item">
+                    <Label text="手机号归属" styleClass="lq-mode-name" userData="i18n:location.card.phone"/>
+                    <Label text="省/市/运营商/区号/邮编" styleClass="lq-mode-sub"/>
+                </VBox>
+            </VBox>
+            <!-- States -->
+            <Label text="STATES" styleClass="lq-panel-states-label" userData="i18n:location.panel.states"/>
+            <VBox styleClass="lq-panel-states" spacing="8">
+                <HBox styleClass="lq-state-chip" alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="lq-state-dot,lq-state-dot-querying"/>
+                    <Label text="查询中" styleClass="lq-state-label" userData="i18n:location.state.querying"/>
                 </HBox>
-                <HBox spacing="16">
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="生日" styleClass="loc-field-label" userData="i18n:location.birthday"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="idCardTF_born"/></VBox>
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="性别" styleClass="loc-field-label" userData="i18n:location.gender"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="idCardTF_sex"/></VBox>
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="地区" styleClass="loc-field-label" userData="i18n:location.region"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="idCardTF_att"/></VBox>
+                <HBox styleClass="lq-state-chip" alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="lq-state-dot,lq-state-dot-invalid"/>
+                    <Label text="无效输入" styleClass="lq-state-label" userData="i18n:location.state.invalid"/>
+                </HBox>
+                <HBox styleClass="lq-state-chip" alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="lq-state-dot,lq-state-dot-done"/>
+                    <Label text="批量完成 CSV" styleClass="lq-state-label" userData="i18n:location.state.done"/>
                 </HBox>
             </VBox>
-
-            <!-- 银行卡查询 -->
-            <VBox styleClass="loc-card" spacing="12">
-                <HBox alignment="CENTER_LEFT">
-                    <Label text="银行卡查询" styleClass="loc-card-title" userData="i18n:location.card.bankcard"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="SYNC" styleClass="pt-caption"/>
-                </HBox>
-                <HBox spacing="12" alignment="CENTER_LEFT">
-                    <TextField styleClass="pt-input" HBox.hgrow="ALWAYS" maxWidth="Infinity" fx:id="bankCardInput" promptText="请输入银行卡号" userData="i18n-prompt:location.bankcard.placeholder"/>
-                    <Button styleClass="pt-btn-primary" minHeight="36.0" minWidth="96" text="查询" userData="i18n:location.query" onAction="#getBankCardInfoFx"/>
-                    <Button styleClass="pt-btn" minHeight="36.0" minWidth="96" text="批量导出" userData="i18n:location.batch" onAction="#getBankCardInfoFx_batch"/>
-                </HBox>
-                <HBox spacing="16">
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="归属" styleClass="loc-field-label" userData="i18n:location.attribution"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="bankCardTF_position"/></VBox>
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="银行" styleClass="loc-field-label" userData="i18n:location.bank"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="bankCardTF_bank"/></VBox>
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="类型" styleClass="loc-field-label" userData="i18n:location.type"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="bankCardTF_type"/></VBox>
-                </HBox>
-            </VBox>
-
-            <!-- 手机号查询 -->
-            <VBox styleClass="loc-card" spacing="12">
-                <HBox alignment="CENTER_LEFT">
-                    <Label text="手机号查询" styleClass="loc-card-title" userData="i18n:location.card.phone"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="SYNC" styleClass="pt-caption"/>
-                    <Label text=" · 批量进度→输入栏" styleClass="pt-caption" style="-fx-text-fill: -pt-text-tertiary;"/>
-                </HBox>
-                <HBox spacing="12" alignment="CENTER_LEFT">
-                    <TextField styleClass="pt-input" HBox.hgrow="ALWAYS" maxWidth="Infinity" fx:id="phoneInput" promptText="请输入手机号" userData="i18n-prompt:location.phone.placeholder"/>
-                    <Button styleClass="pt-btn-primary" minHeight="36.0" minWidth="96" text="查询" userData="i18n:location.query" onAction="#getPhoneInfoFx"/>
-                    <Button styleClass="pt-btn" minHeight="36.0" minWidth="96" text="批量导出" userData="i18n:location.batch" onAction="#getPhoneInfoFx_batch"/>
-                </HBox>
-                <HBox spacing="16">
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="省份" styleClass="loc-field-label" userData="i18n:location.province"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_Province"/></VBox>
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="城市" styleClass="loc-field-label" userData="i18n:location.city"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_City"/></VBox>
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="运商" styleClass="loc-field-label" userData="i18n:location.operator"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_Operator"/></VBox>
-                </HBox>
-                <HBox spacing="16">
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="区号" styleClass="loc-field-label" userData="i18n:location.areacode"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_AreaCode"/></VBox>
-                    <VBox styleClass="loc-field" spacing="4" HBox.hgrow="ALWAYS"><Label text="邮编" styleClass="loc-field-label" userData="i18n:location.zipcode"/><TextField styleClass="pt-input" maxWidth="Infinity" fx:id="phoneTF_PostalCode"/></VBox>
-                    <Region HBox.hgrow="ALWAYS"/>
-                </HBox>
-            </VBox>
-
         </VBox>
     </SmoothScrollPane>
 

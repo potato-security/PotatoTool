@@ -1,0 +1,168 @@
+/* 归属地查询页 — 1:1 Penpot 设计实现 */
+
+/* ===== Top status bar ===== */
+.lq-statusbar {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 20 8 20;
+}
+.lq-status-dot {
+    -fx-pref-width: 8; -fx-pref-height: 8;
+    -fx-min-width: 8; -fx-min-height: 8;
+    -fx-max-width: 8; -fx-max-height: 8;
+    -fx-background-radius: 50%;
+    -fx-background-color: -pt-success;
+}
+.lq-status-label {
+    -fx-text-fill: -pt-success;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.lq-status-info {
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-size: 11px;
+}
+
+/* ===== Card ===== */
+.lq-card {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-color: -pt-border, -pt-accent-teal;
+    -fx-border-width: 1, 0 0 0 3;
+    -fx-background-radius: 0 10 10 0;
+    -fx-border-radius: 0 10 10 0;
+}
+.lq-card-header {
+    -fx-padding: 12 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+.lq-card-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.lq-card-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-padding: 0 0 0 4;
+}
+.lq-card-section {
+    -fx-padding: 12 16 14 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+.lq-card-section:last-child {
+    -fx-border-width: 0;
+}
+
+/* ===== Input area ===== */
+.lq-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent-teal;
+}
+.lq-export-hint {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-style: italic;
+}
+.lq-input-dot {
+    -fx-pref-width: 6; -fx-pref-height: 6;
+    -fx-min-width: 6; -fx-min-height: 6;
+    -fx-max-width: 6; -fx-max-height: 6;
+    -fx-background-radius: 50%;
+    -fx-background-color: -pt-accent-teal;
+}
+.lq-input {
+    -fx-background-color: -pt-bg-elevated;
+}
+
+/* ===== Readonly evidence label ===== */
+.lq-readonly-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-padding: 0 0 2 0;
+}
+
+/* ===== Right QUERY CONTEXT panel ===== */
+.lq-panel-root {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 0 0 0 1;
+    -fx-min-height: 100%;
+}
+.lq-panel-header {
+    -fx-padding: 14 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-spacing: 4;
+}
+.lq-panel-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+}
+.lq-panel-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.lq-panel-modes {
+    -fx-padding: 0;
+}
+.lq-mode-item {
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-spacing: 3;
+}
+.lq-mode-selected {
+    -fx-background-color: derive(-pt-accent-teal, -70%);
+    -fx-border-color: -pt-accent-teal;
+    -fx-border-width: 0 0 1 2;
+}
+.lq-mode-name {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.lq-mode-selected .lq-mode-name {
+    -fx-text-fill: -pt-accent-teal;
+}
+.lq-mode-sub {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+}
+.lq-panel-states-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-padding: 10 16 4 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+.lq-panel-states {
+    -fx-padding: 8 16 16 16;
+}
+.lq-state-chip {
+    -fx-padding: 6 12 6 12;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 6;
+}
+.lq-state-dot {
+    -fx-pref-width: 8; -fx-pref-height: 8;
+    -fx-min-width: 8; -fx-min-height: 8;
+    -fx-max-width: 8; -fx-max-height: 8;
+    -fx-background-radius: 50%;
+}
+.lq-state-dot-querying  { -fx-background-color: -pt-warning; }
+.lq-state-dot-invalid   { -fx-background-color: -pt-danger; }
+.lq-state-dot-done      { -fx-background-color: -pt-success; }
+.lq-state-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text;
+}

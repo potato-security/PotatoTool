@@ -5,6 +5,9 @@ import com.opencsv.CSVWriter;
 import com.potato.potatotool.ToStart;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -15,6 +18,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +43,9 @@ public class PaneLocationQuery {
     private StackPane sPane;
     @FXML
     private ScrollPane scrollPane;
+    @FXML
+    private ScrollPane queryContextPane;
+    private boolean queryContextVisible = false;
 
     @FXML
     private TextField idCardInput;
@@ -73,11 +80,20 @@ public class PaneLocationQuery {
 
     @FXML
     void initialize(){
-        // 绑定国际化
         Platform.runLater(() -> {
             I18nUtils.bindComponents(sPane);
             applyStartupPreviewState();
+            showQueryContextPanel();
         });
+    }
+
+    private void showQueryContextPanel() {
+        if (queryContextPane == null || queryContextVisible) return;
+        queryContextVisible = true;
+        new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(queryContextPane.translateXProperty(), 200)),
+            new KeyFrame(Duration.millis(250), new KeyValue(queryContextPane.translateXProperty(), 0))
+        ).play();
     }
 
     private void applyStartupPreviewState() {
