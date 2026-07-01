@@ -286,3 +286,23 @@
     -fx-border-color: -pt-accent-teal;
     -fx-text-fill: -pt-accent-teal;
 }
+
+/* macOS-style close button */
+.setting-close-btn {
+    -fx-background-color: -pt-danger;
+    -fx-background-radius: 50%;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-min-width: 20;
+    -fx-min-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+.setting-close-btn:hover {
+    -fx-background-color: derive(-pt-danger, -15%);
+}

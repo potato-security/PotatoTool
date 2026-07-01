@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothListView?>
-
 <?import javafx.scene.layout.*?>
-
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.StackPane?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Tooltip?>
 <StackPane xmlns="http://javafx.com/javafx/"
@@ -18,65 +16,73 @@
            fx:id="sPane"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <SmoothScrollPane fx:id="accordionScrollPane" maxHeight="${sPane.height - 10}" maxWidth="210" translateX="210" hbarPolicy="NEVER" StackPane.alignment="TOP_RIGHT">
-        <VBox fx:id="vBoxBar">
-            <VBox styleClass="bc-chain-header">
-                <Label text="CHAIN" styleClass="bc-chain-section-label"/>
-                <Label text="区块链溯源" styleClass="bc-chain-title" userData="i18n:blockchain.chain.panel.title"/>
-            </VBox>
-            <Accordion fx:id="accordionPane"/>
-        </VBox>
-    </SmoothScrollPane>
+    <!-- Main content: top search bar + result list -->
+    <VBox styleClass="bc-root" prefWidth="${sPane.width}" prefHeight="${sPane.height}" spacing="0">
 
-    <VBox spacing="20" alignment="CENTER">
-        <StackPane maxWidth="${sPane.width / 2}">
-            <TextField fx:id="question" styleClass="pt-input" minHeight="0" promptText="支持钱包地址、交易hash、区块ID、名词解释等" userData="i18n-prompt:blockchain.input.placeholder"/>
-            <Pane  maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
-                <Label layoutX="-40" layoutY="3" onMouseClicked="#searchInput">
+        <!-- Top search bar -->
+        <HBox styleClass="bc-search-bar" alignment="CENTER_LEFT" spacing="0">
+            <TextField fx:id="question" styleClass="pt-input,bc-question"
+                       HBox.hgrow="ALWAYS" minHeight="0"
+                       promptText="支持钱包地址、交易hash、区块ID、名词解释等"
+                       userData="i18n-prompt:blockchain.input.placeholder"/>
+            <Pane maxWidth="0" maxHeight="40" HBox.hgrow="NEVER">
+                <Label layoutX="-44" layoutY="7" onMouseClicked="#searchInput">
                     <graphic>
                         <Region styleClass="send"/>
                     </graphic>
                     <cursor>
-                        <Cursor fx:constant="HAND" />
+                        <Cursor fx:constant="HAND"/>
                     </cursor>
                     <tooltip>
                         <Tooltip text="查询" userData="i18n:blockchain.query"/>
                     </tooltip>
                 </Label>
             </Pane>
-        </StackPane>
-        <StackPane>
+        </HBox>
+
+        <!-- Result area: main list + overlays -->
+        <StackPane VBox.vgrow="ALWAYS">
             <StackPane>
-                <SmoothListView fx:id="listViewCell" prefWidth="${sPane.width}" prefHeight="${sPane.height - 85}"/>
-                <Label fx:id="backClearLabel" StackPane.alignment="TOP_LEFT" visible="false" translateX="10" translateY="10" onMouseClicked="#goBackAndClear">
+                <SmoothListView fx:id="listViewCell"
+                                prefWidth="${sPane.width}"
+                                prefHeight="${sPane.height - 55}"/>
+                <Label fx:id="backClearLabel" StackPane.alignment="TOP_LEFT"
+                       visible="false" translateX="10" translateY="10"
+                       onMouseClicked="#goBackAndClear">
                     <graphic>
                         <Region styleClass="back"/>
                     </graphic>
                     <cursor>
-                        <Cursor fx:constant="HAND" />
+                        <Cursor fx:constant="HAND"/>
                     </cursor>
                     <tooltip>
                         <Tooltip text="返回" userData="i18n:blockchain.back"/>
                     </tooltip>
                 </Label>
             </StackPane>
-            <Pane fx:id="detailedPane" visible="false" maxWidth="0"  StackPane.alignment="CENTER_RIGHT">
-                <SmoothListView fx:id="detailedListView" layoutX="${- detailedListView.width}" minWidth="0" minHeight="0" prefWidth="0" prefHeight="${sPane.height - 85}" StackPane.alignment="CENTER_RIGHT" />
+            <Pane fx:id="detailedPane" visible="false" maxWidth="0" StackPane.alignment="CENTER_RIGHT">
+                <SmoothListView fx:id="detailedListView"
+                                layoutX="${- detailedListView.width}"
+                                minWidth="0" minHeight="0" prefWidth="0"
+                                prefHeight="${sPane.height - 55}"
+                                StackPane.alignment="CENTER_RIGHT"/>
                 <Label layoutX="${ 10 - detailedListView.width}" layoutY="10" onMouseClicked="#goBack">
                     <graphic>
                         <Region styleClass="back"/>
                     </graphic>
                     <cursor>
-                        <Cursor fx:constant="HAND" />
+                        <Cursor fx:constant="HAND"/>
                     </cursor>
                     <tooltip>
                         <Tooltip text="返回" userData="i18n:blockchain.back"/>
                     </tooltip>
                 </Label>
-                <Button fx:id="exportReportButton" styleClass="pt-btn-primary" layoutX="${-49}" layoutY="5"
-                        mnemonicParsing="false" disable="true" onAction="#exportCurrentReport">
+                <Button fx:id="exportReportButton" styleClass="pt-btn-primary"
+                        layoutX="${-49}" layoutY="5"
+                        mnemonicParsing="false" disable="true"
+                        onAction="#exportCurrentReport">
                     <cursor>
-                        <Cursor fx:constant="HAND" />
+                        <Cursor fx:constant="HAND"/>
                     </cursor>
                     <tooltip>
                         <Tooltip text="导出分析报告" userData="i18n:blockchain.export.button"/>
@@ -84,11 +90,31 @@
                 </Button>
             </Pane>
         </StackPane>
+
     </VBox>
 
-    <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity"
+    <!-- Right CHAIN panel (slides in/out via translateX animation) -->
+    <SmoothScrollPane fx:id="accordionScrollPane"
+                      maxHeight="${sPane.height}" maxWidth="210"
+                      translateX="210" hbarPolicy="NEVER"
+                      StackPane.alignment="TOP_RIGHT"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox fx:id="vBoxBar">
+            <VBox styleClass="bc-chain-header">
+                <Label text="CHAIN" styleClass="bc-chain-section-label"/>
+                <Label text="区块链溯源" styleClass="bc-chain-title"
+                       userData="i18n:blockchain.chain.panel.title"/>
+            </VBox>
+            <Accordion fx:id="accordionPane"/>
+        </VBox>
+    </SmoothScrollPane>
+
+    <!-- Prompt overlay -->
+    <StackPane fx:id="promptPane" visible="false" managed="false"
+               maxHeight="-Infinity" maxWidth="-Infinity"
                alignment="CENTER" StackPane.alignment="CENTER">
-        <Label fx:id="prompt" wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="620"/>
+        <Label fx:id="prompt" wrapText="true" textAlignment="CENTER"
+               alignment="CENTER" minHeight="-Infinity" maxWidth="620"/>
     </StackPane>
 
 </StackPane>

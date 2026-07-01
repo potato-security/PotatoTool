@@ -11,7 +11,7 @@
     -fx-background-color: -pt-bg-panel;
 }
 #listViewCell{
-    -fx-padding: 32 0 0 0;
+    -fx-padding: 8 0 0 0;
 }
 #listViewCell .list-cell {
     -fx-padding: 8 16 8 16;
@@ -23,9 +23,9 @@
     visibility: visible;
 }
 #question{
-    -fx-padding: 12 42 12 20;
-    -fx-border-radius: 999;
-    -fx-background-radius: 999;
+    -fx-padding: 10 44 10 16;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
 }
 .noContentTitlePane > .title > .arrow-button > .arrow {
     -fx-background-color:  transparent!important;
@@ -434,4 +434,25 @@
 .bc-card-arrow {
     -fx-text-fill: -pt-text-muted;
     -fx-font-size: 16;
+}
+
+/* ========================================
+   顶部搜索栏布局
+   ======================================== */
+
+.bc-root {
+    -fx-background-color: transparent;
+}
+
+.bc-search-bar {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 10 16 10 16;
+}
+
+.bc-question {
+    -fx-padding: 10 44 10 20;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
 }

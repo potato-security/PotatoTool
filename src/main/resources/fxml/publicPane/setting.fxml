@@ -36,14 +36,9 @@
                     </center>
                     <right>
                         <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
-                            <Button id="btnExitSmall" mnemonicParsing="false" onAction="#exitAction" prefHeight="25.0" prefWidth="25.0">
-                                <graphic>
-                                    <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
-                                        <image>
-                                            <Image url="@../../img/close.png" />
-                                        </image>
-                                    </ImageView>
-                                </graphic>
+                            <Button id="btnExitSmall" styleClass="setting-close-btn"
+                                    mnemonicParsing="false" onAction="#exitAction"
+                                    text="×">
                                 <tooltip>
                                     <Tooltip text="关闭" userData="i18n:tooltip.close"/>
                                 </tooltip>

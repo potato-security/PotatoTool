@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
+<?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.fxmisc.richtext.CodeArea?>
@@ -12,100 +13,91 @@
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneSeparateDecode"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}" hbarPolicy="NEVER" fitToWidth="true"
+    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}"
+                      hbarPolicy="NEVER" fitToWidth="true"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
-    <VBox styleClass="sep-root" prefWidth="${sPane.width}" spacing="14">
+    <VBox styleClass="sep-root" prefWidth="${sPane.width}" spacing="0">
 
-        <!-- RULE SELECTION -->
-        <Label text="RULE SELECTION" styleClass="sep-tag"/>
-        <FlowPane styleClass="sep-chips" hgap="10" vgap="10">
-            <ToggleButton text="规则 0" styleClass="pt-toggle-chip">
-                <toggleGroup><ToggleGroup fx:id="ruleGroup"/></toggleGroup>
-            </ToggleButton>
-            <ToggleButton text="规则 1" selected="true" styleClass="pt-toggle-chip" toggleGroup="$ruleGroup"/>
-            <ToggleButton text="规则 2" styleClass="pt-toggle-chip" toggleGroup="$ruleGroup"/>
-            <ToggleButton text="规则 3" styleClass="pt-toggle-chip" toggleGroup="$ruleGroup"/>
-        </FlowPane>
-
-        <!-- PARAMETERS -->
-        <Label text="PARAMETERS" styleClass="sep-tag"/>
-        <VBox spacing="4">
-            <Label text="customPath" styleClass="pt-caption"/>
-            <HBox spacing="8" alignment="CENTER_LEFT">
-                <TextField fx:id="customPath" editable="false" styleClass="pt-input"
-                           promptText="/path/to/payload.jar" HBox.hgrow="ALWAYS"
-                           userData="i18n-prompt:separate.path.placeholder"/>
-                <Button text="选择" styleClass="pt-btn" onAction="#chooseFile" minWidth="64"
-                        userData="i18n:separate.choose"/>
-            </HBox>
-        </VBox>
-
-        <!-- modeComboBox (规则 2 / 3 时显示) -->
-        <VBox fx:id="modeSection" spacing="4" managed="false" visible="false">
-            <Label text="modeComboBox" styleClass="pt-caption"/>
-            <ComboBox fx:id="modeComboBox" prefWidth="200"/>
-        </VBox>
-
-        <!-- OPERATIONS -->
-        <HBox spacing="14" alignment="CENTER_LEFT">
-            <Button styleClass="pt-btn-solid" minHeight="42.0" minWidth="120"
-                    text="开始解密" userData="i18n:separate.start.decrypt" onAction="#startDecrypt"/>
-            <Button styleClass="pt-btn" minHeight="42.0" minWidth="120"
-                    text="导出结果" userData="i18n:separate.export" onAction="#exportResult"/>
+        <!-- ===== Tab bar: 8 encoding type tabs ===== -->
+        <HBox styleClass="sep-tab-bar" alignment="CENTER_LEFT">
+            <FlowPane styleClass="sep-tab-flow" hgap="0" vgap="0">
+                <ToggleButton text="Base64" styleClass="sep-tab" selected="true">
+                    <toggleGroup><ToggleGroup fx:id="ruleGroup"/></toggleGroup>
+                </ToggleButton>
+                <ToggleButton text="URL"     styleClass="sep-tab" toggleGroup="$ruleGroup"/>
+                <ToggleButton text="Rot13"   styleClass="sep-tab" toggleGroup="$ruleGroup"/>
+                <ToggleButton text="Unicode" styleClass="sep-tab" toggleGroup="$ruleGroup"/>
+                <ToggleButton text="Chr"     styleClass="sep-tab" toggleGroup="$ruleGroup"/>
+                <ToggleButton text="strRev"  styleClass="sep-tab" toggleGroup="$ruleGroup"/>
+                <ToggleButton text="Hex"     styleClass="sep-tab" toggleGroup="$ruleGroup"/>
+                <ToggleButton text="Html"    styleClass="sep-tab" toggleGroup="$ruleGroup"/>
+            </FlowPane>
         </HBox>
 
-        <!-- AI STATE -->
-        <HBox spacing="10" alignment="CENTER_LEFT">
+        <!-- ===== Hint bar: description for selected encoding type ===== -->
+        <HBox styleClass="sep-hint-bar" alignment="CENTER_LEFT" spacing="8">
+            <Region styleClass="sep-hint-dot"/>
+            <Label fx:id="hintLabel" styleClass="sep-hint-text"
+                   text="Base64 · RFC 4648 标准编码，用于 HTTP 传输、JWT、数据 URI 等场景"/>
+        </HBox>
+
+        <!-- ===== Input section ===== -->
+        <Label text="输入" styleClass="sep-section-label" userData="i18n:separate.input.label"
+               style="-fx-padding: 12 20 4 20;"/>
+        <SmoothTextArea fx:id="inputText" styleClass="pt-input,sep-textarea"
+                        wrapText="true" prefHeight="180" minHeight="100"
+                        promptText="请输入明文/密文"
+                        userData="i18n-prompt:separate.input.placeholder"/>
+
+        <!-- ===== Action bar ===== -->
+        <HBox styleClass="sep-action-bar" alignment="CENTER_LEFT" spacing="8">
+            <Button styleClass="pt-btn-primary" minHeight="36" minWidth="80"
+                    text="解密" userData="i18n:separate.decode" onAction="#startDecrypt"/>
+            <Button styleClass="pt-btn" minHeight="36" minWidth="80"
+                    text="加密" userData="i18n:separate.encode" onAction="#startEncode"/>
+            <Label fx:id="statusLabel" styleClass="sep-status-chip" text="就绪"
+                   visible="false" managed="false"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="aiHintLabel" styleClass="pt-caption,sep-ai-hint"
+                   text="输入已变更，重新分析" userData="i18n:separate.ai.changed"
+                   visible="false" managed="false"/>
             <StackPane>
-                <Button fx:id="aiAnalyzeBtn" styleClass="pt-btn-solid" minHeight="36" minWidth="100"
-                        text="AI 分析" userData="i18n:separate.ai.analyze" onAction="#startAiAnalysis"/>
+                <Button fx:id="aiAnalyzeBtn" styleClass="pt-btn" minHeight="36" minWidth="80"
+                        text="AI 分析" userData="i18n:separate.ai.analyze"
+                        onAction="#startAiAnalysis"/>
                 <Label fx:id="aiSuccessBadge" styleClass="sep-badge-success" text="SUCCESS"
                        visible="false" StackPane.alignment="TOP_RIGHT"
                        translateX="6.0" translateY="-8.0"/>
             </StackPane>
             <StackPane>
-                <Button fx:id="downloadAiBtn" styleClass="pt-btn" minHeight="36" minWidth="100"
-                        text="下载分析" userData="i18n:separate.ai.download" onAction="#downloadAi"
-                        disable="true"/>
+                <Button fx:id="downloadAiBtn" styleClass="pt-btn" minHeight="36" minWidth="80"
+                        text="下载分析" userData="i18n:separate.ai.download"
+                        onAction="#downloadAi" disable="true"/>
                 <Label fx:id="aiDisabledBadge" styleClass="sep-badge-disabled" text="DISABLED"
                        StackPane.alignment="TOP_RIGHT"
                        translateX="6.0" translateY="-8.0"/>
             </StackPane>
-            <Label fx:id="aiHintLabel" styleClass="pt-caption,sep-ai-hint"
-                   text="输入已变更，重新分析" userData="i18n:separate.ai.changed" visible="false"/>
+            <Button styleClass="pt-btn" minHeight="36" minWidth="80"
+                    text="导出结果" userData="i18n:separate.export" onAction="#exportResult"/>
         </HBox>
 
-        <!-- TEST DATA · testDataList -->
-        <VBox spacing="6">
-            <Label text="TEST DATA · testDataList" styleClass="sep-tag"/>
-            <FlowPane hgap="10" vgap="8">
-                <Button text="AES 样本" styleClass="pt-toggle-chip"
-                        userData="i18n:separate.sample.aes" onAction="#loadSampleAes"/>
-                <Button text="Base64 样本" styleClass="pt-toggle-chip"
-                        userData="i18n:separate.sample.base64" onAction="#loadSampleBase64"/>
-                <Button text="混合加密样本" styleClass="pt-toggle-chip"
-                        userData="i18n:separate.sample.mixed" onAction="#loadSampleMixed"/>
-            </FlowPane>
-        </VBox>
-
-        <!-- tipTitleCopy · 复制按钮 -->
-        <HBox styleClass="sep-tip-row" alignment="CENTER" spacing="8">
-            <Region HBox.hgrow="ALWAYS" styleClass="sep-dash-line"/>
-            <Button fx:id="tipCopyBtn" styleClass="sep-copy-btn" text="复制"
-                    userData="i18n:separate.copy" onAction="#copyResult"/>
-            <Region HBox.hgrow="ALWAYS" styleClass="sep-dash-line"/>
+        <!-- ===== Result label + copy note ===== -->
+        <HBox styleClass="sep-result-bar" alignment="CENTER_LEFT" spacing="8">
+            <Label text="结果" styleClass="sep-section-label" userData="i18n:separate.result.label"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label styleClass="sep-note" text="右键菜单可复制全文"
+                   userData="i18n:separate.note.copy"/>
         </HBox>
 
-        <!-- OUTPUT -->
-        <VBox spacing="6" VBox.vgrow="ALWAYS">
-            <Label text="OUTPUT" styleClass="sep-tag"/>
-            <VBox styleClass="codeAreaPane" VBox.vgrow="ALWAYS">
-                <VirtualizedScrollPane fx:id="virScrollPane" styleClass="virtualizedScrollPane">
-                    <content>
-                        <CodeArea fx:id="result" editable="false" wrapText="true" styleClass="codeArea"/>
-                    </content>
-                </VirtualizedScrollPane>
-            </VBox>
+        <!-- ===== Output CodeArea ===== -->
+        <VBox VBox.vgrow="ALWAYS" styleClass="codeAreaPane" minHeight="200">
+            <VirtualizedScrollPane fx:id="virScrollPane" styleClass="virtualizedScrollPane"
+                                   VBox.vgrow="ALWAYS">
+                <content>
+                    <CodeArea fx:id="result" editable="false" wrapText="true"
+                              styleClass="codeArea"/>
+                </content>
+            </VirtualizedScrollPane>
         </VBox>
 
     </VBox>

@@ -59,3 +59,112 @@
     -fx-text-fill: -pt-text-primary;
     -fx-border-color: -pt-accent;
 }
+
+/* ===== 重构后布局 ===== */
+
+.sep-root {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+/* 顶部 tab 栏 */
+.sep-tab-bar {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 12 0 0;
+}
+.sep-tab-flow {
+    -fx-padding: 0;
+}
+.sep-tab {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-width: 0 1 0 0;
+    -fx-border-color: -pt-border-subtle;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20 10 20;
+    -fx-cursor: hand;
+    -fx-min-width: 80;
+}
+.sep-tab:hover {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text;
+}
+.sep-tab:selected {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-accent-teal;
+    -fx-border-width: 0 1 2 0;
+    -fx-border-color: -pt-border-subtle, -pt-border-subtle, -pt-accent-teal, transparent;
+}
+
+/* 提示条 */
+.sep-hint-bar {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 20 8 20;
+}
+.sep-hint-dot {
+    -fx-background-color: -pt-accent-teal;
+    -fx-pref-width: 6;
+    -fx-pref-height: 6;
+    -fx-min-width: 6;
+    -fx-min-height: 6;
+    -fx-max-width: 6;
+    -fx-max-height: 6;
+    -fx-background-radius: 50%;
+}
+.sep-hint-text {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-secondary;
+}
+
+/* section labels */
+.sep-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+}
+
+/* 输入 textarea */
+.sep-textarea {
+    -fx-padding: 10 20 10 20;
+    -fx-font-size: 12px;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* 操作栏 */
+.sep-action-bar {
+    -fx-padding: 10 20 10 20;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* 状态 chip */
+.sep-status-chip {
+    -fx-background-color: -pt-success-soft;
+    -fx-text-fill: -pt-success;
+    -fx-background-radius: 4;
+    -fx-padding: 3 10 3 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* 结果行 */
+.sep-result-bar {
+    -fx-padding: 8 20 6 20;
+}
+.sep-note {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+}
