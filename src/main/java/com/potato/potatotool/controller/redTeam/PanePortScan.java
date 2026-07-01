@@ -35,6 +35,8 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -94,12 +96,7 @@ public class PanePortScan {
     @FXML private ComboBox<String> exportFormatComboBox;
     @FXML private StackPane historyMask;
     @FXML private VBox historyPane;
-    @FXML private TableView<PortScanDatabase.HistoryItem> historyTableView;
-    @FXML private TableColumn<PortScanDatabase.HistoryItem, String> historyTimeColumn;
-    @FXML private TableColumn<PortScanDatabase.HistoryItem, String> historyOpenColumn;
-    @FXML private TableColumn<PortScanDatabase.HistoryItem, String> historyTaskColumn;
-    @FXML private TableColumn<PortScanDatabase.HistoryItem, String> historyDurationColumn;
-    @FXML private TableColumn<PortScanDatabase.HistoryItem, String> historyScanIdColumn;
+    @FXML private ListView<PortScanDatabase.HistoryItem> historyListView;
     @FXML private Label historyCountLabel;
     @FXML private StackPane promptPane;
     @FXML private Label promptLabel;
@@ -202,8 +199,8 @@ public class PanePortScan {
         }
         resultItems.setAll(previewState.getResultItems());
         lastResult = previewState.toResult();
-        if (historyTableView != null) {
-            historyTableView.getItems().setAll(previewState.getHistoryItems());
+        if (historyListView != null) {
+            historyListView.getItems().setAll(previewState.getHistoryItems());
         }
         updateHistoryCountLabel(previewState.getHistoryItems().size());
         if (previewState.isHistoryVisible()) {
@@ -221,8 +218,8 @@ public class PanePortScan {
         historyMask.setVisible(true);
         historyMask.setManaged(true);
         historyMask.toFront();
-        if (historyTableView != null && !historyTableView.getItems().isEmpty()) {
-            historyTableView.getSelectionModel().selectFirst();
+        if (historyListView != null && !historyListView.getItems().isEmpty()) {
+            historyListView.getSelectionModel().selectFirst();
         }
     }
 
@@ -448,10 +445,10 @@ public class PanePortScan {
 
     @FXML
     public void openSelectedHistory(MouseEvent event) {
-        if (historyTableView == null) {
+        if (historyListView == null) {
             return;
         }
-        PortScanDatabase.HistoryItem selected = historyTableView.getSelectionModel().getSelectedItem();
+        PortScanDatabase.HistoryItem selected = historyListView.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showPrompt(I18nUtils.getString("portscan.msg.history.select"), true);
             return;
@@ -478,20 +475,20 @@ public class PanePortScan {
 
     @FXML
     public void deleteSelectedHistory(MouseEvent event) {
-        if (historyTableView == null) {
+        if (historyListView == null) {
             return;
         }
-        PortScanDatabase.HistoryItem selected = historyTableView.getSelectionModel().getSelectedItem();
+        PortScanDatabase.HistoryItem selected = historyListView.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showPrompt(I18nUtils.getString("portscan.msg.history.select"), true);
             return;
         }
         try {
             database.deleteScan(selected.getScanId());
-            historyTableView.getItems().remove(selected);
-            updateHistoryCountLabel(historyTableView.getItems().size());
-            if (!historyTableView.getItems().isEmpty()) {
-                historyTableView.getSelectionModel().selectFirst();
+            historyListView.getItems().remove(selected);
+            updateHistoryCountLabel(historyListView.getItems().size());
+            if (!historyListView.getItems().isEmpty()) {
+                historyListView.getSelectionModel().selectFirst();
             }
             showPrompt(I18nUtils.getString("portscan.msg.history.deleted"));
         } catch (Exception e) {
@@ -512,8 +509,8 @@ public class PanePortScan {
                     }
                     try {
                         database.clearHistory();
-                        if (historyTableView != null) {
-                            historyTableView.getItems().clear();
+                        if (historyListView != null) {
+                            historyListView.getItems().clear();
                         }
                         updateHistoryCountLabel(0);
                         showPrompt(I18nUtils.getString("portscan.msg.history.cleared"));
@@ -526,18 +523,18 @@ public class PanePortScan {
     }
 
     private boolean loadHistoryIntoTable() {
-        if (historyTableView == null) {
+        if (historyListView == null) {
             return false;
         }
         try {
             List<PortScanDatabase.HistoryItem> history = database.loadHistory();
-            historyTableView.getItems().setAll(history);
+            historyListView.getItems().setAll(history);
             updateHistoryCountLabel(history.size());
             if (history.isEmpty()) {
                 showPrompt(I18nUtils.getString("portscan.msg.history.empty"));
                 return false;
             }
-            historyTableView.getSelectionModel().selectFirst();
+            historyListView.getSelectionModel().selectFirst();
             return true;
         } catch (Exception e) {
             showPrompt(I18nUtils.getString("portscan.msg.history.failed", e.getMessage()), true);
@@ -561,41 +558,35 @@ public class PanePortScan {
     }
 
     private void setupHistoryTable() {
-        if (historyTableView == null) {
+        if (historyListView == null) {
             return;
         }
-        historyTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        historyTableView.setPlaceholder(new Label(I18nUtils.getString("portscan.msg.history.empty")));
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        if (historyTimeColumn != null) {
-            historyTimeColumn.setCellValueFactory(data -> new SimpleStringProperty(
-                    formatter.format(new Date(data.getValue().getStartTime()))));
-        }
-        if (historyOpenColumn != null) {
-            historyOpenColumn.setCellValueFactory(data -> new SimpleStringProperty(
-                    String.valueOf(data.getValue().getOpenCount())));
-        }
-        if (historyTaskColumn != null) {
-            historyTaskColumn.setCellValueFactory(data -> new SimpleStringProperty(
-                    data.getValue().getCompletedTasks() + " / " + data.getValue().getTotalTasks()));
-        }
-        if (historyDurationColumn != null) {
-            historyDurationColumn.setCellValueFactory(data -> {
-                long durationMs = Math.max(0L, data.getValue().getEndTime() - data.getValue().getStartTime());
-                return new SimpleStringProperty(formatDuration(durationMs));
-            });
-        }
-        if (historyScanIdColumn != null) {
-            historyScanIdColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getScanId()));
-        }
-        historyTableView.setRowFactory(tv -> {
-            javafx.scene.control.TableRow<PortScanDatabase.HistoryItem> row = new javafx.scene.control.TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    openSelectedHistory(event);
+        historyListView.setPlaceholder(new Label(I18nUtils.getString("portscan.msg.history.empty")));
+        SimpleDateFormat formatter = new SimpleDateFormat("MM-dd HH:mm");
+        historyListView.setCellFactory(lv -> new ListCell<PortScanDatabase.HistoryItem>() {
+            @Override
+            protected void updateItem(PortScanDatabase.HistoryItem item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                    return;
                 }
-            });
-            return row;
+                String time = formatter.format(new Date(item.getStartTime()));
+                long durationMs = Math.max(0L, item.getEndTime() - item.getStartTime());
+                String sub = item.getOpenCount() + " open  ·  " + formatDuration(durationMs);
+                Label timeLabel = new Label(time);
+                timeLabel.getStyleClass().add("ps-hist-time");
+                Label subLabel = new Label(sub);
+                subLabel.getStyleClass().add("ps-hist-sub");
+                VBox card = new VBox(3, timeLabel, subLabel);
+                card.getStyleClass().add("ps-hist-card");
+                setGraphic(card);
+            }
+        });
+        historyListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && !historyListView.getSelectionModel().isEmpty()) {
+                openSelectedHistory(event);
+            }
         });
         updateHistoryCountLabel(0);
     }

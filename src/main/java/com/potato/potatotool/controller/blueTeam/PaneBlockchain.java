@@ -670,7 +670,7 @@ public class PaneBlockchain {
     private void slideAccordionIn() {
         if (accordionScrollPane == null) return;
         Timeline t = new Timeline(
-            new KeyFrame(Duration.ZERO, new KeyValue(accordionScrollPane.translateXProperty(), -210)),
+            new KeyFrame(Duration.ZERO, new KeyValue(accordionScrollPane.translateXProperty(), 210)),
             new KeyFrame(Duration.millis(200), new KeyValue(accordionScrollPane.translateXProperty(), 0))
         );
         t.play();
@@ -683,14 +683,14 @@ public class PaneBlockchain {
         }
         Timeline t = new Timeline(
             new KeyFrame(Duration.ZERO, new KeyValue(accordionScrollPane.translateXProperty(), 0)),
-            new KeyFrame(Duration.millis(200), new KeyValue(accordionScrollPane.translateXProperty(), -210))
+            new KeyFrame(Duration.millis(200), new KeyValue(accordionScrollPane.translateXProperty(), 210))
         );
         if (onFinished != null) t.setOnFinished(e -> onFinished.run());
         t.play();
     }
 
     private void resetAccordionPosition() {
-        if (accordionScrollPane != null) accordionScrollPane.setTranslateX(-210);
+        if (accordionScrollPane != null) accordionScrollPane.setTranslateX(210);
     }
 
     private void openReportDetailPane() {

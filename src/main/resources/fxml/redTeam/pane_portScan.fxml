@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.dlsc.gemsfx.CFCheckBox?>
-<?import com.potato.potatotool.utils.ui.SmoothTableView?>
+<?import com.potato.potatotool.utils.ui.SmoothListView?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -134,31 +134,14 @@
         <!-- RIGHT: SCAN SESSION panel (always visible) -->
         <VBox styleClass="portscan-session-panel" prefWidth="220" minWidth="220">
 
-            <HBox alignment="CENTER_LEFT" styleClass="portscan-session-header">
+            <VBox styleClass="portscan-session-header">
                 <Label text="SCAN SESSION" styleClass="portscan-session-title"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="historyCountLabel" text="" styleClass="pt-caption"/>
-            </HBox>
+                <Label text="扫描历史" styleClass="portscan-session-heading" userData="i18n:portscan.history.heading"/>
+                <Label fx:id="historyCountLabel" text="" styleClass="pt-caption portscan-hist-count"/>
+            </VBox>
 
-            <SmoothTableView fx:id="historyTableView" VBox.vgrow="ALWAYS"
-                             styleClass="pt-table,history-table,portscan-history-table">
-                <columns>
-                    <TableColumn fx:id="historyTimeColumn" text="时间" prefWidth="120"
-                                 userData="i18n:portscan.column.time"/>
-                    <TableColumn fx:id="historyOpenColumn" text="开放" prefWidth="50"
-                                 style="-fx-alignment: CENTER;"
-                                 userData="i18n:portscan.column.openports"/>
-                    <TableColumn fx:id="historyTaskColumn" text="进度" prefWidth="60"
-                                 style="-fx-alignment: CENTER;"
-                                 userData="i18n:portscan.column.progress"/>
-                    <TableColumn fx:id="historyDurationColumn" text="耗时" prefWidth="60"
-                                 style="-fx-alignment: CENTER;"
-                                 userData="i18n:portscan.column.duration"/>
-                    <TableColumn fx:id="historyScanIdColumn" text="ID" prefWidth="0"
-                                 visible="false"
-                                 userData="i18n:portscan.column.scanid"/>
-                </columns>
-            </SmoothTableView>
+            <SmoothListView fx:id="historyListView" VBox.vgrow="ALWAYS"
+                            styleClass="portscan-history-list"/>
 
             <!-- History action buttons -->
             <HBox spacing="6" alignment="CENTER_RIGHT" styleClass="portscan-session-footer">

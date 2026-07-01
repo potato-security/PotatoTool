@@ -18,8 +18,12 @@
            fx:id="sPane"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <SmoothScrollPane fx:id="accordionScrollPane" maxHeight="${sPane.height - 10}" maxWidth="210" translateX="-210" hbarPolicy="NEVER" StackPane.alignment="TOP_LEFT">
+    <SmoothScrollPane fx:id="accordionScrollPane" maxHeight="${sPane.height - 10}" maxWidth="210" translateX="210" hbarPolicy="NEVER" StackPane.alignment="TOP_RIGHT">
         <VBox fx:id="vBoxBar">
+            <VBox styleClass="bc-chain-header">
+                <Label text="CHAIN" styleClass="bc-chain-section-label"/>
+                <Label text="区块链溯源" styleClass="bc-chain-title" userData="i18n:blockchain.chain.panel.title"/>
+            </VBox>
             <Accordion fx:id="accordionPane"/>
         </VBox>
     </SmoothScrollPane>

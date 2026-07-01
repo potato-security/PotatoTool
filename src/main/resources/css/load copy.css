@@ -1,0 +1,797 @@
+.deck-root {
+    -fx-background-color: transparent;
+}
+
+.deck-void {
+    -fx-background-color:
+        radial-gradient(center 50% 42%, radius 82%, #0a1426 0%, #050916 48%, #030610 100%);
+}
+
+.ambient-orb {
+    -fx-background-radius: 999;
+}
+
+.ambient-cyan {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, rgba(93, 235, 255, 0.42) 0%, rgba(93, 235, 255, 0.10) 45%, transparent 76%);
+}
+
+.ambient-violet {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, rgba(138, 124, 255, 0.36) 0%, rgba(138, 124, 255, 0.08) 45%, transparent 76%);
+}
+
+.ambient-amber {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, rgba(240, 184, 90, 0.18) 0%, rgba(240, 184, 90, 0.05) 42%, transparent 76%);
+}
+
+.coordinate-line {
+    -fx-background-color: rgba(125, 190, 225, 0.09);
+}
+
+.coordinate-line-strong {
+    -fx-background-color: rgba(93, 235, 255, 0.18);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.20), 10, 0.2, 0, 0);
+}
+
+.dust-dot {
+    -fx-background-radius: 999;
+    -fx-background-color: rgba(210, 238, 255, 0.62);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.35), 7, 0.25, 0, 0);
+}
+
+/* [E3] anchor 锦点线 · alpha 从 0.24/0.10 提升到 0.40/0.18，后期 Java 侧加 1200ms 呼吸 Timeline。 */
+.anchor-line {
+    -fx-background-color: linear-gradient(to right, transparent 0%, rgba(93, 235, 255, 0.40) 35%, rgba(93, 235, 255, 0.18) 100%);
+}
+
+.anchor-line-right {
+    -fx-background-color: linear-gradient(to right, rgba(138, 124, 255, 0.18) 0%, rgba(138, 124, 255, 0.40) 65%, transparent 100%);
+}
+
+.anchor-dot {
+    -fx-background-radius: 999;
+    -fx-background-color: #5DEBFF;
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.72), 12, 0.45, 0, 0);
+}
+
+.top-rail {
+    -fx-min-height: 38;
+    -fx-pref-height: 38;
+    -fx-background-color: linear-gradient(to right, transparent 0%, rgba(9, 18, 34, 0.62) 18%, rgba(9, 18, 34, 0.70) 82%, transparent 100%);
+    -fx-border-color: linear-gradient(to right, transparent 0%, rgba(93, 235, 255, 0.20) 20%, rgba(93, 235, 255, 0.10) 80%, transparent 100%);
+    -fx-border-width: 0 0 1 0;
+}
+
+/* [E4] HUD 顶轨 · 字号 10→12 + alpha 0.62→0.86，让顶部信息从"背景"升为"在峰"。 */
+.rail-label {
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 12;
+    -fx-text-fill: rgba(195, 218, 240, 0.86);
+}
+
+.rail-main {
+    -fx-text-fill: rgba(235, 248, 255, 0.96);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.18), 6, 0.10, 0, 0);
+}
+
+.rail-phase {
+    -fx-text-fill: #5DEBFF;
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.55), 12, 0.30, 0, 0);
+}
+
+.rail-time {
+    -fx-text-fill: rgba(235, 248, 255, 0.92);
+}
+
+.rail-pulse {
+    -fx-min-width: 6;
+    -fx-pref-width: 6;
+    -fx-max-width: 6;
+    -fx-min-height: 6;
+    -fx-pref-height: 6;
+    -fx-max-height: 6;
+    -fx-background-radius: 3;
+    -fx-background-color: #55F0B0;
+    -fx-effect: dropshadow(gaussian, rgba(85, 240, 176, 0.70), 10, 0.55, 0, 0);
+}
+
+/* [R3] 翼盘整体高度从 348 拉到 430，与玻璃台等高；内 padding 18→14 给 sub-block 更多空间 */
+.data-wing {
+    -fx-min-width: 246;
+    -fx-pref-width: 246;
+    -fx-max-width: 246;
+    -fx-min-height: 430;
+    -fx-pref-height: 430;
+    -fx-max-height: 430;
+    -fx-padding: 14 14 14 14;
+    -fx-background-color: linear-gradient(to bottom, rgba(8, 18, 34, 0.44), rgba(5, 11, 23, 0.18));
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+}
+
+.left-wing {
+    -fx-border-color: linear-gradient(to bottom right, rgba(93, 235, 255, 0.30), rgba(93, 235, 255, 0.04));
+}
+
+.right-wing {
+    -fx-border-color: linear-gradient(to bottom left, rgba(138, 124, 255, 0.30), rgba(138, 124, 255, 0.04));
+}
+
+.wing-title {
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10;
+    -fx-text-fill: rgba(220, 240, 255, 0.76);
+    -fx-letter-spacing: 1.5;
+}
+
+.module-row {
+    -fx-min-height: 26;
+    -fx-pref-height: 26;
+}
+
+.module-index {
+    -fx-min-width: 34;
+    -fx-pref-width: 34;
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10;
+    -fx-text-fill: rgba(104, 132, 158, 0.85);
+}
+
+.module-name {
+    -fx-min-width: 72;
+    -fx-pref-width: 72;
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10.5;
+    -fx-text-fill: rgba(212, 231, 246, 0.76);
+}
+
+.module-bar-track {
+    -fx-min-width: 66;
+    -fx-pref-width: 66;
+    -fx-max-width: 66;
+    -fx-min-height: 2;
+    -fx-pref-height: 2;
+    -fx-max-height: 2;
+    -fx-background-color: rgba(255, 255, 255, 0.07);
+    -fx-background-radius: 2;
+}
+
+/* [E7] 模块进度条增亮：高度 2→3 + glow 升级 0.56→0.72。 */
+.module-bar-fill {
+    -fx-min-height: 3;
+    -fx-pref-height: 3;
+    -fx-max-height: 3;
+    -fx-background-color: linear-gradient(to right, rgba(93, 235, 255, 0.30), #5DEBFF);
+    -fx-background-radius: 2;
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.72), 10, 0.42, 0, 0);
+}
+
+.module-state {
+    -fx-min-width: 34;
+    -fx-pref-width: 34;
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10;
+    -fx-text-fill: #F0B85A;
+}
+
+.module-ok {
+    -fx-text-fill: #55F0B0;
+    -fx-effect: dropshadow(gaussian, rgba(85, 240, 176, 0.45), 8, 0.35, 0, 0);
+}
+
+.glass-deck {
+    -fx-min-width: 520;
+    -fx-pref-width: 520;
+    -fx-max-width: 520;
+    -fx-min-height: 430;
+    -fx-pref-height: 430;
+    -fx-max-height: 430;
+}
+
+.glass-surface-layer {
+    -fx-min-width: 520;
+    -fx-pref-width: 520;
+    -fx-max-width: 520;
+    -fx-min-height: 430;
+    -fx-pref-height: 430;
+    -fx-max-height: 430;
+    -fx-background-radius: 26;
+}
+
+.glass-back {
+    -fx-min-width: 520;
+    -fx-pref-width: 520;
+    -fx-max-width: 520;
+    -fx-min-height: 430;
+    -fx-pref-height: 430;
+    -fx-max-height: 430;
+    -fx-background-color:
+        linear-gradient(to bottom right, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.018)),
+        linear-gradient(to bottom, rgba(10, 27, 47, 0.72), rgba(4, 10, 20, 0.58));
+    -fx-background-radius: 26;
+    -fx-border-radius: 26;
+    -fx-border-width: 1;
+    -fx-border-color: linear-gradient(to bottom right, rgba(230, 250, 255, 0.52), rgba(93, 235, 255, 0.10) 42%, rgba(138, 124, 255, 0.28) 100%);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 58, 0.18, 0, 24);
+}
+
+.glass-mist {
+    -fx-min-width: 492;
+    -fx-pref-width: 492;
+    -fx-max-width: 492;
+    -fx-min-height: 402;
+    -fx-pref-height: 402;
+    -fx-max-height: 402;
+    /* 超细扫描线（全息 CRT 质感）· 3px 一组 1.5px 青色、透明度 ~2.8%，不会被脱出玻璃边界。
+       叠加在雾面/面背景之上，与 sweep highlight 摄过时形成全息霉点干涉。 */
+    -fx-background-color:
+        linear-gradient(from 0px 0px to 0px 3px, repeat, transparent 0%, transparent 50%, rgba(93, 235, 255, 0.022) 50%, rgba(93, 235, 255, 0.022) 100%),
+        radial-gradient(center 50% 42%, radius 52%, rgba(93, 235, 255, 0.060) 0%, rgba(255, 255, 255, 0.014) 52%, transparent 100%),
+        linear-gradient(to bottom right, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.004));
+    -fx-background-radius: 22;
+    -fx-opacity: 0.72;
+}
+
+.glass-spectrum {
+    -fx-min-width: 520;
+    -fx-pref-width: 520;
+    -fx-max-width: 520;
+    -fx-min-height: 430;
+    -fx-pref-height: 430;
+    -fx-max-height: 430;
+    -fx-background-color: linear-gradient(to bottom right, transparent 0%, rgba(93, 235, 255, 0.055) 18%, transparent 36%, transparent 64%, rgba(138, 124, 255, 0.075) 100%);
+    -fx-background-radius: 26;
+}
+
+.glass-highlight {
+    -fx-min-width: 88;
+    -fx-pref-width: 88;
+    -fx-max-width: 88;
+    -fx-min-height: 580;
+    -fx-pref-height: 580;
+    -fx-max-height: 580;
+    -fx-background-color: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.0) 18%, rgba(255, 255, 255, 0.30) 50%, rgba(93, 235, 255, 0.06) 66%, transparent 100%);
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.14), 12, 0.12, 0, 0);
+}
+
+.glass-edge-top {
+    -fx-min-width: 466;
+    -fx-pref-width: 466;
+    -fx-max-width: 466;
+    -fx-min-height: 1.4;
+    -fx-pref-height: 1.4;
+    -fx-max-height: 1.4;
+    -fx-background-color: linear-gradient(to right, transparent, rgba(235, 252, 255, 0.82), transparent);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.48), 12, 0.35, 0, 0);
+}
+
+.glass-edge-bottom {
+    -fx-min-width: 420;
+    -fx-pref-width: 420;
+    -fx-max-width: 420;
+    -fx-min-height: 1;
+    -fx-pref-height: 1;
+    -fx-max-height: 1;
+    -fx-background-color: linear-gradient(to right, transparent, rgba(93, 235, 255, 0.16), transparent);
+}
+
+.glass-edge-left,
+.glass-edge-right {
+    -fx-min-width: 1;
+    -fx-pref-width: 1;
+    -fx-max-width: 1;
+    -fx-min-height: 344;
+    -fx-pref-height: 344;
+    -fx-max-height: 344;
+}
+
+.glass-edge-left {
+    -fx-background-color: linear-gradient(to bottom, transparent, rgba(93, 235, 255, 0.46), transparent);
+}
+
+.glass-edge-right {
+    -fx-background-color: linear-gradient(to bottom, transparent, rgba(138, 124, 255, 0.36), transparent);
+}
+
+.texture-line {
+    -fx-background-color: rgba(220, 246, 255, 0.05);
+}
+
+.logo-area {
+    -fx-min-width: 188;
+    -fx-pref-width: 188;
+    -fx-max-width: 188;
+    -fx-min-height: 188;
+    -fx-pref-height: 188;
+    -fx-max-height: 188;
+}
+
+.logo-lens {
+    -fx-min-width: 166;
+    -fx-pref-width: 166;
+    -fx-max-width: 166;
+    -fx-min-height: 166;
+    -fx-pref-height: 166;
+    -fx-max-height: 166;
+    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, rgba(93, 235, 255, 0.16) 0%, rgba(93, 235, 255, 0.04) 48%, transparent 72%);
+    -fx-background-radius: 83;
+}
+
+.logo-reticle-outer {
+    -fx-min-width: 174;
+    -fx-pref-width: 174;
+    -fx-max-width: 174;
+    -fx-min-height: 174;
+    -fx-pref-height: 174;
+    -fx-max-height: 174;
+    -fx-background-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 87;
+    -fx-border-color: linear-gradient(to bottom right, rgba(93, 235, 255, 0.50), transparent 52%, rgba(138, 124, 255, 0.42));
+}
+
+.logo-reticle-inner {
+    -fx-min-width: 140;
+    -fx-pref-width: 140;
+    -fx-max-width: 140;
+    -fx-min-height: 140;
+    -fx-pref-height: 140;
+    -fx-max-height: 140;
+    -fx-background-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 70;
+    -fx-border-color: linear-gradient(to top right, rgba(255, 255, 255, 0.18), rgba(93, 235, 255, 0.52), rgba(255, 255, 255, 0.08));
+}
+
+.logo-scan-line {
+    -fx-min-width: 166;
+    -fx-pref-width: 166;
+    -fx-max-width: 166;
+    -fx-min-height: 3;
+    -fx-pref-height: 3;
+    -fx-max-height: 3;
+    -fx-background-color: linear-gradient(to right, transparent, rgba(93, 235, 255, 0.92), transparent);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.78), 14, 0.45, 0, 0);
+}
+
+.title-shadow {
+    -fx-font-family: "Microsoft YaHei Bold", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+    -fx-font-size: 44;
+    -fx-font-weight: bold;
+    -fx-text-fill: rgba(93, 235, 255, 0.08);
+}
+
+.title-main {
+    -fx-font-family: "Microsoft YaHei Bold", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+    -fx-font-size: 44;
+    -fx-font-weight: bold;
+    -fx-text-fill: #F8FDFF;
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.66), 18, 0.34, 0, 0);
+}
+
+.title-lock-line {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-min-height: 2;
+    -fx-pref-height: 2;
+    -fx-max-height: 2;
+    -fx-background-color: linear-gradient(to right, transparent, #5DEBFF, transparent);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.58), 12, 0.35, 0, 0);
+}
+
+.status-primary {
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+    -fx-font-size: 13;
+    -fx-text-fill: rgba(221, 241, 255, 0.82);
+}
+
+.status-secondary {
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10;
+    -fx-text-fill: rgba(120, 148, 174, 0.80);
+}
+
+.telemetry-matrix {
+    -fx-min-width: 182;
+    -fx-pref-width: 182;
+    -fx-max-width: 182;
+    -fx-min-height: 132;
+    -fx-pref-height: 132;
+    -fx-max-height: 132;
+}
+
+.matrix-cell {
+    -fx-background-radius: 2;
+    -fx-background-color: rgba(138, 124, 255, 0.20);
+}
+
+.matrix-cell-hot {
+    -fx-background-color: #8A7CFF;
+    -fx-effect: dropshadow(gaussian, rgba(138, 124, 255, 0.66), 10, 0.45, 0, 0);
+}
+
+.telemetry-row {
+    -fx-min-height: 24;
+    -fx-pref-height: 24;
+}
+
+.telemetry-name {
+    -fx-min-width: 76;
+    -fx-pref-width: 76;
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10;
+    -fx-text-fill: rgba(210, 230, 248, 0.68);
+}
+
+/* [E8] 遥测数值增亮：字号 10→12 + violet glow，让数字跳变被读出来。 */
+.telemetry-value {
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 12;
+    -fx-text-fill: rgba(186, 178, 255, 1.0);
+    -fx-effect: dropshadow(gaussian, rgba(138, 124, 255, 0.62), 9, 0.30, 0, 0);
+}
+
+.bottom-rail {
+    -fx-background-color: linear-gradient(to right, transparent 0%, rgba(7, 14, 28, 0.62) 20%, rgba(7, 14, 28, 0.64) 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right, transparent 0%, rgba(93, 235, 255, 0.09) 20%, rgba(93, 235, 255, 0.18) 50%, rgba(138, 124, 255, 0.09) 80%, transparent 100%);
+    -fx-border-width: 1 0 0 0;
+}
+
+/* [E5] phase 节点压暗未激活态 + 热态加外 ring/glow，让 phase 推进的调度感翻三倍。 */
+.phase-node {
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
+    -fx-min-height: 8;
+    -fx-pref-height: 8;
+    -fx-max-height: 8;
+    -fx-background-radius: 4;
+    -fx-background-color: rgba(110, 135, 160, 0.25);
+}
+
+.phase-node-active {
+    -fx-background-color: #5DEBFF;
+    -fx-border-color: rgba(255, 255, 255, 0.72);
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.92), 20, 0.62, 0, 0);
+}
+
+.phase-node-done {
+    -fx-background-color: #55F0B0;
+    -fx-effect: dropshadow(gaussian, rgba(85, 240, 176, 0.62), 14, 0.48, 0, 0);
+}
+
+.phase-label {
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10;
+    -fx-text-fill: rgba(140, 164, 188, 0.68);
+}
+
+.phase-label-active {
+    -fx-text-fill: rgba(232, 249, 255, 0.92);
+}
+
+.phase-link {
+    -fx-min-width: 56;
+    -fx-pref-width: 56;
+    -fx-max-width: 56;
+    -fx-min-height: 1;
+    -fx-pref-height: 1;
+    -fx-max-height: 1;
+    -fx-background-color: rgba(110, 135, 160, 0.15);
+}
+
+.phase-link-done {
+    -fx-background-color: linear-gradient(to right, rgba(93, 235, 255, 0.18), rgba(85, 240, 176, 0.62));
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.35), 8, 0.35, 0, 0);
+}
+
+.terminal-dot {
+    -fx-min-width: 7;
+    -fx-pref-width: 7;
+    -fx-max-width: 7;
+    -fx-min-height: 7;
+    -fx-pref-height: 7;
+    -fx-max-height: 7;
+    -fx-background-radius: 4;
+    -fx-background-color: #F0B85A;
+    -fx-effect: dropshadow(gaussian, rgba(240, 184, 90, 0.50), 10, 0.45, 0, 0);
+}
+
+/* [E6] 终端心跳涟漪：2 个错峰的 cyan 边环变 1→2.6×，让底部"系统在跳"生命体征明显。 */
+.terminal-ripple {
+    -fx-min-width: 7;
+    -fx-pref-width: 7;
+    -fx-max-width: 7;
+    -fx-min-height: 7;
+    -fx-pref-height: 7;
+    -fx-max-height: 7;
+    -fx-background-radius: 4;
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(93, 235, 255, 0.62);
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+}
+
+.terminal-ready {
+    -fx-background-color: #55F0B0;
+    -fx-effect: dropshadow(gaussian, rgba(85, 240, 176, 0.72), 13, 0.55, 0, 0);
+}
+
+.terminal-primary {
+    -fx-font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+    -fx-font-size: 12;
+    -fx-text-fill: rgba(221, 241, 255, 0.86);
+}
+
+.terminal-secondary {
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10;
+    -fx-text-fill: rgba(115, 144, 172, 0.84);
+}
+
+.ready-flash {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 58%, rgba(93, 235, 255, 0.22) 0%, rgba(93, 235, 255, 0.06) 34%, transparent 72%);
+}
+
+.cut-layer {
+    -fx-background-color: #030610;
+}
+
+.global-scan-band {
+    -fx-background-color:
+        linear-gradient(to bottom,
+            transparent 0%,
+            rgba(93, 235, 255, 0.00) 18%,
+            rgba(93, 235, 255, 0.17) 48%,
+            rgba(255, 255, 255, 0.26) 50%,
+            rgba(138, 124, 255, 0.08) 56%,
+            transparent 100%);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.22), 22, 0.18, 0, 0);
+}
+
+.global-scan-core {
+    -fx-background-color: linear-gradient(to right, transparent, rgba(93, 235, 255, 0.78), rgba(255, 255, 255, 0.76), rgba(138, 124, 255, 0.34), transparent);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.58), 16, 0.30, 0, 0);
+}
+
+.title-gap {
+    -fx-min-width: 16;
+    -fx-pref-width: 16;
+    -fx-max-width: 16;
+}
+
+.title-potato {
+    -fx-text-fill: #F8FDFF;
+}
+
+.title-tool {
+    -fx-text-fill: #76F0FF;
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.52), 20, 0.32, 0, 0);
+}
+
+.energy-rail {
+    -fx-min-width: 440;
+    -fx-pref-width: 440;
+    -fx-max-width: 440;
+    -fx-min-height: 4;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+}
+
+.energy-track {
+    -fx-min-width: 440;
+    -fx-pref-width: 440;
+    -fx-max-width: 440;
+    -fx-min-height: 2;
+    -fx-pref-height: 2;
+    -fx-max-height: 2;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 2;
+}
+
+.energy-fill {
+    -fx-min-height: 2;
+    -fx-pref-height: 2;
+    -fx-max-height: 2;
+    -fx-background-color: linear-gradient(to right, rgba(93, 235, 255, 0.0), #5DEBFF 45%, #55F0B0 100%);
+    -fx-background-radius: 2;
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.58), 12, 0.36, 0, 0);
+}
+
+.energy-shine {
+    -fx-min-width: 58;
+    -fx-pref-width: 58;
+    -fx-max-width: 58;
+    -fx-min-height: 2;
+    -fx-pref-height: 2;
+    -fx-max-height: 2;
+    -fx-background-color: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.92), transparent);
+    -fx-background-radius: 2;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.48), 10, 0.28, 0, 0);
+}
+
+.binary-flow {
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 10;
+    -fx-fill: rgba(150, 185, 210, 0.34);
+}
+
+.binary-flow-blue {
+    -fx-fill: rgba(93, 235, 255, 0.32);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.20), 8, 0.18, 0, 0);
+}
+
+.binary-flow-red {
+    -fx-fill: rgba(255, 93, 108, 0.20);
+    -fx-effect: dropshadow(gaussian, rgba(255, 93, 108, 0.12), 7, 0.15, 0, 0);
+}
+
+.binary-flow-security {
+    -fx-fill: rgba(85, 240, 176, 0.30);
+    -fx-effect: dropshadow(gaussian, rgba(85, 240, 176, 0.18), 9, 0.18, 0, 0);
+}
+
+.binary-flow-attack {
+    -fx-fill: rgba(255, 93, 108, 0.26);
+    -fx-effect: dropshadow(gaussian, rgba(255, 93, 108, 0.16), 8, 0.18, 0, 0);
+}
+
+.dual-channel {
+    -fx-opacity: 0;
+}
+
+.channel-glow-blue {
+    -fx-background-color: linear-gradient(to right, transparent, rgba(93, 235, 255, 0.18), rgba(93, 235, 255, 0.05), transparent);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.16), 28, 0.22, 0, 0);
+}
+
+.channel-core-blue {
+    /* 虚线主轴· 8px 一组：5px 实色 + 3px 透明，模拟雷达测距束。
+       两端淑入淑出由 .channel-glow-blue 辛光衡底提供。 */
+    -fx-background-color: linear-gradient(from 0px 0px to 8px 0px, repeat,
+        rgba(93, 235, 255, 0.62) 0%,
+        rgba(93, 235, 255, 0.62) 62%,
+        transparent 62%,
+        transparent 100%);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.42), 14, 0.32, 0, 0);
+}
+
+.channel-glow-red {
+    -fx-background-color: linear-gradient(to right, transparent, rgba(255, 93, 108, 0.14), rgba(255, 93, 108, 0.035), transparent);
+    -fx-effect: dropshadow(gaussian, rgba(255, 93, 108, 0.14), 26, 0.20, 0, 0);
+}
+
+.channel-core-red {
+    /* 同上，红色风险束 */
+    -fx-background-color: linear-gradient(from 0px 0px to 8px 0px, repeat,
+        rgba(255, 93, 108, 0.50) 0%,
+        rgba(255, 93, 108, 0.50) 62%,
+        transparent 62%,
+        transparent 100%);
+    -fx-effect: dropshadow(gaussian, rgba(255, 93, 108, 0.28), 12, 0.28, 0, 0);
+}
+
+/* ============ HUD 拐角十字瞄准星（方案2）· L 型拼合，给两翼与玻璃台加"空间校准"感 ============ */
+.corner-reticle-h,
+.corner-reticle-v {
+    -fx-background-color: rgba(93, 235, 255, 0.72);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.45), 6, 0.25, 0, 0);
+}
+
+.corner-reticle-violet-h,
+.corner-reticle-violet-v {
+    -fx-background-color: rgba(138, 124, 255, 0.62);
+    -fx-effect: dropshadow(gaussian, rgba(138, 124, 255, 0.38), 6, 0.22, 0, 0);
+}
+
+.corner-reticle-dot {
+    -fx-background-radius: 1.5;
+    -fx-background-color: rgba(220, 245, 255, 0.92);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.55), 4, 0.30, 0, 0);
+}
+
+/* ============ [R3] sub-block 通用样式 · 翼内每块独立 ============ */
+.wing-block {
+    -fx-padding: 8 10 10 10;
+    -fx-background-color: linear-gradient(to bottom, rgba(8, 18, 34, 0.18), rgba(5, 11, 23, 0.06));
+    -fx-background-radius: 6;
+}
+
+/* sub-block 右上状态 tag · [LIVE] / [SCAN] / [CHECK] / [ACTIVE] · [BOOT-PERF] 用更亮文本色替代 dropshadow */
+.wing-tag {
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 9;
+    -fx-text-fill: rgba(140, 245, 255, 0.92);
+    -fx-letter-spacing: 1.0;
+}
+
+/* ============ [R3 · 选项 B] 频谱柱状图 SPEC ANALYZER ============ */
+.spectrum-pane {
+    -fx-min-width: 210;
+    -fx-pref-width: 210;
+    -fx-max-width: 210;
+    -fx-min-height: 80;
+    -fx-pref-height: 80;
+    -fx-max-height: 80;
+}
+
+/* 柱条主体 · 底深顶亮 cyan 渐变 */
+.spectrum-bar {
+    -fx-background-color: linear-gradient(to top, rgba(93, 235, 255, 0.22), rgba(93, 235, 255, 0.88));
+    -fx-background-radius: 1;
+}
+
+/* 柱条 hot · 高度 > 72% 时切换 · [BOOT-PERF] 改用更亮 background 替代 dropshadow，避免动态柱每帧重算高斯卷积 */
+.spectrum-bar-hot {
+    -fx-background-color: linear-gradient(to top, rgba(160, 245, 255, 0.62), #A8F4FF);
+    -fx-background-radius: 1;
+}
+
+.spectrum-scale {
+    -fx-padding: 2 0 0 0;
+}
+
+.spectrum-scale-label {
+    -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
+    -fx-font-size: 8;
+    -fx-text-fill: rgba(150, 175, 200, 0.50);
+    -fx-letter-spacing: 0.5;
+}
+
+/* ============ [R3 · 选项 A] 雷达 PPI（90x90 圆形 · 紫色风险扫描） ============ */
+.radar-pane {
+    -fx-min-width: 90;
+    -fx-pref-width: 90;
+    -fx-max-width: 90;
+    -fx-min-height: 90;
+    -fx-pref-height: 90;
+    -fx-max-height: 90;
+    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, rgba(8, 18, 34, 0.62), rgba(5, 11, 23, 0.16) 90%, transparent 100%);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(138, 124, 255, 0.42);
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+}
+
+/* 同心圆描边（小圆 + 中圆，外圆由 .radar-pane border 提供） */
+.radar-ring {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(138, 124, 255, 0.22);
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+}
+
+/* 扫描臂 · 半径 ~42px · 紫色横向渐变 + glow · [BOOT-PERF] dropshadow radius 7→4（高斯卷积量~3×下降） */
+.radar-arm {
+    -fx-background-color: linear-gradient(to right, transparent, rgba(160, 148, 255, 0.95));
+    -fx-effect: dropshadow(gaussian, rgba(138, 124, 255, 0.55), 4, 0.32, 0, 0);
+    -fx-background-radius: 0;
+}
+
+/* target 光斑 · 4x4 紫白光点 */
+.radar-target {
+    /* [BOOT-PERF] dropshadow radius 8→4（高斯卷积量约 4×下降），background 加亮补偿亮度 */
+    -fx-background-color: #DACEFF;
+    -fx-background-radius: 999;
+    -fx-effect: dropshadow(gaussian, rgba(138, 124, 255, 0.85), 4, 0.55, 0, 0);
+}
+
+/* 雷达中心十字 · 极淡紫线 */
+.radar-cross {
+    -fx-background-color: rgba(138, 124, 255, 0.42);
+}
+
+/* ============ [R3 · 内层 L 拐角] sub-block 包围 L（比外层更细 / 更半透，避免大框小框冲突） ============ */
+/* [BOOT-PERF] 去 dropshadow 改用更亮 background 补偿 glow 视觉，节省 40 个 Region 初始光栅化代价 + cache 位图 glow padding 内存 */
+.corner-reticle-inner-h,
+.corner-reticle-inner-v {
+    -fx-background-color: rgba(160, 245, 255, 0.85);
+}
+
+.corner-reticle-inner-violet-h,
+.corner-reticle-inner-violet-v {
+    -fx-background-color: rgba(180, 168, 255, 0.78);
+}
