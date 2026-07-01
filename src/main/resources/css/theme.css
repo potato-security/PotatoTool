@@ -25,8 +25,10 @@
 
     /* --- 文字 --- */
     -pt-text:           #E8F4F9; /* 主文字 */
+    -pt-text-primary:   #E8F4F9; /* 别名 → -pt-text */
     -pt-text-secondary: #9DB2BE; /* 次文字 */
     -pt-text-muted:     #5C6E7A; /* 弱文字/占位/微标签 */
+    -pt-text-tertiary:  #5C6E7A; /* 别名 → -pt-text-muted */
 
     /* --- 双模强调色 --- */
     -pt-accent-teal: #4FE3FF;    /* Blue Team */

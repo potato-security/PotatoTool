@@ -43,7 +43,7 @@
         <!-- modeComboBox (规则 2 / 3 时显示) -->
         <VBox fx:id="modeSection" spacing="4" managed="false" visible="false">
             <Label text="modeComboBox" styleClass="pt-caption"/>
-            <ComboBox fx:id="modeComboBox" styleClass="pt-combo" prefWidth="200"/>
+            <ComboBox fx:id="modeComboBox" prefWidth="200"/>
         </VBox>
 
         <!-- OPERATIONS -->
@@ -71,7 +71,7 @@
                        StackPane.alignment="TOP_RIGHT"
                        translateX="6.0" translateY="-8.0"/>
             </StackPane>
-            <Label fx:id="aiHintLabel" styleClass="pt-caption sep-ai-hint"
+            <Label fx:id="aiHintLabel" styleClass="pt-caption,sep-ai-hint"
                    text="输入已变更，重新分析" userData="i18n:separate.ai.changed" visible="false"/>
         </HBox>
 

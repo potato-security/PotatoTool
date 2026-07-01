@@ -137,7 +137,7 @@
             <VBox styleClass="portscan-session-header">
                 <Label text="SCAN SESSION" styleClass="portscan-session-title"/>
                 <Label text="扫描历史" styleClass="portscan-session-heading" userData="i18n:portscan.history.heading"/>
-                <Label fx:id="historyCountLabel" text="" styleClass="pt-caption portscan-hist-count"/>
+                <Label fx:id="historyCountLabel" text="" styleClass="pt-caption,portscan-hist-count"/>
             </VBox>
 
             <SmoothListView fx:id="historyListView" VBox.vgrow="ALWAYS"

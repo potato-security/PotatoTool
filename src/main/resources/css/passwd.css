@@ -9,7 +9,7 @@
 
 .passwd-header {
     -fx-padding: 14 16 12 16;
-    -fx-background-color: -pt-bg-surface;
+    -fx-background-color: -pt-bg-elevated;
     -fx-background-radius: 10 10 0 0;
 }
 
