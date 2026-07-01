@@ -70,6 +70,28 @@
     -fx-background-color: -pt-text-secondary;
 }
 
+/* ===== 复制按钮 (override common.css) ===== */
+.copyButton {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-background-radius: 4;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-font-size: 11;
+    -fx-padding: 3 10 3 10;
+    -fx-cursor: hand;
+    -fx-opacity: 1;
+}
+.copyButton:hover {
+    -fx-background-color: -pt-bg-panel;
+    -fx-text-fill: -pt-text;
+    -fx-border-color: -pt-accent-teal;
+}
+.copyButton:pressed {
+    -fx-opacity: 0.8;
+}
+
 /* ===== COMMAND right panel ===== */
 .cmd-panel-root {
     -fx-background-color: -pt-bg-panel;
