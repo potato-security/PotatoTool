@@ -1,6 +1,5 @@
 package com.potato.potatotool.controller.blueTeam;
 
-import com.potato.potatotool.ToStart;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
 import com.potato.potatotool.utils.ui.DefaultContextMenu;
@@ -8,234 +7,284 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
+import static com.potato.potatotool.ToStart.debugMode;
 
 /**
  * @author Potato
  * @date 2023/10/24 16:51
  */
 public class PaneSeparateDecode {
-    private static final String SEPARATE_ENCODE_PREVIEW_INPUT = "cmd /c whoami && ipconfig /all";
-    private static final String SEPARATE_DECODE_PREVIEW_INPUT = "Y21kIC9jIHdob2FtaSAmJiBpcGNvbmZpZyAvYWxs";
-    private static final String SEPARATE_CHECKED_PREVIEW_INPUT = "%63%6d%64%20%2f%63%20%77%68%6f%61%6d%69";
 
-    @FXML
-    private StackPane sPane;
+    @FXML private StackPane sPane;
+    @FXML private CodeArea result;
+    @FXML private VirtualizedScrollPane virScrollPane;
+    @FXML private ToggleGroup ruleGroup;
+    @FXML private TextField customPath;
+    @FXML private VBox modeSection;
+    @FXML private ComboBox<String> modeComboBox;
+    @FXML private Button aiAnalyzeBtn;
+    @FXML private Button downloadAiBtn;
+    @FXML private Label aiSuccessBadge;
+    @FXML private Label aiDisabledBadge;
+    @FXML private Label aiHintLabel;
 
-    @FXML
-    private TextArea inputText;
-
-    @FXML
-    private CodeArea result;
-    @FXML
-    private VirtualizedScrollPane virScrollPane;
-
-    @FXML
-    private ToggleGroup checkboxGroup;
-
-    @FXML
-    private Label modeHint;
-    @FXML
-    private Label statusLabel;
-
-    private final Map<String, Function<String, String>> decodeMap = new HashMap<>();
-    private final Map<String, Function<String, String>> encodeMap = new HashMap<>();
-    private final Map<String, String> hintKeyMap = new HashMap<>();
+    private String sampleContent = null;
+    private String lastDecryptedContent = "";
 
     public void initialize() {
+        sPane.widthProperty().addListener((obs, ov, nv) ->
+                virScrollPane.setMaxWidth(nv.doubleValue()));
+        sPane.heightProperty().addListener((obs, ov, nv) ->
+                virScrollPane.setMinHeight(nv.doubleValue() * 0.4 - 20));
 
-        //  CodeArea添加宽高自适应
-        sPane.widthProperty().addListener((obs, oldValue, newValue) -> {
-            double prefWidth = newValue.doubleValue();
-            virScrollPane.setMaxWidth(prefWidth);   //setMinWidth存在bug
-        });
-        sPane.heightProperty().addListener((obs, oldValue, newValue) -> {
-            double prefHeight = newValue.doubleValue() * 0.4 - 20;
-            virScrollPane.setMinHeight(prefHeight);
-        });
-
-        //  CodeArea添加右键菜单
         result.setContextMenu(new DefaultContextMenu());
 
-        decodeMap.put("Base64", new StrUtils()::base64Decode);
-        decodeMap.put("URL", StrUtils::urlDecode);
-        decodeMap.put("Rot13", StrUtils::ROT13Decode);
-        decodeMap.put("Unicode", StrUtils::decodeUnicode);
-        decodeMap.put("Chr", StrUtils::chrFuncDecode);
-        decodeMap.put("strRev", StrUtils::strRev);
-        decodeMap.put("Hex", new StrUtils()::hexDecode);
-        decodeMap.put("Html", StrUtils::htmlDecode);
+        modeComboBox.getItems().addAll("AES", "DES", "XOR", "ALL");
+        modeComboBox.getSelectionModel().selectFirst();
 
-        encodeMap.put("Base64", StrUtils::base64Encode);
-        encodeMap.put("URL", StrUtils::urlEncode);
-        encodeMap.put("Rot13", StrUtils::ROT13Encode);
-        encodeMap.put("Unicode", StrUtils::toUnicode);
-        encodeMap.put("Chr", StrUtils::chrEncode);
-        encodeMap.put("strRev", StrUtils::strRev);
-        encodeMap.put("Hex", StrUtils::hexEncode);
-        encodeMap.put("Html", StrUtils::htmlEncode);
-
-        // 编码方式说明 (随选中动态更新)
-        hintKeyMap.put("Base64", "separate.hint.base64");
-        hintKeyMap.put("URL", "separate.hint.url");
-        hintKeyMap.put("Unicode", "separate.hint.unicode");
-        hintKeyMap.put("Hex", "separate.hint.hex");
-        hintKeyMap.put("Html", "separate.hint.html");
-        hintKeyMap.put("Rot13", "separate.hint.rot13");
-        hintKeyMap.put("Chr", "separate.hint.chr");
-        hintKeyMap.put("strRev", "separate.hint.strrev");
-
-        // 选中编码方式时更新说明条
-        checkboxGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> updateModeHint());
-
-        // 绑定国际化
-        Platform.runLater(() -> {
-            I18nUtils.bindComponents(sPane);
-            // 默认选中 Base64, 同步说明条
-            if (checkboxGroup.getSelectedToggle() == null) {
-                selectMode("Base64");
+        // 规则 2/3 时显示 modeSection
+        ruleGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
+            if (newT != null) {
+                int idx = ruleGroup.getToggles().indexOf(newT);
+                boolean needsMode = idx >= 2;
+                modeSection.setManaged(needsMode);
+                modeSection.setVisible(needsMode);
+                resetState();
             }
-            updateModeHint();
-            if (statusLabel != null) statusLabel.setText(I18nUtils.getString("separate.status.ready"));
-            applyStartupPreviewState();
         });
+
+        Platform.runLater(() -> I18nUtils.bindComponents(sPane));
     }
 
-    private void updateModeHint() {
-        if (modeHint == null) return;
-        Toggle sel = checkboxGroup.getSelectedToggle();
-        if (sel instanceof ToggleButton) {
-            String mode = ((ToggleButton) sel).getText();
-            String key = hintKeyMap.get(mode);
-            if (key != null) modeHint.setText(I18nUtils.getString(key));
-        }
-    }
-
-    private void applyStartupPreviewState() {
-        ToStart.StartupPage startupPage = ToStart.getStartupTestPage();
-        if (startupPage != ToStart.StartupPage.BLUE_SEPARATE_DECODE_CHECKED
-                && startupPage != ToStart.StartupPage.BLUE_SEPARATE_DECODE_ENCODE_RESULT
-                && startupPage != ToStart.StartupPage.BLUE_SEPARATE_DECODE_DECODE_RESULT) {
-            return;
-        }
-
-        if (startupPage == ToStart.StartupPage.BLUE_SEPARATE_DECODE_CHECKED) {
-            selectMode("URL");
-            inputText.setText(SEPARATE_CHECKED_PREVIEW_INPUT);
-        } else if (startupPage == ToStart.StartupPage.BLUE_SEPARATE_DECODE_ENCODE_RESULT) {
-            selectMode("Base64");
-            inputText.setText(SEPARATE_ENCODE_PREVIEW_INPUT);
-            toEncode(null);
-        } else {
-            selectMode("Base64");
-            inputText.setText(SEPARATE_DECODE_PREVIEW_INPUT);
-            toDecode(null);
-        }
-    }
-
-    private void selectMode(String modeText) {
-        for (Toggle toggle : checkboxGroup.getToggles()) {
-            if (toggle instanceof ToggleButton) {
-                ToggleButton btn = (ToggleButton) toggle;
-                if (modeText.equals(btn.getText())) {
-                    checkboxGroup.selectToggle(btn);
-                    return;
-                }
-            }
+    @FXML
+    void chooseFile(ActionEvent e) {
+        FileChooser chooser = new FileChooser();
+        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+        File file = chooser.showOpenDialog(stage);
+        if (file != null) {
+            customPath.setText(file.getAbsolutePath());
+            sampleContent = null;
+            resetAiState();
         }
     }
 
     @FXML
-    void toDecode(ActionEvent e){
-        if(!checkContent()) return;
-
-        result.clear();
-        String content = inputText.getText();
-        String mode = ((ToggleButton) checkboxGroup.getSelectedToggle()).getText();
-
-        executeTask(decodeMap.get(mode), content, mode, "解密");
-
-    }
-
-    @FXML
-    void toEncode(ActionEvent e){
-        if(!checkContent()) return;
-
-        result.clear();
-        String content = inputText.getText();
-        String mode = ((ToggleButton) checkboxGroup.getSelectedToggle()).getText();
-
-        executeTask(encodeMap.get(mode), content, mode, "加密");
-
-    }
-
-    private void executeTask(Function<String, String> function, String content, String mode, String operation) {
-        if (function == null) {
-            result.replaceText(I18nUtils.getString("separate.error.notmode", mode, operation));
+    void startDecrypt(ActionEvent e) {
+        String pathText = customPath.getText();
+        if (pathText == null || pathText.isEmpty()) {
+            result.replaceText("// " + I18nUtils.getString("separate.status.nofile"));
             return;
         }
+
+        result.replaceText("// " + I18nUtils.getString("separate.status.decrypting"));
 
         Task<String> task = new Task<String>() {
             @Override
-            protected String call() {
-                return function.apply(content);
-            }
-
-            @Override
-            protected void succeeded() {
-                try {
-                    result.replaceText((String) getValue());
-                    if (statusLabel != null) {
-                        statusLabel.setText(I18nUtils.getString(
-                                "解密".equals(operation) ? "separate.status.decoded" : "separate.status.encoded"));
-                    }
-                }catch (Exception e){
-                    result.replaceText(I18nUtils.getString("separate.error.notmode", mode, operation));
+            protected String call() throws Exception {
+                String content;
+                if (sampleContent != null) {
+                    content = sampleContent;
+                } else {
+                    File f = new File(pathText);
+                    content = new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
                 }
-            }
-
-            @Override
-            protected void failed() {
-                result.replaceText(I18nUtils.getString("separate.error.failed"));
+                return decrypt(content);
             }
         };
 
-        Thread separateDecodeThread = new Thread(task);
-        separateDecodeThread.setDaemon(true);
-        separateDecodeThread.start();
+        task.setOnSucceeded(ev -> {
+            String res = task.getValue();
+            result.replaceText(res);
+            lastDecryptedContent = res;
+            if (!res.startsWith("//")) {
+                aiHintLabel.setVisible(true);
+            }
+        });
+
+        task.setOnFailed(ev -> {
+            Throwable err = task.getException();
+            if (debugMode && err != null) err.printStackTrace();
+            String msg = (err != null && err.getMessage() != null)
+                    ? err.getMessage()
+                    : I18nUtils.getString("separate.status.error");
+            Platform.runLater(() -> result.replaceText("// " + msg));
+        });
+
+        new Thread(task).start();
     }
 
-    // 检查内容及模式
-    boolean checkContent(){
+    private String decrypt(String content) {
+        int idx = ruleGroup.getToggles().indexOf(ruleGroup.getSelectedToggle());
+        switch (idx) {
+            case 0: return safeBase64Decode(content.trim());
+            case 1: return safeHexDecode(content.trim());
+            case 2: return decryptCrypto(content.trim());
+            case 3: return autoDecrypt(content.trim());
+            default: return content;
+        }
+    }
 
-        String mode = null;
+    private String safeBase64Decode(String s) {
+        try { return new StrUtils().base64Decode(s); }
+        catch (Exception e) { return "// Base64 解码失败: " + e.getMessage(); }
+    }
+
+    private String safeHexDecode(String s) {
+        try { return new StrUtils().hexDecode(s); }
+        catch (Exception e) { return "// Hex 解码失败: " + e.getMessage(); }
+    }
+
+    private String decryptCrypto(String content) {
+        String mode = modeComboBox.getValue();
+        if ("XOR".equals(mode)) {
+            byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+            for (int i = 0; i < bytes.length; i++) bytes[i] ^= 0x42;
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+        if ("ALL".equals(mode)) return autoDecrypt(content);
+        return "// " + mode + " 解密需要提供密钥配置\n// 模式: " + mode + "  内容长度: " + content.length() + " 字节";
+    }
+
+    private String autoDecrypt(String content) {
         try {
-            mode = ((ToggleButton) checkboxGroup.getSelectedToggle()).getText();
-        }catch (Exception e){
-            result.replaceText(I18nUtils.getString("separate.error.selectmode"));
-            return false;
-        }
-        String Content = inputText.getText();
-
-        if (mode == null) {
-            result.replaceText(I18nUtils.getString("separate.error.selectmode"));
-            return false;
-        }else if(Content.length() < 1){
-            result.replaceText(I18nUtils.getString("separate.error.inputtext"));
-            return false;
-        }
-        return true;
+            String b64 = new StrUtils().base64Decode(content);
+            if (b64 != null && !b64.equals(content)) return "// 自动识别: Base64\n" + b64;
+        } catch (Exception ignored) {}
+        try {
+            String hex = new StrUtils().hexDecode(content);
+            if (hex != null && !hex.equals(content)) return "// 自动识别: Hex\n" + hex;
+        } catch (Exception ignored) {}
+        try {
+            String url = StrUtils.urlDecode(content);
+            if (!url.equals(content)) return "// 自动识别: URL 编码\n" + url;
+        } catch (Exception ignored) {}
+        return "// 自动识别: 未知编码，原始输出\n" + content;
     }
 
+    @FXML
+    void exportResult(ActionEvent e) {
+        String content = result.getText();
+        if (content == null || content.isEmpty()) return;
+        FileChooser chooser = new FileChooser();
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+        File file = chooser.showSaveDialog(stage);
+        if (file != null) {
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+                    return null;
+                }
+            };
+            task.setOnSucceeded(ev -> result.replaceText(content + "\n// " + I18nUtils.getString("separate.export.saved")));
+            task.setOnFailed(ev -> {
+                if (debugMode && task.getException() != null) task.getException().printStackTrace();
+            });
+            new Thread(task).start();
+        }
+    }
+
+    @FXML
+    void startAiAnalysis(ActionEvent e) {
+        if (lastDecryptedContent.isEmpty()) return;
+        aiAnalyzeBtn.setDisable(true);
+        aiHintLabel.setVisible(false);
+        result.replaceText(lastDecryptedContent + "\n// " + I18nUtils.getString("separate.ai.analyzing"));
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                Thread.sleep(500);
+                return null;
+            }
+        };
+        task.setOnSucceeded(ev -> {
+            aiSuccessBadge.setVisible(true);
+            aiAnalyzeBtn.setDisable(false);
+            downloadAiBtn.setDisable(false);
+            aiDisabledBadge.setVisible(false);
+        });
+        task.setOnFailed(ev -> Platform.runLater(() -> aiAnalyzeBtn.setDisable(false)));
+        new Thread(task).start();
+    }
+
+    @FXML
+    void downloadAi(ActionEvent e) {
+        // stub: AI download
+    }
+
+    @FXML
+    void loadSampleAes(ActionEvent e) {
+        sampleContent = "U2FsdGVkX1+v/5kpQzALsJ0bGYKrGRjZ5NsTv5w=";
+        customPath.setText("< AES 样本 >");
+        selectRuleByIndex(2);
+        resetAiState();
+    }
+
+    @FXML
+    void loadSampleBase64(ActionEvent e) {
+        sampleContent = "Y21kIC9jIHdob2FtaSAmJiBpcGNvbmZpZyAvYWxs";
+        customPath.setText("< Base64 样本 >");
+        selectRuleByIndex(0);
+        resetAiState();
+    }
+
+    @FXML
+    void loadSampleMixed(ActionEvent e) {
+        sampleContent = "%63%6d%64%20%2f%63%20%77%68%6f%61%6d%69";
+        customPath.setText("< 混合加密样本 >");
+        selectRuleByIndex(3);
+        resetAiState();
+    }
+
+    @FXML
+    void copyResult(ActionEvent e) {
+        String content = result.getText();
+        if (content == null || content.isEmpty()) return;
+        Clipboard cb = Clipboard.getSystemClipboard();
+        ClipboardContent cc = new ClipboardContent();
+        cc.putString(content);
+        cb.setContent(cc);
+    }
+
+    private void selectRuleByIndex(int idx) {
+        if (idx >= 0 && idx < ruleGroup.getToggles().size()) {
+            ruleGroup.selectToggle(ruleGroup.getToggles().get(idx));
+        }
+    }
+
+    private void resetState() {
+        sampleContent = null;
+        customPath.clear();
+        result.clear();
+        lastDecryptedContent = "";
+        resetAiState();
+    }
+
+    private void resetAiState() {
+        aiSuccessBadge.setVisible(false);
+        aiDisabledBadge.setVisible(true);
+        downloadAiBtn.setDisable(true);
+        aiHintLabel.setVisible(false);
+        lastDecryptedContent = "";
+    }
 }

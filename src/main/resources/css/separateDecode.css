@@ -1,16 +1,61 @@
 
-/* ===== 版式对齐 Penpot: chip 选择 → 说明条 → 输入 → 操作 → 结果 ===== */
+/* ===== 专项加解密 / separateDecode ===== */
 .sep-root { -fx-padding: 16 20 20 20; }
 .sep-chips { -fx-alignment: CENTER_LEFT; }
-.sep-hint {
-    -fx-background-color: -pt-bg-panel;
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
-    -fx-border-width: 1;
-    -fx-border-color: -pt-border-subtle;
-    -fx-padding: 8 12 8 12;
+
+/* 区块标签（RULE SELECTION / PARAMETERS / OUTPUT …） */
+.sep-tag {
+    -fx-font-family: "JetBrains Mono", monospace;
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-tertiary;
 }
-.sep-hint-dot {
-    -fx-background-color: -pt-accent;
+
+/* AI 状态徽章 */
+.sep-badge-success {
+    -fx-background-color: -pt-success;
     -fx-background-radius: 4;
+    -fx-text-fill: white;
+    -fx-font-size: 8px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 5 2 5;
+}
+.sep-badge-disabled {
+    -fx-background-color: -pt-text-tertiary;
+    -fx-background-radius: 4;
+    -fx-text-fill: white;
+    -fx-font-size: 8px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 5 2 5;
+}
+
+/* AI 提示文字 */
+.sep-ai-hint {
+    -fx-text-fill: -pt-text-tertiary;
+    -fx-font-style: italic;
+}
+
+/* tipTitleCopy 行 */
+.sep-tip-row {
+    -fx-padding: 2 0 2 0;
+}
+.sep-dash-line {
+    -fx-background-color: -pt-border-subtle;
+    -fx-pref-height: 1;
+    -fx-max-height: 1;
+    -fx-min-height: 1;
+}
+.sep-copy-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 11px;
+    -fx-padding: 3 10 3 10;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-border-style: dashed;
+    -fx-cursor: hand;
+}
+.sep-copy-btn:hover {
+    -fx-text-fill: -pt-text-primary;
+    -fx-border-color: -pt-accent;
 }
