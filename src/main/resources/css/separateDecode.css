@@ -168,3 +168,74 @@
     -fx-font-size: 10px;
     -fx-text-fill: -pt-text-muted;
 }
+
+/* ===== 专项加解密右侧 DECODE 面板 ===== */
+.decode-panel-root {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 0 0 0 1;
+    -fx-min-height: 100%;
+}
+.decode-panel-header {
+    -fx-padding: 14 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-spacing: 4;
+}
+.decode-panel-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent-teal;
+}
+.decode-panel-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.decode-panel-item {
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-spacing: 2;
+    -fx-cursor: hand;
+}
+.decode-panel-item:hover {
+    -fx-background-color: -pt-bg-elevated;
+}
+.decode-panel-item-active {
+    -fx-background-color: derive(-pt-accent-teal, -55%);
+    -fx-border-width: 0 0 1 3;
+    -fx-border-color: -pt-border-subtle -pt-border-subtle -pt-border-subtle -pt-accent-teal;
+}
+.decode-panel-item-name {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.decode-panel-item-sub {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+}
+.decode-panel-states-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-padding: 10 16 4 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
+.decode-panel-states { -fx-padding: 8 16 16 16; }
+.decode-state-chip {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 6;
+    -fx-padding: 6 12 6 12;
+}
+.decode-state-dot {
+    -fx-pref-width: 8; -fx-pref-height: 8;
+    -fx-min-width: 8; -fx-min-height: 8;
+    -fx-max-width: 8; -fx-max-height: 8;
+    -fx-background-radius: 50%;
+}
+.decode-state-dot-success { -fx-background-color: -pt-success; }
+.decode-state-dot-neutral { -fx-background-color: -pt-text-muted; }
+.decode-state-label { -fx-font-size: 12px; -fx-text-fill: -pt-text; }

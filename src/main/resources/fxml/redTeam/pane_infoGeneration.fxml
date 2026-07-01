@@ -94,9 +94,39 @@
             </VBox>
         </FlowPane>
 
-        <Label styleClass="pt-caption" text="所有字段均可点击选中复制" userData="i18n:infogen.hint.copy" maxWidth="Infinity" alignment="CENTER_LEFT"/>
+            <Label styleClass="pt-caption" text="所有字段均可点击选中复制" userData="i18n:infogen.hint.copy" maxWidth="Infinity" alignment="CENTER_LEFT"/>
 
     </VBox>
+    </SmoothScrollPane>
+
+    <!-- 右侧 GENERATE 面板（生成后滑入） -->
+    <SmoothScrollPane fx:id="genScrollPane"
+                      maxHeight="${sPane.height}" maxWidth="210"
+                      translateX="210" hbarPolicy="NEVER"
+                      StackPane.alignment="TOP_RIGHT"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox styleClass="gen-panel-root" spacing="0">
+            <VBox styleClass="gen-panel-header">
+                <Label text="GENERATE" styleClass="gen-panel-section-label"/>
+                <Label text="身份信息生成" styleClass="gen-panel-title" userData="i18n:infogen.panel.title"/>
+            </VBox>
+            <VBox styleClass="gen-panel-items" spacing="0">
+                <VBox styleClass="gen-panel-item,gen-panel-item-active">
+                    <Label text="中国公民信息" styleClass="gen-panel-item-name" userData="i18n:infogen.panel.type.citizen"/>
+                    <Label text="10字段一键生成" styleClass="gen-panel-item-sub" userData="i18n:infogen.panel.type.citizen.sub"/>
+                </VBox>
+                <VBox styleClass="gen-panel-item">
+                    <Label text="证件·银行" styleClass="gen-panel-item-name" userData="i18n:infogen.panel.type.credential"/>
+                    <Label text="身份证+银行卡号" styleClass="gen-panel-item-sub" userData="i18n:infogen.panel.type.credential.sub"/>
+                </VBox>
+                <VBox styleClass="gen-panel-item">
+                    <Label text="联系方式" styleClass="gen-panel-item-name" userData="i18n:infogen.panel.type.contact"/>
+                    <Label text="手机+邮箱+地址" styleClass="gen-panel-item-sub" userData="i18n:infogen.panel.type.contact.sub"/>
+                </VBox>
+            </VBox>
+            <Label text="STATES" styleClass="gen-panel-states-label" userData="i18n:infogen.panel.states"/>
+            <VBox fx:id="genPanelStates" styleClass="gen-panel-states" spacing="8"/>
+        </VBox>
     </SmoothScrollPane>
 
 </StackPane>
