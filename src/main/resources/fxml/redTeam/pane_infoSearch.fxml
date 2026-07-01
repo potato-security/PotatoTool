@@ -152,10 +152,22 @@
                             <Label text="最大链接数：" styleClass="pt-body" userData="i18n:infosearch.maxlinks"/>
                             <TextField fx:id="maxSubPathCount" styleClass="pt-input" prefWidth="150" text="30"/>
                         </HBox>
-                        <HBox alignment="CENTER" fx:id="localFullDetectionThresholdHBox" visible="true" managed="true">
-                            <Label text="本地探阈值：" styleClass="pt-body" userData="i18n:infosearch.localdetect.threshold"/>
-                            <TextField fx:id="localFullDetectionThreshold" styleClass="pt-input" prefWidth="150" text="20"/>
-                        </HBox>
+                        <VBox fx:id="localFullDetectionThresholdHBox" visible="true" managed="true" spacing="5" style="-fx-padding: 2 0 2 0;">
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <Label text="目标数量 >" styleClass="pt-body" userData="i18n:infosearch.localdetect.condA.label"/>
+                                <TextField fx:id="localFullDetectionThreshold" styleClass="pt-input" prefWidth="56" text="20"/>
+                                <Label text="时执行完整检测" styleClass="pt-body" userData="i18n:infosearch.localdetect.condA.suffix"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT">
+                                <Label text="OR" styleClass="is-or-separator"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <Label text="目标类型包含" styleClass="pt-body" userData="i18n:infosearch.localdetect.condB.label"/>
+                                <Label text="IP段/C段" styleClass="is-type-chip"/>
+                                <Label text="时执行完整检测" styleClass="pt-body" userData="i18n:infosearch.localdetect.condB.suffix"/>
+                            </HBox>
+                            <Label text="满足任一条件即触发完整检测（OR 逻辑）" styleClass="pt-caption" userData="i18n:infosearch.localdetect.hint"/>
+                        </VBox>
                         <HBox alignment="CENTER" fx:id="shadowAssetsThresholdHBox" visible="false" managed="false">
                             <Label text="影资量阈值：" styleClass="pt-body" userData="i18n:infosearch.shadow.threshold"/>
                             <TextField fx:id="shadowAssetsThreshold" styleClass="pt-input" prefWidth="150" text="50"/>
@@ -197,7 +209,9 @@
                 </HBox>
                 <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
                     <Label styleClass="pt-caption" text="请增加/修改公司别名，将用于影子资产检索" userData="i18n:infosearch.company.alias.desc"/>
-                    <VBox fx:id="companyNameVbox" spacing="10" alignment="CENTER"/>
+                    <SmoothScrollPane maxHeight="250" hbarPolicy="NEVER" fitToWidth="true">
+                        <VBox fx:id="companyNameVbox" spacing="10" alignment="CENTER"/>
+                    </SmoothScrollPane>
                     <Button fx:id="companyNameSave" prefWidth="150" styleClass="pt-btn-primary" text="下一步" userData="i18n:infosearch.next" onAction="#saveCompanyNameField"/>
                 </VBox>
             </VBox>
@@ -209,16 +223,57 @@
             <effect>
                 <DropShadow/>
             </effect>
-            <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
-                <HBox alignment="CENTER" styleClass="titleHbox">
-                    <Label fx:id="companyCandidateTitle" styleClass="pt-h2" text="确认根公司"/>
+            <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="0" minWidth="660">
+                <!-- 标题栏 + 双模式徽标 -->
+                <HBox alignment="CENTER_LEFT" styleClass="titleHbox" spacing="10">
+                    <Label fx:id="companyCandidateTitle" styleClass="pt-h2" text="企业候选选择面板" userData="i18n:infosearch.candidate.panel.title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="双模式切换" styleClass="is-dual-mode-badge" userData="i18n:infosearch.candidate.dual.mode"/>
                 </HBox>
-                <VBox styleClass="contentVbox" alignment="CENTER" spacing="20">
-                    <Label fx:id="companyCandidateDesc" styleClass="pt-caption" text="请确认根公司候选，未确认前不会继续企业扩展"/>
-                    <SmoothScrollPane maxHeight="320" hbarPolicy="NEVER">
-                        <VBox fx:id="companyCandidateVbox" spacing="10" alignment="CENTER"/>
-                    </SmoothScrollPane>
-                    <HBox alignment="CENTER" spacing="10">
+                <!-- 模式切换栏 -->
+                <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 8 16 8 16; -fx-border-color: -pt-border-subtle; -fx-border-width: 0 0 1 0;">
+                    <ToggleButton fx:id="candidateSearchModeBtn" text="搜索企业"
+                                  styleClass="is-mode-tab,is-mode-tab-selected"
+                                  userData="i18n:infosearch.candidate.mode.search"
+                                  onAction="#switchToCandidateSearchMode"/>
+                    <ToggleButton fx:id="candidateManualModeBtn" text="手动输入"
+                                  styleClass="is-mode-tab"
+                                  userData="i18n:infosearch.candidate.mode.manual"
+                                  onAction="#switchToCandidateManualMode"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="candidateModeLabel" text="MODE A" styleClass="is-mode-indicator"/>
+                </HBox>
+                <!-- 内容区 -->
+                <VBox styleClass="contentVbox" spacing="12">
+                    <!-- MODE A：搜索 + 候选列表 -->
+                    <VBox fx:id="candidateModeASection" spacing="10">
+                        <Label fx:id="companyCandidateDesc" styleClass="pt-caption" text="请确认根公司候选，未确认前不会继续企业扩展"/>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <TextField fx:id="candidateSearchField" styleClass="pt-input" HBox.hgrow="ALWAYS"
+                                       promptText="搜索企业名称" userData="i18n-prompt:infosearch.candidate.search.prompt"/>
+                            <Button styleClass="pt-btn" text="搜 索" onAction="#searchCandidates"
+                                    userData="i18n:infosearch.candidate.search.btn" minWidth="72" minHeight="30"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="候选企业列表" styleClass="pt-body" userData="i18n:infosearch.candidate.list.title"/>
+                            <Label fx:id="candidateCountLabel" text="已选 0" styleClass="is-count-badge"/>
+                        </HBox>
+                        <SmoothScrollPane maxHeight="260" hbarPolicy="NEVER" fitToWidth="true">
+                            <VBox fx:id="companyCandidateVbox" spacing="8" alignment="CENTER"/>
+                        </SmoothScrollPane>
+                    </VBox>
+                    <!-- MODE B：手动输入 -->
+                    <VBox fx:id="candidateModeBSection" spacing="10" visible="false" managed="false">
+                        <Label text="直接输入公司全称" styleClass="pt-caption" userData="i18n:infosearch.candidate.manual.label"/>
+                        <TextArea fx:id="candidateManualInput" styleClass="pt-input" prefHeight="80" wrapText="true"
+                                  promptText="北京科技有限公司" userData="i18n-prompt:infosearch.candidate.manual.prompt"/>
+                        <HBox alignment="CENTER">
+                            <Button styleClass="pt-btn-primary" text="确 认" onAction="#confirmManualCandidate"
+                                    userData="i18n:infosearch.candidate.confirm.btn" minWidth="100" minHeight="30"/>
+                        </HBox>
+                    </VBox>
+                    <!-- 底部按钮 -->
+                    <HBox alignment="CENTER" spacing="10" style="-fx-padding: 4 0 0 0;">
                         <Button fx:id="companyCandidateSave" prefWidth="150" styleClass="pt-btn-primary" text="确认并继续" onAction="#saveCompanyCandidateField"/>
                         <Button fx:id="companyCandidateNone" prefWidth="120" styleClass="pt-btn" text="都不是" onAction="#chooseNoneCompanyCandidate"/>
                         <Button fx:id="companyCandidateCancel" prefWidth="120" styleClass="pt-btn" text="取消" userData="i18n:app.cancel" onAction="#cancelCompanyCandidateField"/>

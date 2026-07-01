@@ -140,7 +140,7 @@ public class PaneInfoSearch {
     @FXML
     private HBox cipThresholdHBox;
     @FXML
-    private HBox localFullDetectionThresholdHBox;
+    private VBox localFullDetectionThresholdHBox;
     @FXML
     private HBox shadowAssetsThresholdHBox;
     @FXML
@@ -161,6 +161,22 @@ public class PaneInfoSearch {
     private Label companyCandidateTitle;
     @FXML
     private Label companyCandidateDesc;
+    @FXML
+    private VBox candidateModeASection;
+    @FXML
+    private VBox candidateModeBSection;
+    @FXML
+    private TextField candidateSearchField;
+    @FXML
+    private TextArea candidateManualInput;
+    @FXML
+    private Label candidateModeLabel;
+    @FXML
+    private Label candidateCountLabel;
+    @FXML
+    private ToggleButton candidateSearchModeBtn;
+    @FXML
+    private ToggleButton candidateManualModeBtn;
     @FXML
     private VBox iconChoosePaneBox;
     @FXML
@@ -1223,6 +1239,61 @@ public class PaneInfoSearch {
         ), null);
     }
 
+    @FXML
+    private void switchToCandidateSearchMode(ActionEvent e) {
+        if (candidateModeASection != null) { candidateModeASection.setVisible(true); candidateModeASection.setManaged(true); }
+        if (candidateModeBSection != null) { candidateModeBSection.setVisible(false); candidateModeBSection.setManaged(false); }
+        if (candidateModeLabel != null) candidateModeLabel.setText("MODE A");
+        if (companyCandidateSave != null) { companyCandidateSave.setVisible(true); companyCandidateSave.setManaged(true); }
+        if (companyCandidateNone != null) {
+            boolean notAi = companyCandidatePaneMode != CompanyCandidatePaneMode.AI_FULL_NAME;
+            companyCandidateNone.setVisible(notAi); companyCandidateNone.setManaged(notAi);
+        }
+    }
+
+    @FXML
+    private void switchToCandidateManualMode(ActionEvent e) {
+        if (candidateModeASection != null) { candidateModeASection.setVisible(false); candidateModeASection.setManaged(false); }
+        if (candidateModeBSection != null) { candidateModeBSection.setVisible(true); candidateModeBSection.setManaged(true); }
+        if (candidateModeLabel != null) candidateModeLabel.setText("MODE B");
+        if (companyCandidateSave != null) { companyCandidateSave.setVisible(false); companyCandidateSave.setManaged(false); }
+        if (companyCandidateNone != null) { companyCandidateNone.setVisible(false); companyCandidateNone.setManaged(false); }
+    }
+
+    @FXML
+    private void searchCandidates() {
+        if (candidateSearchField == null || companyCandidateVbox == null) return;
+        String query = candidateSearchField.getText().trim().toLowerCase();
+        for (Node child : companyCandidateVbox.getChildren()) {
+            if (query.isEmpty()) {
+                child.setVisible(true);
+                child.setManaged(true);
+            } else if (child instanceof HBox) {
+                HBox hb = (HBox) child;
+                boolean match = hb.getChildren().stream().anyMatch(c -> {
+                    if (c instanceof VBox) {
+                        return ((VBox) c).getChildren().stream().anyMatch(lbl ->
+                                lbl instanceof Label && ((Label) lbl).getText().toLowerCase().contains(query));
+                    }
+                    return c instanceof Label && ((Label) c).getText().toLowerCase().contains(query);
+                });
+                child.setVisible(match);
+                child.setManaged(match);
+            }
+        }
+    }
+
+    @FXML
+    private void confirmManualCandidate() {
+        if (candidateManualInput == null) return;
+        String name = candidateManualInput.getText().trim();
+        if (name.isEmpty()) return;
+        finishCompanyCandidateSelection(new CompanyCandidateSelectionResult(
+                CompanyCandidateSelectionResult.Action.CONFIRM,
+                CompanyCandidate.fromAiName(name)
+        ), null);
+    }
+
     public CompanyCandidateSelectionResult waitAndGetCompanyCandidateSelection() {
         if (searchCancelled) {
             return new CompanyCandidateSelectionResult(CompanyCandidateSelectionResult.Action.CANCEL, null);
@@ -1258,10 +1329,19 @@ public class PaneInfoSearch {
             companyCandidateToggleGroup.getToggles().clear();
             companyCandidateVbox.getChildren().clear();
 
+            // 重置为 MODE A（搜索模式）
+            if (candidateModeASection != null) { candidateModeASection.setVisible(true); candidateModeASection.setManaged(true); }
+            if (candidateModeBSection != null) { candidateModeBSection.setVisible(false); candidateModeBSection.setManaged(false); }
+            if (candidateModeLabel != null) candidateModeLabel.setText("MODE A");
+            if (candidateSearchField != null) candidateSearchField.clear();
+            if (candidateManualInput != null) candidateManualInput.clear();
+
             String confirmTextKey = aiFullNameMode
                     ? "infosearch.company.fullname.confirm"
                     : "infosearch.company.candidate.confirm";
             companyCandidateSave.setText(I18nUtils.getString(confirmTextKey) + "(" + countdown + ")");
+            companyCandidateSave.setVisible(true);
+            companyCandidateSave.setManaged(true);
             companyCandidateNone.setVisible(!aiFullNameMode);
             companyCandidateNone.setManaged(!aiFullNameMode);
             companyCandidateCancel.setVisible(true);
@@ -1831,16 +1911,16 @@ public class PaneInfoSearch {
         tableView.setPrefWidth(sPane.getPrefWidth() - 100);
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        String domainHeader = I18nUtils.getString("infosearch.shadow.table.domain");
+        String idxHeader = I18nUtils.getString("infosearch.shadow.table.idx");
+        String mainDomainHeader = I18nUtils.getString("infosearch.shadow.table.main.domain");
+        String subDomainHeader = I18nUtils.getString("infosearch.shadow.table.sub.domain");
         String ipHeader = I18nUtils.getString("infosearch.shadow.table.ip");
         String portHeader = I18nUtils.getString("infosearch.shadow.table.port");
         String titleHeader = I18nUtils.getString("infosearch.shadow.table.title");
-        String aliasHeader = I18nUtils.getString("infosearch.shadow.table.alias");
-        String scoreHeader = I18nUtils.getString("infosearch.shadow.table.score");
-        String reasonsHeader = I18nUtils.getString("infosearch.shadow.table.reasons");
-        String sourceHeader = I18nUtils.getString("infosearch.shadow.table.source");
+        String statusCodeHeader = I18nUtils.getString("infosearch.shadow.table.status.code");
+        String aliveHeader = I18nUtils.getString("infosearch.shadow.table.alive");
 
-        String[] headers = {domainHeader, ipHeader, portHeader, titleHeader, aliasHeader, scoreHeader, reasonsHeader, sourceHeader};
+        String[] headers = {idxHeader, mainDomainHeader, subDomainHeader, ipHeader, portHeader, titleHeader, statusCodeHeader, aliveHeader};
         for (String header : headers) {
             TableColumn<Map<String, String>, String> column = createTableColumn(header, 0, false);
             tableView.getColumns().add(column);
@@ -1848,16 +1928,17 @@ public class PaneInfoSearch {
 
         ObservableList<Map<String, String>> tableData = FXCollections.observableArrayList();
         if (shadowDomainInfoList != null) {
+            int rowIdx = 1;
             for (DomainInfo domainInfo : shadowDomainInfoList) {
                 Map<String, String> row = new LinkedHashMap<>();
-                row.put(domainHeader, firstNonBlank(domainInfo.getDomain(), domainInfo.getHost(), domainInfo.getUrl(), domainInfo.getIp()));
+                row.put(idxHeader, String.valueOf(rowIdx++));
+                row.put(mainDomainHeader, defaultDisplayValue(domainInfo.getDomain()));
+                row.put(subDomainHeader, firstNonBlank(domainInfo.getHost(), domainInfo.getDomain()));
                 row.put(ipHeader, defaultDisplayValue(domainInfo.getIp()));
                 row.put(portHeader, defaultDisplayValue(domainInfo.getPort()));
                 row.put(titleHeader, defaultDisplayValue(domainInfo.getTitle()));
-                row.put(aliasHeader, defaultDisplayValue(domainInfo.getShadowMatchedAlias()));
-                row.put(scoreHeader, domainInfo.getShadowScore() == null ? "-" : String.valueOf(domainInfo.getShadowScore()));
-                row.put(reasonsHeader, joinList(domainInfo.getShadowReasons()));
-                row.put(sourceHeader, defaultDisplayValue(domainInfo.getShadowDecisionSource()));
+                row.put(statusCodeHeader, defaultDisplayValue(domainInfo.getStatusCode()));
+                row.put(aliveHeader, deriveAliveStatus(domainInfo.getStatusCode()));
                 tableData.add(row);
             }
         }
@@ -1870,6 +1951,17 @@ public class PaneInfoSearch {
         });
 
         return tableView;
+    }
+
+    private String deriveAliveStatus(String statusCode) {
+        if (statusCode == null || statusCode.trim().isEmpty()) return "-";
+        try {
+            int code = Integer.parseInt(statusCode.trim());
+            return (code >= 200 && code < 500) ? I18nUtils.getString("infosearch.shadow.table.alive.yes")
+                    : I18nUtils.getString("infosearch.shadow.table.alive.no");
+        } catch (NumberFormatException ignored) {
+            return "-";
+        }
     }
 
     private TableView<Map<String, String>> createStageSummaryTable(List<InfoGatheringStageMetric> stageMetrics) {

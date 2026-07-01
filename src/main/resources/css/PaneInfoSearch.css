@@ -202,3 +202,94 @@
     -fx-padding: 0;
     -fx-border-width: 0;
 }
+
+/* ===== 信息收集修正版：双模式切换 / OR条件 ===== */
+.is-dual-mode-badge {
+    -fx-background-color: derive(-pt-accent-teal, -65%);
+    -fx-background-radius: 4;
+    -fx-border-color: -pt-accent-teal;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-padding: 2 8 2 8;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent-teal;
+}
+
+.is-mode-tab {
+    -fx-background-color: transparent;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 4 14 4 14;
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-cursor: hand;
+}
+
+.is-mode-tab:hover {
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text;
+}
+
+.is-mode-tab-selected {
+    -fx-background-color: derive(-pt-accent, -60%);
+    -fx-border-color: -pt-accent;
+    -fx-text-fill: -pt-accent;
+    -fx-font-weight: bold;
+}
+
+.is-mode-indicator {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-padding: 2 6 2 6;
+    -fx-background-color: -pt-bg-base;
+    -fx-background-radius: 4;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+}
+
+.is-count-badge {
+    -fx-padding: 2 8 2 8;
+    -fx-background-color: derive(-pt-accent-teal, -65%);
+    -fx-background-radius: 10;
+    -fx-border-color: -pt-accent-teal;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent-teal;
+}
+
+.is-or-separator {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-padding: 2 10 2 10;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 4;
+    -fx-border-color: -pt-border;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+}
+
+.is-type-chip {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-warning;
+    -fx-background-color: derive(-pt-warning, -65%);
+    -fx-background-radius: 4;
+    -fx-border-color: -pt-warning;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-padding: 2 8 2 8;
+}
+
+.is-or-hint {
+    -fx-font-size: 10px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-style: italic;
+}
