@@ -137,7 +137,6 @@ public class MainController {
                 borderPane, arcProperty
         );
         borderPane.setClip(clip);
-        borderPane.setStyle("-fx-background-color: lightblue;");
         DropShadow dropShadow = new DropShadow();
         dropShadow.setColor(Color.BLACK);
         dropShadow.setRadius(10);
@@ -467,6 +466,7 @@ public class MainController {
 
         topBar.getStyleClass().removeAll("blueStyle", "redStyle");
         changeBtn.getStyleClass().removeAll("blueStyle", "redStyle");
+        borderPane.getStyleClass().removeAll("blueStyle", "redStyle");
 
         // 竖向侧栏：红/蓝导航通过显隐切换
         setBarVisible(blueBar, blueMode);
@@ -486,6 +486,7 @@ public class MainController {
             topBarLeft.setTranslateX(-200);
             topBar.getStyleClass().add("redStyle");
             changeBtn.getStyleClass().add("redStyle");
+            borderPane.getStyleClass().add("redStyle");
             isChangeModePaneRight = true;
         }
     }
@@ -558,6 +559,7 @@ public class MainController {
             topBar.getStyleClass().add("blueStyle");
             changeBtn.getStyleClass().remove("redStyle");
             changeBtn.getStyleClass().add("blueStyle");
+            borderPane.getStyleClass().remove("redStyle");
 
             setBarVisible(blueBar, true);
             setBarVisible(redBar, false);
@@ -574,6 +576,7 @@ public class MainController {
             topBar.getStyleClass().add("redStyle");
             changeBtn.getStyleClass().remove("blueStyle");
             changeBtn.getStyleClass().add("redStyle");
+            borderPane.getStyleClass().add("redStyle");
 
             setBarVisible(redBar, true);
             setBarVisible(blueBar, false);

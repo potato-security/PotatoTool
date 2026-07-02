@@ -78,7 +78,7 @@
                                     <Image url="@../img/PotatoTool.png" />
                                  </image>
                                  <effect>
-                                    <DropShadow fx:id="wordmarkGlow" color="#4FE3FF" radius="14" spread="0.15"/>
+                                    <DropShadow fx:id="wordmarkGlow" color="#4FE3FF" radius="22" spread="0.38"/>
                                  </effect>
                               </ImageView>
                               <Label fx:id="wordmarkSubtitle" text="SECURITY · COMMAND · CENTER" styleClass="wordmark-subtitle"/>

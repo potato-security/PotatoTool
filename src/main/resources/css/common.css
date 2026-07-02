@@ -170,11 +170,18 @@
 #outerBorderPane{
     -fx-background-radius: 12;
 }
+/* 壳层背景：深黑底 + 角落柔和氛围光（电影感/指挥中心），随红蓝模式换色 */
 #borderPane{
-    -fx-background-color: transparent;
-    -fx-background-image: url("../img/bg.png");
-    -fx-background-size: cover;
-    -fx-background-repeat: no-repeat;
+    -fx-background-color:
+        radial-gradient(focus-angle 0deg, focus-distance 0%, center 10% 6%, radius 60%, rgba(79,227,255,0.10) 0%, transparent 62%),
+        radial-gradient(focus-angle 0deg, focus-distance 0%, center 94% 96%, radius 50%, rgba(79,227,255,0.05) 0%, transparent 60%),
+        #040B12;
+}
+#borderPane.redStyle{
+    -fx-background-color:
+        radial-gradient(focus-angle 0deg, focus-distance 0%, center 10% 6%, radius 60%, rgba(255,92,102,0.10) 0%, transparent 62%),
+        radial-gradient(focus-angle 0deg, focus-distance 0%, center 94% 96%, radius 50%, rgba(255,92,102,0.05) 0%, transparent 60%),
+        #040B12;
 }
 #topBar{
     -fx-background-color: -main-topBar-color;
