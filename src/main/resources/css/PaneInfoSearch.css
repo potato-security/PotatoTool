@@ -216,7 +216,6 @@
     -fx-font-weight: bold;
     -fx-text-fill: -pt-text-muted;
     -fx-font-family: "Consolas", "JetBrains Mono", monospace;
-    -fx-letter-spacing: 1;
     -fx-padding: 0 4 0 0;
 }
 .is-stat-val {

@@ -58,9 +58,6 @@
     -fx-border-color: -pt-border-subtle;
     -fx-border-width: 0 0 1 0;
 }
-.lq-card-section:last-child {
-    -fx-border-width: 0;
-}
 
 /* ===== Input area ===== */
 .lq-section-label {
