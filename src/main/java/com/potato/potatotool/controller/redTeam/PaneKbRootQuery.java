@@ -155,7 +155,20 @@ public class PaneKbRootQuery {
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
         dateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         cveColumn.setCellValueFactory(new PropertyValueFactory<>("cve"));
-        cveColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        // CVE 编号：强调色 + 等宽，对齐 Penpot 稿（红队页 -pt-accent 解析为红）
+        cveColumn.setCellFactory(col -> new TableCell<KbInfo, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null || item.isEmpty()) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: -pt-accent; -fx-font-family: 'Menlo','Consolas','monospace'; -fx-font-weight: bold;");
+                }
+            }
+        });
         kbColumn.setCellValueFactory(new PropertyValueFactory<>("kb"));
         kbColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
