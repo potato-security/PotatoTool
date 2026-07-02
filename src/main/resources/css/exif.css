@@ -55,9 +55,9 @@
 }
 
 .exif-chip-gps {
-    -fx-background-color: derive(-pt-success, -55%);
-    -fx-text-fill: -pt-success;
-    -fx-border-color: -pt-success;
+    -fx-background-color: derive(-pt-accent-teal, -50%);
+    -fx-text-fill: -pt-accent-teal;
+    -fx-border-color: -pt-accent-teal;
     -fx-border-width: 1;
 }
 
