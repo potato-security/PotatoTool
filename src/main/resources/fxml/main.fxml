@@ -72,13 +72,17 @@
                            </Pane>
                         </left>
                         <center>
-                           <HBox prefWidth="250" alignment="CENTER" BorderPane.alignment="CENTER">
-                              <ImageView fitHeight="40.0" fitWidth="250.0"  pickOnBounds="true" preserveRatio="true">
+                           <VBox alignment="CENTER" spacing="2" BorderPane.alignment="CENTER">
+                              <ImageView fx:id="wordmarkImg" fitHeight="40.0" fitWidth="250.0"  pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@../img/PotatoTool.png" />
                                  </image>
+                                 <effect>
+                                    <DropShadow fx:id="wordmarkGlow" color="#4FE3FF" radius="14" spread="0.15"/>
+                                 </effect>
                               </ImageView>
-                           </HBox>
+                              <Label fx:id="wordmarkSubtitle" text="SECURITY · COMMAND · CENTER" styleClass="wordmark-subtitle"/>
+                           </VBox>
                         </center>
                         <right>
                            <HBox alignment="CENTER" spacing="10" prefHeight="${topBar.height}">

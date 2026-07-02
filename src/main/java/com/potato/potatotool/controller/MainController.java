@@ -95,6 +95,8 @@ public class MainController {
     private Label promptLabel;
     @FXML
     private Label modeSectionLabel;
+    @FXML
+    private DropShadow wordmarkGlow;
 
     private double offsetX,offsetY;
 
@@ -492,10 +494,14 @@ public class MainController {
     }
 
     private void updateModeSectionLabel(boolean blueMode) {
-        if (modeSectionLabel == null) return;
-        modeSectionLabel.setText(blueMode ? "BLUE TEAM" : "RED TEAM");
-        modeSectionLabel.getStyleClass().removeAll("side-nav-section-blue", "side-nav-section-red");
-        modeSectionLabel.getStyleClass().add(blueMode ? "side-nav-section-blue" : "side-nav-section-red");
+        if (modeSectionLabel != null) {
+            modeSectionLabel.setText(blueMode ? "BLUE TEAM" : "RED TEAM");
+            modeSectionLabel.getStyleClass().removeAll("side-nav-section-blue", "side-nav-section-red");
+            modeSectionLabel.getStyleClass().add(blueMode ? "side-nav-section-blue" : "side-nav-section-red");
+        }
+        if (wordmarkGlow != null) {
+            wordmarkGlow.setColor(Color.web(blueMode ? "#4FE3FF" : "#FF5C66"));
+        }
     }
 
     private boolean isChangeModePaneRight = false;  // 是否向右移动

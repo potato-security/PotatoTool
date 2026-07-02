@@ -360,6 +360,12 @@
 .side-nav-section-red{
     -fx-text-fill: -pt-accent-red;
 }
+.wordmark-subtitle{
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-opacity: 0.85;
+}
 /* 竖向导航按钮：铺满侧栏、左对齐 */
 .box-nav, .box-nav-red{
     -fx-padding: 6 0 0 0;
