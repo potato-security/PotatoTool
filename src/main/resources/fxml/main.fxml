@@ -240,7 +240,14 @@
                      </VBox>
                   </left>
                   <center>
-                     <RXCarousel fx:id="mainCarousel" arrowDisplayMode="HIDE" autoSwitch="false" hoverPause="false" navDisplayMode="HIDE" prefWidth="${root.width - 248}" maxWidth="${root.width - 248}" prefHeight="${(root.height - 18) - topBar.height - 40}" styleClass="main-pane" BorderPane.alignment="CENTER"/>
+                     <StackPane prefWidth="${root.width - 248}" maxWidth="${root.width - 248}" BorderPane.alignment="CENTER">
+                        <RXCarousel fx:id="mainCarousel" arrowDisplayMode="HIDE" autoSwitch="false" hoverPause="false" navDisplayMode="HIDE" prefWidth="${root.width - 248}" maxWidth="${root.width - 248}" prefHeight="${(root.height - 18) - topBar.height - 40}" styleClass="main-pane"/>
+                        <!-- HUD 取景框角标 -->
+                        <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+                        <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+                        <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+                        <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
+                     </StackPane>
                   </center>
                </BorderPane>
             </center>
