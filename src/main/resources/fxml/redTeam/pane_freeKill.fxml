@@ -50,6 +50,25 @@
         <SmoothScrollPane prefWidth="${sPane.width - 215}" maxWidth="${sPane.width - 215}" maxHeight="${sPane.height}" hbarPolicy="NEVER" fx:id="contentSp">
             <VBox minWidth="${sPane.width - 265}" alignment="CENTER">
                 <VBox fx:id="webshellContent" alignment="CENTER" managed="true" visible="true">
+                    <HBox styleClass="tipInfo" alignment="CENTER">
+                        <Label fx:id="tipTitle" visible="false"/>
+                    </HBox>
+                    <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
+                        <HBox alignment="CENTER" spacing="20">
+                            <Label id="tipTitle_input" text="[全部生成]" userData="i18n:freekill.generateall"/>
+                            <HBox alignment="CENTER">
+                                <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
+                                <TextField styleClass="pt-input" fx:id="webShellKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
+                            </HBox>
+
+                            <Button styleClass="pt-btn-primary" minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#webshellGeneration">
+                                <effect>
+                                    <DropShadow />
+                                </effect>
+                            </Button>
+                        </HBox>
+                    </HBox>
+
                     <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
                         <Label styleClass="pt-h2" id="tipTitle_input_big" text="Godzilla"/>
                         <Label fx:id="tipTitleGod" visible="false"/>
@@ -230,24 +249,6 @@
                         </Button>
                     </HBox>
 
-                    <HBox styleClass="tipInfo" alignment="CENTER">
-                        <Label fx:id="tipTitle" visible="false"/>
-                    </HBox>
-                    <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
-                        <HBox alignment="CENTER" spacing="20">
-                            <Label id="tipTitle_input" text="[全部生成]" userData="i18n:freekill.generateall"/>
-                            <HBox alignment="CENTER">
-                                <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
-                                <TextField styleClass="pt-input" fx:id="webShellKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
-                            </HBox>
-
-                            <Button styleClass="pt-btn-primary" minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#webshellGeneration">
-                                <effect>
-                                    <DropShadow />
-                                </effect>
-                            </Button>
-                        </HBox>
-                    </HBox>
                 </VBox>
 
                 <VBox fx:id="signatureContent" maxHeight="${sPane.height}" alignment="CENTER" managed="false" visible="false">
