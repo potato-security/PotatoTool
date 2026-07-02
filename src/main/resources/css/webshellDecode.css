@@ -244,3 +244,18 @@
     -fx-background-color: -pt-accent-soft;
     -fx-text-fill: -pt-accent;
 }
+
+/* 修正版结构对齐: RULE SELECTION / PARAMETERS / AI STATE 分区 */
+.wd-rule-chips {
+    -fx-padding: 0 16 10 16;
+}
+
+.wd-params-section {
+    -fx-padding: 0 16 0 16;
+}
+
+.wd-ai-state-bar {
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}
