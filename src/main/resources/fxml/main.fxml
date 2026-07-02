@@ -151,61 +151,19 @@
                            </HBox>
                         </right>
                      </BorderPane>
-
-                     <!--导航-->
-                     <BorderPane>
-                        <left>
-                           <Pane minWidth="160"/>
-                        </left>
-                        <center>
-                           <StackPane>
-                              <clip>
-                                 <Rectangle height="9999" width="${blueBar.width}"/>
-                              </clip>
-                              <!-- 蓝队导航 -->
-                              <FlowPane fx:id="blueBar" alignment="CENTER" hgap="10" vgap="10" prefHeight="80.0" styleClass="box-nav">
-                                 <children>
-                                    <RXToggleButton selected="true" text="一键解密" userData="i18n:main.blue.webshell">
-                                       <toggleGroup>
-                                          <ToggleGroup fx:id="navGroup" />
-                                       </toggleGroup>
-                                    </RXToggleButton>
-                                    <RXToggleButton text="专项加解密" userData="i18n:main.blue.separate" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="IP信息筛选" userData="i18n:main.blue.ip" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="AI分析" userData="i18n:main.blue.ai" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="反编译" userData="i18n:main.blue.decompile" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="区块链溯源" userData="i18n:main.blue.blockchain" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="归属地查询" userData="i18n:main.blue.location" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="文件元信息" userData="i18n:main.blue.exif" toggleGroup="$navGroup"/>
-                                    <RXToggleButton text="扩展模块" userData="i18n:main.extension" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="关于" userData="i18n:main.about" toggleGroup="$navGroup"/>
-                                 </children>
-                              </FlowPane>
-                              <!-- 红队导航 -->
-                              <FlowPane fx:id="redBar" alignment="CENTER" hgap="10" vgap="10" prefHeight="80.0" styleClass="box-nav-red">
-                                 <children>
-                                    <RXToggleButton text="AI自动渗透" userData="i18n:main.red.aipentest" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="资产测绘" userData="i18n:main.red.infosearch" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="端口扫描" userData="i18n:main.red.portscan" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="漏洞扫描" userData="i18n:main.red.vulnscan" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="免杀" userData="i18n:main.red.freekill" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="自定义内存马" userData="i18n:main.red.memshell" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="Payload 工具箱" userData="i18n:main.red.payload" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="命令生成" userData="i18n:main.red.cmdgen" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="命令查询" userData="i18n:main.red.cmdquery" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="KB提权查询" userData="i18n:main.red.kbquery" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="进程分析" userData="i18n:main.red.process" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="信息生成" userData="i18n:main.red.infogen" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="扩展模块" userData="i18n:main.extension" toggleGroup="$navGroup" />
-                                    <RXToggleButton text="关于" userData="i18n:main.about" toggleGroup="$navGroup"/>
-                                 </children>
-                              </FlowPane>
-                           </StackPane>
-                        </center>
-                        <right>
-                           <BorderPane fx:id="changeBtn" style="-fx-padding: 15 50 0 0;">
-                              <right>
-                                 <HBox>
+                  </children>
+               </VBox>
+            </top>
+            <center>
+               <!--主体: 左侧竖向导航 + 右侧内容-->
+               <BorderPane BorderPane.alignment="CENTER">
+                  <left>
+                     <VBox fx:id="sideNav" styleClass="side-nav" prefWidth="230" minWidth="230" maxWidth="230">
+                        <children>
+                           <!--模式切换-->
+                           <BorderPane fx:id="changeBtn" styleClass="side-nav-modebar">
+                              <center>
+                                 <HBox alignment="CENTER">
                                     <StackPane>
                                        <clip>
                                           <Rectangle height="9999" width="55.0"/>
@@ -224,16 +182,56 @@
                                        <Cursor fx:constant="HAND" />
                                     </cursor>
                                  </HBox>
-                              </right>
+                              </center>
                            </BorderPane>
-                        </right>
-                     </BorderPane>
-                  </children>
-               </VBox>
-            </top>
-            <center>
-               <!--主体-->
-               <RXCarousel fx:id="mainCarousel" arrowDisplayMode="HIDE" autoSwitch="false" hoverPause="false" navDisplayMode="HIDE" prefHeight="${(root.height - 18) - topBar.height - 120}" prefWidth="${root.width - 18}" styleClass="main-pane" BorderPane.alignment="CENTER"/>
+                           <!--导航列表-->
+                           <StackPane VBox.vgrow="ALWAYS" alignment="TOP_CENTER">
+                              <!-- 蓝队导航 -->
+                              <FlowPane fx:id="blueBar" orientation="VERTICAL" prefWrapLength="4000" alignment="TOP_CENTER" hgap="10" vgap="6" styleClass="box-nav">
+                                 <children>
+                                    <RXToggleButton selected="true" text="一键解密" userData="i18n:main.blue.webshell">
+                                       <toggleGroup>
+                                          <ToggleGroup fx:id="navGroup" />
+                                       </toggleGroup>
+                                    </RXToggleButton>
+                                    <RXToggleButton text="专项加解密" userData="i18n:main.blue.separate" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="IP信息筛选" userData="i18n:main.blue.ip" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="AI分析" userData="i18n:main.blue.ai" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="反编译" userData="i18n:main.blue.decompile" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="区块链溯源" userData="i18n:main.blue.blockchain" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="归属地查询" userData="i18n:main.blue.location" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="文件元信息" userData="i18n:main.blue.exif" toggleGroup="$navGroup"/>
+                                    <RXToggleButton text="扩展模块" userData="i18n:main.extension" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="关于" userData="i18n:main.about" toggleGroup="$navGroup"/>
+                                 </children>
+                              </FlowPane>
+                              <!-- 红队导航 -->
+                              <FlowPane fx:id="redBar" orientation="VERTICAL" prefWrapLength="4000" alignment="TOP_CENTER" hgap="10" vgap="6" styleClass="box-nav-red">
+                                 <children>
+                                    <RXToggleButton text="AI自动渗透" userData="i18n:main.red.aipentest" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="资产测绘" userData="i18n:main.red.infosearch" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="端口扫描" userData="i18n:main.red.portscan" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="漏洞扫描" userData="i18n:main.red.vulnscan" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="免杀" userData="i18n:main.red.freekill" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="自定义内存马" userData="i18n:main.red.memshell" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="Payload 工具箱" userData="i18n:main.red.payload" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="命令生成" userData="i18n:main.red.cmdgen" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="命令查询" userData="i18n:main.red.cmdquery" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="KB提权查询" userData="i18n:main.red.kbquery" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="进程分析" userData="i18n:main.red.process" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="信息生成" userData="i18n:main.red.infogen" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="扩展模块" userData="i18n:main.extension" toggleGroup="$navGroup" />
+                                    <RXToggleButton text="关于" userData="i18n:main.about" toggleGroup="$navGroup"/>
+                                 </children>
+                              </FlowPane>
+                           </StackPane>
+                        </children>
+                     </VBox>
+                  </left>
+                  <center>
+                     <RXCarousel fx:id="mainCarousel" arrowDisplayMode="HIDE" autoSwitch="false" hoverPause="false" navDisplayMode="HIDE" prefWidth="${root.width - 248}" maxWidth="${root.width - 248}" prefHeight="${(root.height - 18) - topBar.height - 40}" styleClass="main-pane" BorderPane.alignment="CENTER"/>
+                  </center>
+               </BorderPane>
             </center>
          </BorderPane>
          <StackPane fx:id="promptPane" visible="false" managed="false"

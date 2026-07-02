@@ -337,47 +337,50 @@
     -fx-shape: "M512 32c-13.4 0-21.6-5.6-31-12.2C467.8 10.8 452 0 416 0c-61 0-104 87.4-132 178.8-94.6 17.4-156 45.6-156 77.2 0 28.6 50 54.2 129.2 71.8-0.8 8-1.2 16-1.2 24.2 0 34 6.6 66.4 18.6 96H154.8C140 448 128 460 128 474.8c0 3.4 0.6 6.8 2 10l77.6 193.8C120.4 743.6 64 847.6 64 964.6 64 997.4 90.6 1024 123.4 1024h777.2c32.8 0 59.4-26.6 59.4-59.4 0-117-56.4-220.8-143.4-286l77.4-193.8c1.2-3.2 2-6.6 2-10 0-14.8-12-26.8-26.8-26.8h-119.8c12-29.6 18.6-62 18.6-96 0-8.2-0.4-16.2-1.2-24.2C846 310.2 896 284.6 896 256c0-31.6-61.4-59.8-156-77.2C712 87.4 669 0 608 0c-36 0-51.8 10.8-65 19.8-9.6 6.6-17.6 12.2-31 12.2z m112 416h-24.8c-33 0-62.2-21.2-72.6-52.4-4.6-14-24.4-14-29 0-10.4 31.2-39.8 52.4-72.6 52.4H400c-44.2 0-80-35.8-80-80v-28.8c56.4 8.2 122 12.8 192 12.8s135.6-4.6 192-12.8V368c0 44.2-35.8 80-80 80z m-176 192l32 64-64 256-96-384 128 64z m256-64l-96 384-64-256 32-64 128-64z";
     -fx-background-color: -pt-accent-red;
 }
-.box-nav{
-    -fx-padding: 15 0 0 0;
+/* ===== 左侧竖向导航侧栏 ===== */
+.side-nav{
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: transparent -pt-border-subtle transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 14 12 14 12;
+    -fx-spacing: 8;
 }
-.box-nav .rx-toggle-button{
-    -fx-pref-height: 35;
-    -fx-background-color: null;
-    -fx-border-color: -main-border-color;
+.side-nav-modebar{
+    -fx-padding: 0 0 10 0;
+}
+/* 竖向导航按钮：铺满侧栏、左对齐 */
+.box-nav, .box-nav-red{
+    -fx-padding: 6 0 0 0;
+}
+.box-nav .rx-toggle-button, .box-nav-red .rx-toggle-button{
+    -fx-pref-width: 202;
+    -fx-min-width: 202;
+    -fx-pref-height: 38;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 14 0 14;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-text-fill: -main-font-color;
-    -fx-font-size: 16;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 14;
     -fx-cursor: HAND;
 }
-.box-nav .rx-toggle-button:hover{
-    -fx-background-color: -main-borderHover-color;
-    -fx-border-color:  -main-border-color;
+.box-nav .rx-toggle-button:hover, .box-nav-red .rx-toggle-button:hover{
+    -fx-background-color: -pt-bg-elevated;
+    -fx-text-fill: -pt-text;
 }
+/* 蓝队选中态：青色描边 + 淡填充 + 文字点亮 */
 .box-nav .rx-toggle-button:selected{
-    -fx-background-color: -main-border-color;
-    -fx-border-color: -main-border-color;
+    -fx-background-color: derive(-pt-accent, -78%);
+    -fx-border-color: -pt-accent;
+    -fx-text-fill: -pt-accent;
 }
-.box-nav-red{
-    -fx-padding: 15 0 0 0;
-}
-.box-nav-red .rx-toggle-button{
-    -fx-pref-height: 35;
-    -fx-background-color: null;
-    -fx-border-color: -pt-accent-red;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-text-fill: -main-font-color;
-    -fx-font-size: 16;
-    -fx-cursor: HAND;
-}
-.box-nav-red .rx-toggle-button:hover{
-    -fx-background-color: derive(-pt-accent-red, -30%);
-    -fx-border-color: -pt-accent-red;
-}
+/* 红队选中态：红色描边 + 淡填充 + 文字点亮 */
 .box-nav-red .rx-toggle-button:selected{
-    -fx-background-color: -pt-accent-red;
+    -fx-background-color: derive(-pt-accent-red, -78%);
     -fx-border-color: -pt-accent-red;
+    -fx-text-fill: -pt-accent-red;
 }
 
 .header-panel {

@@ -139,60 +139,64 @@ public class MainController {
         dropShadow.setOffsetY(5);
         borderPane.setEffect(dropShadow);
 
+        // 内容列基准宽度 = 窗口宽 - 左侧栏(230) - 外边距(18)，各页据此按比例取宽（稳定值，避免与 carousel 自身宽度形成绑定环）
+        DoubleProperty contentWidth = new SimpleDoubleProperty();
+        contentWidth.bind(root.widthProperty().subtract(248));
+
         Pane p1 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_webshellDecode.fxml"));
         RXCarouselPane webshellDecodePane = new RXCarouselPane(p1);
-        p1.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
+        p1.prefWidthProperty().bind(contentWidth.subtract(48));
         p1.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p2 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_separateDecode.fxml"));
         RXCarouselPane separateDecodePane = new RXCarouselPane(p2);
-        p2.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p2.prefWidthProperty().bind(contentWidth.subtract(48));
         p2.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p3 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_getIpInfo.fxml"));
         RXCarouselPane ipInFoPane = new RXCarouselPane(p3);
-        p3.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p3.prefWidthProperty().bind(contentWidth.subtract(48));
         p3.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p4 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_aiAnswer.fxml"));
         RXCarouselPane aiAnswerPane = new RXCarouselPane(p4);
-        p4.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p4.prefWidthProperty().bind(contentWidth.subtract(48));
         p4.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p5 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_decompile.fxml"));
         RXCarouselPane decompilePane = new RXCarouselPane(p5);
-        p5.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p5.prefWidthProperty().bind(contentWidth.subtract(48));
         p5.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p6 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_blockchain.fxml"));
         RXCarouselPane blockchainPane = new RXCarouselPane(p6);
-        p6.prefWidthProperty().bind(topBar.widthProperty().multiply(0.64));
+        p6.prefWidthProperty().bind(contentWidth.subtract(48));
         p6.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p7 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_locationQuery.fxml"));
         RXCarouselPane locationQueryPane = new RXCarouselPane(p7);
-        p7.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p7.prefWidthProperty().bind(contentWidth.subtract(48));
         p7.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p8 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_exif.fxml"));
         RXCarouselPane exifPane = new RXCarouselPane(p8);
-        p8.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p8.prefWidthProperty().bind(contentWidth.subtract(48));
         p8.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         // 使用工厂创建 Extension 面板（蓝色模式）
-        RXCarouselPane extensionPane = PaneFactory.createExtensionPane(null, 0.8, mainCarousel.heightProperty(), topBar.widthProperty());
+        RXCarouselPane extensionPane = PaneFactory.createExtensionPane(null, 0.95, mainCarousel.heightProperty(), contentWidth);
         yieldToUi();
 
         // 使用工厂创建 About 面板（蓝色模式）
-        PaneFactory.AboutPaneResult aboutResult = PaneFactory.createAboutPane(null, 0.7, mainCarousel.heightProperty().subtract(20), topBar.widthProperty());
+        PaneFactory.AboutPaneResult aboutResult = PaneFactory.createAboutPane(null, 0.95, mainCarousel.heightProperty().subtract(20), contentWidth);
         RXCarouselPane aboutPane = aboutResult.pane;
         PaneAbout PaneAbout = aboutResult.controller;
         yieldToUi();
@@ -201,14 +205,14 @@ public class MainController {
         Pane pAiPentest = aiPentestLoader.load();
         RXCarouselPane aiPentestPane = new RXCarouselPane(pAiPentest);
         aiPentestPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        pAiPentest.prefWidthProperty().bind(topBar.widthProperty().multiply(0.86));
+        pAiPentest.prefWidthProperty().bind(contentWidth.subtract(48));
         pAiPentest.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p11 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_infoSearch.fxml"));
         RXCarouselPane infoSearchPane = new RXCarouselPane(p11);
         infoSearchPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p11.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p11.prefWidthProperty().bind(contentWidth.subtract(48));
         p11.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
@@ -217,7 +221,7 @@ public class MainController {
         portScanController = portScanLoader.getController();
         RXCarouselPane portScanPane = new RXCarouselPane(pPortScan);
         portScanPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        pPortScan.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        pPortScan.prefWidthProperty().bind(contentWidth.subtract(48));
         pPortScan.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
@@ -226,72 +230,72 @@ public class MainController {
         vulScanController = vulScanLoader.getController();
         RXCarouselPane vulScanPane = new RXCarouselPane(p12);
         vulScanPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p12.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p12.prefWidthProperty().bind(contentWidth.subtract(48));
         p12.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p13 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_freeKill.fxml"));
         RXCarouselPane freeKillPane = new RXCarouselPane(p13);
         freeKillPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p13.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
+        p13.prefWidthProperty().bind(contentWidth.subtract(48));
         p13.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p14 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_customMemoryCode.fxml"));
         RXCarouselPane customMemoryCodePane = new RXCarouselPane(p14);
         customMemoryCodePane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p14.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        p14.prefWidthProperty().bind(contentWidth.subtract(48));
         p14.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane pPayloadToolbox = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_payloadToolbox.fxml"));
         RXCarouselPane payloadToolboxPane = new RXCarouselPane(pPayloadToolbox);
         payloadToolboxPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        pPayloadToolbox.prefWidthProperty().bind(topBar.widthProperty().multiply(0.7));
+        pPayloadToolbox.prefWidthProperty().bind(contentWidth.subtract(48));
         pPayloadToolbox.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p15 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_customCommandGeneration.fxml"));
         RXCarouselPane customCommandGenerationPane = new RXCarouselPane(p15);
         customCommandGenerationPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p15.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
+        p15.prefWidthProperty().bind(contentWidth.subtract(48));
         p15.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p16 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_commandQuery.fxml"));
         RXCarouselPane commandQueryPane = new RXCarouselPane(p16);
         commandQueryPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p16.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
+        p16.prefWidthProperty().bind(contentWidth.subtract(48));
         p16.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p17 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_kbRootQuery.fxml"));
         RXCarouselPane kbRootQueryPane = new RXCarouselPane(p17);
         kbRootQueryPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p17.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
+        p17.prefWidthProperty().bind(contentWidth.subtract(48));
         p17.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p18 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_processQuery.fxml"));
         RXCarouselPane processQueryPane = new RXCarouselPane(p18);
         processQueryPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p18.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
+        p18.prefWidthProperty().bind(contentWidth.subtract(48));
         p18.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         Pane p19 = FXMLLoader.load(getClass().getResource("/fxml/redTeam/pane_infoGeneration.fxml"));
         RXCarouselPane infoGenerationPane = new RXCarouselPane(p19);
         infoGenerationPane.getStylesheets().add(Constants.getResourceUrl("/css/redStyle.css"));
-        p19.prefWidthProperty().bind(topBar.widthProperty().multiply(0.8));
+        p19.prefWidthProperty().bind(contentWidth.subtract(48));
         p19.prefHeightProperty().bind(mainCarousel.heightProperty());
         yieldToUi();
 
         // 使用工厂创建 Extension 面板（红色模式）
-        RXCarouselPane extensionPane_1 = PaneFactory.createExtensionPane("/css/redStyle.css", 0.8, mainCarousel.heightProperty(), topBar.widthProperty());
+        RXCarouselPane extensionPane_1 = PaneFactory.createExtensionPane("/css/redStyle.css", 0.95, mainCarousel.heightProperty(), contentWidth);
         yieldToUi();
 
         // 使用工厂创建 About 面板（红色模式）
-        PaneFactory.AboutPaneResult aboutResult_1 = PaneFactory.createAboutPane("/css/redStyle.css", 0.7, mainCarousel.heightProperty().subtract(20), topBar.widthProperty());
+        PaneFactory.AboutPaneResult aboutResult_1 = PaneFactory.createAboutPane("/css/redStyle.css", 0.95, mainCarousel.heightProperty().subtract(20), contentWidth);
         RXCarouselPane aboutPane_1 = aboutResult_1.pane;
         PaneAbout PaneAbout_1 = aboutResult_1.controller;
         yieldToUi();
@@ -311,15 +315,7 @@ public class MainController {
             applySelectedIndex(index, extensionPane, extensionPane_1, aboutPane, aboutPane_1, PaneAbout, PaneAbout_1);
         });
 
-        topBar.widthProperty().addListener((observable, oldValue, newValue) -> {
-            if(isBlueMode) {
-                blueBar.setTranslateX(0);
-                redBar.setTranslateX(newValue.doubleValue() - 320);
-            }else {
-                blueBar.setTranslateX(-(newValue.doubleValue() - 320));
-                redBar.setTranslateX(0);
-            }
-        });
+        // 左侧竖向导航：红/蓝两套导航在侧栏中通过显隐切换，不再随窗宽做横向滑动
         
         // 绑定国际化
         Platform.runLater(() -> {
@@ -460,16 +456,17 @@ public class MainController {
 
     private void applyModeState(boolean blueMode) {
         isBlueMode = blueMode;
-        double barWidthDistance = Math.max(topBar.getWidth() - 320, 0);
 
         topBar.getStyleClass().removeAll("blueStyle", "redStyle");
         changeBtn.getStyleClass().removeAll("blueStyle", "redStyle");
 
+        // 竖向侧栏：红/蓝导航通过显隐切换
+        setBarVisible(blueBar, blueMode);
+        setBarVisible(redBar, !blueMode);
+
         if (blueMode) {
             blueModePane.setTranslateX(0);
             redModePane.setTranslateX(-55);
-            blueBar.setTranslateX(0);
-            redBar.setTranslateX(barWidthDistance);
             topBarLeft.setTranslateX(0);
             topBar.getStyleClass().add("blueStyle");
             changeBtn.getStyleClass().add("blueStyle");
@@ -477,13 +474,18 @@ public class MainController {
         } else {
             blueModePane.setTranslateX(55);
             redModePane.setTranslateX(0);
-            blueBar.setTranslateX(-barWidthDistance);
-            redBar.setTranslateX(0);
             topBarLeft.setTranslateX(-200);
             topBar.getStyleClass().add("redStyle");
             changeBtn.getStyleClass().add("redStyle");
             isChangeModePaneRight = true;
         }
+    }
+
+    private void setBarVisible(FlowPane bar, boolean show) {
+        if (bar == null) return;
+        bar.setVisible(show);
+        bar.setManaged(show);
+        bar.setTranslateX(0);
     }
 
     private boolean isChangeModePaneRight = false;  // 是否向右移动
@@ -493,13 +495,9 @@ public class MainController {
         if(isChangeModePaneMoving) return;  // 如果动画正在播放，不响应按钮点击事件
 
         isChangeModePaneMoving = true;
-        double barWidthDistance = topBar.getWidth() - 320;
-        Scene scene = root.getScene();
 
         TranslateTransition blueTransition = new TranslateTransition(Duration.seconds(0.2), blueModePane);
         TranslateTransition redTransition = new TranslateTransition(Duration.seconds(0.2), redModePane);
-        TranslateTransition blueBarTransition = new TranslateTransition(Duration.seconds(0.2), blueBar);
-        TranslateTransition redBarTransition = new TranslateTransition(Duration.seconds(0.2), redBar);
         TranslateTransition topBarLeftTransition = new TranslateTransition(Duration.seconds(0.2), topBarLeft);
 
         // 创建并行动画组
@@ -510,8 +508,6 @@ public class MainController {
             isBlueMode = true;
             blueTransition.setByX(-55);
             redTransition.setByX(-55);
-            redBarTransition.setByX(barWidthDistance);
-            blueBarTransition.setByX(barWidthDistance);
             topBarLeftTransition.setByX(200);
 
             topBar.getStyleClass().remove("redStyle");
@@ -519,14 +515,14 @@ public class MainController {
             changeBtn.getStyleClass().remove("redStyle");
             changeBtn.getStyleClass().add("blueStyle");
 
+            setBarVisible(blueBar, true);
+            setBarVisible(redBar, false);
             navGroup.getToggles().get(selectedBlueIndex).setSelected(true);
         } else {
             // 切换为红队
             isBlueMode = false;
             blueTransition.setByX(55);
             redTransition.setByX(55);
-            redBarTransition.setByX(-barWidthDistance);
-            blueBarTransition.setByX(-barWidthDistance);
             topBarLeftTransition.setByX(-200);
 
             topBar.getStyleClass().remove("blueStyle");
@@ -534,6 +530,8 @@ public class MainController {
             changeBtn.getStyleClass().remove("blueStyle");
             changeBtn.getStyleClass().add("redStyle");
 
+            setBarVisible(redBar, true);
+            setBarVisible(blueBar, false);
             navGroup.getToggles().get(selectedRedIndex).setSelected(true);
         }
 
@@ -541,8 +539,6 @@ public class MainController {
         parallelTransition.getChildren().addAll(
                 blueTransition,
                 redTransition,
-                redBarTransition,
-                blueBarTransition,
                 topBarLeftTransition
         );
 
