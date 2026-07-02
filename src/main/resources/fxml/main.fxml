@@ -86,6 +86,11 @@
                         </center>
                         <right>
                            <HBox alignment="CENTER" spacing="10" prefHeight="${topBar.height}">
+                              <HBox alignment="CENTER" spacing="7" styleClass="header-status">
+                                 <Label text="LOCAL" styleClass="status-pill,status-pill-local"/>
+                                 <Label fx:id="proxyStatusLabel" text="PROXY OFF" styleClass="status-pill"/>
+                              </HBox>
+                              <Pane minWidth="6"/>
                               <Button id="btnSet" mnemonicParsing="false" onAction="#showSet" prefHeight="35.0" prefWidth="35.0">
                                  <graphic>
                                     <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">

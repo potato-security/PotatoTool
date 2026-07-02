@@ -366,6 +366,24 @@
     -fx-text-fill: -pt-text-muted;
     -fx-opacity: 0.85;
 }
+.status-pill{
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1;
+    -fx-padding: 3 9 3 9;
+}
+.status-pill-local{
+    -fx-text-fill: -pt-success;
+}
+.status-pill-on{
+    -fx-text-fill: -pt-accent;
+    -fx-border-color: -pt-accent;
+}
 /* 竖向导航按钮：铺满侧栏、左对齐 */
 .box-nav, .box-nav-red{
     -fx-padding: 6 0 0 0;

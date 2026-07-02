@@ -97,6 +97,8 @@ public class MainController {
     private Label modeSectionLabel;
     @FXML
     private DropShadow wordmarkGlow;
+    @FXML
+    private Label proxyStatusLabel;
 
     private double offsetX,offsetY;
 
@@ -321,6 +323,7 @@ public class MainController {
 
         // 左侧竖向导航：红/蓝两套导航在侧栏中通过显隐切换，不再随窗宽做横向滑动
         decorateNavDots();
+        refreshProxyStatus();
 
         // 绑定国际化
         Platform.runLater(() -> {
@@ -485,6 +488,15 @@ public class MainController {
             changeBtn.getStyleClass().add("redStyle");
             isChangeModePaneRight = true;
         }
+    }
+
+    /** 头部代理状态胶囊：读取主代理开关，显示 PROXY ON / OFF */
+    public void refreshProxyStatus() {
+        if (proxyStatusLabel == null) return;
+        boolean on = com.potato.potatotool.utils.network.ProxyUtils.isMainProxyEnabled();
+        proxyStatusLabel.setText(on ? "PROXY ON" : "PROXY OFF");
+        proxyStatusLabel.getStyleClass().remove("status-pill-on");
+        if (on) proxyStatusLabel.getStyleClass().add("status-pill-on");
     }
 
     /** 给每个导航条目加左侧圆点指示（对齐 Penpot 侧栏：未选中空心、选中实心，由 CSS 控制） */
