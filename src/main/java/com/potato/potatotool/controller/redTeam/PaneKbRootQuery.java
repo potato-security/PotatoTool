@@ -169,23 +169,32 @@ public class PaneKbRootQuery {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
+                setText(null);
                 if (empty || item == null || item.isEmpty()) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(item);
-                    String color;
-                    switch (item.toLowerCase()) {
-                        case "critical":               color = "#FF5C66"; break;
-                        case "important": case "high": color = "#F48C42"; break;
-                        case "moderate": case "medium":color = "#F4B740"; break;
-                        case "low":                    color = "#5BF0B4"; break;
-                        default:                       color = null; break;
-                    }
-                    setStyle(color != null
-                            ? "-fx-text-fill: " + color + "; -fx-font-weight: bold;"
-                            : "");
+                    setGraphic(null);
+                    return;
                 }
+                String color;
+                String shortLabel;
+                switch (item.toLowerCase()) {
+                    case "critical":                color = "#FF5C66"; shortLabel = "CRIT"; break;
+                    case "important": case "high":   color = "#F48C42"; shortLabel = "HIGH"; break;
+                    case "moderate": case "medium":  color = "#F4B740"; shortLabel = "MED";  break;
+                    case "low":                      color = "#5BF0B4"; shortLabel = "LOW";  break;
+                    default:                         color = null;      shortLabel = item;   break;
+                }
+                if (color == null) {
+                    Label plain = new Label(item);
+                    plain.setStyle("-fx-text-fill: -pt-text-secondary;");
+                    setGraphic(plain);
+                    return;
+                }
+                Label badge = new Label(shortLabel);
+                badge.setStyle("-fx-background-color: " + color + ";"
+                        + " -fx-text-fill: #0A141C; -fx-font-weight: bold; -fx-font-size: 11px;"
+                        + " -fx-background-radius: 6; -fx-padding: 2 8 2 8;");
+                setGraphic(badge);
+                setAlignment(Pos.CENTER);
             }
         });
         impactColumn.setCellValueFactory(new PropertyValueFactory<>("impact"));
