@@ -26,6 +26,17 @@
                     </StackPane>
                 </SmoothScrollPane>
             </VBox>
+            <VBox fx:id="emptyStateBox"
+                  mouseTransparent="true"
+                  spacing="8"
+                  alignment="CENTER"
+                  maxWidth="460"
+                  maxHeight="-Infinity"
+                  StackPane.alignment="CENTER"
+                  styleClass="ai-empty-state">
+                <Label fx:id="emptyStateTitle" text="AI 安全分析" userData="i18n:ai.empty.title" styleClass="ai-empty-title"/>
+                <Label fx:id="emptyStateDesc" text="输入分析目标，或直接粘贴、拖入文件后开始提问" userData="i18n:ai.empty.desc" styleClass="ai-empty-desc" wrapText="true"/>
+            </VBox>
         </StackPane>
 
         <StackPane alignment="CENTER">

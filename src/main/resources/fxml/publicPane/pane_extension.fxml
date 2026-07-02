@@ -58,15 +58,15 @@
             </HBox>
 
             <!-- 搜索 + 过滤 -->
-            <HBox styleClass="ext-filter-bar" alignment="CENTER_LEFT" spacing="10">
-                <HBox styleClass="ext-search-box" alignment="CENTER_LEFT" spacing="6" HBox.hgrow="ALWAYS">
+            <HBox styleClass="ext-filter-bar" alignment="TOP_LEFT" spacing="10">
+                <HBox styleClass="ext-search-box" alignment="CENTER_LEFT" spacing="6" minWidth="360" prefWidth="360" maxWidth="380">
                     <Region styleClass="ext-search-icon"/>
                     <TextField fx:id="searchField" styleClass="pt-input" HBox.hgrow="ALWAYS"
                                promptText="搜索扩展 / 分类…"
                                userData="i18n-prompt:extension.search.prompt"
                                onKeyReleased="#filterExtensions"/>
                 </HBox>
-                <HBox fx:id="filterChips" spacing="6" alignment="CENTER_LEFT"/>
+                <FlowPane fx:id="filterChips" hgap="6" vgap="6" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"/>
             </HBox>
 
             <!-- 卡片网格 -->

@@ -105,6 +105,9 @@ public class PaneAiAnswer {
     private VBox msgBox;
 
     @FXML
+    private VBox emptyStateBox;
+
+    @FXML
     private Button sendAction;
 
     @FXML
@@ -193,6 +196,7 @@ public class PaneAiAnswer {
         refreshThinkingToggle();
         refreshPrimaryActionButton();
         refreshDropHintText();
+        updateEmptyState();
         setState(AiUiState.IDLE, "");
 
         Platform.runLater(() -> {
@@ -202,7 +206,17 @@ public class PaneAiAnswer {
             refreshThinkingToggle();
             refreshPrimaryActionButton();
             refreshDropHintText();
+            updateEmptyState();
         });
+    }
+
+    private void updateEmptyState() {
+        if (emptyStateBox == null || msgBox == null) {
+            return;
+        }
+        boolean empty = msgBox.getChildren().isEmpty();
+        emptyStateBox.setVisible(empty);
+        emptyStateBox.setManaged(empty);
     }
 
     @FXML
@@ -257,6 +271,7 @@ public class PaneAiAnswer {
         myHBox.setAlignment(Pos.TOP_RIGHT);
         myHBox.getChildren().addAll(mySpacer, myLabel, myAvatar);
         msgBox.getChildren().add(myHBox);
+        updateEmptyState();
 
         TextArea aiLabel = createBubbleTextArea("aiMsg");
         TextArea thinkingLabel = createBubbleTextArea("aiThinkingMsg");

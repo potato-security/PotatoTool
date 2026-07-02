@@ -59,6 +59,27 @@
     -fx-font-size: 12px;
 }
 
+.ai-empty-state {
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 16;
+    -fx-border-color: -pt-border;
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-padding: 28 36 28 36;
+}
+
+.ai-empty-title {
+    -fx-text-fill: -pt-text;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.ai-empty-desc {
+    -fx-text-fill: -pt-text-secondary;
+    -fx-font-size: 12px;
+    -fx-text-alignment: center;
+}
+
 #question,
 #question .content {
     -fx-background-color: transparent;

@@ -67,7 +67,7 @@ public class PaneExtension {
 
     // 搜索过滤
     @FXML private TextField searchField;
-    @FXML private HBox filterChips;
+    @FXML private FlowPane filterChips;
 
     // 卡片网格
     @FXML private FlowPane cardGrid;
