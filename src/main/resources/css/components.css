@@ -81,20 +81,25 @@
 .pt-btn { -fx-background-color: transparent !important; -fx-border-color: -pt-border !important; -fx-text-fill: -pt-text !important; }
 .pt-btn:hover   { -fx-border-color: -pt-border-strong !important; -fx-background-color: -pt-bg-elevated !important; }
 .pt-btn:pressed { -fx-background-color: -pt-bg-inset !important; }
+.pt-btn:disabled { -fx-opacity: 0.38 !important; -fx-cursor: default !important; }
 
 .pt-btn-primary { -fx-background-color: -pt-accent-soft !important; -fx-border-color: -pt-accent !important; -fx-text-fill: -pt-accent !important; }
 .pt-btn-primary:hover   { -fx-background-color: derive(-pt-accent, -45%) !important; }
 .pt-btn-primary:pressed { -fx-background-color: derive(-pt-accent, -30%) !important; }
+.pt-btn-primary:disabled { -fx-opacity: 0.38 !important; -fx-cursor: default !important; }
 
 .pt-btn-danger { -fx-background-color: -pt-danger-soft !important; -fx-border-color: -pt-danger !important; -fx-text-fill: -pt-danger !important; }
 .pt-btn-danger:hover   { -fx-background-color: derive(-pt-danger, -45%) !important; }
 .pt-btn-danger:pressed { -fx-background-color: derive(-pt-danger, -30%) !important; }
+.pt-btn-danger:disabled { -fx-opacity: 0.38 !important; -fx-cursor: default !important; }
 
 .pt-btn-ghost { -fx-background-color: transparent !important; -fx-border-color: -pt-border !important; -fx-text-fill: -pt-text-secondary !important; }
 .pt-btn-ghost:hover { -fx-border-color: -pt-accent !important; -fx-text-fill: -pt-accent !important; }
+.pt-btn-ghost:disabled { -fx-opacity: 0.38 !important; -fx-cursor: default !important; }
 
 .pt-btn-solid { -fx-background-color: -pt-accent !important; -fx-border-color: -pt-accent !important; -fx-text-fill: -pt-bg-base !important; -fx-font-weight: bold; }
 .pt-btn-solid:hover { -fx-background-color: derive(-pt-accent, 12%) !important; }
+.pt-btn-solid:disabled { -fx-opacity: 0.38 !important; -fx-cursor: default !important; }
 
 /* ========== 输入 Inputs ========== */
 .pt-input {
@@ -109,7 +114,9 @@
     -fx-padding: 8px 12px;
     -fx-highlight-fill: -pt-accent-soft;
 }
-.pt-input:focused { -fx-border-color: -pt-accent !important; }
+.pt-input:focused  { -fx-border-color: -pt-accent !important; }
+.pt-input:hover    { -fx-border-color: -pt-border-strong !important; }
+.pt-input:disabled { -fx-opacity: 0.45 !important; -fx-cursor: default !important; }
 .pt-input .content { -fx-background-color: transparent; }      /* text-area 内容区透明 */
 .pt-input .text    { -fx-fill: -pt-text; }
 

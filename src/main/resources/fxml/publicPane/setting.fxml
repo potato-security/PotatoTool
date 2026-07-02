@@ -43,7 +43,7 @@
                     </center>
                     <right>
                         <HBox alignment="CENTER"  fx:id="appController" prefHeight="${topBar.height}">
-                            <Button id="btnExitSmall" styleClass="setting-close-btn"
+                            <Button styleClass="setting-close-btn"
                                     mnemonicParsing="false" onAction="#exitAction"
                                     text="×">
                                 <tooltip>

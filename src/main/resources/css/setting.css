@@ -290,7 +290,7 @@
 /* Setting dialog topbar */
 .setting-topbar {
     -fx-background-color: -pt-bg-elevated;
-    -fx-border-color: -pt-border-subtle -pt-border-subtle -pt-border-subtle -pt-border-subtle;
+    -fx-border-color: -pt-border-subtle;
     -fx-border-width: 0 0 1 0;
     -fx-background-radius: 4 4 0 0;
 }
