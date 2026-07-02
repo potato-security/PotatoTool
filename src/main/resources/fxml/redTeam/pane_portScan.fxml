@@ -38,7 +38,7 @@
 
                     <!-- Port preset chips -->
                     <Label styleClass="pt-caption" text="端口预设" userData="i18n:portscan.preset"/>
-                    <HBox spacing="4" styleClass="portscan-preset-row">
+                    <FlowPane hgap="4" vgap="4" prefWrapLength="200" styleClass="portscan-preset-row">
                         <ToggleButton fx:id="preset100Btn" text="Top100" styleClass="preset-chip"
                                       toggleGroup="$presetGroup" selected="true"
                                       userData="0" onAction="#onPresetChip"/>
@@ -51,7 +51,7 @@
                         <ToggleButton fx:id="presetCustomBtn" text="Custom" styleClass="preset-chip"
                                       toggleGroup="$presetGroup"
                                       userData="3" onAction="#onPresetChip"/>
-                    </HBox>
+                    </FlowPane>
 
                     <!-- Service / Public Mode toggles -->
                     <HBox spacing="12" alignment="CENTER_LEFT">
