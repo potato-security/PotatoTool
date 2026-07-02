@@ -85,10 +85,10 @@
     -fx-text-fill: -pt-text;
 }
 .sep-tab:selected {
-    -fx-background-color: -pt-bg-elevated;
-    -fx-text-fill: -pt-accent-teal;
-    -fx-border-width: 0 1 2 0;
-    -fx-border-color: -pt-border-subtle, -pt-border-subtle, -pt-accent-teal, transparent;
+    -fx-background-color: -pt-accent-teal;
+    -fx-text-fill: #040B12;
+    -fx-border-width: 0 1 0 0;
+    -fx-border-color: -pt-border-subtle;
 }
 
 /* 提示条 */

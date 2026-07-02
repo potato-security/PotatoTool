@@ -29,7 +29,7 @@
         <HBox spacing="20" VBox.vgrow="ALWAYS">
 
             <VBox styleClass="proc-panel" HBox.hgrow="ALWAYS" maxWidth="Infinity">
-                <Label text="杀软进程" styleClass="proc-panel-title" userData="i18n:process.antivirus"/>
+                <Label text="安全软件检测" styleClass="proc-panel-title" userData="i18n:process.antivirus"/>
                 <Region styleClass="proc-panel-divider" maxWidth="Infinity"/>
                 <VBox styleClass="proc-inset" VBox.vgrow="ALWAYS">
                     <Label text="NAME        TYPE" styleClass="proc-col-header" userData="i18n:process.antivirus.cols"/>
@@ -38,7 +38,7 @@
             </VBox>
 
             <VBox styleClass="proc-panel" HBox.hgrow="ALWAYS" maxWidth="Infinity">
-                <Label text="其他进程" styleClass="proc-panel-title" userData="i18n:process.other"/>
+                <Label text="可提权进程" styleClass="proc-panel-title" userData="i18n:process.other"/>
                 <Region styleClass="proc-panel-divider" maxWidth="Infinity"/>
                 <VBox styleClass="proc-inset" VBox.vgrow="ALWAYS">
                     <Label text="PROCESS        PID" styleClass="proc-col-header" userData="i18n:process.other.cols"/>
