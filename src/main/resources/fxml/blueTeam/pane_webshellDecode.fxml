@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.dlsc.gemsfx.CFCheckBox?>
 <?import com.leewyatt.rxcontrols.controls.RXPasswordField?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.layout.*?>
