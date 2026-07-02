@@ -16,238 +16,149 @@
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
     <HBox alignment="CENTER" prefWidth="${sPane.width - 15}" prefHeight="${sPane.height}">
-        <SmoothScrollPane maxHeight="${sPane.height}" maxWidth="210" hbarPolicy="NEVER">
-            <VBox fx:id="vBoxBar">
-                <Accordion fx:id="accordionPane">
-                    <panes>
-                        <TitledPane onMouseClicked="#toWebshell">
-                            <graphic>
-                                <Label prefWidth="150" text="免杀webshell" userData="i18n:freekill.webshell"/>
-                            </graphic>
-                        </TitledPane>
-                        <TitledPane onMouseClicked="#toSignature">
-                            <graphic>
-                                <Label prefWidth="150" text="伪造签名" userData="i18n:freekill.signature"/>
-                            </graphic>
-                        </TitledPane>
-                        <TitledPane onMouseClicked="#toQR">
-                            <graphic>
-                                <Label prefWidth="150" text="二维码生成" userData="i18n:freekill.qrcode"/>
-                            </graphic>
-                        </TitledPane>
-                        <TitledPane onMouseClicked="#toSecureProtect">
-                            <graphic>
-                                <Label prefWidth="150" text="加壳(potato壳)" userData="i18n:freekill.packer"/>
-                            </graphic>
-                        </TitledPane>
-                    </panes>
-                </Accordion>
-            </VBox>
-        </SmoothScrollPane>
+        <!-- 左侧工具导航 (对齐 Penpot: 平铺列表 + TOOLS section label) -->
+        <VBox fx:id="vBoxBar" styleClass="fk-nav-panel" minWidth="190" maxWidth="190" prefWidth="190" prefHeight="${sPane.height}">
+            <Label text="TOOLS" styleClass="fk-nav-section-label"/>
+            <Label fx:id="navWebshell" text="Shell 生成" styleClass="fk-nav-item,fk-nav-selected"
+                   onMouseClicked="#toWebshell" userData="i18n:freekill.webshell" maxWidth="Infinity"/>
+            <Label fx:id="navSignature" text="签名伪造" styleClass="fk-nav-item"
+                   onMouseClicked="#toSignature" userData="i18n:freekill.signature" maxWidth="Infinity"/>
+            <Label fx:id="navQR" text="二维码生成" styleClass="fk-nav-item"
+                   onMouseClicked="#toQR" userData="i18n:freekill.qrcode" maxWidth="Infinity"/>
+            <Label fx:id="navProtect" text="保护配置" styleClass="fk-nav-item"
+                   onMouseClicked="#toSecureProtect" userData="i18n:freekill.packer" maxWidth="Infinity"/>
+        </VBox>
 
-        <Region HBox.hgrow="ALWAYS" />
-
-        <SmoothScrollPane prefWidth="${sPane.width - 215}" maxWidth="${sPane.width - 215}" maxHeight="${sPane.height}" hbarPolicy="NEVER" fx:id="contentSp">
+        <SmoothScrollPane prefWidth="${sPane.width - 395}" maxWidth="${sPane.width - 395}" maxHeight="${sPane.height}" hbarPolicy="NEVER" fx:id="contentSp">
             <VBox minWidth="${sPane.width - 265}" alignment="CENTER">
                 <VBox fx:id="webshellContent" alignment="CENTER" managed="true" visible="true">
-                    <HBox styleClass="tipInfo" alignment="CENTER">
-                        <Label fx:id="tipTitle" visible="false"/>
+                    <Label fx:id="tipTitle" visible="false"/>
+                    <!-- Shell 生成 页头 (对齐 Penpot: 标题 + 全局密码 + 全部生成) -->
+                    <HBox styleClass="fk-section-header" alignment="CENTER_LEFT" spacing="12">
+                        <Label text="Shell 生成" styleClass="fk-section-title" userData="i18n:freekill.webshell"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="全局密码" styleClass="pt-caption" userData="i18n:freekill.password"/>
+                        <TextField styleClass="pt-input" fx:id="webShellKey" prefHeight="32" minWidth="140" prefWidth="140"
+                                   promptText="空则每项独立配置" userData="i18n-prompt:freekill.password.placeholder"/>
+                        <Button styleClass="pt-btn-primary" minHeight="32" minWidth="100"
+                                text="全部生成" userData="i18n:freekill.generateall" onAction="#webshellGeneration"/>
                     </HBox>
-                    <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
-                        <HBox alignment="CENTER" spacing="20">
-                            <Label id="tipTitle_input" text="[全部生成]" userData="i18n:freekill.generateall"/>
-                            <HBox alignment="CENTER">
-                                <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
-                                <TextField styleClass="pt-input" fx:id="webShellKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
-                            </HBox>
 
-                            <Button styleClass="pt-btn-primary" minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#webshellGeneration">
-                                <effect>
-                                    <DropShadow />
-                                </effect>
-                            </Button>
+                    <!-- Godzilla 卡片 -->
+                    <VBox styleClass="fk-shell-card" spacing="8">
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Godzilla" styleClass="fk-shell-name" style="-fx-text-fill: -pt-accent;"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="tipTitleGod" styleClass="fk-shell-path" visible="false"/>
                         </HBox>
-                    </HBox>
-
-                    <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                        <Label styleClass="pt-h2" id="tipTitle_input_big" text="Godzilla"/>
-                        <Label fx:id="tipTitleGod" visible="false"/>
-                    </HBox>
-                    <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="语言：" userData="i18n:freekill.language"/>
-                            <ComboBox fx:id="godComboBox" prefHeight="30.0" minWidth="100" prefWidth="100" onAction="#godChoose">
-                                <items>
-                                    <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="jsp" />
-                                        <String fx:value="jspx" />
-                                        <String fx:value="php" />
-                                        <String fx:value="asp" />
-                                        <String fx:value="aspx" />
-                                        <String fx:value="ashx" />
-                                    </FXCollections>
-                                </items>
-                                <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                </cursor>
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label text="语言" styleClass="pt-caption" userData="i18n:freekill.language"/>
+                            <ComboBox fx:id="godComboBox" prefHeight="30" minWidth="90" prefWidth="90" onAction="#godChoose">
+                                <items><FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="jsp"/><String fx:value="jspx"/><String fx:value="php"/>
+                                    <String fx:value="asp"/><String fx:value="aspx"/><String fx:value="ashx"/>
+                                </FXCollections></items>
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
                             </ComboBox>
-                        </HBox>
-
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="编码：" userData="i18n:freekill.encoding"/>
-                            <ComboBox fx:id="godModeComboBox" prefHeight="30.0" minWidth="200" prefWidth="200">
-                                <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                </cursor>
+                            <Label text="编码" styleClass="pt-caption" userData="i18n:freekill.encoding"/>
+                            <ComboBox fx:id="godModeComboBox" prefHeight="30" minWidth="180" prefWidth="180">
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
                             </ComboBox>
+                            <Label text="密码" styleClass="pt-caption" userData="i18n:freekill.password"/>
+                            <TextField styleClass="pt-input" fx:id="godKey" prefHeight="30" minWidth="130" prefWidth="130"
+                                       promptText="随机生成" userData="i18n-prompt:freekill.password.placeholder"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button styleClass="pt-btn-primary" minHeight="30" minWidth="72" text="生成"
+                                    userData="i18n:freekill.generate" onAction="#godWebshellGeneration"/>
                         </HBox>
+                    </VBox>
 
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
-                            <TextField styleClass="pt-input" fx:id="godKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
+                    <!-- Behinder 卡片 -->
+                    <VBox styleClass="fk-shell-card" spacing="8">
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Behinder" styleClass="fk-shell-name"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="tipTitleBeh" styleClass="fk-shell-path" visible="false"/>
                         </HBox>
-
-                        <Button styleClass="pt-btn-primary" minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#godWebshellGeneration">
-                            <effect>
-                                <DropShadow />
-                            </effect>
-                        </Button>
-                    </HBox>
-
-                    <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                        <Label styleClass="pt-h2" id="tipTitle_input_big" text="Behinder"/>
-                        <Label fx:id="tipTitleBeh" visible="false"/>
-                    </HBox>
-                    <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="语言：" userData="i18n:freekill.language"/>
-                            <ComboBox fx:id="behComboBox" prefHeight="30.0" minWidth="100" prefWidth="100" onAction="#behChoose">
-                                <items>
-                                    <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="jsp" />
-                                        <String fx:value="jspx" />
-                                        <String fx:value="php" />
-                                        <String fx:value="asp" />
-                                        <String fx:value="aspx" />
-                                    </FXCollections>
-                                </items>
-                                <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                </cursor>
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label text="语言" styleClass="pt-caption" userData="i18n:freekill.language"/>
+                            <ComboBox fx:id="behComboBox" prefHeight="30" minWidth="90" prefWidth="90" onAction="#behChoose">
+                                <items><FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="jsp"/><String fx:value="jspx"/><String fx:value="php"/>
+                                    <String fx:value="asp"/><String fx:value="aspx"/>
+                                </FXCollections></items>
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
                             </ComboBox>
-                        </HBox>
-
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="编码：" userData="i18n:freekill.encoding"/>
-                            <ComboBox fx:id="behModeComboBox" prefHeight="30.0" minWidth="200" prefWidth="200">
-                                <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                </cursor>
+                            <Label text="编码" styleClass="pt-caption" userData="i18n:freekill.encoding"/>
+                            <ComboBox fx:id="behModeComboBox" prefHeight="30" minWidth="180" prefWidth="180">
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
                             </ComboBox>
+                            <Label text="密码" styleClass="pt-caption" userData="i18n:freekill.password"/>
+                            <TextField styleClass="pt-input" fx:id="behKey" prefHeight="30" minWidth="130" prefWidth="130"
+                                       promptText="随机生成" userData="i18n-prompt:freekill.password.placeholder"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button styleClass="pt-btn-primary" minHeight="30" minWidth="72" text="生成"
+                                    userData="i18n:freekill.generate" onAction="#behWebshellGeneration"/>
                         </HBox>
+                    </VBox>
 
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
-                            <TextField styleClass="pt-input" fx:id="behKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
+                    <!-- AntSword 卡片 -->
+                    <VBox styleClass="fk-shell-card" spacing="8">
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="AntSword" styleClass="fk-shell-name"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="tipTitleAnt" styleClass="fk-shell-path" visible="false"/>
                         </HBox>
-
-                        <Button styleClass="pt-btn-primary" minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#behWebshellGeneration">
-                            <effect>
-                                <DropShadow />
-                            </effect>
-                        </Button>
-                    </HBox>
-
-
-                    <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                        <Label styleClass="pt-h2" id="tipTitle_input_big" text="AntSword"/>
-                        <Label fx:id="tipTitleAnt" visible="false"/>
-                    </HBox>
-                    <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="语言：" userData="i18n:freekill.language"/>
-                            <ComboBox fx:id="antComboBox" prefHeight="30.0" minWidth="100" prefWidth="100" onAction="#antChoose">
-                                <items>
-                                    <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="jsp" />
-                                        <String fx:value="jspx" />
-                                        <String fx:value="php" />
-                                        <String fx:value="asp" />
-                                        <String fx:value="aspx" />
-                                    </FXCollections>
-                                </items>
-                                <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                </cursor>
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label text="语言" styleClass="pt-caption" userData="i18n:freekill.language"/>
+                            <ComboBox fx:id="antComboBox" prefHeight="30" minWidth="90" prefWidth="90" onAction="#antChoose">
+                                <items><FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="jsp"/><String fx:value="jspx"/><String fx:value="php"/>
+                                    <String fx:value="asp"/><String fx:value="aspx"/>
+                                </FXCollections></items>
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
                             </ComboBox>
-                        </HBox>
-
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="编码：" userData="i18n:freekill.encoding"/>
-                            <ComboBox fx:id="antModeComboBox" prefHeight="30.0" minWidth="200" prefWidth="200">
-                                <items>
-                                    <FXCollections fx:id="antFXCollections" fx:factory="observableArrayList">
-                                    </FXCollections>
-                                </items>
-                                <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                </cursor>
+                            <Label text="编码" styleClass="pt-caption" userData="i18n:freekill.encoding"/>
+                            <ComboBox fx:id="antModeComboBox" prefHeight="30" minWidth="180" prefWidth="180">
+                                <items><FXCollections fx:id="antFXCollections" fx:factory="observableArrayList"/></items>
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
                             </ComboBox>
+                            <Label text="密码" styleClass="pt-caption" userData="i18n:freekill.password"/>
+                            <TextField styleClass="pt-input" fx:id="antKey" prefHeight="30" minWidth="130" prefWidth="130"
+                                       promptText="随机生成" userData="i18n-prompt:freekill.password.placeholder"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button styleClass="pt-btn-primary" minHeight="30" minWidth="72" text="生成"
+                                    userData="i18n:freekill.generate" onAction="#antWebshellGeneration"/>
                         </HBox>
+                    </VBox>
 
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
-                            <TextField styleClass="pt-input" fx:id="antKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
+                    <!-- Cmd 卡片 -->
+                    <VBox styleClass="fk-shell-card" spacing="8">
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Cmd" styleClass="fk-shell-name"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="tipTitleCmd" styleClass="fk-shell-path" visible="false"/>
                         </HBox>
-
-                        <Button styleClass="pt-btn-primary" minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#antWebshellGeneration">
-                            <effect>
-                                <DropShadow />
-                            </effect>
-                        </Button>
-                    </HBox>
-
-                    <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                        <Label styleClass="pt-h2" id="tipTitle_input_big" text="Cmd"/>
-                        <Label fx:id="tipTitleCmd" visible="false"/>
-                    </HBox>
-                    <HBox styleClass="contentHbox" alignment="CENTER" spacing="20">
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="语言：" userData="i18n:freekill.language"/>
-                            <ComboBox fx:id="cmdComboBox" prefHeight="30.0" minWidth="100" prefWidth="100" onAction="#cmdChoose">
-                                <items>
-                                    <FXCollections fx:factory="observableArrayList">
-                                        <String fx:value="jsp" />
-                                        <String fx:value="jspx" />
-                                        <String fx:value="ashx" />
-                                    </FXCollections>
-                                </items>
-                                <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                </cursor>
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label text="语言" styleClass="pt-caption" userData="i18n:freekill.language"/>
+                            <ComboBox fx:id="cmdComboBox" prefHeight="30" minWidth="90" prefWidth="90" onAction="#cmdChoose">
+                                <items><FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="jsp"/><String fx:value="jspx"/><String fx:value="ashx"/>
+                                </FXCollections></items>
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
                             </ComboBox>
-                        </HBox>
-
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="编码：" userData="i18n:freekill.encoding"/>
-                            <ComboBox fx:id="cmdModeComboBox"  prefHeight="30.0" minWidth="200" prefWidth="200">
-                                <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                </cursor>
+                            <Label text="编码" styleClass="pt-caption" userData="i18n:freekill.encoding"/>
+                            <ComboBox fx:id="cmdModeComboBox" prefHeight="30" minWidth="180" prefWidth="180">
+                                <cursor><Cursor fx:constant="HAND"/></cursor>
                             </ComboBox>
+                            <Label text="密码" styleClass="pt-caption" userData="i18n:freekill.password"/>
+                            <TextField styleClass="pt-input" fx:id="cmdKey" prefHeight="30" minWidth="130" prefWidth="130"
+                                       promptText="随机生成" userData="i18n-prompt:freekill.password.placeholder"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button styleClass="pt-btn-primary" minHeight="30" minWidth="72" text="生成"
+                                    userData="i18n:freekill.generate" onAction="#cmdWebshellGeneration"/>
                         </HBox>
-
-                        <HBox alignment="CENTER">
-                            <Label id="tipTitle_input" text="密码：" userData="i18n:freekill.password"/>
-                            <TextField styleClass="pt-input" fx:id="cmdKey" prefHeight="40.0" minWidth="150" prefWidth="150" promptText="请输入密码" userData="i18n-prompt:freekill.password.placeholder"/>
-                        </HBox>
-
-                        <Button styleClass="pt-btn-primary" minHeight="40.0" minWidth="150" text="生成" userData="i18n:freekill.generate" onAction="#cmdWebshellGeneration">
-                            <effect>
-                                <DropShadow />
-                            </effect>
-                        </Button>
-                    </HBox>
+                    </VBox>
 
                 </VBox>
 
@@ -436,5 +347,47 @@
         </SmoothScrollPane>
     </HBox>
 
+    <!-- 右侧 BYPASS 面板（对齐 Penpot 修正版） -->
+    <SmoothScrollPane fx:id="bypassPanelScroll"
+                      maxHeight="${sPane.height}" maxWidth="195"
+                      hbarPolicy="NEVER"
+                      StackPane.alignment="TOP_RIGHT"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox styleClass="fk-bypass-panel" spacing="0">
+            <VBox styleClass="fk-bypass-header">
+                <Label text="BYPASS" styleClass="fk-bypass-section-label"/>
+                <Label text="免杀工具" styleClass="fk-bypass-title" userData="i18n:freekill.panel.title"/>
+            </VBox>
+            <VBox styleClass="fk-bypass-items" spacing="0">
+                <VBox styleClass="fk-bypass-item,fk-bypass-selected" onMouseClicked="#toWebshell">
+                    <Label text="Shell 生成" styleClass="fk-bypass-item-name" userData="i18n:freekill.webshell"/>
+                    <Label text="4 种 WebShell 类型" styleClass="fk-bypass-item-sub" userData="i18n:freekill.panel.webshell.sub"/>
+                </VBox>
+                <VBox styleClass="fk-bypass-item" onMouseClicked="#toSignature">
+                    <Label text="签名伪造" styleClass="fk-bypass-item-name" userData="i18n:freekill.signature"/>
+                    <Label text="复制目标签名" styleClass="fk-bypass-item-sub" userData="i18n:freekill.panel.signature.sub"/>
+                </VBox>
+                <VBox styleClass="fk-bypass-item" onMouseClicked="#toQR">
+                    <Label text="二维码生成" styleClass="fk-bypass-item-name" userData="i18n:freekill.qrcode"/>
+                    <Label text="嵌入 Logo" styleClass="fk-bypass-item-sub" userData="i18n:freekill.panel.qr.sub"/>
+                </VBox>
+                <VBox styleClass="fk-bypass-item" onMouseClicked="#toSecureProtect">
+                    <Label text="保护配置" styleClass="fk-bypass-item-name" userData="i18n:freekill.packer"/>
+                    <Label text="代码混淆 / 加密" styleClass="fk-bypass-item-sub" userData="i18n:freekill.panel.protect.sub"/>
+                </VBox>
+            </VBox>
+            <Label text="STATES" styleClass="fk-bypass-states-label" userData="i18n:freekill.panel.states"/>
+            <VBox styleClass="fk-bypass-states" spacing="8">
+                <HBox styleClass="fk-state-chip" alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="fk-state-dot,fk-state-dot-generated"/>
+                    <Label text="Shell 生成" styleClass="fk-state-label" userData="i18n:freekill.webshell"/>
+                </HBox>
+                <HBox styleClass="fk-state-chip" alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="fk-state-dot,fk-state-dot-tool"/>
+                    <Label text="Godzilla ✓" styleClass="fk-state-label"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </SmoothScrollPane>
 
 </StackPane>

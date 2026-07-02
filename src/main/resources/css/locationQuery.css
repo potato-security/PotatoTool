@@ -167,3 +167,17 @@
     -fx-font-size: 12px;
     -fx-text-fill: -pt-text;
 }
+
+/* SYNC 状态徽章 (对齐 Penpot 修正版：强调色，右侧 monospace 标签) */
+.lq-sync-badge {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-padding: 2 6 2 6;
+    -fx-border-color: -pt-accent;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-background-color: transparent;
+}

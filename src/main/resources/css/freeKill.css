@@ -68,3 +68,133 @@
     -fx-border-color: -pt-border-subtle;
     -fx-border-radius: 4;
 }
+
+/* ===== 免杀重构 (对齐 Penpot 修正版) ===== */
+
+/* 左侧导航 */
+.fk-nav-panel {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 1 0 0;
+}
+.fk-nav-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-padding: 16 16 8 16;
+    -fx-letter-spacing: 0.08em;
+}
+.fk-nav-item {
+    -fx-font-size: 13px;
+    -fx-text-fill: -pt-text-secondary;
+    -fx-padding: 10 16 10 16;
+    -fx-cursor: hand;
+}
+.fk-nav-item:hover {
+    -fx-background-color: -pt-bg-hover;
+    -fx-text-fill: -pt-text;
+}
+.fk-nav-selected {
+    -fx-background-color: -pt-bg-selected;
+    -fx-text-fill: -pt-accent;
+    -fx-border-color: -pt-accent;
+    -fx-border-width: 0 0 0 3;
+}
+
+/* Shell 生成区 */
+.fk-section-header {
+    -fx-padding: 12 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+.fk-section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.fk-shell-card {
+    -fx-padding: 12 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+.fk-shell-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+}
+.fk-shell-path {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+}
+
+/* 右侧 BYPASS 面板 */
+.fk-bypass-panel {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-height: 9999;
+}
+.fk-bypass-header {
+    -fx-padding: 16 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+.fk-bypass-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-letter-spacing: 0.08em;
+}
+.fk-bypass-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+    -fx-padding: 4 0 0 0;
+}
+.fk-bypass-items { }
+.fk-bypass-item {
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-cursor: hand;
+}
+.fk-bypass-item:hover { -fx-background-color: -pt-bg-hover; }
+.fk-bypass-selected {
+    -fx-background-color: -pt-bg-selected;
+    -fx-border-color: -pt-accent;
+    -fx-border-width: 0 0 1 3;
+}
+.fk-bypass-item-name {
+    -fx-font-size: 13px;
+    -fx-text-fill: -pt-text;
+    -fx-font-weight: bold;
+}
+.fk-bypass-selected .fk-bypass-item-name { -fx-text-fill: -pt-accent; }
+.fk-bypass-item-sub {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+}
+.fk-bypass-states-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-padding: 12 16 4 16;
+}
+.fk-bypass-states { -fx-padding: 0 16 16 16; }
+.fk-state-chip { }
+.fk-state-dot {
+    -fx-pref-width: 8; -fx-pref-height: 8;
+    -fx-min-width: 8; -fx-min-height: 8;
+    -fx-max-width: 8; -fx-max-height: 8;
+    -fx-background-radius: 50%;
+}
+.fk-state-dot-generated { -fx-background-color: -pt-danger; }
+.fk-state-dot-tool      { -fx-background-color: -pt-success; }
+.fk-state-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -pt-text;
+}

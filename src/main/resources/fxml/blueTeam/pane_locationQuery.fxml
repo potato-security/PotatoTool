@@ -35,11 +35,12 @@
                 <VBox styleClass="lq-card" spacing="0">
                     <!-- Card header -->
                     <HBox styleClass="lq-card-header" alignment="CENTER_LEFT" spacing="10">
-                        <Label text="身份证归属" styleClass="lq-card-title" userData="i18n:location.card.idcard"/>
+                        <Label text="身份证查询" styleClass="lq-card-title" userData="i18n:location.card.idcard"/>
                         <Label text="born / sex / att" styleClass="lq-card-subtitle"/>
                         <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="SYNC" styleClass="lq-sync-badge"/>
                         <Button styleClass="pt-btn" minHeight="32" minWidth="100"
-                                text="批量 TXT" userData="i18n:location.batch.txt" onAction="#getIdCardInfoFx_batch"/>
+                                text="批量导出" userData="i18n:location.batch.txt" onAction="#getIdCardInfoFx_batch"/>
                         <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
                                 text="查询" userData="i18n:location.query" onAction="#getIdCardInfoFx"/>
                     </HBox>
@@ -83,11 +84,12 @@
                 <!-- 银行卡归属 -->
                 <VBox styleClass="lq-card" spacing="0">
                     <HBox styleClass="lq-card-header" alignment="CENTER_LEFT" spacing="10">
-                        <Label text="银行卡归属" styleClass="lq-card-title" userData="i18n:location.card.bankcard"/>
+                        <Label text="银行卡查询" styleClass="lq-card-title" userData="i18n:location.card.bankcard"/>
                         <Label text="cardType / bank / position" styleClass="lq-card-subtitle"/>
                         <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="SYNC" styleClass="lq-sync-badge"/>
                         <Button styleClass="pt-btn" minHeight="32" minWidth="100"
-                                text="批量 TXT" userData="i18n:location.batch.txt" onAction="#getBankCardInfoFx_batch"/>
+                                text="批量导出" userData="i18n:location.batch.txt" onAction="#getBankCardInfoFx_batch"/>
                         <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
                                 text="查询" userData="i18n:location.query" onAction="#getBankCardInfoFx"/>
                     </HBox>
@@ -129,11 +131,12 @@
                 <!-- 手机号归属 -->
                 <VBox styleClass="lq-card" spacing="0">
                     <HBox styleClass="lq-card-header" alignment="CENTER_LEFT" spacing="10">
-                        <Label text="手机号归属" styleClass="lq-card-title" userData="i18n:location.card.phone"/>
-                        <Label text="province / city / carrier" styleClass="lq-card-subtitle"/>
+                        <Label text="手机号查询" styleClass="lq-card-title" userData="i18n:location.card.phone"/>
+                        <Label text="province / city / carrier / areacode / zip" styleClass="lq-card-subtitle"/>
                         <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="SYNC" styleClass="lq-sync-badge"/>
                         <Button styleClass="pt-btn" minHeight="32" minWidth="100"
-                                text="批量 TXT" userData="i18n:location.batch.txt" onAction="#getPhoneInfoFx_batch"/>
+                                text="批量导出" userData="i18n:location.batch.txt" onAction="#getPhoneInfoFx_batch"/>
                         <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
                                 text="查询" userData="i18n:location.query" onAction="#getPhoneInfoFx"/>
                     </HBox>
@@ -195,7 +198,7 @@
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox styleClass="lq-panel-root" spacing="0">
             <VBox styleClass="lq-panel-header">
-                <Label text="QUERY CONTEXT" styleClass="lq-panel-section-label"/>
+                <Label text="LOCATION" styleClass="lq-panel-section-label"/>
                 <Label text="查询模式与状态" styleClass="lq-panel-title" userData="i18n:location.panel.title"/>
             </VBox>
             <!-- Mode cards -->

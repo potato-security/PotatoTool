@@ -478,13 +478,17 @@ public class PaneCommandQuery {
             tips.setMaxWidth(sPane.getWidth() - 215);
             contentObj.add(tips);
 
-            VBox vBox = new VBox();
-            vBox.getStyleClass().add("commandInfoHBox");
+            // AI 命令建议分区（对齐 Penpot 修正版：独立标题行 + 虚线边框）
+            javafx.scene.control.Label aiSectionLabel = new javafx.scene.control.Label(
+                    I18nUtils.getString("cmdquery.ai.section.title", "AI 命令建议"));
+            aiSectionLabel.getStyleClass().add("cmd-ai-section-label");
+            VBox vBox = new VBox(6);
+            vBox.getStyleClass().addAll("commandInfoHBox", "cmd-ai-suggest-box");
             Label aiCommands = new Label();
-            aiCommands.setPrefWidth(sPane.getWidth() - 265);
+            aiCommands.setPrefWidth(sPane.getWidth() - 285);
             aiCommands.setWrapText(true);
-            vBox.setAlignment(Pos.CENTER);
-            vBox.getChildren().add(aiCommands);
+            aiCommands.getStyleClass().add("cmd-ai-result");
+            vBox.getChildren().addAll(aiSectionLabel, aiCommands);
             contentObj.add(vBox);
 
             // 另起线程调用AI接口

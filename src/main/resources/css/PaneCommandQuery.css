@@ -180,3 +180,24 @@
     -fx-font-size: 12px;
     -fx-text-fill: -pt-text;
 }
+
+/* AI 命令建议分区 (对齐 Penpot 修正版虚线边框样式) */
+.cmd-ai-suggest-box {
+    -fx-padding: 12 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-style: dashed;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-background-color: transparent;
+}
+.cmd-ai-section-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+}
+.cmd-ai-result {
+    -fx-font-size: 13px;
+    -fx-text-fill: -pt-text-secondary;
+}
