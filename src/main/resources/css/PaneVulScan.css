@@ -716,3 +716,10 @@
     -fx-font-family: "JetBrains Mono", "Consolas", monospace;
 }
 .stat-num  { -fx-font-size: 18px; -fx-font-weight: bold; }
+
+/* HISTORY 保留天数内联条（对齐 Penpot 修正版底部区域） */
+.history-retention-bar {
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1 0 0 0;
+}

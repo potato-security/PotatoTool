@@ -273,7 +273,16 @@
                 </VBox>
             </HBox>
         </VBox>
-        
+
+        <!-- HISTORY — 保留天数内联设置 (对齐 Penpot 修正版) -->
+        <HBox styleClass="history-retention-bar" alignment="CENTER_LEFT" spacing="10">
+            <Label text="HISTORY" styleClass="pt-section-label" userData="i18n:vulnscan.history.label"/>
+            <Label text="保留天数" styleClass="pt-caption" userData="i18n:vulnscan.history.retentiondays"/>
+            <TextField fx:id="historyRetentionDaysField" text="30" prefWidth="60" styleClass="pt-input" style="-fx-text-alignment: center;"/>
+            <Label text="天" styleClass="pt-caption" userData="i18n:vulnscan.history.days"/>
+            <Button text="清理历史▲" styleClass="pt-btn" onAction="#cleanHistoryByRetention" userData="i18n:vulnscan.history.clean"/>
+        </HBox>
+
     </VBox>
     </SmoothScrollPane>
     

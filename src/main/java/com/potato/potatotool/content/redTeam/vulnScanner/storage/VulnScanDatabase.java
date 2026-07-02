@@ -736,6 +736,33 @@ public class VulnScanDatabase {
 
         System.out.println("✓ 已清空所有历史记录");
     }
+
+    /** 删除 N 天前的历史记录（scan_records + 级联子表） */
+    public synchronized int clearHistoryOlderThan(int days) throws SQLException {
+        long cutoff = System.currentTimeMillis() - (long) days * 86400_000L;
+        PreparedStatement psIds = connection.prepareStatement(
+                "SELECT id FROM scan_records WHERE start_time < ?");
+        psIds.setLong(1, cutoff);
+        ResultSet rs = psIds.executeQuery();
+        java.util.List<Long> ids = new java.util.ArrayList<Long>();
+        while (rs.next()) ids.add(rs.getLong(1));
+        rs.close(); psIds.close();
+
+        int deleted = 0;
+        for (long id : ids) {
+            PreparedStatement d1 = connection.prepareStatement("DELETE FROM vuln_details WHERE scan_id=?");
+            d1.setLong(1, id); d1.executeUpdate(); d1.close();
+            PreparedStatement d2 = connection.prepareStatement("DELETE FROM scan_states WHERE scan_id=?");
+            d2.setLong(1, id); d2.executeUpdate(); d2.close();
+            PreparedStatement d3 = connection.prepareStatement("DELETE FROM task_states WHERE scan_id=?");
+            d3.setLong(1, id); d3.executeUpdate(); d3.close();
+            PreparedStatement d4 = connection.prepareStatement("DELETE FROM scan_records WHERE id=?");
+            d4.setLong(1, id); d4.executeUpdate(); d4.close();
+            deleted++;
+        }
+        System.out.println("✓ 已清理 " + deleted + " 条超过 " + days + " 天的历史记录");
+        return deleted;
+    }
     
     /**
      * 获取统计信息

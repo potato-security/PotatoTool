@@ -171,6 +171,7 @@ public class PaneVulScan {
     @FXML private VBox historyPane;
     @FXML private DatePicker startDatePicker;
     @FXML private DatePicker endDatePicker;
+    @FXML private TextField historyRetentionDaysField;
     @FXML private TableView<HistoryItem> historyTableView;
     @FXML private TableColumn<HistoryItem, String> historyTimeColumn;
     @FXML private TableColumn<HistoryItem, String> historyCritColumn;
@@ -2354,7 +2355,43 @@ public class PaneVulScan {
                 }
         );
     }
-    
+
+    /** 按保留天数清理历史记录（对齐 Penpot 修正版 HISTORY 内联区） */
+    @FXML
+    public void cleanHistoryByRetention(ActionEvent event) {
+        int days;
+        try {
+            days = Integer.parseInt(historyRetentionDaysField == null ? "30" : historyRetentionDaysField.getText().trim());
+            if (days <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            showPrompt(I18nUtils.getString("vulnscan.msg.history.invaliddays"), true);
+            return;
+        }
+        final int keepDays = days;
+        showPromptConfirm(
+                I18nUtils.getString("vulnscan.dialog.cleanretention.title"),
+                I18nUtils.getString("vulnscan.dialog.cleanretention.header", keepDays),
+                I18nUtils.getString("vulnscan.dialog.cleanretention.content"),
+                () -> {
+                    Task<Integer> task = new Task<Integer>() {
+                        @Override
+                        protected Integer call() throws Exception {
+                            return database.clearHistoryOlderThan(keepDays);
+                        }
+                    };
+                    task.setOnSucceeded(e2 -> {
+                        int deleted = task.getValue();
+                        showPrompt(I18nUtils.getString("vulnscan.msg.history.cleaned", deleted), false);
+                    });
+                    task.setOnFailed(e2 -> {
+                        showPrompt(I18nUtils.getString("vulnscan.msg.history.cleanfailed"), true);
+                        if (debugMode) task.getException().printStackTrace();
+                    });
+                    new Thread(task).start();
+                }
+        );
+    }
+
     @FXML
     public void exportHistory(ActionEvent event) {
         HistoryItem selected = historyTableView.getSelectionModel().getSelectedItem();
