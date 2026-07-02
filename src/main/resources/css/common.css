@@ -707,14 +707,20 @@
 
 }
 .table-view .column-header-background{
-    /*导航整行cell*/
-    -fx-background-color: linear-gradient(#424141 0%, -main-border-color 50%, #424141 100%);
+    /*导航整行cell — 收敛到 token 体系的低调表头*/
+    -fx-background-color: -pt-bg-panel;
     -fx-background-radius: 8 8 0 0;
-    -fx-font-size: 18;
+    -fx-font-size: 12;
 }
 .table-view .column-header-background .label{
     /*导航单个cell*/
     -fx-background-color: transparent;
+    -fx-text-fill: -pt-text-muted;
+}
+.table-view .column-header, .table-view .filler{
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent -pt-border-subtle transparent;
+    -fx-border-width: 0 0 1px 0;
 }
 .table-view .column-header{
     -fx-background-color: transparent;
