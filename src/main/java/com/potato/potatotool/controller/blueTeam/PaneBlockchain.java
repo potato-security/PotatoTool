@@ -2790,7 +2790,7 @@ public class PaneBlockchain {
                         VBox vBoxConent = new VBox();
                         vBoxConent.setPrefWidth(sPane.getWidth() - 280);
                         vBoxConent.getStyleClass().add("cellVBox");
-                        vBoxConent.setAlignment(Pos.CENTER);
+                        vBoxConent.setAlignment(Pos.CENTER_LEFT);
                         vBoxConent.setCursor(Cursor.HAND);
 
                         HBox hBox = buildCardHeader(
@@ -2852,7 +2852,7 @@ public class PaneBlockchain {
                         VBox vBoxConent = new VBox();
                         vBoxConent.setPrefWidth(sPane.getWidth() - 280);
                         vBoxConent.getStyleClass().add("cellVBox");
-                        vBoxConent.setAlignment(Pos.CENTER);
+                        vBoxConent.setAlignment(Pos.CENTER_LEFT);
                         vBoxConent.setCursor(Cursor.HAND);
 
                         HBox hBox = buildCardHeader(
@@ -2908,7 +2908,7 @@ public class PaneBlockchain {
                         VBox vBoxConent = new VBox();
                         vBoxConent.setPrefWidth(sPane.getWidth() - 280);
                         vBoxConent.getStyleClass().add("cellVBox");
-                        vBoxConent.setAlignment(Pos.CENTER);
+                        vBoxConent.setAlignment(Pos.CENTER_LEFT);
                         vBoxConent.setCursor(Cursor.HAND);
 
                         HBox hBox = buildCardHeader(
