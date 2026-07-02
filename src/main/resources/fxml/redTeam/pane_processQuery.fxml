@@ -33,7 +33,10 @@
                 <Region styleClass="proc-panel-divider" maxWidth="Infinity"/>
                 <VBox styleClass="proc-inset" VBox.vgrow="ALWAYS">
                     <Label text="NAME        TYPE" styleClass="proc-col-header" userData="i18n:process.antivirus.cols"/>
-                    <SmoothTextArea fx:id="antivirus" styleClass="proc-output,pt-mono" wrapText="false" VBox.vgrow="ALWAYS"/>
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="proc-output-scroll" VBox.vgrow="ALWAYS"
+                                style="-fx-background-color: transparent; -fx-background: transparent;">
+                        <VBox fx:id="antivirus" styleClass="proc-rows" spacing="2"/>
+                    </ScrollPane>
                 </VBox>
             </VBox>
 
@@ -42,7 +45,10 @@
                 <Region styleClass="proc-panel-divider" maxWidth="Infinity"/>
                 <VBox styleClass="proc-inset" VBox.vgrow="ALWAYS">
                     <Label text="PROCESS        PID" styleClass="proc-col-header" userData="i18n:process.other.cols"/>
-                    <SmoothTextArea fx:id="canRoot" styleClass="proc-output,pt-mono" wrapText="false" VBox.vgrow="ALWAYS"/>
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="proc-output-scroll" VBox.vgrow="ALWAYS"
+                                style="-fx-background-color: transparent; -fx-background: transparent;">
+                        <VBox fx:id="canRoot" styleClass="proc-rows" spacing="2"/>
+                    </ScrollPane>
                 </VBox>
             </VBox>
 

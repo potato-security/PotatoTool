@@ -51,6 +51,33 @@
     -fx-fill: -pt-text-muted;
 }
 
+/* 逐行样式行（对齐 Penpot 稿的 NAME/TYPE 行呈现） */
+.proc-output-scroll,
+.proc-output-scroll .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+.proc-rows {
+    -fx-padding: 4 0 4 0;
+}
+.proc-row {
+    -fx-padding: 3 4 3 4;
+    -fx-background-radius: 4;
+}
+.proc-row:hover {
+    -fx-background-color: -pt-bg-hover;
+}
+.proc-row-name {
+    -fx-font-family: "Consolas", "SF Mono", "Menlo", "Courier New", monospace;
+    -fx-font-size: 12.5px;
+    -fx-text-fill: -pt-text;
+}
+.proc-row-type {
+    -fx-font-family: "Consolas", "SF Mono", "Menlo", "Courier New", monospace;
+    -fx-font-size: 12.5px;
+    -fx-text-fill: -pt-text-secondary;
+}
+
 /* 等宽输出区: 透明融入内凹底 */
 .proc-output,
 .proc-output .content,
