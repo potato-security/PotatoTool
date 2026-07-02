@@ -17,20 +17,6 @@
     -fx-border-radius: 10;
     -fx-padding: 30;
 }
-/* ===== 归属地查询 卡片版式 (对齐 Penpot: 卡片标题 + 上置字段标签) ===== */
-.loc-card {
-    -fx-background-color: -pt-bg-panel;
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-border-width: 1;
-    -fx-border-color: -pt-border;
-    -fx-padding: 14 16 16 16;
-}
-.loc-card-title {
-    -fx-font-size: 15px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -pt-text;
-}
 .loc-field-label {
     -fx-font-size: 11px;
     -fx-text-fill: -pt-text-muted;
@@ -66,7 +52,7 @@
 }
 .infogen-copy-btn:hover {
     -fx-background-color: -pt-accent-red;
-    -fx-text-fill: white;
+    -fx-text-fill: -pt-text-inverse;
     -fx-border-color: -pt-accent-red;
 }
 

@@ -1,5 +1,5 @@
 .cf-switch{
-    -cf-color: #D85550;
+    -cf-color: -pt-danger;
     -fx-cursor: hand;
 }
 .cf-switch > .container{
@@ -8,8 +8,8 @@
     -fx-pref-height: 32px;
 }
 .cf-switch:selected{
-    -cf-color: #3ECEE3;
+    -cf-color: -pt-accent-teal;
 }
 .cf-switch:selected > .container{
-    -fx-text-fill: #3ECEE3;
+    -fx-text-fill: -pt-accent-teal;
 }

@@ -2,6 +2,10 @@
  * 规则: 不硬编码色值 / 不再用 -main-*，一律引用 -pt-*。
  * 圆角/间距对齐 4/8/16 与 8pt 规范。选择文件按钮改用 FXML 的 pt-btn-primary。 */
 
+.exif-root {
+    -fx-padding: 18 20 20 20;
+}
+
 #listView{
     -fx-background-color: -pt-bg-panel;
     -fx-border-color: -pt-border;

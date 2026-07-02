@@ -112,7 +112,6 @@
     <StackPane fx:id="promptPane" visible="false" managed="false" translateY="-25"
                maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER"
                StackPane.alignment="CENTER">
-        <effect><DropShadow/></effect>
         <Label fx:id="prompt" wrapText="true" textAlignment="CENTER" alignment="CENTER" maxWidth="600"/>
     </StackPane>
 

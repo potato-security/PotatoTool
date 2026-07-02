@@ -17,6 +17,11 @@
     -pt-bg-panel:     #0A141C;   /* 面板 */
     -pt-bg-elevated:  #0F1A24;   /* 抬升卡片 */
     -pt-bg-inset:     #060D14;   /* 内凹输入/代码区 */
+    /* 交互状态背景 */
+    -pt-bg-hover:     derive(-pt-bg-elevated, 8%);   /* 悬停行/项 */
+    -pt-bg-selected:  derive(-pt-accent, -60%);       /* 选中项 */
+    -pt-bg-disabled:  -pt-bg-inset;                   /* 禁用容器 */
+    -pt-bg-overlay:   rgba(4,11,18,0.72);              /* 遮罩层 */
 
     /* --- 边框 --- */
     -pt-border:        #2A3B49;  /* 常规边框 */
@@ -40,11 +45,16 @@
     -pt-accent-red:  #FF5C66;    /* Red Team */
     -pt-accent:      #4FE3FF;    /* 当前模式强调 (默认 teal，redStyle/blueStyle 覆盖) */
     -pt-accent-soft: derive(-pt-accent, -60%); /* 强调色低亮度填充底 (跟随模式) */
+    -pt-accent-hover:   derive(-pt-accent, -15%);  /* hover 态轻亮 */
+    -pt-accent-pressed: derive(-pt-accent, -30%);  /* pressed 态暗 */
 
     /* --- 语义色 --- */
     -pt-success: #5BF0B4;
     -pt-warning: #F4B740;
     -pt-danger:  #FF5C66;
+    -pt-danger-hover:  derive(-pt-danger, -15%);
+    -pt-success-hover: derive(-pt-success, -15%);
+    -pt-warning-hover: derive(-pt-warning, -15%);
     -pt-info:    #4FE3FF;
     -pt-error:   #FF5C66;  /* alias → -pt-danger，供 ext-state-error 等使用 */
     -pt-crit:    #FF3A44;  /* critical 比 danger 更高饱和 */

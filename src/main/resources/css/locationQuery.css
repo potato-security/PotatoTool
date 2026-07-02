@@ -1,5 +1,9 @@
 /* 归属地查询页 — 1:1 Penpot 设计实现 */
 
+.loc-field {
+    -fx-hgrow: ALWAYS;
+}
+
 /* ===== Top status bar ===== */
 .lq-statusbar {
     -fx-background-color: -pt-bg-elevated;

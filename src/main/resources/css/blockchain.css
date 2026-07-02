@@ -70,11 +70,11 @@
 }
 .tableVBox{
     -fx-border-width: 1 0.5 1 0.5;
-    -fx-border-color: -pt-text-secondary;
+    -fx-border-color: -pt-border;
 }
 .tableTitle .label{
     -fx-border-width: 0 0.5 0 0.5;
-    -fx-border-color: -pt-text-secondary;
+    -fx-border-color: -pt-border-subtle;
     -fx-padding: 8;
 }
 /*.tableTitle .hbox{*/
@@ -96,12 +96,12 @@
 }
 .tableContent .label{
     -fx-border-width: 0 0.5 0 0.5;
-    -fx-border-color: -pt-text-secondary;
+    -fx-border-color: -pt-border-subtle;
     -fx-padding: 4;
 }
 .tableContent .hbox{
     -fx-border-width: 0 0.5 0 0.5;
-    -fx-border-color: -pt-text-secondary;
+    -fx-border-color: -pt-border-subtle;
     -fx-padding: 4;
 }
 .tokentransIcon{
@@ -121,7 +121,7 @@
 }
 .tableListView{
     -fx-border-width: 1 0.5 1 0.5;
-    -fx-border-color: -pt-text-secondary;
+    -fx-border-color: -pt-border;
     -fx-padding: 0;
 }
 
@@ -155,7 +155,7 @@
     -fx-padding: 16;
     -fx-border-width: 1;
     -fx-border-radius: 8;
-    -fx-border-color: -pt-text-secondary;
+    -fx-border-color: -pt-border-subtle;
 }
 
 .sampleCard:hover {
@@ -178,7 +178,7 @@
     -fx-background-radius: 8;
     -fx-border-width: 1;
     -fx-border-radius: 8;
-    -fx-border-color: -pt-text-secondary;
+    -fx-border-color: -pt-border-subtle;
 }
 
 .sampleDescription {
@@ -235,7 +235,7 @@
 .analysisRow {
     -fx-padding: 4 0 4 0;
     -fx-border-width: 0 0 1 0;
-    -fx-border-color: linear-gradient(to right,transparent 0%, -pt-text-secondary 20%, -pt-text-secondary 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right,transparent 0%, -pt-border-subtle 20%, -pt-border-subtle 80%, transparent 100%);
 }
 
 .analysisKey {
@@ -253,7 +253,7 @@
     -fx-background-radius: 8;
     -fx-border-width: 1;
     -fx-border-radius: 8;
-    -fx-border-color: -pt-text-secondary;
+    -fx-border-color: -pt-border-subtle;
 }
 
 .analysisWarningBox .label {

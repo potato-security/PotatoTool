@@ -243,7 +243,15 @@
     -fx-padding: 8 0 0 0;
 }
 
-.prompt-dialog-primary, .prompt-dialog-secondary {
+.prompt-dialog-primary {
+    -fx-background-color: -pt-accent;
+    -fx-text-fill: #040B12;
+    -fx-background-radius: 4;
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+    -fx-padding: 5 16 5 16;
+}
+.prompt-dialog-secondary {
     -fx-font-size: 13;
     -fx-padding: 5 16 5 16;
 }
@@ -348,7 +356,7 @@
 .severity-critical { -fx-background-color: -pt-crit; }
 .severity-high { -fx-background-color: -pt-danger; }
 .severity-medium { -fx-background-color: -pt-warning; }
-.severity-low { -fx-background-color: -pt-info; }
+.severity-low { -fx-background-color: -pt-success; }
 .severity-info { -fx-background-color: -pt-text-muted; }
 
 .severity-card-critical { -fx-background-color: -pt-danger-soft; -fx-border-color: -pt-crit; }
@@ -532,7 +540,7 @@
 .vuln-titled-pane.severity-critical .title { -fx-border-color: -pt-crit; -fx-border-width: 0 0 0 4; }
 .vuln-titled-pane.severity-high .title { -fx-border-color: -pt-danger; -fx-border-width: 0 0 0 4; }
 .vuln-titled-pane.severity-medium .title { -fx-border-color: -pt-warning; -fx-border-width: 0 0 0 4; }
-.vuln-titled-pane.severity-low .title { -fx-border-color: -pt-info; -fx-border-width: 0 0 0 4; }
+.vuln-titled-pane.severity-low .title { -fx-border-color: -pt-success; -fx-border-width: 0 0 0 4; }
 .vuln-titled-pane.severity-info .title { -fx-border-color: -pt-text-muted; -fx-border-width: 0 0 0 4; }
 
 .vuln-detail-content {

@@ -80,6 +80,7 @@ public class PaneAbout {
         if (platformLabel != null) platformLabel.setText(os.trim());
         if (jdkLabel != null) jdkLabel.setText(jdk);
         if (dataPathLabel != null) dataPathLabel.setText(home + "/.potatotool");
+        if (buildLabel != null) buildLabel.setText(getBuildString());
     }
 
     private String getBuildString() {

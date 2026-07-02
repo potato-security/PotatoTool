@@ -1,14 +1,5 @@
 
 /* ===== 专项加解密 / separateDecode ===== */
-.sep-root { -fx-padding: 16 20 20 20; }
-.sep-chips { -fx-alignment: CENTER_LEFT; }
-
-/* 区块标签（RULE SELECTION / PARAMETERS / OUTPUT …） */
-.sep-tag {
-    -fx-font-family: "JetBrains Mono", monospace;
-    -fx-font-size: 10px;
-    -fx-text-fill: -pt-text-tertiary;
-}
 
 /* AI 状态徽章 */
 .sep-badge-success {

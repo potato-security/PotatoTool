@@ -14,21 +14,21 @@
 }
 
 .root{
-    /* 基座已重映射到统一 navy 调色板 (与 theme.css -pt-* 同值) */
-    -main-blue-color: #4FE3FF;
-    -main-red-color: #FF5C66;
-    -main-font-color: #E8F4F9;
-    -main-btnContent-color: #0F1A24;
-    -main-topBar-color: #0A141C;
-    -main-cell-color: #0F1A24;
-    -main-menuBg-color: #0F1A24;
-    -main-lineno-color: #2A3B49;
-    -main-linenoText-color: #9DB2BE;
-    -main-tips-color: #F4B740;
+    /* 基座变量统一指向 -pt-* token，单点修改自动同步全局 */
+    -main-blue-color: -pt-accent-teal;
+    -main-red-color: -pt-accent-red;
+    -main-font-color: -pt-text;
+    -main-btnContent-color: -pt-bg-panel;
+    -main-topBar-color: -pt-bg-panel;
+    -main-cell-color: -pt-bg-panel;
+    -main-menuBg-color: -pt-bg-panel;
+    -main-lineno-color: -pt-border;
+    -main-linenoText-color: -pt-text-muted;
+    -main-tips-color: -pt-warning;
 
-    -main-border-color: #4FE3FF;
-    -main-borderHover-color: #2B8B95;
-    -main-smallbtnBg-color: #4FE3FF;
+    -main-border-color: -pt-accent;
+    -main-borderHover-color: -pt-accent-hover;
+    -main-smallbtnBg-color: -pt-accent;
     -main-btnTransition-color: linear-gradient(to bottom, #4FE3FF, #2FA6C9);
     -main-btnTransitionPressed-color: linear-gradient(to bottom, #3fd0a8, #1a7fd0);
 
@@ -936,6 +936,12 @@
     -fx-background-color: transparent;
     -fx-alignment: center-left;
 }
+.list-view .list-cell:hover {
+    -fx-background-color: -pt-bg-hover;
+}
+.list-view .list-cell:selected {
+    -fx-background-color: -pt-bg-selected;
+}
 .list-view .corner {
     -fx-background-color: transparent;
 }
@@ -978,7 +984,7 @@
 }
 
 .copyButton{
-    -fx-background-color: black;
+    -fx-background-color: -pt-bg-elevated;
     -fx-opacity: 0.7;
     -fx-fill: -main-border-color;
     -fx-font-size: 13;

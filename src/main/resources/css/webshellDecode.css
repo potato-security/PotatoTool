@@ -174,8 +174,8 @@
     -fx-background-color: -pt-bg-elevated;
     -fx-border-color: -pt-border;
     -fx-border-width: 1;
-    -fx-border-radius: 50%;
-    -fx-background-radius: 50%;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
     -fx-pref-width: 56;
     -fx-pref-height: 28;
     -fx-alignment: CENTER;
@@ -218,7 +218,6 @@
     -fx-font-weight: bold;
     -fx-text-fill: -pt-text-muted;
     -fx-font-family: "Consolas", "JetBrains Mono", monospace;
-    -fx-letter-spacing: 1;
 }
 .wd-ctx-title {
     -fx-font-size: 14px;

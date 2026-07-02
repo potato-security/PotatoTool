@@ -42,7 +42,7 @@
                         <HBox alignment="CENTER" prefHeight="${topBar.height}" spacing="0">
                             <Button styleClass="upd-close-btn" mnemonicParsing="false"
                                     onAction="#exitAction" text="✕"
-                                    prefHeight="28" prefWidth="28"/>
+                                    prefHeight="20" prefWidth="20"/>
                             <Pane minWidth="12"/>
                         </HBox>
                     </right>

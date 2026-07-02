@@ -67,7 +67,7 @@
     -fx-background-color: -pt-bg-panel;
 }
 .titledPane_4 > .title {
-    -fx-background-color: -pt-text-secondary;
+    -fx-background-color: -pt-bg-elevated;
 }
 
 /* ===== 复制按钮 (override common.css) ===== */
@@ -109,7 +109,6 @@
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-text-fill: -pt-text-muted;
-    -fx-letter-spacing: 1.5px;
 }
 .cmd-panel-title {
     -fx-font-size: 15px;
@@ -156,7 +155,6 @@
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-text-fill: -pt-text-muted;
-    -fx-letter-spacing: 1.5px;
     -fx-padding: 10 16 4 16;
     -fx-border-color: -pt-border-subtle;
     -fx-border-width: 1 0 0 0;

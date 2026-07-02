@@ -93,7 +93,6 @@
     -fx-padding: 8 16 16 16;
 }
 .cve-state-chip {
-    -fx-padding: 4 0 4 0;
     -fx-background-color: -pt-bg-elevated;
     -fx-background-radius: 6;
     -fx-padding: 6 12 6 12;

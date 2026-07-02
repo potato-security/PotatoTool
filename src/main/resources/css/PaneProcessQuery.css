@@ -6,12 +6,6 @@
     -fx-padding: 20 24 24 24;
 }
 
-/* 输入带占位标题 */
-#tipTitle {
-    -fx-pref-width: 126;
-    -fx-min-width: 126;
-}
-
 /* 外层结果面板：透明底 + 描边卡片，顶部一道极淡青色高光 */
 .proc-panel {
     -fx-background-color: transparent;
@@ -35,7 +29,7 @@
     -fx-pref-height: 1;
     -fx-min-height: 1;
     -fx-max-height: 1;
-    -fx-background-color: rgba(26, 38, 48, 0.4);
+    -fx-background-color: -pt-border-subtle;
 }
 
 /* 内凹结果区 */

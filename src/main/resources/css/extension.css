@@ -18,13 +18,13 @@
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-text-fill: -pt-text-muted;
-    -fx-font-family: "Monospace";
+    -fx-font-family: "monospace";
 }
 .ext-stat-val {
     -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: -pt-text;
-    -fx-font-family: "Monospace";
+    -fx-font-family: "monospace";
 }
 .ext-registry-status {
     -fx-text-fill: -pt-accent-teal;
@@ -104,6 +104,11 @@
     -fx-text-fill: -pt-accent;
     -fx-font-weight: bold;
 }
+.ext-filter-chip-selected:hover {
+    -fx-background-color: derive(-pt-accent, -55%);
+    -fx-border-color: -pt-accent;
+    -fx-text-fill: -pt-accent;
+}
 
 /* 扩展卡片 */
 .ext-card {
@@ -139,7 +144,7 @@
 .ext-card-version {
     -fx-font-size: 10px;
     -fx-text-fill: -pt-text-muted;
-    -fx-font-family: "Monospace";
+    -fx-font-family: "monospace";
 }
 .ext-card-desc {
     -fx-font-size: 11px;
@@ -205,8 +210,7 @@
     -fx-font-size: 9px;
     -fx-font-weight: bold;
     -fx-text-fill: -pt-text-muted;
-    -fx-font-family: "Monospace";
-    -fx-letter-spacing: 1px;
+    -fx-font-family: "monospace";
 }
 .ext-cat-title {
     -fx-font-size: 14px;
@@ -245,7 +249,7 @@
     -fx-font-size: 9px;
     -fx-font-weight: bold;
     -fx-text-fill: -pt-text-muted;
-    -fx-font-family: "Monospace";
+    -fx-font-family: "monospace";
     -fx-padding: 14 14 6 14;
     -fx-border-color: -pt-border transparent transparent transparent;
     -fx-border-width: 1 0 0 0;

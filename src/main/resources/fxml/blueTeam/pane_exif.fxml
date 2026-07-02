@@ -11,7 +11,7 @@
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneExif"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox fx:id="paneBox" alignment="CENTER" spacing="16" style="-fx-padding: 18 20 20 20;">
+    <VBox fx:id="paneBox" alignment="CENTER" spacing="16" styleClass="exif-root">
 
         <!-- SOURCE FILE 卡片 (对齐 Penpot: 标题 + 选择按钮 + 支持格式提示) -->
         <VBox styleClass="exif-source" spacing="10" alignment="CENTER" maxWidth="Infinity">
