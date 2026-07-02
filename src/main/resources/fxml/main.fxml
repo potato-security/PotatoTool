@@ -51,8 +51,8 @@
                            <VBox alignment="CENTER_LEFT" prefHeight="${topBar.height}" spacing="4" style="-fx-padding: 0 0 0 20;">
                               <Label text="MODE" styleClass="header-mode-label"/>
                               <HBox fx:id="changeBtn" styleClass="mode-toggle-group" spacing="6" alignment="CENTER_LEFT">
-                                 <Button fx:id="btnBlueMode" text="Blue" userData="i18n:main.mode.blue" mnemonicParsing="false" onAction="#changeModeBlue" styleClass="mode-pill,mode-pill-blue"/>
-                                 <Button fx:id="btnRedMode" text="Red" userData="i18n:main.mode.red" mnemonicParsing="false" onAction="#changeModeRed" styleClass="mode-pill,mode-pill-red"/>
+                                 <Button fx:id="btnBlueMode" text="Blue" mnemonicParsing="false" onAction="#changeModeBlue" styleClass="mode-pill,mode-pill-blue"/>
+                                 <Button fx:id="btnRedMode" text="Red" mnemonicParsing="false" onAction="#changeModeRed" styleClass="mode-pill,mode-pill-red"/>
                               </HBox>
                               <!-- 保留 fx:id 供 controller 旧引用（已废弃的滑动动画），避免 NPE -->
                               <HBox fx:id="topBarLeft" managed="false" visible="false"/>
@@ -74,7 +74,7 @@
                         <right>
                            <HBox alignment="CENTER" spacing="10" prefHeight="${topBar.height}">
                               <HBox alignment="CENTER" spacing="7" styleClass="header-status">
-                                 <Label text="LOCAL" styleClass="status-pill,status-pill-local"/>
+                                 <Label text="● LOCAL" styleClass="status-pill,status-pill-local"/>
                                  <Label fx:id="proxyStatusLabel" text="PROXY OFF" styleClass="status-pill"/>
                               </HBox>
                               <Pane minWidth="6"/>

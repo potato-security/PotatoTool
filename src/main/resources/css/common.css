@@ -420,6 +420,7 @@
 }
 .status-pill-local{
     -fx-text-fill: -pt-success;
+    -fx-border-color: -pt-success;
 }
 .status-pill-on{
     -fx-text-fill: -pt-accent;
@@ -503,24 +504,8 @@
     -fx-arc-width: 10;
     -fx-fill: -main-red-color;
 }
-#btnBlueMode{
-    -fx-background-color: transparent;
-    -fx-border-color: -main-border-color;
-    -fx-border-radius: 5 0 0 5;
-    -fx-border-width: 1 0 1 1;
-    -fx-padding: 0;
-    -fx-font-size: 16;
-    -fx-text-fill: -main-font-color;
-}
-#btnRedMode{
-    -fx-background-color: transparent;
-    -fx-border-color: -main-border-color;
-    -fx-border-radius: 0 5 5 0;
-    -fx-border-width: 1 1 1 0;
-    -fx-padding: 0;
-    -fx-font-size: 16;
-    -fx-text-fill: -main-font-color;
-}
+/* #btnBlueMode / #btnRedMode — 旧侧栏胶囊样式已废弃；
+   样式现由 .mode-pill + .mode-pill-active 类控制，ID 规则不再覆盖 */
 
 .main-pane{
     -fx-border-width: 0;
