@@ -344,6 +344,30 @@
                                                         <CFSwitch fx:id="quakeProxy"/>
                                                     </HBox>
                                                 </VBox>
+                                                <!-- Google 卡片 (对齐 Penpot 修正版 — Hunter/Quake/Google 三列同排) -->
+                                                <VBox HBox.hgrow="ALWAYS" styleClass="pt-panel" spacing="8">
+                                                    <Label text="Google" styleClass="pt-h2" style="-fx-text-fill: -pt-accent;"/>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="API Key" styleClass="pt-caption" minWidth="72" userData="i18n:setting.asset.google"/>
+                                                        <VBox fx:id="googleVBox" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="8">
+                                                            <StackPane>
+                                                                <TextField styleClass="paddingRightButton" promptText="格式为Google_Key:Google_Cx" StackPane.alignment="CENTER" userData="i18n-prompt:setting.asset.google.placeholder">
+                                                                    <tooltip><Tooltip text="格式为Google_Key:Google_Cx" userData="i18n:setting.asset.google.tooltip"/></tooltip>
+                                                                </TextField>
+                                                                <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
+                                                                    <graphic><Region styleClass="addIcon"/></graphic>
+                                                                    <tooltip><Tooltip text="添加" userData="i18n:tooltip.add"/></tooltip>
+                                                                </Label>
+                                                            </StackPane>
+                                                        </VBox>
+                                                    </HBox>
+                                                    <HBox alignment="CENTER_LEFT" spacing="8">
+                                                        <Label text="代理子开关" styleClass="pt-caption" minWidth="72" userData="i18n:setting.asset.proxy.sub"/>
+                                                        <CFSwitch fx:id="googleProxy">
+                                                            <tooltip><Tooltip text="需要国外IP,建议开启代理" userData="i18n:setting.asset.google.proxy.tooltip"/></tooltip>
+                                                        </CFSwitch>
+                                                    </HBox>
+                                                </VBox>
                                             </HBox>
                                             <HBox alignment="CENTER" spacing="10">
                                                 <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Shodan_Key：" userData="i18n:setting.asset.shodan"/>
@@ -358,32 +382,6 @@
                                                 <CFSwitch fx:id="zoomeyeProxy">
                                                     <tooltip>
                                                         <Tooltip text="需要国外IP,建议开启代理" userData="i18n:setting.asset.zoomeye.proxy.tooltip"/>
-                                                    </tooltip>
-                                                </CFSwitch>
-                                            </HBox>
-                                            <HBox alignment="TOP_CENTER" spacing="10">
-                                                <Label minWidth="${newMaxWidthlabel.width}" textAlignment="RIGHT" text="Google_API：" userData="i18n:setting.asset.google"/>
-                                                <VBox fx:id="googleVBox" alignment="CENTER_LEFT"  spacing="10">
-                                                    <StackPane>
-                                                        <TextField styleClass="paddingRightButton" promptText="格式为Google_Key:Google_Cx" prefWidth="250" StackPane.alignment="CENTER" userData="i18n-prompt:setting.asset.google.placeholder">
-                                                            <tooltip>
-                                                                <Tooltip text="格式为Google_Key:Google_Cx" userData="i18n:setting.asset.google.tooltip"/>
-                                                            </tooltip>
-                                                        </TextField>
-                                                        <Label alignment="CENTER" translateX="35" styleClass="rightButton" onMouseClicked="#addTextField" StackPane.alignment="CENTER_RIGHT">
-                                                            <graphic>
-                                                                <Region styleClass="addIcon"/>
-                                                            </graphic>
-                                                            <tooltip>
-                                                                <Tooltip text="添加" userData="i18n:tooltip.add"/>
-                                                            </tooltip>
-                                                        </Label>
-                                                    </StackPane>
-                                                </VBox>
-                                                <Label minWidth="20"/>
-                                                <CFSwitch fx:id="googleProxy">
-                                                    <tooltip>
-                                                        <Tooltip text="需要国外IP,建议开启代理" userData="i18n:setting.asset.google.proxy.tooltip"/>
                                                     </tooltip>
                                                 </CFSwitch>
                                             </HBox>
