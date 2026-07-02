@@ -28,8 +28,8 @@
                 <Label text="导出：CSV" styleClass="lq-status-info" userData="i18n:location.status.export"/>
             </HBox>
 
-            <!-- ===== Main content ===== -->
-            <VBox spacing="16" style="-fx-padding: 16 20 40 20;">
+            <!-- ===== Main content ===== 右侧留出 QUERY CONTEXT 面板宽度(200)，避免卡片按钮被面板遮挡 -->
+            <VBox spacing="16" style="-fx-padding: 16 224 40 20;">
 
                 <!-- 身份证归属 -->
                 <VBox styleClass="lq-card" spacing="0">
@@ -38,7 +38,7 @@
                         <Label text="身份证归属" styleClass="lq-card-title" userData="i18n:location.card.idcard"/>
                         <Label text="born / sex / att" styleClass="lq-card-subtitle"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Button styleClass="pt-btn" minHeight="32" minWidth="80"
+                        <Button styleClass="pt-btn" minHeight="32" minWidth="100"
                                 text="批量 TXT" userData="i18n:location.batch.txt" onAction="#getIdCardInfoFx_batch"/>
                         <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
                                 text="查询" userData="i18n:location.query" onAction="#getIdCardInfoFx"/>
@@ -86,7 +86,7 @@
                         <Label text="银行卡归属" styleClass="lq-card-title" userData="i18n:location.card.bankcard"/>
                         <Label text="cardType / bank / position" styleClass="lq-card-subtitle"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Button styleClass="pt-btn" minHeight="32" minWidth="80"
+                        <Button styleClass="pt-btn" minHeight="32" minWidth="100"
                                 text="批量 TXT" userData="i18n:location.batch.txt" onAction="#getBankCardInfoFx_batch"/>
                         <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
                                 text="查询" userData="i18n:location.query" onAction="#getBankCardInfoFx"/>
@@ -132,7 +132,7 @@
                         <Label text="手机号归属" styleClass="lq-card-title" userData="i18n:location.card.phone"/>
                         <Label text="province / city / carrier" styleClass="lq-card-subtitle"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Button styleClass="pt-btn" minHeight="32" minWidth="80"
+                        <Button styleClass="pt-btn" minHeight="32" minWidth="100"
                                 text="批量 TXT" userData="i18n:location.batch.txt" onAction="#getPhoneInfoFx_batch"/>
                         <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
                                 text="查询" userData="i18n:location.query" onAction="#getPhoneInfoFx"/>
