@@ -181,8 +181,8 @@
 
         <!-- 4. 结果区域 -->
         <VBox VBox.vgrow="ALWAYS" spacing="10" styleClass="result-area">
-            <!-- 工具栏 -->
-            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: -pt-bg-panel; -fx-background-radius: 8; -fx-padding: 8;">
+            <!-- 工具栏：窄窗时换行避免统计/按钮被截断（自适应） -->
+            <FlowPane hgap="10" vgap="8" alignment="CENTER_LEFT" rowValignment="CENTER" style="-fx-background-color: -pt-bg-panel; -fx-background-radius: 8; -fx-padding: 8;">
                 <Label text="扫描结果" styleClass="pt-h2" userData="i18n:vulnscan.results"/>
                 <Label fx:id="vulnCountLabel" text="(0)" styleClass="vuln-count"/>
                 
@@ -205,16 +205,14 @@
                         <Label text="INFO" styleClass="stat-tag,severity-dot-info"/><Label fx:id="infoCountLabel" text="0" styleClass="stat-num,severity-dot-info"/>
                     </HBox>
                 </HBox>
-                
-                <Region HBox.hgrow="ALWAYS"/>
-                
+
                 <Button text="清空" onAction="#clearResults" styleClass="pt-btn-danger" userData="i18n:vulnscan.clearresults"/>
                 <Button text="日志" onAction="#showScanLogs" styleClass="pt-btn" userData="i18n:vulnscan.ui.logs"/>
                 <Button text="历史" onAction="#showHistory" styleClass="pt-btn" userData="i18n:vulnscan.history"/>
                 
                 <Separator orientation="VERTICAL"/>
                 
-                <ComboBox fx:id="exportFormatComboBox" prefWidth="90" promptText="格式" userData="i18n-prompt:vulnscan.ui.exportformat.prompt">
+                <ComboBox fx:id="exportFormatComboBox" prefWidth="110" minWidth="110" promptText="格式" userData="i18n-prompt:vulnscan.ui.exportformat.prompt">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <String fx:value="HTML"/>
@@ -227,7 +225,7 @@
                     </items>
                 </ComboBox>
                 <Button text="导出报告" onAction="#exportReport" styleClass="pt-btn-primary" userData="i18n:vulnscan.export"/>
-            </HBox>
+            </FlowPane>
             
             <!-- 结果列表：内层 ScrollPane 仅负责结果列表滚动，设 minHeight=200 避免被压扣 -->
             <SmoothScrollPane fx:id="resultScroll" VBox.vgrow="ALWAYS" fitToWidth="true" minHeight="200" prefHeight="320" style="-fx-background-color: transparent;">
