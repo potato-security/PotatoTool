@@ -209,6 +209,10 @@ public class PaneGetIpInfo {
 
         // result1 IP抽取
         result1.replaceText(joinList_r(ipList));
+        // IP 列表着色为强调色(ipData=青)，对齐 Penpot 稿（原为默认白字）
+        if (result1.getLength() > 0) {
+            result1.setStyleClass(0, result1.getLength(), "ipData");
+        }
         // 使用 textProperty().unbind() 解除绑定后再设置
         ipLabel.textProperty().unbind();
         ipLabel.setText(I18nUtils.getString("ipinfo.extract.title") + "(" + ipList.size() + ")");
