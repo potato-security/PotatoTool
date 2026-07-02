@@ -352,9 +352,43 @@
     -fx-padding: 14 12 14 12;
     -fx-spacing: 8;
 }
-.side-nav-modebar{
-    -fx-padding: 0 0 10 0;
+/* ── 头部 MODE toggle（从侧栏移入头部，对齐 Penpot 稿） ── */
+.header-mode-label{
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
 }
+.mode-toggle-group{
+    -fx-spacing: 6;
+}
+.mode-pill{
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: HAND;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-padding: 4 14 4 14;
+    -fx-background-color: -pt-bg-elevated;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 1;
+    -fx-text-fill: -pt-text-muted;
+}
+.mode-pill:hover{
+    -fx-background-color: -pt-bg-hover;
+    -fx-text-fill: -pt-text-secondary;
+}
+/* 激活态：由 mode-pill-blue/mode-pill-red + mode-pill-active 共同控制 */
+.mode-pill-blue.mode-pill-active{
+    -fx-background-color: derive(-pt-accent-teal, -55%);
+    -fx-border-color: -pt-accent-teal;
+    -fx-text-fill: -pt-accent-teal;
+}
+.mode-pill-red.mode-pill-active{
+    -fx-background-color: derive(-pt-accent-red, -55%);
+    -fx-border-color: -pt-accent-red;
+    -fx-text-fill: -pt-accent-red;
+}
+
 .side-nav-section{
     -fx-padding: 6 0 4 6;
     -fx-font-size: 11px;

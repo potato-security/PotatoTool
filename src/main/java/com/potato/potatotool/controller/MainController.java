@@ -77,7 +77,11 @@ public class MainController {
     private RXCarousel mainCarousel;
 
     @FXML
-    private BorderPane changeBtn;
+    private HBox changeBtn;
+    @FXML
+    private Button btnBlueMode;
+    @FXML
+    private Button btnRedMode;
     @FXML
     private Rectangle blueModePane;
     @FXML
@@ -463,10 +467,21 @@ public class MainController {
 
     private void applyModeState(boolean blueMode) {
         isBlueMode = blueMode;
+        isChangeModePaneRight = !blueMode;
 
         topBar.getStyleClass().removeAll("blueStyle", "redStyle");
-        changeBtn.getStyleClass().removeAll("blueStyle", "redStyle");
+        if (changeBtn != null) changeBtn.getStyleClass().removeAll("blueStyle", "redStyle");
         borderPane.getStyleClass().removeAll("blueStyle", "redStyle");
+
+        // 头部 mode pill 激活态
+        if (btnBlueMode != null) {
+            btnBlueMode.getStyleClass().removeAll("mode-pill-active");
+            if (blueMode) btnBlueMode.getStyleClass().add("mode-pill-active");
+        }
+        if (btnRedMode != null) {
+            btnRedMode.getStyleClass().removeAll("mode-pill-active");
+            if (!blueMode) btnRedMode.getStyleClass().add("mode-pill-active");
+        }
 
         // 竖向侧栏：红/蓝导航通过显隐切换
         setBarVisible(blueBar, blueMode);
@@ -474,20 +489,12 @@ public class MainController {
         updateModeSectionLabel(blueMode);
 
         if (blueMode) {
-            blueModePane.setTranslateX(0);
-            redModePane.setTranslateX(-55);
-            topBarLeft.setTranslateX(0);
             topBar.getStyleClass().add("blueStyle");
-            changeBtn.getStyleClass().add("blueStyle");
-            isChangeModePaneRight = false;
+            if (changeBtn != null) changeBtn.getStyleClass().add("blueStyle");
         } else {
-            blueModePane.setTranslateX(55);
-            redModePane.setTranslateX(0);
-            topBarLeft.setTranslateX(-200);
             topBar.getStyleClass().add("redStyle");
-            changeBtn.getStyleClass().add("redStyle");
+            if (changeBtn != null) changeBtn.getStyleClass().add("redStyle");
             borderPane.getStyleClass().add("redStyle");
-            isChangeModePaneRight = true;
         }
     }
 
@@ -524,7 +531,7 @@ public class MainController {
 
     private void updateModeSectionLabel(boolean blueMode) {
         if (modeSectionLabel != null) {
-            modeSectionLabel.setText(blueMode ? "BLUE TEAM" : "RED TEAM");
+            modeSectionLabel.setText(blueMode ? "BLUE OPERATIONS" : "RED TEAM");
             modeSectionLabel.getStyleClass().removeAll("side-nav-section-blue", "side-nav-section-red");
             modeSectionLabel.getStyleClass().add(blueMode ? "side-nav-section-blue" : "side-nav-section-red");
         }
@@ -533,74 +540,20 @@ public class MainController {
         }
     }
 
-    private boolean isChangeModePaneRight = false;  // 是否向右移动
-    private boolean isChangeModePaneMoving = false; // 是否开始移动动画
+    private boolean isChangeModePaneRight = false;  // 是否处于红队模式（保留供其他调用方兼容）
     @FXML
+    void changeModeBlue() {
+        applyModeState(true);
+        navGroup.getToggles().get(selectedBlueIndex).setSelected(true);
+    }
+    @FXML
+    void changeModeRed() {
+        applyModeState(false);
+        navGroup.getToggles().get(selectedRedIndex).setSelected(true);
+    }
+    /** 兼容旧调用（已废弃，不再使用） */
     void changeMode() {
-        if(isChangeModePaneMoving) return;  // 如果动画正在播放，不响应按钮点击事件
-
-        isChangeModePaneMoving = true;
-
-        TranslateTransition blueTransition = new TranslateTransition(Duration.seconds(0.2), blueModePane);
-        TranslateTransition redTransition = new TranslateTransition(Duration.seconds(0.2), redModePane);
-        TranslateTransition topBarLeftTransition = new TranslateTransition(Duration.seconds(0.2), topBarLeft);
-
-        // 创建并行动画组
-        ParallelTransition parallelTransition = new ParallelTransition();
-
-        if (isChangeModePaneRight) {
-            // 切换为蓝队
-            isBlueMode = true;
-            blueTransition.setByX(-55);
-            redTransition.setByX(-55);
-            topBarLeftTransition.setByX(200);
-
-            topBar.getStyleClass().remove("redStyle");
-            topBar.getStyleClass().add("blueStyle");
-            changeBtn.getStyleClass().remove("redStyle");
-            changeBtn.getStyleClass().add("blueStyle");
-            borderPane.getStyleClass().remove("redStyle");
-
-            setBarVisible(blueBar, true);
-            setBarVisible(redBar, false);
-            updateModeSectionLabel(true);
-            navGroup.getToggles().get(selectedBlueIndex).setSelected(true);
-        } else {
-            // 切换为红队
-            isBlueMode = false;
-            blueTransition.setByX(55);
-            redTransition.setByX(55);
-            topBarLeftTransition.setByX(-200);
-
-            topBar.getStyleClass().remove("blueStyle");
-            topBar.getStyleClass().add("redStyle");
-            changeBtn.getStyleClass().remove("blueStyle");
-            changeBtn.getStyleClass().add("redStyle");
-            borderPane.getStyleClass().add("redStyle");
-
-            setBarVisible(redBar, true);
-            setBarVisible(blueBar, false);
-            updateModeSectionLabel(false);
-            navGroup.getToggles().get(selectedRedIndex).setSelected(true);
-        }
-
-        // 将所有动画添加到并行动画组
-        parallelTransition.getChildren().addAll(
-                blueTransition,
-                redTransition,
-                topBarLeftTransition
-        );
-
-        // 设置动画完成后的操作
-        parallelTransition.setOnFinished(e -> {
-            isChangeModePaneMoving = false;
-        });
-
-        // 播放并行动画组
-        parallelTransition.play();
-
-        isChangeModePaneRight = !isChangeModePaneRight;
-
+        if (isChangeModePaneRight) changeModeBlue(); else changeModeRed();
     }
 
     @FXML

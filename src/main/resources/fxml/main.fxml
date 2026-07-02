@@ -47,29 +47,16 @@
                      <!--头部-->
                      <BorderPane fx:id="topBar" prefHeight="${(root.prefHeight - 18) * 0.1}" prefWidth="${root.width - 18}">
                         <left>
-                           <Pane maxWidth="200">
-                              <clip>
-                                 <Rectangle translateX="25" height="9999" width="200" style="-fx-background-color: red"/>
-                              </clip>
-                              <HBox fx:id="topBarLeft">
-                                 <Label alignment="CENTER" prefHeight="${topBar.height}" prefWidth="2000" styleClass="log-label" text=" BlueTeam" textFill="WHITE">
-                                    <graphic>
-                                       <Region styleClass="blueImg"/>
-                                    </graphic>
-                                    <tooltip>
-                                       <Tooltip text="PotatoTool-蓝队版" userData="i18n:main.blueteam.tooltip"/>
-                                    </tooltip>
-                                 </Label>
-                                 <Label alignment="CENTER" prefHeight="${topBar.height}" prefWidth="200" styleClass="log-label" text="  RedTeam" textFill="WHITE">
-                                    <graphic>
-                                       <Region styleClass="redImg"/>
-                                    </graphic>
-                                    <tooltip>
-                                       <Tooltip text="PotatoTool-红队版" userData="i18n:main.redteam.tooltip"/>
-                                    </tooltip>
-                                 </Label>
+                           <!-- 头部左侧：MODE 标签 + 模式切换胶囊（对齐 Penpot 稿头部布局） -->
+                           <VBox alignment="CENTER_LEFT" prefHeight="${topBar.height}" spacing="4" style="-fx-padding: 0 0 0 20;">
+                              <Label text="MODE" styleClass="header-mode-label"/>
+                              <HBox fx:id="changeBtn" styleClass="mode-toggle-group" spacing="6" alignment="CENTER_LEFT">
+                                 <Button fx:id="btnBlueMode" text="Blue" userData="i18n:main.mode.blue" mnemonicParsing="false" onAction="#changeModeBlue" styleClass="mode-pill,mode-pill-blue"/>
+                                 <Button fx:id="btnRedMode" text="Red" userData="i18n:main.mode.red" mnemonicParsing="false" onAction="#changeModeRed" styleClass="mode-pill,mode-pill-red"/>
                               </HBox>
-                           </Pane>
+                              <!-- 保留 fx:id 供 controller 旧引用（已废弃的滑动动画），避免 NPE -->
+                              <HBox fx:id="topBarLeft" managed="false" visible="false"/>
+                           </VBox>
                         </left>
                         <center>
                            <VBox alignment="CENTER" spacing="2" BorderPane.alignment="CENTER">
@@ -169,32 +156,11 @@
                   <left>
                      <VBox fx:id="sideNav" styleClass="side-nav" prefWidth="230" minWidth="230" maxWidth="230">
                         <children>
-                           <!--模式切换-->
-                           <BorderPane fx:id="changeBtn" styleClass="side-nav-modebar">
-                              <center>
-                                 <HBox alignment="CENTER">
-                                    <StackPane>
-                                       <clip>
-                                          <Rectangle height="9999" width="55.0"/>
-                                       </clip>
-                                       <Rectangle fx:id="blueModePane" height="35.0" width="55.0"/>
-                                       <Button fx:id="btnBlueMode" text="蓝队" userData="i18n:main.mode.blue" mnemonicParsing="false" onAction="#changeMode" prefHeight="35.0" prefWidth="55.0"/>
-                                    </StackPane>
-                                    <StackPane>
-                                       <clip>
-                                          <Rectangle height="9999" width="55.0"/>
-                                       </clip>
-                                       <Rectangle fx:id="redModePane" height="35.0" width="55.0" translateX="-55"/>
-                                       <Button fx:id="btnRedMode" text="红队" userData="i18n:main.mode.red" mnemonicParsing="false" onAction="#changeMode" prefHeight="35.0" prefWidth="55.0"/>
-                                    </StackPane>
-                                    <cursor>
-                                       <Cursor fx:constant="HAND" />
-                                    </cursor>
-                                 </HBox>
-                              </center>
-                           </BorderPane>
+                           <!-- 保留旧动画矩形 fx:id 供 controller 引用（动画废弃，0尺寸不可见） -->
+                           <Rectangle fx:id="blueModePane" width="0" height="0" managed="false" visible="false"/>
+                           <Rectangle fx:id="redModePane" width="0" height="0" managed="false" visible="false"/>
                            <!--队伍分区标签-->
-                           <Label fx:id="modeSectionLabel" text="BLUE TEAM" styleClass="side-nav-section"/>
+                           <Label fx:id="modeSectionLabel" text="BLUE OPERATIONS" styleClass="side-nav-section"/>
                            <!--导航列表-->
                            <StackPane VBox.vgrow="ALWAYS" alignment="TOP_CENTER">
                               <!-- 蓝队导航 -->
