@@ -151,14 +151,14 @@
                             styleClass="portscan-history-list"/>
 
             <!-- History action buttons -->
-            <HBox spacing="6" alignment="CENTER_RIGHT" styleClass="portscan-session-footer">
+            <FlowPane hgap="6" vgap="6" alignment="CENTER_RIGHT" styleClass="portscan-session-footer">
                 <Button text="打开" onMouseClicked="#openSelectedHistory"
                         styleClass="pt-btn" userData="i18n:portscan.history.open"/>
                 <Button text="删除" onMouseClicked="#deleteSelectedHistory"
                         styleClass="pt-btn" userData="i18n:app.delete"/>
                 <Button text="清空" onMouseClicked="#clearAllHistory"
                         styleClass="pt-btn-danger" userData="i18n:portscan.history.clear"/>
-            </HBox>
+            </FlowPane>
 
         </VBox>
 
