@@ -233,7 +233,7 @@
         <!-- ===== RIGHT: context panel ===== -->
         <VBox styleClass="is-ctx-panel" prefWidth="200" minWidth="180">
             <VBox styleClass="is-ctx-header">
-                <Label text="RECON CONTEXT" styleClass="is-ctx-section-label"/>
+                <Label text="INFO" styleClass="is-ctx-section-label"/>
                 <Label text="历史与状态" styleClass="is-ctx-title"
                        userData="i18n:infosearch.ctx.title"/>
             </VBox>
@@ -322,7 +322,7 @@
                     <VBox fx:id="candidateModeBSection" spacing="10" visible="false" managed="false">
                         <Label text="直接输入公司全称" styleClass="pt-caption"
                                userData="i18n:infosearch.candidate.manual.label"/>
-                        <TextArea fx:id="candidateManualInput" styleClass="pt-input" prefHeight="80" wrapText="true"
+                        <TextArea fx:id="candidateManualInput" styleClass="pt-input" prefHeight="120" wrapText="true"
                                   promptText="北京科技有限公司"
                                   userData="i18n-prompt:infosearch.candidate.manual.prompt"/>
                         <HBox alignment="CENTER">
