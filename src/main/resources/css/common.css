@@ -388,6 +388,25 @@
     -fx-background-color: -pt-bg-elevated;
     -fx-text-fill: -pt-text;
 }
+/* 导航条目左侧圆点：默认空心弱色 */
+.nav-dot{
+    -fx-min-width: 7; -fx-min-height: 7;
+    -fx-pref-width: 7; -fx-pref-height: 7;
+    -fx-max-width: 7; -fx-max-height: 7;
+    -fx-background-radius: 7;
+    -fx-border-radius: 7;
+    -fx-background-color: transparent;
+    -fx-border-color: -pt-text-muted;
+    -fx-border-width: 1.2;
+}
+.box-nav .rx-toggle-button:selected .nav-dot{
+    -fx-background-color: -pt-accent;
+    -fx-border-color: -pt-accent;
+}
+.box-nav-red .rx-toggle-button:selected .nav-dot{
+    -fx-background-color: -pt-accent-red;
+    -fx-border-color: -pt-accent-red;
+}
 /* 蓝队选中态：青色描边 + 淡填充 + 文字点亮 */
 .box-nav .rx-toggle-button:selected{
     -fx-background-color: derive(-pt-accent, -78%);

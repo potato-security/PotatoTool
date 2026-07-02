@@ -320,7 +320,8 @@ public class MainController {
         });
 
         // 左侧竖向导航：红/蓝两套导航在侧栏中通过显隐切换，不再随窗宽做横向滑动
-        
+        decorateNavDots();
+
         // 绑定国际化
         Platform.runLater(() -> {
             applyStartupTestPage(extensionPane, extensionPane_1, aboutPane, aboutPane_1, PaneAbout, PaneAbout_1);
@@ -483,6 +484,21 @@ public class MainController {
             topBar.getStyleClass().add("redStyle");
             changeBtn.getStyleClass().add("redStyle");
             isChangeModePaneRight = true;
+        }
+    }
+
+    /** 给每个导航条目加左侧圆点指示（对齐 Penpot 侧栏：未选中空心、选中实心，由 CSS 控制） */
+    private void decorateNavDots() {
+        if (navGroup == null) return;
+        for (Toggle t : navGroup.getToggles()) {
+            if (t instanceof ToggleButton) {
+                ToggleButton tb = (ToggleButton) t;
+                Region dot = new Region();
+                dot.getStyleClass().add("nav-dot");
+                tb.setGraphic(dot);
+                tb.setContentDisplay(ContentDisplay.LEFT);
+                tb.setGraphicTextGap(10);
+            }
         }
     }
 
