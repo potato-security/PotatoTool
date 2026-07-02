@@ -93,6 +93,8 @@ public class MainController {
     private StackPane promptPane;
     @FXML
     private Label promptLabel;
+    @FXML
+    private Label modeSectionLabel;
 
     private double offsetX,offsetY;
 
@@ -463,6 +465,7 @@ public class MainController {
         // 竖向侧栏：红/蓝导航通过显隐切换
         setBarVisible(blueBar, blueMode);
         setBarVisible(redBar, !blueMode);
+        updateModeSectionLabel(blueMode);
 
         if (blueMode) {
             blueModePane.setTranslateX(0);
@@ -486,6 +489,13 @@ public class MainController {
         bar.setVisible(show);
         bar.setManaged(show);
         bar.setTranslateX(0);
+    }
+
+    private void updateModeSectionLabel(boolean blueMode) {
+        if (modeSectionLabel == null) return;
+        modeSectionLabel.setText(blueMode ? "BLUE TEAM" : "RED TEAM");
+        modeSectionLabel.getStyleClass().removeAll("side-nav-section-blue", "side-nav-section-red");
+        modeSectionLabel.getStyleClass().add(blueMode ? "side-nav-section-blue" : "side-nav-section-red");
     }
 
     private boolean isChangeModePaneRight = false;  // 是否向右移动
@@ -517,6 +527,7 @@ public class MainController {
 
             setBarVisible(blueBar, true);
             setBarVisible(redBar, false);
+            updateModeSectionLabel(true);
             navGroup.getToggles().get(selectedBlueIndex).setSelected(true);
         } else {
             // 切换为红队
@@ -532,6 +543,7 @@ public class MainController {
 
             setBarVisible(redBar, true);
             setBarVisible(blueBar, false);
+            updateModeSectionLabel(false);
             navGroup.getToggles().get(selectedRedIndex).setSelected(true);
         }
 

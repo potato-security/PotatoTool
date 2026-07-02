@@ -184,6 +184,8 @@
                                  </HBox>
                               </center>
                            </BorderPane>
+                           <!--队伍分区标签-->
+                           <Label fx:id="modeSectionLabel" text="BLUE TEAM" styleClass="side-nav-section"/>
                            <!--导航列表-->
                            <StackPane VBox.vgrow="ALWAYS" alignment="TOP_CENTER">
                               <!-- 蓝队导航 -->

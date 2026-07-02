@@ -348,6 +348,18 @@
 .side-nav-modebar{
     -fx-padding: 0 0 10 0;
 }
+.side-nav-section{
+    -fx-padding: 6 0 4 6;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+}
+.side-nav-section-blue{
+    -fx-text-fill: -pt-accent;
+}
+.side-nav-section-red{
+    -fx-text-fill: -pt-accent-red;
+}
 /* 竖向导航按钮：铺满侧栏、左对齐 */
 .box-nav, .box-nav-red{
     -fx-padding: 6 0 0 0;
