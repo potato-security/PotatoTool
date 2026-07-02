@@ -502,7 +502,7 @@ public class MainController {
     public void refreshProxyStatus() {
         if (proxyStatusLabel == null) return;
         boolean on = com.potato.potatotool.utils.network.ProxyUtils.isMainProxyEnabled();
-        proxyStatusLabel.setText(on ? "PROXY ON" : "PROXY OFF");
+        proxyStatusLabel.setText(on ? "ON" : "OFF");
         proxyStatusLabel.getStyleClass().remove("status-pill-on");
         if (on) proxyStatusLabel.getStyleClass().add("status-pill-on");
     }

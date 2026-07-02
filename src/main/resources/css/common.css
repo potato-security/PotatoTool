@@ -178,6 +178,13 @@
         #040B12;
 }
 #borderPane.redStyle{
+    /* 红队模式：将 -pt-accent 指向红色，使所有子节点的 -pt-accent 自动切红 */
+    -pt-accent:        -pt-accent-red;
+    -pt-accent-soft:   derive(-pt-accent-red, -60%);
+    -pt-accent-hover:  derive(-pt-accent-red, -15%);
+    -pt-accent-pressed:derive(-pt-accent-red, -30%);
+    -pt-border-focus:  -pt-accent-red;
+    -pt-bg-selected:   derive(-pt-accent-red, -60%);
     -fx-background-color:
         radial-gradient(focus-angle 0deg, focus-distance 0%, center 10% 6%, radius 60%, rgba(255,92,102,0.10) 0%, transparent 62%),
         radial-gradient(focus-angle 0deg, focus-distance 0%, center 94% 96%, radius 50%, rgba(255,92,102,0.05) 0%, transparent 60%),
@@ -400,6 +407,11 @@
 }
 .side-nav-section-red{
     -fx-text-fill: -pt-accent-red;
+}
+.header-status-key{
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
 }
 .wordmark-subtitle{
     -fx-font-size: 9px;
