@@ -77,6 +77,14 @@
     -fx-font-size: 12.5px;
     -fx-text-fill: -pt-text-secondary;
 }
+/* 未检测到的常见杀软：灰显（对齐 Penpot 稿；诚实表示"输入里未发现"，非伪造检测） */
+.proc-row-undetected {
+    -fx-opacity: 0.4;
+}
+.proc-row-undetected .proc-row-name,
+.proc-row-undetected .proc-row-type {
+    -fx-text-fill: -pt-text-muted;
+}
 
 /* 等宽输出区: 透明融入内凹底 */
 .proc-output,
