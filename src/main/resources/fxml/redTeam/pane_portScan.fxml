@@ -131,7 +131,7 @@
             <!-- 底部: 导出格式 + 历史记录数 -->
             <HBox styleClass="portscan-footer" alignment="CENTER_LEFT" spacing="8">
                 <Label text="导出格式:" styleClass="pt-caption" userData="i18n:portscan.export.format"/>
-                <ComboBox fx:id="exportFormatComboBox" styleClass="portscan-format-combo" prefWidth="80"/>
+                <ComboBox fx:id="exportFormatComboBox" styleClass="portscan-format-combo" prefWidth="100" minWidth="100"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="historyCountLabel" styleClass="pt-caption,portscan-hist-count-footer"
                        text=""/>
