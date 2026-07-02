@@ -120,14 +120,63 @@
                 </HBox>
             </VBox>
 
-            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成Payload" userData="i18n:memshell.generate" onAction="#toGenerateMemoryShell">
-                <effect>
-                    <DropShadow />
-                </effect>
-            </Button>
+            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成" userData="i18n:memshell.generate" onAction="#toGenerateMemoryShell"/>
 
-            <SmoothTextArea fx:id="outTextArea" styleClass="pt-input,pt-mono" wrapText="true" prefHeight="${sPane.height * 0.4}" prefWidth="${sPane.width - 10}" />
+            <!-- OUTPUT 分区头 (对齐 Penpot) -->
+            <HBox styleClass="payload-output-header" alignment="CENTER_LEFT" spacing="8" prefWidth="${sPane.width - 10}">
+                <Label text="OUTPUT" styleClass="payload-output-label"/>
+                <Label fx:id="outputFormatBadge" text="—" styleClass="payload-output-badge"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="outputStatusBadge" text="" styleClass="payload-status-dot" visible="false"/>
+            </HBox>
+            <SmoothTextArea fx:id="outTextArea" styleClass="pt-input,pt-mono" wrapText="true"
+                            prefHeight="${sPane.height * 0.4}" prefWidth="${sPane.width - 10}"/>
+            <Label fx:id="outputBreadcrumb" text="" styleClass="payload-breadcrumb" prefWidth="${sPane.width - 10}"/>
 
         </VBox>
     </SmoothScrollPane>
+
+    <!-- 右侧 MEMSHELL 面板 -->
+    <SmoothScrollPane fx:id="memshellPanelScroll"
+                      maxHeight="${sPane.height}" maxWidth="195"
+                      hbarPolicy="NEVER"
+                      StackPane.alignment="TOP_RIGHT"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox styleClass="payload-panel-root" spacing="0">
+            <VBox styleClass="payload-panel-header">
+                <Label text="MEMSHELL" styleClass="payload-panel-section-label"/>
+                <Label text="内存马生成" styleClass="payload-panel-title" userData="i18n:memshell.panel.title"/>
+            </VBox>
+            <VBox styleClass="payload-panel-items" spacing="0">
+                <VBox styleClass="payload-panel-item,payload-panel-selected">
+                    <Label text="Godzilla" styleClass="payload-panel-item-name"/>
+                    <Label text="Tomcat Filter 注入" styleClass="payload-panel-item-sub" userData="i18n:memshell.panel.godzilla.sub"/>
+                </VBox>
+                <VBox styleClass="payload-panel-item">
+                    <Label text="参数配置" styleClass="payload-panel-item-name" userData="i18n:memshell.panel.params"/>
+                    <Label text="5 个自定义字段" styleClass="payload-panel-item-sub" userData="i18n:memshell.panel.params.sub"/>
+                </VBox>
+                <VBox styleClass="payload-panel-item">
+                    <Label text="专项利用" styleClass="payload-panel-item-name" userData="i18n:memshell.panel.exploit"/>
+                    <Label text="Gadget 链选择" styleClass="payload-panel-item-sub" userData="i18n:memshell.panel.exploit.sub"/>
+                </VBox>
+                <VBox styleClass="payload-panel-item">
+                    <Label text="输出区" styleClass="payload-panel-item-name" userData="i18n:memshell.panel.output"/>
+                    <Label text="等宽字节码预览" styleClass="payload-panel-item-sub" userData="i18n:memshell.panel.output.sub"/>
+                </VBox>
+            </VBox>
+            <Label text="STATES" styleClass="payload-panel-states-label"/>
+            <VBox styleClass="payload-panel-states" spacing="8">
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="payload-state-dot,payload-state-success"/>
+                    <Label text="已生成" styleClass="payload-state-label" userData="i18n:payload.state.generated"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="payload-state-dot,payload-state-format"/>
+                    <Label fx:id="memshellStateLabel" text="Godzilla/Tomcat" styleClass="payload-state-label"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </SmoothScrollPane>
+
 </StackPane>

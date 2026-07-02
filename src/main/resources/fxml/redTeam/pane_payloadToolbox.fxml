@@ -18,7 +18,7 @@
 
             <TabPane fx:id="payloadTabPane" prefWidth="${sPane.width - 10}" tabClosingPolicy="UNAVAILABLE" styleClass="payload-toolbox-tab-pane">
                 <tabs>
-                    <Tab fx:id="detectorTab" text="DnsLog探测" userData="i18n:payload.tab.detector">
+                    <Tab fx:id="detectorTab" text="探测 Payload" userData="i18n:payload.tab.detector">
                         <content>
                             <VBox styleClass="tipVBox" spacing="15" prefWidth="${sPane.width - 10}">
                                 <HBox>
@@ -142,9 +142,59 @@
                 </HBox>
             </VBox>
 
-            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成Payload" userData="i18n:memshell.generate" onAction="#generatePayload"/>
+            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成 Payload" userData="i18n:memshell.generate" onAction="#generatePayload"/>
 
-            <SmoothTextArea styleClass="pt-input" fx:id="outTextArea" wrapText="true" prefHeight="${sPane.height * 0.4}" prefWidth="${sPane.width - 10}"/>
+            <!-- OUTPUT 分区头 (对齐 Penpot: OUTPUT 标签 + 状态徽章) -->
+            <HBox styleClass="payload-output-header" alignment="CENTER_LEFT" spacing="8" prefWidth="${sPane.width - 10}">
+                <Label text="OUTPUT" styleClass="payload-output-label" userData="i18n:payload.output.label"/>
+                <Label fx:id="outputBadge" text="—" styleClass="payload-output-badge"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="outputStatusDot" text="●" styleClass="payload-status-dot" visible="false"/>
+            </HBox>
+            <SmoothTextArea styleClass="pt-input,pt-mono" fx:id="outTextArea" wrapText="true"
+                            prefHeight="${sPane.height * 0.4}" prefWidth="${sPane.width - 10}"/>
+            <!-- 底部面包屑 -->
+            <Label fx:id="outputBreadcrumb" text="" styleClass="payload-breadcrumb" prefWidth="${sPane.width - 10}"/>
         </VBox>
     </SmoothScrollPane>
+
+    <!-- 右侧 PAYLOAD 面板 -->
+    <SmoothScrollPane fx:id="payloadPanelScroll"
+                      maxHeight="${sPane.height}" maxWidth="195"
+                      hbarPolicy="NEVER"
+                      StackPane.alignment="TOP_RIGHT"
+                      style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox styleClass="payload-panel-root" spacing="0">
+            <VBox styleClass="payload-panel-header">
+                <Label text="PAYLOAD" styleClass="payload-panel-section-label"/>
+                <Label text="Payload 工具箱" styleClass="payload-panel-title" userData="i18n:payload.title"/>
+            </VBox>
+            <VBox styleClass="payload-panel-items" spacing="0">
+                <VBox styleClass="payload-panel-item,payload-panel-selected">
+                    <Label text="探测 Payload" styleClass="payload-panel-item-name" userData="i18n:payload.tab.detector"/>
+                    <Label text="DNSLOG 模式" styleClass="payload-panel-item-sub"/>
+                </VBox>
+                <VBox styleClass="payload-panel-item">
+                    <Label text="Java 反序列化" styleClass="payload-panel-item-name" userData="i18n:payload.tab.yso"/>
+                    <Label text="Yso Gadget 链" styleClass="payload-panel-item-sub"/>
+                </VBox>
+                <VBox styleClass="payload-panel-item">
+                    <Label text="输出格式" styleClass="payload-panel-item-name" userData="i18n:payload.output.format"/>
+                    <Label text="BASE64 已选" styleClass="payload-panel-item-sub"/>
+                </VBox>
+            </VBox>
+            <Label text="STATES" styleClass="payload-panel-states-label"/>
+            <VBox styleClass="payload-panel-states" spacing="8">
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="payload-state-dot,payload-state-success"/>
+                    <Label text="已生成" styleClass="payload-state-label" userData="i18n:payload.state.generated"/>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Region styleClass="payload-state-dot,payload-state-format"/>
+                    <Label fx:id="payloadStateFormat" text="BASE64" styleClass="payload-state-label"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </SmoothScrollPane>
+
 </StackPane>

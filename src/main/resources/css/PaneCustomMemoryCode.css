@@ -59,3 +59,93 @@
     -fx-background-color: transparent;
     -fx-padding: 0;
 }
+
+/* ===== Payload 工具箱右侧面板 ===== */
+.payload-panel-root {
+    -fx-background-color: -pt-bg-panel;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 0 1;
+    -fx-pref-height: 9999;
+}
+.payload-panel-header {
+    -fx-padding: 16 16 12 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+.payload-panel-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+}
+.payload-panel-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text;
+    -fx-padding: 4 0 0 0;
+}
+.payload-panel-items { }
+.payload-panel-item {
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-cursor: hand;
+}
+.payload-panel-selected {
+    -fx-background-color: -pt-bg-selected;
+    -fx-border-color: -pt-accent;
+    -fx-border-width: 0 0 1 3;
+}
+.payload-panel-item-name {
+    -fx-font-size: 13px;
+    -fx-text-fill: -pt-text;
+    -fx-font-weight: bold;
+}
+.payload-panel-selected .payload-panel-item-name { -fx-text-fill: -pt-accent; }
+.payload-panel-item-sub { -fx-font-size: 11px; -fx-text-fill: -pt-text-muted; }
+.payload-panel-states-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-padding: 12 16 4 16;
+}
+.payload-panel-states { -fx-padding: 0 16 16 16; }
+.payload-state-dot {
+    -fx-pref-width: 8; -fx-pref-height: 8;
+    -fx-min-width: 8; -fx-min-height: 8;
+    -fx-max-width: 8; -fx-max-height: 8;
+    -fx-background-radius: 50%;
+}
+.payload-state-success { -fx-background-color: -pt-success; }
+.payload-state-format  { -fx-background-color: -pt-text-muted; }
+.payload-state-label   { -fx-font-size: 12px; -fx-text-fill: -pt-text; }
+
+/* OUTPUT 分区头 */
+.payload-output-header {
+    -fx-padding: 6 0 4 0;
+    -fx-border-color: -pt-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+.payload-output-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+}
+.payload-output-badge {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-accent;
+    -fx-padding: 1 6 1 6;
+    -fx-border-color: -pt-accent;
+    -fx-border-width: 1;
+    -fx-border-radius: 2;
+}
+.payload-status-dot { -fx-text-fill: -pt-success; -fx-font-size: 10px; }
+.payload-breadcrumb {
+    -fx-font-size: 11px;
+    -fx-text-fill: -pt-text-muted;
+    -fx-font-family: "Consolas", "JetBrains Mono", monospace;
+    -fx-padding: 4 0 0 0;
+}
