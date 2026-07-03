@@ -40,12 +40,12 @@
 }
 
 .del-warn-icon {
-    -fx-text-fill: -pt-danger;
+    -fx-text-fill: -pt-warning;
     -fx-font-size: 22;
 }
 
 .del-warn-text {
-    -fx-text-fill: -pt-text-muted;
+    -fx-text-fill: -pt-warning;
     -fx-font-size: 12;
 }
 
