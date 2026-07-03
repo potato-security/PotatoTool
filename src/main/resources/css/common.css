@@ -1280,3 +1280,34 @@
     -fx-text-fill: -main-lineno-color;
     -fx-background-color: -main-topBar-color;
 }
+
+/* ========= 窗口控件：三色圆点（macOS traffic-light 风格） ========= */
+.win-dot {
+    -fx-min-width: 13;
+    -fx-min-height: 13;
+    -fx-max-width: 13;
+    -fx-max-height: 13;
+    -fx-pref-width: 13;
+    -fx-pref-height: 13;
+    -fx-background-radius: 6.5;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+    -fx-cursor: hand;
+}
+.win-dot-close { -fx-background-color: #FF5F57; }
+.win-dot-min   { -fx-background-color: #FEBC2E; }
+.win-dot-max   { -fx-background-color: #28C840; }
+.win-dot:hover   { -fx-opacity: 0.72; }
+.win-dot:pressed { -fx-opacity: 0.50; }
+
+/* 设置按钮变小 */
+#btnSet {
+    -fx-min-width: 22;
+    -fx-min-height: 22;
+    -fx-max-width: 22;
+    -fx-max-height: 22;
+    -fx-background-color: transparent;
+}
+#btnSet:hover   { -fx-background-color: -main-smallbtnBg-color; -fx-background-radius: 11; }
+#btnSet:pressed { -fx-background-color: -main-border-color;     -fx-background-radius: 11; }

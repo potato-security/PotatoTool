@@ -65,7 +65,7 @@
                                     <Image url="@../img/PotatoTool.png" />
                                  </image>
                                  <effect>
-                                    <DropShadow fx:id="wordmarkGlow" color="#4FE3FF" radius="22" spread="0.38"/>
+                                    <DropShadow fx:id="wordmarkGlow" color="#4FE3FF" radius="32" spread="0.62"/>
                                  </effect>
                               </ImageView>
                               <Label fx:id="wordmarkSubtitle" text="SECURITY · COMMAND · CENTER" styleClass="wordmark-subtitle"/>
@@ -79,9 +79,9 @@
                                  <Label fx:id="proxyStatusLabel" text="OFF" styleClass="status-pill"/>
                               </HBox>
                               <Pane minWidth="6"/>
-                              <Button id="btnSet" mnemonicParsing="false" onAction="#showSet" prefHeight="35.0" prefWidth="35.0">
+                              <Button id="btnSet" mnemonicParsing="false" onAction="#showSet" prefHeight="22.0" prefWidth="22.0">
                                  <graphic>
-                                    <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
                                           <Image url="@../img/set.png" />
                                        </image>
@@ -94,54 +94,26 @@
                                     <Tooltip text="设置" userData="i18n:main.setting"/>
                                  </tooltip>
                               </Button>
-                              <Pane minWidth="1"/>
+                              <Pane minWidth="10"/>
 
-                              <Button fx:id="fullScreen" id="btnExit" onAction="#fullScreenAction" prefHeight="35.0" prefWidth="35.0">
-                                 <graphic>
-                                    <ImageView  fx:id="fullScreenImgView" fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@../img/fullScreen.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor>
-                                 <tooltip>
-                                    <Tooltip text="全屏化" userData="i18n:main.fullscreen"/>
-                                 </tooltip>
+                              <!-- 隐藏 ImageView 保留 fullScreenImgView 绑定供 controller 切换图标状态 -->
+                              <ImageView fx:id="fullScreenImgView" visible="false" managed="false" fitHeight="1" fitWidth="1"/>
+
+                              <!-- 三色圆点窗口控件：close(红) → min(黄) → max(绿)，符合 macOS HIG -->
+                              <Button mnemonicParsing="false" onAction="#exitAction"
+                                      styleClass="win-dot,win-dot-close">
+                                 <cursor><Cursor fx:constant="HAND"/></cursor>
+                                 <tooltip><Tooltip text="关闭" userData="i18n:tooltip.close"/></tooltip>
                               </Button>
-
-                              <Button fx:id="reduceScreen" id="btnExit" mnemonicParsing="false" onAction="#reduceScreenAction" prefHeight="35.0" prefWidth="35.0">
-                                 <graphic>
-                                    <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@../img/reduce.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor>
-                                 <tooltip>
-                                    <Tooltip text="缩小化" userData="i18n:main.minimize"/>
-                                 </tooltip>
+                              <Button fx:id="reduceScreen" mnemonicParsing="false" onAction="#reduceScreenAction"
+                                      styleClass="win-dot,win-dot-min">
+                                 <cursor><Cursor fx:constant="HAND"/></cursor>
+                                 <tooltip><Tooltip text="缩小化" userData="i18n:main.minimize"/></tooltip>
                               </Button>
-
-                              <Button id="btnExit" mnemonicParsing="false" onAction="#exitAction" prefHeight="35.0" prefWidth="35.0">
-                                 <graphic>
-                                    <ImageView fitHeight="36.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@../img/close.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor>
-                                 <tooltip>
-                                    <Tooltip text="关闭" userData="i18n:tooltip.close"/>
-                                 </tooltip>
+                              <Button fx:id="fullScreen" mnemonicParsing="false" onAction="#fullScreenAction"
+                                      styleClass="win-dot,win-dot-max">
+                                 <cursor><Cursor fx:constant="HAND"/></cursor>
+                                 <tooltip><Tooltip text="全屏化" userData="i18n:main.fullscreen"/></tooltip>
                               </Button>
 
                               <Pane minWidth="10"/>
