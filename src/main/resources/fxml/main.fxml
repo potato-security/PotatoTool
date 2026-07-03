@@ -21,6 +21,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.Cursor?>
 <AnchorPane fx:id="root"
@@ -128,6 +129,9 @@
                <BorderPane BorderPane.alignment="CENTER">
                   <left>
                      <VBox fx:id="sideNav" styleClass="side-nav" prefWidth="230" minWidth="230" maxWidth="230">
+                        <BorderPane.margin>
+                           <Insets top="8" right="12" bottom="12" left="12"/>
+                        </BorderPane.margin>
                         <children>
                            <!-- 保留旧动画矩形 fx:id 供 controller 引用（动画废弃，0尺寸不可见） -->
                            <Rectangle fx:id="blueModePane" width="0" height="0" managed="false" visible="false"/>

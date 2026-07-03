@@ -354,8 +354,10 @@
 /* ===== 左侧竖向导航侧栏 ===== */
 .side-nav{
     -fx-background-color: -pt-bg-panel;
-    -fx-border-color: transparent -pt-border-subtle transparent transparent;
-    -fx-border-width: 0 1 0 0;
+    -fx-background-radius: 16;
+    -fx-border-color: -pt-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
     -fx-padding: 14 12 14 12;
     -fx-spacing: 8;
 }
@@ -372,28 +374,38 @@
     -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-cursor: HAND;
-    -fx-background-radius: 20;
-    -fx-border-radius: 20;
-    -fx-padding: 4 14 4 14;
-    -fx-background-color: -pt-bg-elevated;
-    -fx-border-color: -pt-border-subtle;
-    -fx-border-width: 1;
-    -fx-text-fill: -pt-text-muted;
+    -fx-background-radius: 9 !important;
+    -fx-border-radius: 9 !important;
+    -fx-padding: 4 14 4 14 !important;
+    -fx-background-color: -pt-bg-panel !important;
+    -fx-border-color: -pt-border-subtle !important;
+    -fx-border-width: 1 !important;
+    -fx-text-fill: -pt-text-muted !important;
+    /* 关闭 JavaFX 默认按钮焦点高亮（否则首个按钮被染成焦点色，误认作激活态） */
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-background-insets: 0;
+}
+.mode-pill:focused{
+    -fx-background-color: -pt-bg-panel !important;
+    -fx-background-insets: 0;
 }
 .mode-pill:hover{
-    -fx-background-color: -pt-bg-hover;
-    -fx-text-fill: -pt-text-secondary;
+    -fx-background-color: -pt-bg-hover !important;
+    -fx-text-fill: -pt-text-secondary !important;
 }
-/* 激活态：由 mode-pill-blue/mode-pill-red + mode-pill-active 共同控制 */
-.mode-pill-blue.mode-pill-active{
-    -fx-background-color: derive(-pt-accent-teal, -55%);
-    -fx-border-color: -pt-accent-teal;
-    -fx-text-fill: -pt-accent-teal;
+/* 激活态：由 mode-pill-blue/mode-pill-red + mode-pill-active 共同控制（板为透明填充+强调色描边/文字） */
+.mode-pill-blue.mode-pill-active,
+.mode-pill-blue.mode-pill-active:focused{
+    -fx-background-color: transparent !important;
+    -fx-border-color: -pt-accent-teal !important;
+    -fx-text-fill: -pt-accent-teal !important;
 }
-.mode-pill-red.mode-pill-active{
-    -fx-background-color: derive(-pt-accent-red, -55%);
-    -fx-border-color: -pt-accent-red;
-    -fx-text-fill: -pt-accent-red;
+.mode-pill-red.mode-pill-active,
+.mode-pill-red.mode-pill-active:focused{
+    -fx-background-color: transparent !important;
+    -fx-border-color: -pt-accent-red !important;
+    -fx-text-fill: -pt-accent-red !important;
 }
 
 .side-nav-section{
@@ -423,16 +435,16 @@
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-text-fill: -pt-text-secondary;
-    -fx-background-color: -pt-bg-elevated;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
+    -fx-background-color: -pt-bg-panel;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
     -fx-border-color: -pt-border-subtle;
     -fx-border-width: 1;
     -fx-padding: 3 9 3 9;
 }
 .status-pill-local{
     -fx-text-fill: -pt-success;
-    -fx-border-color: -pt-success;
+    -fx-border-color: -pt-accent;
 }
 .status-pill-on{
     -fx-text-fill: -pt-accent;
@@ -450,8 +462,8 @@
     -fx-padding: 0 14 0 14;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
     -fx-text-fill: -pt-text-secondary;
     -fx-font-size: 14;
     -fx-cursor: HAND;
@@ -479,15 +491,15 @@
     -fx-background-color: -pt-accent-red;
     -fx-border-color: -pt-accent-red;
 }
-/* 蓝队选中态：青色描边 + 淡填充 + 文字点亮 */
+/* 蓝队选中态：青色描边（板为透明填充，仅描边）+ 文字点亮 */
 .box-nav .rx-toggle-button:selected{
-    -fx-background-color: derive(-pt-accent, -78%);
+    -fx-background-color: transparent;
     -fx-border-color: -pt-accent;
     -fx-text-fill: -pt-accent;
 }
-/* 红队选中态：红色描边 + 淡填充 + 文字点亮 */
+/* 红队选中态：红色描边（板为透明填充，仅描边）+ 文字点亮 */
 .box-nav-red .rx-toggle-button:selected{
-    -fx-background-color: derive(-pt-accent-red, -78%);
+    -fx-background-color: transparent;
     -fx-border-color: -pt-accent-red;
     -fx-text-fill: -pt-accent-red;
 }
@@ -1295,9 +1307,9 @@
     -fx-background-insets: 0;
     -fx-cursor: hand;
 }
-.win-dot-close { -fx-background-color: #FF5F57; }
-.win-dot-min   { -fx-background-color: #FEBC2E; }
-.win-dot-max   { -fx-background-color: #28C840; }
+.win-dot-close { -fx-background-color: -pt-danger; }
+.win-dot-min   { -fx-background-color: -pt-warning; }
+.win-dot-max   { -fx-background-color: -pt-success; }
 .win-dot:hover   { -fx-opacity: 0.72; }
 .win-dot:pressed { -fx-opacity: 0.50; }
 
