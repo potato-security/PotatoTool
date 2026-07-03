@@ -1,6 +1,7 @@
 package com.potato.potatotool.controller.redTeam;
 
 import com.dlsc.gemsfx.CFCheckBox;
+import com.dlsc.gemsfx.CFSwitch;
 import com.potato.potatotool.ToStart;
 import com.potato.potatotool.content.redTeam.portScanner.bridge.HandoffPolicy;
 import com.potato.potatotool.content.redTeam.portScanner.bridge.HandoffResult;
@@ -72,8 +73,8 @@ public class PanePortScan {
     private int presetIndex = 0;
     @FXML private TextField timeoutField;
     @FXML private TextField batchSizeField;
-    @FXML private CFCheckBox serviceProbeBox;
-    @FXML private CFCheckBox publicModeBox;
+    @FXML private CFSwitch serviceProbeBox;
+    @FXML private CFSwitch publicModeBox;
     @FXML private CFCheckBox autoHandoffBox;
     @FXML private Label scanStateLabel;
     @FXML private Label progressLabel;

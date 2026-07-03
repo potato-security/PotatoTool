@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.dlsc.gemsfx.CFCheckBox?>
+<?import com.dlsc.gemsfx.CFSwitch?>
 <?import com.potato.potatotool.utils.ui.SmoothListView?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 <?import javafx.scene.control.*?>
@@ -53,13 +54,19 @@
                                       userData="3" onAction="#onPresetChip"/>
                     </FlowPane>
 
-                    <!-- Service / Public Mode toggles -->
-                    <HBox spacing="12" alignment="CENTER_LEFT">
-                        <CFCheckBox fx:id="serviceProbeBox" text="服务识别"
-                                    userData="i18n:portscan.serviceprobe"/>
-                        <CFCheckBox fx:id="publicModeBox" text="公网限速"
-                                    userData="i18n:portscan.publicmode"/>
-                    </HBox>
+                    <!-- Service / Public Mode 拨动开关（对齐 Penpot 稿：标签 + CFSwitch） -->
+                    <VBox spacing="10">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="服务识别" styleClass="pt-caption" minWidth="56"
+                                   userData="i18n:portscan.serviceprobe"/>
+                            <CFSwitch fx:id="serviceProbeBox"/>
+                        </HBox>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="公网限速" styleClass="pt-caption" minWidth="56"
+                                   userData="i18n:portscan.publicmode"/>
+                            <CFSwitch fx:id="publicModeBox"/>
+                        </HBox>
+                    </VBox>
 
                     <!-- Timeout + Batch -->
                     <HBox spacing="8" alignment="CENTER_LEFT">
