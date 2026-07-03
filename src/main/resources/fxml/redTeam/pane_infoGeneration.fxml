@@ -21,71 +21,71 @@
         </VBox>
 
         <!-- 身份字段卡片 (2 列) -->
-        <FlowPane hgap="16" vgap="16" prefWidth="${sPane.width - 20}">
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 30}">
+        <FlowPane hgap="16" vgap="16" prefWidth="${sPane.width - 48}" maxWidth="${sPane.width - 48}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
                 <Label styleClass="loc-field-label" text="姓名" userData="i18n:infogen.name"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="nameTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 30}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
                 <Label styleClass="loc-field-label" text="拼音" userData="i18n:infogen.pinyin"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="nameToPinYinTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 30}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
                 <Label styleClass="loc-field-label" text="手机号" userData="i18n:infogen.phone"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="phoneTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 30}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
                 <Label styleClass="loc-field-label" text="邮箱号" userData="i18n:infogen.email"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="emailTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 30}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
                 <Label styleClass="loc-field-label" text="居住地址" userData="i18n:infogen.address"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="addressTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 30}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
                 <Label styleClass="loc-field-label" text="身份证号" userData="i18n:infogen.idcard"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="idCardTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 30}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
                 <Label styleClass="loc-field-label" text="银行卡号" userData="i18n:infogen.bankcard"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="bankCardTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 30}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
                 <Label styleClass="loc-field-label" text="邮编号" userData="i18n:infogen.postcode"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="postalCodeTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 30}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
                 <Label styleClass="loc-field-label" text="统一社会信用代码" userData="i18n:infogen.creditcode"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="unifiedSocialCreditCodeTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 30}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
                 <Label styleClass="loc-field-label" text="组织机构代码" userData="i18n:infogen.orgcode"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="organizationCodeTF"/>
