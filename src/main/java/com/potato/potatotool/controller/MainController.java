@@ -531,7 +531,7 @@ public class MainController {
 
     private void updateModeSectionLabel(boolean blueMode) {
         if (modeSectionLabel != null) {
-            modeSectionLabel.setText(blueMode ? "BLUE OPERATIONS" : "RED TEAM");
+            modeSectionLabel.setText(blueMode ? "BLUE OPERATIONS" : "RED OPERATIONS");
             modeSectionLabel.getStyleClass().removeAll("side-nav-section-blue", "side-nav-section-red");
             modeSectionLabel.getStyleClass().add(blueMode ? "side-nav-section-blue" : "side-nav-section-red");
         }

@@ -183,8 +183,8 @@
                                     <RXToggleButton text="关于" userData="i18n:main.about" toggleGroup="$navGroup"/>
                                  </children>
                               </FlowPane>
-                              <!-- 红队导航 -->
-                              <FlowPane fx:id="redBar" orientation="VERTICAL" prefWrapLength="4000" alignment="TOP_CENTER" hgap="10" vgap="6" styleClass="box-nav-red">
+                              <!-- 红队导航（默认隐藏，切红队模式时由 applyModeState 显示） -->
+                              <FlowPane fx:id="redBar" orientation="VERTICAL" prefWrapLength="4000" alignment="TOP_CENTER" hgap="10" vgap="6" styleClass="box-nav-red" visible="false" managed="false">
                                  <children>
                                     <RXToggleButton text="AI自动渗透" userData="i18n:main.red.aipentest" toggleGroup="$navGroup" />
                                     <RXToggleButton text="资产测绘" userData="i18n:main.red.infosearch" toggleGroup="$navGroup" />

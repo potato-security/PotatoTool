@@ -61,7 +61,7 @@
             <Label fx:id="aiHintLabel" styleClass="pt-caption,sep-ai-hint"
                    text="输入已变更，重新分析" userData="i18n:separate.ai.changed"
                    visible="false" managed="false"/>
-            <StackPane>
+            <StackPane visible="false" managed="false">
                 <Button fx:id="aiAnalyzeBtn" styleClass="pt-btn" minHeight="36" minWidth="80"
                         text="AI 分析" userData="i18n:separate.ai.analyze"
                         onAction="#startAiAnalysis"/>
@@ -69,7 +69,7 @@
                        visible="false" StackPane.alignment="TOP_RIGHT"
                        translateX="6.0" translateY="-8.0"/>
             </StackPane>
-            <StackPane>
+            <StackPane visible="false" managed="false">
                 <Button fx:id="downloadAiBtn" styleClass="pt-btn" minHeight="36" minWidth="80"
                         text="下载分析" userData="i18n:separate.ai.download"
                         onAction="#downloadAi" disable="true"/>
@@ -77,7 +77,8 @@
                        StackPane.alignment="TOP_RIGHT"
                        translateX="6.0" translateY="-8.0"/>
             </StackPane>
-            <Button styleClass="pt-btn" minHeight="36" minWidth="80"
+            <Button visible="false" managed="false"
+                    styleClass="pt-btn" minHeight="36" minWidth="80"
                     text="导出结果" userData="i18n:separate.export" onAction="#exportResult"/>
         </HBox>
 
