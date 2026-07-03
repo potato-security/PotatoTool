@@ -64,8 +64,8 @@
                 </VBox>
                 <Button styleClass="pt-btn-solid" minHeight="36" minWidth="96"
                         text="一键识别" userData="i18n:webshell.decrypt" onAction="#toDecode"/>
-                <Button styleClass="pt-btn" minHeight="36" minWidth="96"
-                        text="上传流量包" userData="i18n:webshell.upload" onAction="#toDecodePcap"/>
+                <Button styleClass="pt-btn" minHeight="36" minWidth="72"
+                        text="清空" userData="i18n:webshell.clear" onAction="#clearContent"/>
             </HBox>
 
             <!-- Input section label + tipTitle copy row -->
@@ -165,6 +165,15 @@
                     <cursor><Cursor fx:constant="HAND"/></cursor>
                     <tooltip><Tooltip text="下载分析报告" userData="i18n:webshell.ai.download"/></tooltip>
                 </Button>
+            </HBox>
+
+            <!-- OPERATIONS -->
+            <HBox styleClass="wd-section-header" alignment="CENTER_LEFT" spacing="8">
+                <Label text="OPERATIONS" styleClass="wd-section-label" userData="i18n:webshell.section.operations"/>
+                <Button styleClass="pt-btn-solid" minHeight="30" minWidth="96"
+                        text="开始解密" userData="i18n:webshell.operations.decrypt" onAction="#toDecode"/>
+                <Button styleClass="pt-btn" minHeight="30" minWidth="96"
+                        text="导出结果" userData="i18n:webshell.operations.export" onAction="#exportDecodeResult"/>
             </HBox>
 
             <!-- OUTPUT section -->

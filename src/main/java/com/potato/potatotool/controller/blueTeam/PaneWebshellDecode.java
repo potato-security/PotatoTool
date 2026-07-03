@@ -1014,4 +1014,43 @@ public class PaneWebshellDecode {
         currentThread.setDaemon(true);
         currentThread.start();
     }
+
+    @FXML
+    void clearContent(ActionEvent event) {
+        inputText.clear();
+        result.clear();
+        tipTitle.setText("");
+        tipTitle.setVisible(false);
+        tipTitle.setManaged(false);
+        tipTitleCopy.setVisible(false);
+        tipTitleCopy.setManaged(false);
+        invalidateAiReport();
+    }
+
+    @FXML
+    void exportDecodeResult(ActionEvent event) {
+        String content = result.getText();
+        if (content == null || content.trim().isEmpty()) {
+            showPrompt(I18nUtils.getString("webshell.export.no.result"));
+            return;
+        }
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(I18nUtils.getString("webshell.export.title"));
+        chooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Text Files", "*.txt"),
+                new FileChooser.ExtensionFilter("All Files", "*.*"));
+        chooser.setInitialFileName("webshell_result_" +
+                new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".txt");
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        File selectedFile = chooser.showSaveDialog(stage);
+        if (selectedFile == null) return;
+        try (PrintWriter pw = new PrintWriter(
+                new OutputStreamWriter(new FileOutputStream(selectedFile), "UTF-8"))) {
+            pw.print(content);
+            showSuccessPrompt(I18nUtils.getString("webshell.export.success.result",
+                    selectedFile.getAbsolutePath()));
+        } catch (IOException ex) {
+            showErrorPrompt(I18nUtils.getString("webshell.report.export.failed", ex.getMessage()));
+        }
+    }
 }
