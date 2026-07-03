@@ -146,7 +146,7 @@
                         <cursor><Cursor fx:constant="HAND"/></cursor>
                     </Button>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Button styleClass="pt-btn-primary" text="提交反馈" userData="i18n:about.feedback.submit"
+                    <Button styleClass="pt-btn-solid" text="提交反馈" userData="i18n:about.feedback.submit"
                             onAction="#openGitHubIssues" minHeight="30" minWidth="88">
                         <cursor><Cursor fx:constant="HAND"/></cursor>
                     </Button>
