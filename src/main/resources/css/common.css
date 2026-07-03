@@ -539,13 +539,6 @@
     -fx-background-color: -main-btnTransitionPressed-color;
 }
 
-#tipVBox{
-    -fx-padding: 20;
-    -fx-border-color: -main-border-color;
-    -fx-background-color: -main-topBar-color;
-    -fx-border-width: 1;
-    -fx-border-radius: 8;
-}
 
 /*RichTextFx样式设置*/
 .caret {    /*针对于richTextFx的光标*/

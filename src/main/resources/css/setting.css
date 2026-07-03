@@ -52,10 +52,7 @@
     -fx-border-width: 1;
     -fx-border-radius: 0 0 4 4;
 }
-.tipTitle_input_big .text{
-    -fx-font-size: 20;
-    -fx-font-weight: bold;
-}
+
 .tips{
     -fx-border-width: 0 0 1 0;
     -fx-border-color: linear-gradient(to right,transparent 0%, -pt-border-subtle 20%, -pt-border-subtle 80%, transparent 100%);

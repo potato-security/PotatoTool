@@ -40,7 +40,7 @@
         <Pane minHeight="20"/>
 
         <HBox alignment="CENTER">
-            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.4}" styleClass="pt-btn-primary" text="选择class文件" userData="i18n:decompile.selectfile" onAction="#toDecompile" translationDir="BOTTOM_TO_TOP">
+            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.4}" styleClass="pt-btn-solid" text="选择class文件" userData="i18n:decompile.selectfile" onAction="#toDecompile" translationDir="BOTTOM_TO_TOP">
                 <graphic>
                     <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                         <image>
@@ -56,7 +56,7 @@
                 </cursor>
             </RXTranslationButton>
             <Label minWidth="${sPane.width * 0.1}"/>
-            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.4}" styleClass="pt-btn-primary" text="选择文件夹" userData="i18n:decompile.selectfolder" onAction="#toDecompileBat" translationDir="BOTTOM_TO_TOP">
+            <RXTranslationButton prefHeight="48.0" prefWidth="${sPane.width * 0.4}" styleClass="pt-btn-solid" text="选择文件夹" userData="i18n:decompile.selectfolder" onAction="#toDecompileBat" translationDir="BOTTOM_TO_TOP">
                 <graphic>
                     <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                         <image>
@@ -102,7 +102,7 @@
                     </VBox>
                     <VBox fx:id="aiStateNotAnalyzed" visible="false" prefWidth="0" prefHeight="${sPane.height - 150}" alignment="CENTER" spacing="16" style="-fx-padding: 24 16 24 16;" layoutX="0" layoutY="0">
                         <Label text="已选择文件，点击「AI 分析」开始智能分析" userData="i18n:decompile.ai.state.notanalyzed" styleClass="pt-body" wrapText="true" textAlignment="CENTER" maxWidth="240"/>
-                        <Button text="AI 分析" userData="i18n:decompile.ai.start" onAction="#startAiAnalysis" styleClass="pt-btn-primary" minWidth="120" minHeight="32"/>
+                        <Button text="AI 分析" userData="i18n:decompile.ai.start" onAction="#startAiAnalysis" styleClass="pt-btn-solid" minWidth="120" minHeight="32"/>
                     </VBox>
                     <SmoothTextArea fx:id="aiTextArea" styleClass="pt-input" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height - 150}" maxHeight="${sPane.height - 150}" minHeight="100" text="AI分析中，请稍等……" userData="i18n:decompile.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
                     <Button fx:id="refreshAI" layoutX="-60" layoutY="6" mnemonicParsing="false" onAction="#refreshAI">

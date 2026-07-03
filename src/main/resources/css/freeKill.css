@@ -6,14 +6,7 @@
     -fx-padding: 16;
     -fx-alignment: center;
 }
-.tipInfo{
-    -fx-padding: 8 0 0 0;
-    -fx-spacing: 48;
-}
-#tipTitle_input_big .text{
-    -fx-font-size: 23;
-    -fx-font-weight: bold;
-}
+
 #contentSp{
     -fx-background-color: -pt-bg-panel;
     -fx-background-radius: 8;

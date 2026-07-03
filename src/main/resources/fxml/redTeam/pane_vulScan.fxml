@@ -24,7 +24,15 @@
                       fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
     <VBox alignment="TOP_CENTER" spacing="15" styleClass="vulscan-root">
-        
+
+        <!-- 0. 页面标题 -->
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <VBox spacing="3" HBox.hgrow="ALWAYS">
+                <Label text="漏洞扫描" styleClass="pt-h1" userData="i18n:vulnscan.page.title"/>
+                <Label text="多引擎 POC 编排 · 扫描工作台" styleClass="pt-caption" userData="i18n:vulnscan.page.subtitle"/>
+            </VBox>
+        </HBox>
+
         <!-- 1. 顶部目标输入区 -->
         <HBox alignment="CENTER_LEFT" spacing="15">
             <!-- 模式选择放在左侧 -->

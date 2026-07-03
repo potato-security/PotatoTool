@@ -50,7 +50,7 @@
                 <Button fx:id="uploadBtn" styleClass="pt-btn" text="批量上传"
                         onAction="#searchUploadInput" userData="i18n:infosearch.batch"
                         minHeight="36"/>
-                <Button fx:id="searchBtn" styleClass="pt-btn-primary" text="开始测绘"
+                <Button fx:id="searchBtn" styleClass="pt-btn-solid" text="开始测绘"
                         onAction="#searchInput" userData="i18n:infosearch.search.start"
                         minHeight="36" minWidth="96"/>
                 <Button fx:id="stopBtn" styleClass="pt-btn-danger" text="停止"
@@ -65,7 +65,7 @@
                 <TextField fx:id="question" styleClass="pt-input,is-target-input" HBox.hgrow="ALWAYS"
                            promptText="example.com / 企业名称 / IP / 域名"
                            userData="i18n-prompt:infosearch.input.placeholder"/>
-                <Button styleClass="pt-btn-primary" text="智能检索"
+                <Button styleClass="pt-btn-solid" text="智能检索"
                         onAction="#searchInput" userData="i18n:infosearch.search.smart"
                         minHeight="36" minWidth="88"/>
             </HBox>
@@ -267,7 +267,7 @@
                     <SmoothScrollPane maxHeight="250" hbarPolicy="NEVER" fitToWidth="true">
                         <VBox fx:id="companyNameVbox" spacing="10" alignment="CENTER"/>
                     </SmoothScrollPane>
-                    <Button fx:id="companyNameSave" prefWidth="150" styleClass="pt-btn-primary"
+                    <Button fx:id="companyNameSave" prefWidth="150" styleClass="pt-btn-solid"
                             text="下一步" userData="i18n:infosearch.next" onAction="#saveCompanyNameField"/>
                 </VBox>
             </VBox>
@@ -306,7 +306,7 @@
                             <TextField fx:id="candidateSearchField" styleClass="pt-input" HBox.hgrow="ALWAYS"
                                        promptText="搜索企业名称"
                                        userData="i18n-prompt:infosearch.candidate.search.prompt"/>
-                            <Button styleClass="pt-btn" text="搜 索" onAction="#searchCandidates"
+                            <Button styleClass="pt-btn-solid" text="搜 索" onAction="#searchCandidates"
                                     userData="i18n:infosearch.candidate.search.btn"
                                     minWidth="72" minHeight="30"/>
                         </HBox>
@@ -326,13 +326,13 @@
                                   promptText="北京科技有限公司"
                                   userData="i18n-prompt:infosearch.candidate.manual.prompt"/>
                         <HBox alignment="CENTER">
-                            <Button styleClass="pt-btn-primary" text="确 认" onAction="#confirmManualCandidate"
+                            <Button styleClass="pt-btn-solid" text="确 认" onAction="#confirmManualCandidate"
                                     userData="i18n:infosearch.candidate.confirm.btn"
                                     minWidth="100" minHeight="30"/>
                         </HBox>
                     </VBox>
                     <HBox alignment="CENTER" spacing="10" style="-fx-padding: 4 0 0 0;">
-                        <Button fx:id="companyCandidateSave" prefWidth="150" styleClass="pt-btn-primary"
+                        <Button fx:id="companyCandidateSave" prefWidth="150" styleClass="pt-btn-solid"
                                 text="确认并继续" onAction="#saveCompanyCandidateField"/>
                         <Button fx:id="companyCandidateNone" prefWidth="120" styleClass="pt-btn"
                                 text="都不是" onAction="#chooseNoneCompanyCandidate"/>
@@ -356,7 +356,7 @@
                            text="请选择相关的icon，将用于基础检索 及 影子资产检索"
                            userData="i18n:infosearch.icon.desc"/>
                     <FlowPane fx:id="iconFlowPane" vgap="10" hgap="10" alignment="CENTER"/>
-                    <Button fx:id="iconSave" prefWidth="150" styleClass="pt-btn-primary"
+                    <Button fx:id="iconSave" prefWidth="150" styleClass="pt-btn-solid"
                             text="下一步" userData="i18n:infosearch.next" onAction="#saveIconField"/>
                 </VBox>
             </VBox>
@@ -376,7 +376,7 @@
                     <SmoothScrollPane maxHeight="300" hbarPolicy="NEVER">
                         <VBox fx:id="domainVbox" spacing="10" alignment="CENTER"/>
                     </SmoothScrollPane>
-                    <Button fx:id="domainSave" prefWidth="150" styleClass="pt-btn-primary"
+                    <Button fx:id="domainSave" prefWidth="150" styleClass="pt-btn-solid"
                             text="下一步" userData="i18n:infosearch.next" onAction="#saveDomainField"/>
                 </VBox>
             </VBox>

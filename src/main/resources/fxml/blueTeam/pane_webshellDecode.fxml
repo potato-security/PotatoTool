@@ -62,7 +62,7 @@
                     <Label text="Webshell / 编码解密工作台 · 自动识别与链式解码"
                            styleClass="wd-subtitle" userData="i18n:webshell.page.subtitle"/>
                 </VBox>
-                <Button styleClass="pt-btn-primary" minHeight="36" minWidth="96"
+                <Button styleClass="pt-btn-solid" minHeight="36" minWidth="96"
                         text="一键识别" userData="i18n:webshell.decrypt" onAction="#toDecode"/>
                 <Button styleClass="pt-btn" minHeight="36" minWidth="96"
                         text="上传流量包" userData="i18n:webshell.upload" onAction="#toDecodePcap"/>

@@ -12,15 +12,11 @@
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
     <SmoothScrollPane fx:id="rootScrollPane" maxWidth="${sPane.width}" maxHeight="${sPane.height}" hbarPolicy="NEVER" style="-fx-padding: 0">
         <VBox spacing="20" alignment="TOP_CENTER">
-            <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                <Label styleClass="tipTitle_input_big" text="Payload 工具箱" userData="i18n:payload.title"/>
-            </HBox>
-
             <TabPane fx:id="payloadTabPane" prefWidth="${sPane.width - 10}" tabClosingPolicy="UNAVAILABLE" styleClass="payload-toolbox-tab-pane">
                 <tabs>
                     <Tab fx:id="detectorTab" text="探测 Payload" userData="i18n:payload.tab.detector">
                         <content>
-                            <VBox styleClass="tipVBox" spacing="15" prefWidth="${sPane.width - 10}">
+                            <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 10}">
                                 <HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label fx:id="leftLabel" text="探测方式：" userData="i18n:payload.detector.type"/>
@@ -42,27 +38,27 @@
                                     </HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="类名：" userData="i18n:payload.classname"/>
-                                        <TextField styleClass="pt-input" fx:id="detectorClassNameTextField" promptText="留空则随机" userData="i18n-prompt:payload.classname.placeholder" prefHeight="20.0" prefWidth="250"/>
+                                        <TextField styleClass="pt-input" fx:id="detectorClassNameTextField" promptText="留空则随机" userData="i18n-prompt:payload.classname.placeholder" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="DNSLog 域名：" userData="i18n:payload.detector.dns"/>
-                                        <TextField styleClass="pt-input" fx:id="dnsDomainTextField" promptText="example.dnslog.cn" userData="i18n-prompt:payload.detector.dns.placeholder" prefHeight="20.0" prefWidth="250"/>
+                                        <TextField styleClass="pt-input" fx:id="dnsDomainTextField" promptText="example.dnslog.cn" userData="i18n-prompt:payload.detector.dns.placeholder" prefWidth="250"/>
                                     </HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="HTTPLog URL：" userData="i18n:payload.detector.http"/>
-                                        <TextField styleClass="pt-input" fx:id="httpBaseUrlTextField" promptText="https://log.example/c" userData="i18n-prompt:payload.detector.http.placeholder" prefHeight="20.0" prefWidth="250"/>
+                                        <TextField styleClass="pt-input" fx:id="httpBaseUrlTextField" promptText="https://log.example/c" userData="i18n-prompt:payload.detector.http.placeholder" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="Sleep 秒数：" userData="i18n:payload.detector.sleep"/>
-                                        <TextField styleClass="pt-input" fx:id="sleepSecondsTextField" text="5" prefHeight="20.0" prefWidth="250"/>
+                                        <TextField styleClass="pt-input" fx:id="sleepSecondsTextField" text="5" prefWidth="250"/>
                                     </HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="中间件类型：" userData="i18n:memshell.servertype"/>
-                                        <ComboBox fx:id="serverTypeBox" prefHeight="20.0" prefWidth="250"/>
+                                        <ComboBox fx:id="serverTypeBox" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                             </VBox>
@@ -70,15 +66,15 @@
                     </Tab>
                     <Tab fx:id="ysoTab" text="Yso" userData="i18n:payload.tab.yso">
                         <content>
-                            <VBox styleClass="tipVBox" spacing="15" prefWidth="${sPane.width - 10}">
+                            <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 10}">
                                 <HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label text="分类：" userData="i18n:payload.yso.category"/>
-                                        <ComboBox fx:id="ysoCategoryBox" prefHeight="20.0" prefWidth="250"/>
+                                        <ComboBox fx:id="ysoCategoryBox" prefWidth="250"/>
                                     </HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label text="Gadget：" userData="i18n:payload.yso.gadget"/>
-                                        <ComboBox fx:id="ysoGadgetBox" prefHeight="20.0" prefWidth="250"/>
+                                        <ComboBox fx:id="ysoGadgetBox" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
@@ -87,34 +83,34 @@
                                     </HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label text="输入类型：" userData="i18n:payload.yso.input"/>
-                                        <TextField styleClass="pt-input" fx:id="ysoInputTypeTextField" editable="false" prefHeight="20.0" prefWidth="250"/>
+                                        <TextField styleClass="pt-input" fx:id="ysoInputTypeTextField" editable="false" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label text="命令 / 参数：" userData="i18n:payload.yso.command"/>
-                                        <TextField styleClass="pt-input" fx:id="ysoCommandTextField" promptText="URLDNS 域名或 class_file:路径" userData="i18n-prompt:payload.yso.command.placeholder" prefHeight="20.0" prefWidth="250"/>
+                                        <TextField styleClass="pt-input" fx:id="ysoCommandTextField" promptText="URLDNS 域名或 class_file:路径" userData="i18n-prompt:payload.yso.command.placeholder" prefWidth="250"/>
                                     </HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label text="能力：" userData="i18n:payload.yso.capability"/>
-                                        <TextField styleClass="pt-input" fx:id="ysoCapabilityTextField" editable="false" prefHeight="20.0" prefWidth="250"/>
+                                        <TextField styleClass="pt-input" fx:id="ysoCapabilityTextField" editable="false" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label text="依赖提示：" userData="i18n:payload.yso.dependency"/>
-                                        <TextField styleClass="pt-input" fx:id="ysoDependencyHintTextField" editable="false" prefHeight="20.0" prefWidth="250"/>
+                                        <TextField styleClass="pt-input" fx:id="ysoDependencyHintTextField" editable="false" prefWidth="250"/>
                                     </HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label text="验证边界：" userData="i18n:payload.yso.verification"/>
-                                        <TextField styleClass="pt-input" fx:id="ysoVerificationHintTextField" editable="false" prefHeight="20.0" prefWidth="250"/>
+                                        <TextField styleClass="pt-input" fx:id="ysoVerificationHintTextField" editable="false" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                                         <Label text="结构化辅助：" userData="i18n:payload.yso.helper"/>
-                                        <ComboBox fx:id="ysoHelperTypeBox" prefHeight="20.0" prefWidth="110"/>
-                                        <TextField styleClass="pt-input" fx:id="ysoHelperValueTextField" promptText="根据前缀填写参数" userData="i18n-prompt:payload.yso.helper.value.placeholder" prefHeight="20.0" prefWidth="130"/>
+                                        <ComboBox fx:id="ysoHelperTypeBox" prefWidth="110"/>
+                                        <TextField styleClass="pt-input" fx:id="ysoHelperValueTextField" promptText="根据前缀填写参数" userData="i18n-prompt:payload.yso.helper.value.placeholder" prefWidth="130"/>
                                     </HBox>
                                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER_LEFT" spacing="10">
                                         <Button styleClass="pt-btn-primary" fx:id="ysoHelperApplyButton" minHeight="25.0" minWidth="120" text="填充命令" userData="i18n:payload.yso.helper.apply" onAction="#applyYsoCommandHelper"/>
@@ -129,20 +125,20 @@
                 </tabs>
             </TabPane>
 
-            <VBox styleClass="tipVBox" spacing="15" prefWidth="${sPane.width - 10}">
+            <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 10}">
                 <HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label text="输出格式：" userData="i18n:payload.output.format"/>
-                        <ComboBox fx:id="outputFormatBox" prefHeight="20.0" prefWidth="250"/>
+                        <ComboBox fx:id="outputFormatBox" prefWidth="250"/>
                     </HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label text="输出路径：" userData="i18n:payload.output.path"/>
-                        <TextField styleClass="pt-input" fx:id="outputPathTextField" promptText="文件格式可填写目录或完整文件路径" userData="i18n-prompt:payload.output.path.placeholder" prefHeight="20.0" prefWidth="250"/>
+                        <TextField styleClass="pt-input" fx:id="outputPathTextField" promptText="文件格式可填写目录或完整文件路径" userData="i18n-prompt:payload.output.path.placeholder" prefWidth="250"/>
                     </HBox>
                 </HBox>
             </VBox>
 
-            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成 Payload" userData="i18n:memshell.generate" onAction="#generatePayload"/>
+            <Button styleClass="pt-btn-solid" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成 Payload" userData="i18n:memshell.generate" onAction="#generatePayload"/>
 
             <!-- OUTPUT 分区头 (对齐 Penpot: OUTPUT 标签 + 状态徽章) -->
             <HBox styleClass="payload-output-header" alignment="CENTER_LEFT" spacing="8" prefWidth="${sPane.width - 10}">

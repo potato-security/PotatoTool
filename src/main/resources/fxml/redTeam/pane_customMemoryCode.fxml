@@ -17,76 +17,60 @@
     <SmoothScrollPane fx:id="rootScrollPane" maxWidth="${sPane.width}" maxHeight="${sPane.height}" hbarPolicy="NEVER" style="-fx-padding: 0">
         <VBox spacing="20" alignment="TOP_CENTER">
 
-            <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                <Label styleClass="pt-h2" text="类型选项" userData="i18n:memshell.type.title"/>
+            <Label styleClass="pt-section-label" text="类型选项" userData="i18n:memshell.type.title"/>
+
+            <HBox styleClass="pt-panel" spacing="16" alignment="CENTER_LEFT" prefWidth="${sPane.width - 10}">
+                <Label styleClass="pt-caption" text="工具类型" userData="i18n:memshell.tooltype"/>
+                <ComboBox fx:id="toolTypeBox" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Label styleClass="pt-caption" fx:id="leftLabel" text="中间件" userData="i18n:memshell.servertype"/>
+                <ComboBox fx:id="serverTypeBox" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Label styleClass="pt-caption" text="组件" userData="i18n:memshell.shelltype"/>
+                <ComboBox fx:id="shellTypeBox" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Label styleClass="pt-caption" text="输出格式" userData="i18n:memshell.outputformat"/>
+                <ComboBox fx:id="outputFormatBox" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             </HBox>
 
-            <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 10}">
-                <HBox>
-                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
-                        <Label styleClass="pt-body" text="工具类型：" userData="i18n:memshell.tooltype"/>
-                        <ComboBox fx:id="toolTypeBox" prefHeight="20.0" prefWidth="250"  />
-                    </HBox>
-                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
-                        <Label styleClass="pt-body" fx:id="leftLabel" text="中间件类型：" userData="i18n:memshell.servertype"/>
-                        <ComboBox fx:id="serverTypeBox" prefHeight="20.0" prefWidth="250"  />
-                    </HBox>
-                </HBox>
-                <HBox>
-                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
-                        <Label styleClass="pt-body" text="组件类型：" userData="i18n:memshell.shelltype"/>
-                        <ComboBox fx:id="shellTypeBox" prefHeight="20.0" prefWidth="250"  />
-                    </HBox>
-                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
-                        <Label styleClass="pt-body" minWidth="${leftLabel.width}" text="输出格式：" userData="i18n:memshell.outputformat"/>
-                        <ComboBox fx:id="outputFormatBox" prefHeight="20.0" prefWidth="250"  />
-                    </HBox>
-                </HBox>
-            </VBox>
-
-            <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                <Label styleClass="pt-h2" text="自定义选项" userData="i18n:memshell.custom.title"/>
-            </HBox>
+            <Label styleClass="pt-section-label" text="自定义选项" userData="i18n:memshell.custom.title"/>
 
             <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 10}">
                 <HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label styleClass="pt-body" minWidth="${leftLabel.width}" text="密码：" userData="i18n:memshell.password"/>
-                        <TextField styleClass="pt-input" fx:id="passTextField" promptText="请输入密码，空则随机" userData="i18n-prompt:memshell.password.placeholder" prefHeight="20.0" prefWidth="250"/>
+                        <TextField styleClass="pt-input" fx:id="passTextField" promptText="请输入密码，空则随机" userData="i18n-prompt:memshell.password.placeholder" prefWidth="250"/>
                     </HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label styleClass="pt-body" minWidth="${leftLabel.width}" text="密钥：" userData="i18n:memshell.key"/>
-                        <TextField styleClass="pt-input" fx:id="keyTextField" promptText="请输入密钥，空则随机" userData="i18n-prompt:memshell.key.placeholder" prefHeight="20.0" prefWidth="250"/>
+                        <TextField styleClass="pt-input" fx:id="keyTextField" promptText="请输入密钥，空则随机" userData="i18n-prompt:memshell.key.placeholder" prefWidth="250"/>
                     </HBox>
                 </HBox>
                 <HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label styleClass="pt-body" minWidth="${leftLabel.width}" text="请求头Key：" userData="i18n:memshell.headerkey"/>
-                        <TextField styleClass="pt-input" fx:id="headerNameTextField" promptText="请输入请求头Key，空则随机" userData="i18n-prompt:memshell.headerkey.placeholder" prefHeight="20.0" prefWidth="250"/>
+                        <TextField styleClass="pt-input" fx:id="headerNameTextField" promptText="请输入请求头Key，空则随机" userData="i18n-prompt:memshell.headerkey.placeholder" prefWidth="250"/>
                     </HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label styleClass="pt-body" minWidth="${leftLabel.width}" text="请求头Value：" userData="i18n:memshell.headervalue"/>
-                        <TextField styleClass="pt-input" fx:id="headerValueTextField" promptText="请输入请求头Value，空则随机" userData="i18n-prompt:memshell.headervalue.placeholder" prefHeight="20.0" prefWidth="250"/>
+                        <TextField styleClass="pt-input" fx:id="headerValueTextField" promptText="请输入请求头Value，空则随机" userData="i18n-prompt:memshell.headervalue.placeholder" prefWidth="250"/>
                     </HBox>
                 </HBox>
                 <HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label styleClass="pt-body" minWidth="${leftLabel.width}" text="内存马类名：" userData="i18n:memshell.shellclass"/>
-                        <TextField styleClass="pt-input" fx:id="shellClassNameTextField" promptText="请输入内存马类名，空则随机" userData="i18n-prompt:memshell.shellclass.placeholder" prefHeight="20.0" prefWidth="250"/>
+                        <TextField styleClass="pt-input" fx:id="shellClassNameTextField" promptText="请输入内存马类名，空则随机" userData="i18n-prompt:memshell.shellclass.placeholder" prefWidth="250"/>
                     </HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label styleClass="pt-body" minWidth="${leftLabel.width}" text="注入器类名：" userData="i18n:memshell.injectorclass"/>
-                        <TextField styleClass="pt-input" fx:id="injectorClassNameTextField" promptText="请输入注入器类名，空则随机" userData="i18n-prompt:memshell.injectorclass.placeholder" prefHeight="20.0" prefWidth="250"/>
+                        <TextField styleClass="pt-input" fx:id="injectorClassNameTextField" promptText="请输入注入器类名，空则随机" userData="i18n-prompt:memshell.injectorclass.placeholder" prefWidth="250"/>
                     </HBox>
                 </HBox>
                 <HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label styleClass="pt-body" minWidth="${leftLabel.width}" text="请求路径：" userData="i18n:memshell.urlpattern"/>
-                        <TextField styleClass="pt-input" fx:id="urlPatternTextField" promptText="请输入请求路径，空则随机" userData="i18n-prompt:memshell.urlpattern.placeholder" text="/*" prefHeight="20.0" prefWidth="250"/>
+                        <TextField styleClass="pt-input" fx:id="urlPatternTextField" promptText="请输入请求路径，空则随机" userData="i18n-prompt:memshell.urlpattern.placeholder" text="/*" prefWidth="250"/>
                     </HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label styleClass="pt-body" minWidth="${leftLabel.width}" text="输出路径：" userData="i18n:memshell.output.path"/>
-                        <TextField styleClass="pt-input" fx:id="outputPathTextField" promptText="请输入输出目录或文件路径，空则当前目录" userData="i18n-prompt:memshell.output.path.placeholder" prefHeight="20.0" prefWidth="250"/>
+                        <TextField styleClass="pt-input" fx:id="outputPathTextField" promptText="请输入输出目录或文件路径，空则当前目录" userData="i18n-prompt:memshell.output.path.placeholder" prefWidth="250"/>
                     </HBox>
                 </HBox>
                 <HBox>
@@ -103,24 +87,22 @@
                 </HBox>
             </VBox>
 
-            <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                <Label styleClass="pt-h2" text="专项利用" userData="i18n:memshell.exploit.title"/>
-            </HBox>
+            <Label styleClass="pt-section-label" text="专项利用" userData="i18n:memshell.exploit.title"/>
 
             <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 10}">
                 <HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label styleClass="pt-body" text="漏洞选择：" userData="i18n:memshell.gadget"/>
-                        <ComboBox fx:id="gadgetTypeBox" prefHeight="20.0" prefWidth="250"  />
+                        <ComboBox fx:id="gadgetTypeBox" prefWidth="250"  />
                     </HBox>
                     <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
                         <Label styleClass="pt-body" minWidth="${leftLabel.width}" text="表达式选择：" userData="i18n:memshell.expression"/>
-                        <ComboBox fx:id="exprEncoderBox" prefHeight="20.0" prefWidth="250"  />
+                        <ComboBox fx:id="exprEncoderBox" prefWidth="250"  />
                     </HBox>
                 </HBox>
             </VBox>
 
-            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成" userData="i18n:memshell.generate" onAction="#toGenerateMemoryShell"/>
+            <Button styleClass="pt-btn-solid" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成" userData="i18n:memshell.generate" onAction="#toGenerateMemoryShell"/>
 
             <!-- OUTPUT 分区头 (对齐 Penpot) -->
             <HBox styleClass="payload-output-header" alignment="CENTER_LEFT" spacing="8" prefWidth="${sPane.width - 10}">

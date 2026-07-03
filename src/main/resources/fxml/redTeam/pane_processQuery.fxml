@@ -20,7 +20,7 @@
                                 prefHeight="52" minHeight="52" HBox.hgrow="ALWAYS" maxWidth="Infinity"
                                 promptText="请输入tasklist或者ps aux执行后的内容"
                                 userData="i18n-prompt:process.input.placeholder"/>
-                <Button text="开始提取" styleClass="pt-btn-primary" minWidth="104" prefHeight="52"
+                <Button text="开始提取" styleClass="pt-btn-solid" minWidth="104" prefHeight="52"
                         userData="i18n:process.extract" onAction="#getInfo"/>
             </HBox>
         </VBox>

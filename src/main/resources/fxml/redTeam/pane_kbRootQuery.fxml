@@ -40,7 +40,7 @@
                 </VBox>
 
                 <!-- Extract button -->
-                <Button styleClass="pt-btn-primary" maxWidth="Infinity" minHeight="48"
+                <Button styleClass="pt-btn-solid" maxWidth="Infinity" minHeight="48"
                         text="提取漏洞" userData="i18n:kb.extract" onAction="#searchKb"/>
 
             </VBox>

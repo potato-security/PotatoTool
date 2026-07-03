@@ -1,18 +1,3 @@
-.tipInfo{
-    -fx-padding: 10 0 0 0;
-    -fx-spacing: 50;
-}
-.tipTitle_input_big .text{
-    -fx-font-size: 23;
-    -fx-font-weight: bold;
-}
-.tipVBox{
-    -fx-padding: 20;
-    -fx-border-color: -pt-border;
-    -fx-background-color: -pt-bg-panel;
-    -fx-border-width: 1;
-    -fx-border-radius: 8;
-}
 
 .payload-toolbox-tab-pane {
     -fx-background-color: transparent;

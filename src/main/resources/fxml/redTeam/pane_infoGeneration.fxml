@@ -16,7 +16,7 @@
 
         <!-- 生成 按钮 + 副标题 -->
         <VBox spacing="4" alignment="CENTER" maxWidth="Infinity">
-            <Button styleClass="pt-btn-primary" minHeight="46.0" maxWidth="Infinity" prefWidth="${sPane.width - 40}" text="生 成" userData="i18n:infogen.generate" onAction="#generation"/>
+            <Button styleClass="pt-btn-solid" minHeight="46.0" maxWidth="Infinity" prefWidth="${sPane.width - 40}" text="生 成" userData="i18n:infogen.generate" onAction="#generation"/>
             <Label styleClass="pt-caption" text="点击生成随机中国公民身份信息" userData="i18n:infogen.generate.sub"/>
         </VBox>
 

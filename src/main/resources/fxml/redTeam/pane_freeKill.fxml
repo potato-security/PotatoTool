@@ -40,7 +40,7 @@
                         <Label text="全局密码" styleClass="pt-caption" userData="i18n:freekill.password"/>
                         <TextField styleClass="pt-input" fx:id="webShellKey" prefHeight="32" minWidth="140" prefWidth="140"
                                    promptText="空则每项独立配置" userData="i18n-prompt:freekill.password.placeholder"/>
-                        <Button styleClass="pt-btn-primary" minHeight="32" minWidth="100"
+                        <Button styleClass="pt-btn-solid" minHeight="32" minWidth="100"
                                 text="全部生成" userData="i18n:freekill.generateall" onAction="#webshellGeneration"/>
                     </HBox>
 
@@ -68,7 +68,7 @@
                             <TextField styleClass="pt-input" fx:id="godKey" prefHeight="30" minWidth="130" prefWidth="130"
                                        promptText="随机生成" userData="i18n-prompt:freekill.password.placeholder"/>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button styleClass="pt-btn-primary" minHeight="30" minWidth="72" text="生成"
+                            <Button styleClass="pt-btn-solid" minHeight="30" minWidth="72" text="生成"
                                     userData="i18n:freekill.generate" onAction="#godWebshellGeneration"/>
                         </HBox>
                     </VBox>
@@ -97,7 +97,7 @@
                             <TextField styleClass="pt-input" fx:id="behKey" prefHeight="30" minWidth="130" prefWidth="130"
                                        promptText="随机生成" userData="i18n-prompt:freekill.password.placeholder"/>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button styleClass="pt-btn-primary" minHeight="30" minWidth="72" text="生成"
+                            <Button styleClass="pt-btn-solid" minHeight="30" minWidth="72" text="生成"
                                     userData="i18n:freekill.generate" onAction="#behWebshellGeneration"/>
                         </HBox>
                     </VBox>
@@ -127,7 +127,7 @@
                             <TextField styleClass="pt-input" fx:id="antKey" prefHeight="30" minWidth="130" prefWidth="130"
                                        promptText="随机生成" userData="i18n-prompt:freekill.password.placeholder"/>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button styleClass="pt-btn-primary" minHeight="30" minWidth="72" text="生成"
+                            <Button styleClass="pt-btn-solid" minHeight="30" minWidth="72" text="生成"
                                     userData="i18n:freekill.generate" onAction="#antWebshellGeneration"/>
                         </HBox>
                     </VBox>
@@ -155,7 +155,7 @@
                             <TextField styleClass="pt-input" fx:id="cmdKey" prefHeight="30" minWidth="130" prefWidth="130"
                                        promptText="随机生成" userData="i18n-prompt:freekill.password.placeholder"/>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button styleClass="pt-btn-primary" minHeight="30" minWidth="72" text="生成"
+                            <Button styleClass="pt-btn-solid" minHeight="30" minWidth="72" text="生成"
                                     userData="i18n:freekill.generate" onAction="#cmdWebshellGeneration"/>
                         </HBox>
                     </VBox>
@@ -179,7 +179,7 @@
                             </StackPane>
                         </HBox>
                         <HBox alignment="CENTER">
-                            <Button styleClass="pt-btn-primary" fx:id="addBtn" minHeight="40.0" minWidth="150" text="伪造" userData="i18n:freekill.sig.fake" onAction="#toSigna">
+                            <Button styleClass="pt-btn-solid" fx:id="addBtn" minHeight="40.0" minWidth="150" text="伪造" userData="i18n:freekill.sig.fake" onAction="#toSigna">
                                 <effect>
                                     <DropShadow />
                                 </effect>
@@ -211,7 +211,7 @@
                             <TextField styleClass="pt-input" fx:id="widthLogo" text="60" promptText="输入logo宽度/高度(过大易无法识别二维码)" userData="i18n-prompt:freekill.qr.logosize.placeholder" prefWidth="400" StackPane.alignment="CENTER"/>
                         </HBox>
                         <HBox alignment="CENTER">
-                            <Button styleClass="pt-btn-primary" minHeight="40.0" minWidth="150" text="生成二维码" userData="i18n:freekill.qr.generate" onAction="#toQr">
+                            <Button styleClass="pt-btn-solid" minHeight="40.0" minWidth="150" text="生成二维码" userData="i18n:freekill.qr.generate" onAction="#toQr">
                                 <effect>
                                     <DropShadow />
                                 </effect>
@@ -230,9 +230,7 @@
                         </StackPane>
                     </HBox>
 
-                    <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                        <Label styleClass="pt-h2" id="tipTitle_input_big" text="基本信息" userData="i18n:freekill.packer.basicinfo"/>
-                    </HBox>
+                    <Label styleClass="pt-section-label" text="基本信息" userData="i18n:freekill.packer.basicinfo"/>
 
                     <VBox styleClass="paddingVBox" spacing="10" alignment="CENTER">
                         <HBox alignment="CENTER" spacing="10">
@@ -257,9 +255,7 @@
                         </HBox>
                     </VBox>
 
-                    <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                        <Label styleClass="pt-h2" id="tipTitle_input_big" text="加密选项" userData="i18n:freekill.packer.encryption"/>
-                    </HBox>
+                    <Label styleClass="pt-section-label" text="加密选项" userData="i18n:freekill.packer.encryption"/>
 
                     <VBox alignment="CENTER_LEFT"  styleClass="paddingVBox" style="-fx-padding: 20" spacing="10">
                         <CFCheckBox fx:id="isImportPro" alignment="CENTER" mnemonicParsing="false" selected="false" text="导入表保护" userData="i18n:freekill.packer.importpro"/>
@@ -270,9 +266,7 @@
                         <CFCheckBox fx:id="isVirtualDetection" alignment="CENTER" mnemonicParsing="false" selected="false" text="虚拟机检测" userData="i18n:freekill.packer.vmdetect"/>
                     </VBox>
 
-                    <HBox styleClass="tipInfo" alignment="BOTTOM_LEFT">
-                        <Label styleClass="pt-h2" id="tipTitle_input_big" text="函数选项" userData="i18n:freekill.packer.function"/>
-                    </HBox>
+                    <Label styleClass="pt-section-label" text="函数选项" userData="i18n:freekill.packer.function"/>
 
                     <VBox styleClass="paddingVBox" style="-fx-padding: 20" spacing="10" alignment="CENTER">
                         <HBox spacing="20" alignment="CENTER">
