@@ -443,8 +443,20 @@
     -fx-padding: 3 9 3 9;
 }
 .status-pill-local{
-    -fx-text-fill: -pt-success;
     -fx-border-color: -pt-accent;
+}
+/* LOCAL 胶囊内：绿点 + 浅色文字（对齐 Penpot：点绿、字浅，非全绿） */
+.status-dot-local{
+    -fx-min-width: 6; -fx-min-height: 6;
+    -fx-pref-width: 6; -fx-pref-height: 6;
+    -fx-max-width: 6; -fx-max-height: 6;
+    -fx-background-radius: 6;
+    -fx-background-color: -pt-success;
+}
+.status-pill-local-text{
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -pt-text-secondary;
 }
 .status-pill-on{
     -fx-text-fill: -pt-accent;
@@ -491,16 +503,18 @@
     -fx-background-color: -pt-accent-red;
     -fx-border-color: -pt-accent-red;
 }
-/* 蓝队选中态：青色描边（板为透明填充，仅描边）+ 文字点亮 */
+/* 蓝队选中态：3px 左强调条 + 淡强调底 + 文字点亮（VS Code 式当前项，对齐 Penpot 左强调条） */
 .box-nav .rx-toggle-button:selected{
-    -fx-background-color: transparent;
-    -fx-border-color: -pt-accent;
+    -fx-background-color: -pt-accent, derive(-pt-accent, -82%);
+    -fx-background-insets: 0, 0 0 0 3;
+    -fx-border-color: transparent;
     -fx-text-fill: -pt-accent;
 }
-/* 红队选中态：红色描边（板为透明填充，仅描边）+ 文字点亮 */
+/* 红队选中态：3px 左强调条 + 淡强调底 + 文字点亮 */
 .box-nav-red .rx-toggle-button:selected{
-    -fx-background-color: transparent;
-    -fx-border-color: -pt-accent-red;
+    -fx-background-color: -pt-accent-red, derive(-pt-accent-red, -82%);
+    -fx-background-insets: 0, 0 0 0 3;
+    -fx-border-color: transparent;
     -fx-text-fill: -pt-accent-red;
 }
 
