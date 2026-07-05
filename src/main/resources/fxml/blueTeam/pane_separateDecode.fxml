@@ -51,7 +51,7 @@
 
         <!-- ===== Action bar ===== -->
         <HBox styleClass="sep-action-bar" alignment="CENTER_LEFT" spacing="8">
-            <Button styleClass="pt-btn-solid" minHeight="36" minWidth="80"
+            <Button styleClass="pt-btn-primary" minHeight="36" minWidth="80"
                     text="解密" userData="i18n:separate.decode" onAction="#startDecrypt"/>
             <Button styleClass="pt-btn" minHeight="36" minWidth="80"
                     text="加密" userData="i18n:separate.encode" onAction="#startEncode"/>

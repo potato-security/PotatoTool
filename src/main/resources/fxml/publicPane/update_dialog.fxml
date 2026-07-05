@@ -131,7 +131,7 @@
                                    styleClass="upd-restart-text"
                                    HBox.hgrow="ALWAYS" wrapText="true"/>
                             <Button fx:id="restartNowButton" text="立即重启"
-                                    styleClass="pt-btn-solid"
+                                    styleClass="pt-btn-primary"
                                     userData="i18n:update.install.app.restart.now"
                                     onAction="#onRestartNowClick"
                                     minWidth="100" minHeight="38"/>
@@ -140,7 +140,7 @@
                         <!-- 主按钮 -->
                         <HBox fx:id="buttonBox" alignment="CENTER">
                             <Button fx:id="updateButton" text="立即更新"
-                                    styleClass="pt-btn-solid,upd-primary-btn"
+                                    styleClass="pt-btn-primary,upd-primary-btn"
                                     userData="i18n:update.available.button.update.selected"
                                     onAction="#onUpdateClick"
                                     maxWidth="Infinity" minHeight="42"

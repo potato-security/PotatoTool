@@ -26,7 +26,7 @@
             <!-- 输入 + 提取按钮 -->
             <HBox spacing="12" alignment="CENTER_LEFT">
                <SmoothTextArea fx:id="inputText" styleClass="pt-input,pt-mono" wrapText="true" prefHeight="76" minHeight="76" HBox.hgrow="ALWAYS" maxWidth="Infinity" promptText="请输入netstat -ano或者net -pantu执行后的内容" userData="i18n-prompt:ipinfo.input.placeholder"/>
-               <Button minHeight="76.0" minWidth="104" styleClass="pt-btn-solid" text="提取 IP" userData="i18n:ipinfo.extract" onAction="#getIpInfo"/>
+               <Button minHeight="76.0" minWidth="104" styleClass="pt-btn-primary" text="提取 IP" userData="i18n:ipinfo.extract" onAction="#getIpInfo"/>
             </HBox>
 
             <!-- 过滤规则 -->

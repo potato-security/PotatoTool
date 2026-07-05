@@ -76,7 +76,7 @@
                         <Tooltip text="返回" userData="i18n:blockchain.back"/>
                     </tooltip>
                 </Label>
-                <Button fx:id="exportReportButton" styleClass="pt-btn-solid"
+                <Button fx:id="exportReportButton" styleClass="pt-btn-primary"
                         layoutX="${-49}" layoutY="5"
                         mnemonicParsing="false" disable="true"
                         onAction="#exportCurrentReport">

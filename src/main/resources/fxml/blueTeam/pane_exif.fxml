@@ -18,7 +18,7 @@
             <HBox alignment="CENTER_LEFT" maxWidth="Infinity">
                 <Label text="SOURCE FILE" styleClass="pt-section-label" userData="i18n:exif.source.title"/>
             </HBox>
-            <Button prefHeight="44.0" prefWidth="240" styleClass="pt-btn-solid" text="选择文件" userData="i18n:exif.selectfile" onAction="#getExifFx">
+            <Button prefHeight="44.0" prefWidth="240" styleClass="pt-btn-primary" text="选择文件" userData="i18n:exif.selectfile" onAction="#getExifFx">
                 <cursor>
                     <Cursor fx:constant="HAND" />
                 </cursor>

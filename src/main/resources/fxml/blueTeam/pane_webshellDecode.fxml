@@ -62,7 +62,7 @@
                     <Label text="Webshell / 编码解密工作台 · 自动识别与链式解码"
                            styleClass="wd-subtitle" userData="i18n:webshell.page.subtitle"/>
                 </VBox>
-                <Button styleClass="pt-btn-solid" minHeight="36" minWidth="96"
+                <Button styleClass="pt-btn-primary" minHeight="36" minWidth="96"
                         text="一键识别" userData="i18n:webshell.decrypt" onAction="#toDecode"/>
                 <Button styleClass="pt-btn" minHeight="36" minWidth="72"
                         text="清空" userData="i18n:webshell.clear" onAction="#clearContent"/>
@@ -154,7 +154,7 @@
             <!-- OPERATIONS -->
             <HBox styleClass="wd-section-header" alignment="CENTER_LEFT" spacing="8">
                 <Label text="OPERATIONS" styleClass="wd-section-label" userData="i18n:webshell.section.operations"/>
-                <Button styleClass="pt-btn-solid" minHeight="30" minWidth="96"
+                <Button styleClass="pt-btn-primary" minHeight="30" minWidth="96"
                         text="开始解密" userData="i18n:webshell.operations.decrypt" onAction="#toDecode"/>
                 <Button styleClass="pt-btn" minHeight="30" minWidth="96"
                         text="导出结果" userData="i18n:webshell.operations.export" onAction="#exportDecodeResult"/>

@@ -102,7 +102,7 @@
                 </HBox>
             </VBox>
 
-            <Button styleClass="pt-btn-solid" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成" userData="i18n:memshell.generate" onAction="#toGenerateMemoryShell"/>
+            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成" userData="i18n:memshell.generate" onAction="#toGenerateMemoryShell"/>
 
             <!-- OUTPUT 分区头 (对齐 Penpot) -->
             <HBox styleClass="payload-output-header" alignment="CENTER_LEFT" spacing="8" prefWidth="${sPane.width - 10}">

@@ -95,7 +95,7 @@
             <!-- Action buttons -->
             <HBox spacing="8" alignment="CENTER_LEFT">
                 <Button fx:id="startButton" text="开始扫描" onMouseClicked="#startScan"
-                        styleClass="pt-btn-solid" userData="i18n:portscan.start"/>
+                        styleClass="pt-btn-primary" userData="i18n:portscan.start"/>
                 <Button fx:id="pauseButton" text="暂停" onMouseClicked="#pauseScan"
                         styleClass="pt-btn" userData="i18n:portscan.pause"/>
                 <Button fx:id="resumeButton" text="恢复" onMouseClicked="#resumeScan"

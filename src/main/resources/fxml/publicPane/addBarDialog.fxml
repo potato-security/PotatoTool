@@ -94,7 +94,7 @@
                 </HBox>
 
                 <HBox alignment="CENTER">
-                    <Button styleClass="pt-btn-solid" fx:id="addBtn" minHeight="40" minWidth="150"
+                    <Button styleClass="pt-btn-primary" fx:id="addBtn" minHeight="40" minWidth="150"
                             text="修改/添加" userData="i18n:addbar.submit" onAction="#addBar">
                         <cursor><Cursor fx:constant="HAND"/></cursor>
                     </Button>

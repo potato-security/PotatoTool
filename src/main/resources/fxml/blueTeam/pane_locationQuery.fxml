@@ -41,7 +41,7 @@
                         <Label text="SYNC" styleClass="lq-sync-badge"/>
                         <Button styleClass="pt-btn" minHeight="32" minWidth="100"
                                 text="批量导出" userData="i18n:location.batch.txt" onAction="#getIdCardInfoFx_batch"/>
-                        <Button styleClass="pt-btn-solid" minHeight="32" minWidth="72"
+                        <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
                                 text="查询" userData="i18n:location.query" onAction="#getIdCardInfoFx"/>
                     </HBox>
 
@@ -90,7 +90,7 @@
                         <Label text="SYNC" styleClass="lq-sync-badge"/>
                         <Button styleClass="pt-btn" minHeight="32" minWidth="100"
                                 text="批量导出" userData="i18n:location.batch.txt" onAction="#getBankCardInfoFx_batch"/>
-                        <Button styleClass="pt-btn-solid" minHeight="32" minWidth="72"
+                        <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
                                 text="查询" userData="i18n:location.query" onAction="#getBankCardInfoFx"/>
                     </HBox>
 
@@ -137,7 +137,7 @@
                         <Label text="SYNC" styleClass="lq-sync-badge"/>
                         <Button styleClass="pt-btn" minHeight="32" minWidth="100"
                                 text="批量导出" userData="i18n:location.batch.txt" onAction="#getPhoneInfoFx_batch"/>
-                        <Button styleClass="pt-btn-solid" minHeight="32" minWidth="72"
+                        <Button styleClass="pt-btn-primary" minHeight="32" minWidth="72"
                                 text="查询" userData="i18n:location.query" onAction="#getPhoneInfoFx"/>
                     </HBox>
 
