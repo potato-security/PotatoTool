@@ -978,25 +978,29 @@
 
 
 /*---------滚动条效果设置--------*/
+/* 隐藏滚动条增减箭头（对齐精简设计语言，表格早已隐藏，此处统一 ScrollPane/ListView） */
 .scroll-bar:vertical .increment-button,
 .scroll-bar:vertical .decrement-button {
     -fx-padding: 0;
     -fx-background-color: transparent;
-    -fx-shape: "M7,0L14,14L0,14Z";
-    -fx-scale-shape: false;
-    -fx-pref-width: 10;
-    -fx-pref-height: 10;
+    -fx-pref-width: 8;
+    -fx-pref-height: 0;
     -fx-border-color: transparent;
 }
 .scroll-bar:horizontal .increment-button,
 .scroll-bar:horizontal .decrement-button {
     -fx-padding: 0;
     -fx-background-color: transparent;
-    -fx-shape: "M0,7L14,0L14,14Z";
-    -fx-scale-shape: false;
-    -fx-pref-width: 10;
-    -fx-pref-height: 10;
+    -fx-pref-width: 0;
+    -fx-pref-height: 8;
     -fx-border-color: transparent;
+}
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
 }
 .scroll-bar .increment-arrow:hover,
 .scroll-bar .decrement-arrow:hover {
@@ -1009,13 +1013,13 @@
     -fx-padding: 0;
 }
 .scroll-bar:vertical .thumb {
-    -fx-background-color: -main-border-color;
+    -fx-background-color: -pt-border-strong;
     -fx-background-radius: 5;
-    -fx-pref-width: 10;
+    -fx-pref-width: 8;
     -fx-padding: 0;
 }
 .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: derive(-main-border-color, 20%);
+    -fx-background-color: -main-border-color;
     -fx-cursor: hand;
 }
 .scroll-bar:horizontal {
@@ -1025,13 +1029,13 @@
     -fx-padding: 0;
 }
 .scroll-bar:horizontal .thumb {
-    -fx-background-color: -main-border-color;
+    -fx-background-color: -pt-border-strong;
     -fx-background-radius: 5;
-    -fx-pref-height: 10;
+    -fx-pref-height: 8;
     -fx-padding: 0;
 }
 .scroll-bar:horizontal .thumb:hover {
-    -fx-background-color: derive(-main-border-color, 20%);
+    -fx-background-color: -main-border-color;
     -fx-cursor: hand;
 }
 
