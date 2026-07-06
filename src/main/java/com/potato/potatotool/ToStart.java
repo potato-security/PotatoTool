@@ -142,18 +142,30 @@ public class ToStart {
         RED_INFO_GENERATION(false, 21, "gen", "红队 / 信息生成"),
         RED_INFO_GENERATION_RESULT(false, 21, "genresult", "红队 / 信息生成 / 结果态"),
         RED_EXTENSION(false, 22, "rext", "红队 / 扩展模块"),
-        RED_ABOUT(false, 23, "rabout", "红队 / 关于");
+        RED_ABOUT(false, 23, "rabout", "红队 / 关于"),
+        // 弹窗直达（测试用）：先落到一个基础页(navIndex 0)，加载后再弹出对应弹窗
+        PUBLIC_SETTING_DIALOG(true, 0, "set", "公共 / 设置弹窗", "set");
 
         private final boolean blueMode;
         private final int navIndex;
         private final String alias;
         private final String description;
+        private final String dialogType;
 
         StartupPage(boolean blueMode, int navIndex, String alias, String description) {
+            this(blueMode, navIndex, alias, description, null);
+        }
+
+        StartupPage(boolean blueMode, int navIndex, String alias, String description, String dialogType) {
             this.blueMode = blueMode;
             this.navIndex = navIndex;
             this.alias = alias;
             this.description = description;
+            this.dialogType = dialogType;
+        }
+
+        public String getDialogType() {
+            return dialogType;
         }
 
         public boolean isBlueMode() {

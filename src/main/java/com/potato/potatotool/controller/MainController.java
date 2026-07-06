@@ -453,15 +453,47 @@ public class MainController {
         applyModeState(startupPage.isBlueMode());
 
         int index = startupPage.getNavIndex();
-        if (index < 0 || index >= navGroup.getToggles().size()) {
-            return;
+        if (index >= 0 && index < navGroup.getToggles().size()) {
+            Toggle targetToggle = navGroup.getToggles().get(index);
+            if (navGroup.getSelectedToggle() != targetToggle) {
+                targetToggle.setSelected(true);
+            } else {
+                applySelectedIndex(index, extensionPane, extensionPane_1, aboutPane, aboutPane_1, paneAbout, paneAbout_1);
+            }
         }
 
-        Toggle targetToggle = navGroup.getToggles().get(index);
-        if (navGroup.getSelectedToggle() != targetToggle) {
-            targetToggle.setSelected(true);
+        // 弹窗直达（测试用）：基础页就绪后弹出对应弹窗，供真机 §14 逐块核对弹窗组
+        String dialogType = startupPage.getDialogType();
+        if (dialogType != null) {
+            triggerStartupDialog(dialogType);
+        }
+    }
+
+    /** 测试用：等主舞台 scene/window 就绪后弹出指定弹窗（applyStartupTestPage 在 stage.show() 前执行，需延迟到窗口可用）。 */
+    private void triggerStartupDialog(String dialogType) {
+        Runnable open = () -> {
+            if (root.getScene() == null || root.getScene().getWindow() == null) return;
+            if ("set".equals(dialogType)) {
+                DialogUtils.showSet(root.getScene().getWindow());
+            }
+        };
+        if (root.getScene() != null && root.getScene().getWindow() != null) {
+            Platform.runLater(open);
+        } else if (root.getScene() != null) {
+            root.getScene().windowProperty().addListener((o, ov, nv) -> {
+                if (nv != null) Platform.runLater(open);
+            });
         } else {
-            applySelectedIndex(index, extensionPane, extensionPane_1, aboutPane, aboutPane_1, paneAbout, paneAbout_1);
+            root.sceneProperty().addListener((o, ov, nv) -> {
+                if (nv == null) return;
+                if (nv.getWindow() != null) {
+                    Platform.runLater(open);
+                } else {
+                    nv.windowProperty().addListener((o2, ov2, nv2) -> {
+                        if (nv2 != null) Platform.runLater(open);
+                    });
+                }
+            });
         }
     }
 
