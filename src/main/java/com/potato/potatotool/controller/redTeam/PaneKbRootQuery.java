@@ -154,6 +154,9 @@ public class PaneKbRootQuery {
 
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
         dateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        // 发布日期完整显示，避免被 CVE 列挤成 20240…
+        dateColumn.setMinWidth(84);
+        dateColumn.setPrefWidth(84);
         cveColumn.setCellValueFactory(new PropertyValueFactory<>("cve"));
         // CVE 编号：强调色 + 等宽，对齐 Penpot 稿（红队页 -pt-accent 解析为红）
         cveColumn.setCellFactory(col -> new TableCell<KbInfo, String>() {
@@ -169,8 +172,14 @@ public class PaneKbRootQuery {
                 }
             }
         });
+        // CVE 编号是行主键，需完整显示（对齐 Penpot 稿 CVE-2024-21338 全展示，避免约束列策略挤成 CVE-20…）
+        cveColumn.setMinWidth(120);
+        cveColumn.setPrefWidth(120);
         kbColumn.setCellValueFactory(new PropertyValueFactory<>("kb"));
         kbColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        // KB 编号是标识列，完整显示（约束列策略下文本列吸收截断，标识列固定）
+        kbColumn.setMinWidth(72);
+        kbColumn.setPrefWidth(72);
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         titleColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         productColumn.setCellValueFactory(new PropertyValueFactory<>("product"));
@@ -210,10 +219,15 @@ public class PaneKbRootQuery {
                 setAlignment(Pos.CENTER);
             }
         });
+        // 严重性药丸列固定宽度，避免药丸被挤裁
+        severityColumn.setMinWidth(60);
+        severityColumn.setPrefWidth(60);
         impactColumn.setCellValueFactory(new PropertyValueFactory<>("impact"));
         impactColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         repKbColumn.setCellValueFactory(new PropertyValueFactory<>("repKb"));
         repKbColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        repKbColumn.setMinWidth(72);
+        repKbColumn.setPrefWidth(72);
         pocColumn.setCellValueFactory(new PropertyValueFactory<>("poc"));
         pocColumn.setCellFactory(TextFieldTableCell.forTableColumn());
 
