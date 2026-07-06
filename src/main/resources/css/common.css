@@ -361,6 +361,38 @@
     -fx-padding: 14 12 14 12;
     -fx-spacing: 8;
 }
+/* 导航滚动容器：窗口偏矮时单列滚动，滚动条极细、半透明、随需出现（免第二列幽灵导航） */
+.side-nav-scroll,
+.side-nav-scroll > .viewport{
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+.side-nav-scroll > .scroll-bar:vertical{
+    -fx-pref-width: 7;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.side-nav-scroll > .scroll-bar:vertical > .track,
+.side-nav-scroll > .scroll-bar:vertical > .track-background{
+    -fx-background-color: transparent;
+}
+.side-nav-scroll > .scroll-bar:vertical > .thumb{
+    -fx-background-color: -pt-border;
+    -fx-background-radius: 4;
+}
+.side-nav-scroll > .scroll-bar:vertical > .thumb:hover{
+    -fx-background-color: -pt-border-subtle;
+}
+.side-nav-scroll > .scroll-bar > .increment-button,
+.side-nav-scroll > .scroll-bar > .decrement-button{
+    -fx-pref-height: 0;
+    -fx-padding: 0;
+    -fx-opacity: 0;
+}
+.side-nav-scroll > .corner{
+    -fx-background-color: transparent;
+}
 /* ── 头部 MODE toggle（从侧栏移入头部，对齐 Penpot 稿） ── */
 .header-mode-label{
     -fx-font-size: 9px;

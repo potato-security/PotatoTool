@@ -45,7 +45,7 @@
 
             <!-- 目标输入框 (带右侧图标按钮) -->
             <StackPane HBox.hgrow="ALWAYS">
-                <SmoothTextArea fx:id="targetField" prefHeight="60" wrapText="true"
+                <SmoothTextArea fx:id="targetField" prefRowCount="3" minHeight="66" wrapText="true"
                           promptText="请输入目标 URL/IP，每行一个..."
                           userData="i18n-prompt:vulnscan.target.placeholder"
                           styleClass="pt-input,pt-mono"

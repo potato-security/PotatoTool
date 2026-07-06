@@ -141,8 +141,11 @@
                            <Rectangle fx:id="redModePane" width="0" height="0" managed="false" visible="false"/>
                            <!--队伍分区标签-->
                            <Label fx:id="modeSectionLabel" text="BLUE OPERATIONS" styleClass="side-nav-section"/>
-                           <!--导航列表-->
-                           <StackPane VBox.vgrow="ALWAYS" alignment="TOP_CENTER">
+                           <!--导航列表：包在滚动容器内，窗口偏矮时单列滚动，避免竖向 FlowPane 溢出高度换出第二列压到内容区（幽灵导航）-->
+                           <SmoothScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                                             styleClass="side-nav-scroll"
+                                             style="-fx-background-color: transparent; -fx-background: transparent;">
+                           <StackPane alignment="TOP_CENTER">
                               <!-- 蓝队导航 -->
                               <FlowPane fx:id="blueBar" orientation="VERTICAL" prefWrapLength="4000" alignment="TOP_CENTER" hgap="10" vgap="6" styleClass="box-nav">
                                  <children>
@@ -182,6 +185,7 @@
                                  </children>
                               </FlowPane>
                            </StackPane>
+                           </SmoothScrollPane>
                         </children>
                      </VBox>
                   </left>
