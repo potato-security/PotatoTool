@@ -199,7 +199,6 @@
 /* 右侧分类面板 */
 .ext-cat-root {
     -fx-background-color: -pt-bg-base;
-    -fx-min-height: -Infinity;
 }
 .ext-cat-header {
     -fx-padding: 16 14 12 14;
