@@ -479,6 +479,8 @@ public class MainController {
                 DialogUtils.showDeleteConfirm(root.getScene().getWindow(),
                         "Nacos-未授权访问-CVE-2021-29441",
                         "确认从扩展库移除该规则？此操作不可撤销。");
+            } else if ("update".equals(dialogType)) {
+                DialogUtils.showUpdate(root.getScene().getWindow());
             }
         };
         if (root.getScene() != null && root.getScene().getWindow() != null) {

@@ -93,7 +93,6 @@
                                 <Label fx:id="changelogToggleBtn"
                                        text="展开"
                                        styleClass="upd-changelog-toggle-btn"
-                                       userData="i18n:update.changelog.expand"
                                        BorderPane.alignment="CENTER"/>
                             </right>
                         </BorderPane>

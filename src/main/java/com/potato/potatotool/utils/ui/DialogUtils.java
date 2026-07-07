@@ -2,6 +2,9 @@ package com.potato.potatotool.utils.ui;
 
 import com.potato.potatotool.controller.publicPane.PaneDeleteConfirmDialog;
 import com.potato.potatotool.controller.publicPane.PaneSetting;
+import com.potato.potatotool.controller.publicPane.PaneUpdateDialog;
+import com.potato.potatotool.update.UpdateInfo;
+import com.potato.potatotool.update.manifest.Manifest;
 import com.potato.potatotool.utils.core.Constants;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -104,6 +107,50 @@ public class DialogUtils {
                 stage.setScene(scene);
                 stage.setTitle("危险操作确认");
                 stage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    /**
+     * 显示更新弹窗（测试直达）：构造"有软件更新可用"的 mock UpdateInfo（app 更新+更新日志，
+     * 空资源列表；files 空 map → 大小空串安全），供真机 §14 核对更新弹窗框架/标题/列表/按钮/配色。
+     */
+    public static void showUpdate(Window owner) {
+        Platform.runLater(() -> {
+            try {
+                Manifest.AppVersion av = new Manifest.AppVersion();
+                av.setVersion("2.5");
+                av.setReleaseDate("2026-07-01");
+                av.setChangelog(java.util.Arrays.asList(
+                        "漏洞扫描：新增结果导出与历史回溯",
+                        "内存马：多容器适配增强",
+                        "界面：1:1 视觉还原与滚动条精致化"));
+                av.setRequired(false);
+                av.setFiles(new java.util.HashMap<>());
+                UpdateInfo info = new UpdateInfo(true, av, "2.4", new java.util.ArrayList<>(), null);
+
+                Stage stage = new Stage();
+                stage.initOwner(owner);
+                stage.initModality(Modality.WINDOW_MODAL);
+                stage.initStyle(StageStyle.TRANSPARENT);
+                stage.setAlwaysOnTop(true);
+
+                FXMLLoader loader = new FXMLLoader(DialogUtils.class.getResource("/fxml/publicPane/update_dialog.fxml"));
+                loader.setClassLoader(DialogUtils.class.getClassLoader());
+                AnchorPane dialogRoot = loader.load();
+                PaneUpdateDialog controller = loader.getController();
+
+                Scene scene = new Scene(dialogRoot);
+                scene.getStylesheets().add(Constants.getResourceUrl("/css/theme.css"));
+                scene.getStylesheets().add(Constants.getResourceUrl("/css/common.css"));
+                scene.getStylesheets().add(Constants.getResourceUrl("/css/components.css"));
+                scene.setFill(null);
+                stage.setScene(scene);
+                stage.setTitle("检查更新");
+                stage.show();
+                controller.setUpdateInfo(info);
             } catch (Exception e) {
                 e.printStackTrace();
             }
