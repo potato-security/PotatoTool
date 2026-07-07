@@ -475,6 +475,10 @@ public class MainController {
             if (root.getScene() == null || root.getScene().getWindow() == null) return;
             if ("set".equals(dialogType)) {
                 DialogUtils.showSet(root.getScene().getWindow());
+            } else if ("delete".equals(dialogType)) {
+                DialogUtils.showDeleteConfirm(root.getScene().getWindow(),
+                        "Nacos-未授权访问-CVE-2021-29441",
+                        "确认从扩展库移除该规则？此操作不可撤销。");
             }
         };
         if (root.getScene() != null && root.getScene().getWindow() != null) {

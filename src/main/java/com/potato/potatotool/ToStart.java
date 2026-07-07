@@ -144,7 +144,8 @@ public class ToStart {
         RED_EXTENSION(false, 22, "rext", "红队 / 扩展模块"),
         RED_ABOUT(false, 23, "rabout", "红队 / 关于"),
         // 弹窗直达（测试用）：先落到一个基础页(navIndex 0)，加载后再弹出对应弹窗
-        PUBLIC_SETTING_DIALOG(true, 0, "set", "公共 / 设置弹窗", "set");
+        PUBLIC_SETTING_DIALOG(true, 0, "set", "公共 / 设置弹窗", "set"),
+        PUBLIC_DELETE_CONFIRM_DIALOG(true, 0, "delete", "公共 / 危险确认弹窗", "delete");
 
         private final boolean blueMode;
         private final int navIndex;

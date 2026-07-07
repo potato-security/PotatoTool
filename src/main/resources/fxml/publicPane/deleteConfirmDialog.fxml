@@ -48,9 +48,10 @@
 
                 <!-- Warning row -->
                 <HBox alignment="CENTER" spacing="10">
-                    <Label styleClass="del-warn-icon" text="⚠"/>
+                    <Label styleClass="del-warn-icon" text="⚠" style="-fx-text-fill: -pt-warning;"/>
                     <Label styleClass="pt-caption,del-warn-text"
-                           text="此操作不可撤销" userData="i18n:delete.warning"/>
+                           text="此操作不可撤销" userData="i18n:delete.warning"
+                           style="-fx-text-fill: -pt-warning;"/>
                 </HBox>
 
                 <!-- Item title (dynamic) -->
