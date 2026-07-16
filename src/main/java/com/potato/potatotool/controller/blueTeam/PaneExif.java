@@ -83,6 +83,10 @@ public class PaneExif {
                 addTableRow(entry.getKey(), entry.getValue());
             }
         }
+
+        // 常驻 EXIF 面板: 预览态也填充右侧摘要面板(对齐设计稿 populated 抽屉)
+        populateExifPanel(qrText, metadataMap);
+        showExifPanel();
     }
 
     private void populateFromResult(String qrText, Map<String, String> metadataMap) {

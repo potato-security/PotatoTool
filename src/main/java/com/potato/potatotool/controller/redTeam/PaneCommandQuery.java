@@ -99,6 +99,27 @@ public class PaneCommandQuery {
         if (startupPage == ToStart.StartupPage.RED_COMMAND_QUERY_RESULT) {
             question.setText("ssh");
             searchInput(null);
+            // 常驻 COMMAND 面板: 默认选中首条命令填充(对齐设计稿 populated 抽屉)
+            Platform.runLater(this::selectFirstCommand);
+        }
+    }
+
+    /** 常驻面板默认态: 找列表首条可解析的命令并填充右侧 COMMAND 面板 */
+    private void selectFirstCommand() {
+        try {
+            for (Object o : listView.getItems()) {
+                if (o instanceof HBox) {
+                    javafx.collections.ObservableList<Node> ch = ((HBox) o).getChildrenUnmodifiable();
+                    if (ch.size() > 1 && ch.get(1) instanceof Label) {
+                        String key = ((Label) ch.get(1)).getText();
+                        if (findCommandData(key, jsonData) != null) {
+                            redirect(key);
+                            return;
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignore) {
         }
     }
 

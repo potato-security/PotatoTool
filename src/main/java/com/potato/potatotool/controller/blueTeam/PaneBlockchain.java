@@ -2376,6 +2376,16 @@ public class PaneBlockchain {
                 }
         ));
         listViewCell.setItems(contentObj);
+
+        // 常驻 CHAIN 面板: 列表态也填充证据目录(对齐设计稿 populated 抽屉,不再空态)
+        accordionPane.getPanes().clear();
+        accordionPane.setVisible(true);
+        if (accordionScrollPane != null) accordionScrollPane.setTranslateX(0);
+        addReportNav(I18nUtils.getString("blockchain.report.section.analysis"));
+        addReportNav(I18nUtils.getString("blockchain.report.section.findings"));
+        addReportNav(I18nUtils.getString("blockchain.report.section.overview"));
+        addReportNav(I18nUtils.getString("blockchain.report.section.timeline"));
+        addReportNav(I18nUtils.getString("blockchain.report.section.evidence"));
     }
 
     private VBox createPreviewResultCard(String network, String title, String targetLine, String[] detailLines) {
