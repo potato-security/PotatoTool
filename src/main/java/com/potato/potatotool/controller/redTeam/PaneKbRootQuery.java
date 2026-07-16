@@ -153,7 +153,20 @@ public class PaneKbRootQuery {
         I18nUtils.bindTableColumn(pocColumn, "kb.poc");
 
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
-        dateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        // 发布日期规范为 YYYY-MM-DD（对齐 Penpot 稿的连字符 ISO 格式）；原始为 8 位 YYYYMMDD 时插入连字符，其余原样
+        dateColumn.setCellFactory(col -> new TableCell<KbInfo, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else if (item.matches("\\d{8}")) {
+                    setText(item.substring(0, 4) + "-" + item.substring(4, 6) + "-" + item.substring(6, 8));
+                } else {
+                    setText(item);
+                }
+            }
+        });
         // 发布日期完整显示，避免被 CVE 列挤成 20240…
         dateColumn.setMinWidth(84);
         dateColumn.setPrefWidth(84);
