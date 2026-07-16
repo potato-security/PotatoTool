@@ -668,25 +668,15 @@ public class PaneBlockchain {
     }
 
     private void slideAccordionIn() {
+        // CHAIN 面板改为常驻并排(对齐设计稿),始终可见,仅确保就位。
         if (accordionScrollPane == null) return;
-        Timeline t = new Timeline(
-            new KeyFrame(Duration.ZERO, new KeyValue(accordionScrollPane.translateXProperty(), 210)),
-            new KeyFrame(Duration.millis(200), new KeyValue(accordionScrollPane.translateXProperty(), 0))
-        );
-        t.play();
+        accordionScrollPane.setTranslateX(0);
     }
 
     private void slideAccordionOut(Runnable onFinished) {
-        if (accordionScrollPane == null) {
-            if (onFinished != null) onFinished.run();
-            return;
-        }
-        Timeline t = new Timeline(
-            new KeyFrame(Duration.ZERO, new KeyValue(accordionScrollPane.translateXProperty(), 0)),
-            new KeyFrame(Duration.millis(200), new KeyValue(accordionScrollPane.translateXProperty(), 210))
-        );
-        if (onFinished != null) t.setOnFinished(e -> onFinished.run());
-        t.play();
+        // 常驻并排: 不再滑出隐藏, 保持可见, 但仍执行后续回调。
+        if (accordionScrollPane != null) accordionScrollPane.setTranslateX(0);
+        if (onFinished != null) onFinished.run();
     }
 
     private void resetAccordionPosition() {

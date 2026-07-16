@@ -11,8 +11,9 @@
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
 
+    <!-- 内容让出右侧206px(CONTENTS面板190+间距16)TOP_LEFT, 面板常驻并排不遮挡 -->
     <SmoothScrollPane fx:id="mainScrollPane" fitToWidth="true" hbarPolicy="NEVER"
-                      prefHeight="${sPane.height}" prefWidth="${sPane.width}">
+                      prefHeight="${sPane.height}" prefWidth="${sPane.width - 206}" maxWidth="${sPane.width - 206}" StackPane.alignment="TOP_LEFT">
         <VBox fx:id="contentVBox" styleClass="about-content" spacing="20" style="-fx-padding: 20 28 28 28;">
 
             <!-- 版本信息条 -->
@@ -158,8 +159,8 @@
 
     <!-- Right CONTENTS panel -->
     <SmoothScrollPane fx:id="contentsPane"
-                      maxHeight="${sPane.height}" maxWidth="190"
-                      translateX="190" hbarPolicy="NEVER"
+                      maxHeight="${sPane.height}" maxWidth="190" prefWidth="190"
+                      translateX="0" hbarPolicy="NEVER"
                       StackPane.alignment="TOP_RIGHT"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox styleClass="about-contents-root" spacing="0">
@@ -198,4 +199,9 @@
         </VBox>
     </SmoothScrollPane>
 
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

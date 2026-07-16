@@ -10,15 +10,16 @@
            fx:id="sPane"
            fx:controller="com.potato.potatotool.controller.redTeam.PanePayloadToolbox"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
-    <SmoothScrollPane fx:id="rootScrollPane" maxWidth="${sPane.width}" maxHeight="${sPane.height}" hbarPolicy="NEVER" style="-fx-padding: 0">
+    <!-- 内容让出右侧211px(PAYLOAD面板195+间距16)TOP_LEFT, 面板常驻并排不遮挡 -->
+    <SmoothScrollPane fx:id="rootScrollPane" maxWidth="${sPane.width - 211}" StackPane.alignment="TOP_LEFT" maxHeight="${sPane.height}" hbarPolicy="NEVER" style="-fx-padding: 0">
         <VBox spacing="20" alignment="TOP_CENTER">
-            <TabPane fx:id="payloadTabPane" prefWidth="${sPane.width - 10}" tabClosingPolicy="UNAVAILABLE" styleClass="payload-toolbox-tab-pane">
+            <TabPane fx:id="payloadTabPane" prefWidth="${sPane.width - 221}" tabClosingPolicy="UNAVAILABLE" styleClass="payload-toolbox-tab-pane">
                 <tabs>
                     <Tab fx:id="detectorTab" text="探测 Payload" userData="i18n:payload.tab.detector">
                         <content>
-                            <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 10}">
+                            <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 221}">
                                 <HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label fx:id="leftLabel" text="探测方式：" userData="i18n:payload.detector.type"/>
                                         <FlowPane hgap="8" vgap="6" alignment="CENTER_LEFT">
                                             <ToggleButton styleClass="pt-toggle-chip" text="DFS/Echo" onAction="#onDetectorTypeChanged">
@@ -36,27 +37,27 @@
                                             </ToggleButton>
                                         </FlowPane>
                                     </HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="类名：" userData="i18n:payload.classname"/>
                                         <TextField styleClass="pt-input" fx:id="detectorClassNameTextField" promptText="留空则随机" userData="i18n-prompt:payload.classname.placeholder" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="DNSLog 域名：" userData="i18n:payload.detector.dns"/>
                                         <TextField styleClass="pt-input" fx:id="dnsDomainTextField" promptText="example.dnslog.cn" userData="i18n-prompt:payload.detector.dns.placeholder" prefWidth="250"/>
                                     </HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="HTTPLog URL：" userData="i18n:payload.detector.http"/>
                                         <TextField styleClass="pt-input" fx:id="httpBaseUrlTextField" promptText="https://log.example/c" userData="i18n-prompt:payload.detector.http.placeholder" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="Sleep 秒数：" userData="i18n:payload.detector.sleep"/>
                                         <TextField styleClass="pt-input" fx:id="sleepSecondsTextField" text="5" prefWidth="250"/>
                                     </HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label minWidth="${leftLabel.width}" text="中间件类型：" userData="i18n:memshell.servertype"/>
                                         <ComboBox fx:id="serverTypeBox" prefWidth="250"/>
                                     </HBox>
@@ -66,53 +67,53 @@
                     </Tab>
                     <Tab fx:id="ysoTab" text="Yso" userData="i18n:payload.tab.yso">
                         <content>
-                            <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 10}">
+                            <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 221}">
                                 <HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label text="分类：" userData="i18n:payload.yso.category"/>
                                         <ComboBox fx:id="ysoCategoryBox" prefWidth="250"/>
                                     </HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label text="Gadget：" userData="i18n:payload.yso.gadget"/>
                                         <ComboBox fx:id="ysoGadgetBox" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER_LEFT" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER_LEFT" spacing="10">
                                         <CFCheckBox fx:id="ysoClassFileOnlyCheckBox" text="仅显示支持 class_file" userData="i18n:payload.yso.classfile.only"/>
                                     </HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label text="输入类型：" userData="i18n:payload.yso.input"/>
                                         <TextField styleClass="pt-input" fx:id="ysoInputTypeTextField" editable="false" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label text="命令 / 参数：" userData="i18n:payload.yso.command"/>
                                         <TextField styleClass="pt-input" fx:id="ysoCommandTextField" promptText="URLDNS 域名或 class_file:路径" userData="i18n-prompt:payload.yso.command.placeholder" prefWidth="250"/>
                                     </HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label text="能力：" userData="i18n:payload.yso.capability"/>
                                         <TextField styleClass="pt-input" fx:id="ysoCapabilityTextField" editable="false" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label text="依赖提示：" userData="i18n:payload.yso.dependency"/>
                                         <TextField styleClass="pt-input" fx:id="ysoDependencyHintTextField" editable="false" prefWidth="250"/>
                                     </HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label text="验证边界：" userData="i18n:payload.yso.verification"/>
                                         <TextField styleClass="pt-input" fx:id="ysoVerificationHintTextField" editable="false" prefWidth="250"/>
                                     </HBox>
                                 </HBox>
                                 <HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                                         <Label text="结构化辅助：" userData="i18n:payload.yso.helper"/>
                                         <ComboBox fx:id="ysoHelperTypeBox" prefWidth="110"/>
                                         <TextField styleClass="pt-input" fx:id="ysoHelperValueTextField" promptText="根据前缀填写参数" userData="i18n-prompt:payload.yso.helper.value.placeholder" prefWidth="130"/>
                                     </HBox>
-                                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER_LEFT" spacing="10">
+                                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER_LEFT" spacing="10">
                                         <Button styleClass="pt-btn-primary" fx:id="ysoHelperApplyButton" minHeight="25.0" minWidth="120" text="填充命令" userData="i18n:payload.yso.helper.apply" onAction="#applyYsoCommandHelper"/>
                                     </HBox>
                                 </HBox>
@@ -125,39 +126,39 @@
                 </tabs>
             </TabPane>
 
-            <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 10}">
+            <VBox styleClass="pt-panel" spacing="15" prefWidth="${sPane.width - 221}">
                 <HBox>
-                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                         <Label text="输出格式：" userData="i18n:payload.output.format"/>
                         <ComboBox fx:id="outputFormatBox" prefWidth="250"/>
                     </HBox>
-                    <HBox prefWidth="${sPane.width/2 - 5}" alignment="CENTER" spacing="10">
+                    <HBox prefWidth="${sPane.width/2 - 111}" alignment="CENTER" spacing="10">
                         <Label text="输出路径：" userData="i18n:payload.output.path"/>
                         <TextField styleClass="pt-input" fx:id="outputPathTextField" promptText="文件格式可填写目录或完整文件路径" userData="i18n-prompt:payload.output.path.placeholder" prefWidth="250"/>
                     </HBox>
                 </HBox>
             </VBox>
 
-            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width - 10}" text="生成 Payload" userData="i18n:memshell.generate" onAction="#generatePayload"/>
+            <Button styleClass="pt-btn-primary" minHeight="48.0" minWidth="${sPane.width - 221}" text="生成 Payload" userData="i18n:memshell.generate" onAction="#generatePayload"/>
 
             <!-- OUTPUT 分区头 (对齐 Penpot: OUTPUT 标签 + 状态徽章) -->
-            <HBox styleClass="payload-output-header" alignment="CENTER_LEFT" spacing="8" prefWidth="${sPane.width - 10}">
+            <HBox styleClass="payload-output-header" alignment="CENTER_LEFT" spacing="8" prefWidth="${sPane.width - 221}">
                 <Label text="OUTPUT" styleClass="payload-output-label" userData="i18n:payload.output.label"/>
                 <Label fx:id="outputBadge" text="—" styleClass="payload-output-badge"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="outputStatusDot" text="●" styleClass="payload-status-dot" visible="false"/>
             </HBox>
             <SmoothTextArea styleClass="pt-input,pt-mono" fx:id="outTextArea" wrapText="true"
-                            prefHeight="${sPane.height * 0.4}" prefWidth="${sPane.width - 10}"/>
+                            prefHeight="${sPane.height * 0.4}" prefWidth="${sPane.width - 221}"/>
             <!-- 底部面包屑 -->
-            <Label fx:id="outputBreadcrumb" text="" styleClass="payload-breadcrumb" prefWidth="${sPane.width - 10}"/>
+            <Label fx:id="outputBreadcrumb" text="" styleClass="payload-breadcrumb" prefWidth="${sPane.width - 221}"/>
         </VBox>
     </SmoothScrollPane>
 
     <!-- 右侧 PAYLOAD 面板 -->
     <SmoothScrollPane fx:id="payloadPanelScroll"
-                      maxHeight="${sPane.height}" maxWidth="195"
-                      hbarPolicy="NEVER"
+                      maxHeight="${sPane.height}" maxWidth="195" prefWidth="195"
+                      translateX="0" hbarPolicy="NEVER"
                       StackPane.alignment="TOP_RIGHT"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox styleClass="payload-panel-root" spacing="0">
@@ -193,4 +194,9 @@
         </VBox>
     </SmoothScrollPane>
 
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

@@ -30,7 +30,7 @@
         </VBox>
 
         <SmoothScrollPane prefWidth="${sPane.width - 395}" maxWidth="${sPane.width - 395}" maxHeight="${sPane.height}" hbarPolicy="NEVER" fx:id="contentSp">
-            <VBox minWidth="${sPane.width - 265}" alignment="CENTER">
+            <VBox prefWidth="${sPane.width - 395}" alignment="CENTER">
                 <VBox fx:id="webshellContent" alignment="CENTER" managed="true" visible="true">
                     <Label fx:id="tipTitle" visible="false"/>
                     <!-- Shell 生成 页头 (对齐 Penpot: 标题 + 全局密码 + 全部生成) -->
@@ -343,8 +343,8 @@
 
     <!-- 右侧 BYPASS 面板（对齐 Penpot 修正版） -->
     <SmoothScrollPane fx:id="bypassPanelScroll"
-                      maxHeight="${sPane.height}" maxWidth="195"
-                      hbarPolicy="NEVER"
+                      maxHeight="${sPane.height}" maxWidth="195" prefWidth="195"
+                      translateX="0" hbarPolicy="NEVER"
                       StackPane.alignment="TOP_RIGHT"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox styleClass="fk-bypass-panel" spacing="0">
@@ -384,4 +384,9 @@
         </VBox>
     </SmoothScrollPane>
 
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

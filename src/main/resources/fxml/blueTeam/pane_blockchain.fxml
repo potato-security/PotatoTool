@@ -16,7 +16,8 @@
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
     <!-- Main content: top search bar + result list -->
-    <VBox styleClass="bc-root" prefWidth="${sPane.width}" prefHeight="${sPane.height}" spacing="0">
+    <!-- 内容让出右侧226px(CHAIN面板210+间距16)TOP_LEFT, 面板常驻并排不遮挡 -->
+    <VBox styleClass="bc-root" prefWidth="${sPane.width - 226}" maxWidth="${sPane.width - 226}" StackPane.alignment="TOP_LEFT" prefHeight="${sPane.height}" spacing="0">
 
         <!-- Top search bar -->
         <HBox styleClass="bc-search-bar" alignment="CENTER_LEFT" spacing="0">
@@ -43,7 +44,7 @@
         <StackPane VBox.vgrow="ALWAYS">
             <StackPane>
                 <SmoothListView fx:id="listViewCell"
-                                prefWidth="${sPane.width}"
+                                prefWidth="${sPane.width - 226}"
                                 prefHeight="${sPane.height - 55}"/>
                 <Label fx:id="backClearLabel" StackPane.alignment="TOP_LEFT"
                        visible="false" translateX="10" translateY="10"
@@ -94,8 +95,8 @@
 
     <!-- Right CHAIN panel (slides in/out via translateX animation) -->
     <SmoothScrollPane fx:id="accordionScrollPane"
-                      maxHeight="${sPane.height}" maxWidth="210"
-                      translateX="210" hbarPolicy="NEVER"
+                      maxHeight="${sPane.height}" maxWidth="210" prefWidth="210"
+                      translateX="0" hbarPolicy="NEVER"
                       StackPane.alignment="TOP_RIGHT"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox fx:id="vBoxBar">
@@ -116,4 +117,9 @@
                alignment="CENTER" minHeight="-Infinity" maxWidth="620"/>
     </StackPane>
 
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

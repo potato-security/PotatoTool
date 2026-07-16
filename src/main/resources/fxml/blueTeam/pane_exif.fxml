@@ -11,7 +11,8 @@
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneExif"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox fx:id="paneBox" alignment="CENTER" spacing="16" styleClass="exif-root">
+    <!-- 内容让出右侧216px(EXIF面板200+间距16)TOP_LEFT, 面板常驻并排不遮挡 -->
+    <VBox fx:id="paneBox" alignment="CENTER" spacing="16" styleClass="exif-root" maxWidth="${sPane.width - 216}" StackPane.alignment="TOP_LEFT">
 
         <!-- SOURCE FILE 卡片 (对齐 Penpot: 标题 + 选择按钮 + 支持格式提示) -->
         <VBox styleClass="exif-source" spacing="10" alignment="CENTER" maxWidth="Infinity">
@@ -26,7 +27,7 @@
             <Label text="不支持拖拽 · JPG / PNG / TIFF / HEIC / RAW" styleClass="pt-caption" userData="i18n:exif.formats"/>
         </VBox>
 
-        <SmoothListView fx:id="listView"  prefWidth="${sPane.width - 20}" prefHeight="${sPane.height - 200}">
+        <SmoothListView fx:id="listView"  prefWidth="${sPane.width - 236}" prefHeight="${sPane.height - 200}">
             <HBox prefHeight="${sPane.height - 220}"  alignment="CENTER">
                 <Label id="tipTitle" text="请上传需要获取元信息的文件……" userData="i18n:exif.tip"/>
             </HBox>
@@ -36,8 +37,8 @@
 
     <!-- Right EXIF summary panel (slides in from right) -->
     <SmoothScrollPane fx:id="exifPanelScrollPane"
-                      maxHeight="${sPane.height}" maxWidth="200"
-                      translateX="200" hbarPolicy="NEVER"
+                      maxHeight="${sPane.height}" maxWidth="200" prefWidth="200"
+                      translateX="0" hbarPolicy="NEVER"
                       StackPane.alignment="TOP_RIGHT"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox styleClass="exif-panel-root" spacing="0">
@@ -51,4 +52,9 @@
         </VBox>
     </SmoothScrollPane>
 
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

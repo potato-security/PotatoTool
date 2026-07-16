@@ -179,12 +179,10 @@ public class PaneExif {
     }
 
     private void showExifPanel() {
-        if (exifPanelScrollPane == null || exifPanelVisible) return;
+        // EXIF 面板改为常驻并排(对齐设计稿),始终可见,仅确保就位。
+        if (exifPanelScrollPane == null) return;
         exifPanelVisible = true;
-        new Timeline(
-            new KeyFrame(Duration.ZERO, new KeyValue(exifPanelScrollPane.translateXProperty(), 200)),
-            new KeyFrame(Duration.millis(200), new KeyValue(exifPanelScrollPane.translateXProperty(), 0))
-        ).play();
+        exifPanelScrollPane.setTranslateX(0);
     }
 
     private void addChipRow(String title, String value, String chipStyle) {

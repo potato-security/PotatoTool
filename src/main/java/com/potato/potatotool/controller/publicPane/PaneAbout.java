@@ -50,12 +50,10 @@ public class PaneAbout {
     }
 
     private void showContentsPanel() {
-        if (contentsPane == null || contentsPaneVisible) return;
+        // CONTENTS 面板改为常驻并排(对齐设计稿),始终可见,仅确保就位。
+        if (contentsPane == null) return;
         contentsPaneVisible = true;
-        new Timeline(
-            new KeyFrame(Duration.ZERO, new KeyValue(contentsPane.translateXProperty(), 190)),
-            new KeyFrame(Duration.millis(250), new KeyValue(contentsPane.translateXProperty(), 0))
-        ).play();
+        contentsPane.setTranslateX(0);
     }
 
     private void populateDynamicInfo() {
