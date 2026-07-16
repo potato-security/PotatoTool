@@ -13,10 +13,16 @@
 
 .root {
     /* --- 背景层 (深 navy) --- */
-    -pt-bg-base:      #040B12;   /* 最底 */
-    -pt-bg-panel:     #0A141C;   /* 面板 */
-    -pt-bg-elevated:  #0F1A24;   /* 抬升卡片 */
-    -pt-bg-inset:     #060D14;   /* 内凹输入/代码区 */
+    -pt-bg-base:      #040B12;   /* 最底 (不透明) */
+    /* 玻璃面板: 板实测色 #0A141C/#0F1A24 转 rgba, 让外壳径向辉光透出 (α 0.82 起步, 真机复测下调).
+       -pt-bg-panel/elevated 转玻璃后, 所有引用它们的面板自动获得玻璃感;
+       文本/代码/菜单等可读性面由 common.css 的 -main-* 桥改指 -pt-bg-code 保持不透明. */
+    -pt-bg-panel:     rgba(10,20,28,0.72);   /* 面板 (玻璃) */
+    -pt-bg-elevated:  rgba(15,26,36,0.70);   /* 抬升卡片 (玻璃) */
+    -pt-surface-glass:    rgba(10,20,28,0.72); /* 导航/主面板玻璃 (= panel) */
+    -pt-surface-elevated: rgba(15,26,36,0.70); /* 卡片玻璃 (= elevated) */
+    -pt-bg-inset:     #060D14;   /* 内凹输入/代码区 (不透明) */
+    -pt-bg-code:      #060A12;   /* 代码/日志/Payload 输出不透明锚 (护可读性) */
     /* 交互状态背景 */
     -pt-bg-hover:     derive(-pt-bg-elevated, 8%);   /* 悬停行/项 */
     -pt-bg-selected:  derive(-pt-accent, -60%);       /* 选中项 */

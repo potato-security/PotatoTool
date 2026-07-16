@@ -18,10 +18,12 @@
     -main-blue-color: -pt-accent-teal;
     -main-red-color: -pt-accent-red;
     -main-font-color: -pt-text;
-    -main-btnContent-color: -pt-bg-panel;
-    -main-topBar-color: -pt-bg-panel;
-    -main-cell-color: -pt-bg-panel;
-    -main-menuBg-color: -pt-bg-panel;
+    /* 可读性护栏: -pt-bg-panel 已转玻璃(半透明), 这些桥画文本域/代码cell/菜单/弹窗,
+       必须保持不透明否则文字底透出辉光发糊 → 改指不透明锚 -pt-bg-code / -pt-bg-inset */
+    -main-btnContent-color: -pt-bg-inset;   /* 弹窗/按钮内容面板 (不透明) */
+    -main-topBar-color: -pt-bg-code;        /* 顶栏 + .text-area/.text-field (不透明护文字) */
+    -main-cell-color: -pt-bg-code;          /* 代码 cell/选中行 (不透明) */
+    -main-menuBg-color: -pt-bg-inset;       /* 菜单/下拉 (不透明护对比) */
     -main-lineno-color: -pt-border;
     -main-linenoText-color: -pt-text-muted;
     -main-tips-color: -pt-warning;
@@ -509,7 +511,7 @@
     -fx-border-radius: 10;
     -fx-background-radius: 10;
     -fx-text-fill: -pt-text-secondary;
-    -fx-font-size: 14;
+    -fx-font-size: 13;
     -fx-cursor: HAND;
 }
 .box-nav .rx-toggle-button:hover, .box-nav-red .rx-toggle-button:hover{
