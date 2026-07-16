@@ -13,10 +13,11 @@
            fx:controller="com.potato.potatotool.controller.blueTeam.PaneSeparateDecode"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}"
+    <!-- 内容让出右侧226px(DECODE面板210+间距16)TOP_LEFT, 面板常驻并排不遮挡 -->
+    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width - 226}" maxWidth="${sPane.width - 226}" StackPane.alignment="TOP_LEFT"
                       hbarPolicy="NEVER" fitToWidth="true"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
-    <VBox styleClass="sep-root" prefWidth="${sPane.width}" spacing="0">
+    <VBox styleClass="sep-root" prefWidth="${sPane.width - 242}" spacing="0">
 
         <!-- ===== Tab bar: 8 encoding type tabs ===== -->
         <HBox styleClass="sep-tab-bar" alignment="CENTER_LEFT">
@@ -106,8 +107,8 @@
 
     <!-- 右侧 DECODE 面板（解密/加密后滑入） -->
     <SmoothScrollPane fx:id="decodeScrollPane"
-                      maxHeight="${sPane.height}" maxWidth="210"
-                      translateX="210" hbarPolicy="NEVER"
+                      maxHeight="${sPane.height}" maxWidth="210" prefWidth="210"
+                      translateX="0" hbarPolicy="NEVER"
                       StackPane.alignment="TOP_RIGHT"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox styleClass="decode-panel-root" spacing="0">
@@ -121,4 +122,9 @@
         </VBox>
     </SmoothScrollPane>
 
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

@@ -79,7 +79,7 @@ public class PaneSeparateDecode {
 
     public void initialize() {
         sPane.widthProperty().addListener((obs, ov, nv) ->
-                virScrollPane.setMaxWidth(nv.doubleValue()));
+                virScrollPane.setMaxWidth(nv.doubleValue() - 226));
         sPane.heightProperty().addListener((obs, ov, nv) ->
                 virScrollPane.setMinHeight(nv.doubleValue() * 0.4 - 20));
 
@@ -308,12 +308,10 @@ public class PaneSeparateDecode {
     }
 
     private void slideInDecodePanel() {
-        if (decodeScrollPane == null || decodePanelVisible) return;
+        // DECODE 面板改为常驻并排(对齐设计稿),始终可见,仅确保就位。
+        if (decodeScrollPane == null) return;
         decodePanelVisible = true;
-        new Timeline(
-            new KeyFrame(Duration.ZERO, new KeyValue(decodeScrollPane.translateXProperty(), 210)),
-            new KeyFrame(Duration.millis(200), new KeyValue(decodeScrollPane.translateXProperty(), 0))
-        ).play();
+        decodeScrollPane.setTranslateX(0);
     }
 
     private void refreshDecodePanelStates(String statusKey, int typeIdx) {

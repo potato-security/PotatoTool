@@ -192,8 +192,8 @@
 
     <!-- Right QUERY CONTEXT panel (static) -->
     <SmoothScrollPane fx:id="queryContextPane"
-                      maxHeight="${sPane.height}" maxWidth="200"
-                      translateX="200" hbarPolicy="NEVER"
+                      maxHeight="${sPane.height}" maxWidth="200" prefWidth="200"
+                      translateX="0" hbarPolicy="NEVER"
                       StackPane.alignment="TOP_RIGHT"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox styleClass="lq-panel-root" spacing="0">
@@ -235,4 +235,9 @@
         </VBox>
     </SmoothScrollPane>
 
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

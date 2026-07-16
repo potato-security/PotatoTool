@@ -88,12 +88,10 @@ public class PaneLocationQuery {
     }
 
     private void showQueryContextPanel() {
-        if (queryContextPane == null || queryContextVisible) return;
+        // QUERY CONTEXT 面板改为常驻并排(对齐设计稿),内容已用 padding 预留右侧空间,面板始终就位。
+        if (queryContextPane == null) return;
         queryContextVisible = true;
-        new Timeline(
-            new KeyFrame(Duration.ZERO, new KeyValue(queryContextPane.translateXProperty(), 200)),
-            new KeyFrame(Duration.millis(250), new KeyValue(queryContextPane.translateXProperty(), 0))
-        ).play();
+        queryContextPane.setTranslateX(0);
     }
 
     private void applyStartupPreviewState() {
