@@ -49,6 +49,7 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseEvent;
+import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -229,6 +230,31 @@ public class PanePortScan {
         hostColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getHost()));
         portColumn.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getPort())));
         stateColumn.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getState())));
+        // 状态列渲染语义状态点+着色（对齐 Penpot 稿：open=绿点绿字，其余灰）
+        stateColumn.setCellFactory(column -> new TableCell<PortResult, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null || item.isEmpty()) {
+                    setGraphic(null);
+                    setText(null);
+                    return;
+                }
+                boolean open = "open".equalsIgnoreCase(item);
+                String color = open ? "-pt-success" : "-pt-text-muted";
+                Region dot = new Region();
+                dot.setMinSize(7, 7);
+                dot.setPrefSize(7, 7);
+                dot.setMaxSize(7, 7);
+                dot.setStyle("-fx-background-radius: 4; -fx-background-color: " + color + ";");
+                Label label = new Label(item.toLowerCase());
+                label.setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold;");
+                HBox box = new HBox(6, dot, label);
+                box.setAlignment(Pos.CENTER_LEFT);
+                setGraphic(box);
+                setText(null);
+            }
+        });
         serviceColumn.setCellValueFactory(data -> new SimpleStringProperty(safe(data.getValue().getService())));
         rttColumn.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getRttMs())));
         bannerColumn.setCellValueFactory(data -> new SimpleStringProperty(safe(data.getValue().getBanner())));
