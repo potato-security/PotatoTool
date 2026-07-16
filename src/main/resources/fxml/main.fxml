@@ -190,8 +190,8 @@
                      </VBox>
                   </left>
                   <center>
-                     <StackPane prefWidth="${root.width - 248}" maxWidth="${root.width - 248}" BorderPane.alignment="CENTER">
-                        <RXCarousel fx:id="mainCarousel" arrowDisplayMode="HIDE" autoSwitch="false" hoverPause="false" navDisplayMode="HIDE" prefWidth="${root.width - 248}" maxWidth="${root.width - 248}" prefHeight="${(root.height - 18) - topBar.height - 40}" styleClass="main-pane"/>
+                     <StackPane prefWidth="${root.width - 292}" maxWidth="${root.width - 292}" BorderPane.alignment="CENTER">
+                        <RXCarousel fx:id="mainCarousel" arrowDisplayMode="HIDE" autoSwitch="false" hoverPause="false" navDisplayMode="HIDE" prefWidth="${root.width - 292}" maxWidth="${root.width - 292}" prefHeight="${(root.height - 18) - topBar.height - 40}" styleClass="main-pane"/>
                         <!-- HUD 取景框角标 -->
                         <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
                         <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>

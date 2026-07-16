@@ -142,15 +142,19 @@ public class MainController {
         );
         borderPane.setClip(clip);
         DropShadow dropShadow = new DropShadow();
-        dropShadow.setColor(Color.BLACK);
-        dropShadow.setRadius(10);
-        dropShadow.setOffsetX(5);
-        dropShadow.setOffsetY(5);
+        // 水平对称阴影(offsetX=0): 旧值 offsetX/Y=5 使阴影偏右下, 把右/下圆角缺口填成黑色→
+        // 右下角看起来是直角(左上无阴影故圆角干净)。offsetX=0 令左右对称, 四角圆角一致。
+        dropShadow.setColor(Color.rgb(0, 0, 0, 0.55));
+        dropShadow.setRadius(18);
+        dropShadow.setOffsetX(0);
+        dropShadow.setOffsetY(4);
         borderPane.setEffect(dropShadow);
 
-        // 内容列基准宽度 = 窗口宽 - 左侧栏(230) - 外边距(18)，各页据此按比例取宽（稳定值，避免与 carousel 自身宽度形成绑定环）
+        // 内容列基准宽度 = 窗口宽 - 左侧栏footprint(254=230+左右12边距) - 右侧圆角/角标清空间(~38)
+        // 修正: 旧值 -248 使 nav(254)+内容(root-248)=root+6 超出 borderPane(root-18) 达 24px,
+        // 内容右溢出撑大 borderPane → 圆角裁剪矩形右圆角被挤出屏(右直角) + 右角标被推出屏(挤压/只显内侧)。
         DoubleProperty contentWidth = new SimpleDoubleProperty();
-        contentWidth.bind(root.widthProperty().subtract(248));
+        contentWidth.bind(root.widthProperty().subtract(292));
 
         Pane p1 = FXMLLoader.load(getClass().getResource("/fxml/blueTeam/pane_webshellDecode.fxml"));
         RXCarouselPane webshellDecodePane = new RXCarouselPane(p1);
@@ -621,10 +625,19 @@ public class MainController {
 
     public static Rectangle clipRect(Node node, DoubleProperty bindArc){
         Rectangle rectangle = new Rectangle();
-        rectangle.widthProperty().bind(Bindings.createObjectBinding((Callable<Number>) () ->
-                node.getLayoutBounds().getWidth(), node.layoutBoundsProperty()));
-        rectangle.heightProperty().bind(Bindings.createObjectBinding((Callable<Number>) () ->
-                node.getLayoutBounds().getHeight(), node.layoutBoundsProperty()));
+        // 绑实际 resize 尺寸(Region width/height)而非 getLayoutBounds():
+        // layoutBounds 会被任何溢出子节点撑大 → 裁剪矩形比窗口宽 → 右/下圆角被挤出屏(右直角)。
+        // widthProperty/heightProperty = 节点自身分配框, 不含子节点溢出, 四角圆角对称。
+        if (node instanceof Region) {
+            Region region = (Region) node;
+            rectangle.widthProperty().bind(region.widthProperty());
+            rectangle.heightProperty().bind(region.heightProperty());
+        } else {
+            rectangle.widthProperty().bind(Bindings.createObjectBinding((Callable<Number>) () ->
+                    node.getLayoutBounds().getWidth(), node.layoutBoundsProperty()));
+            rectangle.heightProperty().bind(Bindings.createObjectBinding((Callable<Number>) () ->
+                    node.getLayoutBounds().getHeight(), node.layoutBoundsProperty()));
+        }
         rectangle.arcWidthProperty().bind(bindArc);
         rectangle.arcHeightProperty().bind(bindArc);
         node.setClip(rectangle);
