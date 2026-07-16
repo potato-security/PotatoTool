@@ -102,12 +102,10 @@ public class PaneInfoGeneration {
     }
 
     private void slideInGenPanel() {
-        if (genScrollPane == null || genPanelVisible) return;
+        // GENERATE 面板改为常驻并排(对齐设计稿),始终可见,仅确保就位。
+        if (genScrollPane == null) return;
         genPanelVisible = true;
-        new Timeline(
-            new KeyFrame(Duration.ZERO, new KeyValue(genScrollPane.translateXProperty(), 210)),
-            new KeyFrame(Duration.millis(200), new KeyValue(genScrollPane.translateXProperty(), 0))
-        ).play();
+        genScrollPane.setTranslateX(0);
     }
 
     private void refreshGenPanelStates() {

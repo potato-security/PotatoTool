@@ -10,82 +10,82 @@
            fx:controller="com.potato.potatotool.controller.redTeam.PaneInfoGeneration"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}" hbarPolicy="NEVER" fitToWidth="true"
+    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width - 226}" maxWidth="${sPane.width - 226}" StackPane.alignment="TOP_LEFT" hbarPolicy="NEVER" fitToWidth="true"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
     <VBox styleClass="infogen-root" alignment="TOP_CENTER" spacing="16" style="-fx-padding: 18 20 40 20;">
 
         <!-- 生成 按钮 + 副标题 -->
         <VBox spacing="4" alignment="CENTER" maxWidth="Infinity">
-            <Button styleClass="pt-btn-primary" minHeight="46.0" maxWidth="Infinity" prefWidth="${sPane.width - 40}" text="生 成" userData="i18n:infogen.generate" onAction="#generation"/>
+            <Button styleClass="pt-btn-primary" minHeight="46.0" maxWidth="Infinity" prefWidth="${sPane.width - 266}" text="生 成" userData="i18n:infogen.generate" onAction="#generation"/>
             <Label styleClass="pt-caption" text="点击生成随机中国公民身份信息" userData="i18n:infogen.generate.sub"/>
         </VBox>
 
         <!-- 身份字段卡片 (2 列) -->
-        <FlowPane hgap="16" vgap="16" prefWidth="${sPane.width - 48}" maxWidth="${sPane.width - 48}">
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
+        <FlowPane hgap="16" vgap="16" prefWidth="${sPane.width - 274}" maxWidth="${sPane.width - 274}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 157}">
                 <Label styleClass="loc-field-label" text="姓名" userData="i18n:infogen.name"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="nameTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 157}">
                 <Label styleClass="loc-field-label" text="拼音" userData="i18n:infogen.pinyin"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="nameToPinYinTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 157}">
                 <Label styleClass="loc-field-label" text="手机号" userData="i18n:infogen.phone"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="phoneTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 157}">
                 <Label styleClass="loc-field-label" text="邮箱号" userData="i18n:infogen.email"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="emailTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 157}">
                 <Label styleClass="loc-field-label" text="居住地址" userData="i18n:infogen.address"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="addressTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 157}">
                 <Label styleClass="loc-field-label" text="身份证号" userData="i18n:infogen.idcard"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="idCardTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 157}">
                 <Label styleClass="loc-field-label" text="银行卡号" userData="i18n:infogen.bankcard"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="bankCardTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 157}">
                 <Label styleClass="loc-field-label" text="邮编号" userData="i18n:infogen.postcode"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="postalCodeTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 157}">
                 <Label styleClass="loc-field-label" text="统一社会信用代码" userData="i18n:infogen.creditcode"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="unifiedSocialCreditCodeTF"/>
                     <Button text="复制" styleClass="infogen-copy-btn" onAction="#copyFieldValue" userData="i18n:app.copy"/>
                 </HBox>
             </VBox>
-            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 44}">
+            <VBox styleClass="infogen-card" spacing="4" prefWidth="${sPane.width / 2 - 157}">
                 <Label styleClass="loc-field-label" text="组织机构代码" userData="i18n:infogen.orgcode"/>
                 <HBox spacing="0" alignment="CENTER">
                     <TextField styleClass="pt-input,infogen-field" maxWidth="Infinity" HBox.hgrow="ALWAYS" fx:id="organizationCodeTF"/>
@@ -101,8 +101,8 @@
 
     <!-- 右侧 GENERATE 面板（生成后滑入） -->
     <SmoothScrollPane fx:id="genScrollPane"
-                      maxHeight="${sPane.height}" maxWidth="210"
-                      translateX="210" hbarPolicy="NEVER"
+                      maxHeight="${sPane.height}" maxWidth="210" prefWidth="210"
+                      translateX="0" hbarPolicy="NEVER"
                       StackPane.alignment="TOP_RIGHT"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox styleClass="gen-panel-root" spacing="0">
@@ -129,4 +129,9 @@
         </VBox>
     </SmoothScrollPane>
 
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>
