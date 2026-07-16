@@ -13,10 +13,11 @@
            fx:controller="com.potato.potatotool.controller.redTeam.PaneCommandQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width}">
-        <VBox alignment="CENTER" spacing="20" prefWidth="${sPane.width - 15}">
+    <!-- 内容让出右侧 206px(COMMAND面板190+间距16), TOP_LEFT左对齐, 面板常驻并排不遮挡 -->
+    <SmoothScrollPane prefHeight="${sPane.height}" prefWidth="${sPane.width - 206}" maxWidth="${sPane.width - 206}" StackPane.alignment="TOP_LEFT">
+        <VBox alignment="CENTER" spacing="20" prefWidth="${sPane.width - 221}">
 
-            <StackPane prefWidth="${sPane.width - 15}" maxWidth="Infinity">
+            <StackPane prefWidth="${sPane.width - 221}" maxWidth="Infinity">
                 <TextField fx:id="question" styleClass="pt-input" minHeight="0" promptText="请输入需要查询的命令/操作……" userData="i18n-prompt:cmdquery.input.placeholder"/>
                 <Pane maxWidth="0" maxHeight="35" StackPane.alignment="CENTER_RIGHT">
                     <Label layoutX="-40" layoutY="3" onMouseClicked="#searchInput">
@@ -33,7 +34,7 @@
                 </Pane>
             </StackPane>
 
-            <HBox alignment="CENTER" prefWidth="${sPane.width - 15}">
+            <HBox alignment="CENTER" prefWidth="${sPane.width - 221}">
                 <SmoothScrollPane fx:id="accordionScroll" maxHeight="${sPane.height - 80}" hbarPolicy="NEVER">
                     <VBox fx:id="vBoxBar">
                         <Accordion fx:id="accordionPane"/>
@@ -43,7 +44,7 @@
                 <Region HBox.hgrow="ALWAYS" />
 
                 <StackPane>
-                    <SmoothListView fx:id="listView" prefWidth="${sPane.width - 215}" prefHeight="${sPane.height - 80}" maxHeight="${sPane.height - 100}" />
+                    <SmoothListView fx:id="listView" prefWidth="${sPane.width - 421}" prefHeight="${sPane.height - 80}" maxHeight="${sPane.height - 100}" />
                     <Label fx:id="toBack" visible="false" managed="false" translateX="-10" translateY="5" StackPane.alignment="TOP_RIGHT" onMouseClicked="#goBack">
                         <graphic>
                             <Region styleClass="back"/>
@@ -63,8 +64,8 @@
 
     <!-- Right COMMAND panel (slides in from right via translateX animation) -->
     <SmoothScrollPane fx:id="commandScrollPane"
-                      maxHeight="${sPane.height}" maxWidth="190"
-                      translateX="190" hbarPolicy="NEVER"
+                      maxHeight="${sPane.height}" maxWidth="190" prefWidth="190"
+                      translateX="0" hbarPolicy="NEVER"
                       StackPane.alignment="TOP_RIGHT"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox fx:id="commandPanelBox" styleClass="cmd-panel-root" spacing="0">
@@ -81,4 +82,9 @@
     <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER">
         <Label fx:id="prompt" text="复制成功" wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="600"/>
     </StackPane>
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>
