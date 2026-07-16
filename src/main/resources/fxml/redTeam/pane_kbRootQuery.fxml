@@ -12,11 +12,13 @@
            fx:controller="com.potato.potatotool.controller.redTeam.PaneKbRootQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
+    <!-- 内容区左对齐并让出右侧 226px(CVE面板210 + 间距16), 使 CVE DETAIL 面板常驻并排不遮挡(对齐设计稿) -->
+    <SmoothScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="${sPane.height}" prefWidth="${sPane.width - 226}" maxWidth="${sPane.width - 226}" StackPane.alignment="TOP_LEFT" style="-fx-background-color: transparent; -fx-background: transparent;">
     <VBox fx:id="vBox" styleClass="kb-root" spacing="12"
-          prefWidth="${sPane.width}" prefHeight="${sPane.height}">
+          prefWidth="${sPane.width - 242}">
 
         <!-- Top: input (left) + controls (right) -->
-        <HBox spacing="12" prefWidth="${sPane.width - 32}">
+        <HBox spacing="12" prefWidth="${sPane.width - 258}">
 
             <!-- systeminfo textarea (grows) -->
             <SmoothTextArea fx:id="inputText" styleClass="pt-input,kb-input"
@@ -50,10 +52,12 @@
 
     </VBox>
 
+    </SmoothScrollPane>
+
     <!-- Right CVE DETAIL panel (slides in from right via translateX animation) -->
     <SmoothScrollPane fx:id="cveDetailScrollPane"
-                      maxHeight="${sPane.height}" maxWidth="210"
-                      translateX="210" hbarPolicy="NEVER"
+                      maxHeight="${sPane.height}" maxWidth="210" prefWidth="210"
+                      translateX="0" hbarPolicy="NEVER"
                       StackPane.alignment="TOP_RIGHT"
                       style="-fx-background-color: transparent; -fx-background: transparent;">
         <VBox fx:id="cvePanelBox" styleClass="cve-panel-root" spacing="0">
@@ -67,4 +71,9 @@
         </VBox>
     </SmoothScrollPane>
 
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

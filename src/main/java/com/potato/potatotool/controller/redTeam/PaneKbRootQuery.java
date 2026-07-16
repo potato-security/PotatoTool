@@ -328,12 +328,10 @@ public class PaneKbRootQuery {
     }
 
     private void showCvePanel() {
-        if (cveDetailScrollPane == null || cvePanelVisible) return;
+        // CVE DETAIL 面板改为常驻并排(对齐设计稿),始终可见,不再滑入/隐藏,仅确保就位。
+        if (cveDetailScrollPane == null) return;
         cvePanelVisible = true;
-        new Timeline(
-            new KeyFrame(Duration.ZERO, new KeyValue(cveDetailScrollPane.translateXProperty(), 210)),
-            new KeyFrame(Duration.millis(200), new KeyValue(cveDetailScrollPane.translateXProperty(), 0))
-        ).play();
+        cveDetailScrollPane.setTranslateX(0);
     }
 
     private void applyStartupPreviewState() {
@@ -470,6 +468,13 @@ public class PaneKbRootQuery {
                     Label tipTitle = new Label(I18nUtils.getString("kb.novuln"));
                     tipTitle.setId("tipTitle");
                     tableView.setPlaceholder(tipTitle);
+
+                    // CVE DETAIL 常驻面板: 加载后默认选中首行, 使面板有填充态(对齐设计稿)
+                    Platform.runLater(() -> {
+                        if (!tableView.getItems().isEmpty()) {
+                            tableView.getSelectionModel().selectFirst();
+                        }
+                    });
                 });
             } catch (Exception e) {
                 if(debugMode) e.printStackTrace();
