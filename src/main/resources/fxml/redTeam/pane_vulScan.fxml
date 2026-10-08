@@ -298,7 +298,8 @@
     
     <!-- 1. POC管理弹窗 -->
     <StackPane fx:id="pocManageMask" visible="false" managed="false" styleClass="dialog-mask" onMouseClicked="#closePocManageByMask">
-        <VBox fx:id="pocManagePane" styleClass="manage-pane" StackPane.alignment="CENTER" onMouseClicked="#consumeEvent" prefWidth="900" prefHeight="650">
+        <StackPane StackPane.alignment="CENTER" onMouseClicked="#consumeEvent" prefWidth="900" prefHeight="650">
+        <VBox fx:id="pocManagePane" styleClass="manage-pane">
             <HBox alignment="CENTER_LEFT" styleClass="manage-header">
                 <Label text="POC 仓库管理" styleClass="manage-title" userData="i18n:vulnscan.tab.pocmanage"/>
                 <Region HBox.hgrow="ALWAYS"/>
@@ -351,11 +352,18 @@
                 <Button text="批量删除" onAction="#deleteSelectedPocs" styleClass="pt-btn-danger" userData="i18n:vulnscan.ui.batchdelete"/>
             </HBox>
         </VBox>
+        <!-- 四角取景框 -->
+        <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+        <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+        <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+        <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
+    </StackPane>
     </StackPane>
     
     <!-- 2. POC详情弹窗 -->
     <StackPane fx:id="pocDetailMask" visible="false" managed="false" styleClass="dialog-mask" onMouseClicked="#closePocDetailByMask">
-        <VBox fx:id="pocDetailPane" styleClass="detail-pane" StackPane.alignment="CENTER" onMouseClicked="#consumeEvent" prefWidth="750" prefHeight="550">
+        <StackPane StackPane.alignment="CENTER" onMouseClicked="#consumeEvent" prefWidth="750" prefHeight="550">
+        <VBox fx:id="pocDetailPane" styleClass="detail-pane">
             <HBox alignment="CENTER_LEFT" styleClass="manage-header">
                 <Label text="POC 详情" styleClass="manage-title" userData="i18n:vulnscan.ui.pocdetail"/>
                 <Region HBox.hgrow="ALWAYS"/>
@@ -371,11 +379,18 @@
                 <Button text="导出文件" onAction="#exportPocFile" styleClass="pt-btn" userData="i18n:vulnscan.ui.exportfile"/>
             </HBox>
         </VBox>
+        <!-- 四角取景框 -->
+        <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+        <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+        <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+        <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
+    </StackPane>
     </StackPane>
     
     <!-- 3. 日志查看弹窗 -->
     <StackPane fx:id="logViewerMask" visible="false" managed="false" styleClass="dialog-mask" onMouseClicked="#closeLogViewerByMask">
-        <VBox fx:id="logViewerPane" styleClass="manage-pane" StackPane.alignment="CENTER" onMouseClicked="#consumeEvent" prefWidth="900" prefHeight="600">
+        <StackPane StackPane.alignment="CENTER" onMouseClicked="#consumeEvent" prefWidth="900" prefHeight="600">
+        <VBox fx:id="logViewerPane" styleClass="manage-pane">
             <HBox alignment="CENTER_LEFT" styleClass="manage-header">
                 <Label text="运行日志" styleClass="manage-title" userData="i18n:vulnscan.ui.runlog"/>
                 <Region HBox.hgrow="ALWAYS"/>
@@ -391,11 +406,18 @@
             </HBox>
             <SmoothTextArea fx:id="logTextArea" VBox.vgrow="ALWAYS" editable="false" wrapText="false" styleClass="pt-input,pt-mono"/>
         </VBox>
+        <!-- 四角取景框 -->
+        <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+        <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+        <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+        <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
+    </StackPane>
     </StackPane>
     
     <!-- 4. 历史记录弹窗 (新增) -->
     <StackPane fx:id="historyMask" visible="false" managed="false" styleClass="dialog-mask" onMouseClicked="#closeHistoryByMask">
-        <VBox fx:id="historyPane" styleClass="manage-pane" StackPane.alignment="CENTER" onMouseClicked="#consumeEvent" prefWidth="800" prefHeight="500">
+        <StackPane StackPane.alignment="CENTER" onMouseClicked="#consumeEvent" prefWidth="800" prefHeight="500">
+        <VBox fx:id="historyPane" styleClass="manage-pane">
             <HBox alignment="CENTER_LEFT" styleClass="manage-header">
                 <Label text="扫描历史" styleClass="manage-title" userData="i18n:vulnscan.ui.scanhistory"/>
                 <Region HBox.hgrow="ALWAYS"/>
@@ -433,6 +455,12 @@
                  <Button text="清空历史" onAction="#clearHistory" styleClass="pt-btn-danger" userData="i18n:vulnscan.button.clearhistory"/>
             </HBox>
         </VBox>
+        <!-- 四角取景框 -->
+        <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+        <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+        <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+        <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
+    </StackPane>
     </StackPane>
     
     <!-- 5. 全局提示框 -->
@@ -444,4 +472,10 @@
                wrapText="true" textAlignment="CENTER" alignment="CENTER" maxWidth="600"/>
     </StackPane>
 
+
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

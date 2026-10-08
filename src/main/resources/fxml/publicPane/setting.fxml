@@ -31,11 +31,6 @@
             <effect>
                 <DropShadow color="#00000080" radius="18" spread="0.08"/>
             </effect>
-            <!-- 四角取景框 -->
-            <Region styleClass="pt-corner-tl" StackPane.alignment="TOP_LEFT"/>
-            <Region styleClass="pt-corner-tr" StackPane.alignment="TOP_RIGHT"/>
-            <Region styleClass="pt-corner-bl" StackPane.alignment="BOTTOM_LEFT"/>
-            <Region styleClass="pt-corner-br" StackPane.alignment="BOTTOM_RIGHT"/>
             <VBox>
                 <BorderPane fx:id="topBar" styleClass="setting-topbar" prefHeight="45" BorderPane.alignment="CENTER">
                     <center>
@@ -880,6 +875,11 @@
             <StackPane fx:id="promptPane" visible="false" managed="false" maxHeight="-Infinity" maxWidth="-Infinity" alignment="CENTER" StackPane.alignment="CENTER" onMouseClicked="#closePromptPane">
                 <Label fx:id="prompt" wrapText="true" textAlignment="CENTER" alignment="CENTER" minHeight="-Infinity" maxWidth="600"/>
             </StackPane>
+            <!-- 保持在内容层之上，避免边角被不透明面板覆盖。 -->
+            <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+            <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+            <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+            <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
         </StackPane>
     </children>
 

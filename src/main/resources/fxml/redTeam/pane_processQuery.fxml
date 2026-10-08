@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import com.potato.potatotool.utils.ui.SmoothScrollPane?>
 <?import com.potato.potatotool.utils.ui.SmoothTextArea?>
 
 <?import javafx.scene.control.*?>
@@ -10,7 +11,8 @@
            fx:controller="com.potato.potatotool.controller.redTeam.PaneProcessQuery"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity">
 
-    <VBox styleClass="proc-root" spacing="16">
+    <SmoothScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="${sPane.height}" prefWidth="${sPane.width}" style="-fx-background-color: transparent; -fx-background: transparent;">
+    <VBox styleClass="proc-root" spacing="16" prefWidth="${sPane.width - 16}">
 
         <!-- 1. 输入区：紧凑输入带 + 右侧动作按钮 (对齐 Penpot 设计) -->
         <VBox spacing="6">
@@ -56,4 +58,11 @@
 
     </VBox>
 
+    </SmoothScrollPane>
+
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

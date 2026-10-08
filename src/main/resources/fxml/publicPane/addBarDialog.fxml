@@ -14,7 +14,7 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.potato.potatotool.controller.publicPane.PaneAddBarDialog"
             fx:id="an"
-            stylesheets="@../../css/common.css"
+            stylesheets="@../../css/common.css, @../../css/components.css"
             style="-fx-background-color: transparent"
             onMouseDragged="#topBarDraggedAction"
             onMousePressed="#topBarPressedAction"
@@ -26,12 +26,6 @@
         <effect>
             <DropShadow color="#00000080" radius="18" spread="0.08"/>
         </effect>
-        <!-- 四角取景框 -->
-        <Region styleClass="pt-corner-tl" StackPane.alignment="TOP_LEFT"/>
-        <Region styleClass="pt-corner-tr" StackPane.alignment="TOP_RIGHT"/>
-        <Region styleClass="pt-corner-bl" StackPane.alignment="BOTTOM_LEFT"/>
-        <Region styleClass="pt-corner-br" StackPane.alignment="BOTTOM_RIGHT"/>
-
         <VBox>
             <BorderPane fx:id="topBar"
                         style="-fx-background-color: -pt-bg-elevated; -fx-border-color: transparent transparent -pt-border-subtle transparent; -fx-border-width: 0 0 1 0;"
@@ -101,5 +95,10 @@
                 </HBox>
             </VBox>
         </VBox>
+        <!-- 保持在内容层之上，避免边角被不透明面板覆盖。 -->
+        <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+        <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+        <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+        <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
     </StackPane>
 </AnchorPane>

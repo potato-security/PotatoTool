@@ -17,13 +17,8 @@
             xmlns:fx="http://javafx.com/fxml/1"
             stylesheets="@../../css/common.css, @../../css/components.css, @../../css/passwd.css"
             fx:controller="com.potato.potatotool.controller.publicPane.PanePasswd">
-    <StackPane AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
-               AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
-        <!-- 四角取景框 -->
-        <Region styleClass="pt-corner-tl" StackPane.alignment="TOP_LEFT"/>
-        <Region styleClass="pt-corner-tr" StackPane.alignment="TOP_RIGHT"/>
-        <Region styleClass="pt-corner-bl" StackPane.alignment="BOTTOM_LEFT"/>
-        <Region styleClass="pt-corner-br" StackPane.alignment="BOTTOM_RIGHT"/>
+    <StackPane AnchorPane.topAnchor="4" AnchorPane.bottomAnchor="4"
+               AnchorPane.leftAnchor="4" AnchorPane.rightAnchor="4">
     <VBox styleClass="passwd-card" spacing="0" StackPane.alignment="CENTER">
         <effect>
             <DropShadow color="#000000" radius="28" spread="0.08"/>
@@ -66,5 +61,10 @@
         </VBox>
 
     </VBox>
+        <!-- 四角取景框叠加在最上层，translate 留出呼吸空间 -->
+        <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+        <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+        <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+        <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
     </StackPane>
 </AnchorPane>

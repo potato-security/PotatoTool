@@ -35,7 +35,8 @@
     </fx:define>
 
     <!-- Main two-column layout: content left + context panel right -->
-    <HBox spacing="0" prefWidth="${sPane.width}" prefHeight="${sPane.height}">
+    <SmoothScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="${sPane.height}" prefWidth="${sPane.width}" style="-fx-background-color: transparent; -fx-background: transparent;">
+    <HBox spacing="0" prefWidth="${sPane.width - 16}">
 
         <!-- ===== LEFT: main decode content ===== -->
         <VBox styleClass="wd-root" HBox.hgrow="ALWAYS" spacing="0">
@@ -250,6 +251,8 @@
 
     </HBox>
 
+    </SmoothScrollPane>
+
     <!-- Prompt overlay -->
     <StackPane fx:id="promptPane" visible="false" managed="false"
                maxHeight="-Infinity" maxWidth="-Infinity"
@@ -258,4 +261,9 @@
                alignment="CENTER" minHeight="-Infinity" maxWidth="600"/>
     </StackPane>
 
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>

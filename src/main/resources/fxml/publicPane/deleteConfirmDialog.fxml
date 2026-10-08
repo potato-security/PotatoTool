@@ -18,12 +18,6 @@
                AnchorPane.leftAnchor="9" AnchorPane.rightAnchor="9">
         <effect><DropShadow color="#00000080" radius="18" spread="0.08"/></effect>
 
-        <!-- 危险角标 (红色) -->
-        <Region styleClass="pt-corner-tl-danger" StackPane.alignment="TOP_LEFT"/>
-        <Region styleClass="pt-corner-tr-danger" StackPane.alignment="TOP_RIGHT"/>
-        <Region styleClass="pt-corner-bl-danger" StackPane.alignment="BOTTOM_LEFT"/>
-        <Region styleClass="pt-corner-br-danger" StackPane.alignment="BOTTOM_RIGHT"/>
-
         <VBox>
             <!-- Title bar -->
             <BorderPane fx:id="topBar" styleClass="del-topbar"
@@ -74,6 +68,11 @@
 
             </VBox>
         </VBox>
+        <!-- 保持在内容层之上，避免边角被不透明面板覆盖。 -->
+        <Region styleClass="pt-corner-tl-danger" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+        <Region styleClass="pt-corner-tr-danger" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+        <Region styleClass="pt-corner-bl-danger" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+        <Region styleClass="pt-corner-br-danger" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
     </StackPane>
 
 </AnchorPane>

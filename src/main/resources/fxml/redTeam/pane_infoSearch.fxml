@@ -257,6 +257,7 @@
     <VBox fx:id="companyNameChoosePaneBox" styleClass="choosePaneBox" visible="false" managed="false" alignment="CENTER">
         <HBox alignment="CENTER" translateY="-45">
             <effect><DropShadow/></effect>
+            <StackPane>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
                     <Label styleClass="pt-h2" text="公司别名设置" userData="i18n:infosearch.company.alias.title"/>
@@ -271,12 +272,19 @@
                             text="下一步" userData="i18n:infosearch.next" onAction="#saveCompanyNameField"/>
                 </VBox>
             </VBox>
+            <!-- 四角取景框 -->
+            <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+            <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+            <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+            <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
+        </StackPane>
         </HBox>
     </VBox>
 
     <VBox fx:id="companyCandidateChoosePaneBox" styleClass="choosePaneBox" visible="false" managed="false" alignment="CENTER">
         <HBox alignment="CENTER" translateY="-45">
             <effect><DropShadow/></effect>
+            <StackPane>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="0" minWidth="660">
                 <HBox alignment="CENTER_LEFT" styleClass="titleHbox" spacing="10">
                     <Label fx:id="companyCandidateTitle" styleClass="pt-h2" text="企业候选选择面板"
@@ -341,12 +349,19 @@
                     </HBox>
                 </VBox>
             </VBox>
+            <!-- 四角取景框 -->
+            <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+            <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+            <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+            <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
+        </StackPane>
         </HBox>
     </VBox>
 
     <VBox fx:id="iconChoosePaneBox" styleClass="choosePaneBox" visible="false" managed="false" alignment="CENTER">
         <HBox alignment="CENTER" translateY="-45">
             <effect><DropShadow/></effect>
+            <StackPane>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
                     <Label styleClass="pt-h2" text="icon设置" userData="i18n:infosearch.icon.title"/>
@@ -360,12 +375,19 @@
                             text="下一步" userData="i18n:infosearch.next" onAction="#saveIconField"/>
                 </VBox>
             </VBox>
+            <!-- 四角取景框 -->
+            <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+            <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+            <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+            <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
+        </StackPane>
         </HBox>
     </VBox>
 
     <VBox fx:id="domainChoosePaneBox" styleClass="choosePaneBox" visible="false" managed="false" alignment="CENTER">
         <HBox alignment="CENTER" translateY="-45">
             <effect><DropShadow/></effect>
+            <StackPane>
             <VBox styleClass="choosePane" alignment="TOP_CENTER" spacing="10">
                 <HBox alignment="CENTER" styleClass="titleHbox">
                     <Label styleClass="pt-h2" text="选择域名" userData="i18n:infosearch.domain.title"/>
@@ -380,7 +402,19 @@
                             text="下一步" userData="i18n:infosearch.next" onAction="#saveDomainField"/>
                 </VBox>
             </VBox>
+            <!-- 四角取景框 -->
+            <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+            <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+            <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+            <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
+        </StackPane>
         </HBox>
     </VBox>
 
+
+    <!-- 四角取景框叠加在最上层 -->
+    <Region styleClass="pt-corner-tl" mouseTransparent="true" StackPane.alignment="TOP_LEFT" translateX="4" translateY="4"/>
+    <Region styleClass="pt-corner-tr" mouseTransparent="true" StackPane.alignment="TOP_RIGHT" translateX="-4" translateY="4"/>
+    <Region styleClass="pt-corner-bl" mouseTransparent="true" StackPane.alignment="BOTTOM_LEFT" translateX="4" translateY="-4"/>
+    <Region styleClass="pt-corner-br" mouseTransparent="true" StackPane.alignment="BOTTOM_RIGHT" translateX="-4" translateY="-4"/>
 </StackPane>
