@@ -520,6 +520,43 @@
 - 启动命令后+debug，可打印解密报错，用于提交bug信息（例：java -jar xxx.jar debug）
 - **启动密码：potato520**
 
+# 十、从源码构建
+
+## 1. 环境要求
+
+| 项目 | 要求 |
+|:---:|:---:|
+| JDK | 8 或 11+（推荐 11+，性能更高） |
+| Maven | 3.6 及以上 |
+
+仓库根目录提供两套构建描述：`jdk8.xml`（JDK 8）与 `jdk11+.xml`（JDK 11+，使用 JavaFX 17）。当前 `pom.xml` 对应 JDK 8 构建。
+
+## 2. 打包步骤
+
+1. 先确认命令行 Java 版本与要构建的目标一致：`java -version`
+2. 用目标版本的构建描述打包（二选一）：
+   - 直接指定：`mvn -f jdk8.xml clean package` 或 `mvn -f jdk11+.xml clean package`
+   - 按仓库惯例：将对应版本的 xml 复制为 `pom.xml`（IDE 中重新加载 Maven 配置即可识别）后执行 `mvn clean package`
+3. 产物：经 ProGuard 混淆的 jar 输出到 `./outJar/`，命名形如 `PotatoTool-<版本>-jdk8.jar`、`PotatoTool-<版本>-jdk11+.jar`（与 Releases 中的附件一致）
+
+## 3. 发版前检查
+
+| 需要同步版本号的位置 | 说明 |
+|:---|:---|
+| `pom.xml` / `jdk8.xml` / `jdk11+.xml` 的 `<version>` | 构建版本 |
+| `src/META-INF/MANIFEST.MF` 的 `Manifest-Version` | jar 清单版本 |
+| `src/main/resources/conf/config.json` 的 `AppVersion` | 应用读取的版本号 |
+| `src/main/resources/i18n/messages_zh_CN.properties`、`messages_en_US.properties` 的 `about.version.value` | “关于”页显示的版本（中英各一份） |
+
+- 打包前确认 `src/main/resources/conf/config.json` 中不含自己的测试配置与密钥（对外发版请使用默认模板）
+- 发布后如需同步热更新资源或配置，更新地址见 `src/main/resources/config.properties`
+
+## 4. 构建与调试提示
+
+- **打包失败或产物运行异常**：先核对 `java -version` 是否与所用 POM 一致，JDK 8 与 JDK 11+ 的 POM 不可混用
+- **macOS 下命令行 Java/Maven 版本不生效**：先刷新 shell 环境变量（`source ~/.bash_profile`，zsh 用 `~/.zshrc`）
+- **调试解密报错**：源码调试时在 IDE 的程序实参中追加 `debug`（直接运行 jar 则跟在命令后），一键解密的报错信息才会输出
+
 ## 帮宝子点个star吧，Stargazers over time
 [![Stargazers over time](https://starchart.cc/potato-security/PotatoTool.svg?variant=adaptive)](https://starchart.cc/potato-security/PotatoTool)
 
