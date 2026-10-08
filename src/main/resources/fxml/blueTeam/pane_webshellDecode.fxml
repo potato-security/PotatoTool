@@ -25,6 +25,7 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.Region?>
 <StackPane fx:id="sPane"
            stylesheets="@../../css/webshellDecode.css"
            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
@@ -116,7 +117,9 @@
                </tooltip>
             </Button>
             <Pane fx:id="aiPane" visible="false" maxWidth="0">
-               <SmoothTextArea fx:id="aiTextArea" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height * 0.43 + 12}" maxHeight="${sPane.height * 0.43 + 12}" minHeight="0" text="AI分析中，请稍等……" userData="i18n:webshell.ai.analyzing" StackPane.alignment="CENTER_RIGHT"/>
+               <SmoothTextArea fx:id="aiTextArea" editable="false" wrapText="true" prefWidth="0" maxWidth="${sPane.width * 0.9}" minWidth="0" prefHeight="${sPane.height * 0.43 + 12}" maxHeight="${sPane.height * 0.43 + 12}" minHeight="0" StackPane.alignment="CENTER_RIGHT"/>
+               <Region fx:id="aiStatusDivider" layoutY="42" minHeight="1" prefHeight="1" maxHeight="1" mouseTransparent="true" styleClass="ai-status-divider"/>
+               <Label fx:id="aiStatusLabel" layoutY="13" mouseTransparent="true" minWidth="0" styleClass="ai-status-strip"/>
                <Button fx:id="downloadAI" layoutX="-88" layoutY="6" mnemonicParsing="false" onAction="#downloadAIReport" disable="true">
                   <cursor>
                      <Cursor fx:constant="HAND" />

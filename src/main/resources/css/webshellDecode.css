@@ -54,3 +54,24 @@
 #promptPane.prompt-error .label {
     -fx-text-fill: #ffe6e2;
 }
+
+.ai-status-strip {
+    -fx-text-fill: rgba(240, 246, 250, 0.78);
+    -fx-font-size: 12;
+    -fx-padding: 0 0 0 2;
+}
+
+.ai-status-strip.ai-status-warn {
+    -fx-text-fill: -main-tips-color;
+}
+
+/* 顶栏（状态 + 工具按钮）与下方输出区的分割线：随面板宽度伸缩 */
+.ai-status-divider {
+    -fx-background-color: -main-border-color;
+    -fx-opacity: 0.26;
+}
+
+/* 面板顶栏与下载/刷新/关闭三个按钮同排，正文下移让出这一行（含分割线上下的间隙） */
+#aiTextArea .content {
+    -fx-padding: 48 10 8 10;
+}

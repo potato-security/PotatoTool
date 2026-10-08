@@ -84,7 +84,7 @@ public class GitHubLeakage {
                         String repoName = item.getAsJsonObject().get("full_name").getAsString();
                         String repoDes = (item.getAsJsonObject().get("description")==null || item.getAsJsonObject().get("description").isJsonNull()) ? "" : item.getAsJsonObject().get("description").getAsString() ;
 
-                        if ((domain!=null && domain.equals("HotBoy-java/PotatoTool")) || AiUtils.getGitRepoRelevance_Ai(repoName, repoDes, question)) {
+                        if ((domain!=null && domain.equals("potato-security/PotatoTool")) || AiUtils.getGitRepoRelevance_Ai(repoName, repoDes, question)) {
                             repoObj.addProperty("repoName", repoName);
                             repoObj.addProperty("repoUrl", item.getAsJsonObject().get("html_url").getAsString());
                             repoObj.addProperty("repoDes", repoDes);
@@ -111,7 +111,7 @@ public class GitHubLeakage {
         }
         boolean Proxy = ProxyUtils.isServiceProxyEnabled(AssetConstants.GITHUB_TOKEN);
         GitHubLeakage gitHubLeakage = new GitHubLeakage(GitHub_Token_Set, Proxy);
-        String domain = "HotBoy-java/PotatoTool";
+        String domain = "potato-security/PotatoTool";
         if (gitHubLeakage.getRepo(null, domain, 1).isEmpty()){
             isEffectiveKey = false;
             return "无效的GitHub_Token";

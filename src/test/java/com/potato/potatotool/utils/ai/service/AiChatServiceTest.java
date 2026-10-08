@@ -176,6 +176,54 @@ class AiChatServiceTest {
     }
 
     @Test
+    @DisplayName("已取消的请求不会真正建立连接")
+    void cancelledRequestGateSkipsTransport() {
+        AiConfigReader reader = new StubConfigReader(false, "https://api.example.com/v1/chat/completions");
+        AiProviderRegistry registry = new AiProviderRegistry();
+        registry.register(AiProviderType.OPENAI, new StubProviderAdapter());
+
+        final int[] transportCalls = new int[]{0};
+        AiChatService service = new AiChatService(reader, registry, (requestObj, streamSession, lineConsumer) -> {
+            transportCalls[0]++;
+            lineConsumer.accept("token:SHOULD_NOT_APPEAR");
+            lineConsumer.accept("done");
+        });
+        service.setRequestGate(() -> true);
+
+        List<AiStreamEvent> events = new ArrayList<AiStreamEvent>();
+        service.streamChat("hello", events::add);
+
+        assertEquals(0, transportCalls[0], "已取消的会话不应建立连接");
+        assertTrue(events.isEmpty(), "已取消的会话不应产生任何事件");
+    }
+
+    @Test
+    @DisplayName("请求门未取消时正常发起连接")
+    void activeRequestGateStillStreams() {
+        AiConfigReader reader = new StubConfigReader(false, "https://api.example.com/v1/chat/completions");
+        AiProviderRegistry registry = new AiProviderRegistry();
+        registry.register(AiProviderType.OPENAI, new StubProviderAdapter());
+
+        final int[] transportCalls = new int[]{0};
+        AiChatService service = new AiChatService(reader, registry, (requestObj, streamSession, lineConsumer) -> {
+            transportCalls[0]++;
+            lineConsumer.accept("token:OK");
+            lineConsumer.accept("done");
+        });
+        service.setRequestGate(() -> false);
+
+        StringBuilder answer = new StringBuilder();
+        service.streamChat("hello", event -> {
+            if (event.getType() == AiStreamEvent.Type.TOKEN) {
+                answer.append(event.getContent());
+            }
+        });
+
+        assertEquals(1, transportCalls[0]);
+        assertEquals("OK", answer.toString());
+    }
+
+    @Test
     @DisplayName("流式请求会把附件传入 prepareRequest 并在结束后清理")
     void streamChatPassesAttachmentsAndCleansPreparedRequest() {
         AiConfigReader reader = new StubConfigReader(false, "https://api.example.com/v1/chat/completions");

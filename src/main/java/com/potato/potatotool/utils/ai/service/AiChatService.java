@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,6 +53,7 @@ public class AiChatService {
     private final List<AiMessage> history = new ArrayList<AiMessage>();
     private final Object streamSessionLock = new Object();
     private StreamController activeStreamSession;
+    private volatile BooleanSupplier requestGate;
 
     public AiChatService() {
         this(new AiConfigReader(), new AiProviderRegistry());
@@ -59,6 +61,9 @@ public class AiChatService {
 
     public AiChatService(AiConfigReader configReader, AiProviderRegistry providerRegistry) {
         this(configReader, providerRegistry, (requestObj, streamSession, lineConsumer) -> {
+            if (streamSession.isCancelled()) {
+                return;
+            }
             try (CustomHttpResponse response = AiHttpExecutor.requests(requestObj)) {
                 StreamController.bind(streamSession, response);
                 if (streamSession.isCancelled()) {
@@ -162,6 +167,9 @@ public class AiChatService {
         final StreamController streamSession = beginStreamSession();
 
         try {
+            if (streamSession.isCancelled()) {
+                return;
+            }
             streamTransport.stream(requestObj, streamSession, line -> {
                 if (streamSession.isCancelled()) {
                     return;
@@ -190,6 +198,14 @@ public class AiChatService {
             clearActiveStream(streamSession);
             preparedRequest.cleanup();
         }
+    }
+
+    /**
+     * 设置请求发起前的最终取消判定。判定为真时，本次会话不会真正建立连接。
+     * 用于关闭“用户已取消、但请求尚未发出”这一窗口内的无效请求。
+     */
+    public void setRequestGate(BooleanSupplier requestGate) {
+        this.requestGate = requestGate;
     }
 
     public void cancelActiveStream() {
@@ -357,8 +373,13 @@ public class AiChatService {
             if (activeStreamSession != null) {
                 activeStreamSession.cancel();
             }
-            activeStreamSession = new StreamController();
-            return activeStreamSession;
+            StreamController controller = new StreamController();
+            BooleanSupplier gate = requestGate;
+            if (gate != null && gate.getAsBoolean()) {
+                controller.cancel();
+            }
+            activeStreamSession = controller;
+            return controller;
         }
     }
 

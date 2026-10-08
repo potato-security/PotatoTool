@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("CodeAnalyzerUtils 测试")
@@ -100,6 +101,40 @@ class CodeAnalyzerUtilsTest {
         assertEquals("AI 请求失败", appender.getText());
     }
 
+    @Test
+    @DisplayName("会话已失效时不发起请求且不写入任何内容")
+    void streamEvilCodeAnalysisSkipAllWhenGateInactive() {
+        PhaseStreamAiChatService aiService = new PhaseStreamAiChatService(null, false,
+                new AiStreamEvent[]{AiStreamEvent.token("结果"), AiStreamEvent.done()}
+        );
+        RecordingAppender appender = new RecordingAppender();
+        MutableGate gate = new MutableGate();
+        gate.close();
+
+        boolean success = CodeAnalyzerUtils.streamEvilCodeAnalysis("payload", "aes", aiService, appender, gate);
+
+        assertFalse(success);
+        assertEquals(0, aiService.getCallCount(), "会话失效后不应发起请求");
+        assertEquals("", appender.getText());
+    }
+
+    @Test
+    @DisplayName("会话失效后不再发起续写请求")
+    void streamEvilCodeAnalysisStopContinuationWhenGateClosed() {
+        MutableGate gate = new MutableGate();
+        PhaseStreamAiChatService aiService = new PhaseStreamAiChatService(gate, true,
+                new AiStreamEvent[]{AiStreamEvent.token("前半段"), AiStreamEvent.error("流读取超时")},
+                new AiStreamEvent[]{AiStreamEvent.token("续写内容"), AiStreamEvent.done()}
+        );
+        RecordingAppender appender = new RecordingAppender();
+
+        boolean success = CodeAnalyzerUtils.streamEvilCodeAnalysis("payload", "aes", aiService, appender, gate);
+
+        assertFalse(success);
+        assertEquals(1, aiService.getCallCount(), "会话失效后不应再发起续写请求");
+        assertFalse(appender.getText().contains("续写内容"));
+    }
+
     private static class StubAiChatService extends AiChatService {
         private final String[] responses;
         private int index;
@@ -144,6 +179,56 @@ class CodeAnalyzerUtilsTest {
         @Override
         public void streamChat(String systemPrompt, String question, EventListener listener) {
             streamChat(question, listener);
+        }
+    }
+
+    private static class MutableGate implements CodeAnalyzerUtils.StreamGate {
+        private boolean active = true;
+
+        @Override
+        public boolean isActive() {
+            return active;
+        }
+
+        private void close() {
+            active = false;
+        }
+    }
+
+    private static class PhaseStreamAiChatService extends AiChatService {
+        private final MutableGate gate;
+        private final boolean closeGateAfterPhase;
+        private final AiStreamEvent[][] phases;
+        private int index;
+        private int callCount;
+
+        private PhaseStreamAiChatService(MutableGate gate, boolean closeGateAfterPhase, AiStreamEvent[]... phases) {
+            this.gate = gate;
+            this.closeGateAfterPhase = closeGateAfterPhase;
+            this.phases = phases;
+        }
+
+        @Override
+        public void streamChat(String question, EventListener listener) {
+            callCount++;
+            if (index >= phases.length) {
+                return;
+            }
+            for (AiStreamEvent event : phases[index++]) {
+                listener.onEvent(event);
+            }
+            if (closeGateAfterPhase && gate != null) {
+                gate.close();
+            }
+        }
+
+        @Override
+        public void streamChat(String systemPrompt, String question, EventListener listener) {
+            streamChat(question, listener);
+        }
+
+        private int getCallCount() {
+            return callCount;
         }
     }
 

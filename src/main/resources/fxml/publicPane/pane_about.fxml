@@ -50,7 +50,7 @@
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label id="tipTitle" text="仓库" userData="i18n:about.repo"/>
                     <Label wrapText="true" id="tipSymbol" text="："/>
-                    <RXLineButton onAction="#openGitHub" prefHeight="40.0" prefWidth="300.0" spacing="3.0" text="https://github.com/ljy1058318852"  alignment="CENTER_LEFT"/>
+                    <RXLineButton onAction="#openGitHub" prefHeight="40.0" prefWidth="300.0" spacing="3.0" text="https://github.com/potato-security"  alignment="CENTER_LEFT"/>
                 </HBox>
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label id="tipTitle" text="CSDN" />

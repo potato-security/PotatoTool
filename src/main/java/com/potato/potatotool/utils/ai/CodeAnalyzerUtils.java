@@ -5,10 +5,13 @@ import com.potato.potatotool.utils.ai.model.AiStreamEvent;
 import com.potato.potatotool.utils.core.I18nTextUtils;
 import com.potato.potatotool.utils.ui.ScrollOptimizationConstants;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -33,6 +36,53 @@ public class CodeAnalyzerUtils {
         return streamEvilCodeAnalysis(evilCode, encodeModes, new AiChatService(), createStreamAppender(node));
     }
 
+    /**
+     * 可取消的流式安全分析入口。
+     *
+     * @param streamGate 会话有效性判定，返回 false 时不再发起新的请求、不再写入任何内容
+     */
+    public static boolean streamEvilCodeAnalysis(String evilCode,
+                                                 String encodeModes,
+                                                 AiChatService aiService,
+                                                 StreamAppender appender,
+                                                 StreamGate streamGate) {
+        if (appender == null) {
+            throw new IllegalArgumentException("stream appender is required");
+        }
+        if (!isGateActive(streamGate)) {
+            return false;
+        }
+        if (aiService != null) {
+            // 让请求层在真正建连之前再判定一次，避免“已取消但请求仍发出”的窗口
+            aiService.setRequestGate(() -> !isGateActive(streamGate));
+        }
+
+        appender.setText(I18nTextUtils.getString("webshell.ai.section.summary") + "\n");
+        StreamPhaseResult result = streamPrompt(
+                aiService,
+                AiPromptUtils.securityAnalysisSystemPrompt(),
+                buildUnifiedAnalysisPrompt(evilCode, encodeModes),
+                appender,
+                streamGate
+        );
+        if (!isGateActive(streamGate)) {
+            return false;
+        }
+        if (result.hasError()) {
+            if (result.hasContent()) {
+                appender.append("\n\n");
+                appender.append(I18nTextUtils.getString("webshell.ai.stream.error", result.getError()));
+            } else {
+                appender.setText(result.getError());
+            }
+            return false;
+        }
+        if (!result.hasContent()) {
+            appender.setText(I18nTextUtils.getString("webshell.ai.empty"));
+            return false;
+        }
+        return true;
+    }
 
     //  优化代码，如反编译后的代码
     public static void optimizedCode(String code, Object node) throws Exception {
@@ -59,35 +109,11 @@ public class CodeAnalyzerUtils {
         ));
     }
 
-    static boolean streamEvilCodeAnalysis(String evilCode,
-                                          String encodeModes,
-                                          AiChatService aiService,
-                                          StreamAppender appender) {
-        if (appender == null) {
-            throw new IllegalArgumentException("stream appender is required");
-        }
-
-        appender.setText(I18nTextUtils.getString("webshell.ai.section.summary") + "\n");
-        StreamPhaseResult result = streamPrompt(
-                aiService,
-                AiPromptUtils.securityAnalysisSystemPrompt(),
-                buildUnifiedAnalysisPrompt(evilCode, encodeModes),
-                appender
-        );
-        if (result.hasError()) {
-            if (result.hasContent()) {
-                appender.append("\n\n");
-                appender.append(I18nTextUtils.getString("webshell.ai.stream.error", result.getError()));
-            } else {
-                appender.setText(result.getError());
-            }
-            return false;
-        }
-        if (!result.hasContent()) {
-            appender.setText(I18nTextUtils.getString("webshell.ai.empty"));
-            return false;
-        }
-        return true;
+    public static boolean streamEvilCodeAnalysis(String evilCode,
+                                                 String encodeModes,
+                                                 AiChatService aiService,
+                                                 StreamAppender appender) {
+        return streamEvilCodeAnalysis(evilCode, encodeModes, aiService, appender, ALWAYS_ACTIVE);
     }
 
     static void streamOptimizedCode(String code,
@@ -102,7 +128,8 @@ public class CodeAnalyzerUtils {
                 aiService,
                 AiPromptUtils.codeOptimizationSystemPrompt(),
                 buildOptimizedCodePrompt(code),
-                appender
+                appender,
+                ALWAYS_ACTIVE
         );
         if (result.hasError()) {
             if (result.hasContent()) {
@@ -131,9 +158,13 @@ public class CodeAnalyzerUtils {
     private static StreamPhaseResult streamPrompt(AiChatService aiService,
                                                   String systemPrompt,
                                                   String prompt,
-                                                  StreamAppender appender) {
-        StreamPhaseResult firstAttempt = streamPromptOnce(aiService, systemPrompt, prompt, appender);
+                                                  StreamAppender appender,
+                                                  StreamGate streamGate) {
+        StreamPhaseResult firstAttempt = streamPromptOnce(aiService, systemPrompt, prompt, appender, streamGate);
         if (!shouldContinueFromInterruption(firstAttempt)) {
+            return firstAttempt;
+        }
+        if (!isGateActive(streamGate)) {
             return firstAttempt;
         }
 
@@ -141,8 +172,12 @@ public class CodeAnalyzerUtils {
                 aiService,
                 systemPrompt,
                 buildContinuationPrompt(firstAttempt.getContent()),
-                NoOpStreamAppender.INSTANCE
+                NoOpStreamAppender.INSTANCE,
+                streamGate
         );
+        if (!isGateActive(streamGate)) {
+            return firstAttempt;
+        }
 
         String mergedContinuation = trimRepeatedPrefix(firstAttempt.getContent(), continuationAttempt.getContent());
         if (!mergedContinuation.isEmpty()) {
@@ -160,18 +195,25 @@ public class CodeAnalyzerUtils {
     private static StreamPhaseResult streamPromptOnce(AiChatService aiService,
                                                       String systemPrompt,
                                                       String prompt,
-                                                      StreamAppender appender) {
+                                                      StreamAppender appender,
+                                                      StreamGate streamGate) {
+        if (!isGateActive(streamGate)) {
+            return new StreamPhaseResult("", "");
+        }
+
         final StringBuilder buffer = new StringBuilder();
         final String[] errorHolder = new String[1];
-        aiService.streamChat(systemPrompt, prompt, event -> handlePhaseEvent(event, buffer, appender, errorHolder));
+        aiService.streamChat(systemPrompt, prompt, event ->
+                handlePhaseEvent(event, buffer, appender, errorHolder, streamGate));
         return new StreamPhaseResult(buffer.toString(), errorHolder[0]);
     }
 
     private static void handlePhaseEvent(AiStreamEvent event,
                                          StringBuilder buffer,
                                          StreamAppender appender,
-                                         String[] errorHolder) {
-        if (event == null) {
+                                         String[] errorHolder,
+                                         StreamGate streamGate) {
+        if (event == null || !isGateActive(streamGate)) {
             return;
         }
         switch (event.getType()) {
@@ -271,20 +313,58 @@ public class CodeAnalyzerUtils {
         }
     }
 
-    private static StreamAppender createStreamAppender(Object node) {
+    /**
+     * 创建默认的流式接收器（不校验会话有效性）。
+     */
+    public static StreamAppender createStreamAppender(Object node) {
+        return createStreamAppender(node, ALWAYS_ACTIVE);
+    }
+
+    /**
+     * 创建带会话有效性校验的流式接收器。校验在写入线程与 FX 线程 flush 时都会执行，
+     * 因此会话被取消或取代后，已经排队等待写入的残留分片也会被丢弃。
+     */
+    public static StreamAppender createStreamAppender(Object node, StreamGate streamGate) {
         if (node instanceof TextArea) {
-            return new FxBufferedTextAreaAppender((TextArea) node);
+            return new FxBufferedTextAreaAppender((TextArea) node, streamGate);
         }
         if (node instanceof CodeArea) {
-            return new FxBufferedCodeAreaAppender((CodeArea) node);
+            return new FxBufferedCodeAreaAppender((CodeArea) node, streamGate);
         }
         throw new IllegalArgumentException("Unsupported stream node: " + node);
     }
 
-    interface StreamAppender {
+    /**
+     * 流式写入接收器。调用方可以实现自己的接收器，用于在写入前做代次/取消校验。
+     */
+    public interface StreamAppender {
         void setText(String text);
 
         void append(String text);
+
+        /**
+         * 释放该接收器在目标节点上安装的事件监听。默认无操作，必须在 FX 线程调用。
+         */
+        default void dispose() {
+        }
+    }
+
+    /**
+     * 流式会话的有效性判定。返回 false 表示该会话已取消或已被新会话取代。
+     */
+    public interface StreamGate {
+        boolean isActive();
+    }
+
+    private static final StreamGate ALWAYS_ACTIVE = new StreamGate() {
+        @Override
+        public boolean isActive() {
+            return true;
+        }
+    };
+
+    private static boolean isGateActive(StreamGate streamGate) {
+        return streamGate == null || streamGate.isActive();
     }
 
     private static final class StreamPhaseResult {
@@ -328,17 +408,37 @@ public class CodeAnalyzerUtils {
     private abstract static class FxBufferedAppenderSupport {
         private final StringBuilder pending = new StringBuilder();
         private final AtomicBoolean flushQueued = new AtomicBoolean(false);
+        private final StreamGate streamGate;
+
+        FxBufferedAppenderSupport(StreamGate streamGate) {
+            this.streamGate = streamGate;
+        }
+
+        boolean isStreamActive() {
+            return isGateActive(streamGate);
+        }
 
         public void setText(String text) {
+            if (!isStreamActive()) {
+                return;
+            }
             final String value = text == null ? "" : text;
             synchronized (pending) {
                 pending.setLength(0);
             }
-            Platform.runLater(() -> applyText(value));
+            Platform.runLater(() -> {
+                if (!isStreamActive()) {
+                    return;
+                }
+                applyText(value);
+            });
         }
 
         public void append(String text) {
             if (text == null || text.isEmpty()) {
+                return;
+            }
+            if (!isStreamActive()) {
                 return;
             }
             synchronized (pending) {
@@ -358,7 +458,7 @@ public class CodeAnalyzerUtils {
                     pending.setLength(0);
                 }
                 try {
-                    if (!chunk.isEmpty()) {
+                    if (!chunk.isEmpty() && isStreamActive()) {
                         appendText(chunk);
                     }
                 } finally {
@@ -382,6 +482,7 @@ public class CodeAnalyzerUtils {
         private boolean followOutput = true;
         private boolean programmaticScroll;
         private boolean scrollbarListenerInstalled;
+        private volatile boolean disposed;
         private ScrollPane internalScrollPane;
         private ScrollPane trackedScrollPane;
         private ScrollBar verticalScrollBar;
@@ -392,13 +493,56 @@ public class CodeAnalyzerUtils {
         private double preservedVerticalScrollValue;
         private boolean preservedVerticalScrollBar;
         private boolean detachedAppendRestoreGuard;
+        private final EventHandler<ScrollEvent> userScrollFilter = this::handleUserScroll;
+        private final EventHandler<MouseEvent> followRefreshFilter =
+                event -> refreshFollowOutputFromCurrentPosition(true);
+        private final ChangeListener<Skin<?>> skinListener = (observable, oldValue, newValue) -> {
+            internalScrollPane = null;
+            verticalScrollBar = null;
+            Platform.runLater(this::installScrollTracking);
+        };
+        private final ChangeListener<Number> scrollPaneVvalueListener =
+                (observable, oldValue, newValue) -> refreshFollowOutputFromCurrentPosition();
+        private final ChangeListener<Number> scrollPaneHvalueListener = (observable, oldValue, newValue) -> {
+            if (!programmaticScroll && !followOutput && newValue != null) {
+                preservedHvalue = newValue.doubleValue();
+            }
+        };
+        private final ChangeListener<Number> scrollBarValueListener =
+                (observable, oldValue, newValue) -> refreshFollowOutputFromCurrentPosition();
+        private final EventHandler<MouseEvent> scrollBarPressFilter = event -> detachFromAutoFollow();
+        private final EventHandler<MouseEvent> scrollBarDragFilter =
+                event -> Platform.runLater(() -> refreshFollowOutputFromCurrentPosition(true));
+        private final EventHandler<MouseEvent> scrollBarReleaseFilter =
+                event -> Platform.runLater(() -> refreshFollowOutputFromCurrentPosition(true));
         private int detachedRestoreGeneration;
 
-        private FxBufferedTextAreaAppender(TextArea textArea) {
+        private FxBufferedTextAreaAppender(TextArea textArea, StreamGate streamGate) {
+            super(streamGate);
             this.textArea = textArea;
             Platform.runLater(this::installScrollTracking);
         }
 
+        @Override
+        public void dispose() {
+            disposed = true;
+            textArea.removeEventFilter(ScrollEvent.SCROLL, userScrollFilter);
+            textArea.removeEventFilter(MouseEvent.MOUSE_RELEASED, followRefreshFilter);
+            textArea.skinProperty().removeListener(skinListener);
+            if (trackedScrollPane != null) {
+                trackedScrollPane.vvalueProperty().removeListener(scrollPaneVvalueListener);
+                trackedScrollPane.hvalueProperty().removeListener(scrollPaneHvalueListener);
+                trackedScrollPane = null;
+            }
+            if (verticalScrollBar != null) {
+                verticalScrollBar.valueProperty().removeListener(scrollBarValueListener);
+                verticalScrollBar.removeEventFilter(MouseEvent.MOUSE_PRESSED, scrollBarPressFilter);
+                verticalScrollBar.removeEventFilter(MouseEvent.MOUSE_DRAGGED, scrollBarDragFilter);
+                verticalScrollBar.removeEventFilter(MouseEvent.MOUSE_RELEASED, scrollBarReleaseFilter);
+                verticalScrollBar = null;
+            }
+            internalScrollPane = null;
+        }
         @Override
         protected void applyText(String text) {
             followOutput = true;
@@ -445,18 +589,14 @@ public class CodeAnalyzerUtils {
         }
 
         private void installScrollTracking() {
-            if (textArea == null) {
+            if (textArea == null || disposed) {
                 return;
             }
             if (!scrollbarListenerInstalled) {
                 scrollbarListenerInstalled = true;
-                textArea.addEventFilter(ScrollEvent.SCROLL, this::handleUserScroll);
-                textArea.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> refreshFollowOutputFromCurrentPosition(true));
-                textArea.skinProperty().addListener((observable, oldValue, newValue) -> {
-                    internalScrollPane = null;
-                    verticalScrollBar = null;
-                    Platform.runLater(this::installScrollTracking);
-                });
+                textArea.addEventFilter(ScrollEvent.SCROLL, userScrollFilter);
+                textArea.addEventFilter(MouseEvent.MOUSE_RELEASED, followRefreshFilter);
+                textArea.skinProperty().addListener(skinListener);
             }
             resolveInternalScrollPane();
             resolveVerticalScrollBar();
@@ -471,7 +611,13 @@ public class CodeAnalyzerUtils {
         }
 
         private void scheduleRefreshFollowOutputFromCurrentPosition(int remainingPulses, boolean allowReattach) {
+            if (disposed) {
+                return;
+            }
             Platform.runLater(() -> {
+                if (disposed) {
+                    return;
+                }
                 refreshFollowOutputFromCurrentPosition(allowReattach);
                 if (remainingPulses > 0) {
                     scheduleRefreshFollowOutputFromCurrentPosition(remainingPulses - 1, allowReattach);
@@ -567,6 +713,9 @@ public class CodeAnalyzerUtils {
         }
 
         private void restorePreservedScrollUntilStable(int remainingPulses, int generation) {
+            if (disposed) {
+                return;
+            }
             detachedAppendRestoreGuard = true;
             if (!followOutput) {
                 // Keep the caret away from the newly appended tail so TextAreaSkin does not force it into view.
@@ -639,6 +788,9 @@ public class CodeAnalyzerUtils {
         }
 
         private ScrollPane resolveInternalScrollPane() {
+            if (disposed) {
+                return null;
+            }
             if (internalScrollPane != null) {
                 return internalScrollPane;
             }
@@ -652,20 +804,18 @@ public class CodeAnalyzerUtils {
         }
 
         private void installScrollPanePositionTracking(ScrollPane scrollPane) {
-            if (scrollPane == null || scrollPane == trackedScrollPane) {
+            if (disposed || scrollPane == null || scrollPane == trackedScrollPane) {
                 return;
             }
             trackedScrollPane = scrollPane;
-            scrollPane.vvalueProperty().addListener((observable, oldValue, newValue) ->
-                    refreshFollowOutputFromCurrentPosition());
-            scrollPane.hvalueProperty().addListener((observable, oldValue, newValue) -> {
-                if (!programmaticScroll && !followOutput && newValue != null) {
-                    preservedHvalue = newValue.doubleValue();
-                }
-            });
+            scrollPane.vvalueProperty().addListener(scrollPaneVvalueListener);
+            scrollPane.hvalueProperty().addListener(scrollPaneHvalueListener);
         }
 
         private ScrollBar resolveVerticalScrollBar() {
+            if (disposed) {
+                return null;
+            }
             if (verticalScrollBar != null) {
                 return verticalScrollBar;
             }
@@ -674,17 +824,17 @@ public class CodeAnalyzerUtils {
                 return null;
             }
             verticalScrollBar = (ScrollBar) node;
-            verticalScrollBar.valueProperty().addListener((observable, oldValue, newValue) ->
-                    refreshFollowOutputFromCurrentPosition());
-            verticalScrollBar.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> detachFromAutoFollow());
-            verticalScrollBar.addEventFilter(MouseEvent.MOUSE_DRAGGED, event ->
-                    Platform.runLater(() -> refreshFollowOutputFromCurrentPosition(true)));
-            verticalScrollBar.addEventFilter(MouseEvent.MOUSE_RELEASED, event ->
-                    Platform.runLater(() -> refreshFollowOutputFromCurrentPosition(true)));
+            verticalScrollBar.valueProperty().addListener(scrollBarValueListener);
+            verticalScrollBar.addEventFilter(MouseEvent.MOUSE_PRESSED, scrollBarPressFilter);
+            verticalScrollBar.addEventFilter(MouseEvent.MOUSE_DRAGGED, scrollBarDragFilter);
+            verticalScrollBar.addEventFilter(MouseEvent.MOUSE_RELEASED, scrollBarReleaseFilter);
             return verticalScrollBar;
         }
 
         private void detachFromAutoFollow() {
+            if (disposed) {
+                return;
+            }
             followOutput = false;
             detachedAppendRestoreGuard = false;
             detachedRestoreGeneration++;
@@ -692,6 +842,9 @@ public class CodeAnalyzerUtils {
         }
 
         private void detachFromAutoFollow(ScrollEvent event) {
+            if (disposed) {
+                return;
+            }
             followOutput = false;
             detachedAppendRestoreGuard = false;
             detachedRestoreGeneration++;
@@ -779,7 +932,8 @@ public class CodeAnalyzerUtils {
     private static final class FxBufferedCodeAreaAppender extends FxBufferedAppenderSupport implements StreamAppender {
         private final CodeArea codeArea;
 
-        private FxBufferedCodeAreaAppender(CodeArea codeArea) {
+        private FxBufferedCodeAreaAppender(CodeArea codeArea, StreamGate streamGate) {
+            super(streamGate);
             this.codeArea = codeArea;
         }
 

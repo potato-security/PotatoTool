@@ -200,10 +200,14 @@ public class CustomHttpResponse implements AutoCloseable {
 
     public void disconnect() {
         disconnectedByClient = true;
-        if (response != null) {
-            clearBuffer();
-            response.close();
+        Response current;
+        synchronized (this) {
+            current = response;
             response = null;
+        }
+        if (current != null) {
+            clearBuffer();
+            current.close();
         }
     }
 

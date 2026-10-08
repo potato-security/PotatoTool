@@ -11,6 +11,7 @@ import com.potato.potatotool.content.blueTeam.webshellDecrypt.model.DecryptConfi
 import com.potato.potatotool.content.blueTeam.webshellDecrypt.model.DecryptResult;
 import com.potato.potatotool.content.blueTeam.webshellDecrypt.report.WebshellAnalysisWordReportGenerator;
 import com.potato.potatotool.utils.ai.CodeAnalyzerUtils;
+import com.potato.potatotool.utils.ai.service.AiChatService;
 import com.potato.potatotool.utils.core.ExecutorServiceManager;
 import com.potato.potatotool.utils.core.I18nUtils;
 import com.potato.potatotool.utils.data.StrUtils;
@@ -21,6 +22,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
@@ -33,6 +35,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -116,6 +119,10 @@ public class PaneWebshellDecode {
     @FXML
     private TextArea aiTextArea;
     @FXML
+    private Label aiStatusLabel;
+    @FXML
+    private Region aiStatusDivider;
+    @FXML
     private Pane aiPane;
     @FXML
     private Button showAI;
@@ -131,21 +138,18 @@ public class PaneWebshellDecode {
 
     Map<String, Object> res = new HashMap<>();
 
+    private static final double RESIZE_MARGIN = 10;
+    private static final double AI_STATUS_INSET = 14;
+    private static final double AI_STATUS_RESERVED_WIDTH = 120;
+    private static final double AI_PANEL_WIDTH_RATIO = 0.8;
+    private static final double AI_STALE_OPACITY = 0.45;
+
     private double aiTextAreaStartX, aiTextAreaStartY;
     private DoubleProperty aiTextAreWidthProperty = new SimpleDoubleProperty(0);
     private DoubleProperty aiTextAreHeightProperty = new SimpleDoubleProperty(0);
-    private static final double RESIZE_MARGIN = 10;
     private final WebshellAnalysisWordReportGenerator reportGenerator = new WebshellAnalysisWordReportGenerator();
-    private volatile boolean lastAiTaskSuccess = false;
     private FadeTransition promptFadeIn;
     private FadeTransition promptFadeOut;
-
-    private enum AiAnalysisState {
-        IDLE,
-        ANALYZING,
-        SUCCESS,
-        FAILED
-    }
 
     private enum PromptTone {
         INFO,
@@ -153,7 +157,121 @@ public class PaneWebshellDecode {
         ERROR
     }
 
-    private AiAnalysisState aiAnalysisState = AiAnalysisState.IDLE;
+    private enum AiPanelState {
+        NO_SOURCE,
+        ANALYZING,
+        DONE,
+        STALE,
+        FAILED
+    }
+
+    /**
+     * 面板内容对应的“内容指纹”：解密结果文本 + 识别出的加解密链路。
+     * 提示词由这两者决定，任一变化都必须重新分析。
+     */
+    private static final class AiSourceKey {
+        private final String resultText;
+        private final String encodeModes;
+
+        private AiSourceKey(String resultText, String encodeModes) {
+            this.resultText = resultText == null ? "" : resultText;
+            this.encodeModes = encodeModes == null ? "" : encodeModes;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof AiSourceKey)) {
+                return false;
+            }
+            AiSourceKey other = (AiSourceKey) obj;
+            return resultText.equals(other.resultText) && encodeModes.equals(other.encodeModes);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * resultText.hashCode() + encodeModes.hashCode();
+        }
+    }
+
+    /**
+     * 分析发起时的输入快照。报告必须使用与面板内容同一代的快照，
+     * 否则会出现“AI 正文来自 A、原始数据来自 B”的错配。
+     */
+    private static final class AiReportSnapshot {
+        private final String sourceInput;
+        private final String sourceResult;
+        private final String ruleSummary;
+        private final List<String> schemeLines;
+        private final Date capturedAt;
+
+        private AiReportSnapshot(String sourceInput,
+                                 String sourceResult,
+                                 String ruleSummary,
+                                 List<String> schemeLines,
+                                 Date capturedAt) {
+            this.sourceInput = sourceInput;
+            this.sourceResult = sourceResult;
+            this.ruleSummary = ruleSummary;
+            this.schemeLines = schemeLines;
+            this.capturedAt = capturedAt;
+        }
+    }
+
+    /**
+     * 一次 AI 分析。会话自带代次与取消标记，既是流式写入的有效性判定，
+     * 也用于丢弃已经排队、但属于旧会话的写入分片。
+     */
+    private final class AiSession implements CodeAnalyzerUtils.StreamGate {
+        private final long token;
+        private final AiSourceKey key;
+        private final AiReportSnapshot snapshot;
+        private final AiChatService service = new AiChatService();
+        private final CodeAnalyzerUtils.StreamAppender appender;
+        private volatile boolean cancelled;
+        private volatile boolean succeeded;
+
+        private AiSession(long token, AiSourceKey key, AiReportSnapshot snapshot) {
+            this.token = token;
+            this.key = key;
+            this.snapshot = snapshot;
+            this.appender = CodeAnalyzerUtils.createStreamAppender(aiTextArea, this);
+        }
+
+        @Override
+        public boolean isActive() {
+            return !cancelled && token == aiActiveToken;
+        }
+
+        private void cancel() {
+            cancelled = true;
+            try {
+                service.cancelActiveStream();
+            } catch (Throwable ignore) {
+                // 取消上游连接是尽量而为：连接已被读线程关闭时可能抛异常，
+                // 这里必须吞掉，否则会打断调用方（例如一键解密的入口流程）
+            }
+            try {
+                appender.dispose();
+            } catch (Throwable ignore) {
+                // 同上，释放监听失败不影响业务
+            }
+        }
+    }
+
+    private AiSession activeSession;
+    private AiSourceKey analyzedKey;
+    private AiReportSnapshot analyzedSnapshot;
+    private AiSourceKey attemptedKey;
+    private boolean lastRunFailed;
+    private long aiTokenSeq;
+    private volatile long aiActiveToken;
+    private boolean aiPanelOpen;
+    private boolean decryptRunning;
+    private long decryptTokenSeq;
+    private long activeDecryptToken;
 
     @FXML
     void initialize() throws IOException {
@@ -170,6 +288,11 @@ public class PaneWebshellDecode {
 
         aiTextArea.prefWidthProperty().bind(aiTextAreWidthProperty);
         aiTextArea.layoutXProperty().bind(aiTextAreWidthProperty.negate());
+        aiStatusLabel.layoutXProperty().bind(aiTextAreWidthProperty.negate().add(AI_STATUS_INSET));
+        aiStatusLabel.maxWidthProperty().bind(Bindings.max(0,
+                aiTextAreWidthProperty.subtract(AI_STATUS_INSET + AI_STATUS_RESERVED_WIDTH)));
+        aiStatusDivider.layoutXProperty().bind(aiTextAreWidthProperty.negate());
+        aiStatusDivider.prefWidthProperty().bind(aiTextAreWidthProperty);
 
         //  CodeArea添加宽高自适应
         sPane.widthProperty().addListener((obs, oldValue, newValue) -> {
@@ -218,7 +341,6 @@ public class PaneWebshellDecode {
         });
 
         initAiControls();
-        initStateInvalidationListeners();
 
         //  设置默认第一个选项
         rulesComboBox.getSelectionModel().selectFirst();
@@ -229,6 +351,8 @@ public class PaneWebshellDecode {
             I18nUtils.bindComponents(sPane);
             applyStartupPreviewState();
         });
+        //  状态条文案由状态派生，切语言时重新渲染一次
+        I18nUtils.localeProperty().addListener((obs, oldLocale, newLocale) -> refreshAiUi());
     }
 
     private void applyStartupPreviewState() {
@@ -268,19 +392,23 @@ public class PaneWebshellDecode {
             res.put("encodeModeList", Collections.singletonList(Collections.singletonList("Base64 -> DefaultKey")));
             if (startupPage == ToStart.StartupPage.BLUE_WEBSHELL_DECODE_AI) {
                 applyAiPreviewState();
+            } else {
+                refreshAiUi();
             }
         }
     }
 
     private void applyAiPreviewState() {
+        aiPanelOpen = true;
         aiPane.setVisible(true);
-        aiTextAreWidthProperty.set(Math.max(0, sPane.getPrefWidth() * 0.8));
+        aiTextAreWidthProperty.set(Math.max(0, sPane.getPrefWidth() * AI_PANEL_WIDTH_RATIO));
         aiTextArea.setText(WEBSHELL_AI_PREVIEW_TEXT);
-        isAiVisible = true;
         showAI.setStyle("-fx-background-color: #87CEFA");
-        lastAiTaskSuccess = true;
-        oldData = result.getText();
-        setAiAnalysisState(AiAnalysisState.SUCCESS);
+        analyzedKey = currentKey();
+        analyzedSnapshot = buildAiSnapshot();
+        attemptedKey = null;
+        lastRunFailed = false;
+        refreshAiUi();
     }
 
     private final ObservableList<Node> contentObj = FXCollections.observableArrayList();
@@ -325,13 +453,9 @@ public class PaneWebshellDecode {
     }
 
 
-    private String oldData = "";
-    private boolean isAiVisible = false;
-    private boolean isAiCD = false;
-
     private void initAiControls() {
         downloadAI.setGraphic(createAiButtonIcon(MaterialDesign.MDI_DOWNLOAD));
-        setAiAnalysisState(AiAnalysisState.IDLE);
+        refreshAiUi();
     }
 
     private FontIcon createAiButtonIcon(MaterialDesign iconCode) {
@@ -341,143 +465,272 @@ public class PaneWebshellDecode {
         return icon;
     }
 
-    private void initStateInvalidationListeners() {
-        inputText.textProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
-        customKey.textProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
-        customIv.textProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
-        customPath.textProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
-        rulesComboBox.valueProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
-        modeComboBox.valueProperty().addListener((obs, oldValue, newValue) -> invalidateAiReport());
+    /**
+     * 当前待分析内容的指纹。只有“解密成功且结果非空”时才存在指纹，
+     * 解密中、解密失败、流量包模式、结果为空都视为无内容可分析。
+     */
+    private AiSourceKey currentKey() {
+        if (decryptRunning || res.isEmpty()) {
+            return null;
+        }
+        Object errorFlag = res.get("error");
+        if (!(errorFlag instanceof Integer) || ((Integer) errorFlag).intValue() != 0) {
+            return null;
+        }
+        String resultStr = result.getText();
+        if (resultStr == null || resultStr.trim().isEmpty()) {
+            return null;
+        }
+        Object encodeModes = res.get("encodeModeList");
+        return new AiSourceKey(resultStr, encodeModes == null ? "" : encodeModes.toString());
     }
 
-    private void invalidateAiReport() {
-        oldData = "";
-        lastAiTaskSuccess = false;
-        setAiAnalysisState(AiAnalysisState.IDLE);
+    private AiPanelState deriveAiPanelState() {
+        if (activeSession != null) {
+            return AiPanelState.ANALYZING;
+        }
+        AiSourceKey key = currentKey();
+        if (key == null) {
+            return AiPanelState.NO_SOURCE;
+        }
+        if (lastRunFailed && key.equals(attemptedKey)) {
+            return AiPanelState.FAILED;
+        }
+        if (key.equals(analyzedKey)) {
+            return AiPanelState.DONE;
+        }
+        return AiPanelState.STALE;
     }
 
-    private void setAiAnalysisState(AiAnalysisState state) {
-        aiAnalysisState = state;
-        refreshAI.setDisable(state == AiAnalysisState.ANALYZING);
-        downloadAI.setDisable(state != AiAnalysisState.SUCCESS);
+    /**
+     * 面板文本只由 AI 会话写入，其它事件（无内容、解密失败、内容已更新）
+     * 一律只更新状态条，避免把已有分析覆盖掉。
+     */
+    private void refreshAiUi() {
+        AiPanelState state = deriveAiPanelState();
+        if (aiStatusLabel != null) {
+            aiStatusLabel.setText(resolveAiStatusText(state));
+            aiStatusLabel.getStyleClass().removeAll("ai-status-warn");
+            boolean warning = state == AiPanelState.STALE || state == AiPanelState.FAILED;
+            if (warning) {
+                aiStatusLabel.getStyleClass().add("ai-status-warn");
+            }
+        }
+        refreshAI.setDisable(state == AiPanelState.NO_SOURCE);
+        downloadAI.setDisable(state != AiPanelState.DONE);
+        // 解密期间面板里的旧分析已不对应当前内容，置灰避免被误读（解密结束由这里恢复）
+        boolean dimmed = decryptRunning && !aiTextArea.getText().isEmpty();
+        aiTextArea.setOpacity(dimmed ? AI_STALE_OPACITY : 1.0);
     }
 
-    private void executeAiAnalysis(String resultStr) {
-        oldData = resultStr;
-        isAiCD = true;
-        lastAiTaskSuccess = false;
-        setAiAnalysisState(AiAnalysisState.ANALYZING);
+    private String resolveAiStatusText(AiPanelState state) {
+        if (decryptRunning) {
+            return I18nUtils.getString("webshell.decrypting");
+        }
+        switch (state) {
+            case ANALYZING:
+                return I18nUtils.getString("webshell.ai.analyzing");
+            case FAILED:
+                return I18nUtils.getString("ai.status.error");
+            case NO_SOURCE:
+                return I18nUtils.getString("webshell.ai.detect.empty");
+            case STALE:
+                return I18nUtils.getString("webshell.ai.status.stale");
+            case DONE:
+            default:
+                return I18nUtils.getString("ai.status.completed");
+        }
+    }
 
+    private AiReportSnapshot buildAiSnapshot() {
+        return new AiReportSnapshot(
+                inputText.getText(),
+                result.getText(),
+                resolveDecryptRuleSummary(),
+                collectSchemeLines(),
+                new Date()
+        );
+    }
+
+    private boolean isCurrentSession(AiSession session) {
+        return session != null && session == activeSession && session.isActive();
+    }
+
+    /**
+     * 当前内容已确定无法分析（解密失败、解密结果为空、流量包模式）时，
+     * 面板里上一份分析不再对应任何可见内容，必须丢弃，
+     * 否则会出现"上一轮 AI 输出看起来像这次输入的分析结果"。
+     */
+    private void discardAiAnalysis() {
+        boolean empty = analyzedKey == null && analyzedSnapshot == null && aiTextArea.getText().isEmpty();
+        if (empty) {
+            return;
+        }
+        analyzedKey = null;
+        analyzedSnapshot = null;
         aiTextArea.clear();
-        aiTextArea.appendText(I18nUtils.getString("webshell.ai.analyzing"));
+        refreshAiUi();
+    }
+
+    private void cancelActiveSession() {
+        AiSession session = activeSession;
+        if (session == null) {
+            return;
+        }
+        activeSession = null;
+        session.cancel();
+    }
+
+    private void startAnalysis(AiSourceKey key) {
+        cancelActiveSession();
+
+        AiSession session = new AiSession(++aiTokenSeq, key, buildAiSnapshot());
+        activeSession = session;
+        aiActiveToken = session.token;
+        session.appender.setText(I18nUtils.getString("webshell.ai.analyzing"));
+        refreshAiUi();
 
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() {
-                lastAiTaskSuccess = CodeAnalyzerUtils.streamEvilCodeAnalysis(
-                        resultStr,
-                        res.get("encodeModeList").toString(),
-                        aiTextArea
+                session.succeeded = CodeAnalyzerUtils.streamEvilCodeAnalysis(
+                        key.resultText,
+                        key.encodeModes,
+                        session.service,
+                        session.appender,
+                        session
                 );
                 return null;
             }
         };
+        task.setOnSucceeded(event -> finishAnalysis(session));
         task.setOnFailed(event -> {
             Throwable error = task.getException();
             if (debugMode && error != null) {
                 error.printStackTrace();
             }
-            Platform.runLater(() -> {
-                isAiCD = false;
-                setAiAnalysisState(AiAnalysisState.FAILED);
-                String message = error == null || error.getMessage() == null || error.getMessage().trim().isEmpty()
-                        ? I18nUtils.getString("ai.status.error")
-                        : error.getMessage();
-                aiTextArea.setText(message);
-            });
-        });
-        task.setOnSucceeded(event -> {
-            isAiCD = false;
-            setAiAnalysisState(lastAiTaskSuccess ? AiAnalysisState.SUCCESS : AiAnalysisState.FAILED);
+            if (!isCurrentSession(session)) {
+                return;
+            }
+            String message = error == null || error.getMessage() == null || error.getMessage().trim().isEmpty()
+                    ? I18nUtils.getString("ai.status.error")
+                    : error.getMessage();
+            session.appender.setText(message);
+            lastRunFailed = true;
+            attemptedKey = session.key;
+            releaseSession(session);
         });
         Thread aiTaskThread = new Thread(task);
         aiTaskThread.setDaemon(true);
         aiTaskThread.start();
     }
 
-    private void showAiUnavailable(String message) {
-        aiTextArea.clear();
-        aiTextArea.appendText(message);
-        oldData = "";
-        setAiAnalysisState(AiAnalysisState.FAILED);
+    private void finishAnalysis(AiSession session) {
+        if (!isCurrentSession(session)) {
+            return;
+        }
+        lastRunFailed = !session.succeeded;
+        attemptedKey = session.key;
+        if (session.succeeded) {
+            analyzedKey = session.key;
+            analyzedSnapshot = session.snapshot;
+        }
+        releaseSession(session);
+    }
+
+    private void releaseSession(AiSession session) {
+        if (activeSession == session) {
+            activeSession = null;
+        }
+        session.appender.dispose();
+        refreshAiUi();
+    }
+
+    /**
+     * 面板打开、或解密产出新结果时调用：决定复用已有分析、还是按新内容重新分析。
+     */
+    private void syncAiWithCurrentResult() {
+        AiSourceKey key = currentKey();
+        if (activeSession != null && key != null && activeSession.key.equals(key)) {
+            refreshAiUi();
+            return;
+        }
+        if (key == null) {
+            refreshAiUi();
+            return;
+        }
+        if (activeSession != null) {
+            cancelActiveSession();
+        }
+        if (key.equals(analyzedKey)) {
+            refreshAiUi();
+            return;
+        }
+        if (lastRunFailed && key.equals(attemptedKey)) {
+            refreshAiUi();
+            return;
+        }
+        startAnalysis(key);
     }
 
     @FXML
-    void showAI(ActionEvent e) throws Exception {
+    void showAI(ActionEvent e) {
+        boolean opening = !aiPanelOpen;
+        setAiPanelVisible(opening);
+        if (opening) {
+            syncAiWithCurrentResult();
+        }
+    }
 
-        double targetWidth = isAiVisible ? 0 : sPane.getPrefWidth() * 0.8;
-        Duration duration = Duration.seconds(0.2);
+    private void setAiPanelVisible(boolean visible) {
+        if (visible == aiPanelOpen) {
+            return;
+        }
+        aiPanelOpen = visible;
+        double targetWidth = visible ? sPane.getPrefWidth() * AI_PANEL_WIDTH_RATIO : 0;
 
-        if (!isAiVisible){
+        if (visible) {
             aiPane.setVisible(true);
             showAI.setStyle("-fx-background-color: #87CEFA");
-        }else {
+        } else {
             showAI.setStyle("-fx-background-color: transparent");
+        }
+        if (aiStatusLabel != null) {
+            // 关闭动画期间面板宽度趋近 0，状态条会漂到右边缘外，直接隐藏避免残影
+            aiStatusLabel.setVisible(visible);
         }
 
         Timeline animation = new Timeline(
                 new KeyFrame(Duration.ZERO, new KeyValue(aiTextAreWidthProperty, aiTextAreWidthProperty.get())),
-                new KeyFrame(duration, new KeyValue(aiTextAreWidthProperty, targetWidth))
+                new KeyFrame(Duration.seconds(0.2), new KeyValue(aiTextAreWidthProperty, targetWidth))
         );
 
         animation.setOnFinished(event -> {
-            isAiVisible = !isAiVisible;
-
-            if (!isAiVisible) {
+            if (!aiPanelOpen) {
                 aiPane.setVisible(false);
             }
         });
 
         animation.play();
-
-        String resultStr = result.getText();
-        //  结果非空 且 结果更新 且 未到AI冷却CD 才触发AI接口
-        if(res.isEmpty()){
-
-            showAiUnavailable(I18nUtils.getString("webshell.ai.detect.empty"));
-
-        }else if((int)res.get("error") == 1){
-
-            showAiUnavailable((String) res.get("data"));
-
-        }else if (!resultStr.equals(oldData) && !isAiCD){
-            executeAiAnalysis(resultStr);
-
-        }
-
+        refreshAiUi();
     }
 
     @FXML
-    void refreshAI(ActionEvent e) throws Exception { //结果未更新也可以强行重新调用AI
-        String resultStr = result.getText();
-        //  结果非空 且 未到AI冷却CD 才触发AI接口
-        if(res.isEmpty()){
-
-            showAiUnavailable(I18nUtils.getString("webshell.ai.detect.empty"));
-
-        }else if((int)res.get("error") == 1){
-
-            showAiUnavailable((String) res.get("data"));
-
-        }else if (!isAiCD){
-            executeAiAnalysis(resultStr);
-
+    void refreshAI(ActionEvent e) {
+        if (!aiPanelOpen) {
+            setAiPanelVisible(true);
         }
+        AiSourceKey key = currentKey();
+        if (key == null) {
+            refreshAiUi();
+            return;
+        }
+        startAnalysis(key);
     }
 
     @FXML
     void downloadAIReport(ActionEvent event) {
-        if (aiAnalysisState != AiAnalysisState.SUCCESS) {
+        if (deriveAiPanelState() != AiPanelState.DONE) {
             showPrompt(I18nUtils.getString("webshell.report.not.ready"));
             return;
         }
@@ -519,17 +772,13 @@ public class PaneWebshellDecode {
             }
         };
         exportTask.setOnSucceeded(e -> {
-            if (aiAnalysisState == AiAnalysisState.SUCCESS) {
-                downloadAI.setDisable(false);
-            }
+            refreshAiUi();
             File exportedFile = exportTask.getValue();
             showSuccessPrompt(I18nUtils.getString("webshell.report.export.success.named",
                     exportedFile.getName(), exportedFile.getAbsolutePath()));
         });
         exportTask.setOnFailed(e -> {
-            if (aiAnalysisState == AiAnalysisState.SUCCESS) {
-                downloadAI.setDisable(false);
-            }
+            refreshAiUi();
             Throwable error = exportTask.getException();
             if (debugMode && error != null) {
                 error.printStackTrace();
@@ -543,13 +792,17 @@ public class PaneWebshellDecode {
     }
 
     private WebshellAnalysisWordReportGenerator.ReportData buildReportData() {
+        AiReportSnapshot snapshot = analyzedSnapshot;
+        if (snapshot == null) {
+            snapshot = buildAiSnapshot();
+        }
         return new WebshellAnalysisWordReportGenerator.ReportData(
-                inputText.getText(),
-                result.getText(),
+                snapshot.sourceInput,
+                snapshot.sourceResult,
                 aiTextArea.getText(),
-                resolveDecryptRuleSummary(),
-                collectSchemeLines(),
-                new Date()
+                snapshot.ruleSummary,
+                snapshot.schemeLines,
+                snapshot.capturedAt
         );
     }
 
@@ -665,8 +918,12 @@ public class PaneWebshellDecode {
     void toDecode(ActionEvent event) throws Exception {
         if(!checkContent()) return;
 
-        invalidateAiReport();
+        final long decryptToken = ++decryptTokenSeq;
+        activeDecryptToken = decryptToken;
+        decryptRunning = true;
+        cancelActiveSession();
         res.clear();
+        refreshAiUi();
         traverse.clear();
         ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.DECRYPT_ARRAY);
 
@@ -714,21 +971,25 @@ public class PaneWebshellDecode {
             I18nUtils.getString("webshell.decrypting.dict") : 
             I18nUtils.getString("webshell.decrypting"));
 
-        currentTask = new Task<Void>() {
+        final DecryptConfig decryptConfig = DecryptConfig.builder()
+                .inputKey(inputKey)
+                .inputIv(inputIv)
+                .traverseList(new ArrayList<>(traverse))
+                .customPath(filePath)
+                .build();
+        final String decryptInput = inputText.getText();
+
+        Task<Void> decryptTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                DecryptConfig config = DecryptConfig.builder()
-                        .inputKey(inputKey)
-                        .inputIv(inputIv)
-                        .traverseList(traverse)
-                        .customPath(filePath)
-                        .build();
                 WebShellDecryptService decryptContent = new WebShellDecryptService();
-                DecryptResult decryptResult = decryptContent.decryptContent(inputText.getText(), config);
-                res = decryptResult.toMap();
+                final DecryptResult decryptResult = decryptContent.decryptContent(decryptInput, decryptConfig);
                 Platform.runLater(() -> {
-
-                    System.out.println(res);
+                    if (decryptToken != activeDecryptToken) {
+                        return;
+                    }
+                    res = decryptResult.toMap();
+                    decryptRunning = false;
 
                     String data = (String) res.get("data");
                     String encodeModeList = res.get("encodeModeList").toString();
@@ -736,15 +997,21 @@ public class PaneWebshellDecode {
 
                     result.replaceText(data);
 
-                    if(error == 1){
-                        showAiUnavailable(data);
-                    }else {
+                    if (currentKey() == null) {
+                        // 解密失败或结果为空：面板里上一份分析已不对应任何内容
+                        discardAiAnalysis();
+                        refreshAiUi();
+                    } else {
                         String recognizeText = I18nUtils.getString("webshell.auto.recognize", encodeModeList);
                         tipTitle.setText(recognizeText);
                         Tooltip tooltip = new Tooltip(recognizeText);
                         Tooltip.install(tipTitle, tooltip);
                         tipTitle.setVisible(true);
                         tipTitle.setManaged(true);
+                        if (aiPanelOpen) {
+                            syncAiWithCurrentResult();
+                        }
+                        refreshAiUi();
                     }
 
                 });
@@ -752,12 +1019,17 @@ public class PaneWebshellDecode {
                 return null;
             }
         };
-        currentTask.setOnFailed(e -> {
-            Throwable error = currentTask.getException();
-            if (debugMode) error.printStackTrace();
+        currentTask = decryptTask;
+        decryptTask.setOnFailed(e -> {
+            Throwable error = decryptTask.getException();
+            if (debugMode && error != null) error.printStackTrace();
+            if (decryptToken == activeDecryptToken) {
+                decryptRunning = false;
+                refreshAiUi();
+            }
         });
         // 启动任务
-        currentThread = new Thread(currentTask);
+        currentThread = new Thread(decryptTask);
         currentThread.setDaemon(true);
         currentThread.start();
     }
@@ -765,8 +1037,6 @@ public class PaneWebshellDecode {
     //    筛选栏事件
     @FXML
     void rulesComboChoose(ActionEvent e){
-        invalidateAiReport();
-
         // 0-使用默认Key快速解密 1-指定Key快速解密 2-使用内置50wKey字典解密 3-指定Key字典解密ƒ
 
         int selectedIndex = rulesComboBox.getSelectionModel().getSelectedIndex();
@@ -898,8 +1168,6 @@ public class PaneWebshellDecode {
 
     @FXML
     void toDecodePcap(ActionEvent event) {
-        invalidateAiReport();
-        res.clear();
         traverse.clear();
         FileChooser chooser = new FileChooser();
         FileChooser.ExtensionFilter filterPcap = new FileChooser.ExtensionFilter(I18nUtils.getString("webshell.filetype.pcap"), "*.pcap");
@@ -919,6 +1187,13 @@ public class PaneWebshellDecode {
             if(debugMode) System.out.println("没有文件被选择");
             return;
         }
+
+        final long decryptToken = ++decryptTokenSeq;
+        activeDecryptToken = decryptToken;
+        decryptRunning = true;
+        cancelActiveSession();
+        res.clear();
+        refreshAiUi();
 
         ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.DECRYPT_ARRAY);
 
@@ -971,24 +1246,40 @@ public class PaneWebshellDecode {
             I18nUtils.getString("webshell.pcap.decrypting"));
 
         String finalPath = path;
-        currentTask = new Task<Void>() {
+        final String pcapKey = inputKey;
+        final String pcapIv = inputIv;
+        final List<String> pcapTraverse = new ArrayList<>(traverse);
+        final String pcapCustomPath = filePath;
+        Task<Void> pcapTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                ReadPacketFile reader = new ReadPacketFile(finalPath, inputKey, inputIv, traverse, filePath);
+                ReadPacketFile reader = new ReadPacketFile(finalPath, pcapKey, pcapIv, pcapTraverse, pcapCustomPath);
                 String outputFilePath = reader.getPackets();
                 Platform.runLater(() -> {
+                    if (decryptToken != activeDecryptToken) {
+                        return;
+                    }
+                    decryptRunning = false;
                     result.replaceText(I18nUtils.getString("webshell.pcap.success", outputFilePath));
+                    // 流量包解密不回填 res，AI 无内容可分析，同时清掉上一份分析
+                    discardAiAnalysis();
+                    refreshAiUi();
                 });
                 ExecutorServiceManager.shutdownExecutor(ExecutorServiceManager.ExecutorPoolNames.DECRYPT_ARRAY);
                 return null;
             }
         };
-        currentTask.setOnFailed(e -> {
-            Throwable error = currentTask.getException();
-            if (debugMode) error.printStackTrace();
+        currentTask = pcapTask;
+        pcapTask.setOnFailed(e -> {
+            Throwable error = pcapTask.getException();
+            if (debugMode && error != null) error.printStackTrace();
+            if (decryptToken == activeDecryptToken) {
+                decryptRunning = false;
+                refreshAiUi();
+            }
         });
         // 启动任务
-        currentThread = new Thread(currentTask);
+        currentThread = new Thread(pcapTask);
         currentThread.setDaemon(true);
         currentThread.start();
     }

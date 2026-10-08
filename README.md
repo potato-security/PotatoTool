@@ -1,10 +1,11 @@
 
 # 一、简介
-	当前版本V2.4（本次更新主要增加了一些红队功能）
+	当前源码版本：V2.5。仓库中的构建版本、应用展示版本与报告版本已统一为 2.5。目前暂未提供 V2.5 的预打包 Release；需要使用当前版本时，请获取源码并按“从源码构建”一节自行构建和打包。
 
-这款工具是一款功能强大的网络安全综合工具，旨在为安全从业者、红蓝对抗人员和网络安全爱好者提供全面的网络安全解决方案。它集成了多种实用功能，包括解密、分析、扫描、溯源等，为用户提供了便捷的操作界面和丰富的功能选择。
+PotatoTool 是一款基于 JavaFX 的桌面安全工具，包含加密流量解密、信息收集、漏洞扫描、反编译和若干数据查询与分析功能。红蓝队页面集中在同一个应用中，方便在安全测试和分析工作中调用。各项能力的兼容范围、外部服务依赖和测试状态并不相同，具体以当前源码和对应说明为准。
 
-- GitHub链接：[https://github.com/potato-security/PotatoTool/releases/tag/ReleaseV2.4](https://github.com/potato-security/PotatoTool/releases/tag/ReleaseV2.4)
+- GitHub 仓库：[potato-security/PotatoTool](https://github.com/potato-security/PotatoTool)
+- V2.5 暂无预打包 Release；下载源码后可自行构建，步骤见本文“从源码构建”。
 - 启动命令后+debug，可打印解密报错，用于提交bug信息（例：java -jar xxx.jar debug）
 - **启动密码：potato520**
 
@@ -14,14 +15,9 @@
 		3、如您在使用本工具的过程中存在任何非法行为，您需自行承担相应后果，我们将不承担任何法律及连带责任。
 		4、使用本工具前，请务必审慎阅读、充分理解各条款内容，并接受本协议所有条款，否则，请不要使用本工具。您的使用行为或者您以其他任何明示或者默示方式表示接受本协议的，即视为您已阅读并同意本协议的约束。
 
-# 二、优势
+# 二、项目定位
 
-| 特性 | 说明 |
-|:---:|:---:|
-| 强大全面 | 每个功能相较于同类型工具更强大，功能支持更全面 | 
-| 综合性能 | 一体化设计，用户无需切换工具或界面即可完成各项操作 | 
-| 用户友好 | 界面简单友好，操作易上手 | 
-| 反馈支持 | 重视用户反馈，提供及时支持和帮助 | 
+蓝队功能主要处理 WebShell 流量、编码与密文、文件和网络数据；红队功能包括信息收集、端口与漏洞扫描，以及命令、载荷等辅助工具。项目仍在迭代，部分能力会受到 POC 格式、目标环境、外部接口配额和本地 Java 运行环境的影响。
 
 # 三、使用场景
 
@@ -38,13 +34,9 @@
 | Java版本 | 8 / 11+ (【荐】性能更高) | 
 | 兼容平台 | 支持 Windows、Linux 和 Mac 操作系统 | 
 
-# 五、价格与许可
+# 五、许可与版本状态
 
-**免费使用**：目前提供的是一个社区版本，完全免费供用户使用。这个版本包含了所有蓝队功能，并且没有任何时间限制，尽情享受工具带来的便利和效益。
-
-**内部版**：这款工具在设计时就注重可扩展性与定制化，旨在贴合用户需求。目前有一个内部版本，具备很多强大功能，但因团队资源问题未充分测试和修补，尚未在公开版推出，后续更新会逐步发布这些功能。
-
-**开源**：项目代码已开源，采用 Apache License 2.0（详见根目录 `LICENSE` 文件），允许商业使用与二次开发；欢迎社区参与共建。
+项目源码采用 Apache License 2.0，使用和再发布时请遵守根目录 `LICENSE` 中的条款。当前源码版本为 V2.5，暂未提供该版本的预打包 Release；需要使用此版本的用户可按下文步骤自行构建。已有 Release 附件的版本以 GitHub 发布页标注为准。
 
 # 六、快速入门
 
@@ -498,8 +490,8 @@
    	A:因界面采用DPI自适应，且未测试不常见的分辨率，所以导致部分分辨率显示异常，建议更换分辨率尝试。
 
 
-	Q:内测版能公布么
- 	A:内部版暂不对外开放，UI上有很多bug，功能上也没有进行全面测试。但是后面会陆续开放，不会存在收费问题。V1版本号开头为蓝队版本、V2版本开头为红蓝队全功能版本、版本号结尾单数为发布版、版本号结尾双数为内测版
+	Q:当前有可直接下载的 V2.5 安装包吗
+	A:目前没有 V2.5 的预打包 Release。仓库提供源码，使用者可按本文“从源码构建”一节自行构建；其他已发布版本以 GitHub Releases 页面为准。
 
 
 	Q:无法输入中文
@@ -515,7 +507,9 @@
 
 # 九、获取方式
 
-- GitHub链接：[https://github.com/potato-security/PotatoTool/releases/tag/ReleaseV2.4](https://github.com/potato-security/PotatoTool/releases/tag/ReleaseV2.4)
+- GitHub 仓库：[potato-security/PotatoTool](https://github.com/potato-security/PotatoTool)
+- 当前源码版本为 V2.5，暂未提供对应的预打包 Release。需要使用 V2.5 时，请从仓库获取源码并按下文说明自行构建和打包。
+- [查看已有 Release](https://github.com/potato-security/PotatoTool/releases)；下载预打包版本前，请核对发布页标注的版本号。
 - 推荐使用java11+，性能更高
 - 启动命令后+debug，可打印解密报错，用于提交bug信息（例：java -jar xxx.jar debug）
 - **启动密码：potato520**
@@ -537,7 +531,7 @@
 2. 用目标版本的构建描述打包（二选一）：
    - 直接指定：`mvn -f jdk8.xml clean package` 或 `mvn -f jdk11+.xml clean package`
    - 按仓库惯例：将对应版本的 xml 复制为 `pom.xml`（IDE 中重新加载 Maven 配置即可识别）后执行 `mvn clean package`
-3. 产物：经 ProGuard 混淆的 jar 输出到 `./outJar/`，命名形如 `PotatoTool-<版本>-jdk8.jar`、`PotatoTool-<版本>-jdk11+.jar`（与 Releases 中的附件一致）
+3. 产物：经 ProGuard 混淆的 jar 输出到 `./outJar/`，命名形如 `PotatoTool-<版本>-jdk8.jar`、`PotatoTool-<版本>-jdk11+.jar`。构建产物由使用者自行管理；当前未提供 V2.5 的预打包 Release 附件。
 
 ## 3. 发版前检查
 
@@ -559,4 +553,3 @@
 
 ## 帮宝子点个star吧，Stargazers over time
 [![Stargazers over time](https://starchart.cc/potato-security/PotatoTool.svg?variant=adaptive)](https://starchart.cc/potato-security/PotatoTool)
-

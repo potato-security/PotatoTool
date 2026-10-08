@@ -159,7 +159,7 @@ public class PaneAbout {
     HostServices services = MainApplication.letGetHostServices();
     @FXML
     void openGitHub(){
-        services.showDocument("https://github.com/ljy1058318852");
+        services.showDocument("https://github.com/potato-security");
     }
 
     @FXML
@@ -174,7 +174,7 @@ public class PaneAbout {
 
     @FXML
     void openGitHubIssues(){
-        services.showDocument("https://github.com/HotBoy-java/PotatoTool/issues");
+        services.showDocument("https://github.com/potato-security/PotatoTool/issues");
     }
 
     @FXML
