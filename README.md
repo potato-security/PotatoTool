@@ -34,9 +34,9 @@ PotatoTool 是一款基于 JavaFX 的桌面安全工具，包含加密流量解�
 | Java版本 | 8 / 11+ (【荐】性能更高) | 
 | 兼容平台 | 支持 Windows、Linux 和 Mac 操作系统 | 
 
-# 五、许可与版本状态
+# 五、许可
 
-项目源码采用 Apache License 2.0，使用和再发布时请遵守根目录 `LICENSE` 中的条款。当前源码版本为 V2.5，暂未提供该版本的预打包 Release；需要使用此版本的用户可按下文步骤自行构建。已有 Release 附件的版本以 GitHub 发布页标注为准。
+项目源码采用 Apache License 2.0，使用和再发布时请遵守根目录 `LICENSE` 中的条款。
 
 # 六、快速入门
 
@@ -490,10 +490,6 @@ PotatoTool 是一款基于 JavaFX 的桌面安全工具，包含加密流量解�
    	A:因界面采用DPI自适应，且未测试不常见的分辨率，所以导致部分分辨率显示异常，建议更换分辨率尝试。
 
 
-	Q:当前有可直接下载的 V2.5 安装包吗
-	A:目前没有 V2.5 的预打包 Release。仓库提供源码，使用者可按本文“从源码构建”一节自行构建；其他已发布版本以 GitHub Releases 页面为准。
-
-
 	Q:无法输入中文
  	A:Arch Linux中可能存在JavaFX在Linux下的文本框不能输入中文，Java启动时加入-Djdk.gtk.version=2   如：java -Djdk.gtk.version=2 -jar xxxx.jar
   
@@ -531,7 +527,7 @@ PotatoTool 是一款基于 JavaFX 的桌面安全工具，包含加密流量解�
 2. 用目标版本的构建描述打包（二选一）：
    - 直接指定：`mvn -f jdk8.xml clean package` 或 `mvn -f jdk11+.xml clean package`
    - 按仓库惯例：将对应版本的 xml 复制为 `pom.xml`（IDE 中重新加载 Maven 配置即可识别）后执行 `mvn clean package`
-3. 产物：经 ProGuard 混淆的 jar 输出到 `./outJar/`，命名形如 `PotatoTool-<版本>-jdk8.jar`、`PotatoTool-<版本>-jdk11+.jar`。构建产物由使用者自行管理；当前未提供 V2.5 的预打包 Release 附件。
+3. 产物：经 ProGuard 混淆的 jar 输出到 `./outJar/`，命名形如 `PotatoTool-<版本>-jdk8.jar`、`PotatoTool-<版本>-jdk11+.jar`。
 
 ## 3. 发版前检查
 
