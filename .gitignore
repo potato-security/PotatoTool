@@ -1,13 +1,12 @@
-*/.DS_Store
-.idea
-.vscode
-.cursor
-target
-outJar
-PotatoTool.iml
+# 构建产物
+target/
+outJar/
 dependency-reduced-pom.xml
-webshell_KeyIs_*
-testData.csv
-ai-gateway-deploy
-./src/test
-plan.md
+
+# IDE / 编辑器
+.idea/
+.vscode/
+*.iml
+
+# 系统文件
+.DS_Store
