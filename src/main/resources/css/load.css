@@ -12,7 +12,7 @@
 }
 
 .ambient-cyan {
-    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, rgba(93, 235, 255, 0.42) 0%, rgba(93, 235, 255, 0.10) 45%, transparent 76%);
+    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, rgba(79, 227, 255, 0.42) 0%, rgba(79, 227, 255, 0.10) 45%, transparent 76%);
 }
 
 .ambient-violet {
@@ -28,19 +28,19 @@
 }
 
 .coordinate-line-strong {
-    -fx-background-color: rgba(93, 235, 255, 0.18);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.20), 10, 0.2, 0, 0);
+    -fx-background-color: rgba(79, 227, 255, 0.18);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.20), 10, 0.2, 0, 0);
 }
 
 .dust-dot {
     -fx-background-radius: 999;
     -fx-background-color: rgba(210, 238, 255, 0.62);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.35), 7, 0.25, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.35), 7, 0.25, 0, 0);
 }
 
 /* [E3] anchor 锦点线 · alpha 从 0.24/0.10 提升到 0.40/0.18，后期 Java 侧加 1200ms 呼吸 Timeline。 */
 .anchor-line {
-    -fx-background-color: linear-gradient(to right, transparent 0%, rgba(93, 235, 255, 0.40) 35%, rgba(93, 235, 255, 0.18) 100%);
+    -fx-background-color: linear-gradient(to right, transparent 0%, rgba(79, 227, 255, 0.40) 35%, rgba(79, 227, 255, 0.18) 100%);
 }
 
 .anchor-line-right {
@@ -49,15 +49,15 @@
 
 .anchor-dot {
     -fx-background-radius: 999;
-    -fx-background-color: #5DEBFF;
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.72), 12, 0.45, 0, 0);
+    -fx-background-color: #4FE3FF;
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.72), 12, 0.45, 0, 0);
 }
 
 .top-rail {
     -fx-min-height: 38;
     -fx-pref-height: 38;
     -fx-background-color: linear-gradient(to right, transparent 0%, rgba(9, 18, 34, 0.62) 18%, rgba(9, 18, 34, 0.70) 82%, transparent 100%);
-    -fx-border-color: linear-gradient(to right, transparent 0%, rgba(93, 235, 255, 0.20) 20%, rgba(93, 235, 255, 0.10) 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right, transparent 0%, rgba(79, 227, 255, 0.20) 20%, rgba(79, 227, 255, 0.10) 80%, transparent 100%);
     -fx-border-width: 0 0 1 0;
 }
 
@@ -70,12 +70,12 @@
 
 .rail-main {
     -fx-text-fill: rgba(235, 248, 255, 0.96);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.18), 6, 0.10, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.18), 6, 0.10, 0, 0);
 }
 
 .rail-phase {
-    -fx-text-fill: #5DEBFF;
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.55), 12, 0.30, 0, 0);
+    -fx-text-fill: #4FE3FF;
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.55), 12, 0.30, 0, 0);
 }
 
 .rail-time {
@@ -90,8 +90,8 @@
     -fx-pref-height: 6;
     -fx-max-height: 6;
     -fx-background-radius: 3;
-    -fx-background-color: #55F0B0;
-    -fx-effect: dropshadow(gaussian, rgba(85, 240, 176, 0.70), 10, 0.55, 0, 0);
+    -fx-background-color: #5BF0B4;
+    -fx-effect: dropshadow(gaussian, rgba(91, 240, 180, 0.70), 10, 0.55, 0, 0);
 }
 
 /* [R3] 翼盘整体高度从 348 拉到 430，与玻璃台等高；内 padding 18→14 给 sub-block 更多空间 */
@@ -110,7 +110,7 @@
 }
 
 .left-wing {
-    -fx-border-color: linear-gradient(to bottom right, rgba(93, 235, 255, 0.30), rgba(93, 235, 255, 0.04));
+    -fx-border-color: linear-gradient(to bottom right, rgba(79, 227, 255, 0.30), rgba(79, 227, 255, 0.04));
 }
 
 .right-wing {
@@ -163,9 +163,9 @@
     -fx-min-height: 3;
     -fx-pref-height: 3;
     -fx-max-height: 3;
-    -fx-background-color: linear-gradient(to right, rgba(93, 235, 255, 0.30), #5DEBFF);
+    -fx-background-color: linear-gradient(to right, rgba(79, 227, 255, 0.30), #4FE3FF);
     -fx-background-radius: 2;
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.72), 10, 0.42, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.72), 10, 0.42, 0, 0);
 }
 
 .module-state {
@@ -177,8 +177,8 @@
 }
 
 .module-ok {
-    -fx-text-fill: #55F0B0;
-    -fx-effect: dropshadow(gaussian, rgba(85, 240, 176, 0.45), 8, 0.35, 0, 0);
+    -fx-text-fill: #5BF0B4;
+    -fx-effect: dropshadow(gaussian, rgba(91, 240, 180, 0.45), 8, 0.35, 0, 0);
 }
 
 .glass-deck {
@@ -208,14 +208,14 @@
     -fx-pref-height: 430;
     -fx-max-height: 430;
     -fx-background-color:
-        radial-gradient(center 50% 0%, radius 92%, rgba(235, 252, 255, 0.18) 0%, rgba(93, 235, 255, 0.058) 34%, transparent 70%),
-        radial-gradient(center 16% 18%, radius 42%, rgba(255, 255, 255, 0.070) 0%, rgba(93, 235, 255, 0.030) 52%, transparent 100%),
+        radial-gradient(center 50% 0%, radius 92%, rgba(235, 252, 255, 0.18) 0%, rgba(79, 227, 255, 0.058) 34%, transparent 70%),
+        radial-gradient(center 16% 18%, radius 42%, rgba(255, 255, 255, 0.070) 0%, rgba(79, 227, 255, 0.030) 52%, transparent 100%),
         linear-gradient(to bottom right, rgba(255, 255, 255, 0.150), rgba(255, 255, 255, 0.032)),
         linear-gradient(to bottom, rgba(14, 39, 66, 0.82), rgba(4, 10, 20, 0.66));
     -fx-background-radius: 26;
     -fx-border-radius: 26;
     -fx-border-width: 1;
-    -fx-border-color: linear-gradient(to bottom right, rgba(238, 252, 255, 0.78), rgba(93, 235, 255, 0.26) 42%, rgba(138, 124, 255, 0.42) 100%);
+    -fx-border-color: linear-gradient(to bottom right, rgba(238, 252, 255, 0.78), rgba(79, 227, 255, 0.26) 42%, rgba(138, 124, 255, 0.42) 100%);
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 58, 0.18, 0, 24);
 }
 
@@ -229,8 +229,8 @@
     /* 超细扫描线（全息 CRT 质感）· 3px 一组 1.5px 青色、透明度 ~2.8%，不会被脱出玻璃边界。
        叠加在雾面/面背景之上，与 sweep highlight 摄过时形成全息霉点干涉。 */
     -fx-background-color:
-        linear-gradient(from 0px 0px to 0px 3px, repeat, transparent 0%, transparent 50%, rgba(93, 235, 255, 0.038) 50%, rgba(93, 235, 255, 0.038) 100%),
-        radial-gradient(center 50% 36%, radius 58%, rgba(93, 235, 255, 0.145) 0%, rgba(255, 255, 255, 0.038) 52%, transparent 100%),
+        linear-gradient(from 0px 0px to 0px 3px, repeat, transparent 0%, transparent 50%, rgba(79, 227, 255, 0.038) 50%, rgba(79, 227, 255, 0.038) 100%),
+        radial-gradient(center 50% 36%, radius 58%, rgba(79, 227, 255, 0.145) 0%, rgba(255, 255, 255, 0.038) 52%, transparent 100%),
         radial-gradient(center 78% 74%, radius 46%, rgba(138, 124, 255, 0.075) 0%, transparent 68%),
         linear-gradient(to bottom right, rgba(255, 255, 255, 0.068), rgba(255, 255, 255, 0.014));
     -fx-background-radius: 22;
@@ -244,7 +244,7 @@
     -fx-min-height: 430;
     -fx-pref-height: 430;
     -fx-max-height: 430;
-    -fx-background-color: linear-gradient(to bottom right, transparent 0%, rgba(93, 235, 255, 0.120) 18%, transparent 38%, transparent 60%, rgba(138, 124, 255, 0.145) 100%);
+    -fx-background-color: linear-gradient(to bottom right, transparent 0%, rgba(79, 227, 255, 0.120) 18%, transparent 38%, transparent 60%, rgba(138, 124, 255, 0.145) 100%);
     -fx-background-radius: 26;
 }
 
@@ -255,7 +255,7 @@
     -fx-min-height: 580;
     -fx-pref-height: 580;
     -fx-max-height: 580;
-    -fx-background-color: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.0) 18%, rgba(255, 255, 255, 0.36) 50%, rgba(93, 235, 255, 0.09) 66%, transparent 100%);
+    -fx-background-color: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.0) 18%, rgba(255, 255, 255, 0.36) 50%, rgba(79, 227, 255, 0.09) 66%, transparent 100%);
     -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.18), 14, 0.14, 0, 0);
 }
 
@@ -266,8 +266,8 @@
     -fx-min-height: 1.8;
     -fx-pref-height: 1.8;
     -fx-max-height: 1.8;
-    -fx-background-color: linear-gradient(to right, transparent, rgba(245, 253, 255, 0.98), rgba(93, 235, 255, 0.42), transparent);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.74), 16, 0.44, 0, 0);
+    -fx-background-color: linear-gradient(to right, transparent, rgba(245, 253, 255, 0.98), rgba(79, 227, 255, 0.42), transparent);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.74), 16, 0.44, 0, 0);
 }
 
 .glass-edge-bottom {
@@ -277,7 +277,7 @@
     -fx-min-height: 1;
     -fx-pref-height: 1;
     -fx-max-height: 1;
-    -fx-background-color: linear-gradient(to right, transparent, rgba(93, 235, 255, 0.34), rgba(138, 124, 255, 0.18), transparent);
+    -fx-background-color: linear-gradient(to right, transparent, rgba(79, 227, 255, 0.34), rgba(138, 124, 255, 0.18), transparent);
 }
 
 .glass-edge-left,
@@ -291,7 +291,7 @@
 }
 
 .glass-edge-left {
-    -fx-background-color: linear-gradient(to bottom, transparent, rgba(93, 235, 255, 0.58), transparent);
+    -fx-background-color: linear-gradient(to bottom, transparent, rgba(79, 227, 255, 0.58), transparent);
 }
 
 .glass-edge-right {
@@ -304,18 +304,18 @@
 
 .glass-probe-line {
     -fx-background-color: linear-gradient(to right, transparent, rgba(220, 250, 255, 0.45), transparent);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.26), 8, 0.22, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.26), 8, 0.22, 0, 0);
 }
 
 .glass-probe-dot {
     -fx-background-radius: 999;
     -fx-background-color: rgba(220, 250, 255, 0.72);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.62), 12, 0.42, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.62), 12, 0.42, 0, 0);
 }
 
 .glass-probe-scan {
-    -fx-background-color: linear-gradient(to right, transparent, rgba(93, 235, 255, 0.54), rgba(138, 124, 255, 0.26), transparent);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.34), 12, 0.30, 0, 0);
+    -fx-background-color: linear-gradient(to right, transparent, rgba(79, 227, 255, 0.54), rgba(138, 124, 255, 0.26), transparent);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.34), 12, 0.30, 0, 0);
 }
 
 .logo-area {
@@ -334,7 +334,7 @@
     -fx-min-height: 166;
     -fx-pref-height: 166;
     -fx-max-height: 166;
-    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, rgba(93, 235, 255, 0.16) 0%, rgba(93, 235, 255, 0.04) 48%, transparent 72%);
+    -fx-background-color: radial-gradient(center 50% 50%, radius 50%, rgba(79, 227, 255, 0.16) 0%, rgba(79, 227, 255, 0.04) 48%, transparent 72%);
     -fx-background-radius: 83;
 }
 
@@ -348,7 +348,7 @@
     -fx-background-color: transparent;
     -fx-border-width: 1;
     -fx-border-radius: 87;
-    -fx-border-color: linear-gradient(to bottom right, rgba(93, 235, 255, 0.50), transparent 52%, rgba(138, 124, 255, 0.42));
+    -fx-border-color: linear-gradient(to bottom right, rgba(79, 227, 255, 0.50), transparent 52%, rgba(138, 124, 255, 0.42));
 }
 
 .logo-reticle-inner {
@@ -361,7 +361,7 @@
     -fx-background-color: transparent;
     -fx-border-width: 1;
     -fx-border-radius: 70;
-    -fx-border-color: linear-gradient(to top right, rgba(255, 255, 255, 0.18), rgba(93, 235, 255, 0.52), rgba(255, 255, 255, 0.08));
+    -fx-border-color: linear-gradient(to top right, rgba(255, 255, 255, 0.18), rgba(79, 227, 255, 0.52), rgba(255, 255, 255, 0.08));
 }
 
 .logo-scan-line {
@@ -371,15 +371,15 @@
     -fx-min-height: 3;
     -fx-pref-height: 3;
     -fx-max-height: 3;
-    -fx-background-color: linear-gradient(to right, transparent, rgba(93, 235, 255, 0.92), transparent);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.78), 14, 0.45, 0, 0);
+    -fx-background-color: linear-gradient(to right, transparent, rgba(79, 227, 255, 0.92), transparent);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.78), 14, 0.45, 0, 0);
 }
 
 .title-shadow {
     -fx-font-family: "Microsoft YaHei Bold", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
     -fx-font-size: 44;
     -fx-font-weight: bold;
-    -fx-text-fill: rgba(93, 235, 255, 0.08);
+    -fx-text-fill: rgba(79, 227, 255, 0.08);
 }
 
 .title-main {
@@ -387,7 +387,7 @@
     -fx-font-size: 44;
     -fx-font-weight: bold;
     -fx-text-fill: #F8FDFF;
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.66), 18, 0.34, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.66), 18, 0.34, 0, 0);
 }
 
 .title-lock-line {
@@ -397,8 +397,8 @@
     -fx-min-height: 2;
     -fx-pref-height: 2;
     -fx-max-height: 2;
-    -fx-background-color: linear-gradient(to right, transparent, #5DEBFF, transparent);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.58), 12, 0.35, 0, 0);
+    -fx-background-color: linear-gradient(to right, transparent, #4FE3FF, transparent);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.58), 12, 0.35, 0, 0);
 }
 
 .status-primary {
@@ -456,7 +456,7 @@
 
 .bottom-rail {
     -fx-background-color: linear-gradient(to right, transparent 0%, rgba(7, 14, 28, 0.62) 20%, rgba(7, 14, 28, 0.64) 80%, transparent 100%);
-    -fx-border-color: linear-gradient(to right, transparent 0%, rgba(93, 235, 255, 0.09) 20%, rgba(93, 235, 255, 0.18) 50%, rgba(138, 124, 255, 0.09) 80%, transparent 100%);
+    -fx-border-color: linear-gradient(to right, transparent 0%, rgba(79, 227, 255, 0.09) 20%, rgba(79, 227, 255, 0.18) 50%, rgba(138, 124, 255, 0.09) 80%, transparent 100%);
     -fx-border-width: 1 0 0 0;
 }
 
@@ -473,16 +473,16 @@
 }
 
 .phase-node-active {
-    -fx-background-color: #5DEBFF;
+    -fx-background-color: #4FE3FF;
     -fx-border-color: rgba(255, 255, 255, 0.72);
     -fx-border-width: 1;
     -fx-border-radius: 5;
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.92), 20, 0.62, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.92), 20, 0.62, 0, 0);
 }
 
 .phase-node-done {
-    -fx-background-color: #55F0B0;
-    -fx-effect: dropshadow(gaussian, rgba(85, 240, 176, 0.62), 14, 0.48, 0, 0);
+    -fx-background-color: #5BF0B4;
+    -fx-effect: dropshadow(gaussian, rgba(91, 240, 180, 0.62), 14, 0.48, 0, 0);
 }
 
 .phase-label {
@@ -493,7 +493,7 @@
 
 .phase-label-active {
     -fx-text-fill: rgba(232, 249, 255, 0.98);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.36), 7, 0.24, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.36), 7, 0.24, 0, 0);
 }
 
 .phase-link {
@@ -507,8 +507,8 @@
 }
 
 .phase-link-done {
-    -fx-background-color: linear-gradient(to right, rgba(93, 235, 255, 0.18), rgba(85, 240, 176, 0.62));
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.35), 8, 0.35, 0, 0);
+    -fx-background-color: linear-gradient(to right, rgba(79, 227, 255, 0.18), rgba(91, 240, 180, 0.62));
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.35), 8, 0.35, 0, 0);
 }
 
 .terminal-dot {
@@ -533,14 +533,14 @@
     -fx-max-height: 7;
     -fx-background-radius: 4;
     -fx-background-color: transparent;
-    -fx-border-color: rgba(93, 235, 255, 0.62);
+    -fx-border-color: rgba(79, 227, 255, 0.62);
     -fx-border-radius: 4;
     -fx-border-width: 1;
 }
 
 .terminal-ready {
-    -fx-background-color: #55F0B0;
-    -fx-effect: dropshadow(gaussian, rgba(85, 240, 176, 0.72), 13, 0.55, 0, 0);
+    -fx-background-color: #5BF0B4;
+    -fx-effect: dropshadow(gaussian, rgba(91, 240, 180, 0.72), 13, 0.55, 0, 0);
 }
 
 .terminal-primary {
@@ -556,7 +556,7 @@
 }
 
 .ready-flash {
-    -fx-background-color: radial-gradient(center 50% 50%, radius 58%, rgba(93, 235, 255, 0.22) 0%, rgba(93, 235, 255, 0.06) 34%, transparent 72%);
+    -fx-background-color: radial-gradient(center 50% 50%, radius 58%, rgba(79, 227, 255, 0.22) 0%, rgba(79, 227, 255, 0.06) 34%, transparent 72%);
 }
 
 .cut-layer {
@@ -567,17 +567,17 @@
     -fx-background-color:
         linear-gradient(to bottom,
             transparent 0%,
-            rgba(93, 235, 255, 0.00) 18%,
-            rgba(93, 235, 255, 0.17) 48%,
+            rgba(79, 227, 255, 0.00) 18%,
+            rgba(79, 227, 255, 0.17) 48%,
             rgba(255, 255, 255, 0.26) 50%,
             rgba(138, 124, 255, 0.08) 56%,
             transparent 100%);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.22), 22, 0.18, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.22), 22, 0.18, 0, 0);
 }
 
 .global-scan-core {
-    -fx-background-color: linear-gradient(to right, transparent, rgba(93, 235, 255, 0.78), rgba(255, 255, 255, 0.76), rgba(138, 124, 255, 0.34), transparent);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.58), 16, 0.30, 0, 0);
+    -fx-background-color: linear-gradient(to right, transparent, rgba(79, 227, 255, 0.78), rgba(255, 255, 255, 0.76), rgba(138, 124, 255, 0.34), transparent);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.58), 16, 0.30, 0, 0);
 }
 
 .title-gap {
@@ -592,7 +592,7 @@
 
 .title-tool {
     -fx-text-fill: #76F0FF;
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.52), 20, 0.32, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.52), 20, 0.32, 0, 0);
 }
 
 .energy-rail {
@@ -619,9 +619,9 @@
     -fx-min-height: 2;
     -fx-pref-height: 2;
     -fx-max-height: 2;
-    -fx-background-color: linear-gradient(to right, rgba(93, 235, 255, 0.0), #5DEBFF 45%, #55F0B0 100%);
+    -fx-background-color: linear-gradient(to right, rgba(79, 227, 255, 0.0), #4FE3FF 45%, #5BF0B4 100%);
     -fx-background-radius: 2;
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.58), 12, 0.36, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.58), 12, 0.36, 0, 0);
 }
 
 .energy-shine {
@@ -643,8 +643,8 @@
 }
 
 .binary-flow-blue {
-    -fx-fill: rgba(93, 235, 255, 0.50);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.32), 9, 0.20, 0, 0);
+    -fx-fill: rgba(79, 227, 255, 0.50);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.32), 9, 0.20, 0, 0);
 }
 
 .binary-flow-red {
@@ -653,8 +653,8 @@
 }
 
 .binary-flow-security {
-    -fx-fill: rgba(85, 240, 176, 0.48);
-    -fx-effect: dropshadow(gaussian, rgba(85, 240, 176, 0.30), 10, 0.20, 0, 0);
+    -fx-fill: rgba(91, 240, 180, 0.48);
+    -fx-effect: dropshadow(gaussian, rgba(91, 240, 180, 0.30), 10, 0.20, 0, 0);
 }
 
 .binary-flow-attack {
@@ -667,19 +667,19 @@
 }
 
 .channel-glow-blue {
-    -fx-background-color: linear-gradient(to right, transparent, rgba(93, 235, 255, 0.18), rgba(93, 235, 255, 0.05), transparent);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.16), 28, 0.22, 0, 0);
+    -fx-background-color: linear-gradient(to right, transparent, rgba(79, 227, 255, 0.18), rgba(79, 227, 255, 0.05), transparent);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.16), 28, 0.22, 0, 0);
 }
 
 .channel-core-blue {
     /* 虚线主轴· 8px 一组：5px 实色 + 3px 透明，模拟雷达测距束。
        两端淑入淑出由 .channel-glow-blue 辛光衡底提供。 */
     -fx-background-color: linear-gradient(from 0px 0px to 8px 0px, repeat,
-        rgba(93, 235, 255, 0.62) 0%,
-        rgba(93, 235, 255, 0.62) 62%,
+        rgba(79, 227, 255, 0.62) 0%,
+        rgba(79, 227, 255, 0.62) 62%,
         transparent 62%,
         transparent 100%);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.42), 14, 0.32, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.42), 14, 0.32, 0, 0);
 }
 
 .channel-glow-red {
@@ -700,8 +700,8 @@
 /* ============ HUD 拐角十字瞄准星（方案2）· L 型拼合，给两翼与玻璃台加"空间校准"感 ============ */
 .corner-reticle-h,
 .corner-reticle-v {
-    -fx-background-color: rgba(93, 235, 255, 0.72);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.45), 6, 0.25, 0, 0);
+    -fx-background-color: rgba(79, 227, 255, 0.72);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.45), 6, 0.25, 0, 0);
 }
 
 .corner-reticle-violet-h,
@@ -713,7 +713,7 @@
 .corner-reticle-dot {
     -fx-background-radius: 1.5;
     -fx-background-color: rgba(220, 245, 255, 0.92);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.55), 4, 0.30, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.55), 4, 0.30, 0, 0);
 }
 
 /* ============ [R3] sub-block 通用样式 · 翼内每块独立 ============ */
@@ -751,9 +751,9 @@
 .wing-tag {
     -fx-font-family: "Menlo", "Consolas", "Monaco", "Courier New", monospace;
     -fx-font-size: 9;
-    -fx-text-fill: rgba(93, 235, 255, 0.78);
+    -fx-text-fill: rgba(79, 227, 255, 0.78);
     -fx-letter-spacing: 1.0;
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.35), 4, 0.20, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.35), 4, 0.20, 0, 0);
 }
 
 /* ============ [R3 · 选项 B] 频谱柱状图 SPEC ANALYZER ============ */
@@ -768,14 +768,14 @@
 
 /* 柱条主体 · 底深顶亮 cyan 渐变 */
 .spectrum-bar {
-    -fx-background-color: linear-gradient(to top, rgba(93, 235, 255, 0.22), rgba(93, 235, 255, 0.88));
+    -fx-background-color: linear-gradient(to top, rgba(79, 227, 255, 0.22), rgba(79, 227, 255, 0.88));
     -fx-background-radius: 1;
 }
 
 /* 柱条 hot · 高度 > 72% 时切换，加 cyan glow */
 .spectrum-bar-hot {
-    -fx-background-color: linear-gradient(to top, rgba(93, 235, 255, 0.42), #5DEBFF);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.62), 6, 0.32, 0, 0);
+    -fx-background-color: linear-gradient(to top, rgba(79, 227, 255, 0.42), #4FE3FF);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.62), 6, 0.32, 0, 0);
     -fx-background-radius: 1;
 }
 
@@ -878,8 +878,8 @@
 /* ============ [R3 · 内层 L 拐角] sub-block 包围 L（比外层更细 / 更半透，避免大框小框冲突） ============ */
 .corner-reticle-inner-h,
 .corner-reticle-inner-v {
-    -fx-background-color: rgba(93, 235, 255, 0.55);
-    -fx-effect: dropshadow(gaussian, rgba(93, 235, 255, 0.30), 4, 0.15, 0, 0);
+    -fx-background-color: rgba(79, 227, 255, 0.55);
+    -fx-effect: dropshadow(gaussian, rgba(79, 227, 255, 0.30), 4, 0.15, 0, 0);
 }
 
 .corner-reticle-inner-violet-h,
