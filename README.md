@@ -5,6 +5,7 @@
 PotatoTool 是一款基于 JavaFX 的桌面安全工具，包含加密流量解密、信息收集、漏洞扫描、反编译和若干数据查询与分析功能。红蓝队页面集中在同一个应用中，方便在安全测试和分析工作中调用。各项能力的兼容范围、外部服务依赖和测试状态并不相同，具体以当前源码和对应说明为准。
 
 - GitHub 仓库：[potato-security/PotatoTool](https://github.com/potato-security/PotatoTool)
+- AtomGit 仓库（国内托管）：[potato-security/PotatoTool](https://gitcode.com/potato-security/PotatoTool)
 - V2.5 暂无预打包 Release；下载源码后可自行构建，步骤见本文“从源码构建”。
 - 启动命令后+debug，可打印解密报错，用于提交bug信息（例：java -jar xxx.jar debug）
 - **启动密码：potato520**
@@ -504,6 +505,7 @@ PotatoTool 是一款基于 JavaFX 的桌面安全工具，包含加密流量解�
 # 九、获取方式
 
 - GitHub 仓库：[potato-security/PotatoTool](https://github.com/potato-security/PotatoTool)
+- AtomGit：在国内托管 PotatoTool，帮助中国大陆用户更快访问项目与下载 Release。项目地址：[potato-security/PotatoTool](https://gitcode.com/potato-security/PotatoTool)
 - 当前源码版本为 V2.5，暂未提供对应的预打包 Release。需要使用 V2.5 时，请从仓库获取源码并按下文说明自行构建和打包。
 - [查看已有 Release](https://github.com/potato-security/PotatoTool/releases)；下载预打包版本前，请核对发布页标注的版本号。
 - 推荐使用java11+，性能更高
@@ -546,6 +548,3 @@ PotatoTool 是一款基于 JavaFX 的桌面安全工具，包含加密流量解�
 - **打包失败或产物运行异常**：先核对 `java -version` 是否与所用 POM 一致，JDK 8 与 JDK 11+ 的 POM 不可混用
 - **macOS 下命令行 Java/Maven 版本不生效**：先刷新 shell 环境变量（`source ~/.bash_profile`，zsh 用 `~/.zshrc`）
 - **调试解密报错**：源码调试时在 IDE 的程序实参中追加 `debug`（直接运行 jar 则跟在命令后），一键解密的报错信息才会输出
-
-## 帮宝子点个star吧，Stargazers over time
-[![Stargazers over time](https://starchart.cc/potato-security/PotatoTool.svg?variant=adaptive)](https://starchart.cc/potato-security/PotatoTool)
